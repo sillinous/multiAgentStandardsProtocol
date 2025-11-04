@@ -1,0 +1,21 @@
+[package]
+name = "agentic_api"
+version.workspace = true
+edition.workspace = true
+authors.workspace = true
+license.workspace = true
+description = "REST API and WebSocket server for the agentic ecosystem"
+
+[dependencies]
+agentic_core = { path = "../agentic_core" }
+agentic_domain = { path = "../agentic_domain" }
+tokio = { workspace = true }
+async-trait = { workspace = true }
+serde = { workspace = true }
+serde_json = { workspace = true }
+axum = { workspace = true }
+hyper = { workspace = true }
+tower = { workspace = true }
+tower-http = { workspace = true }
+tokio-tungstenite = { workspace = true }
+tracing = { workspace = true }

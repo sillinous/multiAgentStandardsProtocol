@@ -1,0 +1,19 @@
+[package]
+name = "agentic_observability"
+version.workspace = true
+edition.workspace = true
+authors.workspace = true
+license.workspace = true
+description = "Observability, tracing, and metrics for multi-agent systems"
+
+[dependencies]
+agentic_core = { path = "../agentic_core" }
+agentic_domain = { path = "../agentic_domain" }
+tokio = { workspace = true }
+serde = { workspace = true }
+serde_json = { workspace = true }
+tracing = { workspace = true }
+tracing-subscriber = { workspace = true }
+opentelemetry = { workspace = true }
+opentelemetry-otlp = { workspace = true }
+opentelemetry-semantic-conventions = { workspace = true }

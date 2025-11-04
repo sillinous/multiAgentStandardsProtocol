@@ -1,0 +1,30 @@
+# Rust
+/target/
+Cargo.lock
+**/*.rs.bk
+*.pdb
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+.DS_Store
+
+# Project
+.env
+.env.local
+*.log
+
+# Testing
+.tarpaulin-report.html
+coverage/
+
+# Generated
+/docs/
+
+# Learned behaviors and artifacts
+learned_behaviors/
+experiments/
+agent_states/

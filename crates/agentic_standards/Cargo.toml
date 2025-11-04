@@ -1,0 +1,17 @@
+[package]
+name = "agentic_standards"
+version.workspace = true
+edition.workspace = true
+authors.workspace = true
+license.workspace = true
+description = "Standards tracking and compliance agent"
+
+[dependencies]
+agentic_core = { path = "../agentic_core" }
+agentic_domain = { path = "../agentic_domain" }
+tokio = { workspace = true }
+async-trait = { workspace = true }
+serde = { workspace = true }
+serde_json = { workspace = true }
+chrono = { workspace = true }
+tracing = { workspace = true }
