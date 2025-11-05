@@ -1,0 +1,398 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Agentic Forge - Real-Time Dashboard</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+            background: #0f172a;
+            color: #e2e8f0;
+            padding: 20px;
+        }
+
+        .header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            padding: 30px;
+            border-radius: 12px;
+            margin-bottom: 30px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+        }
+
+        h1 {
+            font-size: 2em;
+            margin-bottom: 10px;
+        }
+
+        .status {
+            display: flex;
+            gap: 20px;
+            margin-top: 15px;
+        }
+
+        .status-item {
+            background: rgba(255, 255, 255, 0.1);
+            padding: 10px 20px;
+            border-radius: 8px;
+            font-size: 0.9em;
+        }
+
+        .status-dot {
+            display: inline-block;
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            margin-right: 8px;
+        }
+
+        .status-dot.connected {
+            background: #10b981;
+            box-shadow: 0 0 10px #10b981;
+        }
+
+        .status-dot.disconnected {
+            background: #ef4444;
+        }
+
+        .grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(400px, 1fr));
+            gap: 20px;
+            margin-bottom: 20px;
+        }
+
+        .card {
+            background: #1e293b;
+            border-radius: 12px;
+            padding: 20px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        }
+
+        .card h2 {
+            font-size: 1.3em;
+            margin-bottom: 15px;
+            color: #818cf8;
+        }
+
+        .event-list {
+            max-height: 400px;
+            overflow-y: auto;
+            padding-right: 10px;
+        }
+
+        .event {
+            background: #334155;
+            padding: 12px;
+            margin-bottom: 10px;
+            border-radius: 8px;
+            border-left: 4px solid #818cf8;
+            animation: slideIn 0.3s ease-out;
+        }
+
+        @keyframes slideIn {
+            from {
+                opacity: 0;
+                transform: translateX(-20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateX(0);
+            }
+        }
+
+        .event-type {
+            font-weight: 600;
+            color: #818cf8;
+            margin-bottom: 5px;
+        }
+
+        .event-content {
+            font-size: 0.9em;
+            color: #cbd5e1;
+        }
+
+        .event-time {
+            font-size: 0.75em;
+            color: #64748b;
+            margin-top: 5px;
+        }
+
+        .event.opportunity {
+            border-left-color: #10b981;
+        }
+
+        .event.opportunity .event-type {
+            color: #10b981;
+        }
+
+        .event.agent {
+            border-left-color: #3b82f6;
+        }
+
+        .event.agent .event-type {
+            color: #3b82f6;
+        }
+
+        .event.revenue {
+            border-left-color: #f59e0b;
+        }
+
+        .event.revenue .event-type {
+            color: #f59e0b;
+        }
+
+        .metrics {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+            gap: 15px;
+        }
+
+        .metric {
+            background: #334155;
+            padding: 15px;
+            border-radius: 8px;
+            text-align: center;
+        }
+
+        .metric-value {
+            font-size: 2em;
+            font-weight: 700;
+            color: #818cf8;
+        }
+
+        .metric-label {
+            font-size: 0.85em;
+            color: #94a3b8;
+            margin-top: 5px;
+        }
+
+        .event-list::-webkit-scrollbar {
+            width: 8px;
+        }
+
+        .event-list::-webkit-scrollbar-track {
+            background: #1e293b;
+            border-radius: 4px;
+        }
+
+        .event-list::-webkit-scrollbar-thumb {
+            background: #475569;
+            border-radius: 4px;
+        }
+
+        .event-list::-webkit-scrollbar-thumb:hover {
+            background: #64748b;
+        }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <h1>🤖 Agentic Forge - Real-Time Monitoring Dashboard</h1>
+        <p>Autonomous Multi-Agent Business Creation Platform</p>
+        <div class="status">
+            <div class="status-item">
+                <span class="status-dot" id="ws-status"></span>
+                <span id="ws-status-text">Connecting...</span>
+            </div>
+            <div class="status-item">
+                <span>Events Received: <strong id="event-count">0</strong></span>
+            </div>
+            <div class="status-item">
+                <span>Clients Connected: <strong id="client-count">0</strong></span>
+            </div>
+        </div>
+    </div>
+
+    <div class="grid">
+        <div class="card">
+            <h2>📊 Live Metrics</h2>
+            <div class="metrics" id="metrics">
+                <div class="metric">
+                    <div class="metric-value" id="metric-agents">0</div>
+                    <div class="metric-label">Active Agents</div>
+                </div>
+                <div class="metric">
+                    <div class="metric-value" id="metric-opportunities">0</div>
+                    <div class="metric-label">Opportunities</div>
+                </div>
+                <div class="metric">
+                    <div class="metric-value" id="metric-revenue">$0</div>
+                    <div class="metric-label">Est. Revenue</div>
+                </div>
+            </div>
+        </div>
+
+        <div class="card">
+            <h2>🔥 Real-Time Events</h2>
+            <div class="event-list" id="event-list">
+                <div style="text-align: center; padding: 40px; color: #64748b;">
+                    <p>Waiting for events...</p>
+                    <p style="font-size: 0.85em; margin-top: 10px;">Connect to WebSocket to see live updates</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let ws = null;
+        let eventCount = 0;
+        let agentsActive = 0;
+        let opportunitiesActive = 0;
+        let totalRevenue = 0;
+
+        const wsProtocol = window.location.protocol === 'https:' ? 'wss:' : 'ws:';
+        const wsUrl = `${wsProtocol}//${window.location.host}/api/dashboard/ws`;
+
+        function connect() {
+            console.log('Connecting to WebSocket:', wsUrl);
+            ws = new WebSocket(wsUrl);
+
+            ws.onopen = () => {
+                console.log('WebSocket connected');
+                document.getElementById('ws-status').className = 'status-dot connected';
+                document.getElementById('ws-status-text').textContent = 'Connected';
+            };
+
+            ws.onmessage = (event) => {
+                try {
+                    const data = JSON.parse(event.data);
+                    console.log('Received event:', data);
+                    handleEvent(data);
+                } catch (e) {
+                    console.error('Error parsing event:', e);
+                }
+            };
+
+            ws.onerror = (error) => {
+                console.error('WebSocket error:', error);
+            };
+
+            ws.onclose = () => {
+                console.log('WebSocket disconnected');
+                document.getElementById('ws-status').className = 'status-dot disconnected';
+                document.getElementById('ws-status-text').textContent = 'Disconnected';
+
+                // Reconnect after 3 seconds
+                setTimeout(connect, 3000);
+            };
+        }
+
+        function handleEvent(event) {
+            eventCount++;
+            document.getElementById('event-count').textContent = eventCount;
+
+            const eventList = document.getElementById('event-list');
+
+            // Clear placeholder if this is first event
+            if (eventCount === 1) {
+                eventList.innerHTML = '';
+            }
+
+            // Create event element
+            const eventEl = document.createElement('div');
+            let eventClass = 'event';
+            let eventTypeText = event.type.replace(/_/g, ' ').toUpperCase();
+            let eventContent = '';
+
+            switch(event.type) {
+                case 'agent_execution_started':
+                    eventClass += ' agent';
+                    eventContent = `<strong>${event.agent_name}</strong> started executing task: ${event.task}`;
+                    agentsActive++;
+                    break;
+
+                case 'agent_execution_completed':
+                    eventClass += ' agent';
+                    const status = event.success ? '✅ Success' : '❌ Failed';
+                    eventContent = `<strong>${event.agent_name}</strong> completed (${event.duration_ms}ms) - ${status}`;
+                    break;
+
+                case 'opportunity_discovered':
+                    eventClass += ' opportunity';
+                    opportunitiesActive++;
+                    totalRevenue += event.estimated_revenue;
+                    eventContent = `<strong>${event.title}</strong><br>
+                        Score: ${event.score.toFixed(2)} | Est. Revenue: $${event.estimated_revenue.toLocaleString()}<br>
+                        ${event.description.substring(0, 100)}...`;
+                    break;
+
+                case 'validation_completed':
+                    eventClass += ' opportunity';
+                    eventContent = `<strong>${event.title}</strong> validated<br>
+                        Overall Score: ${event.overall_score.toFixed(2)} | Risk: ${event.risk_level}<br>
+                        Recommendation: ${event.recommendation}`;
+                    break;
+
+                case 'revenue_generated':
+                    eventClass += ' revenue';
+                    eventContent = `<strong>$${event.amount.toLocaleString()}</strong> generated from ${event.source}`;
+                    break;
+
+                case 'system_health':
+                    agentsActive = event.agents_active;
+                    opportunitiesActive = event.opportunities_active;
+                    eventContent = `Agents: ${event.agents_active}/${event.agents_total} |
+                        CPU: ${event.cpu_usage.toFixed(1)}% |
+                        Memory: ${event.memory_usage.toFixed(1)}%`;
+                    break;
+
+                default:
+                    eventContent = JSON.stringify(event, null, 2);
+            }
+
+            eventEl.className = eventClass;
+            eventEl.innerHTML = `
+                <div class="event-type">${eventTypeText}</div>
+                <div class="event-content">${eventContent}</div>
+                <div class="event-time">${new Date(event.timestamp).toLocaleTimeString()}</div>
+            `;
+
+            eventList.insertBefore(eventEl, eventList.firstChild);
+
+            // Keep only last 50 events
+            while (eventList.children.length > 50) {
+                eventList.removeChild(eventList.lastChild);
+            }
+
+            // Update metrics
+            updateMetrics();
+        }
+
+        function updateMetrics() {
+            document.getElementById('metric-agents').textContent = agentsActive;
+            document.getElementById('metric-opportunities').textContent = opportunitiesActive;
+            document.getElementById('metric-revenue').textContent = `$${totalRevenue.toLocaleString()}`;
+        }
+
+        // Load stats from API
+        async function loadStats() {
+            try {
+                const response = await fetch('/api/dashboard/stats');
+                const data = await response.json();
+                document.getElementById('client-count').textContent = data.connected_clients;
+
+                // Process recent events
+                if (data.recent_events && data.recent_events.length > 0) {
+                    data.recent_events.forEach(event => handleEvent(event));
+                }
+            } catch (e) {
+                console.error('Error loading stats:', e);
+            }
+        }
+
+        // Connect on page load
+        connect();
+        loadStats();
+
+        // Refresh stats every 10 seconds
+        setInterval(loadStats, 10000);
+    </script>
+</body>
+</html>

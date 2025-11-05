@@ -1,5 +1,6 @@
 //! Business API endpoints - Opportunity discovery, validation, and revenue generation
 
+use crate::{DashboardState, DashboardEvent};
 use axum::{
     extract::{Path, State},
     http::StatusCode,
@@ -21,16 +22,18 @@ pub struct BusinessState {
     pub llm_client: Arc<dyn LlmClient>,
     pub discovery_manager: Arc<Mutex<OpportunityDiscoveryManager>>,
     pub discovered_opportunities: Arc<Mutex<Vec<Opportunity>>>,
+    pub dashboard_state: DashboardState,
 }
 
 impl BusinessState {
-    pub fn new(llm_client: Arc<dyn LlmClient>) -> Self {
+    pub fn new(llm_client: Arc<dyn LlmClient>, dashboard_state: DashboardState) -> Self {
         let discovery_manager = OpportunityDiscoveryManager::new(llm_client.clone());
 
         Self {
             llm_client,
             discovery_manager: Arc::new(Mutex::new(discovery_manager)),
             discovered_opportunities: Arc::new(Mutex::new(Vec::new())),
+            dashboard_state,
         }
     }
 }
@@ -101,8 +104,23 @@ pub async fn api_discover_opportunities(
             let count = opportunities.len();
             let workflow_id = manager.workflow_id().to_string();
 
-            // Store discovered opportunities
+            // Store discovered opportunities and broadcast events
             let mut stored = state.discovered_opportunities.lock().await;
+
+            // Broadcast OpportunityDiscovered event for each opportunity
+            for opp in &opportunities {
+                state.dashboard_state.broadcast(
+                    DashboardEvent::opportunity_discovered(
+                        opp.id.to_string(),
+                        opp.title.clone(),
+                        opp.description.clone(),
+                        opp.score,
+                        opp.category.clone(),
+                        opp.estimated_revenue
+                    )
+                ).await;
+            }
+
             stored.extend(opportunities.clone());
 
             info!("Successfully discovered {} opportunities", count);

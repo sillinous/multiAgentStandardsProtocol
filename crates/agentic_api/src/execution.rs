@@ -1,6 +1,6 @@
 //! Agent execution endpoints
 
-use crate::AppState;
+use crate::{AppState, DashboardEvent};
 use axum::{extract::{Path, State}, Json};
 use serde::{Deserialize, Serialize};
 use tracing::{info, error};
@@ -50,6 +50,16 @@ pub async fn api_agent_execute(
         });
     };
 
+    // Broadcast execution started event
+    let start_time = std::time::Instant::now();
+    state.dashboard_state.broadcast(
+        DashboardEvent::agent_started(
+            id.clone(),
+            agent.name.clone(),
+            req.input.clone()
+        )
+    ).await;
+
     // Create execution context
     let context = ExecutionContext::new(agent.id);
 
@@ -65,8 +75,21 @@ pub async fn api_agent_execute(
             .await
     };
 
+    let duration_ms = start_time.elapsed().as_millis() as u64;
+
     match result {
         Ok(exec_result) => {
+            // Broadcast execution completed event
+            state.dashboard_state.broadcast(
+                DashboardEvent::agent_completed(
+                    id.clone(),
+                    agent.name.clone(),
+                    req.input.clone(),
+                    duration_ms,
+                    exec_result.success
+                )
+            ).await;
+
             // Update agent in registry
             state.registry.lock().unwrap().register(agent,
                 state.registry.lock().unwrap().get_genome(&id).unwrap().clone()
@@ -82,6 +105,17 @@ pub async fn api_agent_execute(
             })
         }
         Err(e) => {
+            // Broadcast execution failed event
+            state.dashboard_state.broadcast(
+                DashboardEvent::agent_completed(
+                    id.clone(),
+                    agent.name.clone(),
+                    req.input.clone(),
+                    duration_ms,
+                    false
+                )
+            ).await;
+
             error!("Execution error: {}", e);
             Json(ExecuteAgentRes {
                 success: false,

@@ -23,6 +23,9 @@ use execution::*;
 mod business;
 use business::BusinessState;
 
+mod dashboard_ws;
+pub use dashboard_ws::{DashboardState, DashboardEvent, broadcast_event};
+
 #[derive(Clone)]
 pub struct AppState {
     pub standards: StandardsAgent,
@@ -35,6 +38,7 @@ pub struct AppState {
     pub scheduler: Arc<TaskScheduler>,
     pub learning_engine: Arc<Mutex<agentic_learning::LearningEngine>>,
     pub business_state: Arc<BusinessState>,
+    pub dashboard_state: DashboardState,
 }
 
 impl AppState {
@@ -56,8 +60,11 @@ impl AppState {
         // Create learning engine
         let learning_engine = Arc::new(Mutex::new(agentic_learning::LearningEngine::new()));
 
-        // Create business state
-        let business_state = Arc::new(BusinessState::new(llm_client.clone()));
+        // Create dashboard state
+        let dashboard_state = DashboardState::new();
+
+        // Create business state (with dashboard state for event broadcasting)
+        let business_state = Arc::new(BusinessState::new(llm_client.clone(), dashboard_state.clone()));
 
         Self {
             standards,
@@ -70,6 +77,7 @@ impl AppState {
             scheduler,
             learning_engine,
             business_state,
+            dashboard_state,
         }
     }
 }
@@ -88,8 +96,12 @@ pub fn router(state: AppState) -> Router {
     // Create business routes with dedicated state
     let business_routes = business::create_business_routes(state.business_state.clone());
 
+    // Create dashboard routes with dedicated state
+    let dashboard_routes = dashboard_ws::create_dashboard_routes(state.dashboard_state.clone());
+
     Router::new()
         .route("/", get(ui_index))
+        .route("/dashboard", get(ui_dashboard))
         .route("/api/health", get(api_health))
         .route("/api/version", get(api_version))
         .route("/api/templates", get(api_templates))
@@ -113,6 +125,13 @@ pub fn router(state: AppState) -> Router {
         .with_state(state)
         // Merge business routes under /api/
         .merge(Router::new().nest("/api", business_routes))
+        // Merge dashboard routes under /api/dashboard/
+        .merge(Router::new().nest("/api/dashboard", dashboard_routes))
+}
+
+async fn ui_dashboard() -> Html<String> {
+    let dashboard_html = include_str!("../dashboard.html");
+    Html(dashboard_html.to_string())
 }
 
 async fn ui_index() -> Html<String> {
