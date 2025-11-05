@@ -22,7 +22,7 @@ from crates.agentic_protocols.python.anp_implementation import (
     AgentNetworkRegistry,
     ANPRegistration,
     DiscoveryQuery,
-    HealthStatus
+    AgentStatus
 )
 
 
@@ -176,7 +176,7 @@ async def main():
     # Simulate healthy agent
     result = await registry.heartbeat(
         "data-collector-1",
-        HealthStatus.HEALTHY,
+        AgentStatus.HEALTHY,
         load_score=0.3
     )
     print(f"[+] data-collector-1: {result['status']} (load: {result['current_load']})")
@@ -184,7 +184,7 @@ async def main():
     # Simulate degraded agent
     result = await registry.heartbeat(
         "data-analyzer-1",
-        HealthStatus.DEGRADED,
+        AgentStatus.DEGRADED,
         load_score=0.85
     )
     print(f"[+] data-analyzer-1: {result['status']} (load: {result['current_load']})")

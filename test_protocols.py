@@ -52,30 +52,38 @@ async def main():
         bap = BlockchainAgenticProtocol(config={})
 
         # Test wallet creation
+        from decimal import Decimal
         wallet = AgentWallet(
+            wallet_id="wallet-001",
             agent_id="test-agent",
-            address="0x1234567890abcdef",
+            public_key="test_public_key",
+            private_key_hash="test_hash",
             token_balances={
-                TokenType.REPUTATION: 100.0,
-                TokenType.UTILITY: 500.0,
-                TokenType.GOVERNANCE: 50.0
+                TokenType.REPUTATION: Decimal("100.0"),
+                TokenType.UTILITY: Decimal("500.0"),
+                TokenType.GOVERNANCE: Decimal("50.0")
             }
         )
         await bap.wallet_manager.store_wallet(wallet)
         print(f"[+] Wallet created: {wallet.agent_id}")
+        print(f"    Wallet ID: {wallet.wallet_id}")
         print(f"    Reputation: {wallet.token_balances[TokenType.REPUTATION]}")
         print(f"    Utility: {wallet.token_balances[TokenType.UTILITY]}")
 
         # Test NFT minting
         nft = await bap.mint_capability_nft(
             agent_id="test-agent",
-            capability_type="data_analysis",
-            proficiency_level=0.92,
-            metadata={"verified": True, "certifications": ["ML Engineer"]}
+            capability_spec={
+                "name": "data_analysis",
+                "category": "analytics",
+                "proficiency_level": 0.92,
+                "description": "Advanced data analysis capability",
+                "authority": "SuperStandard Certification"
+            }
         )
-        print(f"[+] NFT minted: {nft['nft_id']}")
-        print(f"    Capability: {nft['capability_type']}")
-        print(f"    Proficiency: {nft['proficiency_level']:.0%}")
+        print(f"[+] NFT minted: {nft.nft_id}")
+        print(f"    Capability: {nft.capability_name}")
+        print(f"    Proficiency: {nft.proficiency_level:.0%}")
 
         print("[PASS] BAP Test PASSED\n")
     except Exception as e:

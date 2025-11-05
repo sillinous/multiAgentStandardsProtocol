@@ -14,6 +14,7 @@ from enum import Enum
 import logging
 from decimal import Decimal, ROUND_HALF_UP
 from abc import ABC, abstractmethod
+from collections import defaultdict
 import aiohttp
 import sqlite3
 from cryptography.hazmat.primitives import hashes, serialization
