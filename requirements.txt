@@ -1,0 +1,44 @@
+# SuperStandard v1.0 - Python Protocol Dependencies
+# Python 3.9+ required
+
+# Core dependencies for protocol implementations
+dataclasses-json>=0.6.0      # JSON serialization for dataclasses
+typing-extensions>=4.5.0      # Type hint extensions for Python < 3.11
+
+# Async support
+asyncio>=3.4.3               # Asynchronous I/O (built-in but listed for clarity)
+
+# Optional: Testing dependencies
+pytest>=7.4.0                # Testing framework
+pytest-asyncio>=0.21.0       # Async test support
+pytest-cov>=4.1.0           # Test coverage
+
+# Optional: Code quality tools
+black>=23.7.0               # Code formatter
+mypy>=1.5.0                 # Static type checker
+pylint>=2.17.0              # Linter
+flake8>=6.1.0               # Style guide enforcement
+
+# Optional: Development tools
+ipython>=8.14.0             # Enhanced Python shell for development
+jupyter>=1.0.0              # Notebook support for experimentation
+
+# Protocol-specific dependencies
+
+# ANP (Agent Network Protocol)
+# - Uses only Python standard library and dataclasses
+
+# ACP (Agent Coordination Protocol)
+# - Uses only Python standard library and dataclasses
+
+# BAP (Blockchain Agent Protocol)
+# - Uses only Python standard library and dataclasses
+
+# Note: For production deployments, consider adding:
+# - cryptography>=41.0.0    # For encryption and security
+# - pydantic>=2.0.0         # For advanced data validation
+# - fastapi>=0.100.0        # For REST API implementations
+# - websockets>=11.0.0      # For WebSocket support
+# - aiohttp>=3.8.0          # For async HTTP client/server
+# - redis>=4.6.0            # For distributed state management
+# - prometheus-client>=0.17.0  # For metrics and observability
