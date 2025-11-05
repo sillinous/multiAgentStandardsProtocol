@@ -10,6 +10,7 @@ description = "AgentFactory meta-agent for autonomous agent generation"
 agentic_core = { path = "../agentic_core" }
 agentic_domain = { path = "../agentic_domain" }
 agentic_learning = { path = "../agentic_learning" }
+agentic_standards = { path = "../agentic_standards" }
 tokio = { workspace = true }
 async-trait = { workspace = true }
 serde = { workspace = true }

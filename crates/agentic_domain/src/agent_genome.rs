@@ -224,7 +224,7 @@ impl AgentGenome {
     }
 
     /// Apply a mutation to the genome
-    pub fn apply_mutation(&mut self, mutation: TraitMutation) -> crate::agentic_core::Result<()> {
+    pub fn apply_mutation(&mut self, mutation: TraitMutation) -> agentic_core::Result<()> {
         if self.locked {
             return Err(agentic_core::Error::InvalidState(
                 "Cannot mutate locked genome".to_string(),

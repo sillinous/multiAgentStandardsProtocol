@@ -1,0 +1,36 @@
+[package]
+name = "agentic_runtime"
+version.workspace = true
+edition.workspace = true
+authors.workspace = true
+license.workspace = true
+
+[dependencies]
+# Core dependencies
+agentic_core = { path = "../agentic_core" }
+agentic_domain = { path = "../agentic_domain" }
+agentic_learning = { path = "../agentic_learning" }
+
+# Async runtime
+tokio.workspace = true
+async-trait.workspace = true
+
+# Serialization
+serde.workspace = true
+serde_json.workspace = true
+
+# HTTP client for LLM APIs
+reqwest = { version = "0.11", features = ["json", "stream"] }
+
+# Error handling
+anyhow.workspace = true
+thiserror.workspace = true
+
+# Tracing
+tracing.workspace = true
+
+# Time
+chrono.workspace = true
+
+# UUID
+uuid.workspace = true

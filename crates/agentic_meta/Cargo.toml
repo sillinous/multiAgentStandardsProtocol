@@ -1,0 +1,36 @@
+[package]
+name = "agentic_meta"
+version.workspace = true
+edition.workspace = true
+authors.workspace = true
+license.workspace = true
+description = "Meta-agents that create and manage other agents"
+
+[dependencies]
+# Core dependencies
+agentic_core = { path = "../agentic_core" }
+agentic_domain = { path = "../agentic_domain" }
+agentic_factory = { path = "../agentic_factory" }
+agentic_runtime = { path = "../agentic_runtime" }
+agentic_learning = { path = "../agentic_learning" }
+
+# Async runtime
+tokio.workspace = true
+async-trait.workspace = true
+
+# Serialization
+serde.workspace = true
+serde_json.workspace = true
+
+# Error handling
+anyhow.workspace = true
+thiserror.workspace = true
+
+# Logging
+tracing.workspace = true
+
+# UUID
+uuid.workspace = true
+
+# Time
+chrono.workspace = true

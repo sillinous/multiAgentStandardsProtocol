@@ -1,0 +1,48 @@
+[package]
+name = "agentic_business"
+version.workspace = true
+edition.workspace = true
+authors.workspace = true
+license.workspace = true
+repository.workspace = true
+homepage.workspace = true
+description = "Autonomous business-to-revenue agent system for opportunity discovery, validation, development, and monetization"
+
+[dependencies]
+# Workspace dependencies
+agentic_core = { path = "../agentic_core" }
+agentic_meta = { path = "../agentic_meta" }
+agentic_runtime = { path = "../agentic_runtime" }
+agentic_standards = { path = "../agentic_standards" }
+
+# Async runtime
+tokio = { workspace = true }
+async-trait = { workspace = true }
+
+# Serialization
+serde = { workspace = true }
+serde_json = { workspace = true }
+
+# Logging
+tracing = { workspace = true }
+
+# Error handling
+anyhow = { workspace = true }
+thiserror = { workspace = true }
+
+# HTTP client for API integrations
+reqwest = { version = "0.11", features = ["json", "rustls-tls"] }
+
+# HTML parsing for web scraping
+scraper = "0.19"
+select = "0.6"
+
+# Date/time
+chrono = { workspace = true }
+
+# UUID
+uuid = { workspace = true }
+
+[dev-dependencies]
+mockall = { workspace = true }
+tokio-test = "0.4"

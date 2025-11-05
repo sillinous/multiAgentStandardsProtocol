@@ -10,6 +10,8 @@ description = "CLI interface for the agentic ecosystem"
 agentic_core = { path = "../agentic_core" }
 agentic_domain = { path = "../agentic_domain" }
 agentic_learning = { path = "../agentic_learning" }
+agentic_factory = { path = "../agentic_factory" }
+agentic_standards = { path = "../agentic_standards" }
 tokio = { workspace = true }
 serde = { workspace = true }
 serde_json = { workspace = true }
