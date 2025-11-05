@@ -13,6 +13,7 @@ agentic_domain = { path = "../agentic_domain" }
 agentic_factory = { path = "../agentic_factory" }
 agentic_runtime = { path = "../agentic_runtime" }
 agentic_learning = { path = "../agentic_learning" }
+agentic_protocols = { path = "../agentic_protocols" }
 
 # Async runtime
 tokio.workspace = true

@@ -1,6 +1,12 @@
-//! Protocol adapters (A2A, MCP, ANS) - MVP trait definitions
+//! Protocol adapters (A2A, MCP, ANS) - Production implementations
 
 use agentic_core::{Protocol, ProtocolVersion};
+
+pub mod a2a;
+pub mod a2a_bus;
+
+pub use a2a::*;
+pub use a2a_bus::*;
 
 pub trait ProtocolAdapter {
     fn protocol(&self) -> Protocol;

@@ -17,3 +17,5 @@ axum = { workspace = true }
 hyper = { workspace = true }
 tower = { workspace = true }
 tracing = { workspace = true }
+uuid = { workspace = true }
+chrono = { workspace = true }

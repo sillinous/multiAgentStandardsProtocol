@@ -14,10 +14,12 @@ pub mod code_generator;
 pub mod testing_agent;
 pub mod specialist_agents;
 pub mod requirements;
+pub mod dashboard_coordinator;
 
-pub use meta_agent::{MetaAgent, MetaAgentType, MetaAgentCapability};
+pub use meta_agent::{MetaAgent, MetaAgentType, MetaAgentCapability, MetaAgentMetrics};
 pub use factory_agent::FactoryMetaAgent;
 pub use sdlc_manager::SDLCManager;
 pub use code_generator::{CodeGeneratorAgent, CodeGenRequest, GeneratedCode};
 pub use testing_agent::{TestingAgent, TestGenRequest, GeneratedTests, TestType};
 pub use requirements::{AgentRequirement, FeatureRequest, CapabilitySpec};
+pub use dashboard_coordinator::{DashboardCoordinatorAgent, DashboardRequirements, DashboardBuildResult};
