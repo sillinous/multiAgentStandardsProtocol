@@ -653,7 +653,26 @@ class BlockchainAgenticProtocol:
     async def _deploy_standard_contracts(self): pass
     async def _validate_capability_spec(self, spec: Dict[str, Any]) -> bool: return True
     async def _calculate_minting_cost(self, spec: Dict[str, Any]) -> Decimal: return Decimal('10')
-    async def _create_minting_transaction(self, agent_id: str, nft: CapabilityNFT) -> Transaction: pass
+
+    async def _create_minting_transaction(self, agent_id: str, nft: CapabilityNFT) -> Transaction:
+        """Create a transaction for minting a capability NFT"""
+        return Transaction(
+            transaction_id=str(uuid.uuid4()),
+            transaction_type=TransactionType.CAPABILITY_MINT,
+            from_agent=agent_id,
+            to_agent=agent_id,  # Minting to self
+            token_type=TokenType.UTILITY,
+            amount=nft.mint_cost,
+            transaction_fee=Decimal('0.1'),
+            transaction_data={
+                "nft_id": nft.nft_id,
+                "capability_name": nft.capability_name,
+                "capability_category": nft.capability_category,
+                "proficiency_level": nft.proficiency_level
+            },
+            nft_id=nft.nft_id,
+            status="pending"
+        )
     async def _generate_collaboration_logic(self, spec: Dict[str, Any]) -> str: return ""
     async def _calculate_collaboration_allocations(self, spec: Dict[str, Any]) -> Dict[str, Decimal]: return {}
     async def _calculate_transaction_fee(self, transaction: Transaction) -> Decimal: return Decimal('0.1')
