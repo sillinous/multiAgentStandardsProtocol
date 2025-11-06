@@ -180,9 +180,16 @@ SuperStandard includes **455 production-ready agent implementations** organized 
 
 ### Tools & Scripts
 
-- **`scripts/analyze_agents.py`** - Regenerate agent catalog
+**Agent Analysis Tools**:
+- **`scripts/analyze_agents.py`** - Regenerate agent catalog (455 agents)
+- **`scripts/analyze_base_agents.py`** - Analyze BaseAgent implementations
 - **`scripts/consolidate_duplicates.py`** - Identify duplicate agents
-- **[Duplicate Consolidation Plan](DUPLICATE_CONSOLIDATION_PLAN.md)** - Consolidation roadmap
+
+**Consolidation Documentation**:
+- **[📊 Consolidation Executive Summary](CONSOLIDATION_EXECUTIVE_SUMMARY.md)** - Complete consolidation status
+- **[🔧 BaseAgent Consolidation Plan](BASEAGENT_CONSOLIDATION_PLAN.md)** - Critical priority consolidation (172 files affected)
+- **[📋 Duplicate Consolidation Plan](DUPLICATE_CONSOLIDATION_PLAN.md)** - 13 duplicate groups identified
+- **[📈 BaseAgent Analysis Report](BASEAGENT_ANALYSIS.md)** - Technical analysis of 9 BaseAgent implementations
 
 ### Using Agents
 

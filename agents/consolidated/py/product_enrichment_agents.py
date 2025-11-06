@@ -25,8 +25,10 @@ class AgentResult:
     timestamp: datetime = field(default_factory=datetime.utcnow)
 
 
-class BaseAgent:
-    """Base class for all enrichment agents"""
+# NOTE: Renamed from BaseAgent to avoid confusion with canonical BaseAgent
+# This is a specialized base for enrichment agents only
+class EnrichmentBaseAgent:
+    """Base class for all enrichment agents (specialized, not THE canonical BaseAgent)"""
 
     def __init__(self, name: str):
         self.name = name
@@ -39,7 +41,7 @@ class BaseAgent:
         raise NotImplementedError
 
 
-class ProductIntelligenceAgent(BaseAgent):
+class ProductIntelligenceAgent(EnrichmentBaseAgent):
     """
     Agent #1: Product Intelligence
     Extracts comprehensive product information using AI
@@ -132,7 +134,7 @@ Be SPECIFIC and DETAILED. Use real market knowledge."""
         }
 
 
-class ImageDiscoveryAgent(BaseAgent):
+class ImageDiscoveryAgent(EnrichmentBaseAgent):
     """
     Agent #2: Image Discovery
     Finds high-quality product images
@@ -188,7 +190,7 @@ class ImageDiscoveryAgent(BaseAgent):
         return images
 
 
-class MarketAnalysisAgent(BaseAgent):
+class MarketAnalysisAgent(EnrichmentBaseAgent):
     """
     Agent #3: Market Analysis
     Analyzes market opportunity and trends
@@ -269,7 +271,7 @@ Provide comprehensive market analysis in JSON:
         )
 
 
-class CompetitiveIntelligenceAgent(BaseAgent):
+class CompetitiveIntelligenceAgent(EnrichmentBaseAgent):
     """
     Agent #4: Competitive Intelligence
     Analyzes competitive landscape
@@ -352,7 +354,7 @@ Provide competitive intelligence in JSON:
         )
 
 
-class PricingStrategyAgent(BaseAgent):
+class PricingStrategyAgent(EnrichmentBaseAgent):
     """
     Agent #5: Pricing Strategy
     Determines optimal pricing
@@ -402,7 +404,7 @@ class PricingStrategyAgent(BaseAgent):
         )
 
 
-class CustomerProfilingAgent(BaseAgent):
+class CustomerProfilingAgent(EnrichmentBaseAgent):
     """
     Agent #6: Customer Profiling
     Creates detailed customer personas
@@ -493,7 +495,7 @@ Provide comprehensive customer intelligence in JSON:
         )
 
 
-class BusinessModelAgent(BaseAgent):
+class BusinessModelAgent(EnrichmentBaseAgent):
     """
     Agent #7: Business Model Design
     Creates business model recommendations

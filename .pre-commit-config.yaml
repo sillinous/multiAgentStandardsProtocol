@@ -1,0 +1,74 @@
+# Pre-commit hooks for SuperStandard
+# Install: pip install pre-commit && pre-commit install
+# Run manually: pre-commit run --all-files
+
+repos:
+  # Black - Code formatting
+  - repo: https://github.com/psf/black
+    rev: 24.10.0
+    hooks:
+      - id: black
+        language_version: python3.10
+        args: ['--config=pyproject.toml']
+
+  # Ruff - Fast Python linter (replaces flake8, isort, pylint)
+  - repo: https://github.com/astral-sh/ruff-pre-commit
+    rev: v0.7.4
+    hooks:
+      - id: ruff
+        args: ['--fix', '--config=pyproject.toml']
+      - id: ruff-format
+
+  # MyPy - Type checking
+  - repo: https://github.com/pre-commit/mirrors-mypy
+    rev: v1.13.0
+    hooks:
+      - id: mypy
+        additional_dependencies:
+          - pydantic>=2.0.0
+          - types-aiofiles
+        args: ['--config-file=pyproject.toml']
+        exclude: '^(tests/|benchmarks/|scripts/|archive/)'
+
+  # Standard pre-commit hooks
+  - repo: https://github.com/pre-commit/pre-commit-hooks
+    rev: v5.0.0
+    hooks:
+      - id: trailing-whitespace
+        exclude: '^archive/'
+      - id: end-of-file-fixer
+        exclude: '^archive/'
+      - id: check-yaml
+        exclude: '^archive/'
+      - id: check-json
+        exclude: '^archive/'
+      - id: check-toml
+        exclude: '^archive/'
+      - id: check-added-large-files
+        args: ['--maxkb=500']
+      - id: check-merge-conflict
+      - id: detect-private-key
+      - id: mixed-line-ending
+        args: ['--fix=lf']
+        exclude: '^archive/'
+
+  # Python-specific checks
+  - repo: https://github.com/pre-commit/pygrep-hooks
+    rev: v1.10.0
+    hooks:
+      - id: python-check-blanket-noqa
+      - id: python-check-mock-methods
+      - id: python-no-eval
+      - id: python-no-log-warn
+      - id: python-use-type-annotations
+
+# Exclude archived files and old consolidated structure
+exclude: '^(archive/|agents/consolidated/)'
+
+# Global settings
+default_language_version:
+  python: python3.10
+
+# Run hooks in parallel for speed
+default_stages: [commit, push]
+fail_fast: false

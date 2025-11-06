@@ -57,18 +57,8 @@ sys.path.insert(0, os.path.join(os.path.dirname(__file__), '../..'))
 
 import logging
 
-# Simple BaseAgent structure (not using abstract base)
-class BaseAgent:
-    """Minimal base agent for operational agents"""
-    def __init__(self, agent_id: str, **kwargs):
-        self.agent_id = agent_id
-        self.logger = logging.getLogger(agent_id)
-        self.state = "created"
-
-class ProtocolMixin:
-    """Protocol support mixin"""
-    def __init__(self):
-        self.supported_protocols = ["A2A", "A2P", "ACP", "ANP", "MCP"]
+# Import CANONICAL BaseAgent (Phase 3: BaseAgent Consolidation)
+from .base_agent_v1 import BaseAgent, ProtocolMixin
 
 
 # =========================================================================

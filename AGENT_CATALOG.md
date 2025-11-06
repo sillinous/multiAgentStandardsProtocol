@@ -1,7 +1,7 @@
 # Agent Catalog - SuperStandard v1.0
 
-**Total Agents:** 455
-**Python Implementations:** 400
+**Total Agents:** 445
+**Python Implementations:** 390
 **Markdown Specifications:** 55
 
 ## Categories
@@ -682,7 +682,7 @@
   - File: `agents\consolidated\py\revenue_optimizer_agent_v1.py`
   - Type: python
 
-### General (154 agents)
+### General (151 agents)
 
 - **AIAgent**
   - File: `agents\consolidated\py\coingecko_agent.py`
@@ -705,27 +705,6 @@
   - File: `agents\consolidated\py\autonomous_agent.py`
   - Type: python
   - Protocols: ANP
-
-- **AutonomousAgent**
-  - File: `agents\consolidated\py\autonomous_agent.py`
-  - Type: python
-  - Protocols: ANP
-
-- **BaseAgent**
-  - File: `agents\consolidated\py\base_agent.py`
-  - Type: python
-
-- **BaseAgent**
-  - File: `agents\consolidated\py\base_agent.py`
-  - Type: python
-
-- **BaseAgent**
-  - File: `agents\consolidated\py\base_agent.py`
-  - Type: python
-
-- **BaseAgent**
-  - File: `agents\consolidated\py\base_agent.py`
-  - Type: python
 
 - **BaseAgent**
   - File: `agents\consolidated\py\base_agent.py`
@@ -832,11 +811,6 @@
   - Type: python
   - Protocols: ANP, ACP
 
-- **DevelopmentAgent**
-  - File: `agents\consolidated\py\development_agent.py`
-  - Type: python
-  - Protocols: ANP, ACP
-
 - **DispatchManagementLogisticsAgentConfig**
   - File: `agents\consolidated\py\dispatch_management_logistics_agent.py`
   - Type: python
@@ -854,8 +828,8 @@
   - File: `agents\consolidated\py\enhanced_development_agent.py`
   - Type: python
 
-- **EnhancedDevelopmentAgent**
-  - File: `agents\consolidated\py\enhanced_development_agent.py`
+- **EnrichmentBaseAgent**
+  - File: `agents\consolidated\py\product_enrichment_agents.py`
   - Type: python
 
 - **Enterprise Reusable Agent Library Architecture**
@@ -900,6 +874,10 @@
 
 - **FundingArbAgent**
   - File: `agents\consolidated\py\fundingarb_agent.py`
+  - Type: python
+
+- **GeospatialBroadcastAgentConfig**
+  - File: `agents\consolidated\py\geospatial_broadcast_agent_v1.py`
   - Type: python
 
 - **GermanTrafficIntelligenceAgent**
@@ -1054,6 +1032,11 @@
   - File: `agents\consolidated\py\realtime_clips_agent.py`
   - Type: python
 
+- **RideMatchingAgentConfig**
+  - File: `agents\consolidated\py\ride_matching_agent_v1.py`
+  - Type: python
+  - Protocols: ANP, ACP
+
 - **RouteOptimizationLogisticsAgentConfig**
   - File: `agents\consolidated\py\route_optimization_logistics_agent.py`
   - Type: python
@@ -1065,6 +1048,10 @@
 - **Solana Agent**
   - File: `agents\consolidated\md\solana_agent.md`
   - Type: markdown
+
+- **SpatiotemporalRoutingAgent**
+  - File: `agents\consolidated\py\spatiotemporal_routing_agent_v1.py`
+  - Type: python
 
 - **StorytellingAgent**
   - File: `agents\consolidated\py\storytelling_agent.py`
@@ -1547,7 +1534,7 @@
   - File: `agents\consolidated\py\agent_intelligence_dashboard.py`
   - Type: python
 
-### Research (8 agents)
+### Research (6 agents)
 
 - **BaseAgent**
   - File: `agents\consolidated\py\base_agent.py`
@@ -1556,10 +1543,6 @@
 - **Research Agent**
   - File: `agents\consolidated\md\research_agent.md`
   - Type: markdown
-
-- **ResearchAgent**
-  - File: `agents\consolidated\py\research_agent_v1.py`
-  - Type: python
 
 - **ResearchIntelligenceAgent**
   - File: `agents\consolidated\py\research_intelligence_agent.py`
@@ -1570,12 +1553,7 @@
   - Type: python
 
 - **RouteDiscoveryAgentConfig**
-  - File: `agents\consolidated\py\routediscoveryagent_v1_0_0.py`
-  - Type: python
-  - Protocols: ANP, ACP
-
-- **RouteDiscoveryAgentConfig**
-  - File: `agents\consolidated\py\routediscoveryagent_v1_0_0.py`
+  - File: `agents\consolidated\py\route_discovery_agent_v1.py`
   - Type: python
   - Protocols: ANP, ACP
 
@@ -1583,7 +1561,7 @@
   - File: `agents\consolidated\py\research_agent.py`
   - Type: python
 
-### Security (16 agents)
+### Security (15 agents)
 
 - **Accessibility & Usability Agent**
   - File: `agents\consolidated\md\accessibility_usability_agent.md`
@@ -1596,10 +1574,6 @@
 - **Compliance Agent**
   - File: `agents\consolidated\md\compliance_agent.md`
   - Type: markdown
-
-- **ComplianceAgent**
-  - File: `agents\consolidated\py\compliance_agent.py`
-  - Type: python
 
 - **ComplianceAgent**
   - File: `agents\consolidated\py\compliance_agent.py`
@@ -1656,7 +1630,7 @@
   - File: `agents\consolidated\py\audit_agents.py`
   - Type: python
 
-### Testing (26 agents)
+### Testing (24 agents)
 
 - **BaseUserAgentResponder**
   - File: `agents\consolidated\py\test_user_agent.py`
@@ -1701,22 +1675,12 @@
   - Type: python
   - Protocols: ANP, ACP
 
-- **QAAgent**
-  - File: `agents\consolidated\py\qa_agent.py`
-  - Type: python
-  - Protocols: ANP, ACP
-
 - **TestAgentSDK**
   - File: `agents\consolidated\py\test_agent_sdk.py`
   - Type: python
 
 - **TestMarketForNewProductsServicesCreativeAgentConfig**
   - File: `agents\consolidated\py\test_market_for_new_products_services_creative_agent.py`
-  - Type: python
-  - Protocols: ANP, ACP
-
-- **TestingAgent**
-  - File: `agents\consolidated\py\testing_agent.py`
   - Type: python
   - Protocols: ANP, ACP
 
@@ -1770,7 +1734,7 @@
   - File: `agents\consolidated\py\test_testing_agent.py`
   - Type: python
 
-### Trading (33 agents)
+### Trading (32 agents)
 
 - **AnalyzeMarketTrendsSalesMarketingAgentConfig**
   - File: `agents\consolidated\py\analyze_market_trends_sales_marketing_agent.py`
@@ -1834,11 +1798,7 @@
   - Protocols: ANP, ACP
 
 - **GlobalAgentMarketplace**
-  - File: `agents\consolidated\py\global_agent_marketplace.py`
-  - Type: python
-
-- **GlobalAgentMarketplace**
-  - File: `agents\consolidated\py\global_agent_marketplace.py`
+  - File: `agents\consolidated\py\global_agent_marketplace_ecosystem.py`
   - Type: python
 
 - **ManageCampaignEffectivenessSalesMarketingAgentConfig**
@@ -1920,7 +1880,7 @@
   - Type: python
   - Protocols: ANP, ACP
 
-### Ui (14 agents)
+### Ui (13 agents)
 
 - **BaseAgentInterface**
   - File: `agents\consolidated\py\common_agent_interface_protocol.py`
@@ -1934,11 +1894,6 @@
 - **ComponentBuilderAgent**
   - File: `agents\consolidated\py\component_builder_agent_v1.py`
   - Type: python
-
-- **DesignAgent**
-  - File: `agents\consolidated\py\design_agent.py`
-  - Type: python
-  - Protocols: ANP, ACP
 
 - **DesignAgent**
   - File: `agents\consolidated\py\design_agent.py`
@@ -2001,29 +1956,25 @@ Agents with similar names (may need consolidation):
 - **AiopsAgent** similar to: FinopsAgent
 - **AlertManagementAgent** similar to: ManagementAgent
 - **ApiAgent** similar to: ApmAgent, AIAgent, AIAgent
-- **AutonomousAgent** similar to: AutonomousAgent, AutonomousRiskAgent, BasicAutonomousAgent, AutonomousRiskAgent, BasicAutonomousAgent
-- **BaseAgent** similar to: BaseAgent, BaseAgent, BaseAgent, BaseAgent, BaseAgent, BaseAgent, BaseAgent, BaseAgent, BaseAgent, BaseAgent, BaseAgent, BaseAgent, BaseAgent, BaseAgent, BaseAgent, BaseAgent, BaseAgent, BaseAgent, BaseAgent, BaseAgent, BaseAgent, BaseAgent, BaseAgent, BaseAgent, BaseAgent, BaseAgent, BaseAgent, BaseAgent, BaseAgent, BaseAgent, BaseAgent, BaseAgent, BaseAgent, BaseAgent, BaseAgent, BaseAgent, BaseAgent, BaseAgent, BaseAgent, BaseAgent, BaseAgent, BaseAgent, BaseAgent, BaseAgent, BaseAgent
+- **AutonomousAgent** similar to: AutonomousRiskAgent, BasicAutonomousAgent
+- **BaseAgent** similar to: BaseAgent, BaseAgent, BaseAgent, BaseAgent, BaseAgent, BaseAgent, BaseAgent, BaseAgent, BaseAgent, BaseAgent, BaseAgent, BaseAgent, BaseAgent, BaseAgent, BaseAgent
 - **CacheManagerTaskAgent** similar to: StateManagerTaskAgent
 - **ChartAnalysisAgent** similar to: Chart Analysis Agent
 - **ChatAgent** similar to: ChatAgentAd, ChatAgent, Chat Agent, Chat Agent
 - **ChatAgentAd** similar to: ChatAgent, Chat Agent
 - **ClassificationAgent** similar to: ClassificationTaskAgent
-- **AIAgent** similar to: AIAgent, oaiagents, QAAgent, QAAgent, oaiagents, QAAgent, QAAgent
-- **ComplianceAgent** similar to: ComplianceAgent, Compliance Agent, Compliance Agent
+- **AIAgent** similar to: AIAgent, oaiagents, QAAgent, oaiagents, QAAgent
+- **ComplianceAgent** similar to: Compliance Agent
 - **ContextPreservationAgent** similar to: ContextPreservationAgentConfig
 - **CopyBotAgent** similar to: CopyBot Agent
 - **DashboardOrchestratorAgent** similar to: DashboardOrchestratorAgentConfig
 - **DeployITSolutionsTechnologyAgentConfig** similar to: DesignItSolutionsTechnologyAgentConfig
-- **DesignAgent** similar to: DesignAgent
-- **DevelopmentAgent** similar to: DevelopmentAgent
 - **DevelopManageMarketingPlansSalesMarketingAgentConfig** similar to: DevelopManageSalesPlansSalesMarketingAgentConfig
 - **DevelopMarketingStrategySalesMarketingAgentConfig** similar to: DevelopSalesStrategySalesMarketingAgentConfig
 - **DisposeOfProductiveAssetsAssetManagementAgentConfig** similar to: MaintainProductiveAssetsAssetManagementAgentConfig
-- **EnhancedDevelopmentAgent** similar to: EnhancedDevelopmentAgent
 - **ExecuteProjectsCapabilityDevelopmentAgentConfig** similar to: InitiateProjectsCapabilityDevelopmentAgentConfig
 - **FundingArbAgent** similar to: FundingAgent, Funding Agent
 - **FundingAgent** similar to: Funding Agent
-- **GlobalAgentMarketplace** similar to: GlobalAgentMarketplace
 - **HandoffCoordinationAgent** similar to: HandoffCoordinationAgentConfig
 - **LiquidationAgent** similar to: Liquidation Agent
 - **ManageCompensationHumanCapitalAgentConfig** similar to: ManageEmployeeInformationHumanCapitalAgentConfig
@@ -2033,15 +1984,12 @@ Agents with similar names (may need consolidation):
 - **PerformCostAccountingFinancialAgentConfig** similar to: PerformRevenueAccountingFinancialAgentConfig
 - **PlanForAlignSupplyChainResourcesOperationalAgentConfig** similar to: PlanSupplyChainResourcesOperationalAgentConfig
 - **ProcessAccountsPayableFinancialAgentConfig** similar to: ProcessAccountsReceivableFinancialAgentConfig
-- **QAAgent** similar to: QAAgent
 - **rbi_agent** similar to: rbi_agent_pp, rbi_agent_v2, rbi_agent_v3
 - **rbi_agent_v2** similar to: rbi_agent_v3
 - **RealtimeClipsAgent** similar to: Real-Time Clips Agent
 - **RedeployRetireEmployeesHumanCapitalAgentConfig** similar to: RewardRetainEmployeesHumanCapitalAgentConfig
-- **research_agent** similar to: ResearchAgent, Research Agent
-- **ResearchAgent** similar to: Research Agent
+- **research_agent** similar to: Research Agent
 - **RiskAgent** similar to: Risk Agent
-- **RouteDiscoveryAgentConfig** similar to: RouteDiscoveryAgent, RouteDiscoveryAgentConfig
 - **RouteDiscoveryAgent** similar to: RouteDiscoveryAgentConfig
 - **SentimentAgent** similar to: Sentiment Agent
 - **SentimentAnalysisAgent** similar to: SentimentAnalysisTaskAgent
@@ -2052,7 +2000,6 @@ Agents with similar names (may need consolidation):
 - **SwarmAgent** similar to: Swarm Agent
 - **TaskAssignmentAgent** similar to: TaskAssignmentAgentConfig
 - **TaxAgent** similar to: tx_agent, TX Agent
-- **TestingAgent** similar to: TestingAgent
 - **test_design_agent** similar to: test_testing_agent
 - **TradingAgent** similar to: Trading Agent
 - **TrafficPredictionAgent** similar to: TrafficPredictionAgentConfig
@@ -2063,23 +2010,23 @@ Agents with similar names (may need consolidation):
 
 ## Statistics
 
-- **Total Files:** 455
-- **Python Agents:** 400
+- **Total Files:** 445
+- **Python Agents:** 390
 - **Markdown Specs:** 55
 - **Protocols Used:** ACP, ANP
 
 ### Base Classes
 
-- **BaseAgent:** 238 agents
-- **ProtocolMixin:** 121 agents
-- **Enum:** 31 agents
-- **str:** 5 agents
+- **BaseAgent:** 229 agents
+- **ProtocolMixin:** 120 agents
+- **Enum:** 30 agents
+- **str:** 4 agents
 - **AutonomousAgent:** 4 agents
 - **BaseModel:** 2 agents
 - **ABC:** 1 agents
-- **enum.Enum:** 1 agents
 - **BaseEnrichmentAgentA2A:** 1 agents
 - **TrafficIntelligenceAgent:** 1 agents
+- **EnrichmentBaseAgent:** 1 agents
 - **EnhancedBaseAgent:** 1 agents
 - **int:** 1 agents
 - **http.server.BaseHTTPRequestHandler:** 1 agents

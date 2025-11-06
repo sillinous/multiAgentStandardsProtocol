@@ -20,8 +20,8 @@ from datetime import datetime
 import asyncio
 import logging
 
-# Import existing base
-from .base_agent import BaseAgent, DataSource, AgentUnhealthyException
+# Import CANONICAL base
+from .base_agent_v1 import BaseAgent
 from .protocols import (
     ProtocolMixin, A2AMessage, A2PTransaction,
     ACPCoordination, ANPRegistration, MessageType

@@ -1,8 +1,11 @@
 """
-Protocol-Compliant Base Agent Class for Autonomous Improvement Loop
+🔷 CANONICAL BaseAgent Implementation - SuperStandard v1.0 🔷
 
 This is THE SINGLE SOURCE OF TRUTH for all agents in the ecosystem.
 All agents MUST inherit from this class to ensure protocol compliance.
+
+⚠️ IMPORTANT: Do NOT create new BaseAgent classes!
+   Import from this file: from agents.consolidated.py.base_agent_v1 import BaseAgent
 
 Protocols Supported:
 - A2A (Agent-to-Agent): Direct agent communication
@@ -13,6 +16,7 @@ Protocols Supported:
 
 Version: 2.0.0 (Protocol-Compliant)
 Date: 2025-10-15
+Canonical Status: Established 2025-11-06 (BaseAgent Consolidation Phase 1)
 """
 
 from abc import ABC, abstractmethod
