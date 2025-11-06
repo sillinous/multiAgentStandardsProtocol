@@ -153,6 +153,50 @@ contract = await bap.create_collaboration_contract(
 
 ---
 
+## Agent Library
+
+SuperStandard includes **455 production-ready agent implementations** organized into 22 categories!
+
+### Browse the Agent Catalog
+
+**[📋 Agent Catalog](AGENT_CATALOG.md)** - Complete inventory of all 455 agents
+- **400 Python implementations** - Ready to use
+- **55 Markdown specifications** - Design documents
+- **22 categories** - From infrastructure to trading to ML/AI
+
+### Top Agent Categories
+
+| Category | Count | Description |
+|----------|-------|-------------|
+| **General** | 154 | Multi-purpose agents |
+| **Coordination** | 49 | Task orchestration, workflow management |
+| **API** | 34 | Service integrations, endpoints |
+| **Trading** | 33 | Autonomous trading, market strategies |
+| **Testing** | 26 | QA, validation, verification |
+| **Infrastructure** | 22 | Base agents, registries, factories |
+| **Security** | 16 | Auth, compliance, audit |
+| **Analysis** | 14 | Data analysis, insights, metrics |
+| And 14 more... | 107 | See [catalog](AGENT_CATALOG.md) for full list |
+
+### Tools & Scripts
+
+- **`scripts/analyze_agents.py`** - Regenerate agent catalog
+- **`scripts/consolidate_duplicates.py`** - Identify duplicate agents
+- **[Duplicate Consolidation Plan](DUPLICATE_CONSOLIDATION_PLAN.md)** - Consolidation roadmap
+
+### Using Agents
+
+Agents follow SuperStandard protocols:
+```python
+# Most agents support ANP, ACP, or BAP protocols
+from agents.consolidated.py.your_agent import YourAgent
+
+agent = YourAgent(agent_id="my-agent")
+# Configure and use with protocol managers
+```
+
+---
+
 ## Protocol Suite
 
 SuperStandard v1.0 includes **8 production-grade protocols**:
