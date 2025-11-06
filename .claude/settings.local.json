@@ -21,7 +21,9 @@
       "Bash(powershell.exe -Command \"$env:PATH = ($env:PATH -split '';'' | Where-Object { $_-notlike ''*Git\\usr\\bin*'' }) -join '';''; cargo run --example autonomous_dashboard_build\")",
       "Bash(cmd.exe:*)",
       "Bash(powershell.exe -ExecutionPolicy Bypass -File build.ps1 check)",
-      "Bash(rustup default:*)"
+      "Bash(rustup default:*)",
+      "Bash(git commit:*)",
+      "Bash(python scripts/fix_imports.py:*)"
     ],
     "deny": [],
     "ask": []

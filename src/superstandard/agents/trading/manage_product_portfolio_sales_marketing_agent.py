@@ -26,7 +26,7 @@ from dataclasses import dataclass, field
 from typing import Dict, Any, List, Optional
 from datetime import datetime
 
-from library.core.base_agent import BaseAgent
+from superstandard.agents.base.base_agent import BaseAgent
 from library.core.protocols import ProtocolMixin
 
 

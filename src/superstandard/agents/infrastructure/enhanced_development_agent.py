@@ -12,7 +12,7 @@ import sys
 # Add parent directory to path for imports
 sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
-from agents.base_agent import BaseAgent, AgentCapability, MessageType
+from superstandard.agents.base.base_agent import BaseAgent, AgentCapability, MessageType
 from services.code_generator import ClaudeCodeGenerator
 from services.file_operations import SafeFileOperations
 from services.test_runner import TestRunner

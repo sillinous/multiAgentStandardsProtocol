@@ -17,7 +17,7 @@ from pathlib import Path
 sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
 # CRITICAL: Import from protocol-compliant BaseAgent (THE SINGLE SOURCE OF TRUTH)
-from core.base_agent_v1 import BaseAgent, AgentCapability, MessageType
+from superstandard.agents.base.base_agent import BaseAgent, AgentCapability, MessageType
 from services.code_generator import ClaudeCodeGenerator
 from services.file_operations import SafeFileOperations
 
@@ -432,7 +432,7 @@ from datetime import datetime
 sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
 # CRITICAL: Import from protocol-compliant BaseAgent (THE SINGLE SOURCE OF TRUTH)
-from core.base_agent_v1 import BaseAgent, AgentCapability, MessageType
+from superstandard.agents.base.base_agent import BaseAgent, AgentCapability, MessageType
 
 '''
 

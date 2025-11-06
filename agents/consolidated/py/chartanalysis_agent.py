@@ -18,7 +18,7 @@ import anthropic
 import openai
 from src import nice_funcs as n
 from src import nice_funcs_hyperliquid as hl
-from src.agents.base_agent import BaseAgent
+from superstandard.agents.base.base_agent import BaseAgent
 import traceback
 import base64
 from io import BytesIO

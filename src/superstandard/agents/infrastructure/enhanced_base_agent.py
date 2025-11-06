@@ -21,7 +21,7 @@ import asyncio
 import logging
 
 # Import CANONICAL base
-from .base_agent_v1 import BaseAgent
+from superstandard.agents.base.base_agent import BaseAgent
 from .protocols import (
     ProtocolMixin,
     A2AMessage,

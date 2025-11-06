@@ -19,7 +19,7 @@ import os
 
 sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
-from agents.base_agent import BaseAgent, AgentCapability
+from superstandard.agents.base.base_agent import BaseAgent, AgentCapability
 
 
 class SeverityLevel(Enum):

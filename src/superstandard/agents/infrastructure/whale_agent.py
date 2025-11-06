@@ -26,7 +26,7 @@ from src import nice_funcs as n
 from src import nice_funcs_hyperliquid as hl  # Add import for hyperliquid functions
 from src.agents.api import MoonDevAPI
 from collections import deque
-from src.agents.base_agent import BaseAgent
+from superstandard.agents.base.base_agent import BaseAgent
 import traceback
 import numpy as np
 import anthropic

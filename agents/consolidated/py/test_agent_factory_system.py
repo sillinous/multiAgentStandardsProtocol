@@ -196,7 +196,7 @@ class TestCodeGenerator:
         generated = code_generator.generate_agent(sample_specification)
 
         # Check for key imports
-        assert "from autonomous_ecosystem.library.core.enhanced_base_agent import EnhancedBaseAgent" in generated.agent_code
+        assert "from superstandard.agents.base.base_agent import BaseAgent" in generated.agent_code
         assert "import asyncio" in generated.agent_code
 
         # Check for class definition

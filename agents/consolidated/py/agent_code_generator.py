@@ -333,7 +333,7 @@ from datetime import datetime
 from typing import Dict, List, Optional, Any
 import asyncio
 
-from autonomous_ecosystem.library.core.enhanced_base_agent import EnhancedBaseAgent
+from superstandard.agents.base.base_agent import BaseAgent
 from autonomous_ecosystem.library.core.agent_learning_system import AgentLearningSystem
 from autonomous_ecosystem.library.core.tool_discovery_system import ToolDiscoverySystem
 from autonomous_ecosystem.library.core.collaborative_problem_solving import CollaborativeProblemSolving

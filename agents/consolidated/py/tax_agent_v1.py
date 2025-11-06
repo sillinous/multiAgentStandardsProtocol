@@ -18,7 +18,7 @@ from datetime import datetime
 sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
 # Import from protocol-compliant BaseAgent
-from core.base_agent_v1 import BaseAgent, AgentCapability, MessageType
+from superstandard.agents.base.base_agent import BaseAgent, AgentCapability, MessageType
 
 
 class TaxAgent(BaseAgent):

@@ -29,7 +29,7 @@ from datetime import datetime
 import logging
 
 # Import base agent
-from library.core.base_agent_v1 import BaseAgent
+from superstandard.agents.base.base_agent import BaseAgent
 
 # Configure logging
 logging.basicConfig(level=logging.INFO)

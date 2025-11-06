@@ -115,7 +115,7 @@ from datetime import datetime
 from enum import Enum
 
 # Core framework imports
-from library.core.base_agent import BaseAgent
+from superstandard.agents.base.base_agent import BaseAgent
 from library.core.protocols import (
     ProtocolMixin,
     A2AMessage,

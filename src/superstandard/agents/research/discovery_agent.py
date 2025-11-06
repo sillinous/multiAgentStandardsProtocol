@@ -51,7 +51,7 @@ except ImportError:
 
 # Import BaseAgent optionally for full orchestration
 try:
-    from src.agents.base_agent import BaseAgent
+    from superstandard.agents.base.base_agent import BaseAgent
 
     HAS_BASE_AGENT = True
 except ImportError:

@@ -56,7 +56,7 @@ from src.data.ohlcv_collector import collect_all_tokens
 from datetime import datetime, timedelta
 import time
 from src.config import *
-from src.agents.base_agent import BaseAgent
+from superstandard.agents.base.base_agent import BaseAgent
 import traceback
 
 # Load environment variables

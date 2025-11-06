@@ -27,7 +27,7 @@ import json
 
 # Try importing BaseAgent, create stub if not available
 try:
-    from agents.base_agent import BaseAgent, AgentCapability
+    from superstandard.agents.base.base_agent import BaseAgent, AgentCapability
 except ImportError:
     # Create stub classes if imports fail
     from enum import Enum

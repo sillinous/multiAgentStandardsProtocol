@@ -18,7 +18,7 @@ from typing import Dict, Any, Optional
 import logging
 from datetime import datetime
 
-from app.agents.base_agent import BaseAgent
+from superstandard.agents.base.base_agent import BaseAgent
 from app.ollama_service import ollama_service
 from app.ai_service import market_ai
 

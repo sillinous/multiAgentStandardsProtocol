@@ -14,7 +14,7 @@ from typing import Dict, Any, List, Optional, Tuple
 from datetime import datetime, timedelta
 from math import radians, sin, cos, sqrt, atan2
 
-from library.core.base_agent import BaseAgent
+from superstandard.agents.base.base_agent import BaseAgent
 from library.core.protocols import ProtocolMixin
 
 

@@ -4,7 +4,7 @@ Orchestrator Agent - Coordinates the autonomous improvement loop
 
 from typing import Dict, List, Any, Optional
 from datetime import datetime
-from .base_agent import BaseAgent, AgentCapability, MessageType
+from superstandard.agents.base.base_agent import BaseAgent, AgentCapability, MessageType
 from .testing_agent import TestingAgent
 from .design_agent import DesignAgent
 from .development_agent import DevelopmentAgent

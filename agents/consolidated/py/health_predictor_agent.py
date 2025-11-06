@@ -48,7 +48,7 @@ except ImportError:
 
 # Import BaseAgent optionally
 try:
-    from src.agents.base_agent import BaseAgent
+    from superstandard.agents.base.base_agent import BaseAgent
     HAS_BASE_AGENT = True
 except ImportError:
     HAS_BASE_AGENT = False

@@ -14,7 +14,7 @@ from typing import Dict, List, Optional, Any
 from datetime import datetime, timedelta
 import uuid
 
-from src.agents.base_agent import BaseAgent
+from superstandard.agents.base.base_agent import BaseAgent
 from src.models.model_factory import ModelFactory
 from .goal_analyzer import GoalAnalyzer, GoalAnalysis, ClarificationEngine
 from .goal_clarifier import GoalRefiner, RefinedGoal

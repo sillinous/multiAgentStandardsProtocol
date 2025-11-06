@@ -203,7 +203,7 @@ class TestCodeGenerator:
 
         # Check for key imports
         assert (
-            "from autonomous_ecosystem.library.core.enhanced_base_agent import EnhancedBaseAgent"
+            "from superstandard.agents.base.base_agent import BaseAgent"
             in generated.agent_code
         )
         assert "import asyncio" in generated.agent_code

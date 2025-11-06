@@ -19,7 +19,7 @@ from anthropic import Anthropic
 from dotenv import load_dotenv
 import openai
 
-from src.agents.base_agent import BaseAgent
+from superstandard.agents.base.base_agent import BaseAgent
 from src.nice_funcs_hyperliquid import get_funding_rates
 from src.config import AI_MODEL, AI_TEMPERATURE, AI_MAX_TOKENS
 

@@ -63,7 +63,7 @@ sys.path.insert(0, os.path.join(os.path.dirname(__file__), '../..'))
 import logging
 
 # Import CANONICAL BaseAgent (Phase 3: BaseAgent Consolidation)
-from .base_agent_v1 import BaseAgent, ProtocolMixin
+from superstandard.agents.base.base_agent import BaseAgent, ProtocolMixin
 
 
 # =============================================================================

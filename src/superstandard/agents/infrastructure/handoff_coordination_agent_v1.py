@@ -68,7 +68,7 @@ import sys
 
 sys.path.append(os.path.join(os.path.dirname(__file__), "../.."))
 
-from library.core.base_agent import BaseAgent
+from superstandard.agents.base.base_agent import BaseAgent
 from library.core.protocols import ProtocolMixin
 
 # Agent metadata

@@ -15,7 +15,7 @@ from typing import Dict, List, Any
 
 from src.db import SessionLocal
 from src.orchestration import AgentOrchestrator
-from src.base_agent import BaseAgent
+from superstandard.agents.base.base_agent import BaseAgent
 
 logger = logging.getLogger(__name__)
 
