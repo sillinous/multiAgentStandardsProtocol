@@ -6,7 +6,15 @@
 
 ## Categories
 
-### Analysis (9 agents)
+### Analysis (14 agents)
+
+- **AnalyticsAgent**
+  - File: `agents\consolidated\py\analytics_agent_v1.py`
+  - Type: python
+
+- **AnomalyDetectionTaskAgent**
+  - File: `agents\consolidated\py\anomaly_detection_task_agent_v1.py`
+  - Type: python
 
 - **Chart Analysis Agent**
   - File: `agents\consolidated\md\chartanalysis_agent.md`
@@ -25,6 +33,14 @@
   - File: `agents\consolidated\py\product_analysis_agent.py`
   - Type: python
 
+- **Sentiment Agent**
+  - File: `agents\consolidated\md\sentiment_agent.md`
+  - Type: markdown
+
+- **SentimentAgent**
+  - File: `agents\consolidated\py\sentiment_agent.py`
+  - Type: python
+
 - **SentimentAnalysisAgent**
   - File: `agents\consolidated\py\sentiment_analysis_agent.py`
   - Type: python
@@ -37,6 +53,10 @@
   - File: `agents\consolidated\py\statistical_analysis_task_agent_v1.py`
   - Type: python
 
+- **TrendDetectionTaskAgent**
+  - File: `agents\consolidated\py\trend_detection_task_agent_v1.py`
+  - Type: python
+
 - **agent-metrics**
   - File: `agents\consolidated\md\agent-metrics.md`
   - Type: markdown
@@ -46,26 +66,14 @@
   - Type: python
   - Protocols: ANP, ACP
 
-### Api (40 agents)
+### Api (34 agents)
 
 - **API Integration Management Agents - Level 2**
   - File: `agents\consolidated\md\api_integration_agents.md`
   - Type: markdown
 
-- **AnalyzeServiceCoverageStrategyAgentConfig**
-  - File: `agents\consolidated\py\analyze_service_coverage_strategy_agent.py`
-  - Type: python
-
 - **ApiAgent**
   - File: `agents\consolidated\py\api_agent_v1.py`
-  - Type: python
-
-- **ApiRateLimiterTaskAgent**
-  - File: `agents\consolidated\py\api_rate_limiter_task_agent_v1.py`
-  - Type: python
-
-- **ApiResponseFormatterTaskAgent**
-  - File: `agents\consolidated\py\api_response_formatter_task_agent_v1.py`
   - Type: python
 
 - **Backend API Agent**
@@ -92,22 +100,12 @@
   - Type: python
   - Protocols: ANP, ACP
 
-- **DevelopCustomerCareCustomerServiceStrategyCustomerServiceAgentConfig**
-  - File: `agents\consolidated\py\develop_customer_care_customer_service_strategy_customer_service_agent.py`
-  - Type: python
-  - Protocols: ANP, ACP
-
 - **DevelopEmployeeCompetenciesHumanCapitalAgentConfig**
   - File: `agents\consolidated\py\develop_employee_competencies_human_capital_agent.py`
   - Type: python
 
 - **DevelopManageServiceDeliveryServiceDeliveryAgentConfig**
   - File: `agents\consolidated\py\develop_manage_service_delivery_service_delivery_agent.py`
-  - Type: python
-  - Protocols: ANP, ACP
-
-- **GenerateDefineNewProductServiceIdeasCreativeAgentConfig**
-  - File: `agents\consolidated\py\generate_define_new_product_service_ideas_creative_agent.py`
   - Type: python
   - Protocols: ANP, ACP
 
@@ -209,10 +207,6 @@
   - Type: python
   - Protocols: ANP, ACP
 
-- **WebScrapingTaskAgent**
-  - File: `agents\consolidated\py\web_scraping_task_agent_v1.py`
-  - Type: python
-
 - **agent_library_client**
   - File: `agents\consolidated\py\agent_library_client.py`
   - Type: python
@@ -231,68 +225,55 @@
   - Type: python
   - Protocols: ANP, ACP
 
-### Blockchain (2 agents)
+### Blockchain (8 agents)
+
+- **AutonomousTradingAgent**
+  - File: `agents\consolidated\py\autonomous_trading_agent.py`
+  - Type: python
 
 - **BlockchainAgenticProtocol**
   - File: `agents\consolidated\py\blockchain_agentic_protocol.py`
   - Type: python
+
+- **GenerateDefineNewProductServiceIdeasCreativeAgentConfig**
+  - File: `agents\consolidated\py\generate_define_new_product_service_ideas_creative_agent.py`
+  - Type: python
+  - Protocols: ANP, ACP
 
 - **ManageSupplierContractsOperationalAgentConfig**
   - File: `agents\consolidated\py\manage_supplier_contracts_operational_agent.py`
   - Type: python
   - Protocols: ANP, ACP
 
-### Business (23 agents)
+- **Trading Agent**
+  - File: `agents\consolidated\md\trading_agent.md`
+  - Type: markdown
+
+- **TradingAgent**
+  - File: `agents\consolidated\py\trading_agent.py`
+  - Type: python
+
+- **define_business_concept_long-term_vision_strategic_agent**
+  - File: `agents\consolidated\py\define_business_concept_long-term_vision_strategic_agent.py`
+  - Type: python
+  - Protocols: ANP, ACP
+
+- **🌙 Moon Dev's Trading Agents Guide**
+  - File: `agents\consolidated\md\tradingagents.md`
+  - Type: markdown
+
+### Business (11 agents)
 
 - **AnalyzeCustomerJourneyCustomerExperienceAgentConfig**
   - File: `agents\consolidated\py\analyze_customer_journey_customer_experience_agent.py`
   - Type: python
 
-- **AnalyzeMarketTrendsSalesMarketingAgentConfig**
-  - File: `agents\consolidated\py\analyze_market_trends_sales_marketing_agent.py`
-  - Type: python
-  - Protocols: ANP, ACP
-
 - **Business Intelligence Generation Agent Teams - Level 2**
   - File: `agents\consolidated\md\business_intelligence_agents.md`
   - Type: markdown
 
-- **Business Intelligence Validation Agent**
-  - File: `agents\consolidated\md\business_intelligence_validation_agent.md`
-  - Type: markdown
-
-- **ConductCustomerResearchSalesMarketingAgentConfig**
-  - File: `agents\consolidated\py\conduct_customer_research_sales_marketing_agent.py`
-  - Type: python
-  - Protocols: ANP, ACP
-
-- **DevelopBusinessStrategyStrategicAgentConfig**
-  - File: `agents\consolidated\py\develop_business_strategy_strategic_agent.py`
-  - Type: python
-  - Protocols: ANP, ACP
-
 - **DevelopManageItCustomerRelationshipsTechnologyAgentConfig**
   - File: `agents\consolidated\py\develop_manage_it_customer_relationships_technology_agent.py`
-  - Type: python
-  - Protocols: ANP, ACP
-
-- **DevelopManageMarketingPlansSalesMarketingAgentConfig**
-  - File: `agents\consolidated\py\develop_manage_marketing_plans_sales_marketing_agent.py`
-  - Type: python
-  - Protocols: ANP, ACP
-
-- **DevelopManageSalesPlansSalesMarketingAgentConfig**
-  - File: `agents\consolidated\py\develop_manage_sales_plans_sales_marketing_agent.py`
-  - Type: python
-  - Protocols: ANP, ACP
-
-- **DevelopMarketingStrategySalesMarketingAgentConfig**
-  - File: `agents\consolidated\py\develop_marketing_strategy_sales_marketing_agent.py`
-  - Type: python
-  - Protocols: ANP, ACP
-
-- **DevelopSalesStrategySalesMarketingAgentConfig**
-  - File: `agents\consolidated\py\develop_sales_strategy_sales_marketing_agent.py`
   - Type: python
   - Protocols: ANP, ACP
 
@@ -306,60 +287,57 @@
   - Type: python
   - Protocols: ANP, ACP
 
-- **ManageCampaignEffectivenessSalesMarketingAgentConfig**
-  - File: `agents\consolidated\py\manage_campaign_effectiveness_sales_marketing_agent.py`
+- **ManageGovernmentIndustryRelationshipsRelationshipManagementAgentConfig**
+  - File: `agents\consolidated\py\manage_government_industry_relationships_relationship_management_agent.py`
   - Type: python
   - Protocols: ANP, ACP
 
-- **ManageProductLifecycleSalesMarketingAgentConfig**
-  - File: `agents\consolidated\py\manage_product_lifecycle_sales_marketing_agent.py`
+- **ManageLegalEthicalIssuesRelationshipManagementAgentConfig**
+  - File: `agents\consolidated\py\manage_legal_ethical_issues_relationship_management_agent.py`
   - Type: python
   - Protocols: ANP, ACP
 
-- **ManageProductPortfolioSalesMarketingAgentConfig**
-  - File: `agents\consolidated\py\manage_product_portfolio_sales_marketing_agent.py`
+- **ManagePublicRelationsRelationshipManagementAgentConfig**
+  - File: `agents\consolidated\py\manage_public_relations_relationship_management_agent.py`
   - Type: python
   - Protocols: ANP, ACP
 
-- **ManageSalesChannelsSalesMarketingAgentConfig**
-  - File: `agents\consolidated\py\manage_sales_channels_sales_marketing_agent.py`
+- **ManageRelationsWithBoardOfDirectorsRelationshipManagementAgentConfig**
+  - File: `agents\consolidated\py\manage_relations_with_board_of_directors_relationship_management_agent.py`
   - Type: python
   - Protocols: ANP, ACP
 
-- **MarketingAutomationAgent**
-  - File: `agents\consolidated\py\marketing_automation_agent_v1.py`
-  - Type: python
-
-- **RevenueOptimizerAgent**
-  - File: `agents\consolidated\py\revenue_optimizer_agent_v1.py`
+- **ManageSupplierRelationshipsOperationalAgentConfig**
+  - File: `agents\consolidated\py\manage_supplier_relationships_operational_agent.py`
   - Type: python
 
 - **SalesAgent**
   - File: `agents\consolidated\py\sales_agent_v1.py`
   - Type: python
 
-- **SegmentCustomersSalesMarketingAgentConfig**
-  - File: `agents\consolidated\py\segment_customers_sales_marketing_agent.py`
-  - Type: python
-  - Protocols: ANP, ACP
-
-- **define_business_concept_long-term_vision_strategic_agent**
-  - File: `agents\consolidated\py\define_business_concept_long-term_vision_strategic_agent.py`
-  - Type: python
-  - Protocols: ANP, ACP
-
-- **understand_markets,_customers,_capabilities_sales_marketing_agent**
-  - File: `agents\consolidated\py\understand_markets,_customers,_capabilities_sales_marketing_agent.py`
-  - Type: python
-  - Protocols: ANP, ACP
-
 ### Communication (1 agents)
 
-- **MessageQueuePublisherTaskAgent**
-  - File: `agents\consolidated\py\message_queue_publisher_task_agent_v1.py`
+- **AlertManagementAgent**
+  - File: `agents\consolidated\py\alert_management_agent.py`
   - Type: python
 
-### Coordination (11 agents)
+### Coordination (49 agents)
+
+- **AccessControlValidatorTaskAgent**
+  - File: `agents\consolidated\py\access_control_validator_task_agent_v1.py`
+  - Type: python
+
+- **ApiRateLimiterTaskAgent**
+  - File: `agents\consolidated\py\api_rate_limiter_task_agent_v1.py`
+  - Type: python
+
+- **ApiResponseFormatterTaskAgent**
+  - File: `agents\consolidated\py\api_response_formatter_task_agent_v1.py`
+  - Type: python
+
+- **AuditLogWriterTaskAgent**
+  - File: `agents\consolidated\py\audit_log_writer_task_agent_v1.py`
+  - Type: python
 
 - **AutonomousAgentOrchestrator**
   - File: `agents\consolidated\py\autonomous_agent_orchestrator.py`
@@ -367,6 +345,30 @@
 
 - **CacheManagerTaskAgent**
   - File: `agents\consolidated\py\cache_manager_task_agent_v1.py`
+  - Type: python
+
+- **ChartCreationTaskAgent**
+  - File: `agents\consolidated\py\chart_creation_task_agent_v1.py`
+  - Type: python
+
+- **ClassificationTaskAgent**
+  - File: `agents\consolidated\py\classification_task_agent_v1.py`
+  - Type: python
+
+- **ComplianceCheckerTaskAgent**
+  - File: `agents\consolidated\py\compliance_checker_task_agent_v1.py`
+  - Type: python
+
+- **ConditionEvaluatorTaskAgent**
+  - File: `agents\consolidated\py\condition_evaluator_task_agent_v1.py`
+  - Type: python
+
+- **ContentModeratorTaskAgent**
+  - File: `agents\consolidated\py\content_moderator_task_agent_v1.py`
+  - Type: python
+
+- **CurrencyConverterTaskAgent**
+  - File: `agents\consolidated\py\currency_converter_task_agent_v1.py`
   - Type: python
 
 - **DashboardOrchestratorAgent**
@@ -378,20 +380,133 @@
   - Type: python
   - Protocols: ANP, ACP
 
+- **DashboardUpdateTaskAgent**
+  - File: `agents\consolidated\py\dashboard_update_task_agent_v1.py`
+  - Type: python
+
+- **EmailSenderTaskAgent**
+  - File: `agents\consolidated\py\email_sender_task_agent_v1.py`
+  - Type: python
+
+- **EncryptionTaskAgent**
+  - File: `agents\consolidated\py\encryption_task_agent_v1.py`
+  - Type: python
+
+- **EntityExtractionTaskAgent**
+  - File: `agents\consolidated\py\entity_extraction_task_agent_v1.py`
+  - Type: python
+
+- **FileExportTaskAgent**
+  - File: `agents\consolidated\py\file_export_task_agent_v1.py`
+  - Type: python
+
+- **FileScannerTaskAgent**
+  - File: `agents\consolidated\py\file_scanner_task_agent_v1.py`
+  - Type: python
+
+- **FtpTransferTaskAgent**
+  - File: `agents\consolidated\py\ftp_transfer_task_agent_v1.py`
+  - Type: python
+
+- **GraphqlQueryBuilderTaskAgent**
+  - File: `agents\consolidated\py\graphql_query_builder_task_agent_v1.py`
+  - Type: python
+
+- **ImageOcrTaskAgent**
+  - File: `agents\consolidated\py\image_ocr_task_agent_v1.py`
+  - Type: python
+
+- **InventoryTrackerTaskAgent**
+  - File: `agents\consolidated\py\inventory_tracker_task_agent_v1.py`
+  - Type: python
+
+- **KeywordExtractionTaskAgent**
+  - File: `agents\consolidated\py\keyword_extraction_task_agent_v1.py`
+  - Type: python
+
+- **LanguageDetectorTaskAgent**
+  - File: `agents\consolidated\py\language_detector_task_agent_v1.py`
+  - Type: python
+
+- **LoopControllerTaskAgent**
+  - File: `agents\consolidated\py\loop_controller_task_agent_v1.py`
+  - Type: python
+
+- **MessageQueuePublisherTaskAgent**
+  - File: `agents\consolidated\py\message_queue_publisher_task_agent_v1.py`
+  - Type: python
+
+- **NotificationDispatcherTaskAgent**
+  - File: `agents\consolidated\py\notification_dispatcher_task_agent_v1.py`
+  - Type: python
+
 - **OrchestratorAgent**
   - File: `agents\consolidated\py\orchestrator_agent_v1.py`
+  - Type: python
+
+- **PdfParsingTaskAgent**
+  - File: `agents\consolidated\py\pdf_parsing_task_agent_v1.py`
+  - Type: python
+
+- **PriceCalculatorTaskAgent**
+  - File: `agents\consolidated\py\price_calculator_task_agent_v1.py`
   - Type: python
 
 - **RefactoringCoordinatorAgent**
   - File: `agents\consolidated\py\refactoring_coordinator_agent.py`
   - Type: python
 
+- **RetryHandlerTaskAgent**
+  - File: `agents\consolidated\py\retry_handler_task_agent_v1.py`
+  - Type: python
+
+- **ScheduleCalculatorTaskAgent**
+  - File: `agents\consolidated\py\schedule_calculator_task_agent_v1.py`
+  - Type: python
+
 - **SecretManagerTaskAgent**
   - File: `agents\consolidated\py\secret_manager_task_agent_v1.py`
   - Type: python
 
+- **SlaMonitorTaskAgent**
+  - File: `agents\consolidated\py\sla_monitor_task_agent_v1.py`
+  - Type: python
+
 - **StateManagerTaskAgent**
   - File: `agents\consolidated\py\state_manager_task_agent_v1.py`
+  - Type: python
+
+- **TaskAssignmentAgent**
+  - File: `agents\consolidated\py\task_assignment_agent.py`
+  - Type: python
+
+- **TaskAssignmentAgentConfig**
+  - File: `agents\consolidated\py\task_assignment_agent_v1.py`
+  - Type: python
+  - Protocols: ANP, ACP
+
+- **TextNormalizationTaskAgent**
+  - File: `agents\consolidated\py\text_normalization_task_agent_v1.py`
+  - Type: python
+
+- **TextSimilarityTaskAgent**
+  - File: `agents\consolidated\py\text_similarity_task_agent_v1.py`
+  - Type: python
+
+- **TextSummarizerTaskAgent**
+  - File: `agents\consolidated\py\text_summarizer_task_agent_v1.py`
+  - Type: python
+
+- **TextTranslatorTaskAgent**
+  - File: `agents\consolidated\py\text_translator_task_agent_v1.py`
+  - Type: python
+
+- **WebScrapingTaskAgent**
+  - File: `agents\consolidated\py\web_scraping_task_agent_v1.py`
+  - Type: python
+
+- **WebhookTriggerTaskAgent**
+  - File: `agents\consolidated\py\webhook_trigger_task_agent_v1.py`
   - Type: python
 
 - **agent_ecosystem_coordinator**
@@ -464,14 +579,45 @@
   - File: `agents\consolidated\py\social_media_collector_task_agent_v1.py`
   - Type: python
 
-### Devops (18 agents)
+### Devops (8 agents)
 
 - **APQCAgentSpecialization**
   - File: `agents\consolidated\py\apqc_agent_specialization_framework.py`
   - Type: python
 
+- **AutomationAgent**
+  - File: `agents\consolidated\py\automation_agent_v1.py`
+  - Type: python
+
 - **DeployITSolutionsTechnologyAgentConfig**
   - File: `agents\consolidated\py\deploy_it_solutions_technology_agent.py`
+  - Type: python
+
+- **ManageItInfrastructureTechnologyAgentConfig**
+  - File: `agents\consolidated\py\manage_it_infrastructure_technology_agent.py`
+  - Type: python
+  - Protocols: ANP, ACP
+
+- **PricingAgent**
+  - File: `agents\consolidated\py\pricing_agent_v1.py`
+  - Type: python
+
+- **Smart Agent Coordinator**
+  - File: `agents\consolidated\md\automation-smart-agent.md`
+  - Type: markdown
+
+- **SocialAgent**
+  - File: `agents\consolidated\py\social_agent_v1.py`
+  - Type: python
+
+- **agent_consciousness**
+  - File: `agents\consolidated\py\agent_consciousness.py`
+  - Type: python
+
+### Finance (14 agents)
+
+- **CalculateTransportationCostsLogisticsAgentConfig**
+  - File: `agents\consolidated\py\calculate_transportation_costs_logistics_agent.py`
   - Type: python
 
 - **ManageCashFlowFinancialAgentConfig**
@@ -483,10 +629,6 @@
   - File: `agents\consolidated\py\manage_fixed_asset_project_accounting_financial_agent.py`
   - Type: python
   - Protocols: ANP, ACP
-
-- **ManagePricingSalesMarketingAgentConfig**
-  - File: `agents\consolidated\py\manage_pricing_sales_marketing_agent.py`
-  - Type: python
 
 - **ManageTreasuryOperationsFinancialAgentConfig**
   - File: `agents\consolidated\py\manage_treasury_operations_financial_agent.py`
@@ -522,10 +664,6 @@
   - Type: python
   - Protocols: ANP, ACP
 
-- **PricingAgent**
-  - File: `agents\consolidated\py\pricing_agent_v1.py`
-  - Type: python
-
 - **ProcessAccountsPayableFinancialAgentConfig**
   - File: `agents\consolidated\py\process_accounts_payable_financial_agent.py`
   - Type: python
@@ -540,15 +678,11 @@
   - Type: python
   - Protocols: ANP, ACP
 
-- **SocialAgent**
-  - File: `agents\consolidated\py\social_agent_v1.py`
+- **RevenueOptimizerAgent**
+  - File: `agents\consolidated\py\revenue_optimizer_agent_v1.py`
   - Type: python
 
-- **agent_consciousness**
-  - File: `agents\consolidated\py\agent_consciousness.py`
-  - Type: python
-
-### General (263 agents)
+### General (154 agents)
 
 - **AIAgent**
   - File: `agents\consolidated\py\coingecko_agent.py`
@@ -563,42 +697,10 @@
   - Type: python
   - Protocols: ANP, ACP
 
-- **Accessibility & Usability Agent**
-  - File: `agents\consolidated\md\accessibility_usability_agent.md`
-  - Type: markdown
-
-- **AgentRegistrySyncAgent**
-  - File: `agents\consolidated\py\agent_registry_sync_agent.py`
-  - Type: python
-
-- **AiopsAgent**
-  - File: `agents\consolidated\py\aiops_agent_v1.py`
-  - Type: python
-
-- **AlertManagementAgent**
-  - File: `agents\consolidated\py\alert_management_agent.py`
-  - Type: python
-
-- **AnalyticsAgent**
-  - File: `agents\consolidated\py\analytics_agent_v1.py`
-  - Type: python
-
-- **AnomalyDetectionTaskAgent**
-  - File: `agents\consolidated\py\anomaly_detection_task_agent_v1.py`
-  - Type: python
-
-- **ApmAgent**
-  - File: `agents\consolidated\py\apm_agent_v1.py`
-  - Type: python
-
 - **ArchitectureReviewAgent**
   - File: `agents\consolidated\py\architecture_review_agent.py`
   - Type: python
 
-- **AutomationAgent**
-  - File: `agents\consolidated\py\automation_agent_v1.py`
-  - Type: python
-
 - **AutonomousAgent**
   - File: `agents\consolidated\py\autonomous_agent.py`
   - Type: python
@@ -608,30 +710,6 @@
   - File: `agents\consolidated\py\autonomous_agent.py`
   - Type: python
   - Protocols: ANP
-
-- **AutonomousRiskAgent**
-  - File: `agents\consolidated\py\autonomous_risk_agent.py`
-  - Type: python
-
-- **AutonomousStrategyAgent**
-  - File: `agents\consolidated\py\autonomous_strategy_agent.py`
-  - Type: python
-
-- **AutonomousTradingAgent**
-  - File: `agents\consolidated\py\autonomous_trading_agent.py`
-  - Type: python
-
-- **BaseAgent**
-  - File: `agents\consolidated\py\base_agent.py`
-  - Type: python
-
-- **BaseAgent**
-  - File: `agents\consolidated\py\base_agent.py`
-  - Type: python
-
-- **BaseAgent**
-  - File: `agents\consolidated\py\base_agent.py`
-  - Type: python
 
 - **BaseAgent**
   - File: `agents\consolidated\py\base_agent.py`
@@ -669,14 +747,6 @@
   - File: `agents\consolidated\py\million_agent.py`
   - Type: python
 
-- **CalculateTransportationCostsLogisticsAgentConfig**
-  - File: `agents\consolidated\py\calculate_transportation_costs_logistics_agent.py`
-  - Type: python
-
-- **ChartCreationTaskAgent**
-  - File: `agents\consolidated\py\chart_creation_task_agent_v1.py`
-  - Type: python
-
 - **Chat Agent**
   - File: `agents\consolidated\md\chat_agent.md`
   - Type: markdown
@@ -697,10 +767,6 @@
   - File: `agents\consolidated\py\classification_agent.py`
   - Type: python
 
-- **ClassificationTaskAgent**
-  - File: `agents\consolidated\py\classification_task_agent_v1.py`
-  - Type: python
-
 - **ClipsAgent**
   - File: `agents\consolidated\py\clips_agent.py`
   - Type: python
@@ -714,10 +780,6 @@
   - File: `agents\consolidated\md\comprehensive_user_journey_agent.md`
   - Type: markdown
 
-- **ConditionEvaluatorTaskAgent**
-  - File: `agents\consolidated\py\condition_evaluator_task_agent_v1.py`
-  - Type: python
-
 - **ConsensusAgent**
   - File: `agents\consolidated\py\consensus_agent.py`
   - Type: python
@@ -729,14 +791,6 @@
 
 - **ContentAgent**
   - File: `agents\consolidated\py\content_agent_v1.py`
-  - Type: python
-
-- **ContentGeneratorAgent**
-  - File: `agents\consolidated\py\content_generator_agent_v1.py`
-  - Type: python
-
-- **ContentModeratorTaskAgent**
-  - File: `agents\consolidated\py\content_moderator_task_agent_v1.py`
   - Type: python
 
 - **ContextPreservationAgent**
@@ -768,23 +822,6 @@
   - File: `agents\consolidated\py\copybot_agent.py`
   - Type: python
 
-- **Core Utility Agents - Level 1**
-  - File: `agents\consolidated\md\core_utility_agents.md`
-  - Type: markdown
-
-- **CurrencyConverterTaskAgent**
-  - File: `agents\consolidated\py\currency_converter_task_agent_v1.py`
-  - Type: python
-
-- **DashboardUpdateTaskAgent**
-  - File: `agents\consolidated\py\dashboard_update_task_agent_v1.py`
-  - Type: python
-
-- **DevelopEnterpriseRiskStrategyRiskAgentConfig**
-  - File: `agents\consolidated\py\develop_enterprise_risk_strategy_risk_agent.py`
-  - Type: python
-  - Protocols: ANP, ACP
-
 - **DevelopManageInnovationStrategicAgentConfig**
   - File: `agents\consolidated\py\develop_manage_innovation_strategic_agent.py`
   - Type: python
@@ -800,10 +837,6 @@
   - Type: python
   - Protocols: ANP, ACP
 
-- **DevopsAgent**
-  - File: `agents\consolidated\py\devops_agent_v1.py`
-  - Type: python
-
 - **DispatchManagementLogisticsAgentConfig**
   - File: `agents\consolidated\py\dispatch_management_logistics_agent.py`
   - Type: python
@@ -813,26 +846,9 @@
   - Type: python
   - Protocols: ANP, ACP
 
-- **DocumentationMaintenanceAgent**
-  - File: `agents\consolidated\py\documentation_maintenance_agent.py`
-  - Type: python
-
-- **EmailSenderTaskAgent**
-  - File: `agents\consolidated\py\email_sender_task_agent_v1.py`
-  - Type: python
-
-- **EncryptionTaskAgent**
-  - File: `agents\consolidated\py\encryption_task_agent_v1.py`
-  - Type: python
-
 - **EngineeringAgent**
   - File: `agents\consolidated\py\engineering_agent_v1.py`
   - Type: python
-
-- **EnhancedBaseAgent**
-  - File: `agents\consolidated\py\enhanced_base_agent.py`
-  - Type: python
-  - Protocols: ANP, ACP
 
 - **EnhancedDevelopmentAgent**
   - File: `agents\consolidated\py\enhanced_development_agent.py`
@@ -845,10 +861,6 @@
 - **Enterprise Reusable Agent Library Architecture**
   - File: `agents\consolidated\md\agent_library_architecture.md`
   - Type: markdown
-
-- **EntityExtractionTaskAgent**
-  - File: `agents\consolidated\py\entity_extraction_task_agent_v1.py`
-  - Type: python
 
 - **Entrepreneurial Persona Agent**
   - File: `agents\consolidated\md\entrepreneurial_persona_agent.md`
@@ -866,24 +878,8 @@
   - File: `agents\consolidated\py\feature_extraction_agent.py`
   - Type: python
 
-- **FileExportTaskAgent**
-  - File: `agents\consolidated\py\file_export_task_agent_v1.py`
-  - Type: python
-
-- **FileScannerTaskAgent**
-  - File: `agents\consolidated\py\file_scanner_task_agent_v1.py`
-  - Type: python
-
-- **FinopsAgent**
-  - File: `agents\consolidated\py\finops_agent_v1.py`
-  - Type: python
-
 - **FocusAgent**
   - File: `agents\consolidated\py\focus_agent.py`
-  - Type: python
-
-- **ForecastDemandOperationalAgentConfig**
-  - File: `agents\consolidated\py\forecast_demand_operational_agent.py`
   - Type: python
 
 - **ForecastTransportationDemandLogisticsAgentConfig**
@@ -893,14 +889,6 @@
 - **ForecastingAgent**
   - File: `agents\consolidated\py\forecasting_agent_v1.py`
   - Type: python
-
-- **FtpTransferTaskAgent**
-  - File: `agents\consolidated\py\ftp_transfer_task_agent_v1.py`
-  - Type: python
-
-- **Functional Validation Testing Agent**
-  - File: `agents\consolidated\md\functional_validation_agent.md`
-  - Type: markdown
 
 - **Funding Agent**
   - File: `agents\consolidated\md\funding_agent.md`
@@ -914,24 +902,8 @@
   - File: `agents\consolidated\py\fundingarb_agent.py`
   - Type: python
 
-- **GeneratedAgent**
-  - File: `agents\consolidated\py\agent_code_generator.py`
-  - Type: python
-
 - **GermanTrafficIntelligenceAgent**
   - File: `agents\consolidated\py\german_traffic_agent.py`
-  - Type: python
-
-- **GlobalAgentFactory**
-  - File: `agents\consolidated\py\global_agent_factory.py`
-  - Type: python
-
-- **GlobalAgentMarketplace**
-  - File: `agents\consolidated\py\global_agent_marketplace.py`
-  - Type: python
-
-- **GlobalAgentMarketplace**
-  - File: `agents\consolidated\py\global_agent_marketplace.py`
   - Type: python
 
 - **GoalRefinementAgent**
@@ -959,14 +931,6 @@
   - File: `agents\consolidated\py\housecoin_agent.py`
   - Type: python
 
-- **HybridBaseAgent**
-  - File: `agents\consolidated\py\hybrid_base_agent.py`
-  - Type: python
-
-- **ImageOcrTaskAgent**
-  - File: `agents\consolidated\py\image_ocr_task_agent_v1.py`
-  - Type: python
-
 - **InitiateProjectsCapabilityDevelopmentAgentConfig**
   - File: `agents\consolidated\py\initiate_projects_capability_development_agent.py`
   - Type: python
@@ -992,27 +956,6 @@
   - File: `agents\consolidated\py\journey_documentation_agent.py`
   - Type: python
 
-- **KeywordExtractionTaskAgent**
-  - File: `agents\consolidated\py\keyword_extraction_task_agent_v1.py`
-  - Type: python
-
-- **LanguageDetectorTaskAgent**
-  - File: `agents\consolidated\py\language_detector_task_agent_v1.py`
-  - Type: python
-
-- **LearningAgentWrapper**
-  - File: `agents\consolidated\py\agent_learning_integration.py`
-  - Type: python
-
-- **LoopControllerTaskAgent**
-  - File: `agents\consolidated\py\loop_controller_task_agent_v1.py`
-  - Type: python
-
-- **MaintainProductiveAssetsAssetManagementAgentConfig**
-  - File: `agents\consolidated\py\maintain_productive_assets_asset_management_agent.py`
-  - Type: python
-  - Protocols: ANP, ACP
-
 - **ManageChangeCapabilityDevelopmentAgentConfig**
   - File: `agents\consolidated\py\manage_change_capability_development_agent.py`
   - Type: python
@@ -1022,53 +965,8 @@
   - File: `agents\consolidated\py\manage_driver_performance_logistics_agent.py`
   - Type: python
 
-- **ManageEnterpriseQualityCapabilityDevelopmentAgentConfig**
-  - File: `agents\consolidated\py\manage_enterprise_quality_capability_development_agent.py`
-  - Type: python
-  - Protocols: ANP, ACP
-
-- **ManageGovernmentIndustryRelationshipsRelationshipManagementAgentConfig**
-  - File: `agents\consolidated\py\manage_government_industry_relationships_relationship_management_agent.py`
-  - Type: python
-  - Protocols: ANP, ACP
-
 - **ManageItEnterpriseArchitectureTechnologyAgentConfig**
   - File: `agents\consolidated\py\manage_it_enterprise_architecture_technology_agent.py`
-  - Type: python
-  - Protocols: ANP, ACP
-
-- **ManageItInfrastructureTechnologyAgentConfig**
-  - File: `agents\consolidated\py\manage_it_infrastructure_technology_agent.py`
-  - Type: python
-  - Protocols: ANP, ACP
-
-- **ManageLegalEthicalIssuesRelationshipManagementAgentConfig**
-  - File: `agents\consolidated\py\manage_legal_ethical_issues_relationship_management_agent.py`
-  - Type: python
-  - Protocols: ANP, ACP
-
-- **ManageLogisticsWarehousingOperationalAgentConfig**
-  - File: `agents\consolidated\py\manage_logistics_warehousing_operational_agent.py`
-  - Type: python
-  - Protocols: ANP, ACP
-
-- **ManagePortfolioOfEnterpriseProgramsProjectsCapabilityDevelopmentAgentConfig**
-  - File: `agents\consolidated\py\manage_portfolio_of_enterprise_programs_projects_capability_development_agent.py`
-  - Type: python
-  - Protocols: ANP, ACP
-
-- **ManageProductionQualityOperationalAgentConfig**
-  - File: `agents\consolidated\py\manage_production_quality_operational_agent.py`
-  - Type: python
-  - Protocols: ANP, ACP
-
-- **ManagePublicRelationsRelationshipManagementAgentConfig**
-  - File: `agents\consolidated\py\manage_public_relations_relationship_management_agent.py`
-  - Type: python
-  - Protocols: ANP, ACP
-
-- **ManageRelationsWithBoardOfDirectorsRelationshipManagementAgentConfig**
-  - File: `agents\consolidated\py\manage_relations_with_board_of_directors_relationship_management_agent.py`
   - Type: python
   - Protocols: ANP, ACP
 
@@ -1077,30 +975,12 @@
   - Type: python
   - Protocols: ANP, ACP
 
-- **ManageSupplierRelationshipsOperationalAgentConfig**
-  - File: `agents\consolidated\py\manage_supplier_relationships_operational_agent.py`
-  - Type: python
-
-- **ManageTransportationOperationalAgentConfig**
-  - File: `agents\consolidated\py\manage_transportation_operational_agent.py`
-  - Type: python
-  - Protocols: ANP, ACP
-
 - **ManageVehicleFleetAssetAgentConfig**
   - File: `agents\consolidated\py\manage_vehicle_fleet_asset_agent.py`
   - Type: python
 
-- **ManageWarehouseOperationsOperationalAgentConfig**
-  - File: `agents\consolidated\py\manage_warehouse_operations_operational_agent.py`
-  - Type: python
-  - Protocols: ANP, ACP
-
 - **ManagementAgent**
   - File: `agents\consolidated\py\management_agent_v1.py`
-  - Type: python
-
-- **MarketOpportunityScoringAgent**
-  - File: `agents\consolidated\py\market_opportunity_scoring_agent.py`
   - Type: python
 
 - **MatchRidersToDriversLogisticsAgentConfig**
@@ -1132,26 +1012,9 @@
   - File: `agents\consolidated\py\new_or_top_agent.py`
   - Type: python
 
-- **NotificationDispatcherTaskAgent**
-  - File: `agents\consolidated\py\notification_dispatcher_task_agent_v1.py`
-  - Type: python
-
 - **OptimizeAssetUtilizationAssetManagementAgentConfig**
   - File: `agents\consolidated\py\optimize_asset_utilization_asset_management_agent.py`
   - Type: python
-
-- **OptimizeInventoryOperationalAgentConfig**
-  - File: `agents\consolidated\py\optimize_inventory_operational_agent.py`
-  - Type: python
-
-- **PdfParsingTaskAgent**
-  - File: `agents\consolidated\py\pdf_parsing_task_agent_v1.py`
-  - Type: python
-
-- **PerformPreventiveMaintenanceAssetManagementAgentConfig**
-  - File: `agents\consolidated\py\perform_preventive_maintenance_asset_management_agent.py`
-  - Type: python
-  - Protocols: ANP, ACP
 
 - **PerformStrategicPlanningStrategicAgentConfig**
   - File: `agents\consolidated\py\perform_strategic_planning_strategic_agent.py`
@@ -1162,30 +1025,8 @@
   - File: `agents\consolidated\py\personalization_agent_v1.py`
   - Type: python
 
-- **PlanForAlignSupplyChainResourcesOperationalAgentConfig**
-  - File: `agents\consolidated\py\plan_for_align_supply_chain_resources_operational_agent.py`
-  - Type: python
-  - Protocols: ANP, ACP
-
-- **PlanSupplyChainResourcesOperationalAgentConfig**
-  - File: `agents\consolidated\py\plan_supply_chain_resources_operational_agent.py`
-  - Type: python
-  - Protocols: ANP, ACP
-
 - **PlanningAgent**
   - File: `agents\consolidated\py\planning_agent_v1.py`
-  - Type: python
-
-- **Polymarket AI Agents - Roadmap**
-  - File: `agents\consolidated\md\polymarket_agents.md`
-  - Type: markdown
-
-- **Polymarket Prediction Agent**
-  - File: `agents\consolidated\md\polymarket_agent.md`
-  - Type: markdown
-
-- **PolymarketAgent**
-  - File: `agents\consolidated\py\polymarket_agent.py`
   - Type: python
 
 - **PredictiveAgentSpawner**
@@ -1194,15 +1035,6 @@
 
 - **PrepareForProductionCreativeAgentConfig**
   - File: `agents\consolidated\py\prepare_for_production_creative_agent.py`
-  - Type: python
-  - Protocols: ANP, ACP
-
-- **PriceCalculatorTaskAgent**
-  - File: `agents\consolidated\py\price_calculator_task_agent_v1.py`
-  - Type: python
-
-- **ProduceManufactureDeliverProductOperationalAgentConfig**
-  - File: `agents\consolidated\py\produce_manufacture_deliver_product_operational_agent.py`
   - Type: python
   - Protocols: ANP, ACP
 
@@ -1222,50 +1054,9 @@
   - File: `agents\consolidated\py\realtime_clips_agent.py`
   - Type: python
 
-- **ReportGeneratorTaskAgent**
-  - File: `agents\consolidated\py\report_generator_task_agent_v1.py`
-  - Type: python
-
-- **ReportingAgent**
-  - File: `agents\consolidated\py\reporting_agent_v1.py`
-  - Type: python
-
-- **RetryHandlerTaskAgent**
-  - File: `agents\consolidated\py\retry_handler_task_agent_v1.py`
-  - Type: python
-
-- **Risk Agent**
-  - File: `agents\consolidated\md\risk_agent.md`
-  - Type: markdown
-
-- **RiskAgent**
-  - File: `agents\consolidated\py\risk_agent.py`
-  - Type: python
-
 - **RouteOptimizationLogisticsAgentConfig**
   - File: `agents\consolidated\py\route_optimization_logistics_agent.py`
   - Type: python
-
-- **ScheduleCalculatorTaskAgent**
-  - File: `agents\consolidated\py\schedule_calculator_task_agent_v1.py`
-  - Type: python
-
-- **ScheduleProductionOperationalAgentConfig**
-  - File: `agents\consolidated\py\schedule_production_operational_agent.py`
-  - Type: python
-  - Protocols: ANP, ACP
-
-- **Sentiment Agent**
-  - File: `agents\consolidated\md\sentiment_agent.md`
-  - Type: markdown
-
-- **SentimentAgent**
-  - File: `agents\consolidated\py\sentiment_agent.py`
-  - Type: python
-
-- **Smart Agent Coordinator**
-  - File: `agents\consolidated\md\automation-smart-agent.md`
-  - Type: markdown
 
 - **Sniper Agent**
   - File: `agents\consolidated\md\sniper_agent.md`
@@ -1277,14 +1068,6 @@
 
 - **StorytellingAgent**
   - File: `agents\consolidated\py\storytelling_agent.py`
-  - Type: python
-
-- **Strategy Agent**
-  - File: `agents\consolidated\md\strategy_agent.md`
-  - Type: markdown
-
-- **StrategyAgent**
-  - File: `agents\consolidated\py\strategy_agent.py`
   - Type: python
 
 - **StreamAgent**
@@ -1303,15 +1086,6 @@
   - File: `agents\consolidated\md\tx_agent.md`
   - Type: markdown
 
-- **TaskAssignmentAgent**
-  - File: `agents\consolidated\py\task_assignment_agent.py`
-  - Type: python
-
-- **TaskAssignmentAgentConfig**
-  - File: `agents\consolidated\py\task_assignment_agent_v1.py`
-  - Type: python
-  - Protocols: ANP, ACP
-
 - **TaxAgent**
   - File: `agents\consolidated\py\tax_agent_v1.py`
   - Type: python
@@ -1320,49 +1094,12 @@
   - File: `agents\consolidated\py\technical_debt_tracking_agent.py`
   - Type: python
 
-- **TextNormalizationTaskAgent**
-  - File: `agents\consolidated\py\text_normalization_task_agent_v1.py`
-  - Type: python
-
-- **TextSimilarityTaskAgent**
-  - File: `agents\consolidated\py\text_similarity_task_agent_v1.py`
-  - Type: python
-
 - **TextSummarizationAgent**
   - File: `agents\consolidated\py\text_summarization_agent.py`
   - Type: python
 
-- **TextSummarizerTaskAgent**
-  - File: `agents\consolidated\py\text_summarizer_task_agent_v1.py`
-  - Type: python
-
-- **TextTranslatorTaskAgent**
-  - File: `agents\consolidated\py\text_translator_task_agent_v1.py`
-  - Type: python
-
 - **TrackFleetLocationLogisticsAgentConfig**
   - File: `agents\consolidated\py\track_fleet_location_logistics_agent.py`
-  - Type: python
-
-- **Trading Agent**
-  - File: `agents\consolidated\md\trading_agent.md`
-  - Type: markdown
-
-- **TradingAgent**
-  - File: `agents\consolidated\py\trading_agent.py`
-  - Type: python
-
-- **TrafficPredictionAgent**
-  - File: `agents\consolidated\py\traffic_prediction_agent.py`
-  - Type: python
-
-- **TrafficPredictionAgentConfig**
-  - File: `agents\consolidated\py\traffic_prediction_agent_v1.py`
-  - Type: python
-  - Protocols: ANP, ACP
-
-- **TrendDetectionTaskAgent**
-  - File: `agents\consolidated\py\trend_detection_task_agent_v1.py`
   - Type: python
 
 - **Tweet Agent**
@@ -1383,10 +1120,6 @@
 
 - **VideoAgent**
   - File: `agents\consolidated\py\shortvid_agent.py`
-  - Type: python
-
-- **WebhookTriggerTaskAgent**
-  - File: `agents\consolidated\py\webhook_trigger_task_agent_v1.py`
   - Type: python
 
 - **Whale Agent**
@@ -1429,15 +1162,6 @@
   - File: `agents\consolidated\py\agent_evolution_engine.py`
   - Type: python
 
-- **agent_factory**
-  - File: `agents\consolidated\py\agent_factory.py`
-  - Type: python
-
-- **agent_factory_v1**
-  - File: `agents\consolidated\py\agent_factory_v1.py`
-  - Type: python
-  - Protocols: ANP, ACP
-
 - **agent_identity_did**
   - File: `agents\consolidated\py\agent_identity_did.py`
   - Type: python
@@ -1448,10 +1172,6 @@
 
 - **agent_intelligence**
   - File: `agents\consolidated\py\agent_intelligence.py`
-  - Type: python
-
-- **agent_intelligence_dashboard**
-  - File: `agents\consolidated\py\agent_intelligence_dashboard.py`
   - Type: python
 
 - **agent_learning**
@@ -1470,36 +1190,12 @@
   - File: `agents\consolidated\py\agent_library_routes.py`
   - Type: python
 
-- **agent_marketplace**
-  - File: `agents\consolidated\py\agent_marketplace.py`
-  - Type: python
-
 - **agent_mentorship_system**
   - File: `agents\consolidated\py\agent_mentorship_system.py`
   - Type: python
 
 - **agent_mgmt**
   - File: `agents\consolidated\py\agent_mgmt.py`
-  - Type: python
-
-- **agent_models**
-  - File: `agents\consolidated\py\agent_models.py`
-  - Type: python
-
-- **agent_registry**
-  - File: `agents\consolidated\py\agent_registry.py`
-  - Type: python
-
-- **agent_registry_original**
-  - File: `agents\consolidated\py\agent_registry_original.py`
-  - Type: python
-
-- **agent_registry_sync**
-  - File: `agents\consolidated\py\agent_registry_sync.py`
-  - Type: python
-
-- **agent_registry_updater**
-  - File: `agents\consolidated\py\agent_registry_updater.py`
   - Type: python
 
 - **agent_schemas**
@@ -1509,16 +1205,6 @@
 - **agent_sdk_library**
   - File: `agents\consolidated\py\agent_sdk_library.py`
   - Type: python
-
-- **agent_template_generator**
-  - File: `agents\consolidated\py\agent_template_generator.py`
-  - Type: python
-  - Protocols: ANP, ACP
-
-- **agent_template_system**
-  - File: `agents\consolidated\py\agent_template_system.py`
-  - Type: python
-  - Protocols: ANP, ACP
 
 - **agentic_ecosystem**
   - File: `agents\consolidated\py\agentic_ecosystem.py`
@@ -1535,10 +1221,6 @@
 - **auto agent**
   - File: `agents\consolidated\md\auto-agent.md`
   - Type: markdown
-
-- **code_runner_agent**
-  - File: `agents\consolidated\py\code_runner_agent.py`
-  - Type: python
 
 - **create_agent**
   - File: `agents\consolidated\py\create_agent.py`
@@ -1575,10 +1257,6 @@
 
 - **generate_priority_agents**
   - File: `agents\consolidated\py\generate_priority_agents.py`
-  - Type: python
-
-- **oaiagents**
-  - File: `agents\consolidated\py\oaiagents.py`
   - Type: python
 
 - **package_agents**
@@ -1642,9 +1320,138 @@
   - File: `agents\consolidated\py\tx_agent.py`
   - Type: python
 
-- **🌙 Moon Dev's Trading Agents Guide**
-  - File: `agents\consolidated\md\tradingagents.md`
+### Infrastructure (22 agents)
+
+- **AgentRegistrySyncAgent**
+  - File: `agents\consolidated\py\agent_registry_sync_agent.py`
+  - Type: python
+
+- **BaseAgent**
+  - File: `agents\consolidated\py\base_agent.py`
+  - Type: python
+
+- **BaseAgent**
+  - File: `agents\consolidated\py\base_agent.py`
+  - Type: python
+
+- **BaseAgent**
+  - File: `agents\consolidated\py\base_agent.py`
+  - Type: python
+
+- **ContentGeneratorAgent**
+  - File: `agents\consolidated\py\content_generator_agent_v1.py`
+  - Type: python
+
+- **Core Utility Agents - Level 1**
+  - File: `agents\consolidated\md\core_utility_agents.md`
   - Type: markdown
+
+- **EnhancedBaseAgent**
+  - File: `agents\consolidated\py\enhanced_base_agent.py`
+  - Type: python
+  - Protocols: ANP, ACP
+
+- **GeneratedAgent**
+  - File: `agents\consolidated\py\agent_code_generator.py`
+  - Type: python
+
+- **GlobalAgentFactory**
+  - File: `agents\consolidated\py\global_agent_factory.py`
+  - Type: python
+
+- **HybridBaseAgent**
+  - File: `agents\consolidated\py\hybrid_base_agent.py`
+  - Type: python
+
+- **ReportGeneratorTaskAgent**
+  - File: `agents\consolidated\py\report_generator_task_agent_v1.py`
+  - Type: python
+
+- **ReusableAgentLibrary**
+  - File: `agents\consolidated\py\agent_discovery_registry.py`
+  - Type: python
+
+- **TestEndToEndAgentGeneration**
+  - File: `agents\consolidated\py\test_agent_factory_system.py`
+  - Type: python
+
+- **agent_factory**
+  - File: `agents\consolidated\py\agent_factory.py`
+  - Type: python
+
+- **agent_factory_v1**
+  - File: `agents\consolidated\py\agent_factory_v1.py`
+  - Type: python
+  - Protocols: ANP, ACP
+
+- **agent_registry**
+  - File: `agents\consolidated\py\agent_registry.py`
+  - Type: python
+
+- **agent_registry_original**
+  - File: `agents\consolidated\py\agent_registry_original.py`
+  - Type: python
+
+- **agent_registry_sync**
+  - File: `agents\consolidated\py\agent_registry_sync.py`
+  - Type: python
+
+- **agent_registry_updater**
+  - File: `agents\consolidated\py\agent_registry_updater.py`
+  - Type: python
+
+- **agent_template_generator**
+  - File: `agents\consolidated\py\agent_template_generator.py`
+  - Type: python
+  - Protocols: ANP, ACP
+
+- **agent_template_system**
+  - File: `agents\consolidated\py\agent_template_system.py`
+  - Type: python
+  - Protocols: ANP, ACP
+
+- **test_agent_factory**
+  - File: `agents\consolidated\py\test_agent_factory.py`
+  - Type: python
+
+### Integration (1 agents)
+
+- **LearningAgentWrapper**
+  - File: `agents\consolidated\py\agent_learning_integration.py`
+  - Type: python
+
+### Ml_Ai (7 agents)
+
+- **DocumentationMaintenanceAgent**
+  - File: `agents\consolidated\py\documentation_maintenance_agent.py`
+  - Type: python
+
+- **MaintainProductiveAssetsAssetManagementAgentConfig**
+  - File: `agents\consolidated\py\maintain_productive_assets_asset_management_agent.py`
+  - Type: python
+  - Protocols: ANP, ACP
+
+- **PerformPreventiveMaintenanceAssetManagementAgentConfig**
+  - File: `agents\consolidated\py\perform_preventive_maintenance_asset_management_agent.py`
+  - Type: python
+  - Protocols: ANP, ACP
+
+- **TrafficPredictionAgent**
+  - File: `agents\consolidated\py\traffic_prediction_agent.py`
+  - Type: python
+
+- **TrafficPredictionAgentConfig**
+  - File: `agents\consolidated\py\traffic_prediction_agent_v1.py`
+  - Type: python
+  - Protocols: ANP, ACP
+
+- **agent_models**
+  - File: `agents\consolidated\py\agent_models.py`
+  - Type: python
+
+- **oaiagents**
+  - File: `agents\consolidated\py\oaiagents.py`
+  - Type: python
 
 ### Monitoring (6 agents)
 
@@ -1653,16 +1460,16 @@
   - Type: python
   - Protocols: ANP, ACP
 
+- **AiopsAgent**
+  - File: `agents\consolidated\py\aiops_agent_v1.py`
+  - Type: python
+
+- **ApmAgent**
+  - File: `agents\consolidated\py\apm_agent_v1.py`
+  - Type: python
+
 - **CodeQualityMonitoringAgent**
   - File: `agents\consolidated\py\code_quality_monitoring_agent.py`
-  - Type: python
-
-- **InventoryTrackerTaskAgent**
-  - File: `agents\consolidated\py\inventory_tracker_task_agent_v1.py`
-  - Type: python
-
-- **SlaMonitorTaskAgent**
-  - File: `agents\consolidated\py\sla_monitor_task_agent_v1.py`
   - Type: python
 
 - **System Maintenance & Monitoring Agents - Level 2**
@@ -1673,14 +1480,77 @@
   - File: `agents\consolidated\py\activity_tracker_agent.py`
   - Type: python
 
-### Research (10 agents)
+### Operations (12 agents)
+
+- **DevopsAgent**
+  - File: `agents\consolidated\py\devops_agent_v1.py`
+  - Type: python
+
+- **FinopsAgent**
+  - File: `agents\consolidated\py\finops_agent_v1.py`
+  - Type: python
+
+- **ForecastDemandOperationalAgentConfig**
+  - File: `agents\consolidated\py\forecast_demand_operational_agent.py`
+  - Type: python
+
+- **ManageLogisticsWarehousingOperationalAgentConfig**
+  - File: `agents\consolidated\py\manage_logistics_warehousing_operational_agent.py`
+  - Type: python
+  - Protocols: ANP, ACP
+
+- **ManageTransportationOperationalAgentConfig**
+  - File: `agents\consolidated\py\manage_transportation_operational_agent.py`
+  - Type: python
+  - Protocols: ANP, ACP
+
+- **ManageWarehouseOperationsOperationalAgentConfig**
+  - File: `agents\consolidated\py\manage_warehouse_operations_operational_agent.py`
+  - Type: python
+  - Protocols: ANP, ACP
+
+- **OptimizeInventoryOperationalAgentConfig**
+  - File: `agents\consolidated\py\optimize_inventory_operational_agent.py`
+  - Type: python
+
+- **PlanForAlignSupplyChainResourcesOperationalAgentConfig**
+  - File: `agents\consolidated\py\plan_for_align_supply_chain_resources_operational_agent.py`
+  - Type: python
+  - Protocols: ANP, ACP
+
+- **PlanSupplyChainResourcesOperationalAgentConfig**
+  - File: `agents\consolidated\py\plan_supply_chain_resources_operational_agent.py`
+  - Type: python
+  - Protocols: ANP, ACP
+
+- **ProduceManufactureDeliverProductOperationalAgentConfig**
+  - File: `agents\consolidated\py\produce_manufacture_deliver_product_operational_agent.py`
+  - Type: python
+  - Protocols: ANP, ACP
+
+- **ScheduleProductionOperationalAgentConfig**
+  - File: `agents\consolidated\py\schedule_production_operational_agent.py`
+  - Type: python
+  - Protocols: ANP, ACP
+
+- **code_runner_agent**
+  - File: `agents\consolidated\py\code_runner_agent.py`
+  - Type: python
+
+### Reporting (2 agents)
+
+- **ReportingAgent**
+  - File: `agents\consolidated\py\reporting_agent_v1.py`
+  - Type: python
+
+- **agent_intelligence_dashboard**
+  - File: `agents\consolidated\py\agent_intelligence_dashboard.py`
+  - Type: python
+
+### Research (8 agents)
 
 - **BaseAgent**
   - File: `agents\consolidated\py\base_agent.py`
-  - Type: python
-
-- **BaseMarketResearchAgent**
-  - File: `agents\consolidated\py\market_research_agents.py`
   - Type: python
 
 - **Research Agent**
@@ -1693,10 +1563,6 @@
 
 - **ResearchIntelligenceAgent**
   - File: `agents\consolidated\py\research_intelligence_agent.py`
-  - Type: python
-
-- **ReusableAgentLibrary**
-  - File: `agents\consolidated\py\agent_discovery_registry.py`
   - Type: python
 
 - **RouteDiscoveryAgent**
@@ -1717,14 +1583,14 @@
   - File: `agents\consolidated\py\research_agent.py`
   - Type: python
 
-### Security (17 agents)
+### Security (16 agents)
+
+- **Accessibility & Usability Agent**
+  - File: `agents\consolidated\md\accessibility_usability_agent.md`
+  - Type: markdown
 
 - **AssessRisksRiskComplianceAgentConfig**
   - File: `agents\consolidated\py\assess_risks_risk_compliance_agent.py`
-  - Type: python
-
-- **AuditLogWriterTaskAgent**
-  - File: `agents\consolidated\py\audit_log_writer_task_agent_v1.py`
   - Type: python
 
 - **Compliance Agent**
@@ -1737,10 +1603,6 @@
 
 - **ComplianceAgent**
   - File: `agents\consolidated\py\compliance_agent.py`
-  - Type: python
-
-- **ComplianceCheckerTaskAgent**
-  - File: `agents\consolidated\py\compliance_checker_task_agent_v1.py`
   - Type: python
 
 - **ManageBusinessPoliciesProceduresRiskComplianceAgentConfig**
@@ -1794,23 +1656,37 @@
   - File: `agents\consolidated\py\audit_agents.py`
   - Type: python
 
-### Testing (25 agents)
-
-- **AccessControlValidatorTaskAgent**
-  - File: `agents\consolidated\py\access_control_validator_task_agent_v1.py`
-  - Type: python
+### Testing (26 agents)
 
 - **BaseUserAgentResponder**
   - File: `agents\consolidated\py\test_user_agent.py`
   - Type: python
 
+- **Business Intelligence Validation Agent**
+  - File: `agents\consolidated\md\business_intelligence_validation_agent.md`
+  - Type: markdown
+
 - **Cross-Platform Testing Agent**
   - File: `agents\consolidated\md\cross_platform_testing_agent.md`
+  - Type: markdown
+
+- **Functional Validation Testing Agent**
+  - File: `agents\consolidated\md\functional_validation_agent.md`
   - Type: markdown
 
 - **Integration Testing Agent**
   - File: `agents\consolidated\md\integration_testing_agent.md`
   - Type: markdown
+
+- **ManageEnterpriseQualityCapabilityDevelopmentAgentConfig**
+  - File: `agents\consolidated\py\manage_enterprise_quality_capability_development_agent.py`
+  - Type: python
+  - Protocols: ANP, ACP
+
+- **ManageProductionQualityOperationalAgentConfig**
+  - File: `agents\consolidated\py\manage_production_quality_operational_agent.py`
+  - Type: python
+  - Protocols: ANP, ACP
 
 - **Performance Testing Agent**
   - File: `agents\consolidated\md\performance_testing_agent.md`
@@ -1834,10 +1710,6 @@
   - File: `agents\consolidated\py\test_agent_sdk.py`
   - Type: python
 
-- **TestEndToEndAgentGeneration**
-  - File: `agents\consolidated\py\test_agent_factory_system.py`
-  - Type: python
-
 - **TestMarketForNewProductsServicesCreativeAgentConfig**
   - File: `agents\consolidated\py\test_market_for_new_products_services_creative_agent.py`
   - Type: python
@@ -1855,10 +1727,6 @@
 
 - **UserTesterAgent**
   - File: `agents\consolidated\py\qa_swarm_agent.py`
-  - Type: python
-
-- **test_agent_factory**
-  - File: `agents\consolidated\py\test_agent_factory.py`
   - Type: python
 
 - **test_agent_integration**
@@ -1902,7 +1770,157 @@
   - File: `agents\consolidated\py\test_testing_agent.py`
   - Type: python
 
-### Ui (15 agents)
+### Trading (33 agents)
+
+- **AnalyzeMarketTrendsSalesMarketingAgentConfig**
+  - File: `agents\consolidated\py\analyze_market_trends_sales_marketing_agent.py`
+  - Type: python
+  - Protocols: ANP, ACP
+
+- **AnalyzeServiceCoverageStrategyAgentConfig**
+  - File: `agents\consolidated\py\analyze_service_coverage_strategy_agent.py`
+  - Type: python
+
+- **AutonomousRiskAgent**
+  - File: `agents\consolidated\py\autonomous_risk_agent.py`
+  - Type: python
+
+- **AutonomousStrategyAgent**
+  - File: `agents\consolidated\py\autonomous_strategy_agent.py`
+  - Type: python
+
+- **BaseMarketResearchAgent**
+  - File: `agents\consolidated\py\market_research_agents.py`
+  - Type: python
+
+- **ConductCustomerResearchSalesMarketingAgentConfig**
+  - File: `agents\consolidated\py\conduct_customer_research_sales_marketing_agent.py`
+  - Type: python
+  - Protocols: ANP, ACP
+
+- **DevelopBusinessStrategyStrategicAgentConfig**
+  - File: `agents\consolidated\py\develop_business_strategy_strategic_agent.py`
+  - Type: python
+  - Protocols: ANP, ACP
+
+- **DevelopCustomerCareCustomerServiceStrategyCustomerServiceAgentConfig**
+  - File: `agents\consolidated\py\develop_customer_care_customer_service_strategy_customer_service_agent.py`
+  - Type: python
+  - Protocols: ANP, ACP
+
+- **DevelopEnterpriseRiskStrategyRiskAgentConfig**
+  - File: `agents\consolidated\py\develop_enterprise_risk_strategy_risk_agent.py`
+  - Type: python
+  - Protocols: ANP, ACP
+
+- **DevelopManageMarketingPlansSalesMarketingAgentConfig**
+  - File: `agents\consolidated\py\develop_manage_marketing_plans_sales_marketing_agent.py`
+  - Type: python
+  - Protocols: ANP, ACP
+
+- **DevelopManageSalesPlansSalesMarketingAgentConfig**
+  - File: `agents\consolidated\py\develop_manage_sales_plans_sales_marketing_agent.py`
+  - Type: python
+  - Protocols: ANP, ACP
+
+- **DevelopMarketingStrategySalesMarketingAgentConfig**
+  - File: `agents\consolidated\py\develop_marketing_strategy_sales_marketing_agent.py`
+  - Type: python
+  - Protocols: ANP, ACP
+
+- **DevelopSalesStrategySalesMarketingAgentConfig**
+  - File: `agents\consolidated\py\develop_sales_strategy_sales_marketing_agent.py`
+  - Type: python
+  - Protocols: ANP, ACP
+
+- **GlobalAgentMarketplace**
+  - File: `agents\consolidated\py\global_agent_marketplace.py`
+  - Type: python
+
+- **GlobalAgentMarketplace**
+  - File: `agents\consolidated\py\global_agent_marketplace.py`
+  - Type: python
+
+- **ManageCampaignEffectivenessSalesMarketingAgentConfig**
+  - File: `agents\consolidated\py\manage_campaign_effectiveness_sales_marketing_agent.py`
+  - Type: python
+  - Protocols: ANP, ACP
+
+- **ManagePortfolioOfEnterpriseProgramsProjectsCapabilityDevelopmentAgentConfig**
+  - File: `agents\consolidated\py\manage_portfolio_of_enterprise_programs_projects_capability_development_agent.py`
+  - Type: python
+  - Protocols: ANP, ACP
+
+- **ManagePricingSalesMarketingAgentConfig**
+  - File: `agents\consolidated\py\manage_pricing_sales_marketing_agent.py`
+  - Type: python
+
+- **ManageProductLifecycleSalesMarketingAgentConfig**
+  - File: `agents\consolidated\py\manage_product_lifecycle_sales_marketing_agent.py`
+  - Type: python
+  - Protocols: ANP, ACP
+
+- **ManageProductPortfolioSalesMarketingAgentConfig**
+  - File: `agents\consolidated\py\manage_product_portfolio_sales_marketing_agent.py`
+  - Type: python
+  - Protocols: ANP, ACP
+
+- **ManageSalesChannelsSalesMarketingAgentConfig**
+  - File: `agents\consolidated\py\manage_sales_channels_sales_marketing_agent.py`
+  - Type: python
+  - Protocols: ANP, ACP
+
+- **MarketOpportunityScoringAgent**
+  - File: `agents\consolidated\py\market_opportunity_scoring_agent.py`
+  - Type: python
+
+- **MarketingAutomationAgent**
+  - File: `agents\consolidated\py\marketing_automation_agent_v1.py`
+  - Type: python
+
+- **Polymarket AI Agents - Roadmap**
+  - File: `agents\consolidated\md\polymarket_agents.md`
+  - Type: markdown
+
+- **Polymarket Prediction Agent**
+  - File: `agents\consolidated\md\polymarket_agent.md`
+  - Type: markdown
+
+- **PolymarketAgent**
+  - File: `agents\consolidated\py\polymarket_agent.py`
+  - Type: python
+
+- **Risk Agent**
+  - File: `agents\consolidated\md\risk_agent.md`
+  - Type: markdown
+
+- **RiskAgent**
+  - File: `agents\consolidated\py\risk_agent.py`
+  - Type: python
+
+- **SegmentCustomersSalesMarketingAgentConfig**
+  - File: `agents\consolidated\py\segment_customers_sales_marketing_agent.py`
+  - Type: python
+  - Protocols: ANP, ACP
+
+- **Strategy Agent**
+  - File: `agents\consolidated\md\strategy_agent.md`
+  - Type: markdown
+
+- **StrategyAgent**
+  - File: `agents\consolidated\py\strategy_agent.py`
+  - Type: python
+
+- **agent_marketplace**
+  - File: `agents\consolidated\py\agent_marketplace.py`
+  - Type: python
+
+- **understand_markets,_customers,_capabilities_sales_marketing_agent**
+  - File: `agents\consolidated\py\understand_markets,_customers,_capabilities_sales_marketing_agent.py`
+  - Type: python
+  - Protocols: ANP, ACP
+
+### Ui (14 agents)
 
 - **BaseAgentInterface**
   - File: `agents\consolidated\py\common_agent_interface_protocol.py`
@@ -1945,10 +1963,6 @@
 - **Frontend Development Agent**
   - File: `agents\consolidated\md\frontend_development_agent.md`
   - Type: markdown
-
-- **GraphqlQueryBuilderTaskAgent**
-  - File: `agents\consolidated\py\graphql_query_builder_task_agent_v1.py`
-  - Type: python
 
 - **Liquidation Agent**
   - File: `agents\consolidated\md\liquidation_agent.md`

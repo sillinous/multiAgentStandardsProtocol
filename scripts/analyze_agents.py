@@ -136,20 +136,27 @@ class AgentAnalyzer:
         name_lower = name.lower()
 
         categories_map = {
-            "data": ["data", "collector", "scraper", "extractor", "parser"],
-            "analysis": ["analyst", "analyzer", "analysis", "insight", "metric"],
-            "coordination": ["coordinator", "orchestrator", "manager", "scheduler"],
-            "communication": ["messenger", "notifier", "reporter", "publisher"],
-            "monitoring": ["monitor", "tracker", "observer", "watcher"],
-            "testing": ["test", "validator", "verifier", "qa"],
-            "security": ["security", "auth", "compliance", "audit"],
-            "blockchain": ["blockchain", "wallet", "nft", "token", "contract"],
-            "api": ["api", "endpoint", "service", "client"],
-            "ui": ["ui", "ux", "frontend", "interface", "design"],
-            "backend": ["backend", "server", "database", "storage"],
-            "devops": ["deploy", "ci", "cd", "build", "docker"],
-            "business": ["business", "revenue", "sales", "marketing", "customer"],
-            "research": ["research", "investigation", "discovery", "exploration"]
+            "infrastructure": ["base_agent", "baseagent", "registry", "factory", "template", "generator", "core", "foundation"],
+            "data": ["data", "collector", "scraper", "extractor", "parser", "ingestion", "etl", "pipeline"],
+            "analysis": ["analyst", "analyzer", "analysis", "insight", "metric", "analytics", "anomaly", "detection", "statistics", "sentiment"],
+            "coordination": ["coordinator", "orchestrator", "manager", "scheduler", "workflow", "task", "job"],
+            "communication": ["messenger", "notifier", "reporter", "publisher", "notification", "alert", "email"],
+            "monitoring": ["monitor", "tracker", "observer", "watcher", "apm", "aiops", "observability", "telemetry", "logging"],
+            "testing": ["test", "validator", "verifier", "qa", "quality", "validation", "verification"],
+            "security": ["security", "auth", "compliance", "audit", "encryption", "permission", "access"],
+            "blockchain": ["blockchain", "wallet", "nft", "token", "contract", "crypto", "defi", "trading", "arbitrage"],
+            "finance": ["financial", "finance", "revenue", "profit", "cost", "budget", "invoice", "payment", "transaction"],
+            "trading": ["trading", "trader", "trade", "market", "price", "portfolio", "risk", "strategy", "autonomous_trading", "autonomous_risk", "autonomous_strategy"],
+            "api": ["api", "endpoint", "service", "client", "rest", "graphql", "http"],
+            "ui": ["ui", "ux", "frontend", "interface", "design", "accessibility", "usability"],
+            "backend": ["backend", "server", "database", "storage", "db"],
+            "devops": ["deploy", "deployment", "ci", "cd", "build", "docker", "kubernetes", "infrastructure", "automation"],
+            "business": ["business", "sales", "marketing", "customer", "crm", "relationship", "lead"],
+            "research": ["research", "investigation", "discovery", "exploration", "competitive", "market_research"],
+            "operations": ["operation", "ops", "process", "execution", "runner", "executor"],
+            "ml_ai": ["ml", "machine_learning", "ai", "model", "training", "prediction", "neural", "deep_learning"],
+            "reporting": ["report", "dashboard", "visualization", "chart", "graph", "presentation"],
+            "integration": ["integration", "connector", "adapter", "bridge", "sync", "webhook"]
         }
 
         for category, keywords in categories_map.items():

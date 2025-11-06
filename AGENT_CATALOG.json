@@ -3,39 +3,63 @@
     "generated": "C:\\GitHub\\GitHubRoot\\sillinous\\multiAgentStandardsProtocol",
     "total_agents": 455,
     "categories": {
-      "testing": [
+      "coordination": [
         "AccessControlValidatorTaskAgent",
-        "QAAgent",
-        "QAAgent",
-        "UserTesterAgent",
-        "TestingAgent",
-        "TestingAgent",
-        "test_agent_factory",
-        "TestEndToEndAgentGeneration",
-        "test_agent_integration",
-        "test_agent_learning_system",
-        "test_agent_library_stats",
-        "TestAgentSDK",
-        "test_design_agent",
-        "test_development_agent",
-        "test_e2e_agent_creation",
-        "test_external_agent",
-        "TestMarketForNewProductsServicesCreativeAgentConfig",
-        "test_meta_agents_integration_v1",
-        "test_qa_agent",
-        "test_testing_agent",
-        "BaseUserAgentResponder",
-        "Cross-Platform Testing Agent",
-        "Integration Testing Agent",
-        "Performance Testing Agent",
-        "QA Swarm Agent - Automated Quality Assurance & Development Cycle"
+        "agent_ecosystem_coordinator",
+        "agent_manager",
+        "ApiRateLimiterTaskAgent",
+        "ApiResponseFormatterTaskAgent",
+        "AuditLogWriterTaskAgent",
+        "AutonomousAgentOrchestrator",
+        "CacheManagerTaskAgent",
+        "ChartCreationTaskAgent",
+        "ClassificationTaskAgent",
+        "ComplianceCheckerTaskAgent",
+        "ConditionEvaluatorTaskAgent",
+        "ContentModeratorTaskAgent",
+        "CurrencyConverterTaskAgent",
+        "DashboardOrchestratorAgent",
+        "DashboardOrchestratorAgentConfig",
+        "DashboardUpdateTaskAgent",
+        "EmailSenderTaskAgent",
+        "EncryptionTaskAgent",
+        "EntityExtractionTaskAgent",
+        "FileExportTaskAgent",
+        "FileScannerTaskAgent",
+        "FtpTransferTaskAgent",
+        "GraphqlQueryBuilderTaskAgent",
+        "ImageOcrTaskAgent",
+        "InventoryTrackerTaskAgent",
+        "KeywordExtractionTaskAgent",
+        "LanguageDetectorTaskAgent",
+        "LoopControllerTaskAgent",
+        "MessageQueuePublisherTaskAgent",
+        "NotificationDispatcherTaskAgent",
+        "OrchestratorAgent",
+        "PdfParsingTaskAgent",
+        "PriceCalculatorTaskAgent",
+        "RefactoringCoordinatorAgent",
+        "RetryHandlerTaskAgent",
+        "ScheduleCalculatorTaskAgent",
+        "SecretManagerTaskAgent",
+        "SlaMonitorTaskAgent",
+        "StateManagerTaskAgent",
+        "TaskAssignmentAgent",
+        "TaskAssignmentAgentConfig",
+        "TextNormalizationTaskAgent",
+        "TextSimilarityTaskAgent",
+        "TextSummarizerTaskAgent",
+        "TextTranslatorTaskAgent",
+        "WebhookTriggerTaskAgent",
+        "WebScrapingTaskAgent",
+        "enterprise-agent-orchestrator"
       ],
       "monitoring": [
         "activity_tracker_agent",
         "ActivityTrackerAgentConfig",
+        "AiopsAgent",
+        "ApmAgent",
         "CodeQualityMonitoringAgent",
-        "InventoryTrackerTaskAgent",
-        "SlaMonitorTaskAgent",
         "System Maintenance & Monitoring Agents - Level 2"
       ],
       "general": [
@@ -43,65 +67,33 @@
         "agentic_ecosystem",
         "agentic_ecosystem_initializer",
         "RealTimeAgentData",
-        "GeneratedAgent",
         "agent_dna_system",
         "agent_evolution_engine",
-        "agent_factory",
-        "agent_factory_v1",
         "agent_identity_did",
         "agent_index",
         "agent_intelligence",
-        "agent_intelligence_dashboard",
         "agent_learning",
-        "LearningAgentWrapper",
         "agent_learning_system",
         "agent_library",
         "agent_library_routes",
-        "agent_marketplace",
         "agent_mentorship_system",
         "agent_mgmt",
-        "agent_models",
-        "agent_registry",
-        "agent_registry_original",
-        "agent_registry_sync",
-        "AgentRegistrySyncAgent",
-        "agent_registry_updater",
         "agent_schemas",
         "agent_sdk_library",
-        "agent_template_generator",
-        "agent_template_system",
-        "AiopsAgent",
-        "AlertManagementAgent",
-        "AnalyticsAgent",
         "analyze_agent_library",
-        "AnomalyDetectionTaskAgent",
-        "ApmAgent",
         "ArchitectureReviewAgent",
-        "AutomationAgent",
         "AutonomousAgent",
         "AutonomousAgent",
-        "AutonomousRiskAgent",
-        "AutonomousStrategyAgent",
-        "AutonomousTradingAgent",
-        "BaseAgent",
-        "BaseAgent",
         "BasicAutonomousAgent",
-        "CalculateTransportationCostsLogisticsAgentConfig",
-        "ChartCreationTaskAgent",
         "ChatAgent",
         "ChatAgentAd",
         "ChatAgent",
         "ClassificationAgent",
-        "ClassificationTaskAgent",
         "ClipsAgent",
-        "code_runner_agent",
         "AIAgent",
-        "ConditionEvaluatorTaskAgent",
         "ConsensusAgent",
         "ConsensusAgentConfig",
         "ContentAgent",
-        "ContentGeneratorAgent",
-        "ContentModeratorTaskAgent",
         "ContextPreservationAgent",
         "ContextPreservationAgentConfig",
         "CoordinationAgent",
@@ -109,28 +101,18 @@
         "create_agent",
         "CompliantAgentGenerator",
         "cross_enterprise_agent_collaboration_network",
-        "CurrencyConverterTaskAgent",
-        "DashboardUpdateTaskAgent",
         "demo_autonomous_agents",
         "DevelopmentAgent",
         "DevelopmentAgent",
-        "DevelopEnterpriseRiskStrategyRiskAgentConfig",
         "develop_manage_enterprise-wide_knowledge_management_capability_development_agent",
         "DevelopManageInnovationStrategicAgentConfig",
-        "DevopsAgent",
         "discover_agents",
         "DispatchManagementLogisticsAgentConfig",
         "DisposeOfProductiveAssetsAssetManagementAgentConfig",
-        "DocumentationMaintenanceAgent",
-        "BaseAgent",
-        "EmailSenderTaskAgent",
-        "EncryptionTaskAgent",
         "EngineeringAgent",
-        "EnhancedBaseAgent",
         "EnhancedDevelopmentAgent",
         "EnhancedDevelopmentAgent",
         "BaseEnrichmentAgentA2A",
-        "EntityExtractionTaskAgent",
         "BaseAgent",
         "ExampleAgent",
         "example_hybrid_agent",
@@ -138,14 +120,9 @@
         "ExecuteProjectsCapabilityDevelopmentAgentConfig",
         "expand_agent_library",
         "FeatureExtractionAgent",
-        "FileExportTaskAgent",
-        "FileScannerTaskAgent",
-        "FinopsAgent",
         "FocusAgent",
         "ForecastingAgent",
-        "ForecastDemandOperationalAgentConfig",
         "ForecastTransportationDemandLogisticsAgentConfig",
-        "FtpTransferTaskAgent",
         "FundingArbAgent",
         "FundingAgent",
         "APQCAgentGenerator",
@@ -153,9 +130,6 @@
         "generate_priority_agents",
         "BaseAgent",
         "GermanTrafficIntelligenceAgent",
-        "GlobalAgentFactory",
-        "GlobalAgentMarketplace",
-        "GlobalAgentMarketplace",
         "GoalRefinementAgent",
         "GovernanceAgent",
         "HandoffCoordinationAgent",
@@ -163,63 +137,34 @@
         "HealthCheckAgent",
         "BaseAgent",
         "HousecoinAgent",
-        "HybridBaseAgent",
-        "ImageOcrTaskAgent",
         "InitiateProjectsCapabilityDevelopmentAgentConfig",
         "InnovationAgent",
         "IntelligenceAgent",
         "InvestmentAgent",
         "JourneyAgent",
         "JourneyDocumentationAgent",
-        "KeywordExtractionTaskAgent",
-        "LanguageDetectorTaskAgent",
         "AIAgent",
-        "LoopControllerTaskAgent",
-        "MaintainProductiveAssetsAssetManagementAgentConfig",
         "ManagementAgent",
         "ManageChangeCapabilityDevelopmentAgentConfig",
         "ManageDriverPerformanceLogisticsAgentConfig",
-        "ManageEnterpriseQualityCapabilityDevelopmentAgentConfig",
-        "ManageGovernmentIndustryRelationshipsRelationshipManagementAgentConfig",
         "ManageItEnterpriseArchitectureTechnologyAgentConfig",
-        "ManageItInfrastructureTechnologyAgentConfig",
-        "ManageLegalEthicalIssuesRelationshipManagementAgentConfig",
-        "ManageLogisticsWarehousingOperationalAgentConfig",
-        "ManagePortfolioOfEnterpriseProgramsProjectsCapabilityDevelopmentAgentConfig",
-        "ManageProductionQualityOperationalAgentConfig",
-        "ManagePublicRelationsRelationshipManagementAgentConfig",
-        "ManageRelationsWithBoardOfDirectorsRelationshipManagementAgentConfig",
         "ManageStrategicInitiativesStrategicAgentConfig",
-        "ManageSupplierRelationshipsOperationalAgentConfig",
-        "ManageTransportationOperationalAgentConfig",
         "ManageVehicleFleetAssetAgentConfig",
-        "ManageWarehouseOperationsOperationalAgentConfig",
-        "MarketOpportunityScoringAgent",
         "MatchingOptimizationAgent",
         "MatchingOptimizationAgentConfig",
         "MatchRidersToDriversLogisticsAgentConfig",
         "MessageRoutingAgent",
         "BookAgent",
         "NewOrTopAgent",
-        "NotificationDispatcherTaskAgent",
-        "oaiagents",
         "OptimizeAssetUtilizationAssetManagementAgentConfig",
-        "OptimizeInventoryOperationalAgentConfig",
         "package_agents",
-        "PdfParsingTaskAgent",
-        "PerformPreventiveMaintenanceAssetManagementAgentConfig",
         "PerformStrategicPlanningStrategicAgentConfig",
         "PersonalizationAgent",
         "phase9_agent_management",
         "phone_agent",
         "PlanningAgent",
-        "PlanForAlignSupplyChainResourcesOperationalAgentConfig",
-        "PlanSupplyChainResourcesOperationalAgentConfig",
-        "PolymarketAgent",
         "PredictiveAgentSpawner",
         "PrepareForProductionCreativeAgentConfig",
-        "PriceCalculatorTaskAgent",
-        "ProduceManufactureDeliverProductOperationalAgentConfig",
         "BaseAgent",
         "rbi_agent",
         "rbi_agent_pp",
@@ -228,89 +173,81 @@
         "rbi_agent_v2_simple",
         "rbi_agent_v3",
         "RealtimeClipsAgent",
-        "ReportingAgent",
-        "ReportGeneratorTaskAgent",
-        "RetryHandlerTaskAgent",
         "BaseAgent",
-        "RiskAgent",
         "RouteOptimizationLogisticsAgentConfig",
         "scan_agents",
         "scan_all_agents",
-        "ScheduleCalculatorTaskAgent",
-        "ScheduleProductionOperationalAgentConfig",
-        "SentimentAgent",
         "VideoAgent",
         "sniper_agent",
         "solana_agent",
         "BaseAgent",
         "StorytellingAgent",
-        "StrategyAgent",
         "StreamAgent",
         "SwarmAgent",
-        "TaskAssignmentAgent",
-        "TaskAssignmentAgentConfig",
         "TaxAgent",
         "TechnicalDebtTrackingAgent",
-        "TextNormalizationTaskAgent",
-        "TextSimilarityTaskAgent",
         "TextSummarizationAgent",
-        "TextSummarizerTaskAgent",
-        "TextTranslatorTaskAgent",
         "tiktok_agent",
         "TrackFleetLocationLogisticsAgentConfig",
-        "TradingAgent",
-        "TrafficPredictionAgent",
-        "TrafficPredictionAgentConfig",
-        "TrendDetectionTaskAgent",
         "TweetAgent",
         "tx_agent",
-        "WebhookTriggerTaskAgent",
         "WhaleAgent",
         "__editable___agent_ecosystem_sdk_0_1_0_finder",
         "__editable___agent_ecosystem_sdk_1_0_0_finder",
-        "Accessibility & Usability Agent",
         "agent-spawn",
         "Memories",
         "Your role",
         "agent.tools",
         "Enterprise Reusable Agent Library Architecture",
         "auto agent",
-        "Smart Agent Coordinator",
         "Chat Agent",
         "Comprehensive User Journey Testing Agent",
         "Conversion Optimization Agent",
         "Coordination & Orchestration Meta-Agents - Level 3",
         "CopyBot Agent",
-        "Core Utility Agents - Level 1",
         "Entrepreneurial Persona Agent",
-        "Functional Validation Testing Agent",
         "Funding Agent",
         "Million Agent",
-        "Polymarket Prediction Agent",
-        "Polymarket AI Agents - Roadmap",
         "RBI Agent (Research-Based Inference)",
         "Real-Time Clips Agent",
-        "Risk Agent",
-        "Sentiment Agent",
         "Sniper Agent",
         "Solana Agent",
-        "Strategy Agent",
         "Swarm Agent",
-        "\ud83c\udf19 Moon Dev's Trading Agents Guide",
-        "Trading Agent",
         "Tweet Agent",
         "TX Agent",
         "Video Agent",
         "Whale Agent"
       ],
+      "infrastructure": [
+        "GeneratedAgent",
+        "ReusableAgentLibrary",
+        "agent_factory",
+        "agent_factory_v1",
+        "agent_registry",
+        "agent_registry_original",
+        "agent_registry_sync",
+        "AgentRegistrySyncAgent",
+        "agent_registry_updater",
+        "agent_template_generator",
+        "agent_template_system",
+        "BaseAgent",
+        "BaseAgent",
+        "ContentGeneratorAgent",
+        "BaseAgent",
+        "EnhancedBaseAgent",
+        "GlobalAgentFactory",
+        "HybridBaseAgent",
+        "ReportGeneratorTaskAgent",
+        "test_agent_factory",
+        "TestEndToEndAgentGeneration",
+        "Core Utility Agents - Level 1"
+      ],
       "security": [
         "agent_compliance_checker",
         "AssessRisksRiskComplianceAgentConfig",
         "audit_agents",
-        "AuditLogWriterTaskAgent",
         "ComplianceAgent",
         "ComplianceAgent",
-        "ComplianceCheckerTaskAgent",
         "ManageBusinessPoliciesProceduresRiskComplianceAgentConfig",
         "ManageBusinessResiliencyRiskComplianceAgentConfig",
         "ManageEnterpriseRiskRiskComplianceAgentConfig",
@@ -319,71 +256,39 @@
         "ManageRegulatoryComplianceTransportationAgentConfig",
         "ManageRegulatoryLegalComplianceRiskComplianceAgentConfig",
         "SecurityAgent",
+        "Accessibility & Usability Agent",
         "Compliance Agent",
         "Security & Authentication Agent"
       ],
       "devops": [
         "agent_consciousness",
         "APQCAgentSpecialization",
+        "AutomationAgent",
         "DeployITSolutionsTechnologyAgentConfig",
-        "ManageCashFlowFinancialAgentConfig",
-        "ManageFixedAssetProjectAccountingFinancialAgentConfig",
-        "ManagePricingSalesMarketingAgentConfig",
-        "ManageTreasuryOperationsFinancialAgentConfig",
-        "OptimizePricingStrategyRevenueAgentConfig",
-        "PerformBudgetingFinancialAgentConfig",
-        "PerformCostAccountingFinancialAgentConfig",
-        "PerformGeneralAccountingReportingFinancialAgentConfig",
-        "PerformPlanningManagementAccountingFinancialAgentConfig",
-        "PerformRevenueAccountingFinancialAgentConfig",
+        "ManageItInfrastructureTechnologyAgentConfig",
         "PricingAgent",
-        "ProcessAccountsPayableFinancialAgentConfig",
-        "ProcessAccountsReceivableFinancialAgentConfig",
-        "ProcessPayrollFinancialAgentConfig",
-        "SocialAgent"
+        "SocialAgent",
+        "Smart Agent Coordinator"
       ],
-      "research": [
-        "ReusableAgentLibrary",
-        "BaseAgent",
-        "BaseMarketResearchAgent",
-        "research_agent",
-        "ResearchAgent",
-        "ResearchIntelligenceAgent",
-        "RouteDiscoveryAgentConfig",
-        "RouteDiscoveryAgent",
-        "RouteDiscoveryAgentConfig",
-        "Research Agent"
+      "reporting": [
+        "agent_intelligence_dashboard",
+        "ReportingAgent"
       ],
-      "coordination": [
-        "agent_ecosystem_coordinator",
-        "agent_manager",
-        "AutonomousAgentOrchestrator",
-        "CacheManagerTaskAgent",
-        "DashboardOrchestratorAgent",
-        "DashboardOrchestratorAgentConfig",
-        "OrchestratorAgent",
-        "RefactoringCoordinatorAgent",
-        "SecretManagerTaskAgent",
-        "StateManagerTaskAgent",
-        "enterprise-agent-orchestrator"
+      "integration": [
+        "LearningAgentWrapper"
       ],
       "api": [
         "agent_library_client",
         "IAgentDiscoveryService",
         "agent_management_api",
-        "AnalyzeServiceCoverageStrategyAgentConfig",
         "ApiAgent",
-        "ApiRateLimiterTaskAgent",
-        "ApiResponseFormatterTaskAgent",
         "DeliverServiceToCustomerOperationalAgentConfig",
         "DeliverServiceToCustomerServiceDeliveryAgentConfig",
         "DesignServiceDeliveryProcessServiceAgentConfig",
         "DevelopCounselEmployeesHumanCapitalAgentConfig",
-        "DevelopCustomerCareCustomerServiceStrategyCustomerServiceAgentConfig",
         "DevelopEmployeeCompetenciesHumanCapitalAgentConfig",
         "develop_manage_hr_planning,_policies,_strategies_human_capital_agent",
         "DevelopManageServiceDeliveryServiceDeliveryAgentConfig",
-        "GenerateDefineNewProductServiceIdeasCreativeAgentConfig",
         "GovernManageProductServiceDevelopmentCreativeAgentConfig",
         "HandleServiceExceptionsCustomerServiceAgentConfig",
         "ManageCompensationHumanCapitalAgentConfig",
@@ -405,45 +310,84 @@
         "ResolveCustomerIssuesCustomerServiceAgentConfig",
         "RewardRetainEmployeesHumanCapitalAgentConfig",
         "SourceCandidatesHumanCapitalAgentConfig",
-        "WebScrapingTaskAgent",
         "API Integration Management Agents - Level 2",
         "Backend API Agent"
       ],
-      "analysis": [
-        "agent_metrics_service",
-        "ChartAnalysisAgent",
-        "PerformProfitabilityAnalysisFinancialAgentConfig",
-        "ProductAnalysisAgent",
-        "SentimentAnalysisAgent",
-        "SentimentAnalysisTaskAgent",
-        "StatisticalAnalysisTaskAgent",
-        "agent-metrics",
-        "Chart Analysis Agent"
-      ],
-      "business": [
-        "AnalyzeCustomerJourneyCustomerExperienceAgentConfig",
+      "trading": [
+        "agent_marketplace",
         "AnalyzeMarketTrendsSalesMarketingAgentConfig",
+        "AnalyzeServiceCoverageStrategyAgentConfig",
+        "AutonomousRiskAgent",
+        "AutonomousStrategyAgent",
         "ConductCustomerResearchSalesMarketingAgentConfig",
-        "define_business_concept_long-term_vision_strategic_agent",
         "DevelopBusinessStrategyStrategicAgentConfig",
-        "DevelopManageItCustomerRelationshipsTechnologyAgentConfig",
+        "DevelopCustomerCareCustomerServiceStrategyCustomerServiceAgentConfig",
+        "DevelopEnterpriseRiskStrategyRiskAgentConfig",
         "DevelopManageMarketingPlansSalesMarketingAgentConfig",
         "DevelopManageSalesPlansSalesMarketingAgentConfig",
         "DevelopMarketingStrategySalesMarketingAgentConfig",
         "DevelopSalesStrategySalesMarketingAgentConfig",
-        "ManageBusinessOfItTechnologyAgentConfig",
-        "ManageBusinessProcessesCapabilityDevelopmentAgentConfig",
+        "GlobalAgentMarketplace",
+        "GlobalAgentMarketplace",
         "ManageCampaignEffectivenessSalesMarketingAgentConfig",
+        "ManagePortfolioOfEnterpriseProgramsProjectsCapabilityDevelopmentAgentConfig",
+        "ManagePricingSalesMarketingAgentConfig",
         "ManageProductLifecycleSalesMarketingAgentConfig",
         "ManageProductPortfolioSalesMarketingAgentConfig",
         "ManageSalesChannelsSalesMarketingAgentConfig",
         "MarketingAutomationAgent",
-        "RevenueOptimizerAgent",
-        "SalesAgent",
+        "MarketOpportunityScoringAgent",
+        "BaseMarketResearchAgent",
+        "PolymarketAgent",
+        "RiskAgent",
         "SegmentCustomersSalesMarketingAgentConfig",
+        "StrategyAgent",
         "understand_markets,_customers,_capabilities_sales_marketing_agent",
-        "Business Intelligence Generation Agent Teams - Level 2",
-        "Business Intelligence Validation Agent"
+        "Polymarket Prediction Agent",
+        "Polymarket AI Agents - Roadmap",
+        "Risk Agent",
+        "Strategy Agent"
+      ],
+      "analysis": [
+        "agent_metrics_service",
+        "AnalyticsAgent",
+        "AnomalyDetectionTaskAgent",
+        "ChartAnalysisAgent",
+        "PerformProfitabilityAnalysisFinancialAgentConfig",
+        "ProductAnalysisAgent",
+        "SentimentAgent",
+        "SentimentAnalysisAgent",
+        "SentimentAnalysisTaskAgent",
+        "StatisticalAnalysisTaskAgent",
+        "TrendDetectionTaskAgent",
+        "agent-metrics",
+        "Chart Analysis Agent",
+        "Sentiment Agent"
+      ],
+      "ml_ai": [
+        "agent_models",
+        "DocumentationMaintenanceAgent",
+        "MaintainProductiveAssetsAssetManagementAgentConfig",
+        "oaiagents",
+        "PerformPreventiveMaintenanceAssetManagementAgentConfig",
+        "TrafficPredictionAgent",
+        "TrafficPredictionAgentConfig"
+      ],
+      "communication": [
+        "AlertManagementAgent"
+      ],
+      "business": [
+        "AnalyzeCustomerJourneyCustomerExperienceAgentConfig",
+        "DevelopManageItCustomerRelationshipsTechnologyAgentConfig",
+        "ManageBusinessOfItTechnologyAgentConfig",
+        "ManageBusinessProcessesCapabilityDevelopmentAgentConfig",
+        "ManageGovernmentIndustryRelationshipsRelationshipManagementAgentConfig",
+        "ManageLegalEthicalIssuesRelationshipManagementAgentConfig",
+        "ManagePublicRelationsRelationshipManagementAgentConfig",
+        "ManageRelationsWithBoardOfDirectorsRelationshipManagementAgentConfig",
+        "ManageSupplierRelationshipsOperationalAgentConfig",
+        "SalesAgent",
+        "Business Intelligence Generation Agent Teams - Level 2"
       ],
       "data": [
         "ApiDataFetcherTaskAgent",
@@ -462,8 +406,14 @@
         "Data Retrieval Testing Agent"
       ],
       "blockchain": [
+        "AutonomousTradingAgent",
         "BlockchainAgenticProtocol",
-        "ManageSupplierContractsOperationalAgentConfig"
+        "define_business_concept_long-term_vision_strategic_agent",
+        "GenerateDefineNewProductServiceIdeasCreativeAgentConfig",
+        "ManageSupplierContractsOperationalAgentConfig",
+        "TradingAgent",
+        "\ud83c\udf19 Moon Dev's Trading Agents Guide",
+        "Trading Agent"
       ],
       "ui": [
         "BuildInvestorRelationshipsRelationshipManagementAgentConfig",
@@ -474,7 +424,6 @@
         "DesignConstructAcquireProductiveAssetsAssetManagementAgentConfig",
         "DesignItSolutionsTechnologyAgentConfig",
         "DesignPrototypeProductsCreativeAgentConfig",
-        "GraphqlQueryBuilderTaskAgent",
         "LiquidationAgent",
         "UXEvaluationAgent",
         "UXEvaluationAgentConfig",
@@ -482,8 +431,73 @@
         "Liquidation Agent",
         "UI/UX Design Agent"
       ],
-      "communication": [
-        "MessageQueuePublisherTaskAgent"
+      "finance": [
+        "CalculateTransportationCostsLogisticsAgentConfig",
+        "ManageCashFlowFinancialAgentConfig",
+        "ManageFixedAssetProjectAccountingFinancialAgentConfig",
+        "ManageTreasuryOperationsFinancialAgentConfig",
+        "OptimizePricingStrategyRevenueAgentConfig",
+        "PerformBudgetingFinancialAgentConfig",
+        "PerformCostAccountingFinancialAgentConfig",
+        "PerformGeneralAccountingReportingFinancialAgentConfig",
+        "PerformPlanningManagementAccountingFinancialAgentConfig",
+        "PerformRevenueAccountingFinancialAgentConfig",
+        "ProcessAccountsPayableFinancialAgentConfig",
+        "ProcessAccountsReceivableFinancialAgentConfig",
+        "ProcessPayrollFinancialAgentConfig",
+        "RevenueOptimizerAgent"
+      ],
+      "operations": [
+        "code_runner_agent",
+        "DevopsAgent",
+        "FinopsAgent",
+        "ForecastDemandOperationalAgentConfig",
+        "ManageLogisticsWarehousingOperationalAgentConfig",
+        "ManageTransportationOperationalAgentConfig",
+        "ManageWarehouseOperationsOperationalAgentConfig",
+        "OptimizeInventoryOperationalAgentConfig",
+        "PlanForAlignSupplyChainResourcesOperationalAgentConfig",
+        "PlanSupplyChainResourcesOperationalAgentConfig",
+        "ProduceManufactureDeliverProductOperationalAgentConfig",
+        "ScheduleProductionOperationalAgentConfig"
+      ],
+      "research": [
+        "BaseAgent",
+        "research_agent",
+        "ResearchAgent",
+        "ResearchIntelligenceAgent",
+        "RouteDiscoveryAgentConfig",
+        "RouteDiscoveryAgent",
+        "RouteDiscoveryAgentConfig",
+        "Research Agent"
+      ],
+      "testing": [
+        "ManageEnterpriseQualityCapabilityDevelopmentAgentConfig",
+        "ManageProductionQualityOperationalAgentConfig",
+        "QAAgent",
+        "QAAgent",
+        "UserTesterAgent",
+        "TestingAgent",
+        "TestingAgent",
+        "test_agent_integration",
+        "test_agent_learning_system",
+        "test_agent_library_stats",
+        "TestAgentSDK",
+        "test_design_agent",
+        "test_development_agent",
+        "test_e2e_agent_creation",
+        "test_external_agent",
+        "TestMarketForNewProductsServicesCreativeAgentConfig",
+        "test_meta_agents_integration_v1",
+        "test_qa_agent",
+        "test_testing_agent",
+        "BaseUserAgentResponder",
+        "Business Intelligence Validation Agent",
+        "Cross-Platform Testing Agent",
+        "Functional Validation Testing Agent",
+        "Integration Testing Agent",
+        "Performance Testing Agent",
+        "QA Swarm Agent - Automated Quality Assurance & Development Cycle"
       ],
       "unknown": [
         "agentic-asset-landscape"
@@ -495,8 +509,8 @@
       "markdown_specs": 55,
       "rust_agents": 0,
       "protocols_found": [
-        "ACP",
-        "ANP"
+        "ANP",
+        "ACP"
       ],
       "base_classes": {
         "BaseAgent": 238,
@@ -618,7 +632,7 @@
       "name": "AccessControlValidatorTaskAgent",
       "file": "agents\\consolidated\\py\\access_control_validator_task_agent_v1.py",
       "type": "python",
-      "category": "testing",
+      "category": "coordination",
       "description": "Access Control Validator Task Agent\n\nLevel 5 Task Agent\nCategory: security_compliance\n\nValidate permissions and access rights\n\nCapabilities:\n- rbac\n- abac\n- policy_evaluation\n- permission_inheritance\n",
       "base_classes": [
         "BaseAgent"
@@ -637,7 +651,7 @@
       "name": "Accessibility & Usability Agent",
       "file": "agents\\consolidated\\md\\accessibility_usability_agent.md",
       "type": "markdown",
-      "category": "general",
+      "category": "security",
       "description": "## Agent Overview\n**Role**: Accessibility & Usability Compliance Specialist\n**APQC Domain**: 12.0 Manage Risk, Compliance, Security, and Quality (12.2 Manage Compliance)\n**Team**: User Flow Analysis T",
       "line_count": 293
     },
@@ -672,7 +686,7 @@
       "name": "AgentRegistrySyncAgent",
       "file": "agents\\consolidated\\py\\agent_registry_sync_agent.py",
       "type": "python",
-      "category": "general",
+      "category": "infrastructure",
       "description": "Agent Registry Sync Agent\n\nAutomatically discovers and registers agents in the agent library.\nMaintains synchronization between the file system and the agent registry.",
       "base_classes": [],
       "capabilities": [
@@ -691,7 +705,7 @@
       "name": "AiopsAgent",
       "file": "agents\\consolidated\\py\\aiops_agent_v1.py",
       "type": "python",
-      "category": "general",
+      "category": "monitoring",
       "description": "Information Technology - AIOps\n\nAgent ID: apqc_13_0_aiops\nVersion: 1.0.0\nFramework: APQC 7.0.1\nGenerated: 2025-10-16T09:44:03.878271\n\nAuto-generated Agent (Protocol-Compliant)",
       "base_classes": [
         "BaseAgent"
@@ -708,7 +722,7 @@
       "name": "AlertManagementAgent",
       "file": "agents\\consolidated\\py\\alert_management_agent.py",
       "type": "python",
-      "category": "general",
+      "category": "communication",
       "description": "\ud83c\udf19 Alert Management Agent\n\nAutonomous agent that manages alerts across the system.\nHandles alert acknowledgment, resolution, and notification dispatch.\n\nCan run independently or as part of the orchestr",
       "base_classes": [
         "BaseAgent"
@@ -729,7 +743,7 @@
       "name": "AnalyticsAgent",
       "file": "agents\\consolidated\\py\\analytics_agent_v1.py",
       "type": "python",
-      "category": "general",
+      "category": "analysis",
       "description": "Financial Resources - Budget Intelligence\n\nAgent ID: apqc_8_0_budget_intelligence\nVersion: 1.0.0\nFramework: APQC 7.0.1\nGenerated: 2025-10-16T09:44:03.876214\n\nAuto-generated Agent (Protocol-Compliant)",
       "base_classes": [
         "BaseAgent"
@@ -765,7 +779,7 @@
       "name": "AnalyzeMarketTrendsSalesMarketingAgentConfig",
       "file": "agents\\consolidated\\py\\analyze_market_trends_sales_marketing_agent.py",
       "type": "python",
-      "category": "business",
+      "category": "trading",
       "description": "AnalyzeMarketTrendsSalesMarketingAgent - APQC 3.0 Agent\n\n3.1.2 Analyze Market Trends\n\nThis agent implements APQC process 3.1.2 from category 3.0: Market and Sell Products and Services.\n\nDomain: sales_",
       "base_classes": [
         "BaseAgent",
@@ -791,7 +805,7 @@
       "name": "AnalyzeServiceCoverageStrategyAgentConfig",
       "file": "agents\\consolidated\\py\\analyze_service_coverage_strategy_agent.py",
       "type": "python",
-      "category": "api",
+      "category": "trading",
       "description": "AnalyzeServiceCoverageStrategyAgent - APQC 1.3.2\nAnalyze Service Coverage and Market Penetration Strategy\nAPQC ID: apqc_1_3_a1s2c3v4\n\nThis agent analyzes service coverage, market penetration, expansio",
       "base_classes": [
         "BaseAgent",
@@ -810,7 +824,7 @@
       "name": "AnomalyDetectionTaskAgent",
       "file": "agents\\consolidated\\py\\anomaly_detection_task_agent_v1.py",
       "type": "python",
-      "category": "general",
+      "category": "analysis",
       "description": "Anomaly Detection Task Agent\n\nLevel 5 Task Agent\nCategory: analysis\n\nDetect outliers and anomalies in data\n\nCapabilities:\n- statistical_methods\n- ml_methods\n- severity_scoring\n\nInputs:\n- dataset: list",
       "base_classes": [
         "BaseAgent"
@@ -865,7 +879,7 @@
       "name": "ApiRateLimiterTaskAgent",
       "file": "agents\\consolidated\\py\\api_rate_limiter_task_agent_v1.py",
       "type": "python",
-      "category": "api",
+      "category": "coordination",
       "description": "API Rate Limiter Task Agent\n\nLevel 5 Task Agent\nCategory: communication_integration\n\nEnforce rate limits for API calls\n\nCapabilities:\n- token_bucket\n- leaky_bucket\n- sliding_window\n- distributed_limit",
       "base_classes": [
         "BaseAgent"
@@ -884,7 +898,7 @@
       "name": "ApiResponseFormatterTaskAgent",
       "file": "agents\\consolidated\\py\\api_response_formatter_task_agent_v1.py",
       "type": "python",
-      "category": "api",
+      "category": "coordination",
       "description": "API Response Formatter Task Agent\n\nLevel 5 Task Agent\nCategory: output_generation\n\nFormat data for API responses\n\nCapabilities:\n- rest_formatting\n- graphql_formatting\n- schema_validation\n\nInputs:\n- da",
       "base_classes": [
         "BaseAgent"
@@ -903,7 +917,7 @@
       "name": "ApmAgent",
       "file": "agents\\consolidated\\py\\apm_agent_v1.py",
       "type": "python",
-      "category": "general",
+      "category": "monitoring",
       "description": "Information Technology - Application Performance\n\nAgent ID: apqc_13_0_application_performance\nVersion: 1.0.0\nFramework: APQC 7.0.1\nGenerated: 2025-10-16T09:44:03.879987\n\nAuto-generated Agent (Protocol",
       "base_classes": [
         "BaseAgent"
@@ -955,7 +969,7 @@
       "name": "AuditLogWriterTaskAgent",
       "file": "agents\\consolidated\\py\\audit_log_writer_task_agent_v1.py",
       "type": "python",
-      "category": "security",
+      "category": "coordination",
       "description": "Audit Log Writer Task Agent\n\nLevel 5 Task Agent\nCategory: security_compliance\n\nWrite structured audit logs for compliance\n\nCapabilities:\n- structured_logging\n- tamper_proof\n- log_encryption\n- retentio",
       "base_classes": [
         "BaseAgent"
@@ -974,7 +988,7 @@
       "name": "AutomationAgent",
       "file": "agents\\consolidated\\py\\automation_agent_v1.py",
       "type": "python",
-      "category": "general",
+      "category": "devops",
       "description": "Market and Sell - Campaign Automation\n\nAgent ID: apqc_3_0_campaign_automation\nVersion: 1.0.0\nFramework: APQC 7.0.1\nGenerated: 2025-10-16T09:44:03.871695\n\nAuto-generated Agent (Protocol-Compliant)",
       "base_classes": [
         "BaseAgent"
@@ -1055,7 +1069,7 @@
       "name": "AutonomousRiskAgent",
       "file": "agents\\consolidated\\py\\autonomous_risk_agent.py",
       "type": "python",
-      "category": "general",
+      "category": "trading",
       "description": "\ud83c\udf19 Moon Dev's Autonomous Risk Management Agent\nBuilt with love by Moon Dev \ud83d\ude80\n\nAUTONOMOUS FEATURES:\n- Real-time risk monitoring (< 1 second response)\n- Collaborative consensus-based limit overrides\n- Pr",
       "base_classes": [
         "AutonomousAgent"
@@ -1072,7 +1086,7 @@
       "name": "AutonomousStrategyAgent",
       "file": "agents\\consolidated\\py\\autonomous_strategy_agent.py",
       "type": "python",
-      "category": "general",
+      "category": "trading",
       "description": "\ud83c\udf19 Moon Dev's Autonomous Strategy Agent\nBuilt with love by Moon Dev \ud83d\ude80\n\nAUTONOMOUS FEATURES:\n- Real-time market analysis and signal generation\n- Collaborative strategy development with other agents\n- AI",
       "base_classes": [
         "AutonomousAgent"
@@ -1089,7 +1103,7 @@
       "name": "AutonomousTradingAgent",
       "file": "agents\\consolidated\\py\\autonomous_trading_agent.py",
       "type": "python",
-      "category": "general",
+      "category": "blockchain",
       "description": "\ud83c\udf19 Moon Dev's Autonomous Trading Agent\nBuilt with love by Moon Dev \ud83d\ude80\n\nAUTONOMOUS FEATURES:\n- Real-time collaborative trading with Risk Agent\n- Multi-agent consensus for critical decisions\n- Protocol-co",
       "base_classes": [
         "AutonomousAgent"
@@ -1114,7 +1128,7 @@
       "name": "BaseAgent",
       "file": "agents\\consolidated\\py\\base_agent.py",
       "type": "python",
-      "category": "general",
+      "category": "infrastructure",
       "description": "\ud83c\udf19 Moon Dev's Base Agent\nParent class for all trading agents with unified exchange support",
       "base_classes": [],
       "capabilities": [
@@ -1128,7 +1142,7 @@
       "name": "BaseAgent",
       "file": "agents\\consolidated\\py\\base_agent_v1.py",
       "type": "python",
-      "category": "general",
+      "category": "infrastructure",
       "description": "Protocol-Compliant Base Agent Class for Autonomous Improvement Loop\n\nThis is THE SINGLE SOURCE OF TRUTH for all agents in the ecosystem.\nAll agents MUST inherit from this class to ensure protocol comp",
       "base_classes": [
         "Enum"
@@ -1175,7 +1189,7 @@
       "name": "BaseAgent",
       "file": "agents\\consolidated\\py\\dynamic_agent_factory.py",
       "type": "python",
-      "category": "general",
+      "category": "infrastructure",
       "description": "Dynamic Agent Factory - Production System\n\nDemonstrates ability to:\n1. Dynamically instantiate agents on-demand\n2. Register new agents in library\n3. Hot-swap agents during demo\n4. Show agent ecosystem",
       "base_classes": [
         "str",
@@ -1398,7 +1412,7 @@
       "name": "BaseMarketResearchAgent",
       "file": "agents\\consolidated\\py\\market_research_agents.py",
       "type": "python",
-      "category": "research",
+      "category": "trading",
       "description": "Specialized capabilities for market research agents",
       "base_classes": [
         "Enum"
@@ -1532,7 +1546,7 @@
       "name": "Business Intelligence Validation Agent",
       "file": "agents\\consolidated\\md\\business_intelligence_validation_agent.md",
       "type": "markdown",
-      "category": "business",
+      "category": "testing",
       "description": "## Agent Overview\n**Role**: Business Intelligence Accuracy & Relevance Specialist\n**APQC Domain**: 1.0 Develop Vision and Strategy (1.4 Develop Business Strategy)\n**Team**: Real Data Testing Team\n**Re",
       "line_count": 297
     },
@@ -1559,7 +1573,7 @@
       "name": "CalculateTransportationCostsLogisticsAgentConfig",
       "file": "agents\\consolidated\\py\\calculate_transportation_costs_logistics_agent.py",
       "type": "python",
-      "category": "general",
+      "category": "finance",
       "description": "CalculateTransportationCostsLogisticsAgent - APQC 4.5.4\nCalculate and Analyze Transportation Costs for Ride-Sharing Operations\nAPQC ID: apqc_4_5_c1o2s3t4\n\nThis agent calculates comprehensive transport",
       "base_classes": [
         "BaseAgent",
@@ -1603,7 +1617,7 @@
       "name": "ChartCreationTaskAgent",
       "file": "agents\\consolidated\\py\\chart_creation_task_agent_v1.py",
       "type": "python",
-      "category": "general",
+      "category": "coordination",
       "description": "Chart Creation Task Agent\n\nLevel 5 Task Agent\nCategory: output_generation\n\nGenerate data visualizations\n\nCapabilities:\n- multiple_chart_types\n- interactive_charts\n- custom_styling\n\nInputs:\n- data: dic",
       "base_classes": [
         "BaseAgent"
@@ -1712,7 +1726,7 @@
       "name": "ClassificationTaskAgent",
       "file": "agents\\consolidated\\py\\classification_task_agent_v1.py",
       "type": "python",
-      "category": "general",
+      "category": "coordination",
       "description": "Classification Task Agent\n\nLevel 5 Task Agent\nCategory: analysis\n\nClassify items using ML models\n\nCapabilities:\n- binary_classification\n- multi_class\n- confidence_calibration\n\nInputs:\n- items: list\n- ",
       "base_classes": [
         "BaseAgent"
@@ -1812,7 +1826,7 @@
       "name": "ComplianceCheckerTaskAgent",
       "file": "agents\\consolidated\\py\\compliance_checker_task_agent_v1.py",
       "type": "python",
-      "category": "security",
+      "category": "coordination",
       "description": "Compliance Checker Task Agent\n\nLevel 5 Task Agent\nCategory: security_compliance\n\nCheck compliance against regulatory rules\n\nCapabilities:\n- gdpr\n- hipaa\n- sox\n- pci_dss\n- rule_engine\n- remediation_sug",
       "base_classes": [
         "BaseAgent"
@@ -1880,7 +1894,7 @@
       "name": "ConditionEvaluatorTaskAgent",
       "file": "agents\\consolidated\\py\\condition_evaluator_task_agent_v1.py",
       "type": "python",
-      "category": "general",
+      "category": "coordination",
       "description": "Condition Evaluator Task Agent\n\nLevel 5 Task Agent\nCategory: workflow_automation\n\nEvaluate complex conditional logic\n\nCapabilities:\n- boolean_logic\n- comparison_operators\n- regex\n- nested_conditions\n-",
       "base_classes": [
         "BaseAgent"
@@ -1899,7 +1913,7 @@
       "name": "ConductCustomerResearchSalesMarketingAgentConfig",
       "file": "agents\\consolidated\\py\\conduct_customer_research_sales_marketing_agent.py",
       "type": "python",
-      "category": "business",
+      "category": "trading",
       "description": "ConductCustomerResearchSalesMarketingAgent - APQC 3.0 Agent\n\n3.1.1 Conduct Customer Research\n\nThis agent implements APQC process 3.1.1 from category 3.0: Market and Sell Products and Services.\n\nDomain",
       "base_classes": [
         "BaseAgent",
@@ -1988,7 +2002,7 @@
       "name": "ContentGeneratorAgent",
       "file": "agents\\consolidated\\py\\content_generator_agent_v1.py",
       "type": "python",
-      "category": "general",
+      "category": "infrastructure",
       "description": "Content Generator Agent - Autonomous Content Creation for Revenue\n\nHandles all writing tasks: blog posts, articles, documentation, marketing copy, etc.\nYou don't need to be good at writing - this agen",
       "base_classes": [],
       "capabilities": [
@@ -2005,7 +2019,7 @@
       "name": "ContentModeratorTaskAgent",
       "file": "agents\\consolidated\\py\\content_moderator_task_agent_v1.py",
       "type": "python",
-      "category": "general",
+      "category": "coordination",
       "description": "Content Moderator Task Agent\n\nLevel 5 Task Agent\nCategory: content_processing\n\nModerate content for inappropriate material\n\nCapabilities:\n- text_moderation\n- image_moderation\n- custom_rules\n- multiple",
       "base_classes": [
         "BaseAgent"
@@ -2128,7 +2142,7 @@
       "name": "Core Utility Agents - Level 1",
       "file": "agents\\consolidated\\md\\core_utility_agents.md",
       "type": "markdown",
-      "category": "general",
+      "category": "infrastructure",
       "description": "## Data Processing & Validation Agents",
       "line_count": 151
     },
@@ -2144,7 +2158,7 @@
       "name": "CurrencyConverterTaskAgent",
       "file": "agents\\consolidated\\py\\currency_converter_task_agent_v1.py",
       "type": "python",
-      "category": "general",
+      "category": "coordination",
       "description": "Currency Converter Task Agent\n\nLevel 5 Task Agent\nCategory: business_logic\n\nConvert amounts between currencies\n\nCapabilities:\n- real_time_rates\n- historical_rates\n- multiple_sources\n- batch_conversion",
       "base_classes": [
         "BaseAgent"
@@ -2214,7 +2228,7 @@
       "name": "DashboardUpdateTaskAgent",
       "file": "agents\\consolidated\\py\\dashboard_update_task_agent_v1.py",
       "type": "python",
-      "category": "general",
+      "category": "coordination",
       "description": "Dashboard Update Task Agent\n\nLevel 5 Task Agent\nCategory: output_generation\n\nUpdate dashboard metrics and visualizations\n\nCapabilities:\n- metric_push\n- real_time_streaming\n- alert_triggering\n\nInputs:\n",
       "base_classes": [
         "BaseAgent"
@@ -2597,7 +2611,7 @@
       "name": "DevelopBusinessStrategyStrategicAgentConfig",
       "file": "agents\\consolidated\\py\\develop_business_strategy_strategic_agent.py",
       "type": "python",
-      "category": "business",
+      "category": "trading",
       "description": "DevelopBusinessStrategyStrategicAgent - APQC 1.0 Agent\n\n1.2 Develop business strategy\n\nThis agent implements APQC process 1.0.2 from category 1.0: Develop Vision and Strategy.\n\nDomain: strategy\nType: ",
       "base_classes": [
         "BaseAgent",
@@ -2649,7 +2663,7 @@
       "name": "DevelopCustomerCareCustomerServiceStrategyCustomerServiceAgentConfig",
       "file": "agents\\consolidated\\py\\develop_customer_care_customer_service_strategy_customer_service_agent.py",
       "type": "python",
-      "category": "api",
+      "category": "trading",
       "description": "DevelopCustomerCareCustomerServiceStrategyCustomerServiceAgent - APQC 6.0 Agent\n\n6.1 Develop customer care/customer service strategy\n\nThis agent implements APQC process 6.0.1 from category 6.0: Manage",
       "base_classes": [
         "BaseAgent",
@@ -2693,7 +2707,7 @@
       "name": "DevelopEnterpriseRiskStrategyRiskAgentConfig",
       "file": "agents\\consolidated\\py\\develop_enterprise_risk_strategy_risk_agent.py",
       "type": "python",
-      "category": "general",
+      "category": "trading",
       "description": "DevelopEnterpriseRiskStrategyRiskAgent - APQC 10.0 Agent\n\n10.1.1 Develop Enterprise Risk Strategy\n\nThis agent implements APQC process 10.1.1 from category 10.0: Manage Enterprise Risk, Compliance, and",
       "base_classes": [
         "BaseAgent",
@@ -2771,7 +2785,7 @@
       "name": "DevelopManageMarketingPlansSalesMarketingAgentConfig",
       "file": "agents\\consolidated\\py\\develop_manage_marketing_plans_sales_marketing_agent.py",
       "type": "python",
-      "category": "business",
+      "category": "trading",
       "description": "DevelopManageMarketingPlansSalesMarketingAgent - APQC 3.0 Agent\n\n3.4 Develop and manage marketing plans\n\nThis agent implements APQC process 3.0.4 from category 3.0: Market and Sell Products and Servic",
       "base_classes": [
         "BaseAgent",
@@ -2797,7 +2811,7 @@
       "name": "DevelopManageSalesPlansSalesMarketingAgentConfig",
       "file": "agents\\consolidated\\py\\develop_manage_sales_plans_sales_marketing_agent.py",
       "type": "python",
-      "category": "business",
+      "category": "trading",
       "description": "DevelopManageSalesPlansSalesMarketingAgent - APQC 3.0 Agent\n\n3.5 Develop and manage sales plans\n\nThis agent implements APQC process 3.0.5 from category 3.0: Market and Sell Products and Services.\n\nDom",
       "base_classes": [
         "BaseAgent",
@@ -2849,7 +2863,7 @@
       "name": "DevelopMarketingStrategySalesMarketingAgentConfig",
       "file": "agents\\consolidated\\py\\develop_marketing_strategy_sales_marketing_agent.py",
       "type": "python",
-      "category": "business",
+      "category": "trading",
       "description": "DevelopMarketingStrategySalesMarketingAgent - APQC 3.0 Agent\n\n3.2 Develop marketing strategy\n\nThis agent implements APQC process 3.0.2 from category 3.0: Market and Sell Products and Services.\n\nDomain",
       "base_classes": [
         "BaseAgent",
@@ -2875,7 +2889,7 @@
       "name": "DevelopSalesStrategySalesMarketingAgentConfig",
       "file": "agents\\consolidated\\py\\develop_sales_strategy_sales_marketing_agent.py",
       "type": "python",
-      "category": "business",
+      "category": "trading",
       "description": "DevelopSalesStrategySalesMarketingAgent - APQC 3.0 Agent\n\n3.3 Develop sales strategy\n\nThis agent implements APQC process 3.0.3 from category 3.0: Market and Sell Products and Services.\n\nDomain: market",
       "base_classes": [
         "BaseAgent",
@@ -2950,7 +2964,7 @@
       "name": "DevopsAgent",
       "file": "agents\\consolidated\\py\\devops_agent_v1.py",
       "type": "python",
-      "category": "general",
+      "category": "operations",
       "description": "Information Technology - Infrastructure Automation\n\nAgent ID: apqc_13_0_infrastructure\nVersion: 1.0.0\nFramework: APQC 7.0.1\nGenerated: 2025-10-16T09:44:03.878271\n\nAuto-generated Agent (Protocol-Compli",
       "base_classes": [
         "BaseAgent"
@@ -3012,7 +3026,7 @@
       "name": "DocumentationMaintenanceAgent",
       "file": "agents\\consolidated\\py\\documentation_maintenance_agent.py",
       "type": "python",
-      "category": "general",
+      "category": "ml_ai",
       "description": "Documentation Maintenance Agent\nAPQC Process Classification Framework: 11.2.5 - Manage IT Knowledge\n\nSpecialized agent for maintaining, tracking, and ensuring consistency of\narchitectural decisions, t",
       "base_classes": [
         "Enum"
@@ -3049,7 +3063,7 @@
       "name": "EmailSenderTaskAgent",
       "file": "agents\\consolidated\\py\\email_sender_task_agent_v1.py",
       "type": "python",
-      "category": "general",
+      "category": "coordination",
       "description": "Email Sender Task Agent\n\nLevel 5 Task Agent\nCategory: output_generation\n\nSend formatted emails\n\nCapabilities:\n- html_email\n- attachments\n- template_rendering\n- bulk_sending\n\nInputs:\n- recipients: list",
       "base_classes": [
         "BaseAgent"
@@ -3068,7 +3082,7 @@
       "name": "EncryptionTaskAgent",
       "file": "agents\\consolidated\\py\\encryption_task_agent_v1.py",
       "type": "python",
-      "category": "general",
+      "category": "coordination",
       "description": "Encryption/Decryption Task Agent\n\nLevel 5 Task Agent\nCategory: security_compliance\n\nEncrypt and decrypt data using various algorithms\n\nCapabilities:\n- aes\n- rsa\n- chacha20\n- key_management\n- streaming",
       "base_classes": [
         "BaseAgent"
@@ -3104,7 +3118,7 @@
       "name": "EnhancedBaseAgent",
       "file": "agents\\consolidated\\py\\enhanced_base_agent.py",
       "type": "python",
-      "category": "general",
+      "category": "infrastructure",
       "description": "Enhanced Base Agent - Next Generation Autonomous Agent\n\nIntegrates all advanced capabilities:\n- Agent learning system\n- Tool discovery and dynamic capabilities\n- Collaborative problem solving\n- Advanc",
       "base_classes": [
         "BaseAgent",
@@ -3178,7 +3192,7 @@
       "name": "EntityExtractionTaskAgent",
       "file": "agents\\consolidated\\py\\entity_extraction_task_agent_v1.py",
       "type": "python",
-      "category": "general",
+      "category": "coordination",
       "description": "Entity Extraction Task Agent\n\nLevel 5 Task Agent\nCategory: analysis\n\nExtract named entities from text\n\nCapabilities:\n- ner\n- entity_linking\n- coreference_resolution\n\nInputs:\n- text: string\n\nOutputs:\n-",
       "base_classes": [
         "BaseAgent"
@@ -3261,7 +3275,7 @@
       "name": "FileExportTaskAgent",
       "file": "agents\\consolidated\\py\\file_export_task_agent_v1.py",
       "type": "python",
-      "category": "general",
+      "category": "coordination",
       "description": "File Export Task Agent\n\nLevel 5 Task Agent\nCategory: output_generation\n\nExport data to various file formats\n\nCapabilities:\n- format_support\n- compression\n- cloud_upload\n\nInputs:\n- data: dict\n- format:",
       "base_classes": [
         "BaseAgent"
@@ -3280,7 +3294,7 @@
       "name": "FileScannerTaskAgent",
       "file": "agents\\consolidated\\py\\file_scanner_task_agent_v1.py",
       "type": "python",
-      "category": "general",
+      "category": "coordination",
       "description": "File System Scanner Task Agent\n\nLevel 5 Task Agent\nCategory: data_extraction\n\nScan directories and catalog files\n\nCapabilities:\n- recursive_scan\n- metadata_extraction\n- hash_calculation\n\nInputs:\n- dir",
       "base_classes": [
         "BaseAgent"
@@ -3299,7 +3313,7 @@
       "name": "FinopsAgent",
       "file": "agents\\consolidated\\py\\finops_agent_v1.py",
       "type": "python",
-      "category": "general",
+      "category": "operations",
       "description": "Information Technology - Cloud Optimization\n\nAgent ID: apqc_13_0_cloud_optimization\nVersion: 1.0.0\nFramework: APQC 7.0.1\nGenerated: 2025-10-16T09:44:03.879987\n\nAuto-generated Agent (Protocol-Compliant",
       "base_classes": [
         "BaseAgent"
@@ -3333,7 +3347,7 @@
       "name": "ForecastDemandOperationalAgentConfig",
       "file": "agents\\consolidated\\py\\forecast_demand_operational_agent.py",
       "type": "python",
-      "category": "general",
+      "category": "operations",
       "description": "ForecastDemandOperationalAgent - APQC 4.0\n4.1.3 Forecast Demand\nAPQC ID: apqc_4_0_e6f7g8h9",
       "base_classes": [
         "BaseAgent",
@@ -3395,7 +3409,7 @@
       "name": "FtpTransferTaskAgent",
       "file": "agents\\consolidated\\py\\ftp_transfer_task_agent_v1.py",
       "type": "python",
-      "category": "general",
+      "category": "coordination",
       "description": "FTP/SFTP Transfer Task Agent\n\nLevel 5 Task Agent\nCategory: communication_integration\n\nUpload/download files via FTP/SFTP\n\nCapabilities:\n- ftp\n- ftps\n- sftp\n- recursive_transfer\n- resume_transfer\n- che",
       "base_classes": [
         "BaseAgent"
@@ -3414,7 +3428,7 @@
       "name": "Functional Validation Testing Agent",
       "file": "agents\\consolidated\\md\\functional_validation_agent.md",
       "type": "markdown",
-      "category": "general",
+      "category": "testing",
       "description": "## Agent Overview\n**Role**: Comprehensive Feature & Function Validation Specialist\n**APQC Domain**: 12.0 Manage Risk, Compliance, Security, and Quality (12.3 Manage Quality)\n**Team**: Automated Testin",
       "line_count": 274
     },
@@ -3464,7 +3478,7 @@
       "name": "GenerateDefineNewProductServiceIdeasCreativeAgentConfig",
       "file": "agents\\consolidated\\py\\generate_define_new_product_service_ideas_creative_agent.py",
       "type": "python",
-      "category": "api",
+      "category": "blockchain",
       "description": "GenerateDefineNewProductServiceIdeasCreativeAgent - APQC 2.0 Agent\n\n2.2 Generate and define new product/service ideas\n\nThis agent implements APQC process 2.0.2 from category 2.0: Develop and Manage Pr",
       "base_classes": [
         "BaseAgent",
@@ -3490,7 +3504,7 @@
       "name": "GeneratedAgent",
       "file": "agents\\consolidated\\py\\agent_code_generator.py",
       "type": "python",
-      "category": "general",
+      "category": "infrastructure",
       "description": "Agent Code Generation Engine - Core component of Global Agent Factory\n\nThis engine generates production-ready agent code from templates and specifications.\nUses Jinja2 for templating and incorporates:",
       "base_classes": [],
       "capabilities": [
@@ -3533,7 +3547,7 @@
       "name": "GlobalAgentFactory",
       "file": "agents\\consolidated\\py\\global_agent_factory.py",
       "type": "python",
-      "category": "general",
+      "category": "infrastructure",
       "description": "Global Agent Factory - World-Class Self-Evolving Agent Creation System\n\nThis is the crown jewel of the autonomous ecosystem - a factory that not only creates\nagents but continuously evolves to become ",
       "base_classes": [
         "Enum"
@@ -3556,7 +3570,7 @@
       "name": "GlobalAgentMarketplace",
       "file": "agents\\consolidated\\py\\global_agent_marketplace.py",
       "type": "python",
-      "category": "general",
+      "category": "trading",
       "description": "Types of reputation events for blockchain recording",
       "base_classes": [
         "Enum"
@@ -3580,7 +3594,7 @@
       "name": "GlobalAgentMarketplace",
       "file": "agents\\consolidated\\py\\global_agent_marketplace_ecosystem.py",
       "type": "python",
-      "category": "general",
+      "category": "trading",
       "description": "GLOBAL AGENT MARKETPLACE ECOSYSTEM\nRevolutionary Platform for Autonomous Agent Commerce & Collaboration\n\nThis module implements a comprehensive marketplace where autonomous agents can:\n- Discover and ",
       "base_classes": [
         "Enum"
@@ -3669,7 +3683,7 @@
       "name": "GraphqlQueryBuilderTaskAgent",
       "file": "agents\\consolidated\\py\\graphql_query_builder_task_agent_v1.py",
       "type": "python",
-      "category": "ui",
+      "category": "coordination",
       "description": "GraphQL Query Builder Task Agent\n\nLevel 5 Task Agent\nCategory: communication_integration\n\nBuild and execute GraphQL queries dynamically\n\nCapabilities:\n- query_generation\n- fragment_management\n- variab",
       "base_classes": [
         "BaseAgent"
@@ -3794,7 +3808,7 @@
       "name": "HybridBaseAgent",
       "file": "agents\\consolidated\\py\\hybrid_base_agent.py",
       "type": "python",
-      "category": "general",
+      "category": "infrastructure",
       "description": "Hybrid Base Agent - Enhanced Base Class for All Agents\n\nProvides automatic local/cloud routing for AI operations.\nAll future agents should inherit from this class to get:\n- ZERO credit local processin",
       "base_classes": [
         "Enum"
@@ -3838,7 +3852,7 @@
       "name": "ImageOcrTaskAgent",
       "file": "agents\\consolidated\\py\\image_ocr_task_agent_v1.py",
       "type": "python",
-      "category": "general",
+      "category": "coordination",
       "description": "Image OCR Task Agent\n\nLevel 5 Task Agent\nCategory: data_extraction\n\nExtract text from images using OCR\n\nCapabilities:\n- ocr_processing\n- language_detection\n- confidence_scoring\n\nInputs:\n- image_path: ",
       "base_classes": [
         "BaseAgent"
@@ -3925,7 +3939,7 @@
       "name": "InventoryTrackerTaskAgent",
       "file": "agents\\consolidated\\py\\inventory_tracker_task_agent_v1.py",
       "type": "python",
-      "category": "monitoring",
+      "category": "coordination",
       "description": "Inventory Tracker Task Agent\n\nLevel 5 Task Agent\nCategory: business_logic\n\nTrack inventory levels and stock movements\n\nCapabilities:\n- real_time_updates\n- multi_location\n- reorder_alerts\n- stock_reser",
       "base_classes": [
         "BaseAgent"
@@ -3995,7 +4009,7 @@
       "name": "KeywordExtractionTaskAgent",
       "file": "agents\\consolidated\\py\\keyword_extraction_task_agent_v1.py",
       "type": "python",
-      "category": "general",
+      "category": "coordination",
       "description": "Keyword Extraction Task Agent\n\nLevel 5 Task Agent\nCategory: analysis\n\nExtract important keywords and phrases from text\n\nCapabilities:\n- tfidf\n- rake\n- textrank\n- phrase_extraction\n\nInputs:\n- text: str",
       "base_classes": [
         "BaseAgent"
@@ -4014,7 +4028,7 @@
       "name": "LanguageDetectorTaskAgent",
       "file": "agents\\consolidated\\py\\language_detector_task_agent_v1.py",
       "type": "python",
-      "category": "general",
+      "category": "coordination",
       "description": "Language Detector Task Agent\n\nLevel 5 Task Agent\nCategory: content_processing\n\nDetect language of text content\n\nCapabilities:\n- 100plus_languages\n- confidence_scoring\n- script_detection\n- mixed_langua",
       "base_classes": [
         "BaseAgent"
@@ -4033,7 +4047,7 @@
       "name": "LearningAgentWrapper",
       "file": "agents\\consolidated\\py\\agent_learning_integration.py",
       "type": "python",
-      "category": "general",
+      "category": "integration",
       "description": "Wrapper that adds learning capabilities to any agent\n\n    Usage:\n        agent = MarketResearchAgent(...)\n        learning_agent = LearningAgentWrapper(agent, \"market_research_agent_1\")\n\n        # Age",
       "base_classes": [],
       "capabilities": [
@@ -4080,7 +4094,7 @@
       "name": "LoopControllerTaskAgent",
       "file": "agents\\consolidated\\py\\loop_controller_task_agent_v1.py",
       "type": "python",
-      "category": "general",
+      "category": "coordination",
       "description": "Loop Controller Task Agent\n\nLevel 5 Task Agent\nCategory: workflow_automation\n\nControl iteration over collections\n\nCapabilities:\n- parallel_execution\n- batch_processing\n- error_handling\n- progress_trac",
       "base_classes": [
         "BaseAgent"
@@ -4099,7 +4113,7 @@
       "name": "MaintainProductiveAssetsAssetManagementAgentConfig",
       "file": "agents\\consolidated\\py\\maintain_productive_assets_asset_management_agent.py",
       "type": "python",
-      "category": "general",
+      "category": "ml_ai",
       "description": "MaintainProductiveAssetsAssetManagementAgent - APQC 9.0 Agent\n\n9.2 Maintain productive assets\n\nThis agent implements APQC process 9.0.2 from category 9.0: Acquire, Construct, and Manage Assets.\n\nDomai",
       "base_classes": [
         "BaseAgent",
@@ -4229,7 +4243,7 @@
       "name": "ManageCampaignEffectivenessSalesMarketingAgentConfig",
       "file": "agents\\consolidated\\py\\manage_campaign_effectiveness_sales_marketing_agent.py",
       "type": "python",
-      "category": "business",
+      "category": "trading",
       "description": "ManageCampaignEffectivenessSalesMarketingAgent - APQC Agent\nAPQC Process: 3.4.1\nAPQC Blueprint ID: apqc_3_0_t2u3v4w5\nSkills: roi_calculation (0.93), attribution_modeling (0.89), ab_testing (0.87)\nFull",
       "base_classes": [
         "BaseAgent",
@@ -4251,7 +4265,7 @@
       "name": "ManageCashFlowFinancialAgentConfig",
       "file": "agents\\consolidated\\py\\manage_cash_flow_financial_agent.py",
       "type": "python",
-      "category": "devops",
+      "category": "finance",
       "description": "ManageCashFlowFinancialAgent - APQC Agent\nProcess: 8.4.1 | ID: apqc_8_0_a9b0c1d2\nSkills: cash_forecasting (0.93), working_capital_optimization (0.90), liquidity_analysis (0.89)\nCompliance: All 8 princ",
       "base_classes": [
         "BaseAgent",
@@ -4392,7 +4406,7 @@
       "name": "ManageEnterpriseQualityCapabilityDevelopmentAgentConfig",
       "file": "agents\\consolidated\\py\\manage_enterprise_quality_capability_development_agent.py",
       "type": "python",
-      "category": "general",
+      "category": "testing",
       "description": "ManageEnterpriseQualityCapabilityDevelopmentAgent - APQC 12.0 Agent\n\n12.3 Manage enterprise quality\n\nThis agent implements APQC process 12.0.3 from category 12.0: Develop and Manage Business Capabilit",
       "base_classes": [
         "BaseAgent",
@@ -4470,7 +4484,7 @@
       "name": "ManageFixedAssetProjectAccountingFinancialAgentConfig",
       "file": "agents\\consolidated\\py\\manage_fixed_asset_project_accounting_financial_agent.py",
       "type": "python",
-      "category": "devops",
+      "category": "finance",
       "description": "ManageFixedAssetProjectAccountingFinancialAgent - APQC 8.0 Agent\n\n8.4 Manage fixed asset project accounting\n\nThis agent implements APQC process 8.0.4 from category 8.0: Manage Financial Resources.\n\nDo",
       "base_classes": [
         "BaseAgent",
@@ -4496,7 +4510,7 @@
       "name": "ManageGovernmentIndustryRelationshipsRelationshipManagementAgentConfig",
       "file": "agents\\consolidated\\py\\manage_government_industry_relationships_relationship_management_agent.py",
       "type": "python",
-      "category": "general",
+      "category": "business",
       "description": "ManageGovernmentIndustryRelationshipsRelationshipManagementAgent - APQC 11.0 Agent\n\n11.2 Manage government and industry relationships\n\nThis agent implements APQC process 11.0.2 from category 11.0: Man",
       "base_classes": [
         "BaseAgent",
@@ -4548,7 +4562,7 @@
       "name": "ManageItInfrastructureTechnologyAgentConfig",
       "file": "agents\\consolidated\\py\\manage_it_infrastructure_technology_agent.py",
       "type": "python",
-      "category": "general",
+      "category": "devops",
       "description": "ManageItInfrastructureTechnologyAgent - APQC 13.0 Agent\n\n13.4 Manage IT infrastructure\n\nThis agent implements APQC process 13.0.4 from category 13.0: Manage Information Technology.\n\nDomain: informatio",
       "base_classes": [
         "BaseAgent",
@@ -4626,7 +4640,7 @@
       "name": "ManageLegalEthicalIssuesRelationshipManagementAgentConfig",
       "file": "agents\\consolidated\\py\\manage_legal_ethical_issues_relationship_management_agent.py",
       "type": "python",
-      "category": "general",
+      "category": "business",
       "description": "ManageLegalEthicalIssuesRelationshipManagementAgent - APQC 11.0 Agent\n\n11.4 Manage legal and ethical issues\n\nThis agent implements APQC process 11.0.4 from category 11.0: Manage External Relationships",
       "base_classes": [
         "BaseAgent",
@@ -4652,7 +4666,7 @@
       "name": "ManageLogisticsWarehousingOperationalAgentConfig",
       "file": "agents\\consolidated\\py\\manage_logistics_warehousing_operational_agent.py",
       "type": "python",
-      "category": "general",
+      "category": "operations",
       "description": "ManageLogisticsWarehousingOperationalAgent - APQC 4.0 Agent\n\n4.5 Manage logistics and warehousing\n\nThis agent implements APQC process 4.0.5 from category 4.0: Deliver Physical Products.\n\nDomain: manuf",
       "base_classes": [
         "BaseAgent",
@@ -4696,7 +4710,7 @@
       "name": "ManagePortfolioOfEnterpriseProgramsProjectsCapabilityDevelopmentAgentConfig",
       "file": "agents\\consolidated\\py\\manage_portfolio_of_enterprise_programs_projects_capability_development_agent.py",
       "type": "python",
-      "category": "general",
+      "category": "trading",
       "description": "ManagePortfolioOfEnterpriseProgramsProjectsCapabilityDevelopmentAgent - APQC 12.0 Agent\n\n12.2 Manage portfolio of enterprise programs/projects\n\nThis agent implements APQC process 12.0.2 from category ",
       "base_classes": [
         "BaseAgent",
@@ -4722,7 +4736,7 @@
       "name": "ManagePricingSalesMarketingAgentConfig",
       "file": "agents\\consolidated\\py\\manage_pricing_sales_marketing_agent.py",
       "type": "python",
-      "category": "devops",
+      "category": "trading",
       "description": "ManagePricingSalesMarketingAgent - APQC 3.0\n3.3.2 Manage Pricing\nAPQC ID: apqc_3_0_k2l3m4n5",
       "base_classes": [
         "BaseAgent",
@@ -4740,7 +4754,7 @@
       "name": "ManageProductLifecycleSalesMarketingAgentConfig",
       "file": "agents\\consolidated\\py\\manage_product_lifecycle_sales_marketing_agent.py",
       "type": "python",
-      "category": "business",
+      "category": "trading",
       "description": "ManageProductLifecycleSalesMarketingAgent - APQC 3.0 Agent\n3.2.4 Manage Product Lifecycle\n\nAPQC Blueprint ID: apqc_3_0_q9r0s1t2\nDomain: sales_marketing | Type: analytical\n\nFull compliance with all 8 a",
       "base_classes": [
         "BaseAgent",
@@ -4762,7 +4776,7 @@
       "name": "ManageProductPortfolioSalesMarketingAgentConfig",
       "file": "agents\\consolidated\\py\\manage_product_portfolio_sales_marketing_agent.py",
       "type": "python",
-      "category": "business",
+      "category": "trading",
       "description": "ManageProductPortfolioSalesMarketingAgent - APQC 3.0 Agent\n\n3.2.3 Manage Product Portfolio\n\nThis agent implements APQC process 3.2.3 from category 3.0: Market and Sell Products and Services.\n\nDomain: ",
       "base_classes": [
         "BaseAgent",
@@ -4814,7 +4828,7 @@
       "name": "ManageProductionQualityOperationalAgentConfig",
       "file": "agents\\consolidated\\py\\manage_production_quality_operational_agent.py",
       "type": "python",
-      "category": "general",
+      "category": "testing",
       "description": "ManageProductionQualityOperationalAgent - APQC Agent\nProcess: 4.3.3 | ID: apqc_4_0_v4w5x6y7\nSkills: spc_analysis (0.92), six_sigma (0.89), defect_tracking (0.90), process_capability (0.88)\nCompliance:",
       "base_classes": [
         "BaseAgent",
@@ -4836,7 +4850,7 @@
       "name": "ManagePublicRelationsRelationshipManagementAgentConfig",
       "file": "agents\\consolidated\\py\\manage_public_relations_relationship_management_agent.py",
       "type": "python",
-      "category": "general",
+      "category": "business",
       "description": "ManagePublicRelationsRelationshipManagementAgent - APQC 11.0 Agent\n\n11.5 Manage public relations\n\nThis agent implements APQC process 11.0.5 from category 11.0: Manage External Relationships.\n\nDomain: ",
       "base_classes": [
         "BaseAgent",
@@ -4907,7 +4921,7 @@
       "name": "ManageRelationsWithBoardOfDirectorsRelationshipManagementAgentConfig",
       "file": "agents\\consolidated\\py\\manage_relations_with_board_of_directors_relationship_management_agent.py",
       "type": "python",
-      "category": "general",
+      "category": "business",
       "description": "ManageRelationsWithBoardOfDirectorsRelationshipManagementAgent - APQC 11.0 Agent\n\n11.3 Manage relations with board of directors\n\nThis agent implements APQC process 11.0.3 from category 11.0: Manage Ex",
       "base_classes": [
         "BaseAgent",
@@ -4933,7 +4947,7 @@
       "name": "ManageSalesChannelsSalesMarketingAgentConfig",
       "file": "agents\\consolidated\\py\\manage_sales_channels_sales_marketing_agent.py",
       "type": "python",
-      "category": "business",
+      "category": "trading",
       "description": "ManageSalesChannelsSalesMarketingAgent - APQC Agent\nAPQC Process: 3.3.3\nAPQC Blueprint ID: apqc_3_0_s1t2u3v4\nSkills: channel_profitability (0.91), contribution_analysis (0.88), channel_optimization (0",
       "base_classes": [
         "BaseAgent",
@@ -5022,7 +5036,7 @@
       "name": "ManageSupplierRelationshipsOperationalAgentConfig",
       "file": "agents\\consolidated\\py\\manage_supplier_relationships_operational_agent.py",
       "type": "python",
-      "category": "general",
+      "category": "business",
       "description": "ManageSupplierRelationshipsOperationalAgent - APQC 4.0\n4.2.2 Manage Supplier Relationships\nAPQC ID: apqc_4_0_h9i0j1k2",
       "base_classes": [
         "BaseAgent",
@@ -5040,7 +5054,7 @@
       "name": "ManageTransportationOperationalAgentConfig",
       "file": "agents\\consolidated\\py\\manage_transportation_operational_agent.py",
       "type": "python",
-      "category": "general",
+      "category": "operations",
       "description": "ManageTransportationOperationalAgent - APQC Agent\nProcess: 4.5.1 | ID: apqc_4_0_y7z8a9b0\nSkills: route_optimization (0.92), load_consolidation (0.89), carrier_selection (0.87)\nCompliance: All 8 princi",
       "base_classes": [
         "BaseAgent",
@@ -5062,7 +5076,7 @@
       "name": "ManageTreasuryOperationsFinancialAgentConfig",
       "file": "agents\\consolidated\\py\\manage_treasury_operations_financial_agent.py",
       "type": "python",
-      "category": "devops",
+      "category": "finance",
       "description": "ManageTreasuryOperationsFinancialAgent - APQC 8.0 Agent\n\n8.6 Manage treasury operations\n\nThis agent implements APQC process 8.0.6 from category 8.0: Manage Financial Resources.\n\nDomain: finance_accoun",
       "base_classes": [
         "BaseAgent",
@@ -5107,7 +5121,7 @@
       "name": "ManageWarehouseOperationsOperationalAgentConfig",
       "file": "agents\\consolidated\\py\\manage_warehouse_operations_operational_agent.py",
       "type": "python",
-      "category": "general",
+      "category": "operations",
       "description": "ManageWarehouseOperationsOperationalAgent - APQC Agent\nProcess: 4.4.2 | ID: apqc_4_0_w5x6y7z8\nSkills: space_optimization (0.91), picking_optimization (0.89), throughput_analysis (0.87)\nCompliance: All",
       "base_classes": [
         "BaseAgent",
@@ -5146,7 +5160,7 @@
       "name": "MarketOpportunityScoringAgent",
       "file": "agents\\consolidated\\py\\market_opportunity_scoring_agent.py",
       "type": "python",
-      "category": "general",
+      "category": "trading",
       "description": "Market Opportunity Scoring Agent\nAPQC Level 5 Atomic Task: 3.1.2.5 - Calculate market opportunity scores\n\nThis agent calculates comprehensive opportunity scores for products based on\nmultiple factors ",
       "base_classes": [],
       "capabilities": [
@@ -5159,7 +5173,7 @@
       "name": "MarketingAutomationAgent",
       "file": "agents\\consolidated\\py\\marketing_automation_agent_v1.py",
       "type": "python",
-      "category": "business",
+      "category": "trading",
       "description": "Marketing Automation Agent - Handles All Marketing Tasks\n\nYou don't need marketing skills - this agent does everything:\n- Social media posting\n- SEO optimization\n- Email campaigns\n- Audience growth\n- ",
       "base_classes": [],
       "capabilities": [
@@ -5298,7 +5312,7 @@
       "name": "MessageQueuePublisherTaskAgent",
       "file": "agents\\consolidated\\py\\message_queue_publisher_task_agent_v1.py",
       "type": "python",
-      "category": "communication",
+      "category": "coordination",
       "description": "Message Queue Publisher Task Agent\n\nLevel 5 Task Agent\nCategory: communication_integration\n\nPublish messages to queues (RabbitMQ, SQS, Kafka)\n\nCapabilities:\n- rabbitmq\n- sqs\n- kafka\n- redis\n- message_",
       "base_classes": [
         "BaseAgent"
@@ -5390,7 +5404,7 @@
       "name": "NotificationDispatcherTaskAgent",
       "file": "agents\\consolidated\\py\\notification_dispatcher_task_agent_v1.py",
       "type": "python",
-      "category": "general",
+      "category": "coordination",
       "description": "Notification Dispatcher Task Agent\n\nLevel 5 Task Agent\nCategory: output_generation\n\nSend notifications via multiple channels\n\nCapabilities:\n- multi_channel\n- channel_fallback\n- priority_routing\n\nInput",
       "base_classes": [
         "BaseAgent"
@@ -5446,7 +5460,7 @@
       "name": "OptimizeInventoryOperationalAgentConfig",
       "file": "agents\\consolidated\\py\\optimize_inventory_operational_agent.py",
       "type": "python",
-      "category": "general",
+      "category": "operations",
       "description": "OptimizeInventoryOperationalAgent - APQC 4.0\n4.4.1 Optimize Inventory\nAPQC ID: apqc_4_0_l3m4n5o6",
       "base_classes": [
         "BaseAgent",
@@ -5464,7 +5478,7 @@
       "name": "OptimizePricingStrategyRevenueAgentConfig",
       "file": "agents\\consolidated\\py\\optimize_pricing_strategy_revenue_agent.py",
       "type": "python",
-      "category": "devops",
+      "category": "finance",
       "description": "OptimizePricingStrategyRevenueAgent - APQC 3.3.3\nOptimize Dynamic Pricing Strategy for Revenue Maximization\nAPQC ID: apqc_3_3_o1p2s3r4\n\nThis agent optimizes pricing strategies using dynamic pricing al",
       "base_classes": [
         "BaseAgent",
@@ -5504,7 +5518,7 @@
       "name": "PdfParsingTaskAgent",
       "file": "agents\\consolidated\\py\\pdf_parsing_task_agent_v1.py",
       "type": "python",
-      "category": "general",
+      "category": "coordination",
       "description": "PDF Parsing Task Agent\n\nLevel 5 Task Agent\nCategory: data_extraction\n\nExtract text, tables, and images from PDF documents\n\nCapabilities:\n- text_extraction\n- table_parsing\n- image_extraction\n- ocr_supp",
       "base_classes": [
         "BaseAgent"
@@ -5523,7 +5537,7 @@
       "name": "PerformBudgetingFinancialAgentConfig",
       "file": "agents\\consolidated\\py\\perform_budgeting_financial_agent.py",
       "type": "python",
-      "category": "devops",
+      "category": "finance",
       "description": "PerformBudgetingFinancialAgent - APQC Agent\nProcess: 8.1.4 | ID: apqc_8_0_c1d2e3f4\nSkills: budget_allocation (0.91), variance_tracking (0.90), rolling_forecasts (0.88)\nCompliance: All 8 principles | P",
       "base_classes": [
         "BaseAgent",
@@ -5545,7 +5559,7 @@
       "name": "PerformCostAccountingFinancialAgentConfig",
       "file": "agents\\consolidated\\py\\perform_cost_accounting_financial_agent.py",
       "type": "python",
-      "category": "devops",
+      "category": "finance",
       "description": "PerformCostAccountingFinancialAgent - APQC 8.0 Agent\n\n8.1.2 Perform Cost Accounting\n\nDomain: financial_management\nType: analytical\n\nAPQC Blueprint ID: apqc_8_0_c4d5e6f7\nVersion: 1.0.0",
       "base_classes": [
         "BaseAgent",
@@ -5568,7 +5582,7 @@
       "name": "PerformGeneralAccountingReportingFinancialAgentConfig",
       "file": "agents\\consolidated\\py\\perform_general_accounting_reporting_financial_agent.py",
       "type": "python",
-      "category": "devops",
+      "category": "finance",
       "description": "PerformGeneralAccountingReportingFinancialAgent - APQC 8.0 Agent\n\n8.3 Perform general accounting and reporting\n\nThis agent implements APQC process 8.0.3 from category 8.0: Manage Financial Resources.\n",
       "base_classes": [
         "BaseAgent",
@@ -5594,7 +5608,7 @@
       "name": "PerformPlanningManagementAccountingFinancialAgentConfig",
       "file": "agents\\consolidated\\py\\perform_planning_management_accounting_financial_agent.py",
       "type": "python",
-      "category": "devops",
+      "category": "finance",
       "description": "PerformPlanningManagementAccountingFinancialAgent - APQC 8.0 Agent\n\n8.1 Perform planning and management accounting\n\nThis agent implements APQC process 8.0.1 from category 8.0: Manage Financial Resourc",
       "base_classes": [
         "BaseAgent",
@@ -5620,7 +5634,7 @@
       "name": "PerformPreventiveMaintenanceAssetManagementAgentConfig",
       "file": "agents\\consolidated\\py\\perform_preventive_maintenance_asset_management_agent.py",
       "type": "python",
-      "category": "general",
+      "category": "ml_ai",
       "description": "PerformPreventiveMaintenanceAssetManagementAgent - APQC 9.0 Agent\n\n9.2.1 Perform Preventive Maintenance\n\nThis agent implements APQC process 9.2.1 from category 9.0: Acquire, Construct, and Manage Asse",
       "base_classes": [
         "BaseAgent",
@@ -5668,7 +5682,7 @@
       "name": "PerformRevenueAccountingFinancialAgentConfig",
       "file": "agents\\consolidated\\py\\perform_revenue_accounting_financial_agent.py",
       "type": "python",
-      "category": "devops",
+      "category": "finance",
       "description": "PerformRevenueAccountingFinancialAgent - APQC 8.0 Agent\n\n8.2 Perform revenue accounting\n\nThis agent implements APQC process 8.0.2 from category 8.0: Manage Financial Resources.\n\nDomain: finance_accoun",
       "base_classes": [
         "BaseAgent",
@@ -5767,7 +5781,7 @@
       "name": "PlanForAlignSupplyChainResourcesOperationalAgentConfig",
       "file": "agents\\consolidated\\py\\plan_for_align_supply_chain_resources_operational_agent.py",
       "type": "python",
-      "category": "general",
+      "category": "operations",
       "description": "PlanForAlignSupplyChainResourcesOperationalAgent - APQC 4.0 Agent\n\n4.1 Plan for and align supply chain resources\n\nThis agent implements APQC process 4.0.1 from category 4.0: Deliver Physical Products.",
       "base_classes": [
         "BaseAgent",
@@ -5819,7 +5833,7 @@
       "name": "PlanSupplyChainResourcesOperationalAgentConfig",
       "file": "agents\\consolidated\\py\\plan_supply_chain_resources_operational_agent.py",
       "type": "python",
-      "category": "general",
+      "category": "operations",
       "description": "PlanSupplyChainResourcesOperationalAgent - APQC Agent\nProcess: 4.1.4 | ID: apqc_4_0_x6y7z8a9\nSkills: sales_operations_planning (0.92), capacity_modeling (0.89), resource_optimization (0.88)\nCompliance",
       "base_classes": [
         "BaseAgent",
@@ -5858,7 +5872,7 @@
       "name": "Polymarket AI Agents - Roadmap",
       "file": "agents\\consolidated\\md\\polymarket_agents.md",
       "type": "markdown",
-      "category": "general",
+      "category": "trading",
       "description": "Dr. Data Dawg's master plan for intelligent Polymarket trading agents. Building on the proven strategies from the existing bot infrastructure and the AI agent framework from moon-dev-ai-agents-for-tra",
       "line_count": 239
     },
@@ -5866,7 +5880,7 @@
       "name": "Polymarket Prediction Agent",
       "file": "agents\\consolidated\\md\\polymarket_agent.md",
       "type": "markdown",
-      "category": "general",
+      "category": "trading",
       "description": "**Built by Moon Dev** - Real-time prediction market analysis using AI",
       "line_count": 160
     },
@@ -5874,7 +5888,7 @@
       "name": "PolymarketAgent",
       "file": "agents\\consolidated\\py\\polymarket_agent.py",
       "type": "python",
-      "category": "general",
+      "category": "trading",
       "description": "\ud83c\udf19 Moon Dev's Polymarket Prediction Market Agent\nBuilt with love by Moon Dev \ud83d\ude80\n\nThis agent scans Polymarket trades, saves markets to CSV, and uses AI to make predictions.\nNO ACTUAL TRADING - just predi",
       "base_classes": [],
       "capabilities": [
@@ -5942,7 +5956,7 @@
       "name": "PriceCalculatorTaskAgent",
       "file": "agents\\consolidated\\py\\price_calculator_task_agent_v1.py",
       "type": "python",
-      "category": "general",
+      "category": "coordination",
       "description": "Price Calculator Task Agent\n\nLevel 5 Task Agent\nCategory: business_logic\n\nCalculate prices with discounts, taxes, shipping\n\nCapabilities:\n- discount_rules\n- tax_calculation\n- shipping_calculation\n- bu",
       "base_classes": [
         "BaseAgent"
@@ -5978,7 +5992,7 @@
       "name": "ProcessAccountsPayableFinancialAgentConfig",
       "file": "agents\\consolidated\\py\\process_accounts_payable_financial_agent.py",
       "type": "python",
-      "category": "devops",
+      "category": "finance",
       "description": "ProcessAccountsPayableFinancialAgent - APQC 8.0 Agent\n\n8.3.1 Process Accounts Payable\n\nThis agent implements APQC process 8.3.1 from category 8.0: Manage Financial Resources.\n\nDomain: financial\nType: ",
       "base_classes": [
         "BaseAgent",
@@ -6004,7 +6018,7 @@
       "name": "ProcessAccountsReceivableFinancialAgentConfig",
       "file": "agents\\consolidated\\py\\process_accounts_receivable_financial_agent.py",
       "type": "python",
-      "category": "devops",
+      "category": "finance",
       "description": "ProcessAccountsReceivableFinancialAgent - APQC 8.0 Agent\n8.2.2 Process Accounts Receivable\nAPQC Blueprint ID: apqc_8_0_d5e6f7g8\nVersion: 1.0.0",
       "base_classes": [
         "BaseAgent",
@@ -6022,7 +6036,7 @@
       "name": "ProcessPayrollFinancialAgentConfig",
       "file": "agents\\consolidated\\py\\process_payroll_financial_agent.py",
       "type": "python",
-      "category": "devops",
+      "category": "finance",
       "description": "ProcessPayrollFinancialAgent - APQC 8.0 Agent\n\n8.5 Process payroll\n\nThis agent implements APQC process 8.0.5 from category 8.0: Manage Financial Resources.\n\nDomain: finance_accounting\nType: financial\n",
       "base_classes": [
         "BaseAgent",
@@ -6074,7 +6088,7 @@
       "name": "ProduceManufactureDeliverProductOperationalAgentConfig",
       "file": "agents\\consolidated\\py\\produce_manufacture_deliver_product_operational_agent.py",
       "type": "python",
-      "category": "general",
+      "category": "operations",
       "description": "ProduceManufactureDeliverProductOperationalAgent - APQC 4.0 Agent\n\n4.3 Produce/Manufacture/Deliver product\n\nThis agent implements APQC process 4.0.3 from category 4.0: Deliver Physical Products.\n\nDoma",
       "base_classes": [
         "BaseAgent",
@@ -6314,7 +6328,7 @@
       "name": "ReportGeneratorTaskAgent",
       "file": "agents\\consolidated\\py\\report_generator_task_agent_v1.py",
       "type": "python",
-      "category": "general",
+      "category": "infrastructure",
       "description": "Report Generator Task Agent\n\nLevel 5 Task Agent\nCategory: output_generation\n\nGenerate formatted reports from data\n\nCapabilities:\n- pdf_generation\n- html_generation\n- template_rendering\n\nInputs:\n- data",
       "base_classes": [
         "BaseAgent"
@@ -6333,7 +6347,7 @@
       "name": "ReportingAgent",
       "file": "agents\\consolidated\\py\\reporting_agent_v1.py",
       "type": "python",
-      "category": "general",
+      "category": "reporting",
       "description": "Financial Resources - Financial Reporting\n\nAgent ID: apqc_8_0_financial_reporting\nVersion: 1.0.0\nFramework: APQC 7.0.1\nGenerated: 2025-10-16T09:44:03.874652\n\nAuto-generated Agent (Protocol-Compliant)",
       "base_classes": [
         "BaseAgent"
@@ -6410,7 +6424,7 @@
       "name": "RetryHandlerTaskAgent",
       "file": "agents\\consolidated\\py\\retry_handler_task_agent_v1.py",
       "type": "python",
-      "category": "general",
+      "category": "coordination",
       "description": "Retry Handler Task Agent\n\nLevel 5 Task Agent\nCategory: workflow_automation\n\nHandle retry logic with exponential backoff\n\nCapabilities:\n- exponential_backoff\n- jitter\n- conditional_retry\n- circuit_brea",
       "base_classes": [
         "BaseAgent"
@@ -6429,7 +6443,7 @@
       "name": "ReusableAgentLibrary",
       "file": "agents\\consolidated\\py\\agent_discovery_registry.py",
       "type": "python",
-      "category": "research",
+      "category": "infrastructure",
       "description": "Enterprise Agent Discovery and Registry System\nDynamic agent instantiation, capability matching, and lifecycle management",
       "base_classes": [
         "str",
@@ -6454,7 +6468,7 @@
       "name": "RevenueOptimizerAgent",
       "file": "agents\\consolidated\\py\\revenue_optimizer_agent_v1.py",
       "type": "python",
-      "category": "business",
+      "category": "finance",
       "description": "Revenue Optimizer Agent - Finds and Maximizes Income Streams\n\nThis agent:\n- Identifies revenue opportunities\n- Optimizes pricing\n- Finds grant/funding opportunities\n- Tracks ROI across all activities\n",
       "base_classes": [],
       "capabilities": [
@@ -6496,7 +6510,7 @@
       "name": "Risk Agent",
       "file": "agents\\consolidated\\md\\risk_agent.md",
       "type": "markdown",
-      "category": "general",
+      "category": "trading",
       "description": "First line of defense. Runs before any trades to check risk limits.",
       "line_count": 34
     },
@@ -6504,7 +6518,7 @@
       "name": "RiskAgent",
       "file": "agents\\consolidated\\py\\risk_agent.py",
       "type": "python",
-      "category": "general",
+      "category": "trading",
       "description": "\ud83c\udf19 Moon Dev's Risk Management Agent\nBuilt with love by Moon Dev \ud83d\ude80",
       "base_classes": [
         "BaseAgent"
@@ -6639,7 +6653,7 @@
       "name": "ScheduleCalculatorTaskAgent",
       "file": "agents\\consolidated\\py\\schedule_calculator_task_agent_v1.py",
       "type": "python",
-      "category": "general",
+      "category": "coordination",
       "description": "Schedule Calculator Task Agent\n\nLevel 5 Task Agent\nCategory: business_logic\n\nCalculate dates, business days, schedules\n\nCapabilities:\n- business_days\n- holiday_calendars\n- timezone_handling\n- recurrin",
       "base_classes": [
         "BaseAgent"
@@ -6658,7 +6672,7 @@
       "name": "ScheduleProductionOperationalAgentConfig",
       "file": "agents\\consolidated\\py\\schedule_production_operational_agent.py",
       "type": "python",
-      "category": "general",
+      "category": "operations",
       "description": "ScheduleProductionOperationalAgent - APQC 4.0 Agent\n\n4.3.2 Schedule Production\n\nThis agent implements APQC process 4.3.2 from category 4.0: Deliver Physical Products.\n\nDomain: manufacturing_logistics\n",
       "base_classes": [
         "BaseAgent",
@@ -6728,7 +6742,7 @@
       "name": "SegmentCustomersSalesMarketingAgentConfig",
       "file": "agents\\consolidated\\py\\segment_customers_sales_marketing_agent.py",
       "type": "python",
-      "category": "business",
+      "category": "trading",
       "description": "SegmentCustomersSalesMarketingAgent - APQC 3.0 Agent\n\n3.1.3 Segment Customers\n\nThis agent implements APQC process 3.1.3 from category 3.0: Market and Sell Products and Services.\n\nDomain: sales_marketi",
       "base_classes": [
         "BaseAgent",
@@ -6754,7 +6768,7 @@
       "name": "Sentiment Agent",
       "file": "agents\\consolidated\\md\\sentiment_agent.md",
       "type": "markdown",
-      "category": "general",
+      "category": "analysis",
       "description": "Analyzes social media sentiment for trading signals.",
       "line_count": 34
     },
@@ -6762,7 +6776,7 @@
       "name": "SentimentAgent",
       "file": "agents\\consolidated\\py\\sentiment_agent.py",
       "type": "python",
-      "category": "general",
+      "category": "analysis",
       "description": "Initialize the Sentiment Agent",
       "base_classes": [],
       "capabilities": [
@@ -6822,7 +6836,7 @@
       "name": "SlaMonitorTaskAgent",
       "file": "agents\\consolidated\\py\\sla_monitor_task_agent_v1.py",
       "type": "python",
-      "category": "monitoring",
+      "category": "coordination",
       "description": "SLA Monitor Task Agent\n\nLevel 5 Task Agent\nCategory: business_logic\n\nMonitor and track SLA compliance\n\nCapabilities:\n- response_time\n- resolution_time\n- uptime_monitoring\n- breach_prediction\n- escalat",
       "base_classes": [
         "BaseAgent"
@@ -6841,7 +6855,7 @@
       "name": "Smart Agent Coordinator",
       "file": "agents\\consolidated\\md\\automation-smart-agent.md",
       "type": "markdown",
-      "category": "general",
+      "category": "devops",
       "description": "## Purpose\nThis agent implements intelligent, automated agent management by analyzing task requirements and dynamically spawning the most appropriate agents with optimal capabilities.",
       "line_count": 205
     },
@@ -6982,7 +6996,7 @@
       "name": "Strategy Agent",
       "file": "agents\\consolidated\\md\\strategy_agent.md",
       "type": "markdown",
-      "category": "general",
+      "category": "trading",
       "description": "Runs pre-built strategies from `src/strategies/` folder with AI validation.",
       "line_count": 32
     },
@@ -6990,7 +7004,7 @@
       "name": "StrategyAgent",
       "file": "agents\\consolidated\\py\\strategy_agent.py",
       "type": "python",
-      "category": "general",
+      "category": "trading",
       "description": "Phase 7: Tier 2 Intelligence Layer - Strategy Agent\n\nMain orchestrator for autonomous goal-driven multi-agent workflows.\nDecomposes goals, plans execution, monitors progress, and learns from outcomes.",
       "base_classes": [
         "int",
@@ -7072,7 +7086,7 @@
       "name": "TaskAssignmentAgent",
       "file": "agents\\consolidated\\py\\task_assignment_agent.py",
       "type": "python",
-      "category": "general",
+      "category": "coordination",
       "description": "Task Assignment Agent - Meta-Agent for Intelligent Work Distribution\n\nThis agent intelligently assigns tasks to other agents based on:\n- Agent capabilities and specializations\n- Current workload and p",
       "base_classes": [
         "Enum"
@@ -7092,7 +7106,7 @@
       "name": "TaskAssignmentAgentConfig",
       "file": "agents\\consolidated\\py\\task_assignment_agent_v1.py",
       "type": "python",
-      "category": "general",
+      "category": "coordination",
       "description": "Task Assignment Agent v1.0 - Architecturally Compliant\n=========================================================\n\nMeta-Agent for Intelligent Work Distribution\n\nThis agent intelligently assigns tasks t",
       "base_classes": [
         "Enum"
@@ -7177,7 +7191,7 @@
       "name": "TestEndToEndAgentGeneration",
       "file": "agents\\consolidated\\py\\test_agent_factory_system.py",
       "type": "python",
-      "category": "testing",
+      "category": "infrastructure",
       "description": "Comprehensive tests for Global Agent Factory as a Service (AgentFaaS)\n\nTests cover:\n- Template system\n- Code generation engine\n- API endpoints\n- Research integration\n- Compliance checking\n- End-to-end",
       "base_classes": [],
       "capabilities": [
@@ -7266,7 +7280,7 @@
       "name": "TextNormalizationTaskAgent",
       "file": "agents\\consolidated\\py\\text_normalization_task_agent_v1.py",
       "type": "python",
-      "category": "general",
+      "category": "coordination",
       "description": "Text Normalization Task Agent\n\nLevel 5 Task Agent\nCategory: data_transformation\n\nNormalize text for consistent processing\n\nCapabilities:\n- case_normalization\n- punctuation_handling\n- stemming\n- lemmat",
       "base_classes": [
         "BaseAgent"
@@ -7285,7 +7299,7 @@
       "name": "TextSimilarityTaskAgent",
       "file": "agents\\consolidated\\py\\text_similarity_task_agent_v1.py",
       "type": "python",
-      "category": "general",
+      "category": "coordination",
       "description": "Text Similarity Task Agent\n\nLevel 5 Task Agent\nCategory: analysis\n\nCalculate similarity between text documents\n\nCapabilities:\n- cosine_similarity\n- semantic_similarity\n- fuzzy_matching\n\nInputs:\n- text",
       "base_classes": [
         "BaseAgent"
@@ -7321,7 +7335,7 @@
       "name": "TextSummarizerTaskAgent",
       "file": "agents\\consolidated\\py\\text_summarizer_task_agent_v1.py",
       "type": "python",
-      "category": "general",
+      "category": "coordination",
       "description": "Text Summarizer Task Agent\n\nLevel 5 Task Agent\nCategory: content_processing\n\nGenerate summaries of long text content\n\nCapabilities:\n- extractive\n- abstractive\n- length_control\n- key_points\n- multi_doc",
       "base_classes": [
         "BaseAgent"
@@ -7340,7 +7354,7 @@
       "name": "TextTranslatorTaskAgent",
       "file": "agents\\consolidated\\py\\text_translator_task_agent_v1.py",
       "type": "python",
-      "category": "general",
+      "category": "coordination",
       "description": "Text Translator Task Agent\n\nLevel 5 Task Agent\nCategory: content_processing\n\nTranslate text between languages\n\nCapabilities:\n- google_translate\n- deepl\n- azure_translator\n- custom_glossaries\n- format_",
       "base_classes": [
         "BaseAgent"
@@ -7378,7 +7392,7 @@
       "name": "Trading Agent",
       "file": "agents\\consolidated\\md\\trading_agent.md",
       "type": "markdown",
-      "category": "general",
+      "category": "blockchain",
       "description": "Pure LLM-based trader that uses Claude/GPT/Grok to analyze markets and execute trades.",
       "line_count": 29
     },
@@ -7386,7 +7400,7 @@
       "name": "TradingAgent",
       "file": "agents\\consolidated\\py\\trading_agent.py",
       "type": "python",
-      "category": "general",
+      "category": "blockchain",
       "description": "\ud83c\udf19 Moon Dev's LLM Trading Agent \ud83c\udf19\n\nDUAL-MODE AI TRADING SYSTEM:\n\n\ud83e\udd16 SINGLE MODEL MODE (Fast - ~10 seconds per token):\n   - Uses one AI model for quick trading decisions\n   - Best for: Fast execution, hi",
       "base_classes": [],
       "capabilities": [
@@ -7408,7 +7422,7 @@
       "name": "TrafficPredictionAgent",
       "file": "agents\\consolidated\\py\\traffic_prediction_agent.py",
       "type": "python",
-      "category": "general",
+      "category": "ml_ai",
       "description": "Traffic Prediction Agent for Mobility Routing Swarm\n\nPredicts travel times and congestion patterns using time-based heuristics\nand distance calculations.",
       "base_classes": [
         "Enum"
@@ -7427,7 +7441,7 @@
       "name": "TrafficPredictionAgentConfig",
       "file": "agents\\consolidated\\py\\traffic_prediction_agent_v1.py",
       "type": "python",
-      "category": "general",
+      "category": "ml_ai",
       "description": "TrafficPredictionAgent - Architecturally Compliant Agent\n\nPredicts travel times and congestion patterns using time-based heuristics\nand distance calculations.\n\nVersion: 1.0.0\nAuthor: Autonomous Ecosys",
       "base_classes": [
         "Enum"
@@ -7454,7 +7468,7 @@
       "name": "TrendDetectionTaskAgent",
       "file": "agents\\consolidated\\py\\trend_detection_task_agent_v1.py",
       "type": "python",
-      "category": "general",
+      "category": "analysis",
       "description": "Trend Detection Task Agent\n\nLevel 5 Task Agent\nCategory: analysis\n\nIdentify trends and patterns in time series data\n\nCapabilities:\n- trend_analysis\n- seasonality_detection\n- change_point_detection\n\nIn",
       "base_classes": [
         "BaseAgent"
@@ -7604,7 +7618,7 @@
       "name": "WebScrapingTaskAgent",
       "file": "agents\\consolidated\\py\\web_scraping_task_agent_v1.py",
       "type": "python",
-      "category": "api",
+      "category": "coordination",
       "description": "Web Scraping Task Agent\n\nLevel 5 Task Agent\nCategory: data_extraction\n\nExtract structured data from websites\n\nCapabilities:\n- web_scraping\n- javascript_rendering\n- rate_limiting\n- proxy_support\n\nInput",
       "base_classes": [
         "BaseAgent"
@@ -7623,7 +7637,7 @@
       "name": "WebhookTriggerTaskAgent",
       "file": "agents\\consolidated\\py\\webhook_trigger_task_agent_v1.py",
       "type": "python",
-      "category": "general",
+      "category": "coordination",
       "description": "Webhook Trigger Task Agent\n\nLevel 5 Task Agent\nCategory: communication_integration\n\nTrigger external systems via webhooks\n\nCapabilities:\n- http_methods\n- custom_headers\n- payload_templating\n- retry_lo",
       "base_classes": [
         "BaseAgent"
@@ -7875,7 +7889,7 @@
       "name": "agent_factory",
       "file": "agents\\consolidated\\py\\agent_factory.py",
       "type": "python",
-      "category": "general",
+      "category": "infrastructure",
       "description": "Agent Factory API Router - Global Agent Factory as a Service (AgentFaaS)\n\nThis router exposes the Global Agent Factory capabilities as RESTful APIs, enabling\ndevelopers worldwide to generate productio",
       "base_classes": [],
       "capabilities": [
@@ -7897,7 +7911,7 @@
       "name": "agent_factory_v1",
       "file": "agents\\consolidated\\py\\agent_factory_v1.py",
       "type": "python",
-      "category": "general",
+      "category": "infrastructure",
       "description": "Agent Factory - Meta-Agent for Autonomous Agent Generation\n\nThis agent generates other agents based on APQC specifications.\nThe ultimate force multiplier for agent ecosystem expansion.",
       "base_classes": [],
       "capabilities": [
@@ -7985,7 +7999,7 @@
       "name": "agent_intelligence_dashboard",
       "file": "agents\\consolidated\\py\\agent_intelligence_dashboard.py",
       "type": "python",
-      "category": "general",
+      "category": "reporting",
       "description": "\ud83d\udcca Comprehensive Agent & Swarm Intelligence Dashboard\n====================================================\n\nComplete visibility and historical tracking system for all agent activities:\n- Real-time agen",
       "base_classes": [],
       "capabilities": [
@@ -8158,7 +8172,7 @@
       "name": "agent_marketplace",
       "file": "agents\\consolidated\\py\\agent_marketplace.py",
       "type": "python",
-      "category": "general",
+      "category": "trading",
       "description": "Agent Marketplace with Reputation Economics\n\nDecentralized marketplace where agents list capabilities, users discover and hire agents,\nand reputation drives pricing and trust. Creates economic incenti",
       "base_classes": [],
       "capabilities": [
@@ -8249,7 +8263,7 @@
       "name": "agent_models",
       "file": "agents\\consolidated\\py\\agent_models.py",
       "type": "python",
-      "category": "general",
+      "category": "ml_ai",
       "description": "No description",
       "base_classes": [],
       "capabilities": [],
@@ -8260,7 +8274,7 @@
       "name": "agent_registry",
       "file": "agents\\consolidated\\py\\agent_registry.py",
       "type": "python",
-      "category": "general",
+      "category": "infrastructure",
       "description": "Phase 9 Expanded Agent Registry - ALL 44 Real Agents\n\nAutomatically discovers and registers all agents from src/agents directory.\nProvides complete agent metadata to the AgentManagementSystem backend.",
       "base_classes": [],
       "capabilities": [
@@ -8277,7 +8291,7 @@
       "name": "agent_registry_original",
       "file": "agents\\consolidated\\py\\agent_registry_original.py",
       "type": "python",
-      "category": "general",
+      "category": "infrastructure",
       "description": "Phase 9 Agent Registry\n\nDynamically discovers and registers agents from src/agents directory.\nProvides real agent data to the AgentManagementSystem backend.",
       "base_classes": [],
       "capabilities": [
@@ -8296,7 +8310,7 @@
       "name": "agent_registry_sync",
       "file": "agents\\consolidated\\py\\agent_registry_sync.py",
       "type": "python",
-      "category": "general",
+      "category": "infrastructure",
       "description": "Agent Registry Sync API\n\nProvides endpoints for the AgentRegistrySyncAgent to automatically\ndiscover and register agents.",
       "base_classes": [],
       "capabilities": [
@@ -8313,7 +8327,7 @@
       "name": "agent_registry_updater",
       "file": "agents\\consolidated\\py\\agent_registry_updater.py",
       "type": "python",
-      "category": "general",
+      "category": "infrastructure",
       "description": "Agent Registry Updater - Meta-Agent for Automatic Dashboard Updates\nAPQC: Meta-Level Agent (13.2 - Manage Business Capabilities)\n\nThis meta-agent automatically discovers all agents across all APQC lev",
       "base_classes": [],
       "capabilities": [
@@ -8359,7 +8373,7 @@
       "name": "agent_template_generator",
       "file": "agents\\consolidated\\py\\agent_template_generator.py",
       "type": "python",
-      "category": "general",
+      "category": "infrastructure",
       "description": "Agent Template Generator - Creates Architecturally Compliant Agents\n\nGenerates agent code that follows ALL architectural standards:\n- Standardized (BaseAgent inheritance, consistent patterns)\n- Intero",
       "base_classes": [],
       "capabilities": [
@@ -8384,7 +8398,7 @@
       "name": "agent_template_system",
       "file": "agents\\consolidated\\py\\agent_template_system.py",
       "type": "python",
-      "category": "general",
+      "category": "infrastructure",
       "description": "Agent Template System - Core component of Global Agent Factory\n\nThis system provides a library of APQC-aligned agent templates that serve as\nblueprints for generating production-ready agents. Template",
       "base_classes": [],
       "capabilities": [
@@ -8495,7 +8509,7 @@
       "name": "code_runner_agent",
       "file": "agents\\consolidated\\py\\code_runner_agent.py",
       "type": "python",
-      "category": "general",
+      "category": "operations",
       "description": "building an agent to run code\n\nEssentially, this agent can run code inside of cursor, and then get the error and send it \nto composer and then apply the air and go on an infinite loop of working on an",
       "base_classes": [],
       "capabilities": [
@@ -8559,7 +8573,7 @@
       "name": "define_business_concept_long-term_vision_strategic_agent",
       "file": "agents\\consolidated\\py\\define_business_concept_long-term_vision_strategic_agent.py",
       "type": "python",
-      "category": "business",
+      "category": "blockchain",
       "description": "DefineBusinessConceptLong-termVisionStrategicAgent - APQC 1.0 Agent\n\n1.1 Define the business concept and long-term vision\n\nThis agent implements APQC process 1.0.1 from category 1.0: Develop Vision an",
       "base_classes": [],
       "capabilities": [
@@ -8740,7 +8754,7 @@
       "name": "oaiagents",
       "file": "agents\\consolidated\\py\\oaiagents.py",
       "type": "python",
-      "category": "general",
+      "category": "ml_ai",
       "description": "No description",
       "base_classes": [],
       "capabilities": [],
@@ -9057,7 +9071,7 @@
       "name": "test_agent_factory",
       "file": "agents\\consolidated\\py\\test_agent_factory.py",
       "type": "python",
-      "category": "testing",
+      "category": "infrastructure",
       "description": "Test script for Agent Factory\n\nGenerates a single test agent to validate the factory works",
       "base_classes": [],
       "capabilities": [
@@ -9273,7 +9287,7 @@
       "name": "understand_markets,_customers,_capabilities_sales_marketing_agent",
       "file": "agents\\consolidated\\py\\understand_markets,_customers,_capabilities_sales_marketing_agent.py",
       "type": "python",
-      "category": "business",
+      "category": "trading",
       "description": "UnderstandMarkets,Customers,CapabilitiesSalesMarketingAgent - APQC 3.0 Agent\n\n3.1 Understand markets, customers, and capabilities\n\nThis agent implements APQC process 3.0.1 from category 3.0: Market an",
       "base_classes": [],
       "capabilities": [
@@ -9295,7 +9309,7 @@
       "name": "\ud83c\udf19 Moon Dev's Trading Agents Guide",
       "file": "agents\\consolidated\\md\\tradingagents.md",
       "type": "markdown",
-      "category": "general",
+      "category": "blockchain",
       "description": "**Complete Onboarding to Moon Dev's AI Trading Agent Ecosystem**",
       "line_count": 1327
     }
