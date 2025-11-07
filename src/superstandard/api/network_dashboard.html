@@ -737,10 +737,7 @@
             document.getElementById('avgLoad').textContent = avgLoad + '%';
             document.getElementById('totalCapabilities').textContent = allCaps.size;
 
-            // Bottom metrics
-            document.getElementById('totalDiscoveries').textContent = Math.floor(Math.random() * 1000 + 500);
-            document.getElementById('heartbeatRate').textContent = Math.floor(Math.random() * 50 + 30);
-            document.getElementById('networkUptime').textContent = (99.5 + Math.random() * 0.5).toFixed(2) + '%';
+            // Bottom metrics are updated by fetchANPStats() with real API data
         }
 
         // Apply filters

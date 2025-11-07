@@ -245,6 +245,20 @@
             border-radius: 8px;
             color: #fff;
             font-size: 1em;
+            transition: border-color 0.3s;
+        }
+
+        .control-group input:invalid:not(:placeholder-shown) {
+            border-color: rgba(239, 68, 68, 0.6);
+        }
+
+        .control-group input:valid:not(:placeholder-shown) {
+            border-color: rgba(74, 222, 128, 0.4);
+        }
+
+        .control-group input:focus {
+            outline: none;
+            border-color: rgba(102, 126, 234, 0.6);
         }
 
         .btn {
@@ -365,7 +379,7 @@
         <h2>Connect to Collective</h2>
         <div class="control-group">
             <label>Collective ID</label>
-            <input type="text" id="collectiveId" value="test_collective" placeholder="Enter collective ID">
+            <input type="text" id="collectiveId" placeholder="Enter collective ID" required minlength="3">
         </div>
         <button class="btn" id="connectBtn" onclick="connect()" style="display: inline-block;">Connect</button>
         <button class="btn" id="disconnectBtn" onclick="disconnect()" style="display: none; background: linear-gradient(90deg, #ef4444 0%, #dc2626 100%);">Disconnect</button>
@@ -456,9 +470,12 @@
         let thoughts = [];
 
         function connect() {
-            const input = document.getElementById('collectiveId').value.trim();
-            if (!input) {
-                alert('Please enter a collective ID');
+            const inputEl = document.getElementById('collectiveId');
+            const input = inputEl.value.trim();
+
+            // HTML5 validation
+            if (!inputEl.checkValidity()) {
+                inputEl.reportValidity();
                 return;
             }
 
