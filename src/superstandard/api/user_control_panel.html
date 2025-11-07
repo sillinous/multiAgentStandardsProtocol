@@ -736,6 +736,12 @@
                     <label>Endpoint URL</label>
                     <input type="url" name="endpoint" placeholder="http://localhost:8000">
                 </div>
+                <div class="form-group" style="display: flex; align-items: center; gap: 10px;">
+                    <input type="checkbox" name="instantiate" id="instantiateAgent" style="width: auto; margin: 0;">
+                    <label for="instantiateAgent" style="margin: 0; cursor: pointer;">
+                        🚀 <strong>Instantiate Agent</strong> - Create a REAL running instance (not just registry entry)
+                    </label>
+                </div>
                 <div class="form-actions">
                     <button type="submit" class="btn btn-submit">Register Agent</button>
                     <button type="button" class="btn btn-cancel" onclick="closeModal('registerAgent')">Cancel</button>
@@ -943,16 +949,24 @@
                 ? data.capabilities.split(',').map(c => c.trim()).filter(Boolean)
                 : [];
 
+            // Check if instantiate is checked
+            const instantiate = data.instantiate === 'on';
+
             const requestBody = {
                 agent_id: data.agentId,
                 agent_type: data.agentType,
                 capabilities: capabilities,
                 endpoints: data.endpoint ? { "http": data.endpoint } : {},
-                metadata: { "registered_via": "user_control_panel" }
+                metadata: {
+                    "registered_via": "user_control_panel",
+                    "instantiated": instantiate
+                }
             };
 
             try {
-                const response = await fetch(`${API_BASE}/api/anp/agents/register`, {
+                // Add instantiate query parameter
+                const url = `${API_BASE}/api/anp/agents/register?instantiate=${instantiate}`;
+                const response = await fetch(url, {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify(requestBody)
@@ -961,8 +975,15 @@
                 const result = await response.json();
 
                 if (result.success) {
-                    showToast('Agent Registered', `Agent ${data.agentId} registered successfully!`, 'success');
-                    addActivity('agent', `New agent registered: ${data.agentId} (${data.agentType})`);
+                    const message = result.instantiated
+                        ? `Agent ${data.agentId} INSTANTIATED and RUNNING! 🚀`
+                        : `Agent ${data.agentId} registered in directory`;
+                    showToast(
+                        result.instantiated ? 'Agent Instantiated!' : 'Agent Registered',
+                        message,
+                        'success'
+                    );
+                    addActivity('agent', `New agent ${result.instantiated ? 'INSTANTIATED' : 'registered'}: ${data.agentId} (${data.agentType})`);
                     closeModal('registerAgent');
                     e.target.reset();
                     updateStats();

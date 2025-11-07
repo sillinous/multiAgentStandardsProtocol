@@ -65,6 +65,9 @@ from superstandard.protocols.consciousness_protocol import (
     ConsciousnessState
 )
 
+# Import agent runtime system
+from superstandard.agents.runtime import AgentFactory, LifecycleManager
+
 # ============================================================================
 # Pydantic Models for API
 # ============================================================================
@@ -130,6 +133,10 @@ class ServerState:
         self.coordination_manager = CoordinationManager()
         self.collectives: Dict[str, CollectiveConsciousness] = {}
 
+        # Agent runtime system
+        self.agent_factory = AgentFactory()
+        self.lifecycle_manager = LifecycleManager(self.agent_factory)
+
         # WebSocket connections
         self.ws_connections: Dict[str, List[WebSocket]] = {
             "admin": [],
@@ -144,6 +151,7 @@ class ServerState:
             "total_sessions_created": 0,
             "total_thoughts_submitted": 0,
             "total_patterns_discovered": 0,
+            "total_agents_instantiated": 0,
             "server_start_time": datetime.utcnow()
         }
 
@@ -250,8 +258,18 @@ async def consciousness_dashboard():
 # ============================================================================
 
 @app.post("/api/anp/agents/register")
-async def register_agent(request: AgentRegistrationRequest, background_tasks: BackgroundTasks):
-    """Register an agent on the network."""
+async def register_agent(
+    request: AgentRegistrationRequest,
+    background_tasks: BackgroundTasks,
+    instantiate: bool = False  # NEW: Optional instantiation
+):
+    """
+    Register an agent on the network.
+
+    Args:
+        request: Agent registration details
+        instantiate: If True, creates a REAL running agent instance (not just registry entry)
+    """
     try:
         registration = ANPRegistration(
             action="register",
@@ -265,6 +283,26 @@ async def register_agent(request: AgentRegistrationRequest, background_tasks: Ba
 
         success = await state.network_registry.register_agent(registration)
 
+        instantiated = False
+        if success and instantiate:
+            # 🚀 ACTUALLY INSTANTIATE THE AGENT!
+            try:
+                runtime_agent = await state.agent_factory.create_agent(
+                    agent_id=request.agent_id,
+                    agent_type=request.agent_type,
+                    capabilities=request.capabilities,
+                    metadata=request.metadata,
+                    auto_start=True
+                )
+                instantiated = True
+                state.stats["total_agents_instantiated"] += 1
+
+                logger.info(f"✅ Agent {request.agent_id} INSTANTIATED and RUNNING")
+
+            except Exception as e:
+                logger.error(f"❌ Instantiation failed for {request.agent_id}: {e}")
+                # Registration succeeded but instantiation failed
+
         if success:
             state.stats["total_agents_registered"] += 1
 
@@ -276,6 +314,7 @@ async def register_agent(request: AgentRegistrationRequest, background_tasks: Ba
                     "type": "agent_registered",
                     "agent_id": request.agent_id,
                     "agent_type": request.agent_type,
+                    "instantiated": instantiated,
                     "timestamp": datetime.utcnow().isoformat()
                 }
             )
@@ -286,7 +325,7 @@ async def register_agent(request: AgentRegistrationRequest, background_tasks: Ba
                 {
                     "type": "activity",
                     "category": "agent",
-                    "message": f"Agent {request.agent_id} registered ({request.agent_type})",
+                    "message": f"Agent {request.agent_id} {'INSTANTIATED' if instantiated else 'registered'} ({request.agent_type})",
                     "timestamp": datetime.utcnow().isoformat()
                 }
             )
@@ -294,7 +333,12 @@ async def register_agent(request: AgentRegistrationRequest, background_tasks: Ba
         return {
             "success": success,
             "agent_id": request.agent_id,
-            "message": "Agent registered successfully" if success else "Registration failed"
+            "instantiated": instantiated,
+            "message": (
+                f"Agent {'instantiated and running' if instantiated else 'registered in directory'}"
+                if success
+                else "Registration failed"
+            )
         }
 
     except Exception as e:
@@ -383,6 +427,160 @@ async def anp_stats():
             "discoveries_24h": state.stats["total_agents_registered"],  # Simplified
             "heartbeat_rate": 0,  # TODO: Track actual heartbeat rate
             "network_uptime": 99.9  # TODO: Calculate actual uptime
+        }
+
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
+# ============================================================================
+# Agent Runtime Control Endpoints
+# ============================================================================
+
+@app.post("/api/agents/{agent_id}/instantiate")
+async def instantiate_agent(agent_id: str):
+    """
+    Instantiate a registered agent (make it actually run).
+
+    This takes an agent from the registry and creates a REAL running instance.
+    """
+    try:
+        # Check if agent is registered
+        if agent_id not in state.network_registry.agents:
+            raise HTTPException(status_code=404, detail="Agent not registered")
+
+        # Check if already instantiated
+        if agent_id in state.agent_factory.running_agents:
+            return {
+                "success": False,
+                "message": "Agent already instantiated",
+                "agent_id": agent_id
+            }
+
+        # Get agent info from registry
+        agent_info = state.network_registry.agents[agent_id]
+
+        # Instantiate agent
+        runtime_agent = await state.agent_factory.create_agent(
+            agent_id=agent_id,
+            agent_type=agent_info.agent_type,
+            capabilities=agent_info.capabilities,
+            metadata=agent_info.metadata,
+            auto_start=True
+        )
+
+        state.stats["total_agents_instantiated"] += 1
+
+        return {
+            "success": True,
+            "agent_id": agent_id,
+            "message": "Agent instantiated and running",
+            "status": runtime_agent.get_status()
+        }
+
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
+@app.post("/api/agents/{agent_id}/stop")
+async def stop_agent(agent_id: str):
+    """Stop a running agent"""
+    try:
+        success = await state.agent_factory.stop_agent(agent_id)
+
+        if not success:
+            raise HTTPException(status_code=404, detail="Agent not found or not running")
+
+        return {
+            "success": True,
+            "agent_id": agent_id,
+            "message": "Agent stopped"
+        }
+
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
+@app.post("/api/agents/{agent_id}/pause")
+async def pause_agent(agent_id: str):
+    """Pause a running agent"""
+    try:
+        success = await state.agent_factory.pause_agent(agent_id)
+
+        if not success:
+            raise HTTPException(status_code=404, detail="Agent not found or not running")
+
+        return {
+            "success": True,
+            "agent_id": agent_id,
+            "message": "Agent paused"
+        }
+
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
+@app.post("/api/agents/{agent_id}/resume")
+async def resume_agent(agent_id: str):
+    """Resume a paused agent"""
+    try:
+        success = await state.agent_factory.resume_agent(agent_id)
+
+        if not success:
+            raise HTTPException(status_code=404, detail="Agent not found or not paused")
+
+        return {
+            "success": True,
+            "agent_id": agent_id,
+            "message": "Agent resumed"
+        }
+
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
+@app.post("/api/agents/{agent_id}/task")
+async def submit_task_to_agent(agent_id: str, task: Dict[str, Any]):
+    """Submit a task to a running agent"""
+    try:
+        task_id = await state.agent_factory.submit_task(agent_id, task)
+
+        if not task_id:
+            raise HTTPException(status_code=404, detail="Agent not found or not running")
+
+        return {
+            "success": True,
+            "agent_id": agent_id,
+            "task_id": task_id,
+            "message": "Task submitted"
+        }
+
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
+@app.get("/api/agents/running")
+async def get_running_agents():
+    """Get list of all running (instantiated) agents"""
+    try:
+        running_agents = state.agent_factory.get_running_agents()
+
+        return {
+            "success": True,
+            "count": len(running_agents),
+            "agents": running_agents
+        }
+
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
+@app.get("/api/agents/{agent_id}/status")
+async def get_agent_runtime_status(agent_id: str):
+    """Get detailed runtime status of an agent"""
+    try:
+        status = state.agent_factory.get_agent_status(agent_id)
+
+        if not status:
+            raise HTTPException(status_code=404, detail="Agent not running")
+
+        return {
+            "success": True,
+            "agent_id": agent_id,
+            "status": status
         }
 
     except Exception as e:
