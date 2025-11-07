@@ -261,6 +261,13 @@
             border-color: rgba(102, 126, 234, 0.6);
         }
 
+        .control-group input:disabled,
+        .control-group select:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+            background: rgba(255, 255, 255, 0.02);
+        }
+
         .btn {
             background: linear-gradient(90deg, #667eea 0%, #764ba2 100%);
             color: white;
@@ -273,9 +280,15 @@
             transition: transform 0.2s, box-shadow 0.2s;
         }
 
-        .btn:hover {
+        .btn:hover:not(:disabled) {
             transform: translateY(-2px);
             box-shadow: 0 5px 20px rgba(102, 126, 234, 0.4);
+        }
+
+        .btn:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+            transform: none;
         }
 
         .btn:active {
@@ -471,6 +484,7 @@
 
         function connect() {
             const inputEl = document.getElementById('collectiveId');
+            const connectBtn = document.getElementById('connectBtn');
             const input = inputEl.value.trim();
 
             // HTML5 validation
@@ -478,6 +492,10 @@
                 inputEl.reportValidity();
                 return;
             }
+
+            // Disable input and button during connection
+            inputEl.disabled = true;
+            connectBtn.disabled = true;
 
             collectiveId = input;
 
@@ -525,6 +543,8 @@
         }
 
         function disconnect() {
+            // Clear collectiveId to prevent auto-reconnect
+            collectiveId = '';
             if (ws) {
                 ws.close();
                 ws = null;
@@ -535,17 +555,25 @@
             const status = document.getElementById('connectionStatus');
             const connectBtn = document.getElementById('connectBtn');
             const disconnectBtn = document.getElementById('disconnectBtn');
+            const inputEl = document.getElementById('collectiveId');
 
             if (connected) {
                 status.textContent = `Connected to ${collectiveId}`;
                 status.className = 'connection-status connected pulse';
                 connectBtn.style.display = 'none';
+                connectBtn.disabled = false;
                 disconnectBtn.style.display = 'inline-block';
+                disconnectBtn.disabled = false;
+                // Keep input disabled while connected to prevent editing
+                inputEl.disabled = true;
             } else {
                 status.textContent = 'Disconnected';
                 status.className = 'connection-status disconnected';
                 connectBtn.style.display = 'inline-block';
+                connectBtn.disabled = false;
                 disconnectBtn.style.display = 'none';
+                // Re-enable input when disconnected
+                inputEl.disabled = false;
             }
         }
 
