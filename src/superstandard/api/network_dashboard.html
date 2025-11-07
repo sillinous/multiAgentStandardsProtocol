@@ -463,6 +463,11 @@
     <!-- Registered Agents List -->
     <div class="card">
         <h2>Registered Agents (<span id="agentCount">0</span>)</h2>
+        <div style="margin-bottom: 15px;">
+            <input type="text" id="agentSearch" placeholder="🔍 Search agents by ID, type, or capability..."
+                   oninput="handleSearchInput(this.value)"
+                   style="width: 100%; padding: 12px; background: rgba(255, 255, 255, 0.05); border: 1px solid rgba(255, 255, 255, 0.2); border-radius: 8px; color: #fff; font-size: 14px;">
+        </div>
         <div class="agent-list scrollbar-custom" id="agentList">
             <!-- Dynamically populated -->
         </div>
@@ -795,8 +800,38 @@
             document.getElementById('capabilityFilter').value = '';
             document.getElementById('healthFilter').value = '';
             document.getElementById('maxLoadFilter').value = '';
+            document.getElementById('agentSearch').value = '';
             renderAgentList(agents);
             updateActiveFilters();
+        }
+
+        // Real-time search functionality
+        function handleSearchInput(query) {
+            const searchQuery = query.toLowerCase().trim();
+
+            if (!searchQuery) {
+                // If search is empty, show all agents
+                renderAgentList(agents);
+                return;
+            }
+
+            // Search across ID, type, region, endpoint, and capabilities
+            const filtered = agents.filter(agent => {
+                return agent.id.toLowerCase().includes(searchQuery) ||
+                       agent.type.toLowerCase().includes(searchQuery) ||
+                       agent.region.toLowerCase().includes(searchQuery) ||
+                       agent.endpoint.toLowerCase().includes(searchQuery) ||
+                       agent.capabilities.some(cap => cap.toLowerCase().includes(searchQuery));
+            });
+
+            renderAgentList(filtered);
+
+            // Show search feedback
+            if (filtered.length === 0) {
+                console.log(`[Network] No agents found matching "${query}"`);
+            } else {
+                console.log(`[Network] Found ${filtered.length} agents matching "${query}"`);
+            }
         }
 
         // Update active filters display

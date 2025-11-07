@@ -808,6 +808,11 @@
         <div class="task-queue scrollbar-custom" id="taskQueue">
             <!-- Dynamically populated -->
         </div>
+        <div id="taskPagination" style="display: flex; justify-content: space-between; align-items: center; margin-top: 15px; padding: 10px; border-top: 1px solid rgba(255, 255, 255, 0.1);">
+            <button class="btn btn-secondary" onclick="previousTaskPage()" id="prevTaskBtn" disabled>← Previous</button>
+            <span id="taskPageInfo" style="font-size: 14px; opacity: 0.8;">Page 1 of 1</span>
+            <button class="btn btn-secondary" onclick="nextTaskPage()" id="nextTaskBtn" disabled>Next →</button>
+        </div>
     </div>
 
     <!-- Workflow Visualization -->
@@ -828,6 +833,10 @@
         let participants = [];
         let selectedSessionId = null;
         let ws = null;
+
+        // Pagination state
+        let currentTaskPage = 1;
+        const tasksPerPage = 20;
 
         // HTML Sanitization - Prevent XSS attacks
         function escapeHTML(str) {
@@ -1029,7 +1038,12 @@
                 return priorityOrder[a.priority] - priorityOrder[b.priority];
             });
 
-            listEl.innerHTML = sortedTasks.slice(0, 20).map(task => {
+            // Apply pagination
+            const start = (currentTaskPage - 1) * tasksPerPage;
+            const end = start + tasksPerPage;
+            const paginatedTasks = sortedTasks.slice(start, end);
+
+            listEl.innerHTML = paginatedTasks.map(task => {
                 // Sanitize and validate
                 const validStatuses = ['pending', 'in_progress', 'completed', 'failed'];
                 const validPriorities = ['high', 'medium', 'low'];
@@ -1058,6 +1072,50 @@
             }).join('');
 
             document.getElementById('taskCount').textContent = `${tasks.length} tasks`;
+
+            // Update pagination controls
+            updateTaskPagination();
+        }
+
+        // Pagination control functions
+        function previousTaskPage() {
+            if (currentTaskPage > 1) {
+                currentTaskPage--;
+                renderTasks();
+            }
+        }
+
+        function nextTaskPage() {
+            const totalPages = Math.ceil(tasks.length / tasksPerPage);
+            if (currentTaskPage < totalPages) {
+                currentTaskPage++;
+                renderTasks();
+            }
+        }
+
+        function updateTaskPagination() {
+            const totalPages = Math.max(1, Math.ceil(tasks.length / tasksPerPage));
+            const pageInfo = document.getElementById('taskPageInfo');
+            const prevBtn = document.getElementById('prevTaskBtn');
+            const nextBtn = document.getElementById('nextTaskBtn');
+
+            if (pageInfo) {
+                pageInfo.textContent = `Page ${currentTaskPage} of ${totalPages} (${tasks.length} total tasks)`;
+            }
+
+            if (prevBtn) {
+                prevBtn.disabled = currentTaskPage === 1;
+            }
+
+            if (nextBtn) {
+                nextBtn.disabled = currentTaskPage >= totalPages || tasks.length === 0;
+            }
+
+            // Show/hide pagination if needed
+            const paginationEl = document.getElementById('taskPagination');
+            if (paginationEl) {
+                paginationEl.style.display = tasks.length > tasksPerPage ? 'flex' : 'none';
+            }
         }
 
         // Select session
