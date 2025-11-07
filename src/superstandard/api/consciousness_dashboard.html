@@ -302,12 +302,61 @@
                 opacity: 0.5;
             }
         }
+
+        .navbar {
+            background: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(10px);
+            padding: 15px 30px;
+            border-radius: 15px;
+            margin-bottom: 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .navbar h1 {
+            font-size: 24px;
+            font-weight: 600;
+        }
+
+        .nav-links {
+            display: flex;
+            gap: 20px;
+        }
+
+        .nav-links a {
+            color: #fff;
+            text-decoration: none;
+            padding: 8px 16px;
+            border-radius: 8px;
+            transition: background 0.3s;
+        }
+
+        .nav-links a:hover {
+            background: rgba(255, 255, 255, 0.2);
+        }
+
+        .nav-links a.active {
+            background: rgba(255, 255, 255, 0.3);
+            font-weight: 600;
+        }
     </style>
 </head>
 <body>
+    <nav class="navbar">
+        <h1>🧠 AConsP Consciousness Dashboard</h1>
+        <div class="nav-links">
+            <a href="admin_dashboard.html">Admin</a>
+            <a href="network_dashboard.html">ANP Network</a>
+            <a href="coordination_dashboard.html">ACP Coordination</a>
+            <a href="consciousness_dashboard.html" class="active">AConsP Consciousness</a>
+            <a href="user_control_panel.html">User Panel</a>
+        </div>
+    </nav>
+
     <div class="header">
-        <h1>Consciousness Dashboard</h1>
-        <p class="subtitle">Real-Time Collective Intelligence Monitoring</p>
+        <h1>Collective Intelligence Monitor</h1>
+        <p class="subtitle">Real-Time Consciousness Field Visualization</p>
         <div id="connectionStatus" class="connection-status disconnected">Disconnected</div>
     </div>
 
@@ -390,6 +439,10 @@
     </div>
 
     <script>
+        // Configuration
+        const API_BASE = window.location.origin;
+        const WS_BASE = window.location.protocol === 'https:' ? 'wss://' : 'ws://';
+
         let ws = null;
         let collectiveId = '';
         let eventsData = [];
@@ -415,28 +468,41 @@
                 ws.close();
             }
 
-            // Connect to WebSocket
-            const wsUrl = `ws://localhost:8000/api/consciousness/${collectiveId}/stream`;
+            // Connect to WebSocket using real API server
+            const wsUrl = WS_BASE + window.location.host + '/ws/consciousness';
+            console.log(`[Consciousness] Connecting to ${wsUrl}...`);
             ws = new WebSocket(wsUrl);
 
             ws.onopen = () => {
+                console.log('[Consciousness] WebSocket connected');
                 updateConnectionStatus(true);
                 addEvent('connected', 'Connected to collective', {});
+                // Immediately fetch current state
+                fetchMetrics();
             };
 
             ws.onmessage = (event) => {
                 const data = JSON.parse(event.data);
+                console.log('[Consciousness] WebSocket message:', data);
                 handleEvent(data);
             };
 
             ws.onerror = (error) => {
-                console.error('WebSocket error:', error);
+                console.error('[Consciousness] WebSocket error:', error);
                 updateConnectionStatus(false);
             };
 
             ws.onclose = () => {
+                console.log('[Consciousness] WebSocket disconnected');
                 updateConnectionStatus(false);
                 addEvent('disconnected', 'Disconnected from collective', {});
+                // Auto-reconnect after 5 seconds
+                setTimeout(() => {
+                    if (collectiveId) {
+                        console.log('[Consciousness] Attempting to reconnect...');
+                        connect();
+                    }
+                }, 5000);
             };
         }
 
@@ -480,11 +546,35 @@
             if (!collectiveId) return;
 
             try {
-                const response = await fetch(`http://localhost:8000/api/consciousness/${collectiveId}`);
+                const response = await fetch(`${API_BASE}/api/aconsp/collectives/${collectiveId}/state`);
                 const data = await response.json();
-                updateMetrics(data);
+
+                if (data.success) {
+                    updateMetrics(data.state);
+                } else {
+                    console.error('[Consciousness] Failed to fetch metrics:', data.message);
+                }
             } catch (error) {
-                console.error('Failed to fetch metrics:', error);
+                console.error('[Consciousness] Error fetching metrics:', error);
+            }
+        }
+
+        // Fetch AConsP statistics
+        async function fetchStats() {
+            try {
+                const response = await fetch(`${API_BASE}/api/aconsp/stats`);
+                const data = await response.json();
+
+                if (data.success) {
+                    console.log('[Consciousness] AConsP stats:', data);
+                    // Update overall stats if available
+                    if (data.stats) {
+                        document.getElementById('emergentPatterns').textContent =
+                            data.stats.total_patterns_discovered || 0;
+                    }
+                }
+            } catch (error) {
+                console.error('[Consciousness] Error fetching stats:', error);
             }
         }
 
@@ -619,12 +709,25 @@
         window.addEventListener('resize', resizeCanvas);
         resizeCanvas();
 
+        // Initialize dashboard
+        async function initializeDashboard() {
+            console.log('[Consciousness] Dashboard initialized');
+
+            // Fetch initial stats
+            await fetchStats();
+
+            // Periodic stats refresh (every 10 seconds)
+            setInterval(fetchStats, 10000);
+        }
+
         // Auto-connect on load if collective ID present
         window.addEventListener('load', () => {
+            initializeDashboard();
+
             const input = document.getElementById('collectiveId');
             if (input.value) {
-                // Optional: auto-connect
-                // connect();
+                // Auto-connect to default collective
+                connect();
             }
         });
     </script>

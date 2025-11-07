@@ -547,82 +547,114 @@
     </div>
 
     <script>
+        // Configuration
+        const API_BASE = window.location.origin;
+        const WS_BASE = window.location.protocol === 'https:' ? 'wss://' : 'ws://';
+        const WS_URL = WS_BASE + window.location.host + '/ws/coordination';
+
         // State
         let sessions = [];
         let tasks = [];
         let participants = [];
         let selectedSessionId = null;
+        let ws = null;
 
-        // Generate mock data
-        function generateMockSessions() {
-            const types = ['pipeline', 'swarm', 'supervisor', 'negotiation'];
-            const statuses = ['active', 'active', 'active', 'paused', 'completed'];
-            const names = [
-                'Data Processing Pipeline',
-                'ML Model Training Swarm',
-                'API Integration Supervisor',
-                'Resource Allocation Negotiation',
-                'ETL Workflow Pipeline',
-                'Distributed Computing Swarm'
-            ];
+        // Fetch sessions from API
+        async function fetchSessions() {
+            try {
+                const response = await fetch(`${API_BASE}/api/acp/sessions`);
+                const data = await response.json();
 
-            sessions = [];
-            for (let i = 0; i < 6; i++) {
-                const type = types[i % types.length];
-                const status = statuses[i % statuses.length];
-                const totalTasks = Math.floor(Math.random() * 20) + 5;
-                const completedTasks = Math.floor(totalTasks * (Math.random() * 0.7 + 0.2));
+                if (data.success) {
+                    const apiSessions = data.sessions || [];
 
-                sessions.push({
-                    id: `session_${String(i + 1).padStart(3, '0')}`,
-                    name: names[i],
-                    type: type,
-                    status: status,
-                    totalTasks: totalTasks,
-                    completedTasks: completedTasks,
-                    participantCount: Math.floor(Math.random() * 10) + 3,
-                    createdAt: new Date(Date.now() - Math.random() * 86400000).toISOString(),
-                    priority: ['high', 'medium', 'low'][Math.floor(Math.random() * 3)]
-                });
+                    sessions = apiSessions.map(apiSession => ({
+                        id: apiSession.session_id,
+                        name: apiSession.name || `Session ${apiSession.session_id}`,
+                        type: apiSession.coordination_type || 'pipeline',
+                        status: apiSession.status || 'active',
+                        totalTasks: apiSession.task_count || 0,
+                        completedTasks: apiSession.completed_tasks || 0,
+                        participantCount: apiSession.participant_count || 0,
+                        createdAt: apiSession.created_at || new Date().toISOString(),
+                        priority: apiSession.priority || 'medium',
+                        description: apiSession.description || ''
+                    }));
+
+                    console.log(`[Coordination] Fetched ${sessions.length} sessions from API`);
+                    renderSessions();
+                    updateStats();
+                } else {
+                    console.error('[Coordination] Failed to fetch sessions:', data.message);
+                }
+            } catch (error) {
+                console.error('[Coordination] Error fetching sessions:', error);
             }
         }
 
-        function generateMockTasks() {
-            const taskTypes = ['analysis', 'processing', 'validation', 'transformation', 'aggregation'];
-            const statuses = ['pending', 'in-progress', 'completed', 'failed'];
-            const priorities = ['high', 'medium', 'low'];
+        // Fetch all tasks across all sessions
+        async function fetchAllTasks() {
+            try {
+                tasks = [];
 
-            tasks = [];
-            for (let i = 0; i < 30; i++) {
-                const status = statuses[Math.floor(Math.random() * statuses.length)];
-                const sessionId = sessions[Math.floor(Math.random() * sessions.length)].id;
+                // Fetch tasks for each session
+                for (const session of sessions) {
+                    const response = await fetch(`${API_BASE}/api/acp/sessions/${session.id}/tasks`);
+                    const data = await response.json();
 
-                tasks.push({
-                    id: `task_${String(i + 1).padStart(3, '0')}`,
-                    sessionId: sessionId,
-                    type: taskTypes[Math.floor(Math.random() * taskTypes.length)],
-                    description: `Task ${i + 1} - Process and analyze data`,
-                    status: status,
-                    priority: priorities[Math.floor(Math.random() * priorities.length)],
-                    assignee: status !== 'pending' ? `agent_${String(Math.floor(Math.random() * 15) + 1).padStart(3, '0')}` : null,
-                    progress: status === 'completed' ? 100 : (status === 'in-progress' ? Math.floor(Math.random() * 90) + 10 : 0),
-                    dependencies: Math.random() > 0.7 ? [`task_${String(Math.floor(Math.random() * i) + 1).padStart(3, '0')}}`] : []
-                });
+                    if (data.success) {
+                        const sessionTasks = (data.tasks || []).map(task => ({
+                            id: task.task_id,
+                            sessionId: session.id,
+                            type: task.task_type || 'processing',
+                            description: task.description || `Task ${task.task_id}`,
+                            status: task.status || 'pending',
+                            priority: task.priority >= 8 ? 'high' : (task.priority >= 5 ? 'medium' : 'low'),
+                            assignee: task.assigned_to || null,
+                            progress: task.progress || 0,
+                            dependencies: task.dependencies || []
+                        }));
+
+                        tasks.push(...sessionTasks);
+                    }
+                }
+
+                console.log(`[Coordination] Fetched ${tasks.length} total tasks from API`);
+                renderTasks();
+            } catch (error) {
+                console.error('[Coordination] Error fetching tasks:', error);
             }
         }
 
-        function generateMockParticipants() {
-            const roles = ['coordinator', 'participant', 'observer'];
-            participants = [];
+        // Fetch participants (from session metadata)
+        async function fetchParticipants() {
+            try {
+                participants = [];
 
-            for (let i = 0; i < 15; i++) {
-                participants.push({
-                    agentId: `agent_${String(i + 1).padStart(3, '0')}`,
-                    sessionId: sessions[Math.floor(Math.random() * sessions.length)].id,
-                    role: roles[Math.floor(Math.random() * roles.length)],
-                    tasksCompleted: Math.floor(Math.random() * 20),
-                    activeTask: Math.random() > 0.5
-                });
+                for (const session of sessions) {
+                    // Get session details which includes participants
+                    const response = await fetch(`${API_BASE}/api/acp/sessions`);
+                    const data = await response.json();
+
+                    if (data.success) {
+                        const sessionData = data.sessions.find(s => s.session_id === session.id);
+                        if (sessionData && sessionData.participants) {
+                            sessionData.participants.forEach(p => {
+                                participants.push({
+                                    agentId: p.agent_id || p,
+                                    sessionId: session.id,
+                                    role: p.role || 'participant',
+                                    tasksCompleted: 0,
+                                    activeTask: false
+                                });
+                            });
+                        }
+                    }
+                }
+
+                console.log(`[Coordination] Fetched ${participants.length} participants`);
+            } catch (error) {
+                console.error('[Coordination] Error fetching participants:', error);
             }
         }
 
@@ -786,53 +818,127 @@
             }
         }
 
+        // WebSocket connection for real-time updates
+        function connectWebSocket() {
+            console.log(`[Coordination] Connecting to ${WS_URL}...`);
+
+            ws = new WebSocket(WS_URL);
+
+            ws.onopen = () => {
+                console.log('[Coordination] WebSocket connected');
+            };
+
+            ws.onmessage = (event) => {
+                const data = JSON.parse(event.data);
+                console.log('[Coordination] WebSocket message:', data);
+
+                // Handle different event types
+                if (data.type === 'session_created') {
+                    console.log('[Coordination] New session created:', data.session_id);
+                    fetchSessions();  // Refresh sessions
+                } else if (data.type === 'task_added') {
+                    console.log('[Coordination] New task added:', data.task_id);
+                    fetchAllTasks();  // Refresh tasks
+                } else if (data.type === 'task_status_changed') {
+                    console.log('[Coordination] Task status changed:', data.task_id);
+                    fetchAllTasks();  // Refresh tasks
+                } else if (data.type === 'session_updated') {
+                    console.log('[Coordination] Session updated:', data.session_id);
+                    fetchSessions();  // Refresh sessions
+                }
+
+                // Redraw visualization
+                drawWorkflow();
+            };
+
+            ws.onerror = (error) => {
+                console.error('[Coordination] WebSocket error:', error);
+            };
+
+            ws.onclose = () => {
+                console.log('[Coordination] WebSocket disconnected, reconnecting in 5s...');
+                setTimeout(connectWebSocket, 5000);
+            };
+        }
+
         // Actions
-        function createSession(type) {
-            alert(`Creating new ${type} coordination session...`);
+        async function createSession(type) {
+            const name = prompt(`Enter name for new ${type} session:`, `${type.charAt(0).toUpperCase() + type.slice(1)} Session`);
+            if (!name) return;
+
+            const description = prompt('Enter description (optional):', '');
+
+            try {
+                const response = await fetch(`${API_BASE}/api/acp/sessions`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        name: name,
+                        coordination_type: type,
+                        description: description || `${type} coordination session`
+                    })
+                });
+
+                const result = await response.json();
+
+                if (result.success) {
+                    alert(`✅ Session created: ${result.session_id}`);
+                    fetchSessions();
+                } else {
+                    alert(`❌ Failed to create session: ${result.message}`);
+                }
+            } catch (error) {
+                alert(`❌ Error creating session: ${error.message}`);
+            }
         }
 
         function pauseAllSessions() {
-            alert('Pausing all active sessions...');
+            alert('Pause functionality not yet implemented in API');
         }
 
         function exportMetrics() {
-            alert('Exporting coordination metrics...');
+            const metrics = {
+                sessions: sessions,
+                tasks: tasks,
+                participants: participants,
+                timestamp: new Date().toISOString()
+            };
+            const blob = new Blob([JSON.stringify(metrics, null, 2)], { type: 'application/json' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = `coordination_metrics_${Date.now()}.json`;
+            a.click();
+            URL.revokeObjectURL(url);
         }
 
-        // Initialize
-        generateMockSessions();
-        generateMockTasks();
-        generateMockParticipants();
-        renderSessions();
-        renderTasks();
-        updateStats();
-        drawWorkflow();
+        // Initialize dashboard
+        async function initializeDashboard() {
+            console.log('[Coordination] Initializing dashboard...');
 
-        // Periodic updates
-        setInterval(() => {
-            // Simulate progress
-            sessions.forEach(session => {
-                if (session.status === 'active' && session.completedTasks < session.totalTasks) {
-                    if (Math.random() < 0.3) {
-                        session.completedTasks++;
-                    }
-                }
-            });
+            // Fetch initial data
+            await fetchSessions();
+            await fetchAllTasks();
+            await fetchParticipants();
 
-            tasks.forEach(task => {
-                if (task.status === 'in-progress' && task.progress < 100) {
-                    task.progress = Math.min(100, task.progress + Math.floor(Math.random() * 10));
-                    if (task.progress === 100) {
-                        task.status = 'completed';
-                    }
-                }
-            });
+            // Connect WebSocket for real-time updates
+            connectWebSocket();
 
-            renderSessions();
-            renderTasks();
-            updateStats();
+            // Draw initial visualization
             drawWorkflow();
-        }, 3000);
+
+            console.log('[Coordination] Dashboard initialized');
+        }
+
+        // Start the dashboard
+        initializeDashboard();
+
+        // Periodic refresh (backup for WebSocket)
+        setInterval(async () => {
+            await fetchSessions();
+            await fetchAllTasks();
+            drawWorkflow();
+        }, 10000);  // Refresh every 10 seconds
     </script>
 </body>
 </html>
