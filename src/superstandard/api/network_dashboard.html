@@ -670,6 +670,19 @@
                 ctx.shadowColor = color;
                 ctx.shadowBlur = 15;
 
+                // Activity indicator (pulsing ring for active agents)
+                if (agent.status === 'healthy') {
+                    const pulseTime = Date.now() / 1000;
+                    const pulseSize = Math.sin(pulseTime * 2) * 3 + 3; // Pulse between 0-6
+                    const pulseOpacity = (Math.sin(pulseTime * 2) + 1) / 2; // Pulse between 0-1
+
+                    ctx.strokeStyle = `rgba(74, 222, 128, ${pulseOpacity * 0.7})`;
+                    ctx.lineWidth = 2;
+                    ctx.beginPath();
+                    ctx.arc(agent.x, agent.y, (agent.type === 'coordinator' ? 12 : 8) + pulseSize, 0, Math.PI * 2);
+                    ctx.stroke();
+                }
+
                 // Node
                 ctx.fillStyle = color;
                 ctx.beginPath();
@@ -678,6 +691,15 @@
 
                 // Reset shadow
                 ctx.shadowBlur = 0;
+
+                // Activity dot (small pulsing dot for recently active agents)
+                if (agent.load > 0.5 || agent.status === 'healthy') {
+                    const dotPulse = Math.sin(Date.now() / 500) * 0.5 + 0.5;
+                    ctx.fillStyle = `rgba(74, 222, 128, ${dotPulse})`;
+                    ctx.beginPath();
+                    ctx.arc(agent.x + 6, agent.y - 6, 3, 0, Math.PI * 2);
+                    ctx.fill();
+                }
 
                 // Label
                 ctx.fillStyle = '#fff';

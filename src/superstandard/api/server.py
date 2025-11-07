@@ -246,6 +246,221 @@ async def consciousness_dashboard():
     return FileResponse(dashboard_path)
 
 # ============================================================================
+# Demo Endpoint - Populate Platform with Sample Data
+# ============================================================================
+
+@app.post("/api/demo/populate")
+async def populate_demo_data(background_tasks: BackgroundTasks):
+    """
+    Populate the platform with sample data for demonstration purposes.
+
+    This endpoint creates:
+    - 5 sample agents with different specialties
+    - 2 coordination sessions (pipeline and swarm)
+    - 8 sample thoughts submitted to collective
+    - Demonstrates real-time dashboard updates
+    """
+    results = {
+        "success": True,
+        "agents_created": [],
+        "sessions_created": [],
+        "thoughts_submitted": [],
+        "message": "Demo data populated successfully!"
+    }
+
+    # Sample agents to create
+    sample_agents = [
+        {
+            "agent_id": "supply_chain_analyst_001",
+            "agent_type": "analyst",
+            "capabilities": ["data_analysis", "pattern_recognition", "forecasting"],
+            "endpoints": {"http": "http://localhost:9001"},
+            "metadata": {"specialty": "Supply chain analytics", "department": "Operations"}
+        },
+        {
+            "agent_id": "logistics_optimizer_001",
+            "agent_type": "optimizer",
+            "capabilities": ["optimization", "route_planning", "scheduling"],
+            "endpoints": {"http": "http://localhost:9002"},
+            "metadata": {"specialty": "Transportation optimization", "department": "Logistics"}
+        },
+        {
+            "agent_id": "inventory_manager_001",
+            "agent_type": "manager",
+            "capabilities": ["inventory_management", "stock_prediction", "reorder_automation"],
+            "endpoints": {"http": "http://localhost:9003"},
+            "metadata": {"specialty": "Inventory management", "department": "Warehouse"}
+        },
+        {
+            "agent_id": "cost_optimizer_001",
+            "agent_type": "optimizer",
+            "capabilities": ["cost_analysis", "financial_optimization", "budget_planning"],
+            "endpoints": {"http": "http://localhost:9004"},
+            "metadata": {"specialty": "Cost optimization", "department": "Finance"}
+        },
+        {
+            "agent_id": "demand_forecaster_001",
+            "agent_type": "analyst",
+            "capabilities": ["demand_forecasting", "trend_analysis", "predictive_analytics"],
+            "endpoints": {"http": "http://localhost:9005"},
+            "metadata": {"specialty": "Demand forecasting", "department": "Analytics"}
+        }
+    ]
+
+    # Register all sample agents
+    for agent_data in sample_agents:
+        try:
+            registration = ANPRegistration(
+                action="register",
+                agent_id=agent_data["agent_id"],
+                agent_type=agent_data["agent_type"],
+                capabilities=agent_data["capabilities"],
+                endpoints=agent_data["endpoints"],
+                health_status=AgentStatus.HEALTHY.value,
+                metadata=agent_data["metadata"]
+            )
+
+            success = await state.network_registry.register_agent(registration)
+            if success:
+                results["agents_created"].append(agent_data["agent_id"])
+                state.stats["total_agents_registered"] += 1
+
+                # Broadcast to WebSocket clients
+                background_tasks.add_task(
+                    state.broadcast_event,
+                    "network",
+                    {
+                        "type": "agent_registered",
+                        "agent_id": agent_data["agent_id"],
+                        "agent_type": agent_data["agent_type"],
+                        "timestamp": datetime.now().isoformat()
+                    }
+                )
+        except Exception as e:
+            print(f"Error registering agent {agent_data['agent_id']}: {e}")
+
+    # Create sample coordination sessions
+    sample_sessions = [
+        {
+            "name": "Supply Chain Optimization Pipeline",
+            "coordination_type": CoordinationType.PIPELINE.value,
+            "description": "End-to-end supply chain optimization using pipeline coordination",
+            "objective": "Reduce costs by 30% while maintaining 95% service level"
+        },
+        {
+            "name": "Real-Time Inventory Swarm",
+            "coordination_type": CoordinationType.SWARM.value,
+            "description": "Distributed inventory management using swarm intelligence",
+            "objective": "Optimize stock levels across all warehouses in real-time"
+        }
+    ]
+
+    for session_data in sample_sessions:
+        try:
+            session_id = f"session_{str(uuid4())[:8]}"
+            session = CoordinationSession(
+                session_id=session_id,
+                name=session_data["name"],
+                coordination_type=session_data["coordination_type"],
+                objective=session_data["objective"],
+                description=session_data["description"],
+                status=SessionStatus.ACTIVE.value,
+                created_at=datetime.now()
+            )
+
+            success = await state.coordination_manager.create_coordination(session)
+            if success:
+                results["sessions_created"].append(session_id)
+                state.stats["total_sessions_created"] += 1
+
+                # Broadcast to WebSocket clients
+                background_tasks.add_task(
+                    state.broadcast_event,
+                    "coordination",
+                    {
+                        "type": "session_created",
+                        "session_id": session_id,
+                        "name": session_data["name"],
+                        "coordination_type": session_data["coordination_type"],
+                        "timestamp": datetime.now().isoformat()
+                    }
+                )
+        except Exception as e:
+            print(f"Error creating session {session_data['name']}: {e}")
+
+    # Submit sample thoughts to collective
+    collective_id = "demo_collective"
+    if collective_id not in state.collectives:
+        state.collectives[collective_id] = CollectiveConsciousness(collective_id)
+
+    collective = state.collectives[collective_id]
+
+    sample_thoughts = [
+        {
+            "agent_id": "supply_chain_analyst_001",
+            "thought_type": ThoughtType.OBSERVATION.value,
+            "content": "Historical data shows 23% delivery delays in Q3 2023",
+            "confidence": 0.95
+        },
+        {
+            "agent_id": "logistics_optimizer_001",
+            "thought_type": ThoughtType.INFERENCE.value,
+            "content": "Delays correlate with route consolidation attempts",
+            "confidence": 0.82
+        },
+        {
+            "agent_id": "inventory_manager_001",
+            "thought_type": ThoughtType.INTUITION.value,
+            "content": "Safety stock levels feel misaligned with actual variability",
+            "confidence": 0.70
+        },
+        {
+            "agent_id": "cost_optimizer_001",
+            "thought_type": ThoughtType.INSIGHT.value,
+            "content": "40% cost reduction possible if we accept 5% longer lead times",
+            "confidence": 0.88
+        },
+        {
+            "agent_id": "demand_forecaster_001",
+            "thought_type": ThoughtType.OBSERVATION.value,
+            "content": "Customer tolerance for delays is 7 days in 78% of orders",
+            "confidence": 0.92
+        }
+    ]
+
+    for thought_data in sample_thoughts:
+        try:
+            thought = Thought(
+                thought_id=f"thought_{str(uuid4())[:8]}",
+                agent_id=thought_data["agent_id"],
+                thought_type=thought_data["thought_type"],
+                content=thought_data["content"],
+                confidence=thought_data["confidence"],
+                timestamp=datetime.now()
+            )
+
+            await collective.contribute_thought(thought)
+            results["thoughts_submitted"].append(thought.thought_id)
+            state.stats["total_thoughts_submitted"] += 1
+
+            # Broadcast to WebSocket clients
+            background_tasks.add_task(
+                state.broadcast_event,
+                "consciousness",
+                {
+                    "type": "thought_contributed",
+                    "agent_id": thought_data["agent_id"],
+                    "thought_type": thought_data["thought_type"],
+                    "content": thought_data["content"],
+                    "timestamp": datetime.now().isoformat()
+                }
+            )
+        except Exception as e:
+            print(f"Error submitting thought: {e}")
+
+    return results
+
+# ============================================================================
 # ANP (Agent Network Protocol) Endpoints
 # ============================================================================
 
@@ -858,23 +1073,23 @@ async def startup_event():
     print("SuperStandard Multi-Agent Platform API Server")
     print("=" * 80)
     print()
-    print("🚀 Server starting...")
+    print(">> Server starting...")
     print(f"   Start time: {state.stats['server_start_time'].isoformat()}")
     print()
-    print("📡 Protocols initialized:")
-    print("   ✅ ANP (Agent Network Protocol)")
-    print("   ✅ ACP (Agent Coordination Protocol)")
-    print("   ✅ AConsP (Agent Consciousness Protocol)")
+    print(">> Protocols initialized:")
+    print("   [OK] ANP (Agent Network Protocol)")
+    print("   [OK] ACP (Agent Coordination Protocol)")
+    print("   [OK] AConsP (Agent Consciousness Protocol)")
     print()
-    print("🌐 Dashboard Hub:")
-    print("   🏠 http://localhost:8080/dashboard (Main landing page)")
+    print(">> Dashboard Hub:")
+    print("   [HOME] http://localhost:8080/dashboard (Main landing page)")
     print()
     print("   Individual Dashboards:")
-    print("   📊 http://localhost:8080/dashboard/admin")
-    print("   🎛️ http://localhost:8080/dashboard/user")
-    print("   🌐 http://localhost:8080/dashboard/network")
-    print("   🤝 http://localhost:8080/dashboard/coordination")
-    print("   🧠 http://localhost:8080/dashboard/consciousness")
+    print("   [ADMIN] http://localhost:8080/dashboard/admin")
+    print("   [USER]  http://localhost:8080/dashboard/user")
+    print("   [NET]   http://localhost:8080/dashboard/network")
+    print("   [COORD] http://localhost:8080/dashboard/coordination")
+    print("   [MIND]  http://localhost:8080/dashboard/consciousness")
     print()
     print("=" * 80)
 

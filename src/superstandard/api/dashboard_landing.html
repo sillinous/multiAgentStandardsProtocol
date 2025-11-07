@@ -196,6 +196,105 @@
             background: rgba(255, 255, 255, 0.3);
             transform: translateY(-2px);
         }
+
+        .demo-button {
+            margin-top: 20px;
+            padding: 15px 40px;
+            font-size: 1.1em;
+            font-weight: 600;
+            background: linear-gradient(135deg, #4ade80 0%, #22c55e 100%);
+            color: #fff;
+            border: none;
+            border-radius: 30px;
+            cursor: pointer;
+            transition: all 0.3s;
+            box-shadow: 0 5px 20px rgba(74, 222, 128, 0.4);
+        }
+
+        .demo-button:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 8px 30px rgba(74, 222, 128, 0.6);
+        }
+
+        .demo-button:active {
+            transform: translateY(-1px);
+        }
+
+        .demo-button:disabled {
+            background: rgba(255, 255, 255, 0.3);
+            cursor: not-allowed;
+            box-shadow: none;
+        }
+
+        .demo-notification {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            background: rgba(74, 222, 128, 0.95);
+            color: #000;
+            padding: 20px 30px;
+            border-radius: 15px;
+            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.3);
+            font-weight: 600;
+            animation: slideInRight 0.5s ease;
+            z-index: 1000;
+        }
+
+        @keyframes slideInRight {
+            from {
+                opacity: 0;
+                transform: translateX(100px);
+            }
+            to {
+                opacity: 1;
+                transform: translateX(0);
+            }
+        }
+
+        .activity-heatmap {
+            background: rgba(255, 255, 255, 0.15);
+            backdrop-filter: blur(10px);
+            border-radius: 15px;
+            padding: 25px;
+            margin-bottom: 30px;
+            max-width: 1400px;
+            margin-left: auto;
+            margin-right: auto;
+        }
+
+        .heatmap-row {
+            display: grid;
+            grid-template-columns: 200px 1fr 50px;
+            gap: 15px;
+            align-items: center;
+            margin-bottom: 15px;
+        }
+
+        .heatmap-label {
+            font-size: 0.9em;
+            opacity: 0.9;
+        }
+
+        .heatmap-bar {
+            height: 25px;
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 12px;
+            overflow: hidden;
+            position: relative;
+        }
+
+        .heatmap-fill {
+            height: 100%;
+            background: linear-gradient(90deg, #4ade80, #22c55e);
+            transition: width 0.5s ease;
+            border-radius: 12px;
+        }
+
+        .heatmap-count {
+            text-align: center;
+            font-weight: 600;
+            font-size: 1.1em;
+        }
     </style>
 </head>
 <body>
@@ -206,6 +305,9 @@
             <span class="status-dot"></span>
             <span id="systemStatus">System Operational</span>
         </div>
+        <button class="demo-button" onclick="runQuickDemo()">
+            ⚡ Run Quick Demo
+        </button>
     </div>
 
     <div class="stats-bar">
@@ -226,6 +328,38 @@
                 <span class="stat-value" id="patternsDiscovered">-</span>
                 <span class="stat-label">Patterns Discovered</span>
             </div>
+        </div>
+    </div>
+
+    <div class="activity-heatmap">
+        <h3 style="margin-bottom: 15px; font-size: 1.1em;">Recent Activity (Last 5 Minutes)</h3>
+        <div class="heatmap-row">
+            <span class="heatmap-label">Agent Registrations</span>
+            <div class="heatmap-bar">
+                <div class="heatmap-fill" id="heatAgents" style="width: 0%"></div>
+            </div>
+            <span class="heatmap-count" id="countAgents">0</span>
+        </div>
+        <div class="heatmap-row">
+            <span class="heatmap-label">Session Creation</span>
+            <div class="heatmap-bar">
+                <div class="heatmap-fill" id="heatSessions" style="width: 0%"></div>
+            </div>
+            <span class="heatmap-count" id="countSessions">0</span>
+        </div>
+        <div class="heatmap-row">
+            <span class="heatmap-label">Thought Contributions</span>
+            <div class="heatmap-bar">
+                <div class="heatmap-fill" id="heatThoughts" style="width: 0%"></div>
+            </div>
+            <span class="heatmap-count" id="countThoughts">0</span>
+        </div>
+        <div class="heatmap-row">
+            <span class="heatmap-label">Pattern Discoveries</span>
+            <div class="heatmap-bar">
+                <div class="heatmap-fill" id="heatPatterns" style="width: 0%"></div>
+            </div>
+            <span class="heatmap-count" id="countPatterns">0</span>
         </div>
     </div>
 
@@ -319,6 +453,14 @@
     <script>
         const API_BASE = window.location.origin;
 
+        // Track previous stats for activity heatmap
+        let previousStats = {
+            agents: 0,
+            sessions: 0,
+            thoughts: 0,
+            patterns: 0
+        };
+
         // Fetch system statistics
         async function fetchStats() {
             try {
@@ -327,14 +469,37 @@
 
                 if (data.success) {
                     const system = data.system || {};
-                    document.getElementById('totalAgents').textContent =
-                        system.total_agents_registered || 0;
-                    document.getElementById('activeSessions').textContent =
-                        data.acp?.active_sessions || 0;
-                    document.getElementById('totalThoughts').textContent =
-                        system.total_thoughts_submitted || 0;
-                    document.getElementById('patternsDiscovered').textContent =
-                        system.total_patterns_discovered || 0;
+                    const currentAgents = system.total_agents_registered || 0;
+                    const currentSessions = system.total_sessions_created || 0;
+                    const currentThoughts = system.total_thoughts_submitted || 0;
+                    const currentPatterns = system.total_patterns_discovered || 0;
+
+                    // Update main stats
+                    document.getElementById('totalAgents').textContent = currentAgents;
+                    document.getElementById('activeSessions').textContent = data.acp?.active_sessions || 0;
+                    document.getElementById('totalThoughts').textContent = currentThoughts;
+                    document.getElementById('patternsDiscovered').textContent = currentPatterns;
+
+                    // Calculate recent activity (change since last fetch)
+                    const recentAgents = Math.max(0, currentAgents - previousStats.agents);
+                    const recentSessions = Math.max(0, currentSessions - previousStats.sessions);
+                    const recentThoughts = Math.max(0, currentThoughts - previousStats.thoughts);
+                    const recentPatterns = Math.max(0, currentPatterns - previousStats.patterns);
+
+                    // Update heatmap (scale to max 10 for visualization)
+                    const maxActivity = 10;
+                    updateHeatmap('heatAgents', 'countAgents', recentAgents, maxActivity);
+                    updateHeatmap('heatSessions', 'countSessions', recentSessions, maxActivity);
+                    updateHeatmap('heatThoughts', 'countThoughts', recentThoughts, maxActivity);
+                    updateHeatmap('heatPatterns', 'countPatterns', recentPatterns, maxActivity);
+
+                    // Update previous stats
+                    previousStats = {
+                        agents: currentAgents,
+                        sessions: currentSessions,
+                        thoughts: currentThoughts,
+                        patterns: currentPatterns
+                    };
 
                     document.getElementById('systemStatus').textContent = 'System Operational';
                 } else {
@@ -348,6 +513,13 @@
                 document.getElementById('totalThoughts').textContent = '-';
                 document.getElementById('patternsDiscovered').textContent = '-';
             }
+        }
+
+        // Update heatmap bar
+        function updateHeatmap(fillId, countId, value, maxValue) {
+            const percentage = Math.min(100, (value / maxValue) * 100);
+            document.getElementById(fillId).style.width = percentage + '%';
+            document.getElementById(countId).textContent = value;
         }
 
         // Check system health
@@ -372,6 +544,83 @@
 
         // Refresh every 5 seconds
         setInterval(fetchStats, 5000);
+
+        // Quick Demo function
+        async function runQuickDemo() {
+            const button = document.querySelector('.demo-button');
+            button.disabled = true;
+            button.textContent = '⏳ Populating Platform...';
+
+            // Show notification
+            showNotification('Populating platform with demo data...', 'info');
+
+            try {
+                const response = await fetch(`${API_BASE}/api/demo/populate`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' }
+                });
+
+                const result = await response.json();
+
+                if (result.success) {
+                    showNotification(
+                        `✅ Demo Complete! Created ${result.agents_created.length} agents, ` +
+                        `${result.sessions_created.length} sessions, and ` +
+                        `${result.thoughts_submitted.length} thoughts!`,
+                        'success'
+                    );
+
+                    // Refresh stats immediately
+                    await fetchStats();
+
+                    // Re-enable button after 10 seconds
+                    setTimeout(() => {
+                        button.disabled = false;
+                        button.textContent = '⚡ Run Quick Demo';
+                    }, 10000);
+
+                    // Suggest opening dashboards
+                    setTimeout(() => {
+                        showNotification(
+                            '💡 Now open the Network or Coordination dashboard to see the live data!',
+                            'info'
+                        );
+                    }, 3000);
+                } else {
+                    showNotification('❌ Demo failed. Check console for details.', 'error');
+                    button.disabled = false;
+                    button.textContent = '⚡ Run Quick Demo';
+                }
+            } catch (error) {
+                console.error('Demo error:', error);
+                showNotification('❌ Error running demo: ' + error.message, 'error');
+                button.disabled = false;
+                button.textContent = '⚡ Run Quick Demo';
+            }
+        }
+
+        // Show notification
+        function showNotification(message, type = 'info') {
+            const notification = document.createElement('div');
+            notification.className = 'demo-notification';
+            notification.textContent = message;
+
+            if (type === 'success') {
+                notification.style.background = 'rgba(74, 222, 128, 0.95)';
+            } else if (type === 'error') {
+                notification.style.background = 'rgba(248, 113, 113, 0.95)';
+            } else {
+                notification.style.background = 'rgba(96, 165, 250, 0.95)';
+            }
+
+            document.body.appendChild(notification);
+
+            // Remove after 5 seconds
+            setTimeout(() => {
+                notification.style.opacity = '0';
+                setTimeout(() => notification.remove(), 500);
+            }, 5000);
+        }
     </script>
 </body>
 </html>
