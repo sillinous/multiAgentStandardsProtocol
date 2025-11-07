@@ -450,7 +450,11 @@
                         <label>Max Load</label>
                         <input type="number" id="maxLoadFilter" placeholder="0.0 - 1.0" step="0.1" min="0" max="1">
                     </div>
-                    <button class="btn btn-primary" onclick="applyFilters()">Apply Filters</button>
+                    <div style="display: flex; gap: 10px; margin-top: 10px;">
+                        <button class="btn btn-primary" onclick="applyFilters()">Apply Filters</button>
+                        <button class="btn btn-secondary" onclick="clearFilters()">Clear Filters</button>
+                    </div>
+                    <div id="activeFilters" style="margin-top: 10px; font-size: 13px; opacity: 0.8;"></div>
                 </div>
             </div>
         </div>
@@ -755,6 +759,45 @@
             });
 
             renderAgentList(filtered);
+            updateActiveFilters();
+
+            // Show feedback
+            if (filtered.length < agents.length) {
+                const diff = agents.length - filtered.length;
+                console.log(`[Network] Filtered: ${filtered.length} agents shown, ${diff} hidden`);
+            }
+        }
+
+        // Clear filters
+        function clearFilters() {
+            document.getElementById('agentTypeFilter').value = '';
+            document.getElementById('capabilityFilter').value = '';
+            document.getElementById('healthFilter').value = '';
+            document.getElementById('maxLoadFilter').value = '';
+            renderAgentList(agents);
+            updateActiveFilters();
+        }
+
+        // Update active filters display
+        function updateActiveFilters() {
+            const activeEl = document.getElementById('activeFilters');
+            const filters = [];
+
+            const typeFilter = document.getElementById('agentTypeFilter').value;
+            const capFilter = document.getElementById('capabilityFilter').value;
+            const healthFilter = document.getElementById('healthFilter').value;
+            const maxLoad = document.getElementById('maxLoadFilter').value;
+
+            if (typeFilter) filters.push(`Type: ${typeFilter}`);
+            if (capFilter) filters.push(`Capability: ${capFilter}`);
+            if (healthFilter) filters.push(`Status: ${healthFilter}`);
+            if (maxLoad) filters.push(`Max Load: ${maxLoad}`);
+
+            if (filters.length > 0) {
+                activeEl.innerHTML = `<span style="color: #60a5fa;">🔍 Active filters:</span> ${filters.join(' • ')}`;
+            } else {
+                activeEl.innerHTML = '<span style="opacity: 0.5;">No filters active</span>';
+            }
         }
 
         // Animation loop
@@ -794,9 +837,10 @@
             }
         }
 
-        // Fetch stats initially and periodically
+        // Initialize
         fetchANPStats();
         setInterval(fetchANPStats, 10000);
+        updateActiveFilters();
     </script>
 </body>
 </html>

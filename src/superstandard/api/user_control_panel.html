@@ -326,17 +326,43 @@
         .form-group textarea {
             width: 100%;
             padding: 12px;
-            border: none;
+            border: 2px solid transparent;
             border-radius: 8px;
             background: rgba(255, 255, 255, 0.2);
             color: #fff;
             font-size: 14px;
             font-family: inherit;
+            transition: border-color 0.3s, background 0.3s;
+        }
+
+        .form-group input:focus,
+        .form-group select:focus,
+        .form-group textarea:focus {
+            outline: none;
+            border-color: rgba(96, 165, 250, 0.5);
+            background: rgba(255, 255, 255, 0.25);
+        }
+
+        .form-group input:invalid:not(:placeholder-shown),
+        .form-group select:invalid:not(:placeholder-shown),
+        .form-group textarea:invalid:not(:placeholder-shown) {
+            border-color: rgba(239, 68, 68, 0.6);
+        }
+
+        .form-group input:valid:not(:placeholder-shown),
+        .form-group select:valid:not(:focus),
+        .form-group textarea:valid:not(:placeholder-shown) {
+            border-color: rgba(74, 222, 128, 0.4);
         }
 
         .form-group input::placeholder,
         .form-group textarea::placeholder {
             color: rgba(255, 255, 255, 0.6);
+        }
+
+        .form-group label .required {
+            color: #f87171;
+            margin-left: 4px;
         }
 
         .form-actions {
@@ -354,6 +380,35 @@
         .btn-cancel {
             background: rgba(255, 255, 255, 0.1);
             color: #fff;
+        }
+
+        .btn-submit:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+        }
+
+        .btn-submit.loading {
+            position: relative;
+            color: transparent;
+        }
+
+        .btn-submit.loading::after {
+            content: '';
+            position: absolute;
+            width: 16px;
+            height: 16px;
+            top: 50%;
+            left: 50%;
+            margin-left: -8px;
+            margin-top: -8px;
+            border: 2px solid #fff;
+            border-radius: 50%;
+            border-top-color: transparent;
+            animation: spinner 0.6s linear infinite;
+        }
+
+        @keyframes spinner {
+            to {transform: rotate(360deg);}
         }
 
         .recent-activity {
@@ -658,13 +713,13 @@
                 <span>Register New Agent</span>
                 <button class="modal-close" onclick="closeModal('registerAgent')" aria-label="Close">&times;</button>
             </div>
-            <form onsubmit="submitRegisterAgent(event)">
+            <form onsubmit="submitRegisterAgent(event)" novalidate>
                 <div class="form-group">
-                    <label>Agent ID</label>
-                    <input type="text" name="agentId" placeholder="e.g., analyst_001" required>
+                    <label>Agent ID <span class="required">*</span></label>
+                    <input type="text" name="agentId" placeholder="e.g., analyst_001" required minlength="3">
                 </div>
                 <div class="form-group">
-                    <label>Agent Type</label>
+                    <label>Agent Type <span class="required">*</span></label>
                     <select name="agentType" required>
                         <option value="">Select Type</option>
                         <option value="analyst">Analyst</option>
@@ -696,13 +751,13 @@
                 <span>Create Coordination Session</span>
                 <button class="modal-close" onclick="closeModal('createSession')" aria-label="Close">&times;</button>
             </div>
-            <form onsubmit="submitCreateSession(event)">
+            <form onsubmit="submitCreateSession(event)" novalidate>
                 <div class="form-group">
-                    <label>Session Name</label>
-                    <input type="text" name="sessionName" placeholder="e.g., Data Processing Pipeline" required>
+                    <label>Session Name <span class="required">*</span></label>
+                    <input type="text" name="sessionName" placeholder="e.g., Data Processing Pipeline" required minlength="3">
                 </div>
                 <div class="form-group">
-                    <label>Coordination Type</label>
+                    <label>Coordination Type <span class="required">*</span></label>
                     <select name="coordinationType" required>
                         <option value="">Select Type</option>
                         <option value="pipeline">Pipeline - Sequential task execution</option>
@@ -730,14 +785,14 @@
                 <span>Join Collective Consciousness</span>
                 <button class="modal-close" onclick="closeModal('joinCollective')" aria-label="Close">&times;</button>
             </div>
-            <form onsubmit="submitJoinCollective(event)">
+            <form onsubmit="submitJoinCollective(event)" novalidate>
                 <div class="form-group">
-                    <label>Agent ID</label>
-                    <input type="text" name="agentId" placeholder="e.g., analyst_001" required>
+                    <label>Agent ID <span class="required">*</span></label>
+                    <input type="text" name="agentId" placeholder="e.g., analyst_001" required minlength="3">
                 </div>
                 <div class="form-group">
-                    <label>Collective ID</label>
-                    <input type="text" name="collectiveId" placeholder="e.g., main_collective" required>
+                    <label>Collective ID <span class="required">*</span></label>
+                    <input type="text" name="collectiveId" placeholder="e.g., main_collective" required minlength="3">
                 </div>
                 <div class="form-group">
                     <label>Auto-Respond to Queries</label>
@@ -853,6 +908,17 @@
         // Form submissions with REAL API calls
         async function submitRegisterAgent(e) {
             e.preventDefault();
+
+            // Validate form
+            if (!e.target.checkValidity()) {
+                e.target.reportValidity();
+                return;
+            }
+
+            const submitBtn = e.target.querySelector('.btn-submit');
+            submitBtn.disabled = true;
+            submitBtn.classList.add('loading');
+
             const formData = new FormData(e.target);
             const data = Object.fromEntries(formData);
 
@@ -890,11 +956,25 @@
             } catch (error) {
                 console.error('[UserPanel] Registration error:', error);
                 showToast('Registration Error', error.message, 'error');
+            } finally {
+                submitBtn.disabled = false;
+                submitBtn.classList.remove('loading');
             }
         }
 
         async function submitCreateSession(e) {
             e.preventDefault();
+
+            // Validate form
+            if (!e.target.checkValidity()) {
+                e.target.reportValidity();
+                return;
+            }
+
+            const submitBtn = e.target.querySelector('.btn-submit');
+            submitBtn.disabled = true;
+            submitBtn.classList.add('loading');
+
             const formData = new FormData(e.target);
             const data = Object.fromEntries(formData);
 
@@ -926,11 +1006,25 @@
             } catch (error) {
                 console.error('[UserPanel] Session creation error:', error);
                 showToast('Session Creation Error', error.message, 'error');
+            } finally {
+                submitBtn.disabled = false;
+                submitBtn.classList.remove('loading');
             }
         }
 
         async function submitJoinCollective(e) {
             e.preventDefault();
+
+            // Validate form
+            if (!e.target.checkValidity()) {
+                e.target.reportValidity();
+                return;
+            }
+
+            const submitBtn = e.target.querySelector('.btn-submit');
+            submitBtn.disabled = true;
+            submitBtn.classList.add('loading');
+
             const formData = new FormData(e.target);
             const data = Object.fromEntries(formData);
 
@@ -967,6 +1061,9 @@
             } catch (error) {
                 console.error('[UserPanel] Join collective error:', error);
                 showToast('Join Error', error.message, 'error');
+            } finally {
+                submitBtn.disabled = false;
+                submitBtn.classList.remove('loading');
             }
         }
 
