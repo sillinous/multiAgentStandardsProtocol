@@ -643,59 +643,175 @@
             });
         });
 
-        // Form submissions
-        function submitRegisterAgent(e) {
-            e.preventDefault();
-            const formData = new FormData(e.target);
-            const data = Object.fromEntries(formData);
+        // API Configuration
+        const API_BASE = window.location.origin;
+        const WS_BASE = window.location.protocol === 'https:' ? 'wss://' : 'ws://';
+        const WS_URL = WS_BASE + window.location.host + '/ws/admin';
 
-            console.log('Registering agent:', data);
-            alert(`Agent ${data.agentId} registered successfully!`);
-            addActivity('agent', `New agent registered: ${data.agentId} (${data.agentType})`);
-            closeModal('registerAgent');
-            e.target.reset();
-            updateStats();
+        // WebSocket connection
+        let ws = null;
+        let activities = [];
+
+        // Connect to WebSocket for real-time activity updates
+        function connectWebSocket() {
+            try {
+                ws = new WebSocket(WS_URL);
+
+                ws.onopen = () => {
+                    console.log('[UserPanel] WebSocket connected');
+                };
+
+                ws.onmessage = (event) => {
+                    try {
+                        const data = JSON.parse(event.data);
+                        if (data.type === 'activity') {
+                            addActivity(data.category, data.message);
+                        }
+                    } catch (e) {
+                        console.error('[UserPanel] Failed to parse WebSocket message:', e);
+                    }
+                };
+
+                ws.onclose = () => {
+                    console.log('[UserPanel] WebSocket disconnected, reconnecting...');
+                    setTimeout(connectWebSocket, 5000);
+                };
+            } catch (e) {
+                console.error('[UserPanel] Failed to connect WebSocket:', e);
+            }
         }
 
-        function submitCreateSession(e) {
+        // Form submissions with REAL API calls
+        async function submitRegisterAgent(e) {
             e.preventDefault();
             const formData = new FormData(e.target);
             const data = Object.fromEntries(formData);
 
-            console.log('Creating session:', data);
-            alert(`Session "${data.sessionName}" created successfully!`);
-            addActivity('session', `New ${data.coordinationType} session: ${data.sessionName}`);
-            closeModal('createSession');
-            e.target.reset();
-            updateStats();
+            // Parse capabilities
+            const capabilities = data.capabilities
+                ? data.capabilities.split(',').map(c => c.trim()).filter(Boolean)
+                : [];
+
+            const requestBody = {
+                agent_id: data.agentId,
+                agent_type: data.agentType,
+                capabilities: capabilities,
+                endpoints: data.endpoint ? { "http": data.endpoint } : {},
+                metadata: { "registered_via": "user_control_panel" }
+            };
+
+            try {
+                const response = await fetch(`${API_BASE}/api/anp/agents/register`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(requestBody)
+                });
+
+                const result = await response.json();
+
+                if (result.success) {
+                    alert(`✅ Agent ${data.agentId} registered successfully!`);
+                    addActivity('agent', `New agent registered: ${data.agentId} (${data.agentType})`);
+                    closeModal('registerAgent');
+                    e.target.reset();
+                    updateStats();
+                } else {
+                    alert(`❌ Registration failed: ${result.message || 'Unknown error'}`);
+                }
+            } catch (error) {
+                console.error('[UserPanel] Registration error:', error);
+                alert(`❌ Registration failed: ${error.message}`);
+            }
         }
 
-        function submitJoinCollective(e) {
+        async function submitCreateSession(e) {
             e.preventDefault();
             const formData = new FormData(e.target);
             const data = Object.fromEntries(formData);
 
-            console.log('Joining collective:', data);
-            alert(`Agent ${data.agentId} joined collective ${data.collectiveId}!`);
-            addActivity('thought', `${data.agentId} joined collective: ${data.collectiveId}`);
-            closeModal('joinCollective');
-            e.target.reset();
-            updateStats();
+            const requestBody = {
+                name: data.sessionName,
+                coordination_type: data.coordinationType,
+                description: data.description || "",
+                metadata: { "created_via": "user_control_panel" }
+            };
+
+            try {
+                const response = await fetch(`${API_BASE}/api/acp/sessions`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(requestBody)
+                });
+
+                const result = await response.json();
+
+                if (result.success) {
+                    alert(`✅ Session "${data.sessionName}" created successfully!\nSession ID: ${result.session_id}`);
+                    addActivity('session', `New ${data.coordinationType} session: ${data.sessionName}`);
+                    closeModal('createSession');
+                    e.target.reset();
+                    updateStats();
+                } else {
+                    alert(`❌ Session creation failed: ${result.message || 'Unknown error'}`);
+                }
+            } catch (error) {
+                console.error('[UserPanel] Session creation error:', error);
+                alert(`❌ Session creation failed: ${error.message}`);
+            }
+        }
+
+        async function submitJoinCollective(e) {
+            e.preventDefault();
+            const formData = new FormData(e.target);
+            const data = Object.fromEntries(formData);
+
+            // Submit a thought to join the collective
+            const requestBody = {
+                agent_id: data.agentId,
+                thought_type: "observation",
+                content: `Joining collective ${data.collectiveId}`,
+                confidence: 0.9,
+                context: {
+                    "action": "join",
+                    "auto_respond": data.autoRespond === "true"
+                }
+            };
+
+            try {
+                const response = await fetch(`${API_BASE}/api/aconsp/collectives/${data.collectiveId}/thoughts`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(requestBody)
+                });
+
+                const result = await response.json();
+
+                if (result.success) {
+                    alert(`✅ Agent ${data.agentId} joined collective ${data.collectiveId}!`);
+                    addActivity('thought', `${data.agentId} joined collective: ${data.collectiveId}`);
+                    closeModal('joinCollective');
+                    e.target.reset();
+                    updateStats();
+                } else {
+                    alert(`❌ Failed to join collective: ${result.message || 'Unknown error'}`);
+                }
+            } catch (error) {
+                console.error('[UserPanel] Join collective error:', error);
+                alert(`❌ Failed to join collective: ${error.message}`);
+            }
         }
 
         // Activity tracking
-        let activities = [
-            { type: 'agent', text: 'analyst_001 registered on network', time: new Date(Date.now() - 120000) },
-            { type: 'session', text: 'Pipeline session "Data Processing" started', time: new Date(Date.now() - 300000) },
-            { type: 'thought', text: 'Collective pattern emerged: optimization_strategy', time: new Date(Date.now() - 600000) }
-        ];
-
         function addActivity(type, text) {
             activities.unshift({
                 type: type,
                 text: text,
                 time: new Date()
             });
+            // Keep only last 20 activities
+            if (activities.length > 20) {
+                activities = activities.slice(0, 20);
+            }
             renderActivities();
         }
 
@@ -723,43 +839,41 @@
             return `${days}d ago`;
         }
 
-        // Stats
-        function updateStats() {
-            document.getElementById('anpAgents').textContent = Math.floor(Math.random() * 50 + 20);
-            document.getElementById('anpHealthy').textContent = Math.floor(Math.random() * 45 + 18);
-            document.getElementById('acpSessions').textContent = Math.floor(Math.random() * 15 + 5);
-            document.getElementById('acpTasks').textContent = Math.floor(Math.random() * 100 + 50);
-            document.getElementById('aconspCollectives').textContent = Math.floor(Math.random() * 8 + 2);
-            document.getElementById('aconspThoughts').textContent = Math.floor(Math.random() * 500 + 200);
+        // Fetch real stats from API
+        async function updateStats() {
+            try {
+                const response = await fetch(`${API_BASE}/api/admin/stats`);
+                const data = await response.json();
+
+                if (data.success) {
+                    // ANP stats
+                    const anp = data.anp || {};
+                    document.getElementById('anpAgents').textContent = anp.total_agents || 0;
+                    document.getElementById('anpHealthy').textContent = anp.healthy_agents || 0;
+
+                    // ACP stats
+                    const acp = data.acp || {};
+                    document.getElementById('acpSessions').textContent = acp.active_sessions || 0;
+                    document.getElementById('acpTasks').textContent = acp.total_tasks || 0;
+
+                    // AConsP stats
+                    const aconsp = data.aconsp || {};
+                    document.getElementById('aconspCollectives').textContent = aconsp.total_collectives || 0;
+                    document.getElementById('aconspThoughts').textContent = aconsp.total_thoughts || 0;
+                }
+            } catch (error) {
+                console.error('[UserPanel] Failed to fetch stats:', error);
+            }
         }
 
         // Initialize
+        console.log('[UserPanel] Initializing...');
         renderActivities();
         updateStats();
+        connectWebSocket();
 
-        // Periodic updates
-        setInterval(() => {
-            updateStats();
-        }, 5000);
-
-        // Simulate new activities
-        setInterval(() => {
-            const types = ['agent', 'session', 'thought'];
-            const messages = [
-                'New agent joined the network',
-                'Task completed successfully',
-                'Pattern discovered in collective',
-                'Session coordination updated',
-                'Agent heartbeat received'
-            ];
-
-            if (Math.random() < 0.3) {
-                addActivity(
-                    types[Math.floor(Math.random() * types.length)],
-                    messages[Math.floor(Math.random() * messages.length)]
-                );
-            }
-        }, 10000);
+        // Periodic stats refresh
+        setInterval(updateStats, 5000);
     </script>
 </body>
 </html>
