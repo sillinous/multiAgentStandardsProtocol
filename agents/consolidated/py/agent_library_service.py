@@ -33,6 +33,7 @@ logger = logging.getLogger(__name__)
 
 class AgentStatus(str, Enum):
     """Agent operational status"""
+
     ACTIVE = "active"
     IDLE = "idle"
     BUSY = "busy"
@@ -43,6 +44,7 @@ class AgentStatus(str, Enum):
 
 class ExecutionStatus(str, Enum):
     """Agent execution status"""
+
     PENDING = "pending"
     RUNNING = "running"
     COMPLETED = "completed"
@@ -55,8 +57,10 @@ class ExecutionStatus(str, Enum):
 # DATA MODELS
 # ============================================================================
 
+
 class AgentCapabilityModel(BaseModel):
     """Agent capability specification"""
+
     name: str = Field(..., description="Capability name")
     description: str = Field(..., description="Capability description")
     proficiency: float = Field(..., ge=0.0, le=1.0, description="Proficiency level")
@@ -67,6 +71,7 @@ class AgentCapabilityModel(BaseModel):
 
 class AgentMetadataModel(BaseModel):
     """Agent metadata"""
+
     agent_id: str
     name: str
     description: Optional[str] = None
@@ -82,13 +87,12 @@ class AgentMetadataModel(BaseModel):
     average_execution_time_ms: Optional[float] = None
 
     class Config:
-        json_encoders = {
-            datetime: lambda v: v.isoformat() if v else None
-        }
+        json_encoders = {datetime: lambda v: v.isoformat() if v else None}
 
 
 class AgentExecutionRequest(BaseModel):
     """Request to execute an agent"""
+
     agent_id: str
     input_data: Dict[str, Any]
     request_id: Optional[str] = Field(default_factory=lambda: str(uuid.uuid4()))
@@ -100,6 +104,7 @@ class AgentExecutionRequest(BaseModel):
 
 class AgentExecutionResponse(BaseModel):
     """Response from agent execution"""
+
     execution_id: str = Field(default_factory=lambda: str(uuid.uuid4()))
     agent_id: str
     request_id: str
@@ -111,13 +116,12 @@ class AgentExecutionResponse(BaseModel):
     metadata: Dict[str, Any] = Field(default_factory=dict)
 
     class Config:
-        json_encoders = {
-            datetime: lambda v: v.isoformat() if v else None
-        }
+        json_encoders = {datetime: lambda v: v.isoformat() if v else None}
 
 
 class AgentHealthStatus(BaseModel):
     """Agent health status"""
+
     agent_id: str
     status: AgentStatus
     healthy: bool
@@ -130,13 +134,12 @@ class AgentHealthStatus(BaseModel):
     timestamp: datetime = Field(default_factory=datetime.utcnow)
 
     class Config:
-        json_encoders = {
-            datetime: lambda v: v.isoformat() if v else None
-        }
+        json_encoders = {datetime: lambda v: v.isoformat() if v else None}
 
 
 class AgentDiscoveryQuery(BaseModel):
     """Query for discovering agents"""
+
     apqc_process: Optional[str] = None
     apqc_level: Optional[str] = None
     capability: Optional[str] = None
@@ -151,11 +154,14 @@ class AgentDiscoveryQuery(BaseModel):
 # SERVICE INTERFACES
 # ============================================================================
 
+
 class IAgentDiscoveryService(ABC):
     """Agent discovery service interface"""
 
     @abstractmethod
-    async def discover_agents(self, query: AgentDiscoveryQuery) -> Tuple[List[AgentMetadataModel], int]:
+    async def discover_agents(
+        self, query: AgentDiscoveryQuery
+    ) -> Tuple[List[AgentMetadataModel], int]:
         """Discover agents matching criteria. Returns (agents, total_count)"""
         pass
 
@@ -199,7 +205,9 @@ class IAgentExecutionService(ABC):
         pass
 
     @abstractmethod
-    async def get_execution_history(self, agent_id: str, limit: int = 10) -> List[AgentExecutionResponse]:
+    async def get_execution_history(
+        self, agent_id: str, limit: int = 10
+    ) -> List[AgentExecutionResponse]:
         """Get recent execution history for an agent"""
         pass
 
@@ -256,6 +264,7 @@ class IAgentRegistryService(ABC):
 # CONCRETE IMPLEMENTATIONS
 # ============================================================================
 
+
 class AgentDiscoveryService(IAgentDiscoveryService):
     """Agent discovery service implementation"""
 
@@ -265,7 +274,9 @@ class AgentDiscoveryService(IAgentDiscoveryService):
         self.capability_index: Dict[str, List[str]] = {}  # capability -> agent_ids
         logger.info("✅ AgentDiscoveryService initialized")
 
-    async def discover_agents(self, query: AgentDiscoveryQuery) -> Tuple[List[AgentMetadataModel], int]:
+    async def discover_agents(
+        self, query: AgentDiscoveryQuery
+    ) -> Tuple[List[AgentMetadataModel], int]:
         """Discover agents matching criteria"""
         results = []
 
@@ -297,9 +308,11 @@ class AgentDiscoveryService(IAgentDiscoveryService):
             # Check keyword
             if query.keyword:
                 keyword_lower = query.keyword.lower()
-                if (keyword_lower not in agent.name.lower() and
-                    keyword_lower not in (agent.description or "").lower() and
-                    not any(keyword_lower in cap.name.lower() for cap in agent.capabilities)):
+                if (
+                    keyword_lower not in agent.name.lower()
+                    and keyword_lower not in (agent.description or "").lower()
+                    and not any(keyword_lower in cap.name.lower() for cap in agent.capabilities)
+                ):
                     continue
 
             results.append(agent)
@@ -309,7 +322,7 @@ class AgentDiscoveryService(IAgentDiscoveryService):
 
         # Apply pagination
         total = len(results)
-        paginated = results[query.offset:query.offset + query.limit]
+        paginated = results[query.offset : query.offset + query.limit]
 
         logger.info(f"🔍 Discovered {len(paginated)} agents (total: {total})")
         return paginated, total
@@ -368,7 +381,7 @@ class AgentExecutionService(IAgentExecutionService):
                     request_id=request.request_id,
                     status=ExecutionStatus.FAILED,
                     error_message=f"Agent {request.agent_id} not found",
-                    execution_time_ms=int((datetime.utcnow() - start_time).total_seconds() * 1000)
+                    execution_time_ms=int((datetime.utcnow() - start_time).total_seconds() * 1000),
                 )
 
             # Execute agent (simulated)
@@ -382,7 +395,7 @@ class AgentExecutionService(IAgentExecutionService):
                 request_id=request.request_id,
                 status=ExecutionStatus.COMPLETED,
                 output_data={"result": "success", "processed_at": datetime.utcnow().isoformat()},
-                execution_time_ms=execution_time_ms
+                execution_time_ms=execution_time_ms,
             )
 
             # Store execution
@@ -393,7 +406,9 @@ class AgentExecutionService(IAgentExecutionService):
                 self.execution_history[request.agent_id] = []
             self.execution_history[request.agent_id].append(response)
 
-            logger.info(f"✅ Agent executed successfully: {request.agent_id} (took {execution_time_ms}ms)")
+            logger.info(
+                f"✅ Agent executed successfully: {request.agent_id} (took {execution_time_ms}ms)"
+            )
             return response
 
         except Exception as e:
@@ -404,7 +419,7 @@ class AgentExecutionService(IAgentExecutionService):
                 request_id=request.request_id,
                 status=ExecutionStatus.FAILED,
                 error_message=str(e),
-                execution_time_ms=execution_time_ms
+                execution_time_ms=execution_time_ms,
             )
 
     async def get_execution_status(self, execution_id: str) -> Optional[ExecutionStatus]:
@@ -425,7 +440,9 @@ class AgentExecutionService(IAgentExecutionService):
         logger.warning(f"⚠️ Cannot cancel execution: {execution_id}")
         return False
 
-    async def get_execution_history(self, agent_id: str, limit: int = 10) -> List[AgentExecutionResponse]:
+    async def get_execution_history(
+        self, agent_id: str, limit: int = 10
+    ) -> List[AgentExecutionResponse]:
         """Get recent execution history for an agent"""
         history = self.execution_history.get(agent_id, [])
         recent = history[-limit:] if len(history) > limit else history
@@ -457,7 +474,7 @@ class AgentHealthService(IAgentHealthService):
             healthy=agent.status in [AgentStatus.ACTIVE, AgentStatus.IDLE],
             cpu_usage_percent=None,
             memory_usage_percent=None,
-            success_rate_24h=agent.success_rate
+            success_rate_24h=agent.success_rate,
         )
 
         self.health_status[agent_id] = health
@@ -474,7 +491,9 @@ class AgentHealthService(IAgentHealthService):
         if not health:
             return False
         available = health.status in [AgentStatus.ACTIVE, AgentStatus.IDLE] and health.healthy
-        logger.info(f"{'✅' if available else '⚠️'} Agent availability check: {agent_id} = {available}")
+        logger.info(
+            f"{'✅' if available else '⚠️'} Agent availability check: {agent_id} = {available}"
+        )
         return available
 
     async def get_system_health(self) -> Dict[str, Any]:
@@ -490,7 +509,7 @@ class AgentHealthService(IAgentHealthService):
             "health_percentage": (healthy_count / total_count * 100) if total_count > 0 else 0,
             "system_healthy": healthy_count >= (total_count * 0.9),  # 90% threshold
             "timestamp": datetime.utcnow().isoformat(),
-            "agents_by_status": {}
+            "agents_by_status": {},
         }
 
         # Count by status
@@ -554,7 +573,7 @@ class AgentRegistryService(IAgentRegistryService):
             "agents_by_status": {},
             "agents_by_apqc": {},
             "total_capabilities": 0,
-            "average_success_rate": 0.0
+            "average_success_rate": 0.0,
         }
 
         # Count by status
@@ -585,6 +604,7 @@ class AgentRegistryService(IAgentRegistryService):
 # UNIFIED AGENT LIBRARY SERVICE
 # ============================================================================
 
+
 class AgentLibraryService:
     """
     Unified service for agent library operations.
@@ -607,7 +627,9 @@ class AgentLibraryService:
     # DISCOVERY OPERATIONS
     # =======================================================================
 
-    async def discover_agents(self, query: AgentDiscoveryQuery) -> Tuple[List[AgentMetadataModel], int]:
+    async def discover_agents(
+        self, query: AgentDiscoveryQuery
+    ) -> Tuple[List[AgentMetadataModel], int]:
         """Discover agents matching criteria"""
         return await self.discovery.discover_agents(query)
 
@@ -643,7 +665,9 @@ class AgentLibraryService:
         """Cancel execution"""
         return await self.execution.cancel_execution(execution_id)
 
-    async def get_execution_history(self, agent_id: str, limit: int = 10) -> List[AgentExecutionResponse]:
+    async def get_execution_history(
+        self, agent_id: str, limit: int = 10
+    ) -> List[AgentExecutionResponse]:
         """Get execution history"""
         return await self.execution.get_execution_history(agent_id, limit)
 
@@ -705,11 +729,11 @@ class AgentLibraryService:
                 "discovery": "operational",
                 "execution": "operational",
                 "health": "operational",
-                "registry": "operational"
+                "registry": "operational",
             },
             "system_health": await self.get_system_health(),
             "registry_stats": await self.get_registry_stats(),
-            "timestamp": datetime.utcnow().isoformat()
+            "timestamp": datetime.utcnow().isoformat(),
         }
 
 

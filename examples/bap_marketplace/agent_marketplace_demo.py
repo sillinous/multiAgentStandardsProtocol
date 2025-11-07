@@ -30,14 +30,14 @@ from agents.consolidated.py.blockchain_agentic_protocol import (
     Transaction,
     GovernanceProposal,
     ProposalStatus,
-    VoteType
+    VoteType,
 )
 
 
 async def main():
-    print("\n" + "="*80)
+    print("\n" + "=" * 80)
     print("SuperStandard BAP v1.0 - Agent Marketplace & Blockchain Economy Demo")
-    print("="*80 + "\n")
+    print("=" * 80 + "\n")
 
     # Initialize BAP
     bap = BlockchainAgenticProtocol()
@@ -55,10 +55,10 @@ async def main():
         token_balances={
             TokenType.REPUTATION: 150.0,
             TokenType.UTILITY: 1000.0,
-            TokenType.CAPABILITY: 5.0
+            TokenType.CAPABILITY: 5.0,
         },
         reputation_staked=0.0,
-        staking_history=[]
+        staking_history=[],
     )
     await bap.wallet_manager.store_wallet(wallet1)
     print(f"[+] Created wallet: {wallet1.address}")
@@ -73,10 +73,10 @@ async def main():
         token_balances={
             TokenType.REPUTATION: 200.0,
             TokenType.UTILITY: 500.0,
-            TokenType.GOVERNANCE: 100.0
+            TokenType.GOVERNANCE: 100.0,
         },
         reputation_staked=0.0,
-        staking_history=[]
+        staking_history=[],
     )
     await bap.wallet_manager.store_wallet(wallet2)
     print(f"[+] Created wallet: {wallet2.address}")
@@ -91,10 +91,10 @@ async def main():
         token_balances={
             TokenType.REPUTATION: 180.0,
             TokenType.UTILITY: 750.0,
-            TokenType.PERFORMANCE: 50.0
+            TokenType.PERFORMANCE: 50.0,
         },
         reputation_staked=0.0,
-        staking_history=[]
+        staking_history=[],
     )
     await bap.wallet_manager.store_wallet(wallet3)
     print(f"[+] Created wallet: {wallet3.address}")
@@ -113,8 +113,8 @@ async def main():
             "verified": True,
             "certifications": ["ML Engineer", "Data Scientist"],
             "years_experience": 5,
-            "success_rate": 0.95
-        }
+            "success_rate": 0.95,
+        },
     )
     print(f"[+] Minted NFT: {nft1['nft_id']}")
     print(f"    Capability: {nft1['capability_type']}")
@@ -131,8 +131,8 @@ async def main():
             "verified": True,
             "formats_supported": ["PDF", "HTML", "PPT"],
             "templates": 50,
-            "avg_quality_score": 4.7
-        }
+            "avg_quality_score": 4.7,
+        },
     )
     print(f"[+] Minted NFT: {nft2['nft_id']}")
     print(f"    Capability: {nft2['capability_type']}")
@@ -148,8 +148,8 @@ async def main():
             "verified": True,
             "apis_supported": 30,
             "reliability": 0.99,
-            "avg_response_time": "200ms"
-        }
+            "avg_response_time": "200ms",
+        },
     )
     print(f"[+] Minted NFT: {nft3['nft_id']}")
     print(f"    APIs supported: {nft3['metadata']['apis_supported']}")
@@ -173,11 +173,13 @@ async def main():
     stake_amount = 50.0
     wallet2.reputation_staked += stake_amount
     wallet2.token_balances[TokenType.REPUTATION] -= stake_amount
-    wallet2.staking_history.append({
-        "amount": stake_amount,
-        "timestamp": datetime.now().isoformat(),
-        "purpose": "data_analysis_project"
-    })
+    wallet2.staking_history.append(
+        {
+            "amount": stake_amount,
+            "timestamp": datetime.now().isoformat(),
+            "purpose": "data_analysis_project",
+        }
+    )
     await bap.wallet_manager.update_wallet(wallet2)
     print(f"[+] Staked {stake_amount} REPUTATION")
     print(f"    Remaining balance: {wallet2.token_balances[TokenType.REPUTATION]}")
@@ -194,18 +196,18 @@ async def main():
             "data-provider-1": {
                 "amount": 100,
                 "token_type": TokenType.UTILITY,
-                "milestone": "data_delivery"
+                "milestone": "data_delivery",
             },
             "ai-analyst-1": {
                 "amount": 200,
                 "token_type": TokenType.UTILITY,
-                "milestone": "analysis_complete"
+                "milestone": "analysis_complete",
             },
             "report-gen-1": {
                 "amount": 150,
                 "token_type": TokenType.UTILITY,
-                "milestone": "report_delivered"
-            }
+                "milestone": "report_delivered",
+            },
         },
         terms={
             "project": "Customer Insights Analysis Q4",
@@ -213,17 +215,17 @@ async def main():
             "deliverables": [
                 "Customer data from 3 sources",
                 "Behavioral analysis with ML insights",
-                "Executive summary report"
+                "Executive summary report",
             ],
-            "penalty_clause": "10% reputation burn for non-delivery"
-        }
+            "penalty_clause": "10% reputation burn for non-delivery",
+        },
     )
     print(f"[+] Contract created: {contract['contract_id']}")
     print(f"    Participants: {len(contract['participants'])}")
     print(f"    Total value: {contract['total_value']} tokens")
     print(f"    Duration: {contract['terms']['duration_days']} days")
     print(f"\n    Payment Schedule:")
-    for agent_id, payment in contract['payment_schedule'].items():
+    for agent_id, payment in contract["payment_schedule"].items():
         print(f"      {agent_id}: {payment['amount']} {payment['token_type']}")
         print(f"        Milestone: {payment['milestone']}")
 
@@ -242,7 +244,7 @@ async def main():
         amount=100.0,
         transaction_type="milestone_payment",
         timestamp=datetime.now(),
-        status="pending"
+        status="pending",
     )
     result = await bap.transaction_processor.process_transaction(tx1)
     print(f"[+] Milestone 1 payment processed: {result}")
@@ -261,7 +263,7 @@ async def main():
         amount=200.0,
         transaction_type="milestone_payment",
         timestamp=datetime.now(),
-        status="pending"
+        status="pending",
     )
     result = await bap.transaction_processor.process_transaction(tx2)
     print(f"[+] Milestone 2 payment processed: {result}")
@@ -279,7 +281,7 @@ async def main():
         amount=150.0,
         transaction_type="milestone_payment",
         timestamp=datetime.now(),
-        status="pending"
+        status="pending",
     )
     result = await bap.transaction_processor.process_transaction(tx3)
     print(f"[+] Milestone 3 payment processed: {result}")
@@ -311,15 +313,15 @@ async def main():
         proposal_type="protocol_upgrade",
         title="Increase minimum reputation for high-value contracts",
         description="Propose increasing minimum reputation requirement from 100 to 150 "
-                   "for contracts valued over 1000 UTILITY tokens to ensure quality.",
+        "for contracts valued over 1000 UTILITY tokens to ensure quality.",
         options=["approve", "reject", "modify"],
         voting_period_days=7,
         required_quorum=0.3,
         execution_data={
             "parameter": "min_reputation_high_value",
             "current_value": 100,
-            "proposed_value": 150
-        }
+            "proposed_value": 150,
+        },
     )
     print(f"[+] Proposal created: {proposal['proposal_id']}")
     print(f"    Title: {proposal['title']}")
@@ -333,10 +335,10 @@ async def main():
     # ai-analyst-1 votes (100 GOVERNANCE tokens)
     print("[*] ai-analyst-1 voting 'approve' with 100 GOVERNANCE tokens...")
     vote1 = await bap.vote_on_proposal(
-        proposal_id=proposal['proposal_id'],
+        proposal_id=proposal["proposal_id"],
         voter_id="ai-analyst-1",
         vote=VoteType.APPROVE,
-        voting_power=wallet2.token_balances[TokenType.GOVERNANCE]
+        voting_power=wallet2.token_balances[TokenType.GOVERNANCE],
     )
     print(f"[+] Vote recorded: {vote1['vote']}")
     print(f"    Voting power: {vote1['voting_power']}")
@@ -348,7 +350,7 @@ async def main():
     all_wallets = [
         ("data-provider-1", wallet1),
         ("ai-analyst-1", wallet2),
-        ("report-gen-1", wallet3)
+        ("report-gen-1", wallet3),
     ]
 
     for agent_id, wallet in all_wallets:
@@ -372,9 +374,9 @@ async def main():
         print(f"      From: {tx.from_agent} → To: {tx.to_agent}")
         print(f"      Status: {tx.status}")
 
-    print("\n" + "="*80)
+    print("\n" + "=" * 80)
     print("Agent Marketplace Demo Completed Successfully!")
-    print("="*80)
+    print("=" * 80)
 
     print("\nKey Achievements:")
     print("- 3 agent wallets created with multi-token balances")

@@ -11,7 +11,8 @@ from dataclasses import dataclass
 
 import sys
 import os
-sys.path.append(os.path.join(os.path.dirname(__file__), '../..'))
+
+sys.path.append(os.path.join(os.path.dirname(__file__), "../.."))
 
 from superstandard.agents.base.base_agent import BaseAgent, AgentCapability
 
@@ -19,6 +20,7 @@ from superstandard.agents.base.base_agent import BaseAgent, AgentCapability
 @dataclass
 class Vehicle:
     """Vehicle information"""
+
     id: str
     location: Tuple[float, float]
     destination: Tuple[float, float]
@@ -30,6 +32,7 @@ class Vehicle:
 @dataclass
 class HandoffPoint:
     """A potential handoff location"""
+
     location: Tuple[float, float]
     arrival_time_vehicle1: datetime
     departure_time_vehicle2: datetime
@@ -43,12 +46,16 @@ class HandoffCoordinationAgent(BaseAgent):
     Plans optimal handoff points and timing for long-distance routes.
     """
 
-    def __init__(self, agent_id: str = "handoff_coordination_agent", workspace_path: str = "./autonomous-ecosystem/workspace"):
+    def __init__(
+        self,
+        agent_id: str = "handoff_coordination_agent",
+        workspace_path: str = "./autonomous-ecosystem/workspace",
+    ):
         super().__init__(
             agent_id=agent_id,
             agent_type="handoff_coordination",
             capabilities=[AgentCapability.ORCHESTRATION],
-            workspace_path=workspace_path
+            workspace_path=workspace_path,
         )
 
         # Configuration
@@ -76,10 +83,7 @@ class HandoffCoordinationAgent(BaseAgent):
         elif action == "coordinate_timing":
             return await self._handle_timing_coordination(task)
         else:
-            return {
-                "success": False,
-                "error": f"Unknown action: {action}"
-            }
+            return {"success": False, "error": f"Unknown action: {action}"}
 
     async def analyze(self, input_data: Dict[str, Any]) -> Dict[str, Any]:
         """
@@ -97,13 +101,17 @@ class HandoffCoordinationAgent(BaseAgent):
             return {
                 "timestamp": datetime.now().isoformat(),
                 "total_handoffs": 0,
-                "recommendations": ["No handoffs to analyze"]
+                "recommendations": ["No handoffs to analyze"],
             }
 
         # Calculate metrics
         avg_wait = sum(h.get("wait_time_minutes", 0) for h in handoffs) / len(handoffs)
-        tight_handoffs = sum(1 for h in handoffs if h.get("wait_time_minutes", 0) < self.min_buffer_minutes)
-        long_waits = sum(1 for h in handoffs if h.get("wait_time_minutes", 0) > self.max_buffer_minutes)
+        tight_handoffs = sum(
+            1 for h in handoffs if h.get("wait_time_minutes", 0) < self.min_buffer_minutes
+        )
+        long_waits = sum(
+            1 for h in handoffs if h.get("wait_time_minutes", 0) > self.max_buffer_minutes
+        )
 
         analysis = {
             "timestamp": datetime.now().isoformat(),
@@ -111,8 +119,12 @@ class HandoffCoordinationAgent(BaseAgent):
             "average_wait_minutes": round(avg_wait, 2),
             "tight_handoffs": tight_handoffs,
             "long_waits": long_waits,
-            "coordination_quality": self._calculate_coordination_quality(avg_wait, tight_handoffs, long_waits),
-            "recommendations": self._generate_handoff_recommendations(avg_wait, tight_handoffs, long_waits)
+            "coordination_quality": self._calculate_coordination_quality(
+                avg_wait, tight_handoffs, long_waits
+            ),
+            "recommendations": self._generate_handoff_recommendations(
+                avg_wait, tight_handoffs, long_waits
+            ),
         }
 
         return analysis
@@ -122,7 +134,7 @@ class HandoffCoordinationAgent(BaseAgent):
         origin: Tuple[float, float],
         destination: Tuple[float, float],
         departure_time: datetime,
-        max_vehicles: int = 3
+        max_vehicles: int = 3,
     ) -> Dict[str, Any]:
         """
         Plan a long-distance route using multiple vehicles
@@ -143,7 +155,7 @@ class HandoffCoordinationAgent(BaseAgent):
             return {
                 "needs_multi_vehicle": False,
                 "reason": "Route is short enough for single vehicle",
-                "total_distance_km": round(total_distance, 2)
+                "total_distance_km": round(total_distance, 2),
             }
 
         # Calculate optimal number of segments
@@ -167,20 +179,26 @@ class HandoffCoordinationAgent(BaseAgent):
             segment_distance = self._calculate_distance(current_location, next_location)
             segment_duration = (segment_distance / self.avg_speed_kmh) * 60
 
-            segments.append({
-                "segment_number": i + 1,
-                "from": current_location,
-                "to": next_location,
-                "distance_km": round(segment_distance, 2),
-                "duration_minutes": round(segment_duration, 2),
-                "departure_time": current_time.isoformat(),
-                "arrival_time": (current_time + timedelta(minutes=segment_duration)).isoformat(),
-                "is_handoff_point": i < len(handoff_points)
-            })
+            segments.append(
+                {
+                    "segment_number": i + 1,
+                    "from": current_location,
+                    "to": next_location,
+                    "distance_km": round(segment_distance, 2),
+                    "duration_minutes": round(segment_duration, 2),
+                    "departure_time": current_time.isoformat(),
+                    "arrival_time": (
+                        current_time + timedelta(minutes=segment_duration)
+                    ).isoformat(),
+                    "is_handoff_point": i < len(handoff_points),
+                }
+            )
 
             # Add buffer time for handoff
             if i < len(handoff_points):
-                current_time = current_time + timedelta(minutes=segment_duration + self.ideal_buffer_minutes)
+                current_time = current_time + timedelta(
+                    minutes=segment_duration + self.ideal_buffer_minutes
+                )
             else:
                 current_time = current_time + timedelta(minutes=segment_duration)
 
@@ -192,14 +210,14 @@ class HandoffCoordinationAgent(BaseAgent):
             "num_segments": num_segments,
             "num_handoffs": len(handoff_points),
             "segments": segments,
-            "total_duration_minutes": round((current_time - departure_time).total_seconds() / 60, 2),
-            "handoff_points": [{"lat": p[0], "lon": p[1]} for p in handoff_points]
+            "total_duration_minutes": round(
+                (current_time - departure_time).total_seconds() / 60, 2
+            ),
+            "handoff_points": [{"lat": p[0], "lon": p[1]} for p in handoff_points],
         }
 
     def find_optimal_handoff_points(
-        self,
-        vehicle1: Dict[str, Any],
-        vehicle2: Dict[str, Any]
+        self, vehicle1: Dict[str, Any], vehicle2: Dict[str, Any]
     ) -> List[HandoffPoint]:
         """
         Find optimal handoff points between two vehicles
@@ -215,10 +233,7 @@ class HandoffCoordinationAgent(BaseAgent):
         v2 = self._dict_to_vehicle(vehicle2)
 
         # Calculate midpoint between vehicles
-        midpoint = (
-            (v1.location[0] + v2.location[0]) / 2,
-            (v1.location[1] + v2.location[1]) / 2
-        )
+        midpoint = ((v1.location[0] + v2.location[0]) / 2, (v1.location[1] + v2.location[1]) / 2)
 
         # Generate candidate handoff points around the midpoint
         candidates = []
@@ -261,8 +276,14 @@ class HandoffCoordinationAgent(BaseAgent):
             if wait_time <= self.ideal_buffer_minutes:
                 quality = 1.0 - (wait_time / self.ideal_buffer_minutes) * 0.3
             elif wait_time <= self.max_buffer_minutes:
-                quality = 0.7 - ((wait_time - self.ideal_buffer_minutes) /
-                               (self.max_buffer_minutes - self.ideal_buffer_minutes)) * 0.5
+                quality = (
+                    0.7
+                    - (
+                        (wait_time - self.ideal_buffer_minutes)
+                        / (self.max_buffer_minutes - self.ideal_buffer_minutes)
+                    )
+                    * 0.5
+                )
             else:
                 quality = 0.2
 
@@ -273,13 +294,15 @@ class HandoffCoordinationAgent(BaseAgent):
             arrival_time_v1 = datetime.now() + timedelta(minutes=time1)
             departure_time_v2 = datetime.now() + timedelta(minutes=max(time1, time2))
 
-            handoff_points.append(HandoffPoint(
-                location=candidate,
-                arrival_time_vehicle1=arrival_time_v1,
-                departure_time_vehicle2=departure_time_v2,
-                wait_time_minutes=wait_time,
-                quality_score=quality
-            ))
+            handoff_points.append(
+                HandoffPoint(
+                    location=candidate,
+                    arrival_time_vehicle1=arrival_time_v1,
+                    departure_time_vehicle2=departure_time_v2,
+                    wait_time_minutes=wait_time,
+                    quality_score=quality,
+                )
+            )
 
         # Sort by quality (descending)
         handoff_points.sort(key=lambda h: h.quality_score, reverse=True)
@@ -290,7 +313,7 @@ class HandoffCoordinationAgent(BaseAgent):
         self,
         vehicle1: Dict[str, Any],
         vehicle2: Dict[str, Any],
-        handoff_location: Tuple[float, float]
+        handoff_location: Tuple[float, float],
     ) -> Dict[str, Any]:
         """
         Coordinate timing for a handoff at a specific location
@@ -331,8 +354,7 @@ class HandoffCoordinationAgent(BaseAgent):
 
         # Check if timing is acceptable
         timing_acceptable = (
-            wait_time >= self.min_buffer_minutes and
-            wait_time <= self.max_buffer_minutes
+            wait_time >= self.min_buffer_minutes and wait_time <= self.max_buffer_minutes
         )
 
         return {
@@ -341,19 +363,19 @@ class HandoffCoordinationAgent(BaseAgent):
                 "id": v1.id,
                 "arrival_time": arrival1.isoformat(),
                 "travel_time_minutes": round(time1, 2),
-                "distance_km": round(dist1, 2)
+                "distance_km": round(dist1, 2),
             },
             "vehicle2": {
                 "id": v2.id,
                 "arrival_time": arrival2.isoformat(),
                 "travel_time_minutes": round(time2, 2),
-                "distance_km": round(dist2, 2)
+                "distance_km": round(dist2, 2),
             },
             "waiting_vehicle": waiting_vehicle,
             "wait_time_minutes": round(wait_time, 2),
             "handoff_time": handoff_time.isoformat(),
             "timing_acceptable": timing_acceptable,
-            "recommendation": self._get_timing_recommendation(wait_time)
+            "recommendation": self._get_timing_recommendation(wait_time),
         }
 
     async def _handle_route_planning(self, task: Dict[str, Any]) -> Dict[str, Any]:
@@ -369,11 +391,7 @@ class HandoffCoordinationAgent(BaseAgent):
 
         plan = self.plan_multi_vehicle_route(origin, destination, departure_time, max_vehicles)
 
-        return {
-            "success": True,
-            "plan": plan,
-            "agent_id": self.agent_id
-        }
+        return {"success": True, "plan": plan, "agent_id": self.agent_id}
 
     async def _handle_handoff_finding(self, task: Dict[str, Any]) -> Dict[str, Any]:
         """Handle handoff point finding task"""
@@ -386,7 +404,7 @@ class HandoffCoordinationAgent(BaseAgent):
             "success": True,
             "handoff_points": [self._handoff_to_dict(h) for h in handoff_points],
             "count": len(handoff_points),
-            "agent_id": self.agent_id
+            "agent_id": self.agent_id,
         }
 
     async def _handle_timing_coordination(self, task: Dict[str, Any]) -> Dict[str, Any]:
@@ -397,13 +415,11 @@ class HandoffCoordinationAgent(BaseAgent):
 
         coordination = self.coordinate_timing(vehicle1, vehicle2, handoff_location)
 
-        return {
-            "success": True,
-            "coordination": coordination,
-            "agent_id": self.agent_id
-        }
+        return {"success": True, "coordination": coordination, "agent_id": self.agent_id}
 
-    def _calculate_distance(self, point1: Tuple[float, float], point2: Tuple[float, float]) -> float:
+    def _calculate_distance(
+        self, point1: Tuple[float, float], point2: Tuple[float, float]
+    ) -> float:
         """Calculate distance using Haversine formula"""
         lat1, lon1 = point1
         lat2, lon2 = point2
@@ -413,19 +429,17 @@ class HandoffCoordinationAgent(BaseAgent):
         dlat = math.radians(lat2 - lat1)
         dlon = math.radians(lon2 - lon1)
 
-        a = (math.sin(dlat / 2) ** 2 +
-             math.cos(math.radians(lat1)) * math.cos(math.radians(lat2)) *
-             math.sin(dlon / 2) ** 2)
+        a = (
+            math.sin(dlat / 2) ** 2
+            + math.cos(math.radians(lat1)) * math.cos(math.radians(lat2)) * math.sin(dlon / 2) ** 2
+        )
 
         c = 2 * math.atan2(math.sqrt(a), math.sqrt(1 - a))
 
         return R * c
 
     def _generate_handoff_points(
-        self,
-        origin: Tuple[float, float],
-        destination: Tuple[float, float],
-        num_points: int
+        self, origin: Tuple[float, float], destination: Tuple[float, float], num_points: int
     ) -> List[Tuple[float, float]]:
         """Generate evenly spaced handoff points along a route"""
         points = []
@@ -446,7 +460,7 @@ class HandoffCoordinationAgent(BaseAgent):
             destination=tuple(d.get("destination", [0, 0])),
             capacity=d.get("capacity", 4),
             current_occupancy=d.get("current_occupancy", 0),
-            avg_speed_kmh=d.get("avg_speed_kmh", 45.0)
+            avg_speed_kmh=d.get("avg_speed_kmh", 45.0),
         )
 
     def _handoff_to_dict(self, handoff: HandoffPoint) -> Dict[str, Any]:
@@ -456,14 +470,11 @@ class HandoffCoordinationAgent(BaseAgent):
             "arrival_time_vehicle1": handoff.arrival_time_vehicle1.isoformat(),
             "departure_time_vehicle2": handoff.departure_time_vehicle2.isoformat(),
             "wait_time_minutes": round(handoff.wait_time_minutes, 2),
-            "quality_score": round(handoff.quality_score, 3)
+            "quality_score": round(handoff.quality_score, 3),
         }
 
     def _calculate_coordination_quality(
-        self,
-        avg_wait: float,
-        tight_handoffs: int,
-        long_waits: int
+        self, avg_wait: float, tight_handoffs: int, long_waits: int
     ) -> str:
         """Calculate overall coordination quality"""
         if tight_handoffs > 0 or long_waits > 2:
@@ -476,10 +487,7 @@ class HandoffCoordinationAgent(BaseAgent):
             return "Good"
 
     def _generate_handoff_recommendations(
-        self,
-        avg_wait: float,
-        tight_handoffs: int,
-        long_waits: int
+        self, avg_wait: float, tight_handoffs: int, long_waits: int
     ) -> List[str]:
         """Generate handoff recommendations"""
         recommendations = []

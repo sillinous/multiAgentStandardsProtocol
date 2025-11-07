@@ -44,7 +44,9 @@ class DataValidationTaskAgent(BaseAgent):
     and maximum reusability across APQC categories.
     """
 
-    def __init__(self, agent_id: str = "data_validation_task_agent", config: Optional[Dict[str, Any]] = None):
+    def __init__(
+        self, agent_id: str = "data_validation_task_agent", config: Optional[Dict[str, Any]] = None
+    ):
         """
         Initialize Data Validation Task Agent
 
@@ -55,8 +57,8 @@ class DataValidationTaskAgent(BaseAgent):
         super().__init__(
             agent_id=agent_id,
             agent_type="data_transformation",
-            capabilities=['schema_validation', 'business_rule_validation', 'error_reporting'],
-            config=config or {}
+            capabilities=["schema_validation", "business_rule_validation", "error_reporting"],
+            config=config or {},
         )
 
         # Agent-specific initialization
@@ -66,25 +68,25 @@ class DataValidationTaskAgent(BaseAgent):
             "reusable": True,
             "composable": True,
             "stateless": True,
-            "framework": "APQC 7.0.1"
+            "framework": "APQC 7.0.1",
         }
 
         logger.info(f"Initialized Data Validation Task Agent [{self.agent_id}]")
 
     async def execute_task(self, task: Dict[str, Any]) -> Dict[str, Any]:
         """
-        Execute the data transformation task
+                Execute the data transformation task
 
-        Args:
-            task: Task parameters containing:
-                - data: dict
-- schema: dict
-- rules: list
+                Args:
+                    task: Task parameters containing:
+                        - data: dict
+        - schema: dict
+        - rules: list
 
-        Returns:
-            Result dictionary containing:
-                - validation_result: bool
-- errors: list
+                Returns:
+                    Result dictionary containing:
+                        - validation_result: bool
+        - errors: list
         """
         try:
             logger.info(f"[{self.agent_id}] Executing data_transformation task")
@@ -104,7 +106,7 @@ class DataValidationTaskAgent(BaseAgent):
                 "status": "success",
                 "agent_id": self.agent_id,
                 "timestamp": datetime.utcnow().isoformat(),
-                "result": output
+                "result": output,
             }
 
         except Exception as e:
@@ -113,7 +115,7 @@ class DataValidationTaskAgent(BaseAgent):
                 "status": "error",
                 "agent_id": self.agent_id,
                 "timestamp": datetime.utcnow().isoformat(),
-                "error": str(e)
+                "error": str(e),
             }
 
     def _validate_inputs(self, task: Dict[str, Any]) -> None:
@@ -126,7 +128,7 @@ class DataValidationTaskAgent(BaseAgent):
         Raises:
             ValueError: If required inputs are missing or invalid
         """
-        required_fields = ['data', 'schema', 'rules']
+        required_fields = ["data", "schema", "rules"]
 
         for field in required_fields:
             if field not in task:
@@ -154,7 +156,7 @@ class DataValidationTaskAgent(BaseAgent):
         result = {
             "executed": True,
             "task_type": "data_transformation",
-            "inputs_received": list(task.keys())
+            "inputs_received": list(task.keys()),
         }
 
         # Simulate async work
@@ -179,8 +181,8 @@ class DataValidationTaskAgent(BaseAgent):
                 "agent_type": self.agent_type,
                 "level": 5,
                 "category": "data_transformation",
-                "timestamp": datetime.utcnow().isoformat()
-            }
+                "timestamp": datetime.utcnow().isoformat(),
+            },
         }
 
     async def handle_message(self, message: Dict[str, Any]) -> Dict[str, Any]:
@@ -202,10 +204,7 @@ class DataValidationTaskAgent(BaseAgent):
         elif message_type == "capabilities":
             return self.get_capabilities()
         else:
-            return {
-                "status": "error",
-                "error": f"Unknown message type: {message_type}"
-            }
+            return {"status": "error", "error": f"Unknown message type: {message_type}"}
 
     def get_status(self) -> Dict[str, Any]:
         """
@@ -219,7 +218,7 @@ class DataValidationTaskAgent(BaseAgent):
             "agent_type": self.agent_type,
             "status": "ready",
             "capabilities": self.capabilities,
-            "metadata": self.metadata
+            "metadata": self.metadata,
         }
 
     def get_capabilities(self) -> Dict[str, Any]:
@@ -232,11 +231,11 @@ class DataValidationTaskAgent(BaseAgent):
         return {
             "agent_id": self.agent_id,
             "capabilities": self.capabilities,
-            "inputs": {'data': 'dict', 'schema': 'dict', 'rules': 'list'},
-            "outputs": {'validation_result': 'bool', 'errors': 'list'},
+            "inputs": {"data": "dict", "schema": "dict", "rules": "list"},
+            "outputs": {"validation_result": "bool", "errors": "list"},
             "level": 5,
             "reusable": True,
-            "composable": True
+            "composable": True,
         }
 
 
@@ -250,7 +249,7 @@ async def main():
     # Example task
     task = {
         # Add example inputs here
-                # "data": "example_data",
+        # "data": "example_data",
         # "schema": "example_schema",
         # "rules": "example_rules",
     }

@@ -23,6 +23,7 @@ import random
 @dataclass
 class AgentMetric:
     """Real-time agent performance metric"""
+
     agent_id: str
     agent_type: str
     status: str  # active, idle, communicating, learning
@@ -42,6 +43,7 @@ class AgentMetric:
 @dataclass
 class ProtocolMetric:
     """Protocol usage statistics"""
+
     protocol: str  # A2A, A2P, ACP, ANP, MCP
     messages_count: int
     success_rate: float
@@ -53,6 +55,7 @@ class ProtocolMetric:
 @dataclass
 class SwarmMetric:
     """Swarm-level performance metrics"""
+
     swarm_id: str
     swarm_type: str
     agent_count: int
@@ -66,6 +69,7 @@ class SwarmMetric:
 @dataclass
 class BusinessImpact:
     """Business impact calculations"""
+
     total_tasks_automated: int
     cost_savings: float
     time_savings_hours: float
@@ -90,7 +94,7 @@ class AgentMetricsService:
             time_savings_hours=0.0,
             revenue_generated=0.0,
             roi_percentage=0.0,
-            customer_satisfaction=95.0
+            customer_satisfaction=95.0,
         )
 
         # Message history for activity feed
@@ -119,7 +123,7 @@ class AgentMetricsService:
                 uptime_seconds=0.0,
                 earnings=0.0,
                 reputation_score=100.0,
-                last_activity=datetime.now().isoformat()
+                last_activity=datetime.now().isoformat(),
             )
             self.total_agent_spawns += 1
 
@@ -130,14 +134,16 @@ class AgentMetricsService:
             self.agent_metrics[agent_id].current_task = current_task
             self.agent_metrics[agent_id].last_activity = datetime.now().isoformat()
 
-    def record_message(self,
-                      from_agent: str,
-                      to_agent: str,
-                      protocol: str,
-                      message_type: str,
-                      success: bool = True,
-                      latency_ms: float = 0.0,
-                      value: float = 0.0):
+    def record_message(
+        self,
+        from_agent: str,
+        to_agent: str,
+        protocol: str,
+        message_type: str,
+        success: bool = True,
+        latency_ms: float = 0.0,
+        value: float = 0.0,
+    ):
         """Record a protocol message between agents"""
 
         # Update agent metrics
@@ -157,29 +163,33 @@ class AgentMetricsService:
                 success_rate=100.0,
                 avg_latency_ms=0.0,
                 total_value=0.0,
-                active_agents=0
+                active_agents=0,
             )
 
         pm = self.protocol_metrics[protocol]
         pm.messages_count += 1
-        pm.avg_latency_ms = (pm.avg_latency_ms * (pm.messages_count - 1) + latency_ms) / pm.messages_count
+        pm.avg_latency_ms = (
+            pm.avg_latency_ms * (pm.messages_count - 1) + latency_ms
+        ) / pm.messages_count
         pm.total_value += value
 
         # Add to message history
-        self.message_history.append({
-            "timestamp": datetime.now().isoformat(),
-            "from": from_agent,
-            "to": to_agent,
-            "protocol": protocol,
-            "type": message_type,
-            "success": success,
-            "latency_ms": latency_ms,
-            "value": value
-        })
+        self.message_history.append(
+            {
+                "timestamp": datetime.now().isoformat(),
+                "from": from_agent,
+                "to": to_agent,
+                "protocol": protocol,
+                "type": message_type,
+                "success": success,
+                "latency_ms": latency_ms,
+                "value": value,
+            }
+        )
 
         # Trim history
         if len(self.message_history) > self.max_history:
-            self.message_history = self.message_history[-self.max_history:]
+            self.message_history = self.message_history[-self.max_history :]
 
         self.total_protocol_messages += 1
 
@@ -196,8 +206,8 @@ class AgentMetricsService:
             # Update average response time
             total_tasks = metric.tasks_completed + metric.tasks_failed
             metric.avg_response_time_ms = (
-                (metric.avg_response_time_ms * (total_tasks - 1) + response_time_ms) / total_tasks
-            )
+                metric.avg_response_time_ms * (total_tasks - 1) + response_time_ms
+            ) / total_tasks
 
     def record_agent_earnings(self, agent_id: str, amount: float):
         """Record A2P earnings for an agent"""
@@ -210,7 +220,8 @@ class AgentMetricsService:
 
         # Calculate active agents
         active_agents = [
-            a for a in self.agent_metrics.values()
+            a
+            for a in self.agent_metrics.values()
             if a.status in ["active", "working", "communicating"]
         ]
 
@@ -219,18 +230,26 @@ class AgentMetricsService:
 
         # Calculate business metrics
         total_earnings = sum(a.earnings for a in self.agent_metrics.values())
-        avg_reputation = sum(a.reputation_score for a in self.agent_metrics.values()) / len(self.agent_metrics) if self.agent_metrics else 0
+        avg_reputation = (
+            sum(a.reputation_score for a in self.agent_metrics.values()) / len(self.agent_metrics)
+            if self.agent_metrics
+            else 0
+        )
 
         # Calculate estimated cost savings (based on manual labor cost)
         manual_cost_per_task = 15.0  # Average $15 per manual task
-        self.business_impact.cost_savings = self.business_impact.total_tasks_automated * manual_cost_per_task
+        self.business_impact.cost_savings = (
+            self.business_impact.total_tasks_automated * manual_cost_per_task
+        )
 
         # Calculate time savings (assume each task saves 30 minutes)
         self.business_impact.time_savings_hours = self.business_impact.total_tasks_automated * 0.5
 
         # Calculate ROI
         if total_earnings > 0:
-            self.business_impact.roi_percentage = (self.business_impact.cost_savings / total_earnings) * 100
+            self.business_impact.roi_percentage = (
+                self.business_impact.cost_savings / total_earnings
+            ) * 100
 
         return {
             "timestamp": datetime.now().isoformat(),
@@ -239,9 +258,11 @@ class AgentMetricsService:
                 "total_agents": len(self.agent_metrics),
                 "active_agents": len(active_agents),
                 "total_messages": self.total_protocol_messages,
-                "agents_spawned": self.total_agent_spawns
+                "agents_spawned": self.total_agent_spawns,
             },
-            "agents": [asdict(a) for a in list(self.agent_metrics.values())[:50]],  # Limit for performance
+            "agents": [
+                asdict(a) for a in list(self.agent_metrics.values())[:50]
+            ],  # Limit for performance
             "protocols": [asdict(p) for p in self.protocol_metrics.values()],
             "business_impact": asdict(self.business_impact),
             "recent_activity": self.message_history[-20:],  # Last 20 messages
@@ -250,8 +271,8 @@ class AgentMetricsService:
                 "success_rate": self._calculate_success_rate(),
                 "avg_response_time": self._calculate_avg_response_time(),
                 "total_earnings": total_earnings,
-                "avg_reputation": avg_reputation
-            }
+                "avg_reputation": avg_reputation,
+            },
         }
 
     def _calculate_success_rate(self) -> float:
@@ -278,11 +299,11 @@ class AgentMetricsService:
                     "success_rate": metric.success_rate,
                     "avg_latency_ms": metric.avg_latency_ms,
                     "total_value": metric.total_value,
-                    "active_agents": metric.active_agents
+                    "active_agents": metric.active_agents,
                 }
                 for protocol, metric in self.protocol_metrics.items()
             },
-            "total_messages": self.total_protocol_messages
+            "total_messages": self.total_protocol_messages,
         }
 
     def simulate_activity(self):
@@ -296,9 +317,16 @@ class AgentMetricsService:
         # Simulate some agents if none exist
         if len(self.agent_metrics) < 10:
             agent_types = [
-                "traffic_prediction", "matching_optimization", "route_discovery",
-                "consensus", "task_assignment", "activity_tracker",
-                "dashboard_orchestrator", "testing", "design", "qa"
+                "traffic_prediction",
+                "matching_optimization",
+                "route_discovery",
+                "consensus",
+                "task_assignment",
+                "activity_tracker",
+                "dashboard_orchestrator",
+                "testing",
+                "design",
+                "qa",
             ]
 
             for i, agent_type in enumerate(agent_types):
@@ -323,17 +351,23 @@ class AgentMetricsService:
             message_type=message_type,
             success=random.random() > 0.05,  # 95% success rate
             latency_ms=random.uniform(10, 100),
-            value=random.uniform(0, 10) if protocol == "A2P" else 0.0
+            value=random.uniform(0, 10) if protocol == "A2P" else 0.0,
         )
 
         # Random status updates
         for agent_id in random.sample(agent_ids, min(3, len(agent_ids))):
             status = random.choice(["active", "working", "communicating", "idle"])
-            task = random.choice([
-                "Optimizing routes", "Analyzing traffic", "Matching riders",
-                "Coordinating handoff", "Running consensus", "Tracking activity",
-                None
-            ])
+            task = random.choice(
+                [
+                    "Optimizing routes",
+                    "Analyzing traffic",
+                    "Matching riders",
+                    "Coordinating handoff",
+                    "Running consensus",
+                    "Tracking activity",
+                    None,
+                ]
+            )
             self.update_agent_status(agent_id, status, task)
 
         # Random task completions
@@ -342,7 +376,7 @@ class AgentMetricsService:
             self.record_task_completion(
                 agent_id=agent_id,
                 success=random.random() > 0.1,  # 90% success
-                response_time_ms=random.uniform(50, 500)
+                response_time_ms=random.uniform(50, 500),
             )
 
         # Random earnings (A2P)

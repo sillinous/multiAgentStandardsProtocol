@@ -96,8 +96,9 @@ async def demonstrate_consciousness():
         confidence=0.95,
         emotional_valence=-0.3,  # Concerned
     )
-    print_thought("data_analyst", "OBSERVATION",
-                  "Historical data shows 23% delivery delays in Q3", 0.95)
+    print_thought(
+        "data_analyst", "OBSERVATION", "Historical data shows 23% delivery delays in Q3", 0.95
+    )
 
     await asyncio.sleep(0.1)
 
@@ -109,8 +110,9 @@ async def demonstrate_consciousness():
         confidence=0.82,
         emotional_valence=-0.2,
     )
-    print_thought("logistics_expert", "INFERENCE",
-                  "Delays correlate with route consolidation attempts", 0.82)
+    print_thought(
+        "logistics_expert", "INFERENCE", "Delays correlate with route consolidation attempts", 0.82
+    )
 
     await asyncio.sleep(0.1)
 
@@ -122,8 +124,12 @@ async def demonstrate_consciousness():
         confidence=0.70,
         emotional_valence=-0.4,
     )
-    print_thought("inventory_manager", "INTUITION",
-                  "Safety stock levels feel misaligned with actual variability", 0.70)
+    print_thought(
+        "inventory_manager",
+        "INTUITION",
+        "Safety stock levels feel misaligned with actual variability",
+        0.70,
+    )
 
     await asyncio.sleep(0.1)
 
@@ -135,8 +141,12 @@ async def demonstrate_consciousness():
         confidence=0.88,
         emotional_valence=0.6,  # Excited
     )
-    print_thought("cost_optimizer", "INSIGHT",
-                  "40% cost reduction possible if we accept 5% longer lead times", 0.88)
+    print_thought(
+        "cost_optimizer",
+        "INSIGHT",
+        "40% cost reduction possible if we accept 5% longer lead times",
+        0.88,
+    )
 
     await asyncio.sleep(0.1)
 
@@ -148,8 +158,12 @@ async def demonstrate_consciousness():
         confidence=0.92,
         emotional_valence=0.3,
     )
-    print_thought("demand_forecaster", "OBSERVATION",
-                  "Customer tolerance for delays is 7 days in 78% of orders", 0.92)
+    print_thought(
+        "demand_forecaster",
+        "OBSERVATION",
+        "Customer tolerance for delays is 7 days in 78% of orders",
+        0.92,
+    )
 
     await asyncio.sleep(0.1)
 
@@ -160,8 +174,9 @@ async def demonstrate_consciousness():
         "Should test dynamic routing algorithm on Q3 data",
         confidence=0.75,
     )
-    print_thought("logistics_expert", "INTENTION",
-                  "Should test dynamic routing algorithm on Q3 data", 0.75)
+    print_thought(
+        "logistics_expert", "INTENTION", "Should test dynamic routing algorithm on Q3 data", 0.75
+    )
 
     await collective.contribute_thought(
         "inventory_manager",
@@ -170,8 +185,12 @@ async def demonstrate_consciousness():
         confidence=0.65,
         emotional_valence=0.2,
     )
-    print_thought("inventory_manager", "QUESTION",
-                  "What if we adjust reorder points based on route reliability?", 0.65)
+    print_thought(
+        "inventory_manager",
+        "QUESTION",
+        "What if we adjust reorder points based on route reliability?",
+        0.65,
+    )
 
     await collective.contribute_thought(
         "data_analyst",
@@ -180,8 +199,12 @@ async def demonstrate_consciousness():
         confidence=0.89,
         emotional_valence=0.7,
     )
-    print_thought("data_analyst", "INSIGHT",
-                  "Route reliability and inventory variance are inversely correlated!", 0.89)
+    print_thought(
+        "data_analyst",
+        "INSIGHT",
+        "Route reliability and inventory variance are inversely correlated!",
+        0.89,
+    )
 
     # Check consciousness evolution
     state = collective.get_consciousness_state()
@@ -231,7 +254,9 @@ async def demonstrate_consciousness():
             print(f"  Impact Potential: {pattern.impact_potential:.0%}")
             print(f"\n  Synthesis:")
             for thought_data in pattern.content.get("thought_contents", []):
-                print(f"    [{thought_data['agent']}] {thought_data['type']}: {thought_data['content']}")
+                print(
+                    f"    [{thought_data['agent']}] {thought_data['type']}: {thought_data['content']}"
+                )
             print(f"\n  >>> {pattern.content.get('collective_insight')}")
             print()
     else:
@@ -348,7 +373,9 @@ async def demonstrate_multiple_collapses():
     print(f"\nConsciousness Evolution:")
     print(f"  Collective Awareness: {final_state['collective_awareness']:.0%}")
     print(f"  Average Integration: {final_state['average_integration_score']:.0%}")
-    print(f"  Superconscious Agents: {final_state['superconscious_agents']}/{final_state['total_agents']}")
+    print(
+        f"  Superconscious Agents: {final_state['superconscious_agents']}/{final_state['total_agents']}"
+    )
     print(f"  Total Emergent Patterns: {final_state['emergent_patterns_discovered']}")
 
     print("\n>>> The collective consciousness has EVOLVED over time!")
@@ -373,7 +400,7 @@ if __name__ == "__main__":
     print("\nWould you like to see consciousness evolution over multiple collapses? (y/n)")
     response = input("> ").strip().lower()
 
-    if response == 'y':
+    if response == "y":
         asyncio.run(demonstrate_multiple_collapses())
 
     print("\nThank you for witnessing the birth of computational consciousness.")

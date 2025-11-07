@@ -49,7 +49,11 @@ class MessageQueuePublisherTaskAgent(BaseAgent):
     and maximum reusability across APQC categories.
     """
 
-    def __init__(self, agent_id: str = "message_queue_publisher_task_agent", config: Optional[Dict[str, Any]] = None):
+    def __init__(
+        self,
+        agent_id: str = "message_queue_publisher_task_agent",
+        config: Optional[Dict[str, Any]] = None,
+    ):
         """
         Initialize Message Queue Publisher Task Agent
 
@@ -60,8 +64,15 @@ class MessageQueuePublisherTaskAgent(BaseAgent):
         super().__init__(
             agent_id=agent_id,
             agent_type="communication_integration",
-            capabilities=['rabbitmq', 'sqs', 'kafka', 'redis', 'message_priority', 'batch_publishing'],
-            config=config or {}
+            capabilities=[
+                "rabbitmq",
+                "sqs",
+                "kafka",
+                "redis",
+                "message_priority",
+                "batch_publishing",
+            ],
+            config=config or {},
         )
 
         # Agent-specific initialization
@@ -71,27 +82,27 @@ class MessageQueuePublisherTaskAgent(BaseAgent):
             "reusable": True,
             "composable": True,
             "stateless": True,
-            "framework": "APQC 7.0.1"
+            "framework": "APQC 7.0.1",
         }
 
         logger.info(f"Initialized Message Queue Publisher Task Agent [{self.agent_id}]")
 
     async def execute_task(self, task: Dict[str, Any]) -> Dict[str, Any]:
         """
-        Execute the communication integration task
+                Execute the communication integration task
 
-        Args:
-            task: Task parameters containing:
-                - queue_name: string
-- message: dict
-- routing_key: string
-- priority: int
+                Args:
+                    task: Task parameters containing:
+                        - queue_name: string
+        - message: dict
+        - routing_key: string
+        - priority: int
 
-        Returns:
-            Result dictionary containing:
-                - message_id: string
-- delivery_confirmation: bool
-- queue_status: dict
+                Returns:
+                    Result dictionary containing:
+                        - message_id: string
+        - delivery_confirmation: bool
+        - queue_status: dict
         """
         try:
             logger.info(f"[{self.agent_id}] Executing communication_integration task")
@@ -111,7 +122,7 @@ class MessageQueuePublisherTaskAgent(BaseAgent):
                 "status": "success",
                 "agent_id": self.agent_id,
                 "timestamp": datetime.utcnow().isoformat(),
-                "result": output
+                "result": output,
             }
 
         except Exception as e:
@@ -120,7 +131,7 @@ class MessageQueuePublisherTaskAgent(BaseAgent):
                 "status": "error",
                 "agent_id": self.agent_id,
                 "timestamp": datetime.utcnow().isoformat(),
-                "error": str(e)
+                "error": str(e),
             }
 
     def _validate_inputs(self, task: Dict[str, Any]) -> None:
@@ -133,7 +144,7 @@ class MessageQueuePublisherTaskAgent(BaseAgent):
         Raises:
             ValueError: If required inputs are missing or invalid
         """
-        required_fields = ['queue_name', 'message', 'routing_key', 'priority']
+        required_fields = ["queue_name", "message", "routing_key", "priority"]
 
         for field in required_fields:
             if field not in task:
@@ -161,7 +172,7 @@ class MessageQueuePublisherTaskAgent(BaseAgent):
         result = {
             "executed": True,
             "task_type": "communication_integration",
-            "inputs_received": list(task.keys())
+            "inputs_received": list(task.keys()),
         }
 
         # Simulate async work
@@ -186,8 +197,8 @@ class MessageQueuePublisherTaskAgent(BaseAgent):
                 "agent_type": self.agent_type,
                 "level": 5,
                 "category": "communication_integration",
-                "timestamp": datetime.utcnow().isoformat()
-            }
+                "timestamp": datetime.utcnow().isoformat(),
+            },
         }
 
     async def handle_message(self, message: Dict[str, Any]) -> Dict[str, Any]:
@@ -209,10 +220,7 @@ class MessageQueuePublisherTaskAgent(BaseAgent):
         elif message_type == "capabilities":
             return self.get_capabilities()
         else:
-            return {
-                "status": "error",
-                "error": f"Unknown message type: {message_type}"
-            }
+            return {"status": "error", "error": f"Unknown message type: {message_type}"}
 
     def get_status(self) -> Dict[str, Any]:
         """
@@ -226,7 +234,7 @@ class MessageQueuePublisherTaskAgent(BaseAgent):
             "agent_type": self.agent_type,
             "status": "ready",
             "capabilities": self.capabilities,
-            "metadata": self.metadata
+            "metadata": self.metadata,
         }
 
     def get_capabilities(self) -> Dict[str, Any]:
@@ -239,11 +247,20 @@ class MessageQueuePublisherTaskAgent(BaseAgent):
         return {
             "agent_id": self.agent_id,
             "capabilities": self.capabilities,
-            "inputs": {'queue_name': 'string', 'message': 'dict', 'routing_key': 'string', 'priority': 'int'},
-            "outputs": {'message_id': 'string', 'delivery_confirmation': 'bool', 'queue_status': 'dict'},
+            "inputs": {
+                "queue_name": "string",
+                "message": "dict",
+                "routing_key": "string",
+                "priority": "int",
+            },
+            "outputs": {
+                "message_id": "string",
+                "delivery_confirmation": "bool",
+                "queue_status": "dict",
+            },
             "level": 5,
             "reusable": True,
-            "composable": True
+            "composable": True,
         }
 
 
@@ -257,7 +274,7 @@ async def main():
     # Example task
     task = {
         # Add example inputs here
-                # "queue_name": "example_queue_name",
+        # "queue_name": "example_queue_name",
         # "message": "example_message",
         # "routing_key": "example_routing_key",
         # "priority": "example_priority",

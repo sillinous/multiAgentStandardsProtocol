@@ -12,7 +12,7 @@ Features:
 Created with ❤️ by Moon Dev
 
 [] be able to search youtube
-[] be able to search the web 
+[] be able to search the web
 """
 
 # PROMPT - Edit this to change the type of ideas generated

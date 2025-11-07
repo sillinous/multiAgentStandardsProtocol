@@ -22,8 +22,12 @@ import sqlite3
 from jinja2 import Template, Environment, BaseLoader
 
 from .agent_template_system import (
-    AgentTemplate, AgentSpecification, ComplianceFramework,
-    PerformanceTier, DeploymentFormat, APQCCategory
+    AgentTemplate,
+    AgentSpecification,
+    ComplianceFramework,
+    PerformanceTier,
+    DeploymentFormat,
+    APQCCategory,
 )
 
 logger = logging.getLogger(__name__)
@@ -32,6 +36,7 @@ logger = logging.getLogger(__name__)
 @dataclass
 class GeneratedAgent:
     """Represents a fully generated agent"""
+
     agent_id: str
     agent_name: str
     template_id: str
@@ -68,7 +73,7 @@ class GeneratedAgent:
             "specification": {
                 "agent_name": self.specification.agent_name,
                 "description": self.specification.description,
-                "business_objective": self.specification.business_objective
+                "business_objective": self.specification.business_objective,
             },
             "version": self.version,
             "generated_date": self.generated_date.isoformat(),
@@ -77,7 +82,7 @@ class GeneratedAgent:
             "code_quality_score": self.code_quality_score,
             "test_coverage_target": self.test_coverage_target,
             "performance_benchmarks": self.performance_benchmarks,
-            "compliance_checks": self.compliance_checks
+            "compliance_checks": self.compliance_checks,
         }
         return result
 
@@ -96,7 +101,7 @@ class AgentCodeGenerator:
     def __init__(
         self,
         db_path: str = "agent_generation.db",
-        template_system=None  # AgentTemplateSystem instance
+        template_system=None,  # AgentTemplateSystem instance
     ):
         self.db_path = db_path
         self.template_system = template_system
@@ -109,7 +114,8 @@ class AgentCodeGenerator:
         cursor = conn.cursor()
 
         # Generated agents
-        cursor.execute("""
+        cursor.execute(
+            """
             CREATE TABLE IF NOT EXISTS generated_agents (
                 agent_id TEXT PRIMARY KEY,
                 agent_name TEXT NOT NULL,
@@ -127,10 +133,12 @@ class AgentCodeGenerator:
                 code_quality_score REAL,
                 test_coverage_target REAL
             )
-        """)
+        """
+        )
 
         # Generation history
-        cursor.execute("""
+        cursor.execute(
+            """
             CREATE TABLE IF NOT EXISTS generation_history (
                 history_id INTEGER PRIMARY KEY AUTOINCREMENT,
                 agent_id TEXT,
@@ -139,10 +147,12 @@ class AgentCodeGenerator:
                 event_date TEXT,
                 FOREIGN KEY (agent_id) REFERENCES generated_agents(agent_id)
             )
-        """)
+        """
+        )
 
         # Code quality metrics
-        cursor.execute("""
+        cursor.execute(
+            """
             CREATE TABLE IF NOT EXISTS code_quality_metrics (
                 metric_id INTEGER PRIMARY KEY AUTOINCREMENT,
                 agent_id TEXT,
@@ -151,10 +161,12 @@ class AgentCodeGenerator:
                 measured_date TEXT,
                 FOREIGN KEY (agent_id) REFERENCES generated_agents(agent_id)
             )
-        """)
+        """
+        )
 
         # Compliance checks
-        cursor.execute("""
+        cursor.execute(
+            """
             CREATE TABLE IF NOT EXISTS compliance_checks (
                 check_id INTEGER PRIMARY KEY AUTOINCREMENT,
                 agent_id TEXT,
@@ -165,12 +177,17 @@ class AgentCodeGenerator:
                 checked_date TEXT,
                 FOREIGN KEY (agent_id) REFERENCES generated_agents(agent_id)
             )
-        """)
+        """
+        )
 
         # Indexes
         cursor.execute("CREATE INDEX IF NOT EXISTS idx_agents_name ON generated_agents(agent_name)")
-        cursor.execute("CREATE INDEX IF NOT EXISTS idx_agents_template ON generated_agents(template_id)")
-        cursor.execute("CREATE INDEX IF NOT EXISTS idx_history_agent ON generation_history(agent_id)")
+        cursor.execute(
+            "CREATE INDEX IF NOT EXISTS idx_agents_template ON generated_agents(template_id)"
+        )
+        cursor.execute(
+            "CREATE INDEX IF NOT EXISTS idx_history_agent ON generation_history(agent_id)"
+        )
 
         conn.commit()
         conn.close()
@@ -182,31 +199,30 @@ class AgentCodeGenerator:
         self.jinja_env = Environment(loader=BaseLoader())
 
         # Add custom filters
-        self.jinja_env.filters['snake_case'] = self._to_snake_case
-        self.jinja_env.filters['camel_case'] = self._to_camel_case
-        self.jinja_env.filters['pascal_case'] = self._to_pascal_case
+        self.jinja_env.filters["snake_case"] = self._to_snake_case
+        self.jinja_env.filters["camel_case"] = self._to_camel_case
+        self.jinja_env.filters["pascal_case"] = self._to_pascal_case
 
     def _to_snake_case(self, text: str) -> str:
         """Convert text to snake_case"""
         import re
-        text = re.sub('(.)([A-Z][a-z]+)', r'\1_\2', text)
-        text = re.sub('([a-z0-9])([A-Z])', r'\1_\2', text)
-        return text.lower().replace(' ', '_').replace('-', '_')
+
+        text = re.sub("(.)([A-Z][a-z]+)", r"\1_\2", text)
+        text = re.sub("([a-z0-9])([A-Z])", r"\1_\2", text)
+        return text.lower().replace(" ", "_").replace("-", "_")
 
     def _to_camel_case(self, text: str) -> str:
         """Convert text to camelCase"""
-        words = text.replace('_', ' ').replace('-', ' ').split()
-        return words[0].lower() + ''.join(word.capitalize() for word in words[1:])
+        words = text.replace("_", " ").replace("-", " ").split()
+        return words[0].lower() + "".join(word.capitalize() for word in words[1:])
 
     def _to_pascal_case(self, text: str) -> str:
         """Convert text to PascalCase"""
-        words = text.replace('_', ' ').replace('-', ' ').split()
-        return ''.join(word.capitalize() for word in words)
+        words = text.replace("_", " ").replace("-", " ").split()
+        return "".join(word.capitalize() for word in words)
 
     def generate_agent(
-        self,
-        specification: AgentSpecification,
-        template: Optional[AgentTemplate] = None
+        self, specification: AgentSpecification, template: Optional[AgentTemplate] = None
     ) -> GeneratedAgent:
         """
         Generate a complete agent from specification.
@@ -219,7 +235,7 @@ class AgentCodeGenerator:
                 raise ValueError("Template system not provided")
 
             # Check if template_id is specified in the specification
-            if hasattr(specification, 'template_id') and specification.template_id:
+            if hasattr(specification, "template_id") and specification.template_id:
                 # Use the specified template
                 template_id = specification.template_id
                 template_data = self.template_system.get_template(template_id)
@@ -229,27 +245,31 @@ class AgentCodeGenerator:
 
                 # template_data is already a dict from get_template(), use it directly
                 template = template_data
-                if template and 'template_id' not in template:
-                    template['template_id'] = template_id
+                if template and "template_id" not in template:
+                    template["template_id"] = template_id
             else:
                 # Recommend template based on business objective
                 recommendations = self.template_system.recommend_template(specification)
                 if not recommendations:
-                    raise ValueError(f"No suitable template found for: {specification.business_objective}")
+                    raise ValueError(
+                        f"No suitable template found for: {specification.business_objective}"
+                    )
 
                 # Use top recommendation
-                template_id = recommendations[0]['template_id']
+                template_id = recommendations[0]["template_id"]
                 template_data = self.template_system.get_template(template_id)
 
                 # template_data is already a dict from get_template(), use it directly
                 template = template_data
-                if template and 'template_id' not in template:
-                    template['template_id'] = template_id
+                if template and "template_id" not in template:
+                    template["template_id"] = template_id
 
         # Generate unique agent ID
         agent_id = self._generate_agent_id(specification.agent_name)
 
-        logger.info(f"Generating agent {agent_id} from template {template.get('template_id', 'unknown')}")
+        logger.info(
+            f"Generating agent {agent_id} from template {template.get('template_id', 'unknown')}"
+        )
 
         # Generate each component
         agent_code = self._generate_agent_code(specification, template)
@@ -259,14 +279,14 @@ class AgentCodeGenerator:
         readme_md = self._generate_readme(specification, template)
 
         # Calculate metrics
-        lines_of_code = len(agent_code.split('\n'))
+        lines_of_code = len(agent_code.split("\n"))
         code_quality_score = self._estimate_code_quality(agent_code)
 
         # Create generated agent
         generated = GeneratedAgent(
             agent_id=agent_id,
             agent_name=specification.agent_name,
-            template_id=template.get('template_id', 'custom'),
+            template_id=template.get("template_id", "custom"),
             specification=specification,
             agent_code=agent_code,
             test_code=test_code,
@@ -275,13 +295,12 @@ class AgentCodeGenerator:
             readme_md=readme_md,
             lines_of_code=lines_of_code,
             code_quality_score=code_quality_score,
-            estimated_complexity=template.get('estimated_complexity', 'medium')
+            estimated_complexity=template.get("estimated_complexity", "medium"),
         )
 
         # Perform compliance checks
         generated.compliance_checks = self._check_compliance(
-            generated,
-            specification.compliance_frameworks
+            generated, specification.compliance_frameworks
         )
 
         # Store in database
@@ -289,9 +308,7 @@ class AgentCodeGenerator:
 
         # Record generation event
         self._record_event(
-            agent_id,
-            "created",
-            {"template_id": template.get('template_id', 'custom')}
+            agent_id, "created", {"template_id": template.get("template_id", "custom")}
         )
 
         logger.info(f"Successfully generated agent {agent_id} ({lines_of_code} lines)")
@@ -309,11 +326,7 @@ class AgentCodeGenerator:
 
         return f"agent_{self._to_snake_case(agent_name)}_{hash_hex}"
 
-    def _generate_agent_code(
-        self,
-        spec: AgentSpecification,
-        template: Any
-    ) -> str:
+    def _generate_agent_code(self, spec: AgentSpecification, template: Any) -> str:
         """Generate main agent Python code"""
 
         # Base template for enhanced agents
@@ -518,15 +531,15 @@ if __name__ == "__main__":
             "agent_name": spec.agent_name,
             "description": spec.description,
             "business_objective": spec.business_objective,
-            "template_id": template.get('template_id', 'custom'),
+            "template_id": template.get("template_id", "custom"),
             "generated_date": datetime.now().isoformat(),
             "agent_id": self._to_snake_case(spec.agent_name),
             "class_name": self._to_pascal_case(spec.agent_name),
-            "apqc_process": template.get('apqc_process', 'N/A'),
-            "business_value": template.get('business_value', 'N/A'),
-            "capabilities": template.get('capabilities', []),
-            "data_models": template.get('data_models', []),
-            "actions": template.get('actions', ['execute_task']),
+            "apqc_process": template.get("apqc_process", "N/A"),
+            "business_value": template.get("business_value", "N/A"),
+            "capabilities": template.get("capabilities", []),
+            "data_models": template.get("data_models", []),
+            "actions": template.get("actions", ["execute_task"]),
             "compliance_frameworks": spec.compliance_frameworks,
         }
 
@@ -534,11 +547,7 @@ if __name__ == "__main__":
         jinja_template = self.jinja_env.from_string(code_template)
         return jinja_template.render(**template_vars)
 
-    def _generate_test_code(
-        self,
-        spec: AgentSpecification,
-        template: Any
-    ) -> str:
+    def _generate_test_code(self, spec: AgentSpecification, template: Any) -> str:
         """Generate pytest test code"""
 
         test_template = '''"""
@@ -658,8 +667,8 @@ class TestPerformance:
             "agent_name": spec.agent_name,
             "class_name": self._to_pascal_case(spec.agent_name),
             "module_name": self._to_snake_case(spec.agent_name),
-            "apqc_process": template.get('apqc_process', 'N/A'),
-            "actions": template.get('actions', ['execute_task']),
+            "apqc_process": template.get("apqc_process", "N/A"),
+            "actions": template.get("actions", ["execute_task"]),
             "compliance_frameworks": spec.compliance_frameworks,
             "max_response_time_ms": spec.max_response_time_ms,
         }
@@ -667,11 +676,7 @@ class TestPerformance:
         jinja_template = self.jinja_env.from_string(test_template)
         return jinja_template.render(**template_vars)
 
-    def _generate_requirements(
-        self,
-        spec: AgentSpecification,
-        template: Any
-    ) -> str:
+    def _generate_requirements(self, spec: AgentSpecification, template: Any) -> str:
         """Generate requirements.txt"""
 
         base_requirements = [
@@ -698,12 +703,12 @@ class TestPerformance:
         ]
 
         # Add capability-specific dependencies
-        capabilities = template.get('capabilities', [])
+        capabilities = template.get("capabilities", [])
         capability_deps = set()
 
         for cap in capabilities:
             if isinstance(cap, dict):
-                deps = cap.get('dependencies', [])
+                deps = cap.get("dependencies", [])
                 capability_deps.update(deps)
 
         if capability_deps:
@@ -729,7 +734,7 @@ class TestPerformance:
     def _generate_dockerfile(self, spec: AgentSpecification) -> str:
         """Generate Dockerfile for containerization"""
 
-        dockerfile_template = '''# Generated by Global Agent Factory
+        dockerfile_template = """# Generated by Global Agent Factory
 FROM python:3.11-slim
 
 WORKDIR /app
@@ -759,7 +764,7 @@ HEALTHCHECK --interval=30s --timeout=5s --start-period=5s --retries=3 \\
 
 # Run agent
 CMD ["python", "{{ module_name }}.py"]
-'''
+"""
 
         template_vars = {
             "agent_name": spec.agent_name,
@@ -770,14 +775,10 @@ CMD ["python", "{{ module_name }}.py"]
         jinja_template = self.jinja_env.from_string(dockerfile_template)
         return jinja_template.render(**template_vars)
 
-    def _generate_readme(
-        self,
-        spec: AgentSpecification,
-        template: Any
-    ) -> str:
+    def _generate_readme(self, spec: AgentSpecification, template: Any) -> str:
         """Generate README.md documentation"""
 
-        readme_template = '''# {{ agent_name }}
+        readme_template = """# {{ agent_name }}
 
 {{ description }}
 
@@ -941,20 +942,20 @@ For issues and questions, please contact your Global Agent Factory administrator
 ---
 
 **Generated with ❤️ by Global Agent Factory**
-'''
+"""
 
         template_vars = {
             "agent_name": spec.agent_name,
             "description": spec.description,
             "business_objective": spec.business_objective,
-            "template_id": template.get('template_id', 'custom'),
-            "apqc_process": template.get('apqc_process', 'N/A'),
+            "template_id": template.get("template_id", "custom"),
+            "apqc_process": template.get("apqc_process", "N/A"),
             "generated_date": datetime.now().strftime("%Y-%m-%d"),
-            "business_value": template.get('business_value', 'N/A'),
-            "use_cases": template.get('use_cases', []),
-            "target_personas": template.get('target_personas', []),
-            "capabilities": template.get('capabilities', []),
-            "actions": template.get('actions', ['execute_task']),
+            "business_value": template.get("business_value", "N/A"),
+            "use_cases": template.get("use_cases", []),
+            "target_personas": template.get("target_personas", []),
+            "capabilities": template.get("capabilities", []),
+            "actions": template.get("actions", ["execute_task"]),
             "compliance_frameworks": spec.compliance_frameworks,
             "max_response_time_ms": spec.max_response_time_ms,
             "concurrent_users": spec.concurrent_users,
@@ -976,23 +977,21 @@ For issues and questions, please contact your Global Agent Factory administrator
             score += 10.0
 
         # Check for type hints
-        if '-> ' in code and ': ' in code:
+        if "-> " in code and ": " in code:
             score += 10.0
 
         # Check for error handling
-        if 'try:' in code and 'except' in code:
+        if "try:" in code and "except" in code:
             score += 5.0
 
         # Check for logging
-        if 'logger.' in code:
+        if "logger." in code:
             score += 5.0
 
         return min(score, 100.0)
 
     def _check_compliance(
-        self,
-        agent: GeneratedAgent,
-        frameworks: List[ComplianceFramework]
+        self, agent: GeneratedAgent, frameworks: List[ComplianceFramework]
     ) -> Dict[str, bool]:
         """Check compliance requirements"""
         checks = {}
@@ -1018,34 +1017,39 @@ For issues and questions, please contact your Global Agent Factory administrator
         conn = sqlite3.connect(self.db_path)
         cursor = conn.cursor()
 
-        cursor.execute("""
+        cursor.execute(
+            """
             INSERT OR REPLACE INTO generated_agents (
                 agent_id, agent_name, template_id, specification,
                 agent_code, test_code, requirements_txt, dockerfile, readme_md,
                 version, generated_date, estimated_complexity, lines_of_code,
                 code_quality_score, test_coverage_target
             ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
-        """, (
-            agent.agent_id,
-            agent.agent_name,
-            agent.template_id,
-            json.dumps({
-                "agent_name": agent.specification.agent_name,
-                "description": agent.specification.description,
-                "business_objective": agent.specification.business_objective
-            }),
-            agent.agent_code,
-            agent.test_code,
-            agent.requirements_txt,
-            agent.dockerfile,
-            agent.readme_md,
-            agent.version,
-            agent.generated_date.isoformat(),
-            agent.estimated_complexity,
-            agent.lines_of_code,
-            agent.code_quality_score,
-            agent.test_coverage_target
-        ))
+        """,
+            (
+                agent.agent_id,
+                agent.agent_name,
+                agent.template_id,
+                json.dumps(
+                    {
+                        "agent_name": agent.specification.agent_name,
+                        "description": agent.specification.description,
+                        "business_objective": agent.specification.business_objective,
+                    }
+                ),
+                agent.agent_code,
+                agent.test_code,
+                agent.requirements_txt,
+                agent.dockerfile,
+                agent.readme_md,
+                agent.version,
+                agent.generated_date.isoformat(),
+                agent.estimated_complexity,
+                agent.lines_of_code,
+                agent.code_quality_score,
+                agent.test_coverage_target,
+            ),
+        )
 
         conn.commit()
         conn.close()
@@ -1055,16 +1059,14 @@ For issues and questions, please contact your Global Agent Factory administrator
         conn = sqlite3.connect(self.db_path)
         cursor = conn.cursor()
 
-        cursor.execute("""
+        cursor.execute(
+            """
             INSERT INTO generation_history (
                 agent_id, event_type, event_data, event_date
             ) VALUES (?, ?, ?, ?)
-        """, (
-            agent_id,
-            event_type,
-            json.dumps(event_data),
-            datetime.now().isoformat()
-        ))
+        """,
+            (agent_id, event_type, json.dumps(event_data), datetime.now().isoformat()),
+        )
 
         conn.commit()
         conn.close()
@@ -1074,9 +1076,12 @@ For issues and questions, please contact your Global Agent Factory administrator
         conn = sqlite3.connect(self.db_path)
         cursor = conn.cursor()
 
-        cursor.execute("""
+        cursor.execute(
+            """
             SELECT * FROM generated_agents WHERE agent_id = ?
-        """, (agent_id,))
+        """,
+            (agent_id,),
+        )
 
         row = cursor.fetchone()
         conn.close()
@@ -1113,7 +1118,7 @@ For issues and questions, please contact your Global Agent Factory administrator
         return {
             "total_agents_generated": total_generated,
             "average_code_quality": avg_quality,
-            "total_lines_of_code": total_loc
+            "total_lines_of_code": total_loc,
         }
 
 
@@ -1128,8 +1133,7 @@ if __name__ == "__main__":
         # Initialize systems
         template_system = AgentTemplateSystem(db_path="agent_templates_demo.db")
         generator = AgentCodeGenerator(
-            db_path="agent_generation_demo.db",
-            template_system=template_system
+            db_path="agent_generation_demo.db", template_system=template_system
         )
 
         # Create specification
@@ -1141,7 +1145,7 @@ if __name__ == "__main__":
             compliance_frameworks=[ComplianceFramework.GDPR],
             performance_tier=PerformanceTier.OPTIMIZED,
             max_response_time_ms=500,
-            deployment_format=DeploymentFormat.DOCKER
+            deployment_format=DeploymentFormat.DOCKER,
         )
 
         # Generate agent

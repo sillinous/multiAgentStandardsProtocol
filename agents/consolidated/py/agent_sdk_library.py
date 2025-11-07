@@ -17,6 +17,7 @@ from abc import ABC, abstractmethod
 
 logger = logging.getLogger(__name__)
 
+
 class AgentSDKEnvironment(Enum):
     LOCAL = "local"
     DEVELOPMENT = "development"
@@ -24,11 +25,13 @@ class AgentSDKEnvironment(Enum):
     PRODUCTION = "production"
     CUSTOM = "custom"
 
+
 class LibraryAccessLevel(Enum):
     PUBLIC = "public"
     PRIVATE = "private"
     ENTERPRISE = "enterprise"
     RESEARCH = "research"
+
 
 class AgentOrchestrationMode(Enum):
     SYNCHRONOUS = "synchronous"
@@ -37,9 +40,11 @@ class AgentOrchestrationMode(Enum):
     EVENT_DRIVEN = "event_driven"
     REACTIVE = "reactive"
 
+
 @dataclass
 class AgentSDKConfig:
     """Configuration for the Agent SDK"""
+
     environment: AgentSDKEnvironment
     api_base_url: str
     api_key: Optional[str]
@@ -62,9 +67,11 @@ class AgentSDKConfig:
     enable_nlp: bool = True
     enable_quantum: bool = True
 
+
 @dataclass
 class AgentDefinition:
     """Definition for creating/accessing an agent"""
+
     agent_id: str
     agent_type: str
     capabilities: List[str]
@@ -79,9 +86,11 @@ class AgentDefinition:
     resource_requirements: Dict[str, float] = field(default_factory=dict)
     performance_targets: Dict[str, float] = field(default_factory=dict)
 
+
 @dataclass
 class AgentOrchestrationPlan:
     """Plan for orchestrating multiple agents"""
+
     plan_id: str
     agents: List[AgentDefinition]
     orchestration_mode: AgentOrchestrationMode
@@ -96,6 +105,7 @@ class AgentOrchestrationPlan:
     execution_timeout: int = 300
     failure_handling: str = "graceful"
     monitoring_enabled: bool = True
+
 
 class AgentSDKClient:
     """Main SDK client for accessing the agent ecosystem"""
@@ -122,7 +132,7 @@ class AgentSDKClient:
             # Initialize HTTP session
             self.session = aiohttp.ClientSession(
                 timeout=aiohttp.ClientTimeout(total=self.config.timeout),
-                connector=aiohttp.TCPConnector(limit=self.config.connection_pool_size)
+                connector=aiohttp.TCPConnector(limit=self.config.connection_pool_size),
             )
 
             # Authenticate if credentials provided
@@ -205,7 +215,9 @@ class AgentSDKClient:
         return await self.blockchain_client.endorse_agent(agent_id, endorsement)
 
     # Optimization operations
-    async def optimize_agent_performance(self, agent_id: str, objectives: List[str]) -> Dict[str, Any]:
+    async def optimize_agent_performance(
+        self, agent_id: str, objectives: List[str]
+    ) -> Dict[str, Any]:
         """Optimize agent performance"""
         return await self.optimization_client.optimize_performance(agent_id, objectives)
 
@@ -222,7 +234,7 @@ class AgentSDKClient:
                 "api_key": self.config.api_key,
                 "auth_token": self.config.auth_token,
                 "client_id": self.config.client_id,
-                "client_secret": self.config.client_secret
+                "client_secret": self.config.client_secret,
             }
 
             response = await self._make_request("POST", "/auth/token", auth_data)
@@ -265,6 +277,7 @@ class AgentSDKClient:
             logger.error(f"Request failed: {e}")
             return {"error": str(e)}
 
+
 class AgentManager:
     """Manages individual agent operations"""
 
@@ -299,6 +312,7 @@ class AgentManager:
         result = await self.client._make_request("GET", endpoint)
         return result.get("agents", [])
 
+
 class OrchestrationManager:
     """Manages agent orchestration and composition"""
 
@@ -312,16 +326,14 @@ class OrchestrationManager:
 
     async def compose_workflow(self, agents: List[str], workflow_spec: Dict[str, Any]) -> str:
         """Compose agents into a workflow"""
-        composition_data = {
-            "agents": agents,
-            "workflow_specification": workflow_spec
-        }
+        composition_data = {"agents": agents, "workflow_specification": workflow_spec}
         result = await self.client._make_request("POST", "/ecosystem/compose", composition_data)
         return result.get("workflow_id", "")
 
     async def monitor_workflow(self, workflow_id: str) -> Dict[str, Any]:
         """Monitor workflow execution"""
         return await self.client._make_request("GET", f"/ecosystem/workflows/{workflow_id}/status")
+
 
 class MarketplaceClient:
     """Client for marketplace operations"""
@@ -341,11 +353,9 @@ class MarketplaceClient:
 
     async def purchase_capability(self, agent_id: str, capability: str) -> Dict[str, Any]:
         """Purchase agent capability"""
-        purchase_data = {
-            "agent_id": agent_id,
-            "capability": capability
-        }
+        purchase_data = {"agent_id": agent_id, "capability": capability}
         return await self.client._make_request("POST", "/marketplace/purchase", purchase_data)
+
 
 class BlockchainClient:
     """Client for blockchain operations"""
@@ -359,11 +369,11 @@ class BlockchainClient:
 
     async def endorse_agent(self, agent_id: str, endorsement: Dict[str, Any]) -> str:
         """Endorse an agent"""
-        result = await self.client._make_request("POST", "/blockchain/endorsements", {
-            "endorsed_agent_id": agent_id,
-            **endorsement
-        })
+        result = await self.client._make_request(
+            "POST", "/blockchain/endorsements", {"endorsed_agent_id": agent_id, **endorsement}
+        )
         return result.get("transaction_id", "")
+
 
 class OptimizationClient:
     """Client for optimization operations"""
@@ -373,11 +383,9 @@ class OptimizationClient:
 
     async def optimize_performance(self, agent_id: str, objectives: List[str]) -> Dict[str, Any]:
         """Optimize agent performance"""
-        optimization_data = {
-            "agent_id": agent_id,
-            "objectives": objectives
-        }
+        optimization_data = {"agent_id": agent_id, "objectives": objectives}
         return await self.client._make_request("POST", "/optimization/optimize", optimization_data)
+
 
 class NLPClient:
     """Client for natural language programming"""
@@ -387,11 +395,9 @@ class NLPClient:
 
     async def program_agent(self, description: str) -> Dict[str, Any]:
         """Program agent using natural language"""
-        programming_data = {
-            "description": description,
-            "specifications": {}
-        }
+        programming_data = {"description": description, "specifications": {}}
         return await self.client._make_request("POST", "/nlp/generate-code", programming_data)
+
 
 # Synchronous wrapper for easier use
 class AgentSDKSync:
@@ -428,10 +434,11 @@ class AgentSDKSync:
             asyncio.set_event_loop(self.loop)
         return self.loop.run_until_complete(coro)
 
+
 # Factory functions for easy instantiation
-def create_agent_sdk(environment: str = "production",
-                    api_key: str = None,
-                    api_base_url: str = None) -> AgentSDKClient:
+def create_agent_sdk(
+    environment: str = "production", api_key: str = None, api_base_url: str = None
+) -> AgentSDKClient:
     """Factory function to create Agent SDK client"""
 
     # Default URLs for different environments
@@ -439,42 +446,45 @@ def create_agent_sdk(environment: str = "production",
         "local": "http://localhost:8000",
         "development": "https://dev-api.agent-ecosystem.com",
         "staging": "https://staging-api.agent-ecosystem.com",
-        "production": "https://api.agent-ecosystem.com"
+        "production": "https://api.agent-ecosystem.com",
     }
 
     config = AgentSDKConfig(
         environment=AgentSDKEnvironment(environment),
         api_base_url=api_base_url or default_urls.get(environment, default_urls["production"]),
         api_key=api_key,
-        access_level=LibraryAccessLevel.PUBLIC
+        access_level=LibraryAccessLevel.PUBLIC,
     )
 
     return AgentSDKClient(config)
 
-def create_agent_sdk_sync(environment: str = "production",
-                         api_key: str = None,
-                         api_base_url: str = None) -> AgentSDKSync:
+
+def create_agent_sdk_sync(
+    environment: str = "production", api_key: str = None, api_base_url: str = None
+) -> AgentSDKSync:
     """Factory function to create synchronous Agent SDK client"""
 
     default_urls = {
         "local": "http://localhost:8000",
         "development": "https://dev-api.agent-ecosystem.com",
         "staging": "https://staging-api.agent-ecosystem.com",
-        "production": "https://api.agent-ecosystem.com"
+        "production": "https://api.agent-ecosystem.com",
     }
 
     config = AgentSDKConfig(
         environment=AgentSDKEnvironment(environment),
         api_base_url=api_base_url or default_urls.get(environment, default_urls["production"]),
         api_key=api_key,
-        access_level=LibraryAccessLevel.PUBLIC
+        access_level=LibraryAccessLevel.PUBLIC,
     )
 
     return AgentSDKSync(config)
 
+
 # Quick access functions
-async def quick_create_agent(agent_type: str, capabilities: List[str],
-                           api_key: str = None) -> Dict[str, Any]:
+async def quick_create_agent(
+    agent_type: str, capabilities: List[str], api_key: str = None
+) -> Dict[str, Any]:
     """Quick function to create an agent"""
     client = create_agent_sdk(api_key=api_key)
     await client.connect()
@@ -483,15 +493,17 @@ async def quick_create_agent(agent_type: str, capabilities: List[str],
         agent_id=f"agent-{uuid.uuid4()}",
         agent_type=agent_type,
         capabilities=capabilities,
-        configuration={}
+        configuration={},
     )
 
     result = await client.create_agent(agent_def)
     await client.disconnect()
     return result
 
-async def quick_orchestrate_agents(agent_ids: List[str], workflow: Dict[str, Any],
-                                 api_key: str = None) -> Dict[str, Any]:
+
+async def quick_orchestrate_agents(
+    agent_ids: List[str], workflow: Dict[str, Any], api_key: str = None
+) -> Dict[str, Any]:
     """Quick function to orchestrate agents"""
     client = create_agent_sdk(api_key=api_key)
     await client.connect()
@@ -505,7 +517,7 @@ async def quick_orchestrate_agents(agent_ids: List[str], workflow: Dict[str, Any
                 agent_id=agent_id,
                 agent_type=agent_info.get("type", "generic"),
                 capabilities=agent_info.get("capabilities", []),
-                configuration=agent_info.get("configuration", {})
+                configuration=agent_info.get("configuration", {}),
             )
             agents.append(agent_def)
 
@@ -517,15 +529,17 @@ async def quick_orchestrate_agents(agent_ids: List[str], workflow: Dict[str, Any
         plan_id=f"plan-{uuid.uuid4()}",
         agents=agents,
         orchestration_mode=AgentOrchestrationMode.ASYNCHRONOUS,
-        workflow=workflow
+        workflow=workflow,
     )
 
     result = await client.orchestrate_agents(plan)
     await client.disconnect()
     return result
 
+
 # Global SDK instance for simple usage
 _global_sdk = None
+
 
 def get_global_sdk(api_key: str = None) -> AgentSDKSync:
     """Get global SDK instance"""
@@ -535,6 +549,7 @@ def get_global_sdk(api_key: str = None) -> AgentSDKSync:
         _global_sdk.connect()
     return _global_sdk
 
+
 def sdk_status() -> Dict[str, Any]:
     """Get SDK connection status"""
     global _global_sdk
@@ -542,19 +557,32 @@ def sdk_status() -> Dict[str, Any]:
         "connected": _global_sdk.async_client.connected if _global_sdk else False,
         "environment": _global_sdk.async_client.config.environment.value if _global_sdk else "none",
         "features_enabled": {
-            "blockchain": _global_sdk.async_client.config.enable_blockchain if _global_sdk else False,
-            "marketplace": _global_sdk.async_client.config.enable_marketplace if _global_sdk else False,
-            "optimization": _global_sdk.async_client.config.enable_optimization if _global_sdk else False,
+            "blockchain": (
+                _global_sdk.async_client.config.enable_blockchain if _global_sdk else False
+            ),
+            "marketplace": (
+                _global_sdk.async_client.config.enable_marketplace if _global_sdk else False
+            ),
+            "optimization": (
+                _global_sdk.async_client.config.enable_optimization if _global_sdk else False
+            ),
             "nlp": _global_sdk.async_client.config.enable_nlp if _global_sdk else False,
-            "quantum": _global_sdk.async_client.config.enable_quantum if _global_sdk else False
-        }
+            "quantum": _global_sdk.async_client.config.enable_quantum if _global_sdk else False,
+        },
     }
+
 
 # Export main classes and functions
 __all__ = [
-    "AgentSDKClient", "AgentSDKSync", "AgentSDKConfig",
-    "AgentDefinition", "AgentOrchestrationPlan",
-    "create_agent_sdk", "create_agent_sdk_sync",
-    "quick_create_agent", "quick_orchestrate_agents",
-    "get_global_sdk", "sdk_status"
+    "AgentSDKClient",
+    "AgentSDKSync",
+    "AgentSDKConfig",
+    "AgentDefinition",
+    "AgentOrchestrationPlan",
+    "create_agent_sdk",
+    "create_agent_sdk_sync",
+    "quick_create_agent",
+    "quick_orchestrate_agents",
+    "get_global_sdk",
+    "sdk_status",
 ]

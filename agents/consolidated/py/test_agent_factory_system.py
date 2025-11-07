@@ -21,8 +21,13 @@ from datetime import datetime
 sys.path.insert(0, str(Path(__file__).parent.parent))
 
 from library.core.agent_template_system import (
-    AgentTemplateSystem, AgentTemplate, AgentSpecification,
-    ComplianceFramework, PerformanceTier, DeploymentFormat, APQCCategory
+    AgentTemplateSystem,
+    AgentTemplate,
+    AgentSpecification,
+    ComplianceFramework,
+    PerformanceTier,
+    DeploymentFormat,
+    APQCCategory,
 )
 from library.core.agent_code_generator import AgentCodeGenerator
 
@@ -30,6 +35,7 @@ from library.core.agent_code_generator import AgentCodeGenerator
 # ============================================================================
 # Fixtures
 # ============================================================================
+
 
 @pytest.fixture
 def template_system():
@@ -62,13 +68,14 @@ def sample_specification():
         performance_tier=PerformanceTier.OPTIMIZED,
         max_response_time_ms=500,
         concurrent_users=100,
-        deployment_format=DeploymentFormat.DOCKER
+        deployment_format=DeploymentFormat.DOCKER,
     )
 
 
 # ============================================================================
 # Template System Tests
 # ============================================================================
+
 
 class TestTemplateSystem:
     """Test suite for Agent Template System"""
@@ -80,20 +87,18 @@ class TestTemplateSystem:
 
         # Should have loaded built-in templates
         stats = template_system.get_statistics()
-        assert stats['total_templates'] >= 10  # We created 10 templates
+        assert stats["total_templates"] >= 10  # We created 10 templates
 
     def test_search_templates_by_apqc(self, template_system):
         """Test searching templates by APQC process"""
         results = template_system.search_templates(apqc_process="1.3")
 
         assert len(results) > 0
-        assert all(r['apqc_process'] == "1.3" for r in results)
+        assert all(r["apqc_process"] == "1.3" for r in results)
 
     def test_search_templates_by_category(self, template_system):
         """Test searching templates by APQC category"""
-        results = template_system.search_templates(
-            apqc_category=APQCCategory.VISION_STRATEGY
-        )
+        results = template_system.search_templates(apqc_category=APQCCategory.VISION_STRATEGY)
 
         assert len(results) > 0
 
@@ -114,11 +119,11 @@ class TestTemplateSystem:
         assert len(results) > 0
 
         # Get first template
-        template_id = results[0]['template_id']
+        template_id = results[0]["template_id"]
         template = template_system.get_template(template_id)
 
         assert template is not None
-        assert template['template_id'] == template_id
+        assert template["template_id"] == template_id
 
     def test_recommend_template(self, template_system, sample_specification):
         """Test template recommendation"""
@@ -126,12 +131,12 @@ class TestTemplateSystem:
 
         assert len(recommendations) > 0
         # First recommendation should be for APQC 3.1 (market research)
-        assert recommendations[0]['apqc_process'] == "3.1"
+        assert recommendations[0]["apqc_process"] == "3.1"
 
     def test_record_usage(self, template_system):
         """Test recording template usage"""
         results = template_system.search_templates()
-        template_id = results[0]['template_id']
+        template_id = results[0]["template_id"]
 
         # Record usage
         template_system.record_usage(
@@ -140,29 +145,30 @@ class TestTemplateSystem:
             deployment_format=DeploymentFormat.DOCKER,
             compliance_frameworks=[ComplianceFramework.GDPR],
             success=True,
-            performance_metrics={"quality_score": 95.0}
+            performance_metrics={"quality_score": 95.0},
         )
 
         # Verify usage was recorded
         template = template_system.get_template(template_id)
-        assert template['usage_count'] >= 1
+        assert template["usage_count"] >= 1
 
     def test_statistics(self, template_system):
         """Test template system statistics"""
         stats = template_system.get_statistics()
 
-        assert 'total_templates' in stats
-        assert 'total_usage' in stats
-        assert 'average_success_rate' in stats
-        assert 'top_templates' in stats
+        assert "total_templates" in stats
+        assert "total_usage" in stats
+        assert "average_success_rate" in stats
+        assert "top_templates" in stats
 
-        assert stats['total_templates'] >= 10
-        assert isinstance(stats['top_templates'], list)
+        assert stats["total_templates"] >= 10
+        assert isinstance(stats["top_templates"], list)
 
 
 # ============================================================================
 # Code Generator Tests
 # ============================================================================
+
 
 class TestCodeGenerator:
     """Test suite for Agent Code Generator"""
@@ -289,7 +295,7 @@ class TestCodeGenerator:
         retrieved = code_generator.get_generated_agent(generated.agent_id)
 
         assert retrieved is not None
-        assert retrieved['agent_id'] == generated.agent_id
+        assert retrieved["agent_id"] == generated.agent_id
 
     def test_generation_statistics(self, code_generator, sample_specification):
         """Test generation statistics"""
@@ -299,20 +305,21 @@ class TestCodeGenerator:
                 agent_name=f"Test Agent {i}",
                 description=f"Test agent {i}",
                 business_objective="Test objective",
-                apqc_process="3.1"
+                apqc_process="3.1",
             )
             code_generator.generate_agent(spec)
 
         stats = code_generator.get_statistics()
 
-        assert stats['total_agents_generated'] >= 3
-        assert stats['average_code_quality'] > 0
-        assert stats['total_lines_of_code'] > 0
+        assert stats["total_agents_generated"] >= 3
+        assert stats["average_code_quality"] > 0
+        assert stats["total_lines_of_code"] > 0
 
 
 # ============================================================================
 # Integration Tests
 # ============================================================================
+
 
 @pytest.mark.asyncio
 class TestEndToEndAgentGeneration:
@@ -348,7 +355,7 @@ class TestEndToEndAgentGeneration:
                 agent_name=f"Strategic Manager {i}",
                 description=f"Strategic initiative manager instance {i}",
                 business_objective="Manage strategic initiatives",
-                apqc_process="1.3"
+                apqc_process="1.3",
             )
             generated = code_generator.generate_agent(spec)
             agents.append(generated)
@@ -368,7 +375,7 @@ class TestEndToEndAgentGeneration:
             agent_name="GDPR Compliant Agent",
             description="GDPR compliant agent",
             business_objective="Process data with GDPR compliance",
-            compliance_frameworks=[ComplianceFramework.GDPR]
+            compliance_frameworks=[ComplianceFramework.GDPR],
         )
         gdpr_agent = code_generator.generate_agent(gdpr_spec)
 
@@ -377,7 +384,7 @@ class TestEndToEndAgentGeneration:
             agent_name="HIPAA Compliant Agent",
             description="HIPAA compliant agent",
             business_objective="Process healthcare data",
-            compliance_frameworks=[ComplianceFramework.HIPAA]
+            compliance_frameworks=[ComplianceFramework.HIPAA],
         )
         hipaa_agent = code_generator.generate_agent(hipaa_spec)
 
@@ -389,12 +396,14 @@ class TestEndToEndAgentGeneration:
 # Performance Tests
 # ============================================================================
 
+
 @pytest.mark.benchmark
 class TestPerformance:
     """Performance benchmarking tests"""
 
     def test_template_search_performance(self, template_system, benchmark):
         """Benchmark template search performance"""
+
         def search():
             return template_system.search_templates(keyword="market")
 
@@ -403,6 +412,7 @@ class TestPerformance:
 
     def test_agent_generation_performance(self, code_generator, sample_specification, benchmark):
         """Benchmark agent generation performance"""
+
         def generate():
             return code_generator.generate_agent(sample_specification)
 
@@ -419,7 +429,7 @@ class TestPerformance:
                 agent_name=f"Concurrent Agent {i}",
                 description=f"Agent {i}",
                 business_objective="Test concurrency",
-                apqc_process="3.1"
+                apqc_process="3.1",
             )
             return code_generator.generate_agent(spec)
 
@@ -441,6 +451,7 @@ class TestPerformance:
 # Error Handling Tests
 # ============================================================================
 
+
 class TestErrorHandling:
     """Test error handling and edge cases"""
 
@@ -450,7 +461,7 @@ class TestErrorHandling:
             agent_name="Invalid Agent",
             description="Test",
             business_objective="Test",
-            apqc_process="99.99"  # Invalid
+            apqc_process="99.99",  # Invalid
         )
 
         # Should still generate (fallback to generic template or best match)
@@ -483,6 +494,7 @@ class TestErrorHandling:
 # Cleanup
 # ============================================================================
 
+
 @pytest.fixture(scope="session", autouse=True)
 def cleanup():
     """Clean up test databases after all tests"""
@@ -493,7 +505,7 @@ def cleanup():
         "test_agent_templates.db",
         "test_agent_generation.db",
         "agent_templates_demo.db",
-        "agent_generation_demo.db"
+        "agent_generation_demo.db",
     ]
 
     for db in test_dbs:

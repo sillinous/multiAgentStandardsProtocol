@@ -58,13 +58,15 @@ from dataclasses import dataclass, field
 # Resource monitoring
 try:
     import psutil
+
     PSUTIL_AVAILABLE = True
 except ImportError:
     PSUTIL_AVAILABLE = False
 
 # Import base framework
 import sys
-sys.path.append(os.path.join(os.path.dirname(__file__), '../..'))
+
+sys.path.append(os.path.join(os.path.dirname(__file__), "../.."))
 
 from superstandard.agents.base.base_agent import BaseAgent
 from library.core.protocols import ProtocolMixin
@@ -79,6 +81,7 @@ SUPPORTED_PROTOCOLS = ["A2A", "A2P", "ACP", "ANP", "MCP"]
 # CONFIGURATION
 # ============================================================================
 
+
 @dataclass
 class HandoffCoordinationAgentConfig:
     """
@@ -91,6 +94,7 @@ class HandoffCoordinationAgentConfig:
         export HANDOFF_COORDINATION_AVG_SPEED_KMH=50.0
         export HANDOFF_COORDINATION_IDEAL_BUFFER_MINUTES=15
     """
+
     # Logging
     log_level: str = "INFO"
 
@@ -117,11 +121,13 @@ class HandoffCoordinationAgentConfig:
     max_vehicles: int = 5
 
     # Handoff quality
-    quality_weights: Dict[str, float] = field(default_factory=lambda: {
-        "wait_time": 0.6,
-        "distance_balance": 0.3,
-        "buffer_optimization": 0.1
-    })
+    quality_weights: Dict[str, float] = field(
+        default_factory=lambda: {
+            "wait_time": 0.6,
+            "distance_balance": 0.3,
+            "buffer_optimization": 0.1,
+        }
+    )
 
     # Caching
     enable_cache: bool = True
@@ -136,24 +142,22 @@ class HandoffCoordinationAgentConfig:
         return cls(
             # Logging
             log_level=os.getenv("HANDOFF_COORDINATION_LOG_LEVEL", "INFO"),
-
             # Resource limits
             max_memory_mb=int(os.getenv("HANDOFF_COORDINATION_MAX_MEMORY_MB", "512")),
             max_cpu_percent=int(os.getenv("HANDOFF_COORDINATION_MAX_CPU_PERCENT", "80")),
-
             # Protocol flags
             enable_a2a=os.getenv("HANDOFF_COORDINATION_ENABLE_A2A", "true").lower() == "true",
             enable_a2p=os.getenv("HANDOFF_COORDINATION_ENABLE_A2P", "true").lower() == "true",
             enable_acp=os.getenv("HANDOFF_COORDINATION_ENABLE_ACP", "true").lower() == "true",
             enable_anp=os.getenv("HANDOFF_COORDINATION_ENABLE_ANP", "true").lower() == "true",
             enable_mcp=os.getenv("HANDOFF_COORDINATION_ENABLE_MCP", "true").lower() == "true",
-
             # Domain configuration
             min_buffer_minutes=float(os.getenv("HANDOFF_COORDINATION_MIN_BUFFER_MINUTES", "5.0")),
             max_buffer_minutes=float(os.getenv("HANDOFF_COORDINATION_MAX_BUFFER_MINUTES", "30.0")),
-            ideal_buffer_minutes=float(os.getenv("HANDOFF_COORDINATION_IDEAL_BUFFER_MINUTES", "10.0")),
+            ideal_buffer_minutes=float(
+                os.getenv("HANDOFF_COORDINATION_IDEAL_BUFFER_MINUTES", "10.0")
+            ),
             avg_speed_kmh=float(os.getenv("HANDOFF_COORDINATION_AVG_SPEED_KMH", "45.0")),
-
             # Route segmentation
             min_route_distance_for_multi_vehicle_km=float(
                 os.getenv("HANDOFF_COORDINATION_MIN_ROUTE_DISTANCE_KM", "50.0")
@@ -162,19 +166,19 @@ class HandoffCoordinationAgentConfig:
                 os.getenv("HANDOFF_COORDINATION_TARGET_SEGMENT_KM", "75.0")
             ),
             max_vehicles=int(os.getenv("HANDOFF_COORDINATION_MAX_VEHICLES", "5")),
-
             # Caching
             enable_cache=os.getenv("HANDOFF_COORDINATION_ENABLE_CACHE", "true").lower() == "true",
             cache_ttl_seconds=int(os.getenv("HANDOFF_COORDINATION_CACHE_TTL_SECONDS", "300")),
-
             # Performance
-            enable_metrics=os.getenv("HANDOFF_COORDINATION_ENABLE_METRICS", "true").lower() == "true",
+            enable_metrics=os.getenv("HANDOFF_COORDINATION_ENABLE_METRICS", "true").lower()
+            == "true",
         )
 
 
 @dataclass
 class Vehicle:
     """Vehicle information"""
+
     id: str
     location: Tuple[float, float]
     destination: Tuple[float, float]
@@ -186,6 +190,7 @@ class Vehicle:
 @dataclass
 class HandoffPoint:
     """A potential handoff location"""
+
     location: Tuple[float, float]
     arrival_time_vehicle1: datetime
     departure_time_vehicle2: datetime
@@ -196,6 +201,7 @@ class HandoffPoint:
 # ============================================================================
 # RESOURCE MONITORING
 # ============================================================================
+
 
 class ResourceMonitor:
     """Monitor agent resource usage"""
@@ -217,19 +223,19 @@ class ResourceMonitor:
             if memory_mb > self.max_memory_mb:
                 return {
                     "status": "error",
-                    "reason": f"Memory usage {memory_mb:.1f}MB exceeds limit {self.max_memory_mb}MB"
+                    "reason": f"Memory usage {memory_mb:.1f}MB exceeds limit {self.max_memory_mb}MB",
                 }
 
             if cpu_percent > self.max_cpu_percent:
                 return {
                     "status": "warning",
-                    "reason": f"CPU usage {cpu_percent:.1f}% exceeds limit {self.max_cpu_percent}%"
+                    "reason": f"CPU usage {cpu_percent:.1f}% exceeds limit {self.max_cpu_percent}%",
                 }
 
             return {
                 "status": "ok",
                 "memory_mb": round(memory_mb, 2),
-                "cpu_percent": round(cpu_percent, 2)
+                "cpu_percent": round(cpu_percent, 2),
             }
         except Exception as e:
             return {"status": "error", "reason": f"Monitoring error: {str(e)}"}
@@ -238,6 +244,7 @@ class ResourceMonitor:
 # ============================================================================
 # MAIN AGENT
 # ============================================================================
+
 
 class HandoffCoordinationAgent(BaseAgent, ProtocolMixin):
     """
@@ -281,8 +288,7 @@ class HandoffCoordinationAgent(BaseAgent, ProtocolMixin):
 
         # Resource monitoring
         self._resource_monitor = ResourceMonitor(
-            max_memory_mb=config.max_memory_mb,
-            max_cpu_percent=config.max_cpu_percent
+            max_memory_mb=config.max_memory_mb, max_cpu_percent=config.max_cpu_percent
         )
 
         # State
@@ -292,7 +298,7 @@ class HandoffCoordinationAgent(BaseAgent, ProtocolMixin):
             "handoffs_coordinated": 0,
             "cache_hits": 0,
             "cache_misses": 0,
-            "total_execution_time_ms": 0.0
+            "total_execution_time_ms": 0.0,
         }
 
         # Cache for route calculations
@@ -318,7 +324,7 @@ class HandoffCoordinationAgent(BaseAgent, ProtocolMixin):
                 return {
                     "status": "error",
                     "reason": resource_check["reason"],
-                    "agent_id": self.agent_id
+                    "agent_id": self.agent_id,
                 }
 
             self._initialized = True
@@ -333,8 +339,8 @@ class HandoffCoordinationAgent(BaseAgent, ProtocolMixin):
                 "config": {
                     "avg_speed_kmh": self.typed_config.avg_speed_kmh,
                     "ideal_buffer_minutes": self.typed_config.ideal_buffer_minutes,
-                    "max_vehicles": self.typed_config.max_vehicles
-                }
+                    "max_vehicles": self.typed_config.max_vehicles,
+                },
             }
 
         except Exception as e:
@@ -342,7 +348,7 @@ class HandoffCoordinationAgent(BaseAgent, ProtocolMixin):
             return {
                 "status": "error",
                 "reason": f"Initialization failed: {str(e)}",
-                "agent_id": self.agent_id
+                "agent_id": self.agent_id,
             }
 
     async def execute(self, input_data: Dict[str, Any]) -> Dict[str, Any]:
@@ -360,20 +366,12 @@ class HandoffCoordinationAgent(BaseAgent, ProtocolMixin):
         start_time = time.time()
 
         if not self._initialized:
-            return {
-                "success": False,
-                "error": "Agent not initialized",
-                "agent_id": self.agent_id
-            }
+            return {"success": False, "error": "Agent not initialized", "agent_id": self.agent_id}
 
         # Check resources
         resource_check = self._resource_monitor.check_resources()
         if resource_check["status"] == "error":
-            return {
-                "success": False,
-                "error": resource_check["reason"],
-                "agent_id": self.agent_id
-            }
+            return {"success": False, "error": resource_check["reason"], "agent_id": self.agent_id}
 
         try:
             action = input_data.get("action")
@@ -385,10 +383,7 @@ class HandoffCoordinationAgent(BaseAgent, ProtocolMixin):
             elif action == "coordinate_timing":
                 result = await self._handle_timing_coordination(input_data)
             else:
-                result = {
-                    "success": False,
-                    "error": f"Unknown action: {action}"
-                }
+                result = {"success": False, "error": f"Unknown action: {action}"}
 
             # Update metrics
             if self.typed_config.enable_metrics:
@@ -403,7 +398,7 @@ class HandoffCoordinationAgent(BaseAgent, ProtocolMixin):
             return {
                 "success": False,
                 "error": f"Execution failed: {str(e)}",
-                "agent_id": self.agent_id
+                "agent_id": self.agent_id,
             }
 
     async def shutdown(self) -> Dict[str, Any]:
@@ -423,14 +418,14 @@ class HandoffCoordinationAgent(BaseAgent, ProtocolMixin):
             return {
                 "status": "shutdown",
                 "agent_id": self.agent_id,
-                "final_metrics": self._metrics.copy()
+                "final_metrics": self._metrics.copy(),
             }
 
         except Exception as e:
             return {
                 "status": "error",
                 "reason": f"Shutdown failed: {str(e)}",
-                "agent_id": self.agent_id
+                "agent_id": self.agent_id,
             }
 
     async def health_check(self) -> Dict[str, Any]:
@@ -451,7 +446,7 @@ class HandoffCoordinationAgent(BaseAgent, ProtocolMixin):
             "resources": resource_check,
             "metrics": self._metrics.copy() if self.typed_config.enable_metrics else {},
             "cache_size": len(self._handoff_cache),
-            "timestamp": datetime.now().isoformat()
+            "timestamp": datetime.now().isoformat(),
         }
 
     # ========================================================================
@@ -471,9 +466,7 @@ class HandoffCoordinationAgent(BaseAgent, ProtocolMixin):
         return {}
 
     async def _execute_logic(
-        self,
-        input_data: Dict[str, Any],
-        fetched_data: Dict[str, Any]
+        self, input_data: Dict[str, Any], fetched_data: Dict[str, Any]
     ) -> Dict[str, Any]:
         """Core execution logic - delegates to execute() method"""
         return await self.execute(input_data)
@@ -487,7 +480,7 @@ class HandoffCoordinationAgent(BaseAgent, ProtocolMixin):
         origin: Tuple[float, float],
         destination: Tuple[float, float],
         departure_time: datetime,
-        max_vehicles: int = None
+        max_vehicles: int = None,
     ) -> Dict[str, Any]:
         """
         Plan a long-distance route using multiple vehicles
@@ -511,13 +504,12 @@ class HandoffCoordinationAgent(BaseAgent, ProtocolMixin):
             return {
                 "needs_multi_vehicle": False,
                 "reason": f"Route {total_distance:.1f}km is short enough for single vehicle",
-                "total_distance_km": round(total_distance, 2)
+                "total_distance_km": round(total_distance, 2),
             }
 
         # Calculate optimal number of segments
         num_segments = min(
-            max_vehicles,
-            max(2, int(total_distance / self.typed_config.target_segment_distance_km))
+            max_vehicles, max(2, int(total_distance / self.typed_config.target_segment_distance_km))
         )
 
         # Generate handoff points along the route
@@ -537,16 +529,20 @@ class HandoffCoordinationAgent(BaseAgent, ProtocolMixin):
             segment_distance = self._calculate_distance(current_location, next_location)
             segment_duration = (segment_distance / self.typed_config.avg_speed_kmh) * 60
 
-            segments.append({
-                "segment_number": i + 1,
-                "from": current_location,
-                "to": next_location,
-                "distance_km": round(segment_distance, 2),
-                "duration_minutes": round(segment_duration, 2),
-                "departure_time": current_time.isoformat(),
-                "arrival_time": (current_time + timedelta(minutes=segment_duration)).isoformat(),
-                "is_handoff_point": i < len(handoff_points)
-            })
+            segments.append(
+                {
+                    "segment_number": i + 1,
+                    "from": current_location,
+                    "to": next_location,
+                    "distance_km": round(segment_distance, 2),
+                    "duration_minutes": round(segment_duration, 2),
+                    "departure_time": current_time.isoformat(),
+                    "arrival_time": (
+                        current_time + timedelta(minutes=segment_duration)
+                    ).isoformat(),
+                    "is_handoff_point": i < len(handoff_points),
+                }
+            )
 
             # Add buffer time for handoff
             if i < len(handoff_points):
@@ -566,14 +562,14 @@ class HandoffCoordinationAgent(BaseAgent, ProtocolMixin):
             "num_segments": num_segments,
             "num_handoffs": len(handoff_points),
             "segments": segments,
-            "total_duration_minutes": round((current_time - departure_time).total_seconds() / 60, 2),
-            "handoff_points": [{"lat": p[0], "lon": p[1]} for p in handoff_points]
+            "total_duration_minutes": round(
+                (current_time - departure_time).total_seconds() / 60, 2
+            ),
+            "handoff_points": [{"lat": p[0], "lon": p[1]} for p in handoff_points],
         }
 
     def find_optimal_handoff_points(
-        self,
-        vehicle1: Dict[str, Any],
-        vehicle2: Dict[str, Any]
+        self, vehicle1: Dict[str, Any], vehicle2: Dict[str, Any]
     ) -> List[HandoffPoint]:
         """
         Find optimal handoff points between two vehicles
@@ -589,10 +585,7 @@ class HandoffCoordinationAgent(BaseAgent, ProtocolMixin):
         v2 = self._dict_to_vehicle(vehicle2)
 
         # Calculate midpoint between vehicles
-        midpoint = (
-            (v1.location[0] + v2.location[0]) / 2,
-            (v1.location[1] + v2.location[1]) / 2
-        )
+        midpoint = ((v1.location[0] + v2.location[0]) / 2, (v1.location[1] + v2.location[1]) / 2)
 
         # Generate candidate handoff points around the midpoint
         candidates = []
@@ -635,8 +628,17 @@ class HandoffCoordinationAgent(BaseAgent, ProtocolMixin):
             if wait_time <= self.typed_config.ideal_buffer_minutes:
                 quality = 1.0 - (wait_time / self.typed_config.ideal_buffer_minutes) * 0.3
             elif wait_time <= self.typed_config.max_buffer_minutes:
-                quality = 0.7 - ((wait_time - self.typed_config.ideal_buffer_minutes) /
-                               (self.typed_config.max_buffer_minutes - self.typed_config.ideal_buffer_minutes)) * 0.5
+                quality = (
+                    0.7
+                    - (
+                        (wait_time - self.typed_config.ideal_buffer_minutes)
+                        / (
+                            self.typed_config.max_buffer_minutes
+                            - self.typed_config.ideal_buffer_minutes
+                        )
+                    )
+                    * 0.5
+                )
             else:
                 quality = 0.2
 
@@ -647,13 +649,15 @@ class HandoffCoordinationAgent(BaseAgent, ProtocolMixin):
             arrival_time_v1 = datetime.now() + timedelta(minutes=time1)
             departure_time_v2 = datetime.now() + timedelta(minutes=max(time1, time2))
 
-            handoff_points.append(HandoffPoint(
-                location=candidate,
-                arrival_time_vehicle1=arrival_time_v1,
-                departure_time_vehicle2=departure_time_v2,
-                wait_time_minutes=wait_time,
-                quality_score=quality
-            ))
+            handoff_points.append(
+                HandoffPoint(
+                    location=candidate,
+                    arrival_time_vehicle1=arrival_time_v1,
+                    departure_time_vehicle2=departure_time_v2,
+                    wait_time_minutes=wait_time,
+                    quality_score=quality,
+                )
+            )
 
         # Sort by quality (descending)
         handoff_points.sort(key=lambda h: h.quality_score, reverse=True)
@@ -666,7 +670,7 @@ class HandoffCoordinationAgent(BaseAgent, ProtocolMixin):
         self,
         vehicle1: Dict[str, Any],
         vehicle2: Dict[str, Any],
-        handoff_location: Tuple[float, float]
+        handoff_location: Tuple[float, float],
     ) -> Dict[str, Any]:
         """
         Coordinate timing for a handoff at a specific location
@@ -707,8 +711,8 @@ class HandoffCoordinationAgent(BaseAgent, ProtocolMixin):
 
         # Check if timing is acceptable
         timing_acceptable = (
-            wait_time >= self.typed_config.min_buffer_minutes and
-            wait_time <= self.typed_config.max_buffer_minutes
+            wait_time >= self.typed_config.min_buffer_minutes
+            and wait_time <= self.typed_config.max_buffer_minutes
         )
 
         self._metrics["handoffs_coordinated"] += 1
@@ -719,19 +723,19 @@ class HandoffCoordinationAgent(BaseAgent, ProtocolMixin):
                 "id": v1.id,
                 "arrival_time": arrival1.isoformat(),
                 "travel_time_minutes": round(time1, 2),
-                "distance_km": round(dist1, 2)
+                "distance_km": round(dist1, 2),
             },
             "vehicle2": {
                 "id": v2.id,
                 "arrival_time": arrival2.isoformat(),
                 "travel_time_minutes": round(time2, 2),
-                "distance_km": round(dist2, 2)
+                "distance_km": round(dist2, 2),
             },
             "waiting_vehicle": waiting_vehicle,
             "wait_time_minutes": round(wait_time, 2),
             "handoff_time": handoff_time.isoformat(),
             "timing_acceptable": timing_acceptable,
-            "recommendation": self._get_timing_recommendation(wait_time)
+            "recommendation": self._get_timing_recommendation(wait_time),
         }
 
     # ========================================================================
@@ -751,10 +755,7 @@ class HandoffCoordinationAgent(BaseAgent, ProtocolMixin):
 
         plan = self.plan_multi_vehicle_route(origin, destination, departure_time, max_vehicles)
 
-        return {
-            "success": True,
-            "plan": plan
-        }
+        return {"success": True, "plan": plan}
 
     async def _handle_handoff_finding(self, task: Dict[str, Any]) -> Dict[str, Any]:
         """Handle handoff point finding task"""
@@ -766,7 +767,7 @@ class HandoffCoordinationAgent(BaseAgent, ProtocolMixin):
         return {
             "success": True,
             "handoff_points": [self._handoff_to_dict(h) for h in handoff_points],
-            "count": len(handoff_points)
+            "count": len(handoff_points),
         }
 
     async def _handle_timing_coordination(self, task: Dict[str, Any]) -> Dict[str, Any]:
@@ -777,12 +778,11 @@ class HandoffCoordinationAgent(BaseAgent, ProtocolMixin):
 
         coordination = self.coordinate_timing(vehicle1, vehicle2, handoff_location)
 
-        return {
-            "success": True,
-            "coordination": coordination
-        }
+        return {"success": True, "coordination": coordination}
 
-    def _calculate_distance(self, point1: Tuple[float, float], point2: Tuple[float, float]) -> float:
+    def _calculate_distance(
+        self, point1: Tuple[float, float], point2: Tuple[float, float]
+    ) -> float:
         """
         Calculate distance using Haversine formula
 
@@ -801,19 +801,17 @@ class HandoffCoordinationAgent(BaseAgent, ProtocolMixin):
         dlat = math.radians(lat2 - lat1)
         dlon = math.radians(lon2 - lon1)
 
-        a = (math.sin(dlat / 2) ** 2 +
-             math.cos(math.radians(lat1)) * math.cos(math.radians(lat2)) *
-             math.sin(dlon / 2) ** 2)
+        a = (
+            math.sin(dlat / 2) ** 2
+            + math.cos(math.radians(lat1)) * math.cos(math.radians(lat2)) * math.sin(dlon / 2) ** 2
+        )
 
         c = 2 * math.atan2(math.sqrt(a), math.sqrt(1 - a))
 
         return R * c
 
     def _generate_handoff_points(
-        self,
-        origin: Tuple[float, float],
-        destination: Tuple[float, float],
-        num_points: int
+        self, origin: Tuple[float, float], destination: Tuple[float, float], num_points: int
     ) -> List[Tuple[float, float]]:
         """Generate evenly spaced handoff points along a route"""
         points = []
@@ -834,7 +832,7 @@ class HandoffCoordinationAgent(BaseAgent, ProtocolMixin):
             destination=tuple(d.get("destination", [0, 0])),
             capacity=d.get("capacity", 4),
             current_occupancy=d.get("current_occupancy", 0),
-            avg_speed_kmh=d.get("avg_speed_kmh", 45.0)
+            avg_speed_kmh=d.get("avg_speed_kmh", 45.0),
         )
 
     def _handoff_to_dict(self, handoff: HandoffPoint) -> Dict[str, Any]:
@@ -844,7 +842,7 @@ class HandoffCoordinationAgent(BaseAgent, ProtocolMixin):
             "arrival_time_vehicle1": handoff.arrival_time_vehicle1.isoformat(),
             "departure_time_vehicle2": handoff.departure_time_vehicle2.isoformat(),
             "wait_time_minutes": round(handoff.wait_time_minutes, 2),
-            "quality_score": round(handoff.quality_score, 3)
+            "quality_score": round(handoff.quality_score, 3),
         }
 
     def _get_timing_recommendation(self, wait_time: float) -> str:
@@ -863,9 +861,9 @@ class HandoffCoordinationAgent(BaseAgent, ProtocolMixin):
 # FACTORY FUNCTION
 # ============================================================================
 
+
 async def create_handoff_coordination_agent(
-    agent_id: str = None,
-    config: HandoffCoordinationAgentConfig = None
+    agent_id: str = None, config: HandoffCoordinationAgentConfig = None
 ) -> HandoffCoordinationAgent:
     """
     Factory function to create and initialize Handoff Coordination Agent
@@ -892,6 +890,7 @@ async def create_handoff_coordination_agent(
 # ============================================================================
 # CLI INTERFACE
 # ============================================================================
+
 
 async def main():
     """CLI interface for testing and demonstration"""
@@ -921,18 +920,20 @@ async def main():
 
         # Test 1: Plan multi-vehicle route
         print("\n1. Plan multi-vehicle route (SF to LA):")
-        result = await agent.execute({
-            "action": "plan_route",
-            "origin": (37.7749, -122.4194),  # San Francisco
-            "destination": (34.0522, -118.2437),  # Los Angeles
-            "departure_time": datetime.now().isoformat()
-        })
+        result = await agent.execute(
+            {
+                "action": "plan_route",
+                "origin": (37.7749, -122.4194),  # San Francisco
+                "destination": (34.0522, -118.2437),  # Los Angeles
+                "departure_time": datetime.now().isoformat(),
+            }
+        )
 
         print(f"Success: {result['success']}")
-        if result['success']:
-            plan = result['plan']
+        if result["success"]:
+            plan = result["plan"]
             print(f"Needs multi-vehicle: {plan['needs_multi_vehicle']}")
-            if plan['needs_multi_vehicle']:
+            if plan["needs_multi_vehicle"]:
                 print(f"Total distance: {plan['total_distance_km']} km")
                 print(f"Num segments: {plan['num_segments']}")
                 print(f"Num handoffs: {plan['num_handoffs']}")
@@ -940,29 +941,31 @@ async def main():
 
         # Test 2: Find optimal handoff points
         print("\n2. Find optimal handoff points:")
-        result = await agent.execute({
-            "action": "find_handoff_points",
-            "vehicle1": {
-                "id": "v1",
-                "location": (37.7749, -122.4194),
-                "destination": (37.8044, -122.2712),
-                "capacity": 4,
-                "avg_speed_kmh": 45.0
-            },
-            "vehicle2": {
-                "id": "v2",
-                "location": (37.5485, -121.9886),
-                "destination": (37.3382, -121.8863),
-                "capacity": 4,
-                "avg_speed_kmh": 45.0
+        result = await agent.execute(
+            {
+                "action": "find_handoff_points",
+                "vehicle1": {
+                    "id": "v1",
+                    "location": (37.7749, -122.4194),
+                    "destination": (37.8044, -122.2712),
+                    "capacity": 4,
+                    "avg_speed_kmh": 45.0,
+                },
+                "vehicle2": {
+                    "id": "v2",
+                    "location": (37.5485, -121.9886),
+                    "destination": (37.3382, -121.8863),
+                    "capacity": 4,
+                    "avg_speed_kmh": 45.0,
+                },
             }
-        })
+        )
 
         print(f"Success: {result['success']}")
-        if result['success']:
+        if result["success"]:
             print(f"Handoff points found: {result['count']}")
-            if result['handoff_points']:
-                best = result['handoff_points'][0]
+            if result["handoff_points"]:
+                best = result["handoff_points"][0]
                 print(f"Best handoff:")
                 print(f"  Location: {best['location']}")
                 print(f"  Wait time: {best['wait_time_minutes']} minutes")

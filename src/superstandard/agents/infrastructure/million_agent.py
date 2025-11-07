@@ -1,8 +1,8 @@
 """
-I built this million agent bc it has a million context window. The current problem with AI is the context window. 
-Gemini just destroyed that problem and released Gemini Flash 2.0 with a million context window. 
-This agent is a simple LLM where you can ask back and forth questions based off your knowledge-base 
-Set up a knowledge base in the data folder called million_agent. 
+I built this million agent bc it has a million context window. The current problem with AI is the context window.
+Gemini just destroyed that problem and released Gemini Flash 2.0 with a million context window.
+This agent is a simple LLM where you can ask back and forth questions based off your knowledge-base
+Set up a knowledge base in the data folder called million_agent.
 """
 
 import os

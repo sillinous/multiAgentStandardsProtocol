@@ -53,15 +53,15 @@ class ProductAnalysisAgent(BaseAgent):
                 "feature_extraction",
                 "target_audience_analysis",
                 "price_estimation",
-                "hybrid_processing"
-            ]
+                "hybrid_processing",
+            ],
         )
         self.stats = {
             "total_analyses": 0,
             "local_analyses": 0,
             "cloud_analyses": 0,
             "credits_saved": 0.0,
-            "categories_identified": set()
+            "categories_identified": set(),
         }
 
     async def execute(
@@ -70,7 +70,7 @@ class ProductAnalysisAgent(BaseAgent):
         additional_context: Optional[str] = None,
         quality: str = "auto",
         force_local: bool = False,
-        force_cloud: bool = False
+        force_cloud: bool = False,
     ) -> Dict[str, Any]:
         """
         Analyze product with intelligent routing.
@@ -104,7 +104,7 @@ class ProductAnalysisAgent(BaseAgent):
                 has_context=additional_context is not None,
                 quality=quality,
                 force_local=force_local,
-                force_cloud=force_cloud
+                force_cloud=force_cloud,
             )
 
             # Build input
@@ -128,7 +128,9 @@ class ProductAnalysisAgent(BaseAgent):
             result["method"] = method
             result["processing_time_ms"] = (datetime.utcnow() - start_time).total_seconds() * 1000
 
-            logger.info(f"✅ Analyzed product '{product_name}' via {method}: {result.get('category', 'unknown')}")
+            logger.info(
+                f"✅ Analyzed product '{product_name}' via {method}: {result.get('category', 'unknown')}"
+            )
 
             return result
 
@@ -146,7 +148,7 @@ class ProductAnalysisAgent(BaseAgent):
         has_context: bool,
         quality: str,
         force_local: bool,
-        force_cloud: bool
+        force_cloud: bool,
     ) -> str:
         """Determine whether to use local or cloud processing"""
 
@@ -181,7 +183,7 @@ class ProductAnalysisAgent(BaseAgent):
             **analysis,
             "credits_used": 0,
             "confidence": 0.82,  # Estimated
-            "cost_saved": "$0.02"
+            "cost_saved": "$0.02",
         }
 
     async def _analyze_cloud(self, product_name: str) -> Dict[str, Any]:
@@ -197,14 +199,10 @@ class ProductAnalysisAgent(BaseAgent):
             "price_range": "mid",
             "credits_used": 0.02,
             "confidence": 0.95,
-            "cost_incurred": "$0.02"
+            "cost_incurred": "$0.02",
         }
 
-    async def classify(
-        self,
-        product_name: str,
-        quality: str = "fast"
-    ) -> str:
+    async def classify(self, product_name: str, quality: str = "fast") -> str:
         """
         Quick product classification.
 
@@ -221,11 +219,7 @@ class ProductAnalysisAgent(BaseAgent):
         self.stats["cloud_analyses"] += 1
         return result.get("category", "Unknown")
 
-    async def extract_features(
-        self,
-        product_description: str,
-        quality: str = "fast"
-    ) -> List[str]:
+    async def extract_features(self, product_description: str, quality: str = "fast") -> List[str]:
         """
         Extract key features from product description.
 
@@ -254,7 +248,7 @@ class ProductAnalysisAgent(BaseAgent):
             "cloud_percentage": (self.stats["cloud_analyses"] / total * 100) if total > 0 else 0,
             "estimated_cost_saved": self.stats["credits_saved"] * 1.0,
             "unique_categories": len(self.stats["categories_identified"]),
-            "ollama_available": ollama_service.available
+            "ollama_available": ollama_service.available,
         }
 
     def get_capabilities_manifest(self) -> Dict[str, Any]:
@@ -269,7 +263,7 @@ class ProductAnalysisAgent(BaseAgent):
                 "additional_context": "string (optional)",
                 "quality": "string (fast/auto/high, default: auto)",
                 "force_local": "boolean (default: false)",
-                "force_cloud": "boolean (default: false)"
+                "force_cloud": "boolean (default: false)",
             },
             "output_schema": {
                 "category": "string",
@@ -279,23 +273,20 @@ class ProductAnalysisAgent(BaseAgent):
                 "price_range": "string (budget/mid/premium)",
                 "confidence": "float",
                 "method": "string",
-                "credits_used": "float"
+                "credits_used": "float",
             },
             "methods": {
                 "execute": "Full product analysis",
                 "classify": "Quick categorization",
-                "extract_features": "Feature extraction only"
+                "extract_features": "Feature extraction only",
             },
-            "cost": {
-                "local": "FREE (0 credits)",
-                "cloud": "~0.02 credits per analysis"
-            },
+            "cost": {"local": "FREE (0 credits)", "cloud": "~0.02 credits per analysis"},
             "performance": {
                 "local_latency": "<1s",
                 "cloud_latency": "2-3s",
                 "quality_local": "82%",
-                "quality_cloud": "95%"
-            }
+                "quality_cloud": "95%",
+            },
         }
 
 

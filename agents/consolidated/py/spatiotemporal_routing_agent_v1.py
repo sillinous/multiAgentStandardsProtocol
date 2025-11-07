@@ -52,13 +52,15 @@ from enum import Enum
 
 try:
     import psutil
+
     PSUTIL_AVAILABLE = True
 except ImportError:
     PSUTIL_AVAILABLE = False
 
 import sys
 import os
-sys.path.insert(0, os.path.join(os.path.dirname(__file__), '../..'))
+
+sys.path.insert(0, os.path.join(os.path.dirname(__file__), "../.."))
 
 import logging
 
@@ -70,14 +72,16 @@ from superstandard.agents.base.base_agent import BaseAgent, ProtocolMixin
 # Data Models
 # =============================================================================
 
+
 @dataclass
 class GeoPoint:
     """Geographic coordinate"""
+
     lat: float
     lon: float
     name: str = ""
 
-    def distance_to(self, other: 'GeoPoint') -> float:
+    def distance_to(self, other: "GeoPoint") -> float:
         """Calculate distance using Haversine formula (km)"""
         R = 6371  # Earth's radius in km
 
@@ -87,12 +91,12 @@ class GeoPoint:
         dlat = lat2 - lat1
         dlon = lon2 - lon1
 
-        a = math.sin(dlat/2)**2 + math.cos(lat1) * math.cos(lat2) * math.sin(dlon/2)**2
+        a = math.sin(dlat / 2) ** 2 + math.cos(lat1) * math.cos(lat2) * math.sin(dlon / 2) ** 2
         c = 2 * math.asin(math.sqrt(a))
 
         return R * c
 
-    def bearing_to(self, other: 'GeoPoint') -> float:
+    def bearing_to(self, other: "GeoPoint") -> float:
         """Calculate bearing to another point (degrees)"""
         lat1, lon1 = math.radians(self.lat), math.radians(self.lon)
         lat2, lon2 = math.radians(other.lat), math.radians(other.lon)
@@ -111,6 +115,7 @@ class GeoPoint:
 
 class WaypointType(Enum):
     """Type of waypoint"""
+
     ORIGIN = "origin"
     DESTINATION = "destination"
     PICKUP = "pickup"
@@ -120,6 +125,7 @@ class WaypointType(Enum):
 @dataclass
 class Waypoint:
     """A stop along a route"""
+
     waypoint_id: str
     location: GeoPoint
     waypoint_type: WaypointType
@@ -138,6 +144,7 @@ class Waypoint:
 @dataclass
 class RouteSegment:
     """A segment of a route between two waypoints"""
+
     from_waypoint: Waypoint
     to_waypoint: Waypoint
     distance_km: float
@@ -153,6 +160,7 @@ class RouteSegment:
 @dataclass
 class MultiStopRoute:
     """A complete multi-stop route"""
+
     route_id: str
     driver_id: str
     waypoints: List[Waypoint]
@@ -174,7 +182,11 @@ class MultiStopRoute:
         for waypoint in self.waypoints:
             if waypoint.time_window_start and waypoint.time_window_end:
                 if waypoint.estimated_arrival:
-                    if not (waypoint.time_window_start <= waypoint.estimated_arrival <= waypoint.time_window_end):
+                    if not (
+                        waypoint.time_window_start
+                        <= waypoint.estimated_arrival
+                        <= waypoint.time_window_end
+                    ):
                         return False
         return True
 
@@ -197,6 +209,7 @@ class MultiStopRoute:
 @dataclass
 class WaypointInsertionRequest:
     """Request to insert pickup/dropoff waypoints into route"""
+
     route_id: str
     rider_id: str
     pickup_location: GeoPoint
@@ -209,6 +222,7 @@ class WaypointInsertionRequest:
 @dataclass
 class WaypointInsertionResult:
     """Result of waypoint insertion optimization"""
+
     success: bool
     route: Optional[MultiStopRoute] = None
     pickup_waypoint: Optional[Waypoint] = None
@@ -221,6 +235,7 @@ class WaypointInsertionResult:
 @dataclass
 class TrafficCondition:
     """Real-time traffic information"""
+
     location: GeoPoint
     congestion_level: float  # 0.0 = free flow, 1.0 = standstill
     speed_kmh: float
@@ -231,6 +246,7 @@ class TrafficCondition:
 # =============================================================================
 # Agent Environment Configuration
 # =============================================================================
+
 
 @dataclass
 class SpatiotemporalRoutingConfig:
@@ -261,6 +277,7 @@ class SpatiotemporalRoutingConfig:
 # Spatiotemporal Routing Agent
 # =============================================================================
 
+
 class SpatiotemporalRoutingAgent(BaseAgent, ProtocolMixin):
     """
     Agent for spatiotemporal route optimization and waypoint insertion.
@@ -275,10 +292,7 @@ class SpatiotemporalRoutingAgent(BaseAgent, ProtocolMixin):
     """
 
     def __init__(
-        self,
-        agent_id: str,
-        config: Optional[SpatiotemporalRoutingConfig] = None,
-        **kwargs
+        self, agent_id: str, config: Optional[SpatiotemporalRoutingConfig] = None, **kwargs
     ):
         """Initialize agent"""
         BaseAgent.__init__(self, agent_id=agent_id, **kwargs)
@@ -332,17 +346,18 @@ class SpatiotemporalRoutingAgent(BaseAgent, ProtocolMixin):
         elif operation == "reroute":
             return await self._reroute(task.get("params", {}))
         else:
-            return {
-                "success": False,
-                "error": f"Unknown operation: {operation}"
-            }
+            return {"success": False, "error": f"Unknown operation: {operation}"}
 
     async def shutdown(self):
         """Shutdown agent"""
         self.logger.info(f"[{self.agent_id}] Shutting down...")
 
         # Log final metrics
-        avg_optimization_time = sum(self.optimization_times_ms) / len(self.optimization_times_ms) if self.optimization_times_ms else 0
+        avg_optimization_time = (
+            sum(self.optimization_times_ms) / len(self.optimization_times_ms)
+            if self.optimization_times_ms
+            else 0
+        )
 
         self.logger.info(f"[{self.agent_id}] Final Metrics:")
         self.logger.info(f"  Routes Optimized: {self.routes_optimized}")
@@ -361,9 +376,13 @@ class SpatiotemporalRoutingAgent(BaseAgent, ProtocolMixin):
             "routes_optimized": self.routes_optimized,
             "waypoints_inserted": self.waypoints_inserted,
             "active_routes": len(self.active_routes),
-            "avg_optimization_time_ms": sum(self.optimization_times_ms) / len(self.optimization_times_ms) if self.optimization_times_ms else 0,
+            "avg_optimization_time_ms": (
+                sum(self.optimization_times_ms) / len(self.optimization_times_ms)
+                if self.optimization_times_ms
+                else 0
+            ),
             "cpu_percent": psutil.cpu_percent() if PSUTIL_AVAILABLE else 0,
-            "memory_percent": psutil.virtual_memory().percent if PSUTIL_AVAILABLE else 0
+            "memory_percent": psutil.virtual_memory().percent if PSUTIL_AVAILABLE else 0,
         }
 
     # =========================================================================
@@ -394,7 +413,7 @@ class SpatiotemporalRoutingAgent(BaseAgent, ProtocolMixin):
 
         # Try all insertion positions
         best_insertion = None
-        min_cost = float('inf')
+        min_cost = float("inf")
 
         # Pickup can be inserted after origin, before destination
         pickup_positions = range(1, len(route.waypoints))
@@ -407,7 +426,7 @@ class SpatiotemporalRoutingAgent(BaseAgent, ProtocolMixin):
                 waypoint_type=WaypointType.PICKUP,
                 rider_id=request.rider_id,
                 time_window_start=request.pickup_time_window[0],
-                time_window_end=request.pickup_time_window[1]
+                time_window_end=request.pickup_time_window[1],
             )
 
             # Dropoff must be after pickup
@@ -421,7 +440,7 @@ class SpatiotemporalRoutingAgent(BaseAgent, ProtocolMixin):
                     waypoint_type=WaypointType.DROPOFF,
                     rider_id=request.rider_id,
                     time_window_start=request.dropoff_time_window[0],
-                    time_window_end=request.dropoff_time_window[1]
+                    time_window_end=request.dropoff_time_window[1],
                 )
 
                 # Create candidate route
@@ -452,8 +471,9 @@ class SpatiotemporalRoutingAgent(BaseAgent, ProtocolMixin):
                         pickup_waypoint=pickup_waypoint,
                         dropoff_waypoint=dropoff_waypoint,
                         insertion_cost_minutes=detour,
-                        insertion_cost_km=candidate_route.total_distance_km - route.total_distance_km,
-                        reason="Optimal insertion found"
+                        insertion_cost_km=candidate_route.total_distance_km
+                        - route.total_distance_km,
+                        reason="Optimal insertion found",
                     )
 
         # Record metrics
@@ -471,13 +491,13 @@ class SpatiotemporalRoutingAgent(BaseAgent, ProtocolMixin):
                 "route": self._route_to_dict(best_insertion.route),
                 "insertion_cost_minutes": best_insertion.insertion_cost_minutes,
                 "insertion_cost_km": best_insertion.insertion_cost_km,
-                "optimization_time_ms": optimization_time_ms
+                "optimization_time_ms": optimization_time_ms,
             }
         else:
             self.constraint_violations += 1
             return {
                 "success": False,
-                "reason": "No feasible insertion found (time/capacity/detour constraints)"
+                "reason": "No feasible insertion found (time/capacity/detour constraints)",
             }
 
     async def _optimize_route(self, params: Dict) -> Dict[str, Any]:
@@ -496,7 +516,8 @@ class SpatiotemporalRoutingAgent(BaseAgent, ProtocolMixin):
 
         # Extract flexible waypoints (exclude origin/destination)
         flexible_waypoints = [
-            w for w in route.waypoints
+            w
+            for w in route.waypoints
             if w.waypoint_type not in [WaypointType.ORIGIN, WaypointType.DESTINATION]
         ]
 
@@ -504,7 +525,9 @@ class SpatiotemporalRoutingAgent(BaseAgent, ProtocolMixin):
             return {"success": True, "route": self._route_to_dict(route)}
 
         # Optimize order using 2-opt
-        optimized_order = self._two_opt_optimize(route.waypoints[0], flexible_waypoints, route.waypoints[-1])
+        optimized_order = self._two_opt_optimize(
+            route.waypoints[0], flexible_waypoints, route.waypoints[-1]
+        )
 
         # Reconstruct route
         new_waypoints = [route.waypoints[0]] + optimized_order + [route.waypoints[-1]]
@@ -522,7 +545,7 @@ class SpatiotemporalRoutingAgent(BaseAgent, ProtocolMixin):
             "route": self._route_to_dict(new_route),
             "improvement_km": route.total_distance_km - new_route.total_distance_km,
             "improvement_minutes": route.total_duration_minutes - new_route.total_duration_minutes,
-            "optimization_time_ms": optimization_time_ms
+            "optimization_time_ms": optimization_time_ms,
         }
 
     async def _predict_eta(self, params: Dict) -> Dict[str, Any]:
@@ -546,15 +569,31 @@ class SpatiotemporalRoutingAgent(BaseAgent, ProtocolMixin):
         for i, waypoint in enumerate(route.waypoints):
             waypoint.estimated_arrival = current_time + cumulative_time
 
-            etas.append({
-                "waypoint_id": waypoint.waypoint_id,
-                "location": {"lat": waypoint.location.lat, "lon": waypoint.location.lon, "name": waypoint.location.name},
-                "type": waypoint.waypoint_type.value,
-                "eta": waypoint.estimated_arrival.isoformat(),
-                "time_window_start": waypoint.time_window_start.isoformat() if waypoint.time_window_start else None,
-                "time_window_end": waypoint.time_window_end.isoformat() if waypoint.time_window_end else None,
-                "on_time": True if not waypoint.time_window_end else waypoint.estimated_arrival <= waypoint.time_window_end
-            })
+            etas.append(
+                {
+                    "waypoint_id": waypoint.waypoint_id,
+                    "location": {
+                        "lat": waypoint.location.lat,
+                        "lon": waypoint.location.lon,
+                        "name": waypoint.location.name,
+                    },
+                    "type": waypoint.waypoint_type.value,
+                    "eta": waypoint.estimated_arrival.isoformat(),
+                    "time_window_start": (
+                        waypoint.time_window_start.isoformat()
+                        if waypoint.time_window_start
+                        else None
+                    ),
+                    "time_window_end": (
+                        waypoint.time_window_end.isoformat() if waypoint.time_window_end else None
+                    ),
+                    "on_time": (
+                        True
+                        if not waypoint.time_window_end
+                        else waypoint.estimated_arrival <= waypoint.time_window_end
+                    ),
+                }
+            )
 
             # Add travel time to next waypoint
             if i < len(route.segments):
@@ -566,7 +605,7 @@ class SpatiotemporalRoutingAgent(BaseAgent, ProtocolMixin):
             "success": True,
             "route_id": route_id,
             "etas": etas,
-            "total_duration_minutes": cumulative_time.total_seconds() / 60
+            "total_duration_minutes": cumulative_time.total_seconds() / 60,
         }
 
     async def _reroute(self, params: Dict) -> Dict[str, Any]:
@@ -585,13 +624,15 @@ class SpatiotemporalRoutingAgent(BaseAgent, ProtocolMixin):
         # Recalculate segments with updated traffic
         new_segments = []
         for segment in route.segments:
-            traffic = self._get_traffic_multiplier(segment.from_waypoint.location, segment.to_waypoint.location)
+            traffic = self._get_traffic_multiplier(
+                segment.from_waypoint.location, segment.to_waypoint.location
+            )
             new_segment = RouteSegment(
                 from_waypoint=segment.from_waypoint,
                 to_waypoint=segment.to_waypoint,
                 distance_km=segment.distance_km,
                 duration_minutes=segment.duration_minutes,
-                traffic_multiplier=traffic
+                traffic_multiplier=traffic,
             )
             new_segments.append(new_segment)
 
@@ -604,7 +645,7 @@ class SpatiotemporalRoutingAgent(BaseAgent, ProtocolMixin):
         return {
             "success": True,
             "route": self._route_to_dict(route),
-            "reroute_reason": "Traffic conditions updated"
+            "reroute_reason": "Traffic conditions updated",
         }
 
     # =========================================================================
@@ -620,13 +661,13 @@ class SpatiotemporalRoutingAgent(BaseAgent, ProtocolMixin):
             dropoff_location=GeoPoint(**params["dropoff_location"]),
             pickup_time_window=(
                 datetime.fromisoformat(params["pickup_time_window"][0]),
-                datetime.fromisoformat(params["pickup_time_window"][1])
+                datetime.fromisoformat(params["pickup_time_window"][1]),
             ),
             dropoff_time_window=(
                 datetime.fromisoformat(params["dropoff_time_window"][0]),
-                datetime.fromisoformat(params["dropoff_time_window"][1])
+                datetime.fromisoformat(params["dropoff_time_window"][1]),
             ),
-            max_detour_minutes=params.get("max_detour_minutes", 15.0)
+            max_detour_minutes=params.get("max_detour_minutes", 15.0),
         )
 
     def _create_candidate_route(
@@ -635,7 +676,7 @@ class SpatiotemporalRoutingAgent(BaseAgent, ProtocolMixin):
         pickup: Waypoint,
         pickup_pos: int,
         dropoff: Waypoint,
-        dropoff_pos: int
+        dropoff_pos: int,
     ) -> MultiStopRoute:
         """Create candidate route with inserted waypoints"""
         # Insert waypoints
@@ -646,7 +687,9 @@ class SpatiotemporalRoutingAgent(BaseAgent, ProtocolMixin):
         # Reconstruct route
         return self._reconstruct_route(original_route, new_waypoints)
 
-    def _reconstruct_route(self, original_route: MultiStopRoute, new_waypoints: List[Waypoint]) -> MultiStopRoute:
+    def _reconstruct_route(
+        self, original_route: MultiStopRoute, new_waypoints: List[Waypoint]
+    ) -> MultiStopRoute:
         """Reconstruct route with new waypoint order"""
         # Create segments
         segments = []
@@ -666,7 +709,7 @@ class SpatiotemporalRoutingAgent(BaseAgent, ProtocolMixin):
                 to_waypoint=to_wp,
                 distance_km=distance,
                 duration_minutes=duration,
-                traffic_multiplier=traffic
+                traffic_multiplier=traffic,
             )
 
             segments.append(segment)
@@ -680,7 +723,9 @@ class SpatiotemporalRoutingAgent(BaseAgent, ProtocolMixin):
         for i, waypoint in enumerate(new_waypoints):
             waypoint.estimated_arrival = current_time + cumulative_time
             if i < len(segments):
-                cumulative_time += timedelta(minutes=segments[i].actual_duration_minutes + waypoint.duration_minutes)
+                cumulative_time += timedelta(
+                    minutes=segments[i].actual_duration_minutes + waypoint.duration_minutes
+                )
 
         return MultiStopRoute(
             route_id=original_route.route_id,
@@ -689,18 +734,24 @@ class SpatiotemporalRoutingAgent(BaseAgent, ProtocolMixin):
             segments=segments,
             total_distance_km=total_distance,
             total_duration_minutes=total_duration,
-            max_capacity=original_route.max_capacity
+            max_capacity=original_route.max_capacity,
         )
 
-    def _calculate_insertion_cost(self, original: MultiStopRoute, candidate: MultiStopRoute) -> float:
+    def _calculate_insertion_cost(
+        self, original: MultiStopRoute, candidate: MultiStopRoute
+    ) -> float:
         """Calculate cost of inserting waypoints"""
         distance_cost = candidate.total_distance_km - original.total_distance_km
         time_cost = candidate.total_duration_minutes - original.total_duration_minutes
-        waypoint_cost = (len(candidate.waypoints) - len(original.waypoints)) * self.typed_config.waypoint_insertion_penalty
+        waypoint_cost = (
+            len(candidate.waypoints) - len(original.waypoints)
+        ) * self.typed_config.waypoint_insertion_penalty
 
         return distance_cost + time_cost + waypoint_cost
 
-    def _two_opt_optimize(self, origin: Waypoint, flexible: List[Waypoint], destination: Waypoint) -> List[Waypoint]:
+    def _two_opt_optimize(
+        self, origin: Waypoint, flexible: List[Waypoint], destination: Waypoint
+    ) -> List[Waypoint]:
         """2-opt optimization for TSP-like routing"""
         if len(flexible) <= 2:
             return flexible
@@ -713,7 +764,7 @@ class SpatiotemporalRoutingAgent(BaseAgent, ProtocolMixin):
             for i in range(len(route) - 1):
                 for j in range(i + 2, len(route)):
                     # Try reversing segment [i+1:j]
-                    new_route = route[:i+1] + route[i+1:j+1][::-1] + route[j+1:]
+                    new_route = route[: i + 1] + route[i + 1 : j + 1][::-1] + route[j + 1 :]
 
                     # Calculate improvement
                     old_dist = self._route_distance([origin] + route + [destination])
@@ -732,7 +783,7 @@ class SpatiotemporalRoutingAgent(BaseAgent, ProtocolMixin):
         """Calculate total route distance"""
         total = 0
         for i in range(len(waypoints) - 1):
-            total += waypoints[i].location.distance_to(waypoints[i+1].location)
+            total += waypoints[i].location.distance_to(waypoints[i + 1].location)
         return total
 
     def _get_traffic_multiplier(self, from_loc: GeoPoint, to_loc: GeoPoint) -> float:
@@ -762,12 +813,16 @@ class SpatiotemporalRoutingAgent(BaseAgent, ProtocolMixin):
                 {
                     "waypoint_id": w.waypoint_id,
                     "type": w.waypoint_type.value,
-                    "location": {"lat": w.location.lat, "lon": w.location.lon, "name": w.location.name},
+                    "location": {
+                        "lat": w.location.lat,
+                        "lon": w.location.lon,
+                        "name": w.location.name,
+                    },
                     "rider_id": w.rider_id,
-                    "eta": w.estimated_arrival.isoformat() if w.estimated_arrival else None
+                    "eta": w.estimated_arrival.isoformat() if w.estimated_arrival else None,
                 }
                 for w in route.waypoints
-            ]
+            ],
         }
 
 
@@ -775,10 +830,11 @@ class SpatiotemporalRoutingAgent(BaseAgent, ProtocolMixin):
 # Factory Functions
 # =============================================================================
 
+
 async def create_spatiotemporal_routing_agent(
     agent_id: str = "spatiotemporal-routing-001",
     config: Optional[SpatiotemporalRoutingConfig] = None,
-    **kwargs
+    **kwargs,
 ) -> SpatiotemporalRoutingAgent:
     """
     Factory to create and initialize SpatiotemporalRoutingAgent.
@@ -794,7 +850,7 @@ async def create_spatiotemporal_routing_agent(
 def create_spatiotemporal_routing_agent_sync(
     agent_id: str = "spatiotemporal-routing-001",
     config: Optional[SpatiotemporalRoutingConfig] = None,
-    **kwargs
+    **kwargs,
 ) -> SpatiotemporalRoutingAgent:
     """
     Synchronous factory (does not auto-initialize).
@@ -809,6 +865,7 @@ def create_spatiotemporal_routing_agent_sync(
 # =============================================================================
 # Demo / Testing
 # =============================================================================
+
 
 async def demo_spatiotemporal_routing():
     """Demo the spatiotemporal routing agent"""
@@ -831,59 +888,66 @@ async def demo_spatiotemporal_routing():
         driver_id="driver-123",
         waypoints=[
             Waypoint("origin", origin, WaypointType.ORIGIN),
-            Waypoint("destination", destination, WaypointType.DESTINATION)
+            Waypoint("destination", destination, WaypointType.DESTINATION),
         ],
         segments=[
             RouteSegment(
                 from_waypoint=Waypoint("origin", origin, WaypointType.ORIGIN),
                 to_waypoint=Waypoint("destination", destination, WaypointType.DESTINATION),
                 distance_km=origin.distance_to(destination),
-                duration_minutes=(origin.distance_to(destination) / 40.0) * 60
+                duration_minutes=(origin.distance_to(destination) / 40.0) * 60,
             )
         ],
         total_distance_km=origin.distance_to(destination),
-        total_duration_minutes=(origin.distance_to(destination) / 40.0) * 60
+        total_duration_minutes=(origin.distance_to(destination) / 40.0) * 60,
     )
 
     agent.active_routes["route-001"] = initial_route
-    print(f"    Initial route: {initial_route.total_distance_km:.2f} km, {initial_route.total_duration_minutes:.1f} min")
+    print(
+        f"    Initial route: {initial_route.total_distance_km:.2f} km, {initial_route.total_duration_minutes:.1f} min"
+    )
 
     # Insert rider waypoints
     print("\n[3] Inserting rider pickup/dropoff...")
     now = datetime.now()
 
-    result = await agent.execute({
-        "operation": "insert_waypoints",
-        "params": {
-            "route_id": "route-001",
-            "rider_id": "rider-456",
-            "pickup_location": {"lat": 37.7779, "lon": -122.4164, "name": "Mission District"},
-            "dropoff_location": {"lat": 37.7829, "lon": -122.4124, "name": "SOMA"},
-            "pickup_time_window": [now.isoformat(), (now + timedelta(minutes=30)).isoformat()],
-            "dropoff_time_window": [now.isoformat(), (now + timedelta(minutes=60)).isoformat()],
-            "max_detour_minutes": 15.0
+    result = await agent.execute(
+        {
+            "operation": "insert_waypoints",
+            "params": {
+                "route_id": "route-001",
+                "rider_id": "rider-456",
+                "pickup_location": {"lat": 37.7779, "lon": -122.4164, "name": "Mission District"},
+                "dropoff_location": {"lat": 37.7829, "lon": -122.4124, "name": "SOMA"},
+                "pickup_time_window": [now.isoformat(), (now + timedelta(minutes=30)).isoformat()],
+                "dropoff_time_window": [now.isoformat(), (now + timedelta(minutes=60)).isoformat()],
+                "max_detour_minutes": 15.0,
+            },
         }
-    })
+    )
 
     if result["success"]:
         print(f"    [SUCCESS] Waypoints inserted!")
-        print(f"    Insertion cost: {result['insertion_cost_minutes']:.1f} min, {result['insertion_cost_km']:.2f} km")
+        print(
+            f"    Insertion cost: {result['insertion_cost_minutes']:.1f} min, {result['insertion_cost_km']:.2f} km"
+        )
         print(f"    Optimization time: {result['optimization_time_ms']:.1f} ms")
     else:
         print(f"    [FAILED] {result.get('reason', 'Unknown error')}")
 
     # Predict ETAs
     print("\n[4] Predicting ETAs...")
-    eta_result = await agent.execute({
-        "operation": "predict_eta",
-        "params": {"route_id": "route-001"}
-    })
+    eta_result = await agent.execute(
+        {"operation": "predict_eta", "params": {"route_id": "route-001"}}
+    )
 
     if eta_result["success"]:
         print(f"    Total duration: {eta_result['total_duration_minutes']:.1f} min")
         for waypoint_eta in eta_result["etas"]:
             on_time_marker = "[ON TIME]" if waypoint_eta["on_time"] else "[LATE]"
-            print(f"    {waypoint_eta['type']:12s} {waypoint_eta['location']['name']:20s} ETA: {waypoint_eta['eta']} {on_time_marker}")
+            print(
+                f"    {waypoint_eta['type']:12s} {waypoint_eta['location']['name']:20s} ETA: {waypoint_eta['eta']} {on_time_marker}"
+            )
 
     # Health check
     print("\n[5] Health check...")

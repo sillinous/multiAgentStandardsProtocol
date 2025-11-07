@@ -44,7 +44,9 @@ class ChartCreationTaskAgent(BaseAgent):
     and maximum reusability across APQC categories.
     """
 
-    def __init__(self, agent_id: str = "chart_creation_task_agent", config: Optional[Dict[str, Any]] = None):
+    def __init__(
+        self, agent_id: str = "chart_creation_task_agent", config: Optional[Dict[str, Any]] = None
+    ):
         """
         Initialize Chart Creation Task Agent
 
@@ -55,8 +57,8 @@ class ChartCreationTaskAgent(BaseAgent):
         super().__init__(
             agent_id=agent_id,
             agent_type="output_generation",
-            capabilities=['multiple_chart_types', 'interactive_charts', 'custom_styling'],
-            config=config or {}
+            capabilities=["multiple_chart_types", "interactive_charts", "custom_styling"],
+            config=config or {},
         )
 
         # Agent-specific initialization
@@ -66,25 +68,25 @@ class ChartCreationTaskAgent(BaseAgent):
             "reusable": True,
             "composable": True,
             "stateless": True,
-            "framework": "APQC 7.0.1"
+            "framework": "APQC 7.0.1",
         }
 
         logger.info(f"Initialized Chart Creation Task Agent [{self.agent_id}]")
 
     async def execute_task(self, task: Dict[str, Any]) -> Dict[str, Any]:
         """
-        Execute the output generation task
+                Execute the output generation task
 
-        Args:
-            task: Task parameters containing:
-                - data: dict
-- chart_type: string
-- style: dict
+                Args:
+                    task: Task parameters containing:
+                        - data: dict
+        - chart_type: string
+        - style: dict
 
-        Returns:
-            Result dictionary containing:
-                - chart: string
-- file_path: string
+                Returns:
+                    Result dictionary containing:
+                        - chart: string
+        - file_path: string
         """
         try:
             logger.info(f"[{self.agent_id}] Executing output_generation task")
@@ -104,7 +106,7 @@ class ChartCreationTaskAgent(BaseAgent):
                 "status": "success",
                 "agent_id": self.agent_id,
                 "timestamp": datetime.utcnow().isoformat(),
-                "result": output
+                "result": output,
             }
 
         except Exception as e:
@@ -113,7 +115,7 @@ class ChartCreationTaskAgent(BaseAgent):
                 "status": "error",
                 "agent_id": self.agent_id,
                 "timestamp": datetime.utcnow().isoformat(),
-                "error": str(e)
+                "error": str(e),
             }
 
     def _validate_inputs(self, task: Dict[str, Any]) -> None:
@@ -126,7 +128,7 @@ class ChartCreationTaskAgent(BaseAgent):
         Raises:
             ValueError: If required inputs are missing or invalid
         """
-        required_fields = ['data', 'chart_type', 'style']
+        required_fields = ["data", "chart_type", "style"]
 
         for field in required_fields:
             if field not in task:
@@ -154,7 +156,7 @@ class ChartCreationTaskAgent(BaseAgent):
         result = {
             "executed": True,
             "task_type": "output_generation",
-            "inputs_received": list(task.keys())
+            "inputs_received": list(task.keys()),
         }
 
         # Simulate async work
@@ -179,8 +181,8 @@ class ChartCreationTaskAgent(BaseAgent):
                 "agent_type": self.agent_type,
                 "level": 5,
                 "category": "output_generation",
-                "timestamp": datetime.utcnow().isoformat()
-            }
+                "timestamp": datetime.utcnow().isoformat(),
+            },
         }
 
     async def handle_message(self, message: Dict[str, Any]) -> Dict[str, Any]:
@@ -202,10 +204,7 @@ class ChartCreationTaskAgent(BaseAgent):
         elif message_type == "capabilities":
             return self.get_capabilities()
         else:
-            return {
-                "status": "error",
-                "error": f"Unknown message type: {message_type}"
-            }
+            return {"status": "error", "error": f"Unknown message type: {message_type}"}
 
     def get_status(self) -> Dict[str, Any]:
         """
@@ -219,7 +218,7 @@ class ChartCreationTaskAgent(BaseAgent):
             "agent_type": self.agent_type,
             "status": "ready",
             "capabilities": self.capabilities,
-            "metadata": self.metadata
+            "metadata": self.metadata,
         }
 
     def get_capabilities(self) -> Dict[str, Any]:
@@ -232,11 +231,11 @@ class ChartCreationTaskAgent(BaseAgent):
         return {
             "agent_id": self.agent_id,
             "capabilities": self.capabilities,
-            "inputs": {'data': 'dict', 'chart_type': 'string', 'style': 'dict'},
-            "outputs": {'chart': 'string', 'file_path': 'string'},
+            "inputs": {"data": "dict", "chart_type": "string", "style": "dict"},
+            "outputs": {"chart": "string", "file_path": "string"},
             "level": 5,
             "reusable": True,
-            "composable": True
+            "composable": True,
         }
 
 
@@ -250,7 +249,7 @@ async def main():
     # Example task
     task = {
         # Add example inputs here
-                # "data": "example_data",
+        # "data": "example_data",
         # "chart_type": "example_chart_type",
         # "style": "example_style",
     }

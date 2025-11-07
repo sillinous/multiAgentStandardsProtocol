@@ -60,7 +60,8 @@ import psutil
 
 import sys
 import os
-sys.path.insert(0, os.path.join(os.path.dirname(__file__), '../..'))
+
+sys.path.insert(0, os.path.join(os.path.dirname(__file__), "../.."))
 
 import logging
 
@@ -72,14 +73,16 @@ from superstandard.agents.base.base_agent import BaseAgent, ProtocolMixin
 # Domain Models
 # =========================================================================
 
+
 @dataclass
 class GeoPoint:
     """Geographic point with lat/lon"""
+
     lat: float
     lon: float
     name: str = ""
 
-    def distance_to(self, other: 'GeoPoint') -> float:
+    def distance_to(self, other: "GeoPoint") -> float:
         """Calculate distance using Haversine formula (km)"""
         R = 6371  # Earth's radius in km
 
@@ -89,12 +92,12 @@ class GeoPoint:
         dlat = lat2 - lat1
         dlon = lon2 - lon1
 
-        a = math.sin(dlat/2)**2 + math.cos(lat1) * math.cos(lat2) * math.sin(dlon/2)**2
+        a = math.sin(dlat / 2) ** 2 + math.cos(lat1) * math.cos(lat2) * math.sin(dlon / 2) ** 2
         c = 2 * math.asin(math.sqrt(a))
 
         return R * c
 
-    def bearing_to(self, other: 'GeoPoint') -> float:
+    def bearing_to(self, other: "GeoPoint") -> float:
         """Calculate bearing (direction) to another point (degrees)"""
         lat1, lon1 = math.radians(self.lat), math.radians(self.lon)
         lat2, lon2 = math.radians(other.lat), math.radians(other.lon)
@@ -111,20 +114,20 @@ class GeoPoint:
 @dataclass
 class TimeWindow:
     """Time window constraint"""
+
     earliest: datetime
     latest: datetime
 
-    def overlaps(self, other: 'TimeWindow') -> bool:
+    def overlaps(self, other: "TimeWindow") -> bool:
         """Check if time windows overlap"""
         return not (self.latest < other.earliest or other.latest < self.earliest)
 
-    def intersection(self, other: 'TimeWindow') -> Optional['TimeWindow']:
+    def intersection(self, other: "TimeWindow") -> Optional["TimeWindow"]:
         """Get intersection of two time windows"""
         if not self.overlaps(other):
             return None
         return TimeWindow(
-            earliest=max(self.earliest, other.earliest),
-            latest=min(self.latest, other.latest)
+            earliest=max(self.earliest, other.earliest), latest=min(self.latest, other.latest)
         )
 
     def duration_minutes(self) -> float:
@@ -135,6 +138,7 @@ class TimeWindow:
 @dataclass
 class JourneyIntent:
     """Represents a driver's intentional journey"""
+
     driver_id: str
     origin: GeoPoint
     destination: GeoPoint
@@ -160,6 +164,7 @@ class JourneyIntent:
 @dataclass
 class RideRequest:
     """Represents a rider's ride request"""
+
     rider_id: str
     pickup: GeoPoint
     dropoff: GeoPoint
@@ -175,6 +180,7 @@ class RideRequest:
 @dataclass
 class RouteMatch:
     """Represents a matched rider to driver journey"""
+
     journey: JourneyIntent
     request: RideRequest
     pickup_location: GeoPoint
@@ -192,24 +198,27 @@ class RouteMatch:
             "driver_id": self.journey.driver_id,
             "rider_id": self.request.rider_id,
             "pickup": {
-                "location": self.pickup_location.name or f"{self.pickup_location.lat:.4f},{self.pickup_location.lon:.4f}",
-                "estimated_time": self.estimated_pickup_time.isoformat()
+                "location": self.pickup_location.name
+                or f"{self.pickup_location.lat:.4f},{self.pickup_location.lon:.4f}",
+                "estimated_time": self.estimated_pickup_time.isoformat(),
             },
             "dropoff": {
-                "location": self.dropoff_location.name or f"{self.dropoff_location.lat:.4f},{self.dropoff_location.lon:.4f}",
-                "estimated_time": self.estimated_dropoff_time.isoformat()
+                "location": self.dropoff_location.name
+                or f"{self.dropoff_location.lat:.4f},{self.dropoff_location.lon:.4f}",
+                "estimated_time": self.estimated_dropoff_time.isoformat(),
             },
             "detour_km": round(self.detour_distance_km, 2),
             "detour_minutes": round(self.detour_time_minutes, 1),
             "match_score": round(self.match_score, 3),
             "shared_route_percent": round(self.shared_distance_percent, 1),
-            "fare": round(self.fare_per_rider, 2)
+            "fare": round(self.fare_per_rider, 2),
         }
 
 
 # =========================================================================
 # Configuration
 # =========================================================================
+
 
 @dataclass
 class RideMatchingAgentConfig:
@@ -244,13 +253,14 @@ class RideMatchingAgentConfig:
     cache_ttl_seconds: int = 30
 
     @classmethod
-    def from_environment(cls) -> 'RideMatchingAgentConfig':
+    def from_environment(cls) -> "RideMatchingAgentConfig":
         """Create config from environment variables"""
         import os
+
         return cls(
-            agent_id=os.getenv('RIDE_MATCHING_AGENT_ID', 'ride_matching_001'),
-            max_detour_km=float(os.getenv('MAX_DETOUR_KM', '5.0')),
-            max_detour_minutes=float(os.getenv('MAX_DETOUR_MINUTES', '10.0'))
+            agent_id=os.getenv("RIDE_MATCHING_AGENT_ID", "ride_matching_001"),
+            max_detour_km=float(os.getenv("MAX_DETOUR_KM", "5.0")),
+            max_detour_minutes=float(os.getenv("MAX_DETOUR_MINUTES", "10.0")),
         )
 
 
@@ -297,7 +307,7 @@ class RideMatchingAgent(BaseAgent, ProtocolMixin):
             "total_requests_processed": 0,
             "average_match_score": 0.0,
             "average_detour_minutes": 0.0,
-            "average_shared_route_percent": 0.0
+            "average_shared_route_percent": 0.0,
         }
 
         # Performance monitoring
@@ -326,8 +336,8 @@ class RideMatchingAgent(BaseAgent, ProtocolMixin):
             "config": {
                 "max_detour_km": self.typed_config.max_detour_km,
                 "min_route_overlap": self.typed_config.min_route_overlap_percent,
-                "optimization_mode": self.typed_config.optimize_for
-            }
+                "optimization_mode": self.typed_config.optimize_for,
+            },
         }
 
     async def shutdown(self) -> Dict[str, Any]:
@@ -337,11 +347,7 @@ class RideMatchingAgent(BaseAgent, ProtocolMixin):
         self.pending_requests.clear()
         self.matches.clear()
 
-        return {
-            "status": "shutdown",
-            "agent_id": self.agent_id,
-            "final_stats": self.stats
-        }
+        return {"status": "shutdown", "agent_id": self.agent_id, "final_stats": self.stats}
 
     async def health_check(self) -> Dict[str, Any]:
         """Check agent health"""
@@ -363,11 +369,8 @@ class RideMatchingAgent(BaseAgent, ProtocolMixin):
             "active_journeys": len(self.active_journeys),
             "pending_requests": len(self.pending_requests),
             "total_matches": len(self.matches),
-            "resources": {
-                "memory_mb": round(memory_mb, 2),
-                "cpu_percent": round(cpu_percent, 2)
-            },
-            "stats": self.stats
+            "resources": {"memory_mb": round(memory_mb, 2), "cpu_percent": round(cpu_percent, 2)},
+            "stats": self.stats,
         }
 
     # =====================================================================
@@ -411,14 +414,18 @@ class RideMatchingAgent(BaseAgent, ProtocolMixin):
                 destination=GeoPoint(**params["destination"]),
                 departure_window=TimeWindow(
                     earliest=datetime.fromisoformat(params["departure_window"]["earliest"]),
-                    latest=datetime.fromisoformat(params["departure_window"]["latest"])
+                    latest=datetime.fromisoformat(params["departure_window"]["latest"]),
                 ),
                 seats_available=params.get("seats_available", 3),
                 vehicle_type=params.get("vehicle_type", "sedan"),
                 amenities=params.get("amenities", []),
                 driver_rating=params.get("driver_rating", 5.0),
-                detour_tolerance_km=params.get("detour_tolerance_km", self.typed_config.max_detour_km),
-                detour_tolerance_minutes=params.get("detour_tolerance_minutes", self.typed_config.max_detour_minutes)
+                detour_tolerance_km=params.get(
+                    "detour_tolerance_km", self.typed_config.max_detour_km
+                ),
+                detour_tolerance_minutes=params.get(
+                    "detour_tolerance_minutes", self.typed_config.max_detour_minutes
+                ),
             )
 
             self.active_journeys[journey.driver_id] = journey
@@ -433,7 +440,7 @@ class RideMatchingAgent(BaseAgent, ProtocolMixin):
                 "route_distance_km": round(journey.route_distance_km(), 2),
                 "route_bearing": round(journey.route_bearing(), 1),
                 "potential_matches": len(potential_matches),
-                "message": f"Journey registered: {journey.origin.name} → {journey.destination.name}"
+                "message": f"Journey registered: {journey.origin.name} → {journey.destination.name}",
             }
 
         except Exception as e:
@@ -454,11 +461,7 @@ class RideMatchingAgent(BaseAgent, ProtocolMixin):
         if "current_riders" in params:
             journey.current_riders = params["current_riders"]
 
-        return {
-            "success": True,
-            "journey_id": driver_id,
-            "has_capacity": journey.has_capacity()
-        }
+        return {"success": True, "journey_id": driver_id, "has_capacity": journey.has_capacity()}
 
     # =====================================================================
     # Ride Request Management
@@ -473,13 +476,13 @@ class RideMatchingAgent(BaseAgent, ProtocolMixin):
                 dropoff=GeoPoint(**params["dropoff"]),
                 time_window=TimeWindow(
                     earliest=datetime.fromisoformat(params["time_window"]["earliest"]),
-                    latest=datetime.fromisoformat(params["time_window"]["latest"])
+                    latest=datetime.fromisoformat(params["time_window"]["latest"]),
                 ),
                 max_detour_minutes=params.get("max_detour_minutes", 15.0),
                 max_sharing_riders=params.get("max_sharing_riders", 4),
                 preferred_vehicle_types=params.get("preferred_vehicle_types", ["sedan", "suv"]),
                 rider_rating=params.get("rider_rating", 5.0),
-                priority=params.get("priority", 1)
+                priority=params.get("priority", 1),
             )
 
             self.pending_requests[request.rider_id] = request
@@ -493,7 +496,7 @@ class RideMatchingAgent(BaseAgent, ProtocolMixin):
                 "request_id": request.rider_id,
                 "trip_distance_km": round(request.pickup.distance_to(request.dropoff), 2),
                 "matches_found": len(matches),
-                "best_matches": [m.to_dict() for m in matches[:3]]
+                "best_matches": [m.to_dict() for m in matches[:3]],
             }
 
         except Exception as e:
@@ -530,7 +533,7 @@ class RideMatchingAgent(BaseAgent, ProtocolMixin):
         return {
             "success": True,
             "total_matches": len(matches),
-            "top_matches": [m.to_dict() for m in matches[:10]]
+            "top_matches": [m.to_dict() for m in matches[:10]],
         }
 
     async def _find_matches_for_journey(self, journey: JourneyIntent) -> List[RouteMatch]:
@@ -567,9 +570,11 @@ class RideMatchingAgent(BaseAgent, ProtocolMixin):
         # Sort by score
         matches.sort(key=lambda m: m.match_score, reverse=True)
 
-        return matches[:self.typed_config.max_matches_per_request]
+        return matches[: self.typed_config.max_matches_per_request]
 
-    async def _calculate_match(self, journey: JourneyIntent, request: RideRequest) -> Optional[RouteMatch]:
+    async def _calculate_match(
+        self, journey: JourneyIntent, request: RideRequest
+    ) -> Optional[RouteMatch]:
         """
         THE MAGIC ALGORITHM
         -------------------
@@ -593,9 +598,7 @@ class RideMatchingAgent(BaseAgent, ProtocolMixin):
         pickup_point, dropoff_point = self._calculate_optimal_waypoints(journey, request)
 
         # 4. CALCULATE DETOUR
-        detour_km, detour_minutes = self._calculate_detour(
-            journey, pickup_point, dropoff_point
-        )
+        detour_km, detour_minutes = self._calculate_detour(journey, pickup_point, dropoff_point)
 
         # Check detour within tolerance
         if detour_km > journey.detour_tolerance_km:
@@ -609,7 +612,7 @@ class RideMatchingAgent(BaseAgent, ProtocolMixin):
             detour_km=detour_km,
             detour_minutes=detour_minutes,
             journey=journey,
-            request=request
+            request=request,
         )
 
         # 6. CALCULATE FARE
@@ -633,7 +636,7 @@ class RideMatchingAgent(BaseAgent, ProtocolMixin):
             detour_time_minutes=detour_minutes,
             match_score=match_score,
             shared_distance_percent=shared_percent,
-            fare_per_rider=fare
+            fare_per_rider=fare,
         )
 
         # Update stats
@@ -641,7 +644,9 @@ class RideMatchingAgent(BaseAgent, ProtocolMixin):
 
         return match
 
-    def _check_route_compatibility(self, journey: JourneyIntent, request: RideRequest) -> Tuple[bool, float]:
+    def _check_route_compatibility(
+        self, journey: JourneyIntent, request: RideRequest
+    ) -> Tuple[bool, float]:
         """
         Check if rider's route is geometrically compatible with driver's journey.
 
@@ -681,7 +686,9 @@ class RideMatchingAgent(BaseAgent, ProtocolMixin):
         """Check if time windows are compatible"""
         return journey.departure_window.overlaps(request.time_window)
 
-    def _calculate_optimal_waypoints(self, journey: JourneyIntent, request: RideRequest) -> Tuple[GeoPoint, GeoPoint]:
+    def _calculate_optimal_waypoints(
+        self, journey: JourneyIntent, request: RideRequest
+    ) -> Tuple[GeoPoint, GeoPoint]:
         """
         Calculate optimal pickup and dropoff points that minimize detour.
 
@@ -690,7 +697,9 @@ class RideMatchingAgent(BaseAgent, ProtocolMixin):
         """
         return request.pickup, request.dropoff
 
-    def _calculate_detour(self, journey: JourneyIntent, pickup: GeoPoint, dropoff: GeoPoint) -> Tuple[float, float]:
+    def _calculate_detour(
+        self, journey: JourneyIntent, pickup: GeoPoint, dropoff: GeoPoint
+    ) -> Tuple[float, float]:
         """Calculate detour distance and time caused by adding waypoints"""
 
         # Original route
@@ -698,10 +707,10 @@ class RideMatchingAgent(BaseAgent, ProtocolMixin):
 
         # New route with waypoints: origin → pickup → dropoff → destination
         detour_distance = (
-            journey.origin.distance_to(pickup) +
-            pickup.distance_to(dropoff) +
-            dropoff.distance_to(journey.destination) -
-            original_distance
+            journey.origin.distance_to(pickup)
+            + pickup.distance_to(dropoff)
+            + dropoff.distance_to(journey.destination)
+            - original_distance
         )
 
         # Estimate time (assume 50 km/h average speed)
@@ -709,9 +718,14 @@ class RideMatchingAgent(BaseAgent, ProtocolMixin):
 
         return max(0, detour_distance), max(0, detour_minutes)
 
-    def _calculate_match_score(self, shared_percent: float, detour_km: float,
-                                detour_minutes: float, journey: JourneyIntent,
-                                request: RideRequest) -> float:
+    def _calculate_match_score(
+        self,
+        shared_percent: float,
+        detour_km: float,
+        detour_minutes: float,
+        journey: JourneyIntent,
+        request: RideRequest,
+    ) -> float:
         """
         Calculate match quality score (0-1, higher is better)
 
@@ -738,11 +752,11 @@ class RideMatchingAgent(BaseAgent, ProtocolMixin):
 
         # Weighted combination
         score = (
-            overlap_score * 0.35 +
-            detour_distance_score * 0.25 +
-            detour_time_score * 0.25 +
-            rating_score * 0.10 +
-            vehicle_match * 0.05
+            overlap_score * 0.35
+            + detour_distance_score * 0.25
+            + detour_time_score * 0.25
+            + rating_score * 0.10
+            + vehicle_match * 0.05
         )
 
         return min(1.0, max(0.0, score))
@@ -753,8 +767,8 @@ class RideMatchingAgent(BaseAgent, ProtocolMixin):
         time_minutes = distance * 1.5  # Assume 1.5 min/km
 
         base_fare = (
-            distance * self.typed_config.base_fare_per_km +
-            time_minutes * self.typed_config.base_fare_per_minute
+            distance * self.typed_config.base_fare_per_km
+            + time_minutes * self.typed_config.base_fare_per_minute
         )
 
         # Apply shared ride discount
@@ -773,14 +787,14 @@ class RideMatchingAgent(BaseAgent, ProtocolMixin):
 
         # Running averages
         self.stats["average_match_score"] = (
-            (self.stats["average_match_score"] * (n-1) + match.match_score) / n
-        )
+            self.stats["average_match_score"] * (n - 1) + match.match_score
+        ) / n
         self.stats["average_detour_minutes"] = (
-            (self.stats["average_detour_minutes"] * (n-1) + match.detour_time_minutes) / n
-        )
+            self.stats["average_detour_minutes"] * (n - 1) + match.detour_time_minutes
+        ) / n
         self.stats["average_shared_route_percent"] = (
-            (self.stats["average_shared_route_percent"] * (n-1) + match.shared_distance_percent) / n
-        )
+            self.stats["average_shared_route_percent"] * (n - 1) + match.shared_distance_percent
+        ) / n
 
     async def _get_stats(self) -> Dict[str, Any]:
         """Get agent statistics"""
@@ -790,8 +804,8 @@ class RideMatchingAgent(BaseAgent, ProtocolMixin):
             "current_state": {
                 "active_journeys": len(self.active_journeys),
                 "pending_requests": len(self.pending_requests),
-                "total_matches": len(self.matches)
-            }
+                "total_matches": len(self.matches),
+            },
         }
 
     async def _get_best_match(self, params: Dict) -> Dict[str, Any]:
@@ -808,7 +822,7 @@ class RideMatchingAgent(BaseAgent, ProtocolMixin):
             return {
                 "success": True,
                 "match_found": False,
-                "message": "No compatible journeys found"
+                "message": "No compatible journeys found",
             }
 
         best_match = matches[0]
@@ -817,7 +831,7 @@ class RideMatchingAgent(BaseAgent, ProtocolMixin):
             "success": True,
             "match_found": True,
             "match": best_match.to_dict(),
-            "alternative_matches": len(matches) - 1
+            "alternative_matches": len(matches) - 1,
         }
 
 
@@ -825,9 +839,9 @@ class RideMatchingAgent(BaseAgent, ProtocolMixin):
 # Factory Function
 # =========================================================================
 
+
 def create_ride_matching_agent(
-    agent_id: str,
-    config: Optional[RideMatchingAgentConfig] = None
+    agent_id: str, config: Optional[RideMatchingAgentConfig] = None
 ) -> RideMatchingAgent:
     """
     Create a ride matching agent.
@@ -841,8 +855,7 @@ def create_ride_matching_agent(
 
 
 async def create_ride_matching_agent_async(
-    agent_id: str,
-    config: Optional[RideMatchingAgentConfig] = None
+    agent_id: str, config: Optional[RideMatchingAgentConfig] = None
 ) -> RideMatchingAgent:
     """
     Create and initialize a ride matching agent (async version).

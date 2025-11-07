@@ -25,6 +25,7 @@ from datetime import datetime
 @dataclass
 class AgentSpec:
     """Specification for agent generation"""
+
     agent_name: str
     agent_type: str
     capabilities: List[str]
@@ -65,9 +66,7 @@ class AgentTemplateGenerator:
 
         # Combine all parts
         full_code = self._assemble_full_agent(
-            spec=spec,
-            agent_code=agent_code,
-            config_code=config_code
+            spec=spec, agent_code=agent_code, config_code=config_code
         )
 
         # Write to file
@@ -76,7 +75,7 @@ class AgentTemplateGenerator:
 
         os.makedirs(output_dir, exist_ok=True)
 
-        with open(output_path, 'w', encoding='utf-8') as f:
+        with open(output_path, "w", encoding="utf-8") as f:
             f.write(full_code)
 
         print(f"✅ Generated agent: {output_path}")
@@ -749,27 +748,19 @@ def main():
     """CLI for agent generation"""
     import argparse
 
-    parser = argparse.ArgumentParser(
-        description="Generate architecturally compliant agents"
-    )
+    parser = argparse.ArgumentParser(description="Generate architecturally compliant agents")
     parser.add_argument("--name", required=True, help="Agent name (e.g., TrafficAnalysis)")
     parser.add_argument("--type", required=True, help="Agent type (e.g., analysis)")
     parser.add_argument(
         "--capabilities",
         required=True,
-        help="Comma-separated capabilities (e.g., 'data_analysis,reporting')"
+        help="Comma-separated capabilities (e.g., 'data_analysis,reporting')",
     )
-    parser.add_argument(
-        "--description",
-        required=True,
-        help="Agent description"
-    )
+    parser.add_argument("--description", required=True, help="Agent description")
     parser.add_argument("--version", default="1.0.0", help="Agent version")
     parser.add_argument("--author", default="Autonomous Ecosystem", help="Author name")
     parser.add_argument(
-        "--output-dir",
-        default="./autonomous-ecosystem/library/agents",
-        help="Output directory"
+        "--output-dir", default="./autonomous-ecosystem/library/agents", help="Output directory"
     )
 
     args = parser.parse_args()
@@ -781,7 +772,7 @@ def main():
         capabilities=args.capabilities.split(","),
         description=args.description,
         version=args.version,
-        author=args.author
+        author=args.author,
     )
 
     # Generate agent

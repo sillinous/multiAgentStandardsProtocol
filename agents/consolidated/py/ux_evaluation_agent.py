@@ -16,6 +16,7 @@ from enum import Enum
 
 import sys
 import os
+
 sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
 from superstandard.agents.base.base_agent import BaseAgent, AgentCapability
@@ -23,6 +24,7 @@ from superstandard.agents.base.base_agent import BaseAgent, AgentCapability
 
 class SeverityLevel(Enum):
     """Issue severity levels"""
+
     CRITICAL = "critical"  # Blocks core functionality
     HIGH = "high"  # Severely impacts usability
     MEDIUM = "medium"  # Noticeable but workaround exists
@@ -32,6 +34,7 @@ class SeverityLevel(Enum):
 @dataclass
 class UXIssue:
     """User experience issue"""
+
     issue_id: str
     severity: SeverityLevel
     category: str  # functionality, usability, accessibility, visual
@@ -60,13 +63,13 @@ class UXEvaluationAgent(BaseAgent):
     def __init__(
         self,
         agent_id: str = "ux_evaluator_001",
-        workspace_path: str = "./autonomous-ecosystem/workspace"
+        workspace_path: str = "./autonomous-ecosystem/workspace",
     ):
         super().__init__(
             agent_id=agent_id,
             agent_type="ux_evaluator",
             capabilities=[AgentCapability.QA_EVALUATION],
-            workspace_path=workspace_path
+            workspace_path=workspace_path,
         )
 
         self.issues: List[UXIssue] = []
@@ -82,10 +85,7 @@ class UXEvaluationAgent(BaseAgent):
         elif task_type == "check_accessibility":
             return await self._check_accessibility(task)
         else:
-            return {
-                "success": False,
-                "error": f"Unknown task type: {task_type}"
-            }
+            return {"success": False, "error": f"Unknown task type: {task_type}"}
 
     async def analyze(self, input_data: Dict[str, Any]) -> Dict[str, Any]:
         """Analyze dashboard HTML/JS for UX issues"""
@@ -95,7 +95,7 @@ class UXEvaluationAgent(BaseAgent):
 
         # Read dashboard file
         try:
-            with open(dashboard_path, 'r', encoding='utf-8') as f:
+            with open(dashboard_path, "r", encoding="utf-8") as f:
                 html_content = f.read()
         except Exception as e:
             return {"error": f"Failed to read dashboard: {e}"}
@@ -112,7 +112,7 @@ class UXEvaluationAgent(BaseAgent):
         """Analyze HTML structure for issues"""
 
         # Check for missing critical elements
-        if 'canvas' in html.lower() and 'function' not in html.lower():
+        if "canvas" in html.lower() and "function" not in html.lower():
             self._add_issue(
                 severity=SeverityLevel.CRITICAL,
                 category="functionality",
@@ -123,14 +123,15 @@ class UXEvaluationAgent(BaseAgent):
                 expected="Canvas should show visualization (agents, routes, metrics)",
                 actual="Canvas is blank/empty",
                 fix="Add canvas rendering logic using CanvasRenderingContext2D API",
-                elements=["<canvas>"]
+                elements=["<canvas>"],
             )
 
         # Check for buttons without event handlers
-        if '<button' in html:
+        if "<button" in html:
             import re
-            buttons = re.findall(r'<button[^>]*>(.*?)</button>', html, re.IGNORECASE | re.DOTALL)
-            onclick_count = html.lower().count('onclick=')
+
+            buttons = re.findall(r"<button[^>]*>(.*?)</button>", html, re.IGNORECASE | re.DOTALL)
+            onclick_count = html.lower().count("onclick=")
 
             if len(buttons) > onclick_count + 5:  # Allow some event listeners
                 self._add_issue(
@@ -143,11 +144,11 @@ class UXEvaluationAgent(BaseAgent):
                     expected="Button should trigger action (play, pause, spawn agent)",
                     actual="Button does nothing - no response",
                     fix="Add onclick handlers or addEventListener for each button",
-                    elements=["Play button", "Pause button", "Reset button", "Spawn buttons"]
+                    elements=["Play button", "Pause button", "Reset button", "Spawn buttons"],
                 )
 
         # Check for WebSocket connection code
-        if 'WebSocket' not in html and 'ws://' not in html:
+        if "WebSocket" not in html and "ws://" not in html:
             self._add_issue(
                 severity=SeverityLevel.HIGH,
                 category="functionality",
@@ -158,11 +159,11 @@ class UXEvaluationAgent(BaseAgent):
                 expected="Dashboard updates in real-time with agent activity",
                 actual="Dashboard is frozen - shows initial state only",
                 fix="Add: const ws = new WebSocket('ws://localhost:8001/ws'); ws.onmessage = handler;",
-                elements=["WebSocket initialization"]
+                elements=["WebSocket initialization"],
             )
 
         # Check for API polling/fetching
-        if 'fetch(' not in html and 'XMLHttpRequest' not in html:
+        if "fetch(" not in html and "XMLHttpRequest" not in html:
             self._add_issue(
                 severity=SeverityLevel.HIGH,
                 category="functionality",
@@ -173,14 +174,14 @@ class UXEvaluationAgent(BaseAgent):
                 expected="Dashboard should fetch /api/agents/active, /api/activity/feed etc",
                 actual="No network requests - uses hardcoded/no data",
                 fix="Add fetch() calls to server API endpoints",
-                elements=["API integration"]
+                elements=["API integration"],
             )
 
     async def _analyze_javascript_functionality(self, html: str, path: str):
         """Analyze JavaScript for broken functionality"""
 
         # Check for error handling
-        if 'fetch(' in html and 'catch' not in html:
+        if "fetch(" in html and "catch" not in html:
             self._add_issue(
                 severity=SeverityLevel.MEDIUM,
                 category="functionality",
@@ -191,12 +192,12 @@ class UXEvaluationAgent(BaseAgent):
                 expected="User sees friendly error: 'Unable to connect to server'",
                 actual="Silent failure - looks like it's working but isn't",
                 fix="Add .catch(err => showError(err)) to all fetch calls",
-                elements=["Error handling"]
+                elements=["Error handling"],
             )
 
         # Check for DOMContentLoaded or similar
-        if '<script>' in html:
-            if 'DOMContentLoaded' not in html and 'window.onload' not in html:
+        if "<script>" in html:
+            if "DOMContentLoaded" not in html and "window.onload" not in html:
                 self._add_issue(
                     severity=SeverityLevel.HIGH,
                     category="functionality",
@@ -207,14 +208,14 @@ class UXEvaluationAgent(BaseAgent):
                     expected="Code waits for DOM: document.addEventListener('DOMContentLoaded')",
                     actual="Code runs immediately, elements don't exist yet",
                     fix="Wrap code in: document.addEventListener('DOMContentLoaded', () => { ... })",
-                    elements=["Script execution timing"]
+                    elements=["Script execution timing"],
                 )
 
         # Check for undefined variables
-        if 'function' in html.lower():
+        if "function" in html.lower():
             # Simple check - in real implementation would use JS parser
             common_issues = []
-            if 'getElementById(' in html and 'null' not in html.lower():
+            if "getElementById(" in html and "null" not in html.lower():
                 common_issues.append("getElementById calls without null checks")
 
             if common_issues:
@@ -228,14 +229,14 @@ class UXEvaluationAgent(BaseAgent):
                     expected="if (element) { element.doSomething() }",
                     actual="element.doSomething() crashes if element is null",
                     fix="Add null checks before using DOM elements",
-                    elements=["DOM queries"]
+                    elements=["DOM queries"],
                 )
 
     async def _analyze_visual_layout(self, html: str, path: str):
         """Analyze visual layout for UX issues"""
 
         # Check for overlapping elements
-        if 'position: absolute' in html or 'z-index' in html:
+        if "position: absolute" in html or "z-index" in html:
             self._add_issue(
                 severity=SeverityLevel.HIGH,
                 category="visual",
@@ -246,11 +247,11 @@ class UXEvaluationAgent(BaseAgent):
                 expected="All interactive elements should be accessible",
                 actual="Overlays/modals cover essential UI elements",
                 fix="Review z-index stacking, ensure modals have close buttons, proper positioning",
-                elements=["Modals", "Overlays", "Position:absolute elements"]
+                elements=["Modals", "Overlays", "Position:absolute elements"],
             )
 
         # Check for loading states
-        if 'Loading' not in html and 'Spinner' not in html:
+        if "Loading" not in html and "Spinner" not in html:
             self._add_issue(
                 severity=SeverityLevel.MEDIUM,
                 category="usability",
@@ -261,11 +262,11 @@ class UXEvaluationAgent(BaseAgent):
                 expected="Show spinner or 'Loading...' message during data fetch",
                 actual="Blank screen or old data - no feedback that loading is happening",
                 fix="Add loading state: <div class='loading'>Loading...</div>",
-                elements=["Loading states"]
+                elements=["Loading states"],
             )
 
         # Check for mobile responsiveness
-        if 'viewport' not in html.lower():
+        if "viewport" not in html.lower():
             self._add_issue(
                 severity=SeverityLevel.LOW,
                 category="accessibility",
@@ -276,7 +277,7 @@ class UXEvaluationAgent(BaseAgent):
                 expected="<meta name='viewport' content='width=device-width'>",
                 actual="Missing viewport tag - desktop-only layout",
                 fix="Add viewport meta tag in <head>",
-                elements=["<head> section"]
+                elements=["<head> section"],
             )
 
     async def _analyze_user_flows(self, path: str):
@@ -293,12 +294,12 @@ class UXEvaluationAgent(BaseAgent):
                 "1. User opens dashboard to see agents working",
                 "2. Dashboard is static - no activity shown",
                 "3. User clicks Play - nothing happens",
-                "4. User gives up - dashboard is useless"
+                "4. User gives up - dashboard is useless",
             ],
             expected="User sees: agents moving, tasks being completed, real-time metrics updating",
             actual="User sees: static page, broken buttons, placeholder text, blank canvas",
             fix="PRIORITY 1: Fix WebSocket connection, canvas rendering, button handlers",
-            elements=["Entire user experience"]
+            elements=["Entire user experience"],
         )
 
         # User Goal 2: Control simulation
@@ -313,12 +314,12 @@ class UXEvaluationAgent(BaseAgent):
                 "2. Nothing happens",
                 "3. User clicks multiple times",
                 "4. Still nothing",
-                "5. User opens console - sees errors"
+                "5. User opens console - sees errors",
             ],
             expected="Play starts simulation, Pause stops it, Reset clears and restarts",
             actual="Buttons are non-functional decorations",
             fix="Connect buttons to API: onclick=\"fetch('/api/control/play')\"",
-            elements=["Play", "Pause", "Reset", "Speed controls"]
+            elements=["Play", "Pause", "Reset", "Speed controls"],
         )
 
         # User Goal 3: Spawn agents
@@ -331,12 +332,12 @@ class UXEvaluationAgent(BaseAgent):
             steps=[
                 "1. User clicks 'Spawn Agent' button",
                 "2. Nothing happens",
-                "3. Agent library sidebar might open but buttons inside don't work"
+                "3. Agent library sidebar might open but buttons inside don't work",
             ],
             expected="Click button → API call → Agent spawned → Dashboard updates",
             actual="Click button → nothing → user confusion",
             fix="Add: onclick=\"spawnAgent('agent_type')\" + fetch to /api/agents/spawn",
-            elements=["Spawn buttons", "Agent library"]
+            elements=["Spawn buttons", "Agent library"],
         )
 
     def _add_issue(
@@ -350,7 +351,7 @@ class UXEvaluationAgent(BaseAgent):
         expected: str,
         actual: str,
         fix: str,
-        elements: List[str]
+        elements: List[str],
     ):
         """Add issue to list"""
         issue = UXIssue(
@@ -364,7 +365,7 @@ class UXEvaluationAgent(BaseAgent):
             expected_behavior=expected,
             actual_behavior=actual,
             suggested_fix=fix,
-            affected_elements=elements
+            affected_elements=elements,
         )
         self.issues.append(issue)
 
@@ -376,7 +377,7 @@ class UXEvaluationAgent(BaseAgent):
             "critical": [i for i in self.issues if i.severity == SeverityLevel.CRITICAL],
             "high": [i for i in self.issues if i.severity == SeverityLevel.HIGH],
             "medium": [i for i in self.issues if i.severity == SeverityLevel.MEDIUM],
-            "low": [i for i in self.issues if i.severity == SeverityLevel.LOW]
+            "low": [i for i in self.issues if i.severity == SeverityLevel.LOW],
         }
 
         # Calculate scores
@@ -385,8 +386,14 @@ class UXEvaluationAgent(BaseAgent):
         high_count = len(by_severity["high"])
 
         # UX Score: 0-100 (lower is worse)
-        ux_score = max(0, 100 - (critical_count * 30) - (high_count * 15) -
-                       (len(by_severity["medium"]) * 5) - (len(by_severity["low"]) * 1))
+        ux_score = max(
+            0,
+            100
+            - (critical_count * 30)
+            - (high_count * 15)
+            - (len(by_severity["medium"]) * 5)
+            - (len(by_severity["low"]) * 1),
+        )
 
         # Usability rating
         if ux_score < 20:
@@ -410,7 +417,7 @@ class UXEvaluationAgent(BaseAgent):
                 "critical": critical_count,
                 "high": high_count,
                 "medium": len(by_severity["medium"]),
-                "low": len(by_severity["low"])
+                "low": len(by_severity["low"]),
             },
             "issues": [
                 {
@@ -424,20 +431,15 @@ class UXEvaluationAgent(BaseAgent):
                     "expected_behavior": issue.expected_behavior,
                     "actual_behavior": issue.actual_behavior,
                     "suggested_fix": issue.suggested_fix,
-                    "affected_elements": issue.affected_elements
+                    "affected_elements": issue.affected_elements,
                 }
                 for issue in self.issues
             ],
             "summary": self._generate_executive_summary(ux_score, rating, by_severity),
-            "priority_fixes": self._get_priority_fixes(by_severity)
+            "priority_fixes": self._get_priority_fixes(by_severity),
         }
 
-    def _generate_executive_summary(
-        self,
-        ux_score: int,
-        rating: str,
-        by_severity: Dict
-    ) -> str:
+    def _generate_executive_summary(self, ux_score: int, rating: str, by_severity: Dict) -> str:
         """Generate executive summary"""
         critical = len(by_severity["critical"])
         high = len(by_severity["high"])
@@ -469,7 +471,7 @@ class UXEvaluationAgent(BaseAgent):
                 "priority": idx + 1,
                 "title": issue.title,
                 "fix": issue.suggested_fix,
-                "impact": issue.user_impact
+                "impact": issue.user_impact,
             }
             for idx, issue in enumerate(priority_issues[:5])  # Top 5
         ]
@@ -483,13 +485,13 @@ if __name__ == "__main__":
         evaluator = UXEvaluationAgent()
 
         # Evaluate dashboard_realtime.html
-        result = await evaluator.analyze({
-            "dashboard_path": "../validation/dashboard_realtime.html"
-        })
+        result = await evaluator.analyze(
+            {"dashboard_path": "../validation/dashboard_realtime.html"}
+        )
 
-        print("\n" + "="*80)
+        print("\n" + "=" * 80)
         print("UX EVALUATION REPORT")
-        print("="*80)
+        print("=" * 80)
         print(f"\nUSABILITY RATING: {result['usability_rating']}")
         print(f"UX SCORE: {result['ux_score']}/100")
         print(f"\nTOTAL ISSUES: {result['total_issues']}")
@@ -499,20 +501,20 @@ if __name__ == "__main__":
         print(f"  - Low: {result['severity_breakdown']['low']}")
 
         print(f"\nSUMMARY:")
-        print(result['summary'])
+        print(result["summary"])
 
         print(f"\n{'='*80}")
         print("TOP PRIORITY FIXES:")
-        print("="*80)
-        for fix in result['priority_fixes']:
+        print("=" * 80)
+        for fix in result["priority_fixes"]:
             print(f"\n{fix['priority']}. {fix['title']}")
             print(f"   Fix: {fix['fix']}")
             print(f"   Impact: {fix['impact']}")
 
         print(f"\n{'='*80}")
         print("DETAILED ISSUES:")
-        print("="*80)
-        for issue in result['issues']:
+        print("=" * 80)
+        for issue in result["issues"]:
             print(f"\n[{issue['severity'].upper()}] {issue['title']}")
             print(f"Description: {issue['description']}")
             print(f"User Impact: {issue['user_impact']}")

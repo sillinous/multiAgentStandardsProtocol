@@ -32,4 +32,3 @@ def test_stats_keys_are_serialized(client):
     assert data.get("production_ready") == prod
     assert data.get("in_development") == dev
     assert data.get("templates_available") == templ
-

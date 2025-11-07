@@ -39,6 +39,7 @@ from superstandard.protocols.consciousness_protocol import (
 # Define Conscious Agents Using Mixin
 # ============================================================================
 
+
 class DataAnalystAgent(ConsciousnessMixin, BaseAgent):
     """
     Data analyst agent with consciousness capabilities.
@@ -50,7 +51,7 @@ class DataAnalystAgent(ConsciousnessMixin, BaseAgent):
             agent_id=agent_id,
             agent_type="data_analyst",
             capabilities=[AgentCapability.TESTING],
-            workspace_path=f"./workspace/{agent_id}"
+            workspace_path=f"./workspace/{agent_id}",
         )
 
     async def execute_task(self, task: Dict[str, Any]) -> Dict[str, Any]:
@@ -59,9 +60,7 @@ class DataAnalystAgent(ConsciousnessMixin, BaseAgent):
 
         # Think about starting the task
         await self.think(
-            ThoughtType.OBSERVATION,
-            f"Beginning analysis of: {problem}",
-            confidence=0.9
+            ThoughtType.OBSERVATION, f"Beginning analysis of: {problem}", confidence=0.9
         )
 
         # Simulate analysis
@@ -73,14 +72,10 @@ class DataAnalystAgent(ConsciousnessMixin, BaseAgent):
             ThoughtType.INSIGHT,
             finding,
             confidence=0.85,
-            emotional_valence=0.3  # Mildly positive discovery
+            emotional_valence=0.3,  # Mildly positive discovery
         )
 
-        return {
-            "agent_id": self.agent_id,
-            "finding": finding,
-            "confidence": 0.85
-        }
+        return {"agent_id": self.agent_id, "finding": finding, "confidence": 0.85}
 
     async def analyze(self, input_data: Dict[str, Any]) -> Dict[str, Any]:
         """Analyze data with conscious processing."""
@@ -96,7 +91,7 @@ class DataAnalystAgent(ConsciousnessMixin, BaseAgent):
                 ThoughtType.INFERENCE,
                 f"Data supports the emergent solution with 87% confidence",
                 confidence=0.87,
-                emotional_valence=0.6  # Excited to validate
+                emotional_valence=0.6,  # Excited to validate
             )
 
 
@@ -111,7 +106,7 @@ class StrategyAgent(ConsciousnessMixin, BaseAgent):
             agent_id=agent_id,
             agent_type="strategist",
             capabilities=[AgentCapability.DESIGN],
-            workspace_path=f"./workspace/{agent_id}"
+            workspace_path=f"./workspace/{agent_id}",
         )
 
     async def execute_task(self, task: Dict[str, Any]) -> Dict[str, Any]:
@@ -120,26 +115,15 @@ class StrategyAgent(ConsciousnessMixin, BaseAgent):
 
         # Think strategically
         await self.think(
-            ThoughtType.QUESTION,
-            f"What are the key leverage points for {problem}?",
-            confidence=0.7
+            ThoughtType.QUESTION, f"What are the key leverage points for {problem}?", confidence=0.7
         )
 
         await asyncio.sleep(0.1)
 
         strategy = f"Three-phase approach to {problem}"
-        await self.think(
-            ThoughtType.INTENTION,
-            strategy,
-            confidence=0.8,
-            emotional_valence=0.5
-        )
+        await self.think(ThoughtType.INTENTION, strategy, confidence=0.8, emotional_valence=0.5)
 
-        return {
-            "agent_id": self.agent_id,
-            "strategy": strategy,
-            "confidence": 0.8
-        }
+        return {"agent_id": self.agent_id, "strategy": strategy, "confidence": 0.8}
 
     async def analyze(self, input_data: Dict[str, Any]) -> Dict[str, Any]:
         """Analyze with strategic lens."""
@@ -154,7 +138,7 @@ class StrategyAgent(ConsciousnessMixin, BaseAgent):
                 ThoughtType.INTENTION,
                 f"Should implement emergent {pattern.pattern_type} in next phase",
                 confidence=pattern.coherence_score,
-                emotional_valence=0.7
+                emotional_valence=0.7,
             )
 
 
@@ -170,7 +154,7 @@ class OptimizationAgent(BaseAgent):
             agent_id=agent_id,
             agent_type="optimizer",
             capabilities=[AgentCapability.DEVELOPMENT],
-            workspace_path=f"./workspace/{agent_id}"
+            workspace_path=f"./workspace/{agent_id}",
         )
 
     async def execute_task(self, task: Dict[str, Any]) -> Dict[str, Any]:
@@ -180,7 +164,7 @@ class OptimizationAgent(BaseAgent):
         await self.think(
             ThoughtType.OBSERVATION,
             f"Current performance baseline for {problem}: 100 units",
-            confidence=0.95
+            confidence=0.95,
         )
 
         await asyncio.sleep(0.1)
@@ -190,14 +174,10 @@ class OptimizationAgent(BaseAgent):
             ThoughtType.INSIGHT,
             optimization,
             confidence=0.88,
-            emotional_valence=0.8  # Excited about optimization
+            emotional_valence=0.8,  # Excited about optimization
         )
 
-        return {
-            "agent_id": self.agent_id,
-            "optimization": optimization,
-            "improvement": 0.4
-        }
+        return {"agent_id": self.agent_id, "optimization": optimization, "improvement": 0.4}
 
     async def analyze(self, input_data: Dict[str, Any]) -> Dict[str, Any]:
         """Analyze for optimization opportunities."""
@@ -207,6 +187,7 @@ class OptimizationAgent(BaseAgent):
 # ============================================================================
 # Demo Scenario: Collaborative Problem Solving
 # ============================================================================
+
 
 async def run_conscious_collaboration():
     """
@@ -240,7 +221,7 @@ async def run_conscious_collaboration():
     # Define problem to solve
     problem = {
         "problem": "customer retention optimization",
-        "context": "E-commerce platform with 23% annual churn"
+        "context": "E-commerce platform with 23% annual churn",
     }
 
     print("=" * 80)
@@ -271,7 +252,9 @@ async def run_conscious_collaboration():
 
     print("\n" + "-" * 80)
     print(f"Thoughts in collective superposition: {len(collective.superposition_states)}")
-    print(f"Entangled thought pairs: {sum(len(edges) for edges in collective.entanglement_graph.values()) // 2}")
+    print(
+        f"Entangled thought pairs: {sum(len(edges) for edges in collective.entanglement_graph.values()) // 2}"
+    )
     print()
 
     # Phase 2: Query collective for emergent solution
@@ -281,8 +264,7 @@ async def run_conscious_collaboration():
     print("Collapsing quantum superposition of thoughts...\n")
 
     patterns = await analyst.query_collective(
-        "How can we solve customer retention optimization?",
-        min_coherence=0.4
+        "How can we solve customer retention optimization?", min_coherence=0.4
     )
 
     if patterns:
@@ -346,35 +328,36 @@ async def run_conscious_collaboration():
         ThoughtType.INSIGHT,
         "Segmentation analysis reveals high-value customers churn at lower rates",
         confidence=0.92,
-        emotional_valence=0.5
+        emotional_valence=0.5,
     )
 
     await strategist.think(
         ThoughtType.INTENTION,
         "Focus retention efforts on high-value segment for maximum ROI",
         confidence=0.89,
-        emotional_valence=0.6
+        emotional_valence=0.6,
     )
 
     await optimizer.think(
         ThoughtType.INFERENCE,
         "Automated engagement system can reduce churn by 35% in high-value segment",
         confidence=0.91,
-        emotional_valence=0.8
+        emotional_valence=0.8,
     )
 
     # Second collapse
     print("Triggering second consciousness collapse...\n")
     patterns_round2 = await collective.collapse_consciousness(
-        "What is the optimal implementation strategy?",
-        min_coherence=0.4
+        "What is the optimal implementation strategy?", min_coherence=0.4
     )
 
     if patterns_round2:
         print(f">>> {len(patterns_round2)} NEW PATTERN(S) EMERGED!\n")
         for pattern in patterns_round2:
-            print(f"  {pattern.pattern_type}: Coherence {pattern.coherence_score:.0%}, "
-                  f"Impact {pattern.impact_potential:.0%}")
+            print(
+                f"  {pattern.pattern_type}: Coherence {pattern.coherence_score:.0%}, "
+                f"Impact {pattern.impact_potential:.0%}"
+            )
 
     # Final state
     final_state = collective.get_consciousness_state()
@@ -384,7 +367,8 @@ async def run_conscious_collaboration():
     print("\n" + "=" * 80)
     print("REVOLUTIONARY ACHIEVEMENT")
     print("=" * 80)
-    print("""
+    print(
+        """
 What just happened:
 
 1. SEAMLESS INTEGRATION: Standard BaseAgents enhanced with consciousness
@@ -396,7 +380,8 @@ What just happened:
 
 This demonstrates consciousness as a DROP-IN enhancement to existing agents.
 No changes to core agent logic required - consciousness is orthogonal!
-    """)
+    """
+    )
 
     print("=" * 80)
     print()
@@ -407,7 +392,8 @@ async def demonstrate_decorator_approach():
     print("\n" + "=" * 80)
     print("BONUS: DECORATOR APPROACH")
     print("=" * 80)
-    print("""
+    print(
+        """
 You can also use the @make_conscious decorator:
 
     @make_conscious
@@ -418,7 +404,8 @@ You can also use the @make_conscious decorator:
             return result
 
 This approach is even simpler - just add one decorator!
-    """)
+    """
+    )
 
 
 if __name__ == "__main__":

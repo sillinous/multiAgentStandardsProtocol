@@ -8,7 +8,7 @@ from pathlib import Path
 
 MAPPING: dict[str, str] = {}
 NAMESPACES: dict[str, list[str]] = {}
-PATH_PLACEHOLDER = '__editable__.agent_ecosystem_sdk-0.1.0.finder' + ".__path_hook__"
+PATH_PLACEHOLDER = "__editable__.agent_ecosystem_sdk-0.1.0.finder" + ".__path_hook__"
 
 
 class _EditableFinder:  # MetaPathFinder

@@ -23,22 +23,33 @@ import logging
 # Import CANONICAL base
 from superstandard.agents.base.base_agent import BaseAgent
 from .protocols import (
-    ProtocolMixin, A2AMessage, A2PTransaction,
-    ACPCoordination, ANPRegistration, MessageType
+    ProtocolMixin,
+    A2AMessage,
+    A2PTransaction,
+    ACPCoordination,
+    ANPRegistration,
+    MessageType,
 )
 
 # Import new systems
 from .agent_learning_system import (
-    AgentLearningSystem, ExperienceType, LearningStrategy,
-    get_learning_system
+    AgentLearningSystem,
+    ExperienceType,
+    LearningStrategy,
+    get_learning_system,
 )
 from .tool_discovery_system import (
-    ToolDiscoverySystem, ToolSource, ToolCategory,
-    get_discovery_system
+    ToolDiscoverySystem,
+    ToolSource,
+    ToolCategory,
+    get_discovery_system,
 )
 from .collaborative_problem_solving import (
-    CollaborativeProblemSolving, ProblemSeverity, ProblemCategory,
-    SolutionStrategy, get_collaborative_problem_solving
+    CollaborativeProblemSolving,
+    ProblemSeverity,
+    ProblemCategory,
+    SolutionStrategy,
+    get_collaborative_problem_solving,
 )
 
 
@@ -109,7 +120,7 @@ class EnhancedBaseAgent(BaseAgent, ProtocolMixin):
         config: Optional[Dict[str, Any]] = None,
         enable_learning: bool = True,
         enable_tool_discovery: bool = True,
-        enable_problem_solving: bool = True
+        enable_problem_solving: bool = True,
     ):
         # Initialize base agent
         BaseAgent.__init__(self, agent_id, agent_type, config)
@@ -168,10 +179,10 @@ class EnhancedBaseAgent(BaseAgent, ProtocolMixin):
         """Enhanced execution with automatic learning and problem detection"""
         start_time = datetime.now()
         execution_context = {
-            'agent_id': self.agent_id,
-            'agent_type': self.agent_type,
-            'input_data_summary': self._summarize_input(input_data),
-            'timestamp': start_time.isoformat()
+            "agent_id": self.agent_id,
+            "agent_type": self.agent_type,
+            "input_data_summary": self._summarize_input(input_data),
+            "timestamp": start_time.isoformat(),
         }
 
         try:
@@ -199,15 +210,12 @@ class EnhancedBaseAgent(BaseAgent, ProtocolMixin):
             # Record experience for learning
             if self.enable_learning and self.learning_system:
                 await self._record_learning_experience(
-                    input_data,
-                    validated_result,
-                    reward,
-                    execution_context
+                    input_data, validated_result, reward, execution_context
                 )
 
             # Update metrics
             execution_time = (datetime.now() - start_time).total_seconds() * 1000
-            self._update_metrics('success', execution_time)
+            self._update_metrics("success", execution_time)
 
             # Check for performance degradation (problem detection)
             if self.enable_problem_solving:
@@ -224,11 +232,7 @@ class EnhancedBaseAgent(BaseAgent, ProtocolMixin):
 
             # Record failure experience
             if self.enable_learning and self.learning_system:
-                await self._record_failure_experience(
-                    input_data,
-                    str(e),
-                    execution_context
-                )
+                await self._record_failure_experience(input_data, str(e), execution_context)
 
             # Detect and report problem
             if self.enable_problem_solving and self.problem_solver:
@@ -236,16 +240,14 @@ class EnhancedBaseAgent(BaseAgent, ProtocolMixin):
                     category=ProblemCategory.BUSINESS_LOGIC,
                     severity=ProblemSeverity.HIGH,
                     description=f"Execution failed: {str(e)}",
-                    context=execution_context
+                    context=execution_context,
                 )
 
-            self._update_metrics('error', 0)
+            self._update_metrics("error", 0)
             raise
 
     async def learn_from_peers(
-        self,
-        knowledge_type: Optional[str] = None,
-        min_confidence: float = 0.7
+        self, knowledge_type: Optional[str] = None, min_confidence: float = 0.7
     ) -> List[Dict[str, Any]]:
         """
         Learn from knowledge shared by other agents
@@ -262,9 +264,7 @@ class EnhancedBaseAgent(BaseAgent, ProtocolMixin):
 
         # Get shared knowledge
         knowledge_nodes = self.learning_system.get_shared_knowledge(
-            agent_id=self.agent_id,
-            knowledge_type=knowledge_type,
-            min_confidence=min_confidence
+            agent_id=self.agent_id, knowledge_type=knowledge_type, min_confidence=min_confidence
         )
 
         # Apply learned knowledge
@@ -281,7 +281,7 @@ class EnhancedBaseAgent(BaseAgent, ProtocolMixin):
         knowledge_type: str,
         content: Dict[str, Any],
         confidence: float,
-        tags: Optional[List[str]] = None
+        tags: Optional[List[str]] = None,
     ) -> str:
         """
         Share knowledge with other agents
@@ -303,17 +303,14 @@ class EnhancedBaseAgent(BaseAgent, ProtocolMixin):
             knowledge_type=knowledge_type,
             content=content,
             confidence=confidence,
-            tags=tags
+            tags=tags,
         )
 
         self.logger.info(f"Shared knowledge node {node_id}")
         return node_id
 
     async def discover_and_add_capability(
-        self,
-        capability_name: str,
-        description: str,
-        required_tools: List[str]
+        self, capability_name: str, description: str, required_tools: List[str]
     ) -> str:
         """
         Dynamically discover and add new capability
@@ -335,9 +332,9 @@ class EnhancedBaseAgent(BaseAgent, ProtocolMixin):
                 # Try to discover tool
                 tools = self.tool_discovery.recommend_tools(
                     task_description=tool_name,
-                    context={'agent_type': self.agent_type},
+                    context={"agent_type": self.agent_type},
                     agent_id=self.agent_id,
-                    top_k=1
+                    top_k=1,
                 )
 
                 if tools:
@@ -350,7 +347,7 @@ class EnhancedBaseAgent(BaseAgent, ProtocolMixin):
             capability_name=capability_name,
             description=description,
             required_tools=required_tools,
-            proficiency_level=0.5
+            proficiency_level=0.5,
         )
 
         # Add to capabilities list
@@ -360,10 +357,7 @@ class EnhancedBaseAgent(BaseAgent, ProtocolMixin):
         return capability_id
 
     async def collaborate_on_problem(
-        self,
-        problem_id: str,
-        contribution_type: str,
-        contribution_data: Dict[str, Any]
+        self, problem_id: str, contribution_type: str, contribution_data: Dict[str, Any]
     ) -> str:
         """
         Contribute to collaborative problem solving
@@ -387,7 +381,7 @@ class EnhancedBaseAgent(BaseAgent, ProtocolMixin):
             session_id=session_id,
             agent_id=self.agent_id,
             contribution_type=contribution_type,
-            contribution_data=contribution_data
+            contribution_data=contribution_data,
         )
 
         self.logger.info(f"Contributed to problem {problem_id}: {contribution_id}")
@@ -400,7 +394,7 @@ class EnhancedBaseAgent(BaseAgent, ProtocolMixin):
         current_value: float,
         target_value: float,
         strategy: str = LearningStrategy.REINFORCEMENT.value,
-        deadline: Optional[str] = None
+        deadline: Optional[str] = None,
     ) -> str:
         """
         Set a learning goal for self-improvement
@@ -426,7 +420,7 @@ class EnhancedBaseAgent(BaseAgent, ProtocolMixin):
             current_value=current_value,
             target_value=target_value,
             strategy=strategy,
-            deadline=deadline
+            deadline=deadline,
         )
 
         self.active_learning_goals.append(goal_id)
@@ -437,33 +431,31 @@ class EnhancedBaseAgent(BaseAgent, ProtocolMixin):
     async def get_performance_insights(self) -> Dict[str, Any]:
         """Get insights into agent performance and learning"""
         insights = {
-            'agent_id': self.agent_id,
-            'agent_type': self.agent_type,
-            'metrics': self.metrics,
-            'capabilities': len(self.capabilities_list),
-            'learning_enabled': self.enable_learning,
-            'tool_discovery_enabled': self.enable_tool_discovery,
-            'problem_solving_enabled': self.enable_problem_solving
+            "agent_id": self.agent_id,
+            "agent_type": self.agent_type,
+            "metrics": self.metrics,
+            "capabilities": len(self.capabilities_list),
+            "learning_enabled": self.enable_learning,
+            "tool_discovery_enabled": self.enable_tool_discovery,
+            "problem_solving_enabled": self.enable_problem_solving,
         }
 
         # Add learning insights
         if self.enable_learning and self.learning_system:
-            insights['learning_goals'] = len(self.active_learning_goals)
+            insights["learning_goals"] = len(self.active_learning_goals)
 
             # Get performance trends
-            for metric_name in ['execution_time_ms', 'success_rate']:
+            for metric_name in ["execution_time_ms", "success_rate"]:
                 trend = self.learning_system.get_agent_performance_trend(
-                    agent_id=self.agent_id,
-                    metric_name=metric_name,
-                    days=7
+                    agent_id=self.agent_id, metric_name=metric_name, days=7
                 )
-                insights[f'{metric_name}_trend'] = trend
+                insights[f"{metric_name}_trend"] = trend
 
         # Add tool insights
         if self.enable_tool_discovery and self.tool_discovery:
             capabilities = self.tool_discovery.get_agent_capabilities(self.agent_id)
-            insights['dynamic_capabilities'] = len(capabilities)
-            insights['total_tools'] = len(self.dynamic_tools)
+            insights["dynamic_capabilities"] = len(capabilities)
+            insights["total_tools"] = len(self.dynamic_tools)
 
         return insights
 
@@ -477,13 +469,11 @@ class EnhancedBaseAgent(BaseAgent, ProtocolMixin):
         # Discover from local filesystem
         tools = self.tool_discovery.discover_tools(
             source=ToolSource.LOCAL_FILESYSTEM,
-            search_paths=["./tools", "./autonomous-ecosystem/tools"]
+            search_paths=["./tools", "./autonomous-ecosystem/tools"],
         )
 
         # Discover from shared agents
-        shared_tools = self.tool_discovery.discover_tools(
-            source=ToolSource.AGENT_SHARED
-        )
+        shared_tools = self.tool_discovery.discover_tools(source=ToolSource.AGENT_SHARED)
 
         total_discovered = len(tools) + len(shared_tools)
         self.logger.info(f"Discovered {total_discovered} initial tools")
@@ -506,18 +496,15 @@ class EnhancedBaseAgent(BaseAgent, ProtocolMixin):
             goal_id = await self.set_learning_goal(
                 goal_type="performance",
                 target_metric="avg_execution_time_ms",
-                current_value=self.metrics['avg_decision_time_ms'],
-                target_value=max(self.metrics['avg_decision_time_ms'] * 0.8, 100),
-                strategy=LearningStrategy.REINFORCEMENT.value
+                current_value=self.metrics["avg_decision_time_ms"],
+                target_value=max(self.metrics["avg_decision_time_ms"] * 0.8, 100),
+                strategy=LearningStrategy.REINFORCEMENT.value,
             )
             self.logger.info(f"Set initial learning goal: {goal_id}")
         except Exception as e:
             self.logger.warning(f"Failed to set initial learning goal: {e}")
 
-    async def _get_tool_recommendations(
-        self,
-        input_data: Dict[str, Any]
-    ) -> List[Dict[str, Any]]:
+    async def _get_tool_recommendations(self, input_data: Dict[str, Any]) -> List[Dict[str, Any]]:
         """Get tool recommendations for current task"""
         if not self.tool_discovery:
             return []
@@ -526,9 +513,9 @@ class EnhancedBaseAgent(BaseAgent, ProtocolMixin):
 
         recommendations = self.tool_discovery.recommend_tools(
             task_description=task_description,
-            context={'input_data': input_data},
+            context={"input_data": input_data},
             agent_id=self.agent_id,
-            top_k=3
+            top_k=3,
         )
 
         return recommendations
@@ -538,7 +525,7 @@ class EnhancedBaseAgent(BaseAgent, ProtocolMixin):
         input_data: Dict[str, Any],
         result: Dict[str, Any],
         reward: float,
-        context: Dict[str, Any]
+        context: Dict[str, Any],
     ):
         """Record experience for learning"""
         if not self.learning_system:
@@ -550,10 +537,10 @@ class EnhancedBaseAgent(BaseAgent, ProtocolMixin):
                 agent_type=self.agent_type,
                 experience_type=ExperienceType.SUCCESS if reward > 0 else ExperienceType.FAILURE,
                 context=context,
-                action={'input': self._summarize_input(input_data)},
-                outcome={'result_summary': self._summarize_output(result)},
+                action={"input": self._summarize_input(input_data)},
+                outcome={"result_summary": self._summarize_output(result)},
                 reward=reward,
-                confidence=0.8
+                confidence=0.8,
             )
 
             self.logger.debug(f"Recorded experience: {experience_id}")
@@ -561,10 +548,7 @@ class EnhancedBaseAgent(BaseAgent, ProtocolMixin):
             self.logger.warning(f"Failed to record experience: {e}")
 
     async def _record_failure_experience(
-        self,
-        input_data: Dict[str, Any],
-        error: str,
-        context: Dict[str, Any]
+        self, input_data: Dict[str, Any], error: str, context: Dict[str, Any]
     ):
         """Record failure experience"""
         if not self.learning_system:
@@ -576,10 +560,10 @@ class EnhancedBaseAgent(BaseAgent, ProtocolMixin):
                 agent_type=self.agent_type,
                 experience_type=ExperienceType.FAILURE,
                 context=context,
-                action={'input': self._summarize_input(input_data)},
-                outcome={'error': error},
+                action={"input": self._summarize_input(input_data)},
+                outcome={"error": error},
                 reward=-0.5,
-                confidence=0.9
+                confidence=0.9,
             )
         except Exception as e:
             self.logger.warning(f"Failed to record failure: {e}")
@@ -590,17 +574,17 @@ class EnhancedBaseAgent(BaseAgent, ProtocolMixin):
             return
 
         # Establish baseline on first executions
-        if 'execution_time_avg' not in self.performance_baseline:
-            self.performance_baseline['execution_time_avg'] = execution_time
-            self.performance_baseline['execution_count'] = 1
+        if "execution_time_avg" not in self.performance_baseline:
+            self.performance_baseline["execution_time_avg"] = execution_time
+            self.performance_baseline["execution_count"] = 1
             return
 
         # Update running average
-        count = self.performance_baseline['execution_count']
-        avg = self.performance_baseline['execution_time_avg']
+        count = self.performance_baseline["execution_count"]
+        avg = self.performance_baseline["execution_time_avg"]
         new_avg = (avg * count + execution_time) / (count + 1)
-        self.performance_baseline['execution_time_avg'] = new_avg
-        self.performance_baseline['execution_count'] = count + 1
+        self.performance_baseline["execution_time_avg"] = new_avg
+        self.performance_baseline["execution_count"] = count + 1
 
         # Check for degradation (>50% slower than average)
         if execution_time > new_avg * 1.5 and count > 10:
@@ -609,10 +593,10 @@ class EnhancedBaseAgent(BaseAgent, ProtocolMixin):
                 severity=ProblemSeverity.MEDIUM,
                 description=f"Execution time degradation detected: {execution_time:.2f}ms vs {new_avg:.2f}ms average",
                 context={
-                    'current_execution_time': execution_time,
-                    'average_execution_time': new_avg,
-                    'degradation_factor': execution_time / new_avg
-                }
+                    "current_execution_time": execution_time,
+                    "average_execution_time": new_avg,
+                    "degradation_factor": execution_time / new_avg,
+                },
             )
 
     async def _report_problem(
@@ -620,7 +604,7 @@ class EnhancedBaseAgent(BaseAgent, ProtocolMixin):
         category: ProblemCategory,
         severity: ProblemSeverity,
         description: str,
-        context: Dict[str, Any]
+        context: Dict[str, Any],
     ):
         """Report a detected problem"""
         if not self.problem_solver:
@@ -634,7 +618,7 @@ class EnhancedBaseAgent(BaseAgent, ProtocolMixin):
                 description=description,
                 context=context,
                 symptoms=[],
-                affected_agents=[self.agent_id]
+                affected_agents=[self.agent_id],
             )
 
             self.logger.warning(f"Reported problem: {problem_id} - {description}")
@@ -651,10 +635,10 @@ class EnhancedBaseAgent(BaseAgent, ProtocolMixin):
                 # Update goal with new metric value
                 result = self.learning_system.update_goal_progress(
                     goal_id=goal_id,
-                    new_value=execution_time  # Simplified - would track specific metrics
+                    new_value=execution_time,  # Simplified - would track specific metrics
                 )
 
-                if result['status'] == 'achieved':
+                if result["status"] == "achieved":
                     self.logger.info(f"Learning goal achieved: {goal_id}")
                     self.active_learning_goals.remove(goal_id)
 
@@ -665,17 +649,17 @@ class EnhancedBaseAgent(BaseAgent, ProtocolMixin):
         """Apply learned knowledge from peers"""
         try:
             # Extract knowledge content
-            content = knowledge_node['content']
-            knowledge_type = knowledge_node['knowledge_type']
+            content = knowledge_node["content"]
+            knowledge_type = knowledge_node["knowledge_type"]
 
             # Apply based on type
-            if knowledge_type == 'pattern':
+            if knowledge_type == "pattern":
                 # Store pattern for future use
                 self.state[f"learned_pattern_{knowledge_node['node_id']}"] = content
-            elif knowledge_type == 'best_practice':
+            elif knowledge_type == "best_practice":
                 # Update configuration
-                self.config.update(content.get('config_updates', {}))
-            elif knowledge_type == 'strategy':
+                self.config.update(content.get("config_updates", {}))
+            elif knowledge_type == "strategy":
                 # Store strategy
                 self.state[f"learned_strategy_{knowledge_node['node_id']}"] = content
 
@@ -686,32 +670,22 @@ class EnhancedBaseAgent(BaseAgent, ProtocolMixin):
             self.logger.warning(f"Failed to apply knowledge: {e}")
             return False
 
-    def _calculate_reward(
-        self,
-        input_data: Dict[str, Any],
-        result: Dict[str, Any]
-    ) -> float:
+    def _calculate_reward(self, input_data: Dict[str, Any], result: Dict[str, Any]) -> float:
         """Calculate reward signal for learning (override in subclass)"""
         # Default implementation - can be overridden
-        if result.get('success', True):
+        if result.get("success", True):
             return 1.0
         return 0.0
 
     def _summarize_input(self, input_data: Dict[str, Any]) -> Dict[str, Any]:
         """Summarize input data for logging"""
-        return {
-            'keys': list(input_data.keys()),
-            'size': len(str(input_data))
-        }
+        return {"keys": list(input_data.keys()), "size": len(str(input_data))}
 
     def _summarize_output(self, output: Dict[str, Any]) -> Dict[str, Any]:
         """Summarize output for logging"""
-        return {
-            'keys': list(output.keys()),
-            'size': len(str(output))
-        }
+        return {"keys": list(output.keys()), "size": len(str(output))}
 
     def _infer_task_description(self, input_data: Dict[str, Any]) -> str:
         """Infer task description from input (override in subclass)"""
-        task_type = input_data.get('type', input_data.get('task', 'general_task'))
+        task_type = input_data.get("type", input_data.get("task", "general_task"))
         return f"Perform {task_type} operation"

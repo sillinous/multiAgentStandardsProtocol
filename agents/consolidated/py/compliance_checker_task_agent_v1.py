@@ -48,7 +48,11 @@ class ComplianceCheckerTaskAgent(BaseAgent):
     and maximum reusability across APQC categories.
     """
 
-    def __init__(self, agent_id: str = "compliance_checker_task_agent", config: Optional[Dict[str, Any]] = None):
+    def __init__(
+        self,
+        agent_id: str = "compliance_checker_task_agent",
+        config: Optional[Dict[str, Any]] = None,
+    ):
         """
         Initialize Compliance Checker Task Agent
 
@@ -59,8 +63,15 @@ class ComplianceCheckerTaskAgent(BaseAgent):
         super().__init__(
             agent_id=agent_id,
             agent_type="security_compliance",
-            capabilities=['gdpr', 'hipaa', 'sox', 'pci_dss', 'rule_engine', 'remediation_suggestions'],
-            config=config or {}
+            capabilities=[
+                "gdpr",
+                "hipaa",
+                "sox",
+                "pci_dss",
+                "rule_engine",
+                "remediation_suggestions",
+            ],
+            config=config or {},
         )
 
         # Agent-specific initialization
@@ -70,26 +81,26 @@ class ComplianceCheckerTaskAgent(BaseAgent):
             "reusable": True,
             "composable": True,
             "stateless": True,
-            "framework": "APQC 7.0.1"
+            "framework": "APQC 7.0.1",
         }
 
         logger.info(f"Initialized Compliance Checker Task Agent [{self.agent_id}]")
 
     async def execute_task(self, task: Dict[str, Any]) -> Dict[str, Any]:
         """
-        Execute the security compliance task
+                Execute the security compliance task
 
-        Args:
-            task: Task parameters containing:
-                - data: dict
-- framework: string
-- rules: list
+                Args:
+                    task: Task parameters containing:
+                        - data: dict
+        - framework: string
+        - rules: list
 
-        Returns:
-            Result dictionary containing:
-                - compliance_status: bool
-- violations: list
-- remediation_steps: list
+                Returns:
+                    Result dictionary containing:
+                        - compliance_status: bool
+        - violations: list
+        - remediation_steps: list
         """
         try:
             logger.info(f"[{self.agent_id}] Executing security_compliance task")
@@ -109,7 +120,7 @@ class ComplianceCheckerTaskAgent(BaseAgent):
                 "status": "success",
                 "agent_id": self.agent_id,
                 "timestamp": datetime.utcnow().isoformat(),
-                "result": output
+                "result": output,
             }
 
         except Exception as e:
@@ -118,7 +129,7 @@ class ComplianceCheckerTaskAgent(BaseAgent):
                 "status": "error",
                 "agent_id": self.agent_id,
                 "timestamp": datetime.utcnow().isoformat(),
-                "error": str(e)
+                "error": str(e),
             }
 
     def _validate_inputs(self, task: Dict[str, Any]) -> None:
@@ -131,7 +142,7 @@ class ComplianceCheckerTaskAgent(BaseAgent):
         Raises:
             ValueError: If required inputs are missing or invalid
         """
-        required_fields = ['data', 'framework', 'rules']
+        required_fields = ["data", "framework", "rules"]
 
         for field in required_fields:
             if field not in task:
@@ -159,7 +170,7 @@ class ComplianceCheckerTaskAgent(BaseAgent):
         result = {
             "executed": True,
             "task_type": "security_compliance",
-            "inputs_received": list(task.keys())
+            "inputs_received": list(task.keys()),
         }
 
         # Simulate async work
@@ -184,8 +195,8 @@ class ComplianceCheckerTaskAgent(BaseAgent):
                 "agent_type": self.agent_type,
                 "level": 5,
                 "category": "security_compliance",
-                "timestamp": datetime.utcnow().isoformat()
-            }
+                "timestamp": datetime.utcnow().isoformat(),
+            },
         }
 
     async def handle_message(self, message: Dict[str, Any]) -> Dict[str, Any]:
@@ -207,10 +218,7 @@ class ComplianceCheckerTaskAgent(BaseAgent):
         elif message_type == "capabilities":
             return self.get_capabilities()
         else:
-            return {
-                "status": "error",
-                "error": f"Unknown message type: {message_type}"
-            }
+            return {"status": "error", "error": f"Unknown message type: {message_type}"}
 
     def get_status(self) -> Dict[str, Any]:
         """
@@ -224,7 +232,7 @@ class ComplianceCheckerTaskAgent(BaseAgent):
             "agent_type": self.agent_type,
             "status": "ready",
             "capabilities": self.capabilities,
-            "metadata": self.metadata
+            "metadata": self.metadata,
         }
 
     def get_capabilities(self) -> Dict[str, Any]:
@@ -237,11 +245,15 @@ class ComplianceCheckerTaskAgent(BaseAgent):
         return {
             "agent_id": self.agent_id,
             "capabilities": self.capabilities,
-            "inputs": {'data': 'dict', 'framework': 'string', 'rules': 'list'},
-            "outputs": {'compliance_status': 'bool', 'violations': 'list', 'remediation_steps': 'list'},
+            "inputs": {"data": "dict", "framework": "string", "rules": "list"},
+            "outputs": {
+                "compliance_status": "bool",
+                "violations": "list",
+                "remediation_steps": "list",
+            },
             "level": 5,
             "reusable": True,
-            "composable": True
+            "composable": True,
         }
 
 
@@ -255,7 +267,7 @@ async def main():
     # Example task
     task = {
         # Add example inputs here
-                # "data": "example_data",
+        # "data": "example_data",
         # "framework": "example_framework",
         # "rules": "example_rules",
     }

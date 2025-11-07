@@ -177,16 +177,16 @@ MINUTES_BETWEEN_ROUNDS = 30  # Time to wait between trading rounds (in minutes)
 
 # 🔧 Agent Response Configuration
 # Max Tokens (Controls response length):
-AGENT_ONE_MAX_TOKENS = 1000    # Technical analysis needs decent space (500-1000 words)
-AGENT_TWO_MAX_TOKENS = 1000    # Fundamental analysis might need more detail (600-1200 words)
-EXTRACTOR_MAX_TOKENS = 100     # Keep it brief, just token lists (50-100 words)
-SYNOPSIS_MAX_TOKENS = 100      # Brief round summaries (50-100 words)
+AGENT_ONE_MAX_TOKENS = 1000  # Technical analysis needs decent space (500-1000 words)
+AGENT_TWO_MAX_TOKENS = 1000  # Fundamental analysis might need more detail (600-1200 words)
+EXTRACTOR_MAX_TOKENS = 100  # Keep it brief, just token lists (50-100 words)
+SYNOPSIS_MAX_TOKENS = 100  # Brief round summaries (50-100 words)
 
 # Temperature (Controls response creativity/randomness):
-AGENT_ONE_TEMP = 0.7    # Balanced creativity for technical analysis (0.5-0.8)
-AGENT_TWO_TEMP = 0.7    # Balanced creativity for fundamental analysis (0.5-0.8)
-EXTRACTOR_TEMP = 0      # Zero creativity, just extract tokens (always 0)
-SYNOPSIS_TEMP = 0.3     # Low creativity for consistent summaries (0.2-0.4)
+AGENT_ONE_TEMP = 0.7  # Balanced creativity for technical analysis (0.5-0.8)
+AGENT_TWO_TEMP = 0.7  # Balanced creativity for fundamental analysis (0.5-0.8)
+EXTRACTOR_TEMP = 0  # Zero creativity, just extract tokens (always 0)
+SYNOPSIS_TEMP = 0.3  # Low creativity for consistent summaries (0.2-0.4)
 
 # Token Log File
 TOKEN_LOG_FILE = Path("src/data/agent_discussed_tokens.csv")
@@ -242,11 +242,13 @@ from src.config import *
 # Load environment variables
 load_dotenv()
 
+
 def print_banner():
     """Print a fun colorful banner"""
-    cprint("\n" + "="*70, "white", "on_blue")
+    cprint("\n" + "=" * 70, "white", "on_blue")
     cprint("🌙 🎮 Moon Dev's Crypto Trading Game! 🎮 🌙", "white", "on_magenta", attrs=["bold"])
-    cprint("="*70 + "\n", "white", "on_blue")
+    cprint("=" * 70 + "\n", "white", "on_blue")
+
 
 def print_section(title: str, color: str = "on_blue"):
     """Print a section header"""
@@ -254,13 +256,15 @@ def print_section(title: str, color: str = "on_blue"):
     cprint(f" {title} ", "white", color, attrs=["bold"])
     cprint(f"{'='*35}\n", "white", color)
 
+
 # Create data directory for agent memory in the correct project structure
 AGENT_MEMORY_DIR = Path("src/data/agent_memory")
 AGENT_MEMORY_DIR.mkdir(parents=True, exist_ok=True)
 
+
 def cleanup_old_memory_files():
     """Clean up old memory files from previous naming conventions"""
-    old_files = ['haiku_memory.json', 'sonnet_memory.json']
+    old_files = ["haiku_memory.json", "sonnet_memory.json"]
     for file in old_files:
         try:
             old_file = AGENT_MEMORY_DIR / file
@@ -270,63 +274,58 @@ def cleanup_old_memory_files():
         except Exception as e:
             cprint(f"⚠️ Error cleaning up {file}: {e}", "white", "on_yellow")
 
+
 print(f"📁 Agent memory directory: {AGENT_MEMORY_DIR}")
 cleanup_old_memory_files()  # Clean up old files on startup
 
+
 class AIAgent:
     """Individual AI Agent for collaborative decision making"""
-    
+
     def __init__(self, name: str, model: str = None):
         self.name = name
         self.model = model or AI_MODEL
-        
+
         # Initialize appropriate client based on model
         if "deepseek" in self.model.lower():
             deepseek_key = os.getenv("DEEPSEEK_KEY")
             if deepseek_key:
-                self.client = openai.OpenAI(
-                    api_key=deepseek_key,
-                    base_url=DEEPSEEK_BASE_URL
-                )
+                self.client = openai.OpenAI(api_key=deepseek_key, base_url=DEEPSEEK_BASE_URL)
                 print(f"🚀 {name} using DeepSeek model: {model}")
             else:
                 raise ValueError("🚨 DEEPSEEK_KEY not found in environment variables!")
         else:
             self.client = anthropic.Anthropic(api_key=os.getenv("ANTHROPIC_KEY"))
             print(f"🤖 {name} using Claude model: {model}")
-            
+
         # Use a simpler memory file name
         self.memory_file = AGENT_MEMORY_DIR / f"{name.lower().replace(' ', '_')}.json"
         self.load_memory()
-        
+
     def load_memory(self):
         """Load agent's memory from file"""
         if self.memory_file.exists():
-            with open(self.memory_file, 'r') as f:
+            with open(self.memory_file, "r") as f:
                 self.memory = json.load(f)
         else:
-            self.memory = {
-                'conversations': [],
-                'decisions': [],
-                'portfolio_history': []
-            }
+            self.memory = {"conversations": [], "decisions": [], "portfolio_history": []}
             self.save_memory()
-            
+
     def save_memory(self):
         """Save agent's memory to file"""
-        with open(self.memory_file, 'w') as f:
+        with open(self.memory_file, "w") as f:
             json.dump(self.memory, f, indent=2)
-            
+
     def think(self, market_data: Dict, other_agent_message: str = None) -> str:
         """Process market data and other agent's message to make decisions"""
         try:
             print_section(f"🤔 {self.name} is thinking...", "on_magenta")
-            
+
             # Get the right configuration based on agent name
             max_tokens = AGENT_ONE_MAX_TOKENS if self.name == "Agent One" else AGENT_TWO_MAX_TOKENS
             temperature = AGENT_ONE_TEMP if self.name == "Agent One" else AGENT_TWO_TEMP
             prompt = AGENT_ONE_PROMPT if self.name == "Agent One" else AGENT_TWO_PROMPT
-            
+
             # Add market data context
             market_context = f"""
 Current Market Data:
@@ -359,17 +358,17 @@ Remember to format your response like this:
 🌙 Moon Dev Wisdom:
 [Fun reference to Moon Dev's trading style]
 """
-            
+
             # Get AI response with correct client
             if "deepseek" in self.model.lower():
                 response = self.client.chat.completions.create(
                     model=self.model,
                     messages=[
                         {"role": "system", "content": prompt},
-                        {"role": "user", "content": market_context}
+                        {"role": "user", "content": market_context},
                     ],
                     max_tokens=max_tokens,
-                    temperature=temperature
+                    temperature=temperature,
                 )
                 response_text = response.choices[0].message.content
             else:
@@ -378,70 +377,74 @@ Remember to format your response like this:
                     max_tokens=max_tokens,
                     temperature=temperature,
                     system=prompt,
-                    messages=[{
-                        "role": "user",
-                        "content": market_context
-                    }]
+                    messages=[{"role": "user", "content": market_context}],
                 )
                 response_text = str(message.content)
-            
+
             # Clean up the response
-            response = (response_text
-                .replace("TextBlock(text='", "")
+            response = (
+                response_text.replace("TextBlock(text='", "")
                 .replace("')", "")
                 .replace("\\n", "\n")
                 .replace("*", "")
                 .replace("```", "")
-                .strip())
-            
+                .strip()
+            )
+
             # Add extra newlines between sections for readability
-            sections = ["Market Vibes:", "Opportunities I See:", "My Recommendations:", "Portfolio Impact:", "Moon Dev Wisdom:"]
+            sections = [
+                "Market Vibes:",
+                "Opportunities I See:",
+                "My Recommendations:",
+                "Portfolio Impact:",
+                "Moon Dev Wisdom:",
+            ]
             for section in sections:
                 response = response.replace(section, f"\n{section}\n")
-            
+
             # Save to memory
-            self.memory['conversations'].append({
-                'timestamp': datetime.now().isoformat(),
-                'market_data': market_data,
-                'other_message': other_agent_message,
-                'response': response
-            })
+            self.memory["conversations"].append(
+                {
+                    "timestamp": datetime.now().isoformat(),
+                    "market_data": market_data,
+                    "other_message": other_agent_message,
+                    "response": response,
+                }
+            )
             self.save_memory()
-            
+
             return response
-            
+
         except Exception as e:
             cprint(f"❌ Error in agent thinking: {str(e)}", "white", "on_red")
             return f"Error processing market data: {str(e)}"
 
+
 class CoinGeckoAPI:
     """Utility class for CoinGecko API calls 🦎"""
-    
+
     def __init__(self):
         self.api_key = os.getenv("COINGECKO_API_KEY")
         if not self.api_key:
             print("⚠️ Warning: COINGECKO_API_KEY not found in environment variables!")
         self.base_url = "https://pro-api.coingecko.com/api/v3"
-        self.headers = {
-            "x-cg-pro-api-key": self.api_key,
-            "Content-Type": "application/json"
-        }
+        self.headers = {"x-cg-pro-api-key": self.api_key, "Content-Type": "application/json"}
         print("🦎 Moon Dev's CoinGecko API initialized!")
-        
+
     def _make_request(self, endpoint: str, params: Optional[Dict] = None) -> Dict:
         """Make API request with rate limiting and error handling"""
         try:
             url = f"{self.base_url}/{endpoint}"
             response = requests.get(url, headers=self.headers, params=params)
-            
+
             if response.status_code == 429:
                 print("⚠️ Rate limit hit! Waiting before retry...")
                 time.sleep(60)  # Wait 60 seconds before retry
                 return self._make_request(endpoint, params)
-                
+
             response.raise_for_status()
             return response.json()
-            
+
         except requests.exceptions.RequestException as e:
             print(f"❌ API request failed: {str(e)}")
             return {}
@@ -456,7 +459,7 @@ class CoinGeckoAPI:
 
     def get_price(self, ids: Union[str, List[str]], vs_currencies: Union[str, List[str]]) -> Dict:
         """Get current price data for coins
-        
+
         Args:
             ids: Coin ID(s) (e.g. 'bitcoin' or ['bitcoin', 'ethereum'])
             vs_currencies: Currency(ies) to get price in (e.g. 'usd' or ['usd', 'eur'])
@@ -465,18 +468,15 @@ class CoinGeckoAPI:
             ids = [ids]
         if isinstance(vs_currencies, str):
             vs_currencies = [vs_currencies]
-            
-        params = {
-            'ids': ','.join(ids),
-            'vs_currencies': ','.join(vs_currencies)
-        }
-        
+
+        params = {"ids": ",".join(ids), "vs_currencies": ",".join(vs_currencies)}
+
         print(f"🔍 Getting prices for: {', '.join(ids)}")
         return self._make_request("simple/price", params)
 
     def get_coin_market_data(self, id: str) -> Dict:
         """Get current market data for a coin
-        
+
         Args:
             id: Coin ID (e.g. 'bitcoin')
         """
@@ -487,7 +487,7 @@ class CoinGeckoAPI:
         """Get trending search coins (Top-7) in the last 24 hours"""
         print("🔥 Getting trending coins...")
         response = self._make_request("search/trending")
-        return response.get('coins', [])
+        return response.get("coins", [])
 
     def get_global_data(self) -> Dict:
         """Get cryptocurrency global market data"""
@@ -506,75 +506,71 @@ class CoinGeckoAPI:
 
     def get_coin_history(self, id: str, date: str) -> Dict:
         """Get historical data for a coin at a specific date
-        
+
         Args:
             id: Coin ID (e.g. 'bitcoin')
             date: Date in DD-MM-YYYY format
         """
         print(f"📅 Getting historical data for {id} on {date}...")
-        return self._make_request(f"coins/{id}/history", {'date': date})
+        return self._make_request(f"coins/{id}/history", {"date": date})
 
     def get_coin_market_chart(self, id: str, vs_currency: str, days: int) -> Dict:
         """Get historical market data
-        
+
         Args:
             id: Coin ID (e.g. 'bitcoin')
             vs_currency: Currency (e.g. 'usd')
             days: Number of days of data to retrieve
         """
-        params = {
-            'vs_currency': vs_currency,
-            'days': days
-        }
+        params = {"vs_currency": vs_currency, "days": days}
         print(f"📈 Getting {days} days of market data for {id}...")
         return self._make_request(f"coins/{id}/market_chart", params)
 
     def get_coin_ohlc(self, id: str, vs_currency: str, days: int) -> List:
         """Get coin's OHLC data
-        
+
         Args:
             id: Coin ID (e.g. 'bitcoin')
             vs_currency: Currency (e.g. 'usd')
             days: Number of days of data to retrieve
         """
-        params = {
-            'vs_currency': vs_currency,
-            'days': days
-        }
+        params = {"vs_currency": vs_currency, "days": days}
         print(f"📊 Getting {days} days of OHLC data for {id}...")
         return self._make_request(f"coins/{id}/ohlc", params)
 
+
 class TokenExtractorAgent:
     """Agent that extracts token/crypto symbols from conversations"""
-    
+
     def __init__(self):
         self.client = anthropic.Anthropic(api_key=os.getenv("ANTHROPIC_KEY"))
         self.model = TOKEN_EXTRACTOR_MODEL
         self.token_history = self._load_token_history()
         cprint("🔍 Token Extractor Agent initialized!", "white", "on_cyan")
-        
+
     def _load_token_history(self) -> pd.DataFrame:
         """Load or create token history DataFrame"""
         if TOKEN_LOG_FILE.exists():
             return pd.read_csv(TOKEN_LOG_FILE)
         else:
-            df = pd.DataFrame(columns=['timestamp', 'round', 'token', 'context'])
+            df = pd.DataFrame(columns=["timestamp", "round", "token", "context"])
             df.to_csv(TOKEN_LOG_FILE, index=False)
             return df
-            
+
     def extract_tokens(self, round_num: int, agent_one_msg: str, agent_two_msg: str) -> List[Dict]:
         """Extract tokens/symbols from agent messages"""
         try:
             print_section("🔍 Extracting Mentioned Tokens", "on_cyan")
-            
+
             message = self.client.messages.create(
                 model=self.model,
                 max_tokens=EXTRACTOR_MAX_TOKENS,
                 temperature=EXTRACTOR_TEMP,
                 system=TOKEN_EXTRACTOR_PROMPT,  # Use the token extractor prompt
-                messages=[{
-                    "role": "user",
-                    "content": f"""
+                messages=[
+                    {
+                        "role": "user",
+                        "content": f"""
 Agent One said:
 {agent_one_msg}
 
@@ -582,44 +578,48 @@ Agent Two said:
 {agent_two_msg}
 
 Extract all token symbols and return as a simple list.
-"""
-                }]
+""",
+                    }
+                ],
             )
-            
+
             # Clean up response and split into list
-            tokens = str(message.content).strip().split('\n')
+            tokens = str(message.content).strip().split("\n")
             tokens = [t.strip().upper() for t in tokens if t.strip()]
-            
+
             # Create records for each token
             timestamp = datetime.now().isoformat()
             records = []
             for token in tokens:
-                records.append({
-                    'timestamp': timestamp,
-                    'round': round_num,
-                    'token': token,
-                    'context': f"Round {round_num} discussion"
-                })
-                
+                records.append(
+                    {
+                        "timestamp": timestamp,
+                        "round": round_num,
+                        "token": token,
+                        "context": f"Round {round_num} discussion",
+                    }
+                )
+
             # Log to DataFrame
             new_records = pd.DataFrame(records)
             self.token_history = pd.concat([self.token_history, new_records], ignore_index=True)
             self.token_history.to_csv(TOKEN_LOG_FILE, index=False)
-            
+
             # Print extracted tokens
             cprint("\n📝 Tokens Mentioned This Round:", "white", "on_cyan")
             for token in tokens:
                 cprint(f"• {token}", "white", "on_cyan")
-            
+
             return records
-            
+
         except Exception as e:
             cprint(f"❌ Error extracting tokens: {str(e)}", "white", "on_red")
             return []
 
+
 class MultiAgentSystem:
     """System managing multiple AI agents analyzing CoinGecko data"""
-    
+
     def __init__(self):
         print_banner()
         self.api = CoinGeckoAPI()
@@ -629,7 +629,7 @@ class MultiAgentSystem:
         self.round_history = []  # Store round synopses
         self.max_history_rounds = 50  # Keep last 50 rounds of context
         cprint("🎮 Moon Dev's Trading Game System Ready! 🎮", "white", "on_green", attrs=["bold"])
-        
+
     def generate_round_synopsis(self, agent_one_response: str, agent_two_response: str) -> str:
         """Generate a brief synopsis of the round's key points using Synopsis Agent"""
         try:
@@ -638,9 +638,10 @@ class MultiAgentSystem:
                 max_tokens=SYNOPSIS_MAX_TOKENS,
                 temperature=SYNOPSIS_TEMP,
                 system=SYNOPSIS_AGENT_PROMPT,  # Use the synopsis agent prompt
-                messages=[{
-                    "role": "user",
-                    "content": f"""
+                messages=[
+                    {
+                        "role": "user",
+                        "content": f"""
 Agent One said:
 {agent_one_response}
 
@@ -648,78 +649,80 @@ Agent Two said:
 {agent_two_response}
 
 Create a brief synopsis of this trading round.
-"""
-                }]
+""",
+                    }
+                ],
             )
-            
+
             synopsis = str(message.content).strip()
             return synopsis
-            
+
         except Exception as e:
             cprint(f"⚠️ Error generating synopsis: {e}", "white", "on_yellow")
             return "Synopsis generation failed"
-    
+
     def get_recent_history(self) -> str:
         """Get formatted string of recent round synopses"""
         if not self.round_history:
             return "No previous rounds yet."
-            
-        history = "\n".join([
-            f"Round {i+1}: {synopsis}"
-            for i, synopsis in enumerate(self.round_history[-10:])  # Show last 10 rounds
-        ])
+
+        history = "\n".join(
+            [
+                f"Round {i+1}: {synopsis}"
+                for i, synopsis in enumerate(self.round_history[-10:])  # Show last 10 rounds
+            ]
+        )
         return f"\n📜 Recent Trading History:\n{history}\n"
-        
+
     def run_conversation_cycle(self):
         """Run one cycle of agent conversation"""
         try:
             print_section("🔄 Starting New Trading Round!", "on_blue")
-            
+
             # Get fresh market data
             cprint("📊 Gathering Market Intelligence...", "white", "on_magenta")
             market_data = {
-                'overview': self.api.get_global_data(),
-                'trending': self.api.get_trending(),
-                'bitcoin': self.api.get_coin_market_data('bitcoin'),
-                'ethereum': self.api.get_coin_market_data('ethereum')
+                "overview": self.api.get_global_data(),
+                "trending": self.api.get_trending(),
+                "bitcoin": self.api.get_coin_market_data("bitcoin"),
+                "ethereum": self.api.get_coin_market_data("ethereum"),
             }
-            
+
             # Add round history to market context
-            market_data['recent_history'] = self.get_recent_history()
-            
+            market_data["recent_history"] = self.get_recent_history()
+
             # Agent One starts the conversation
             print_section("🤖 Agent One's Analysis", "on_blue")
             agent_one_response = self.agent_one.think(market_data)
             print(agent_one_response)
-            
+
             # Agent Two responds
             print_section("🤖 Agent Two's Response", "on_magenta")
             agent_two_response = self.agent_two.think(market_data, agent_one_response)
             print(agent_two_response)
-            
+
             # Extract tokens from conversation
             self.token_extractor.extract_tokens(
-                len(self.round_history) + 1,
-                agent_one_response,
-                agent_two_response
+                len(self.round_history) + 1, agent_one_response, agent_two_response
             )
-            
+
             # Generate and store round synopsis
             synopsis = self.generate_round_synopsis(agent_one_response, agent_two_response)
             self.round_history.append(synopsis)
-            
+
             # Keep only last N rounds
             if len(self.round_history) > self.max_history_rounds:
-                self.round_history = self.round_history[-self.max_history_rounds:]
-            
+                self.round_history = self.round_history[-self.max_history_rounds :]
+
             # Print round synopsis
             print_section("📝 Round Synopsis", "on_green")
             cprint(synopsis, "white", "on_green")
-            
+
             cprint("\n🎯 Trading Round Complete! 🎯", "white", "on_green", attrs=["bold"])
-            
+
         except Exception as e:
             cprint(f"\n❌ Error in trading round: {str(e)}", "white", "on_red")
+
 
 def main():
     """Main function to run the multi-agent system"""
@@ -727,24 +730,33 @@ def main():
     cprint("🎮 Welcome to Moon Dev's Trading Game! 🎮", "white", "on_magenta", attrs=["bold"])
     cprint("Two AI agents will collaborate to turn $10,000 into $10,000,000!", "white", "on_blue")
     cprint("Let the trading begin! 🚀\n", "white", "on_green", attrs=["bold"])
-    
+
     system = MultiAgentSystem()
-    
+
     try:
         round_number = 1
         while True:
             print_section(f"🎮 Round {round_number} 🎮", "on_blue")
             system.run_conversation_cycle()
             next_round_time = datetime.now() + timedelta(minutes=MINUTES_BETWEEN_ROUNDS)
-            cprint(f"\n⏳ Next round starts in {MINUTES_BETWEEN_ROUNDS} minutes (at {next_round_time.strftime('%H:%M:%S')})...", 
-                  "white", "on_magenta")
+            cprint(
+                f"\n⏳ Next round starts in {MINUTES_BETWEEN_ROUNDS} minutes (at {next_round_time.strftime('%H:%M:%S')})...",
+                "white",
+                "on_magenta",
+            )
             time.sleep(MINUTES_BETWEEN_ROUNDS * 60)  # Convert minutes to seconds
             round_number += 1
-            
+
     except KeyboardInterrupt:
-        cprint("\n👋 Thanks for playing Moon Dev's Trading Game! 🌙", "white", "on_magenta", attrs=["bold"])
+        cprint(
+            "\n👋 Thanks for playing Moon Dev's Trading Game! 🌙",
+            "white",
+            "on_magenta",
+            attrs=["bold"],
+        )
     except Exception as e:
         cprint(f"\n❌ Game Error: {str(e)}", "white", "on_red")
+
 
 if __name__ == "__main__":
     main()

@@ -57,8 +57,10 @@ import pandas as pd
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
 
+
 class ActivityType(Enum):
     """Types of agent activities"""
+
     VALIDATION = "validation"
     ANALYSIS = "analysis"
     DECISION = "decision"
@@ -70,8 +72,10 @@ class ActivityType(Enum):
     REPORTING = "reporting"
     COORDINATION = "coordination"
 
+
 class CommunicationType(Enum):
     """Types of inter-agent communication"""
+
     REQUEST = "request"
     RESPONSE = "response"
     NOTIFICATION = "notification"
@@ -81,17 +85,21 @@ class CommunicationType(Enum):
     FEEDBACK = "feedback"
     UPDATE = "update"
 
+
 class ExpectationStatus(Enum):
     """Status of agent expectations"""
+
     PENDING = "pending"
     CONFIRMED = "confirmed"
     VIOLATED = "violated"
     UPDATED = "updated"
     FULFILLED = "fulfilled"
 
+
 @dataclass
 class AgentActivity:
     """Individual agent activity record"""
+
     activity_id: str
     agent_id: str
     agent_name: str
@@ -113,9 +121,11 @@ class AgentActivity:
     error_details: Optional[str]
     next_expected_actions: List[str]
 
+
 @dataclass
 class SwarmCommunicationRecord:
     """Record of communication between agents/swarms"""
+
     communication_id: str
     sender_agent: str
     sender_swarm: str
@@ -132,9 +142,11 @@ class SwarmCommunicationRecord:
     response_timestamp: Optional[datetime]
     communication_chain_id: str
 
+
 @dataclass
 class AgentExpectation:
     """Agent expectation and assumption tracking"""
+
     expectation_id: str
     agent_id: str
     expectation_type: str
@@ -151,9 +163,11 @@ class AgentExpectation:
     fulfilled_at: Optional[datetime]
     validation_history: List[Dict[str, Any]]
 
+
 @dataclass
 class HandoffRecord:
     """Record of output handoffs between agents"""
+
     handoff_id: str
     source_agent: str
     source_swarm: str
@@ -172,9 +186,11 @@ class HandoffRecord:
     chain_position: int
     total_chain_length: int
 
+
 @dataclass
 class AgentReport:
     """Comprehensive agent report"""
+
     report_id: str
     agent_id: str
     report_type: str
@@ -189,6 +205,7 @@ class AgentReport:
     related_activities: List[str]
     related_communications: List[str]
     impact_assessment: Dict[str, Any]
+
 
 class ActivityCollector:
     """Collects and processes all agent activities"""
@@ -215,7 +232,7 @@ class ActivityCollector:
         confidence: float = 0.9,
         success: bool = True,
         error_details: str = None,
-        duration: float = 0.0
+        duration: float = 0.0,
     ) -> str:
         """Log a new agent activity"""
         try:
@@ -241,7 +258,7 @@ class ActivityCollector:
                 duration=duration,
                 success=success,
                 error_details=error_details,
-                next_expected_actions=[]
+                next_expected_actions=[],
             )
 
             self.activities[activity_id] = activity
@@ -261,7 +278,7 @@ class ActivityCollector:
                 "success": success,
                 "confidence": confidence,
                 "duration": duration,
-                "metrics": performance_metrics or {}
+                "metrics": performance_metrics or {},
             }
             self.performance_history[agent_id].append(performance_record)
 
@@ -272,7 +289,9 @@ class ActivityCollector:
             logger.error(f"❌ Error logging activity: {e}")
             return ""
 
-    async def get_agent_activity_timeline(self, agent_id: str, hours: int = 24) -> List[AgentActivity]:
+    async def get_agent_activity_timeline(
+        self, agent_id: str, hours: int = 24
+    ) -> List[AgentActivity]:
         """Get activity timeline for an agent"""
         try:
             cutoff_time = datetime.now() - timedelta(hours=hours)
@@ -292,7 +311,9 @@ class ActivityCollector:
             logger.error(f"❌ Error getting activity timeline: {e}")
             return []
 
-    async def get_performance_trends(self, agent_id: str, metric: str = "success_rate") -> Dict[str, Any]:
+    async def get_performance_trends(
+        self, agent_id: str, metric: str = "success_rate"
+    ) -> Dict[str, Any]:
         """Get performance trends for an agent"""
         try:
             if agent_id not in self.performance_history:
@@ -317,16 +338,19 @@ class ActivityCollector:
                 "metric": metric,
                 "current_value": values[-1] if values else 0,
                 "average": np.mean(values),
-                "trend": "improving" if len(values) > 1 and values[-1] > values[-2] else "declining",
+                "trend": (
+                    "improving" if len(values) > 1 and values[-1] > values[-2] else "declining"
+                ),
                 "data_points": len(values),
                 "min_value": min(values),
                 "max_value": max(values),
-                "std_deviation": np.std(values)
+                "std_deviation": np.std(values),
             }
 
         except Exception as e:
             logger.error(f"❌ Error calculating performance trends: {e}")
             return {"error": str(e)}
+
 
 class CommunicationTracker:
     """Tracks communication between agents and swarms"""
@@ -347,7 +371,7 @@ class CommunicationTracker:
         context: Dict[str, Any] = None,
         priority: str = "normal",
         requires_response: bool = False,
-        chain_id: str = None
+        chain_id: str = None,
     ) -> str:
         """Log communication between agents"""
         try:
@@ -371,7 +395,7 @@ class CommunicationTracker:
                 response_received=False,
                 response_content=None,
                 response_timestamp=None,
-                communication_chain_id=chain_id
+                communication_chain_id=chain_id,
             )
 
             self.communications[comm_id] = communication
@@ -424,35 +448,50 @@ class CommunicationTracker:
                 all_agents.add(comm.receiver_agent)
 
             for agent in all_agents:
-                nodes.append({
-                    "id": agent,
-                    "label": agent,
-                    "size": len([c for c in self.communications.values()
-                                if c.sender_agent == agent or c.receiver_agent == agent])
-                })
+                nodes.append(
+                    {
+                        "id": agent,
+                        "label": agent,
+                        "size": len(
+                            [
+                                c
+                                for c in self.communications.values()
+                                if c.sender_agent == agent or c.receiver_agent == agent
+                            ]
+                        ),
+                    }
+                )
 
             # Create edges
             for sender, receivers in self.network_graph.items():
                 for receiver in receivers:
-                    comm_count = len([c for c in self.communications.values()
-                                    if c.sender_agent == sender and c.receiver_agent == receiver])
-                    edges.append({
-                        "from": sender,
-                        "to": receiver,
-                        "weight": comm_count,
-                        "label": f"{comm_count} comms"
-                    })
+                    comm_count = len(
+                        [
+                            c
+                            for c in self.communications.values()
+                            if c.sender_agent == sender and c.receiver_agent == receiver
+                        ]
+                    )
+                    edges.append(
+                        {
+                            "from": sender,
+                            "to": receiver,
+                            "weight": comm_count,
+                            "label": f"{comm_count} comms",
+                        }
+                    )
 
             return {
                 "nodes": nodes,
                 "edges": edges,
                 "total_communications": len(self.communications),
-                "active_agents": len(all_agents)
+                "active_agents": len(all_agents),
             }
 
         except Exception as e:
             logger.error(f"❌ Error generating network data: {e}")
             return {"error": str(e)}
+
 
 class ExpectationMonitor:
     """Monitors agent expectations and assumptions"""
@@ -471,7 +510,7 @@ class ExpectationMonitor:
         expected_timeline: datetime,
         target_agent: str = None,
         dependencies: List[str] = None,
-        assumptions: List[str] = None
+        assumptions: List[str] = None,
     ) -> str:
         """Log a new agent expectation"""
         try:
@@ -492,7 +531,7 @@ class ExpectationMonitor:
                 variance_analysis=None,
                 created_at=datetime.now(),
                 fulfilled_at=None,
-                validation_history=[]
+                validation_history=[],
             )
 
             self.expectations[expectation_id] = expectation
@@ -505,10 +544,7 @@ class ExpectationMonitor:
             return ""
 
     async def validate_expectation(
-        self,
-        expectation_id: str,
-        actual_outcome: Dict[str, Any],
-        status: ExpectationStatus
+        self, expectation_id: str, actual_outcome: Dict[str, Any], status: ExpectationStatus
     ) -> Dict[str, Any]:
         """Validate an expectation against actual outcome"""
         try:
@@ -533,7 +569,7 @@ class ExpectationMonitor:
                 "timestamp": datetime.now().isoformat(),
                 "status": status.value,
                 "variance_score": variance_analysis.get("overall_variance", 0),
-                "notes": f"Expectation {status.value}"
+                "notes": f"Expectation {status.value}",
             }
             expectation.validation_history.append(validation_event)
 
@@ -544,7 +580,7 @@ class ExpectationMonitor:
             return {
                 "expectation_id": expectation_id,
                 "status": status.value,
-                "variance_analysis": variance_analysis
+                "variance_analysis": variance_analysis,
             }
 
         except Exception as e:
@@ -552,9 +588,7 @@ class ExpectationMonitor:
             return {"error": str(e)}
 
     async def _calculate_variance(
-        self,
-        expected: Dict[str, Any],
-        actual: Dict[str, Any]
+        self, expected: Dict[str, Any], actual: Dict[str, Any]
     ) -> Dict[str, Any]:
         """Calculate variance between expected and actual outcomes"""
         try:
@@ -592,7 +626,7 @@ class ExpectationMonitor:
                 "overall_variance": overall_variance,
                 "detailed_variances": variances,
                 "missing_expected": list(missing_expected),
-                "unexpected_actual": list(missing_actual)
+                "unexpected_actual": list(missing_actual),
             }
 
         except Exception as e:
@@ -606,13 +640,16 @@ class ExpectationMonitor:
                 self.fulfillment_metrics[agent_id] = 0.0
 
             agent_expectations = [e for e in self.expectations.values() if e.agent_id == agent_id]
-            fulfilled_count = len([e for e in agent_expectations if e.status == ExpectationStatus.FULFILLED])
+            fulfilled_count = len(
+                [e for e in agent_expectations if e.status == ExpectationStatus.FULFILLED]
+            )
 
             if agent_expectations:
                 self.fulfillment_metrics[agent_id] = fulfilled_count / len(agent_expectations)
 
         except Exception as e:
             logger.error(f"❌ Error updating fulfillment metrics: {e}")
+
 
 class HandoffCoordinator:
     """Coordinates and tracks output handoffs between agents"""
@@ -634,7 +671,7 @@ class HandoffCoordinator:
         handoff_criteria: List[str],
         acceptance_criteria: List[str],
         quality_metrics: Dict[str, float] = None,
-        chain_id: str = None
+        chain_id: str = None,
     ) -> str:
         """Log a handoff between agents"""
         try:
@@ -668,7 +705,7 @@ class HandoffCoordinator:
                 status="pending",
                 feedback=None,
                 chain_position=chain_position,
-                total_chain_length=total_chain_length
+                total_chain_length=total_chain_length,
             )
 
             self.handoffs[handoff_id] = handoff
@@ -686,10 +723,7 @@ class HandoffCoordinator:
             return ""
 
     async def accept_handoff(
-        self,
-        handoff_id: str,
-        feedback: str = None,
-        quality_assessment: Dict[str, float] = None
+        self, handoff_id: str, feedback: str = None, quality_assessment: Dict[str, float] = None
     ) -> bool:
         """Accept a handoff"""
         try:
@@ -720,15 +754,17 @@ class HandoffCoordinator:
             chain_handoffs = []
             for handoff_id in self.handoff_chains[chain_id]:
                 handoff = self.handoffs[handoff_id]
-                chain_handoffs.append({
-                    "position": handoff.chain_position,
-                    "source": handoff.source_agent,
-                    "target": handoff.target_agent,
-                    "type": handoff.handoff_type,
-                    "status": handoff.status,
-                    "timestamp": handoff.handoff_timestamp.isoformat(),
-                    "quality": handoff.quality_metrics
-                })
+                chain_handoffs.append(
+                    {
+                        "position": handoff.chain_position,
+                        "source": handoff.source_agent,
+                        "target": handoff.target_agent,
+                        "type": handoff.handoff_type,
+                        "status": handoff.status,
+                        "timestamp": handoff.handoff_timestamp.isoformat(),
+                        "quality": handoff.quality_metrics,
+                    }
+                )
 
             chain_handoffs.sort(key=lambda h: h["position"])
 
@@ -736,12 +772,17 @@ class HandoffCoordinator:
                 "chain_id": chain_id,
                 "total_length": len(chain_handoffs),
                 "handoffs": chain_handoffs,
-                "overall_status": "completed" if all(h["status"] == "accepted" for h in chain_handoffs) else "in_progress"
+                "overall_status": (
+                    "completed"
+                    if all(h["status"] == "accepted" for h in chain_handoffs)
+                    else "in_progress"
+                ),
             }
 
         except Exception as e:
             logger.error(f"❌ Error generating chain visualization: {e}")
             return {"error": str(e)}
+
 
 class ReportAggregator:
     """Aggregates and manages agent reports"""
@@ -761,7 +802,7 @@ class ReportAggregator:
         performance_data: Dict[str, float],
         metadata: Dict[str, Any] = None,
         period_start: datetime = None,
-        period_end: datetime = None
+        period_end: datetime = None,
     ) -> str:
         """Generate a comprehensive agent report"""
         try:
@@ -791,7 +832,7 @@ class ReportAggregator:
                 report_period={"start": period_start, "end": period_end},
                 related_activities=[],
                 related_communications=[],
-                impact_assessment={}
+                impact_assessment={},
             )
 
             self.reports[report_id] = report
@@ -807,7 +848,7 @@ class ReportAggregator:
         self,
         findings: List[Dict[str, Any]],
         recommendations: List[str],
-        performance: Dict[str, float]
+        performance: Dict[str, float],
     ) -> str:
         """Generate executive summary from findings and recommendations"""
         try:
@@ -834,6 +875,7 @@ class ReportAggregator:
             logger.error(f"❌ Error generating summary: {e}")
             return "Error generating executive summary"
 
+
 class AgentIntelligenceDashboard:
     """Main dashboard orchestrator for agent intelligence and activities"""
 
@@ -857,7 +899,7 @@ class AgentIntelligenceDashboard:
                 "dashboard_id": str(uuid.uuid4()),
                 "components_initialized": [],
                 "tracking_capabilities": [],
-                "initialization_timestamp": datetime.now().isoformat()
+                "initialization_timestamp": datetime.now().isoformat(),
             }
 
             # Initialize activity tracking
@@ -898,11 +940,7 @@ class AgentIntelligenceDashboard:
 
         except Exception as e:
             logger.error(f"❌ Error initializing dashboard: {e}")
-            return {
-                "status": "error",
-                "error": str(e),
-                "components_initialized": []
-            }
+            return {"status": "error", "error": str(e), "components_initialized": []}
 
     async def get_comprehensive_dashboard_data(self, time_range: int = 24) -> Dict[str, Any]:
         """Get comprehensive dashboard data for the UI"""
@@ -911,7 +949,7 @@ class AgentIntelligenceDashboard:
                 "metadata": {
                     "generated_at": datetime.now().isoformat(),
                     "time_range_hours": time_range,
-                    "data_freshness": "real_time"
+                    "data_freshness": "real_time",
                 },
                 "overview": await self._generate_overview_metrics(time_range),
                 "agent_activities": await self._get_agent_activity_data(time_range),
@@ -921,7 +959,7 @@ class AgentIntelligenceDashboard:
                 "performance_analytics": await self._get_performance_analytics_data(),
                 "reports": await self._get_reports_data(),
                 "real_time_feeds": await self._get_real_time_feed_data(),
-                "alerts": await self._get_alerts_and_notifications()
+                "alerts": await self._get_alerts_and_notifications(),
             }
 
             return dashboard_data
@@ -937,19 +975,22 @@ class AgentIntelligenceDashboard:
 
             # Count recent activities
             recent_activities = [
-                a for a in self.activity_collector.activities.values()
+                a
+                for a in self.activity_collector.activities.values()
                 if a.start_time >= cutoff_time
             ]
 
             # Count recent communications
             recent_communications = [
-                c for c in self.communication_tracker.communications.values()
+                c
+                for c in self.communication_tracker.communications.values()
                 if c.timestamp >= cutoff_time
             ]
 
             # Count active expectations
             active_expectations = [
-                e for e in self.expectation_monitor.expectations.values()
+                e
+                for e in self.expectation_monitor.expectations.values()
                 if e.status == ExpectationStatus.PENDING
             ]
 
@@ -958,9 +999,15 @@ class AgentIntelligenceDashboard:
                 "recent_activities": len(recent_activities),
                 "recent_communications": len(recent_communications),
                 "active_expectations": len(active_expectations),
-                "success_rate": np.mean([a.confidence_level for a in recent_activities]) if recent_activities else 0,
+                "success_rate": (
+                    np.mean([a.confidence_level for a in recent_activities])
+                    if recent_activities
+                    else 0
+                ),
                 "system_health": "healthy",
-                "active_handoffs": len([h for h in self.handoff_coordinator.handoffs.values() if h.status == "pending"])
+                "active_handoffs": len(
+                    [h for h in self.handoff_coordinator.handoffs.values() if h.status == "pending"]
+                ),
             }
 
         except Exception as e:
@@ -973,7 +1020,9 @@ class AgentIntelligenceDashboard:
             activity_data = {}
 
             for agent_id in self.activity_collector.activity_streams:
-                timeline = await self.activity_collector.get_agent_activity_timeline(agent_id, time_range)
+                timeline = await self.activity_collector.get_agent_activity_timeline(
+                    agent_id, time_range
+                )
                 performance_trends = await self.activity_collector.get_performance_trends(agent_id)
 
                 activity_data[agent_id] = {
@@ -984,13 +1033,15 @@ class AgentIntelligenceDashboard:
                             "description": a.description,
                             "success": a.success,
                             "confidence": a.confidence_level,
-                            "duration": a.duration
+                            "duration": a.duration,
                         }
                         for a in timeline
                     ],
                     "performance_trends": performance_trends,
                     "total_activities": len(timeline),
-                    "success_rate": np.mean([a.confidence_level for a in timeline]) if timeline else 0
+                    "success_rate": (
+                        np.mean([a.confidence_level for a in timeline]) if timeline else 0
+                    ),
                 }
 
             return activity_data
@@ -1009,22 +1060,29 @@ class AgentIntelligenceDashboard:
             expectations_data = []
 
             for expectation in self.expectation_monitor.expectations.values():
-                expectations_data.append({
-                    "expectation_id": expectation.expectation_id,
-                    "agent_id": expectation.agent_id,
-                    "description": expectation.description,
-                    "status": expectation.status.value,
-                    "expected_timeline": expectation.expected_timeline.isoformat(),
-                    "created_at": expectation.created_at.isoformat(),
-                    "variance_analysis": expectation.variance_analysis
-                })
+                expectations_data.append(
+                    {
+                        "expectation_id": expectation.expectation_id,
+                        "agent_id": expectation.agent_id,
+                        "description": expectation.description,
+                        "status": expectation.status.value,
+                        "expected_timeline": expectation.expected_timeline.isoformat(),
+                        "created_at": expectation.created_at.isoformat(),
+                        "variance_analysis": expectation.variance_analysis,
+                    }
+                )
 
             return {
                 "expectations": expectations_data,
                 "fulfillment_metrics": self.expectation_monitor.fulfillment_metrics,
                 "total_expectations": len(expectations_data),
-                "pending_count": len([e for e in self.expectation_monitor.expectations.values()
-                                    if e.status == ExpectationStatus.PENDING])
+                "pending_count": len(
+                    [
+                        e
+                        for e in self.expectation_monitor.expectations.values()
+                        if e.status == ExpectationStatus.PENDING
+                    ]
+                ),
             }
 
         except Exception as e:
@@ -1043,8 +1101,9 @@ class AgentIntelligenceDashboard:
             return {
                 "chains": chain_data,
                 "total_chains": len(chain_data),
-                "active_handoffs": len([h for h in self.handoff_coordinator.handoffs.values()
-                                      if h.status == "pending"])
+                "active_handoffs": len(
+                    [h for h in self.handoff_coordinator.handoffs.values() if h.status == "pending"]
+                ),
             }
 
         except Exception as e:
@@ -1054,11 +1113,7 @@ class AgentIntelligenceDashboard:
     async def _get_performance_analytics_data(self) -> Dict[str, Any]:
         """Get performance analytics data"""
         try:
-            analytics = {
-                "agent_performance": {},
-                "system_metrics": {},
-                "trends": {}
-            }
+            analytics = {"agent_performance": {}, "system_metrics": {}, "trends": {}}
 
             # Agent performance metrics
             for agent_id in self.activity_collector.performance_history:
@@ -1067,7 +1122,7 @@ class AgentIntelligenceDashboard:
                     "success_rate": np.mean([1.0 if r["success"] else 0.0 for r in history]),
                     "average_confidence": np.mean([r["confidence"] for r in history]),
                     "average_duration": np.mean([r["duration"] for r in history]),
-                    "activity_count": len(history)
+                    "activity_count": len(history),
                 }
 
             return analytics
@@ -1082,21 +1137,20 @@ class AgentIntelligenceDashboard:
             reports_data = []
 
             for report in self.report_aggregator.reports.values():
-                reports_data.append({
-                    "report_id": report.report_id,
-                    "agent_id": report.agent_id,
-                    "title": report.report_title,
-                    "type": report.report_type,
-                    "generated_at": report.generated_at.isoformat(),
-                    "summary": report.executive_summary,
-                    "findings_count": len(report.detailed_findings),
-                    "recommendations_count": len(report.recommendations)
-                })
+                reports_data.append(
+                    {
+                        "report_id": report.report_id,
+                        "agent_id": report.agent_id,
+                        "title": report.report_title,
+                        "type": report.report_type,
+                        "generated_at": report.generated_at.isoformat(),
+                        "summary": report.executive_summary,
+                        "findings_count": len(report.detailed_findings),
+                        "recommendations_count": len(report.recommendations),
+                    }
+                )
 
-            return {
-                "reports": reports_data,
-                "total_reports": len(reports_data)
-            }
+            return {"reports": reports_data, "total_reports": len(reports_data)}
 
         except Exception as e:
             logger.error(f"❌ Error getting reports data: {e}")
@@ -1107,7 +1161,7 @@ class AgentIntelligenceDashboard:
         return {
             "activity_feed": self.real_time_feeds.get("activities", [])[-20:],  # Last 20 activities
             "communication_feed": self.real_time_feeds.get("communications", [])[-20:],
-            "alert_feed": self.real_time_feeds.get("alerts", [])[-10:]
+            "alert_feed": self.real_time_feeds.get("alerts", [])[-10:],
         }
 
     async def _get_alerts_and_notifications(self) -> List[Dict[str, Any]]:
@@ -1116,33 +1170,39 @@ class AgentIntelligenceDashboard:
 
         # Check for overdue expectations
         overdue_expectations = [
-            e for e in self.expectation_monitor.expectations.values()
+            e
+            for e in self.expectation_monitor.expectations.values()
             if e.status == ExpectationStatus.PENDING and e.expected_timeline < datetime.now()
         ]
 
         for expectation in overdue_expectations:
-            alerts.append({
-                "type": "overdue_expectation",
-                "severity": "medium",
-                "message": f"Expectation overdue: {expectation.description}",
-                "agent_id": expectation.agent_id,
-                "timestamp": datetime.now().isoformat()
-            })
+            alerts.append(
+                {
+                    "type": "overdue_expectation",
+                    "severity": "medium",
+                    "message": f"Expectation overdue: {expectation.description}",
+                    "agent_id": expectation.agent_id,
+                    "timestamp": datetime.now().isoformat(),
+                }
+            )
 
         # Check for failed activities
         recent_failures = [
-            a for a in self.activity_collector.activities.values()
+            a
+            for a in self.activity_collector.activities.values()
             if not a.success and a.start_time > datetime.now() - timedelta(hours=1)
         ]
 
         for failure in recent_failures:
-            alerts.append({
-                "type": "activity_failure",
-                "severity": "high",
-                "message": f"Activity failed: {failure.description}",
-                "agent_id": failure.agent_id,
-                "timestamp": failure.start_time.isoformat()
-            })
+            alerts.append(
+                {
+                    "type": "activity_failure",
+                    "severity": "high",
+                    "message": f"Activity failed: {failure.description}",
+                    "agent_id": failure.agent_id,
+                    "timestamp": failure.start_time.isoformat(),
+                }
+            )
 
         return alerts
 
@@ -1176,6 +1236,7 @@ class AgentIntelligenceDashboard:
         """Initialize analytics engine"""
         self.analytics_cache = {}
 
+
 # Usage example and testing
 async def demonstrate_intelligence_dashboard():
     """Demonstrate the agent intelligence dashboard"""
@@ -1183,11 +1244,7 @@ async def demonstrate_intelligence_dashboard():
     # Initialize dashboard
     dashboard = AgentIntelligenceDashboard()
 
-    config = {
-        "real_time_monitoring": True,
-        "analytics_enabled": True,
-        "retention_days": 30
-    }
+    config = {"real_time_monitoring": True, "analytics_enabled": True, "retention_days": 30}
 
     init_result = await dashboard.initialize_dashboard(config)
     print(f"Dashboard Initialization: {init_result}")
@@ -1207,7 +1264,7 @@ async def demonstrate_intelligence_dashboard():
         performance_metrics={"accuracy": 0.95, "speed": 2.3},
         confidence=0.92,
         success=True,
-        duration=5.2
+        duration=5.2,
     )
 
     # Simulate communication
@@ -1218,7 +1275,7 @@ async def demonstrate_intelligence_dashboard():
         receiver_swarm="project_management",
         comm_type=CommunicationType.HANDOFF,
         content={"validation_result": "passed", "recommendations": ["deploy"]},
-        requires_response=True
+        requires_response=True,
     )
 
     # Get comprehensive dashboard data
@@ -1229,9 +1286,11 @@ async def demonstrate_intelligence_dashboard():
     return {
         "dashboard_initialized": init_result["status"] == "success",
         "activities_tracked": dashboard_data.get("overview", {}).get("recent_activities", 0) > 0,
-        "communications_tracked": dashboard_data.get("overview", {}).get("recent_communications", 0) > 0,
-        "comprehensive_data": bool(dashboard_data)
+        "communications_tracked": dashboard_data.get("overview", {}).get("recent_communications", 0)
+        > 0,
+        "comprehensive_data": bool(dashboard_data),
     }
+
 
 if __name__ == "__main__":
     asyncio.run(demonstrate_intelligence_dashboard())

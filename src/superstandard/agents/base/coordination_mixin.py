@@ -36,17 +36,21 @@ try:
         TaskStatus,
         Task,
     )
+
     ACP_AVAILABLE = True
 except ImportError:
     ACP_AVAILABLE = False
+
     class CoordinationType:
         SWARM = "swarm"
+
     class TaskStatus:
         PENDING = "pending"
 
 
 class CoordinationError(Exception):
     """Raised when coordination operations fail"""
+
     pass
 
 
@@ -77,7 +81,7 @@ class CoordinationMixin:
         super().__init__(*args, **kwargs)
 
         # Coordination state
-        self._coordination_manager: Optional['CoordinationManager'] = None
+        self._coordination_manager: Optional["CoordinationManager"] = None
         self._coordination_enabled = ACP_AVAILABLE
         self._current_session_id: Optional[str] = None
         self._current_role: str = "participant"
@@ -86,10 +90,10 @@ class CoordinationMixin:
 
     async def join_coordination(
         self,
-        manager: 'CoordinationManager',
+        manager: "CoordinationManager",
         session_id: str,
         role: str = "participant",
-        metadata: Optional[Dict[str, Any]] = None
+        metadata: Optional[Dict[str, Any]] = None,
     ) -> bool:
         """
         Join a coordination session.
@@ -127,9 +131,9 @@ class CoordinationMixin:
             session_id,
             self.agent_id,
             self.agent_type,
-            self.capabilities_list if hasattr(self, 'capabilities_list') else [],
+            self.capabilities_list if hasattr(self, "capabilities_list") else [],
             role,
-            metadata or {}
+            metadata or {},
         )
 
         if success:
@@ -154,8 +158,7 @@ class CoordinationMixin:
 
         # Remove participant
         success = await self._coordination_manager.remove_participant(
-            self._current_session_id,
-            self.agent_id
+            self._current_session_id, self.agent_id
         )
 
         if success:
@@ -169,9 +172,7 @@ class CoordinationMixin:
         return success
 
     async def request_task(
-        self,
-        preferred_type: Optional[str] = None,
-        max_priority: Optional[int] = None
+        self, preferred_type: Optional[str] = None, max_priority: Optional[int] = None
     ) -> Optional[Dict[str, Any]]:
         """
         Request a task from the coordinator.
@@ -220,7 +221,7 @@ class CoordinationMixin:
                     "description": task.description,
                     "priority": task.priority,
                     "input_data": task.input_data,
-                    "metadata": task.metadata
+                    "metadata": task.metadata,
                 }
 
         return None
@@ -245,18 +246,13 @@ class CoordinationMixin:
             return False
 
         success = await self._coordination_manager.assign_task(
-            self._current_session_id,
-            task_id,
-            self.agent_id
+            self._current_session_id, task_id, self.agent_id
         )
 
         if success:
             # Start progress tracking
             await self._coordination_manager.update_task_progress(
-                self._current_session_id,
-                task_id,
-                0.0,
-                "Task accepted"
+                self._current_session_id, task_id, 0.0, "Task accepted"
             )
 
             # Track locally
@@ -267,7 +263,7 @@ class CoordinationMixin:
                     self._assigned_tasks[task_id] = {
                         "task": task,
                         "started_at": datetime.utcnow(),
-                        "progress": 0.0
+                        "progress": 0.0,
                     }
 
         return success
@@ -290,12 +286,7 @@ class CoordinationMixin:
         print(f"[{self.agent_id}] Rejected task {task_id}: {reason}")
         return True
 
-    async def report_progress(
-        self,
-        task_id: str,
-        progress: float,
-        message: str = ""
-    ) -> bool:
+    async def report_progress(self, task_id: str, progress: float, message: str = "") -> bool:
         """
         Report task progress.
 
@@ -314,10 +305,7 @@ class CoordinationMixin:
             return False
 
         success = await self._coordination_manager.update_task_progress(
-            self._current_session_id,
-            task_id,
-            progress,
-            message
+            self._current_session_id, task_id, progress, message
         )
 
         if success and task_id in self._assigned_tasks:
@@ -325,12 +313,7 @@ class CoordinationMixin:
 
         return success
 
-    async def submit_result(
-        self,
-        task_id: str,
-        result: Any,
-        success: bool = True
-    ) -> bool:
+    async def submit_result(self, task_id: str, result: Any, success: bool = True) -> bool:
         """
         Submit task result.
 
@@ -352,10 +335,7 @@ class CoordinationMixin:
         # Mark task complete
         status = TaskStatus.COMPLETED.value if success else TaskStatus.FAILED.value
         submitted = await self._coordination_manager.complete_task(
-            self._current_session_id,
-            task_id,
-            result,
-            status
+            self._current_session_id, task_id, result, status
         )
 
         if submitted:
@@ -411,8 +391,7 @@ class CoordinationMixin:
             "status": session.status,
             "total_tasks": len(session.tasks),
             "completed_tasks": sum(
-                1 for t in session.tasks.values()
-                if t.status == TaskStatus.COMPLETED.value
+                1 for t in session.tasks.values() if t.status == TaskStatus.COMPLETED.value
             ),
             "total_participants": len(session.participants),
             "my_role": self._current_role,
@@ -454,6 +433,7 @@ def coordination_capable(agent_class):
     Returns:
         Enhanced class with coordination capabilities
     """
+
     class CoordinatedAgent(CoordinationMixin, agent_class):
         pass
 

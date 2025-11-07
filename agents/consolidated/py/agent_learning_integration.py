@@ -10,7 +10,7 @@ from app.agent_knowledge import (
     AgentTeacher,
     get_knowledge_base,
     LearningMode,
-    create_learning_loop
+    create_learning_loop,
 )
 
 logger = logging.getLogger(__name__)
@@ -29,10 +29,7 @@ class LearningAgentWrapper:
     """
 
     def __init__(
-        self,
-        agent: Any,
-        agent_name: str,
-        learning_mode: LearningMode = LearningMode.ACTIVE
+        self, agent: Any, agent_name: str, learning_mode: LearningMode = LearningMode.ACTIVE
     ):
         self.agent = agent
         self.agent_name = agent_name
@@ -43,9 +40,7 @@ class LearningAgentWrapper:
         logger.info(f"🎓 Learning capabilities enabled for {agent_name}")
 
     async def execute_task_with_learning(
-        self,
-        task_data: Dict[str, Any],
-        original_execute_func
+        self, task_data: Dict[str, Any], original_execute_func
     ) -> Dict[str, Any]:
         """
         Execute a task and automatically learn from the outcome
@@ -63,10 +58,10 @@ class LearningAgentWrapper:
         # Recall relevant knowledge before execution
         relevant_knowledge = self.learner.recall_knowledge(
             task_context={
-                'task_type': task_data.get('type', 'unknown'),
-                'tags': task_data.get('tags', [])
+                "task_type": task_data.get("type", "unknown"),
+                "tags": task_data.get("tags", []),
             },
-            min_confidence=0.6
+            min_confidence=0.6,
         )
 
         if relevant_knowledge:
@@ -75,12 +70,12 @@ class LearningAgentWrapper:
                 f"relevant knowledge entries"
             )
             # Inject knowledge into task context
-            task_data['recalled_knowledge'] = [
+            task_data["recalled_knowledge"] = [
                 {
-                    'id': k.knowledge_id,
-                    'content': k.content,
-                    'confidence': k.confidence,
-                    'category': k.category
+                    "id": k.knowledge_id,
+                    "content": k.content,
+                    "confidence": k.confidence,
+                    "category": k.category,
                 }
                 for k in relevant_knowledge
             ]
@@ -90,60 +85,58 @@ class LearningAgentWrapper:
             result = await original_execute_func(task_data)
 
             # Learn from success
-            if result.get('success', False):
+            if result.get("success", False):
                 knowledge_id = self.learner.learn_from_success(
-                    task_description=task_data.get('description', str(task_data)),
+                    task_description=task_data.get("description", str(task_data)),
                     solution={
-                        'approach': result.get('approach', 'unknown'),
-                        'result': result.get('result', {}),
-                        'method': result.get('method', 'unknown')
+                        "approach": result.get("approach", "unknown"),
+                        "result": result.get("result", {}),
+                        "method": result.get("method", "unknown"),
                     },
                     context={
-                        'task_type': task_data.get('type', 'unknown'),
-                        'duration_seconds': (datetime.utcnow() - task_start).total_seconds(),
-                        'conditions': task_data.get('context', {}),
-                        'success_factors': result.get('success_factors', [])
+                        "task_type": task_data.get("type", "unknown"),
+                        "duration_seconds": (datetime.utcnow() - task_start).total_seconds(),
+                        "conditions": task_data.get("context", {}),
+                        "success_factors": result.get("success_factors", []),
                     },
-                    tags=task_data.get('tags', []) + ['success']
+                    tags=task_data.get("tags", []) + ["success"],
                 )
 
-                result['learned_knowledge_id'] = knowledge_id
+                result["learned_knowledge_id"] = knowledge_id
 
                 # Reinforce any recalled knowledge that was used
-                if 'used_knowledge_ids' in result:
-                    for kid in result['used_knowledge_ids']:
+                if "used_knowledge_ids" in result:
+                    for kid in result["used_knowledge_ids"]:
                         self.learner.knowledge_base.reinforce(
-                            knowledge_id=kid,
-                            success=True,
-                            context={'task': task_data.get('type')}
+                            knowledge_id=kid, success=True, context={"task": task_data.get("type")}
                         )
 
             else:
                 # Learn from failure
                 knowledge_id = self.learner.learn_from_failure(
-                    task_description=task_data.get('description', str(task_data)),
+                    task_description=task_data.get("description", str(task_data)),
                     attempted_solution={
-                        'approach': result.get('approach', 'unknown'),
-                        'method': result.get('method', 'unknown')
+                        "approach": result.get("approach", "unknown"),
+                        "method": result.get("method", "unknown"),
                     },
-                    failure_reason=result.get('error', 'Unknown error'),
+                    failure_reason=result.get("error", "Unknown error"),
                     context={
-                        'task_type': task_data.get('type', 'unknown'),
-                        'duration_seconds': (datetime.utcnow() - task_start).total_seconds(),
-                        'conditions': task_data.get('context', {}),
-                        'lessons': result.get('lessons_learned', [])
+                        "task_type": task_data.get("type", "unknown"),
+                        "duration_seconds": (datetime.utcnow() - task_start).total_seconds(),
+                        "conditions": task_data.get("context", {}),
+                        "lessons": result.get("lessons_learned", []),
                     },
-                    tags=task_data.get('tags', []) + ['failure']
+                    tags=task_data.get("tags", []) + ["failure"],
                 )
 
-                result['learned_knowledge_id'] = knowledge_id
+                result["learned_knowledge_id"] = knowledge_id
 
             # Add learning metadata to result
-            result['learning_metadata'] = {
-                'agent_name': self.agent_name,
-                'task_count': self.task_count,
-                'knowledge_recalled': len(relevant_knowledge),
-                'learned': True
+            result["learning_metadata"] = {
+                "agent_name": self.agent_name,
+                "task_count": self.task_count,
+                "knowledge_recalled": len(relevant_knowledge),
+                "learned": True,
             }
 
             return result
@@ -153,46 +146,36 @@ class LearningAgentWrapper:
             logger.error(f"Task execution failed with exception: {e}")
 
             knowledge_id = self.learner.learn_from_failure(
-                task_description=task_data.get('description', str(task_data)),
-                attempted_solution={
-                    'approach': task_data.get('approach', 'unknown')
-                },
+                task_description=task_data.get("description", str(task_data)),
+                attempted_solution={"approach": task_data.get("approach", "unknown")},
                 failure_reason=str(e),
                 context={
-                    'task_type': task_data.get('type', 'unknown'),
-                    'exception_type': type(e).__name__
+                    "task_type": task_data.get("type", "unknown"),
+                    "exception_type": type(e).__name__,
                 },
-                tags=task_data.get('tags', []) + ['exception', 'failure']
+                tags=task_data.get("tags", []) + ["exception", "failure"],
             )
 
             raise
 
     def teach_another_agent(
-        self,
-        student_agent_name: str,
-        topic: Optional[str] = None
+        self, student_agent_name: str, topic: Optional[str] = None
     ) -> Dict[str, Any]:
         """Teach knowledge to another agent"""
-        return self.teacher.teach(
-            student_agent=student_agent_name,
-            topic=topic,
-            max_lessons=20
-        )
+        return self.teacher.teach(student_agent=student_agent_name, topic=topic, max_lessons=20)
 
     def get_stats(self) -> Dict[str, Any]:
         """Get combined learning and teaching stats"""
         return {
-            'agent_name': self.agent_name,
-            'tasks_executed': self.task_count,
-            'learning_stats': self.learner.get_learning_stats(),
-            'teaching_stats': self.teacher.get_teaching_stats()
+            "agent_name": self.agent_name,
+            "tasks_executed": self.task_count,
+            "learning_stats": self.learner.get_learning_stats(),
+            "teaching_stats": self.teacher.get_teaching_stats(),
         }
 
 
 def enable_agent_learning(
-    agent: Any,
-    agent_name: str,
-    learning_mode: LearningMode = LearningMode.ACTIVE
+    agent: Any, agent_name: str, learning_mode: LearningMode = LearningMode.ACTIVE
 ) -> LearningAgentWrapper:
     """
     Enable learning capabilities for an existing agent
@@ -228,7 +211,7 @@ def add_learning_to_agent_class(agent_class):
         original_init(self, *args, **kwargs)
 
         # Add learner and teacher
-        agent_name = getattr(self, 'agent_name', None) or getattr(self, 'agent_id', 'unknown_agent')
+        agent_name = getattr(self, "agent_name", None) or getattr(self, "agent_id", "unknown_agent")
         self._learner = AgentLearner(agent_name)
         self._teacher = AgentTeacher(agent_name)
 
@@ -245,20 +228,19 @@ def add_learning_to_agent_class(agent_class):
     def learn_from_result(self, task_data: Dict[str, Any], result: Dict[str, Any]):
         """Learn from a task result"""
         task_result = {
-            'task': task_data.get('description', str(task_data)),
-            'success': result.get('success', False),
-            'solution': result.get('solution', {}),
-            'context': task_data.get('context', {}),
-            'tags': task_data.get('tags', [])
+            "task": task_data.get("description", str(task_data)),
+            "success": result.get("success", False),
+            "solution": result.get("solution", {}),
+            "context": task_data.get("context", {}),
+            "tags": task_data.get("tags", []),
         }
 
-        if result.get('error'):
-            task_result['error'] = result['error']
-            task_result['attempted_solution'] = result.get('attempted_solution', {})
+        if result.get("error"):
+            task_result["error"] = result["error"]
+            task_result["attempted_solution"] = result.get("attempted_solution", {})
 
         return create_learning_loop(
-            agent_name=getattr(self, 'agent_name', 'unknown_agent'),
-            task_result=task_result
+            agent_name=getattr(self, "agent_name", "unknown_agent"), task_result=task_result
         )
 
     agent_class.recall_knowledge = recall_knowledge
@@ -292,11 +274,10 @@ def get_learning_ecosystem_stats() -> Dict[str, Any]:
     kb = get_knowledge_base()
 
     return {
-        'total_learning_agents': len(_learning_agents_registry),
-        'agents': {
-            name: wrapper.get_stats()
-            for name, wrapper in _learning_agents_registry.items()
+        "total_learning_agents": len(_learning_agents_registry),
+        "agents": {
+            name: wrapper.get_stats() for name, wrapper in _learning_agents_registry.items()
         },
-        'knowledge_base': kb.get_statistics(),
-        'timestamp': datetime.utcnow().isoformat()
+        "knowledge_base": kb.get_statistics(),
+        "timestamp": datetime.utcnow().isoformat(),
     }

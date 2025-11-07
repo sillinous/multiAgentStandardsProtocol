@@ -1,6 +1,6 @@
 """
-search api 
-computer use api 
+search api
+computer use api
 """
 
 from openai import OpenAI

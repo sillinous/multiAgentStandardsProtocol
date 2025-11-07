@@ -48,7 +48,9 @@ class TextTranslatorTaskAgent(BaseAgent):
     and maximum reusability across APQC categories.
     """
 
-    def __init__(self, agent_id: str = "text_translator_task_agent", config: Optional[Dict[str, Any]] = None):
+    def __init__(
+        self, agent_id: str = "text_translator_task_agent", config: Optional[Dict[str, Any]] = None
+    ):
         """
         Initialize Text Translator Task Agent
 
@@ -59,8 +61,14 @@ class TextTranslatorTaskAgent(BaseAgent):
         super().__init__(
             agent_id=agent_id,
             agent_type="content_processing",
-            capabilities=['google_translate', 'deepl', 'azure_translator', 'custom_glossaries', 'format_preservation'],
-            config=config or {}
+            capabilities=[
+                "google_translate",
+                "deepl",
+                "azure_translator",
+                "custom_glossaries",
+                "format_preservation",
+            ],
+            config=config or {},
         )
 
         # Agent-specific initialization
@@ -70,27 +78,27 @@ class TextTranslatorTaskAgent(BaseAgent):
             "reusable": True,
             "composable": True,
             "stateless": True,
-            "framework": "APQC 7.0.1"
+            "framework": "APQC 7.0.1",
         }
 
         logger.info(f"Initialized Text Translator Task Agent [{self.agent_id}]")
 
     async def execute_task(self, task: Dict[str, Any]) -> Dict[str, Any]:
         """
-        Execute the content processing task
+                Execute the content processing task
 
-        Args:
-            task: Task parameters containing:
-                - text: string
-- source_lang: string
-- target_lang: string
-- context: string
+                Args:
+                    task: Task parameters containing:
+                        - text: string
+        - source_lang: string
+        - target_lang: string
+        - context: string
 
-        Returns:
-            Result dictionary containing:
-                - translated_text: string
-- confidence: float
-- glossary_matches: list
+                Returns:
+                    Result dictionary containing:
+                        - translated_text: string
+        - confidence: float
+        - glossary_matches: list
         """
         try:
             logger.info(f"[{self.agent_id}] Executing content_processing task")
@@ -110,7 +118,7 @@ class TextTranslatorTaskAgent(BaseAgent):
                 "status": "success",
                 "agent_id": self.agent_id,
                 "timestamp": datetime.utcnow().isoformat(),
-                "result": output
+                "result": output,
             }
 
         except Exception as e:
@@ -119,7 +127,7 @@ class TextTranslatorTaskAgent(BaseAgent):
                 "status": "error",
                 "agent_id": self.agent_id,
                 "timestamp": datetime.utcnow().isoformat(),
-                "error": str(e)
+                "error": str(e),
             }
 
     def _validate_inputs(self, task: Dict[str, Any]) -> None:
@@ -132,7 +140,7 @@ class TextTranslatorTaskAgent(BaseAgent):
         Raises:
             ValueError: If required inputs are missing or invalid
         """
-        required_fields = ['text', 'source_lang', 'target_lang', 'context']
+        required_fields = ["text", "source_lang", "target_lang", "context"]
 
         for field in required_fields:
             if field not in task:
@@ -160,7 +168,7 @@ class TextTranslatorTaskAgent(BaseAgent):
         result = {
             "executed": True,
             "task_type": "content_processing",
-            "inputs_received": list(task.keys())
+            "inputs_received": list(task.keys()),
         }
 
         # Simulate async work
@@ -185,8 +193,8 @@ class TextTranslatorTaskAgent(BaseAgent):
                 "agent_type": self.agent_type,
                 "level": 5,
                 "category": "content_processing",
-                "timestamp": datetime.utcnow().isoformat()
-            }
+                "timestamp": datetime.utcnow().isoformat(),
+            },
         }
 
     async def handle_message(self, message: Dict[str, Any]) -> Dict[str, Any]:
@@ -208,10 +216,7 @@ class TextTranslatorTaskAgent(BaseAgent):
         elif message_type == "capabilities":
             return self.get_capabilities()
         else:
-            return {
-                "status": "error",
-                "error": f"Unknown message type: {message_type}"
-            }
+            return {"status": "error", "error": f"Unknown message type: {message_type}"}
 
     def get_status(self) -> Dict[str, Any]:
         """
@@ -225,7 +230,7 @@ class TextTranslatorTaskAgent(BaseAgent):
             "agent_type": self.agent_type,
             "status": "ready",
             "capabilities": self.capabilities,
-            "metadata": self.metadata
+            "metadata": self.metadata,
         }
 
     def get_capabilities(self) -> Dict[str, Any]:
@@ -238,11 +243,20 @@ class TextTranslatorTaskAgent(BaseAgent):
         return {
             "agent_id": self.agent_id,
             "capabilities": self.capabilities,
-            "inputs": {'text': 'string', 'source_lang': 'string', 'target_lang': 'string', 'context': 'string'},
-            "outputs": {'translated_text': 'string', 'confidence': 'float', 'glossary_matches': 'list'},
+            "inputs": {
+                "text": "string",
+                "source_lang": "string",
+                "target_lang": "string",
+                "context": "string",
+            },
+            "outputs": {
+                "translated_text": "string",
+                "confidence": "float",
+                "glossary_matches": "list",
+            },
             "level": 5,
             "reusable": True,
-            "composable": True
+            "composable": True,
         }
 
 
@@ -256,7 +270,7 @@ async def main():
     # Example task
     task = {
         # Add example inputs here
-                # "text": "example_text",
+        # "text": "example_text",
         # "source_lang": "example_source_lang",
         # "target_lang": "example_target_lang",
         # "context": "example_context",

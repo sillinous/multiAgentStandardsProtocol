@@ -21,6 +21,7 @@ except ImportError:
     # Fallback if protocols not available
     class AgentStatus(Enum):
         """Agent health status"""
+
         HEALTHY = "healthy"
         DEGRADED = "degraded"
         UNHEALTHY = "unhealthy"
@@ -30,6 +31,7 @@ except ImportError:
     @dataclass
     class ANPRegistration:
         """Agent Network Protocol registration"""
+
         protocol: str = "ANP"
         version: str = "1.0.0"
         action: str = "register"
@@ -46,6 +48,7 @@ except ImportError:
 @dataclass
 class A2AMessage:
     """Agent-to-Agent message"""
+
     from_agent: str
     to_agent: str
     message_type: str
@@ -57,6 +60,7 @@ class A2AMessage:
 # Protocol message types
 class MessageType(Enum):
     """Protocol message types"""
+
     TASK_ASSIGNMENT = "task_assignment"
     STATUS_UPDATE = "status_update"
     RESULT = "result"
@@ -85,10 +89,7 @@ class ProtocolMixin:
         self._message_handlers[message_type] = handler
 
     async def send_protocol_message(
-        self,
-        recipient: str,
-        message_type: str,
-        content: Dict[str, Any]
+        self, recipient: str, message_type: str, content: Dict[str, Any]
     ) -> A2AMessage:
         """
         Send a protocol-compliant message.
@@ -102,10 +103,10 @@ class ProtocolMixin:
             The sent message
         """
         message = A2AMessage(
-            from_agent=getattr(self, 'agent_id', 'unknown'),
+            from_agent=getattr(self, "agent_id", "unknown"),
             to_agent=recipient,
             message_type=message_type,
-            content=content
+            content=content,
         )
         # TODO: Integrate with actual message bus
         return message

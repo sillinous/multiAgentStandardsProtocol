@@ -51,8 +51,12 @@ from collections import defaultdict
 sys.path.insert(0, str(Path(__file__).parent.parent))
 
 from core.agent_template_system import (
-    AgentTemplateSystem, AgentTemplate, AgentSpecification,
-    ComplianceFramework, PerformanceTier, DeploymentFormat
+    AgentTemplateSystem,
+    AgentTemplate,
+    AgentSpecification,
+    ComplianceFramework,
+    PerformanceTier,
+    DeploymentFormat,
 )
 from core.agent_code_generator import AgentCodeGenerator, GeneratedAgent
 from core.agent_learning_system import AgentLearningSystem, ExperienceType
@@ -64,6 +68,7 @@ logger = logging.getLogger(__name__)
 
 class FactoryEvolutionStrategy(Enum):
     """Evolution strategies for the factory"""
+
     PERFORMANCE_DRIVEN = "performance_driven"  # Optimize for performance
     QUALITY_DRIVEN = "quality_driven"  # Optimize for code quality
     RELIABILITY_DRIVEN = "reliability_driven"  # Optimize for reliability
@@ -73,6 +78,7 @@ class FactoryEvolutionStrategy(Enum):
 
 class AgentSuccessMetric(Enum):
     """Metrics for measuring agent success"""
+
     DEPLOYMENT_SUCCESS = "deployment_success"
     EXECUTION_RELIABILITY = "execution_reliability"
     PERFORMANCE_BENCHMARKS = "performance_benchmarks"
@@ -84,6 +90,7 @@ class AgentSuccessMetric(Enum):
 @dataclass
 class AgentPerformanceData:
     """Performance data for a generated agent"""
+
     agent_id: str
     template_id: str
     generated_date: str
@@ -121,6 +128,7 @@ class AgentPerformanceData:
 @dataclass
 class TemplateEvolution:
     """Template evolution record"""
+
     evolution_id: str
     template_id: str
     parent_version: str
@@ -141,6 +149,7 @@ class TemplateEvolution:
 @dataclass
 class FactoryInsight:
     """Insights learned by the factory"""
+
     insight_id: str
     insight_type: str  # pattern, anti_pattern, best_practice, optimization
     title: str
@@ -205,7 +214,7 @@ class GlobalAgentFactory:
     def __init__(
         self,
         db_path: str = "data/global_agent_factory.db",
-        evolution_strategy: FactoryEvolutionStrategy = FactoryEvolutionStrategy.ADAPTIVE
+        evolution_strategy: FactoryEvolutionStrategy = FactoryEvolutionStrategy.ADAPTIVE,
     ):
         self.db_path = db_path
         self.evolution_strategy = evolution_strategy
@@ -230,7 +239,7 @@ class GlobalAgentFactory:
             "insights_discovered": 0,
             "research_papers_integrated": 0,
             "average_agent_quality": 0.0,
-            "factory_learning_rate": 0.0
+            "factory_learning_rate": 0.0,
         }
 
         # Evolution configuration
@@ -253,16 +262,14 @@ class GlobalAgentFactory:
 
         self.code_generator = AgentCodeGenerator(
             db_path=self.db_path.replace(".db", "_generation.db"),
-            template_system=self.template_system
+            template_system=self.template_system,
         )
 
         self.learning_system = AgentLearningSystem(
             db_path=self.db_path.replace(".db", "_learning.db")
         )
 
-        self.tool_discovery = ToolDiscoverySystem(
-            db_path=self.db_path.replace(".db", "_tools.db")
-        )
+        self.tool_discovery = ToolDiscoverySystem(db_path=self.db_path.replace(".db", "_tools.db"))
 
         self.research_agent = ResearchIntelligenceAgent()
         await self.research_agent.initialize()
@@ -286,7 +293,8 @@ class GlobalAgentFactory:
         cursor = conn.cursor()
 
         # Agent performance tracking
-        cursor.execute("""
+        cursor.execute(
+            """
             CREATE TABLE IF NOT EXISTS agent_performance (
                 agent_id TEXT PRIMARY KEY,
                 template_id TEXT,
@@ -306,10 +314,12 @@ class GlobalAgentFactory:
                 performance_data_json TEXT,
                 last_updated TEXT
             )
-        """)
+        """
+        )
 
         # Factory insights
-        cursor.execute("""
+        cursor.execute(
+            """
             CREATE TABLE IF NOT EXISTS factory_insights (
                 insight_id TEXT PRIMARY KEY,
                 insight_type TEXT,
@@ -325,10 +335,12 @@ class GlobalAgentFactory:
                 applied_date TEXT,
                 status TEXT
             )
-        """)
+        """
+        )
 
         # Template evolution
-        cursor.execute("""
+        cursor.execute(
+            """
             CREATE TABLE IF NOT EXISTS template_evolutions (
                 evolution_id TEXT PRIMARY KEY,
                 template_id TEXT,
@@ -342,10 +354,12 @@ class GlobalAgentFactory:
                 validation_status TEXT,
                 actual_improvement REAL
             )
-        """)
+        """
+        )
 
         # Factory statistics
-        cursor.execute("""
+        cursor.execute(
+            """
             CREATE TABLE IF NOT EXISTS factory_statistics (
                 stat_date TEXT PRIMARY KEY,
                 total_agents_generated INTEGER,
@@ -357,10 +371,12 @@ class GlobalAgentFactory:
                 factory_learning_rate REAL,
                 metrics_json TEXT
             )
-        """)
+        """
+        )
 
         # Research integrations
-        cursor.execute("""
+        cursor.execute(
+            """
             CREATE TABLE IF NOT EXISTS research_integrations (
                 integration_id TEXT PRIMARY KEY,
                 paper_id TEXT,
@@ -371,12 +387,19 @@ class GlobalAgentFactory:
                 performance_improvement REAL,
                 status TEXT
             )
-        """)
+        """
+        )
 
         # Create indexes
-        cursor.execute("CREATE INDEX IF NOT EXISTS idx_performance_template ON agent_performance(template_id)")
-        cursor.execute("CREATE INDEX IF NOT EXISTS idx_insights_type ON factory_insights(insight_type)")
-        cursor.execute("CREATE INDEX IF NOT EXISTS idx_evolutions_template ON template_evolutions(template_id)")
+        cursor.execute(
+            "CREATE INDEX IF NOT EXISTS idx_performance_template ON agent_performance(template_id)"
+        )
+        cursor.execute(
+            "CREATE INDEX IF NOT EXISTS idx_insights_type ON factory_insights(insight_type)"
+        )
+        cursor.execute(
+            "CREATE INDEX IF NOT EXISTS idx_evolutions_template ON template_evolutions(template_id)"
+        )
 
         conn.commit()
         conn.close()
@@ -389,10 +412,12 @@ class GlobalAgentFactory:
         cursor = conn.cursor()
 
         # Load latest statistics
-        cursor.execute("""
+        cursor.execute(
+            """
             SELECT * FROM factory_statistics
             ORDER BY stat_date DESC LIMIT 1
-        """)
+        """
+        )
 
         row = cursor.fetchone()
         if row:
@@ -403,14 +428,16 @@ class GlobalAgentFactory:
                 "insights_discovered": row[4],
                 "research_papers_integrated": row[5],
                 "average_agent_quality": row[6],
-                "factory_learning_rate": row[7]
+                "factory_learning_rate": row[7],
             }
 
         # Load active insights
-        cursor.execute("""
+        cursor.execute(
+            """
             SELECT * FROM factory_insights
             WHERE status IN ('discovered', 'validated')
-        """)
+        """
+        )
 
         for row in cursor.fetchall():
             insight = FactoryInsight(
@@ -426,7 +453,7 @@ class GlobalAgentFactory:
                 impact=row[9],
                 discovered_date=row[10],
                 applied_date=row[11],
-                status=row[12]
+                status=row[12],
             )
             self.insights[insight.insight_id] = insight
 
@@ -441,7 +468,7 @@ class GlobalAgentFactory:
         template_id: Optional[str] = None,
         compliance_frameworks: Optional[List[str]] = None,
         auto_optimize: bool = True,
-        **kwargs
+        **kwargs,
     ) -> GeneratedAgent:
         """
         Create a new agent with intelligent template selection and optimization
@@ -468,10 +495,8 @@ class GlobalAgentFactory:
             business_objective=objective,
             template_id=template_id,
             apqc_process=apqc_process,
-            compliance_frameworks=[
-                ComplianceFramework(cf) for cf in (compliance_frameworks or [])
-            ],
-            **kwargs
+            compliance_frameworks=[ComplianceFramework(cf) for cf in (compliance_frameworks or [])],
+            **kwargs,
         )
 
         # If no template specified, use intelligent selection
@@ -497,7 +522,7 @@ class GlobalAgentFactory:
             agent_id=generated.agent_id,
             template_id=generated.template_id,
             generated_date=generated.generated_date.isoformat(),
-            code_quality_score=generated.code_quality_score
+            code_quality_score=generated.code_quality_score,
         )
 
         # Update statistics
@@ -512,12 +537,12 @@ class GlobalAgentFactory:
             context={
                 "objective": objective,
                 "template_id": template_id,
-                "apqc_process": apqc_process or "unspecified"
+                "apqc_process": apqc_process or "unspecified",
             },
             action={"action": "create_agent", "template": template_id},
             outcome={"agent_id": generated.agent_id, "quality": generated.code_quality_score},
             reward=0.8,  # Initial reward, will be updated with actual performance
-            metadata={"auto_optimized": auto_optimize}
+            metadata={"auto_optimized": auto_optimize},
         )
 
         logger.info(f"✅ Agent created: {generated.agent_id}")
@@ -538,39 +563,44 @@ class GlobalAgentFactory:
         # Enhance recommendations with performance data
         enhanced_recs = []
         for rec in recommendations:
-            template_id = rec['template_id']
+            template_id = rec["template_id"]
 
             # Get historical performance for this template
             perf_score = await self._get_template_performance_score(template_id)
 
             # Combine with recommendation score
-            combined_score = rec['success_rate'] * 0.5 + perf_score * 0.5
+            combined_score = rec["success_rate"] * 0.5 + perf_score * 0.5
 
-            enhanced_recs.append({
-                'template_id': template_id,
-                'combined_score': combined_score,
-                'recommendation_score': rec['success_rate'],
-                'performance_score': perf_score
-            })
+            enhanced_recs.append(
+                {
+                    "template_id": template_id,
+                    "combined_score": combined_score,
+                    "recommendation_score": rec["success_rate"],
+                    "performance_score": perf_score,
+                }
+            )
 
         # Sort by combined score
-        enhanced_recs.sort(key=lambda x: x['combined_score'], reverse=True)
+        enhanced_recs.sort(key=lambda x: x["combined_score"], reverse=True)
 
-        return enhanced_recs[0]['template_id']
+        return enhanced_recs[0]["template_id"]
 
     async def _get_template_performance_score(self, template_id: str) -> float:
         """Calculate performance score for a template"""
         conn = sqlite3.connect(self.db_path)
         cursor = conn.cursor()
 
-        cursor.execute("""
+        cursor.execute(
+            """
             SELECT
                 AVG(CASE WHEN deployment_success = 1 THEN 1.0 ELSE 0.0 END) as deploy_rate,
                 AVG(code_quality_score) / 100.0 as quality_rate,
                 AVG(user_satisfaction_score) / 5.0 as satisfaction_rate
             FROM agent_performance
             WHERE template_id = ?
-        """, (template_id,))
+        """,
+            (template_id,),
+        )
 
         row = cursor.fetchone()
         conn.close()
@@ -583,7 +613,7 @@ class GlobalAgentFactory:
         quality_rate = row[1] or 0.7
         satisfaction_rate = row[2] or 0.7
 
-        score = (deploy_rate * 0.4 + quality_rate * 0.3 + satisfaction_rate * 0.3)
+        score = deploy_rate * 0.4 + quality_rate * 0.3 + satisfaction_rate * 0.3
         return min(score, 1.0)
 
     async def _apply_optimizations(self, spec: AgentSpecification) -> AgentSpecification:
@@ -622,11 +652,7 @@ class GlobalAgentFactory:
 
         return generated
 
-    async def report_performance(
-        self,
-        agent_id: str,
-        metrics: Dict[str, Any]
-    ) -> Dict[str, Any]:
+    async def report_performance(self, agent_id: str, metrics: Dict[str, Any]) -> Dict[str, Any]:
         """
         Report agent performance data (factory learns from this!)
 
@@ -685,7 +711,7 @@ class GlobalAgentFactory:
             action={"action": "generated_agent"},
             outcome={"agent_id": agent_id, "metrics": metrics},
             reward=reward,
-            metadata={"performance_data": asdict(perf)}
+            metadata={"performance_data": asdict(perf)},
         )
 
         # Trigger pattern discovery if enough data
@@ -701,7 +727,7 @@ class GlobalAgentFactory:
             "agent_id": agent_id,
             "reward": reward,
             "factory_learning": "active",
-            "insights_count": len(self.insights)
+            "insights_count": len(self.insights),
         }
 
     def _calculate_performance_reward(self, perf: AgentPerformanceData) -> float:
@@ -727,7 +753,8 @@ class GlobalAgentFactory:
         conn = sqlite3.connect(self.db_path)
         cursor = conn.cursor()
 
-        cursor.execute("""
+        cursor.execute(
+            """
             INSERT OR REPLACE INTO agent_performance (
                 agent_id, template_id, generated_date, deployment_success,
                 deployment_time_seconds, total_executions, successful_executions,
@@ -736,16 +763,27 @@ class GlobalAgentFactory:
                 business_value_delivered, cost_efficiency, performance_data_json,
                 last_updated
             ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
-        """, (
-            perf.agent_id, perf.template_id, perf.generated_date,
-            perf.deployment_success, perf.deployment_time_seconds,
-            perf.total_executions, perf.successful_executions,
-            perf.average_response_time_ms, perf.error_rate,
-            perf.code_quality_score, perf.test_coverage, perf.security_score,
-            perf.user_satisfaction_score, perf.business_value_delivered,
-            perf.cost_efficiency, json.dumps(asdict(perf)),
-            datetime.now().isoformat()
-        ))
+        """,
+            (
+                perf.agent_id,
+                perf.template_id,
+                perf.generated_date,
+                perf.deployment_success,
+                perf.deployment_time_seconds,
+                perf.total_executions,
+                perf.successful_executions,
+                perf.average_response_time_ms,
+                perf.error_rate,
+                perf.code_quality_score,
+                perf.test_coverage,
+                perf.security_score,
+                perf.user_satisfaction_score,
+                perf.business_value_delivered,
+                perf.cost_efficiency,
+                json.dumps(asdict(perf)),
+                datetime.now().isoformat(),
+            ),
+        )
 
         conn.commit()
         conn.close()
@@ -769,8 +807,7 @@ class GlobalAgentFactory:
 
         # Use learning system to discover patterns
         patterns = self.learning_system.discover_patterns(
-            agent_id="factory_core",
-            min_support=self.min_samples_for_evolution
+            agent_id="factory_core", min_support=self.min_samples_for_evolution
         )
 
         for pattern in patterns:
@@ -781,12 +818,12 @@ class GlobalAgentFactory:
                 title=f"Performance Pattern: {pattern['pattern_key'][:50]}",
                 description=f"Discovered pattern with {pattern['support_count']} supporting cases",
                 supporting_agents=[],
-                confidence_score=pattern['confidence'],
-                sample_size=pattern['support_count'],
+                confidence_score=pattern["confidence"],
+                sample_size=pattern["support_count"],
                 applies_to_templates=[],
                 applies_to_categories=[],
                 impact="medium",
-                discovered_date=datetime.now().isoformat()
+                discovered_date=datetime.now().isoformat(),
             )
 
             self.insights[insight.insight_id] = insight
@@ -802,22 +839,31 @@ class GlobalAgentFactory:
         conn = sqlite3.connect(self.db_path)
         cursor = conn.cursor()
 
-        cursor.execute("""
+        cursor.execute(
+            """
             INSERT OR REPLACE INTO factory_insights (
                 insight_id, insight_type, title, description,
                 supporting_agents_json, confidence_score, sample_size,
                 applies_to_templates_json, applies_to_categories_json,
                 impact, discovered_date, applied_date, status
             ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
-        """, (
-            insight.insight_id, insight.insight_type, insight.title,
-            insight.description, json.dumps(insight.supporting_agents),
-            insight.confidence_score, insight.sample_size,
-            json.dumps(insight.applies_to_templates),
-            json.dumps(insight.applies_to_categories),
-            insight.impact, insight.discovered_date, insight.applied_date,
-            insight.status
-        ))
+        """,
+            (
+                insight.insight_id,
+                insight.insight_type,
+                insight.title,
+                insight.description,
+                json.dumps(insight.supporting_agents),
+                insight.confidence_score,
+                insight.sample_size,
+                json.dumps(insight.applies_to_templates),
+                json.dumps(insight.applies_to_categories),
+                insight.impact,
+                insight.discovered_date,
+                insight.applied_date,
+                insight.status,
+            ),
+        )
 
         conn.commit()
         conn.close()
@@ -834,7 +880,7 @@ class GlobalAgentFactory:
             "templates_evolved": 0,
             "insights_applied": 0,
             "research_integrated": 0,
-            "improvements": []
+            "improvements": [],
         }
 
         # 1. Apply high-confidence insights to templates
@@ -869,7 +915,10 @@ class GlobalAgentFactory:
         applied = []
 
         for insight in self.insights.values():
-            if insight.status == "validated" and insight.confidence_score >= self.confidence_threshold:
+            if (
+                insight.status == "validated"
+                and insight.confidence_score >= self.confidence_threshold
+            ):
                 # Apply insight to applicable templates
                 for template_id in insight.applies_to_templates:
                     success = await self._apply_insight_to_template(insight, template_id)
@@ -894,10 +943,7 @@ class GlobalAgentFactory:
             return 0
 
         # Get recent research insights
-        result = await self.research_agent.execute({
-            "action": "get_insights",
-            "time_range_days": 7
-        })
+        result = await self.research_agent.execute({"action": "get_insights", "time_range_days": 7})
 
         if result.get("status") == "success":
             insights = result.get("data", {})
@@ -922,19 +968,23 @@ class GlobalAgentFactory:
         cursor = conn.cursor()
 
         # Get average quality over time
-        cursor.execute("""
+        cursor.execute(
+            """
             SELECT AVG(code_quality_score) as avg_quality
             FROM agent_performance
             WHERE generated_date >= date('now', '-30 days')
-        """)
+        """
+        )
 
         recent_quality = cursor.fetchone()[0] or 0
 
-        cursor.execute("""
+        cursor.execute(
+            """
             SELECT AVG(code_quality_score) as avg_quality
             FROM agent_performance
             WHERE generated_date < date('now', '-30 days')
-        """)
+        """
+        )
 
         historical_quality = cursor.fetchone()[0] or recent_quality
 
@@ -955,23 +1005,26 @@ class GlobalAgentFactory:
         conn = sqlite3.connect(self.db_path)
         cursor = conn.cursor()
 
-        cursor.execute("""
+        cursor.execute(
+            """
             INSERT OR REPLACE INTO factory_statistics (
                 stat_date, total_agents_generated, successful_agents,
                 templates_evolved, insights_discovered, research_papers_integrated,
                 average_agent_quality, factory_learning_rate, metrics_json
             ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
-        """, (
-            datetime.now().date().isoformat(),
-            self.stats["total_agents_generated"],
-            self.stats["successful_agents"],
-            self.stats["templates_evolved"],
-            self.stats["insights_discovered"],
-            self.stats["research_papers_integrated"],
-            self.stats["average_agent_quality"],
-            self.stats["factory_learning_rate"],
-            json.dumps(self.stats)
-        ))
+        """,
+            (
+                datetime.now().date().isoformat(),
+                self.stats["total_agents_generated"],
+                self.stats["successful_agents"],
+                self.stats["templates_evolved"],
+                self.stats["insights_discovered"],
+                self.stats["research_papers_integrated"],
+                self.stats["average_agent_quality"],
+                self.stats["factory_learning_rate"],
+                json.dumps(self.stats),
+            ),
+        )
 
         conn.commit()
         conn.close()
@@ -996,9 +1049,11 @@ class GlobalAgentFactory:
             "statistics": self.stats,
             "insights_count": len(self.insights),
             "performance_tracked_agents": len(self.performance_data),
-            "template_count": len(self.template_system.search_templates() if self.template_system else []),
+            "template_count": len(
+                self.template_system.search_templates() if self.template_system else []
+            ),
             "last_evolution": datetime.now().isoformat(),
-            "learning_rate": self.stats["factory_learning_rate"]
+            "learning_rate": self.stats["factory_learning_rate"],
         }
 
     async def get_insights(self, insight_type: Optional[str] = None) -> List[Dict[str, Any]]:
@@ -1009,16 +1064,18 @@ class GlobalAgentFactory:
             if insight_type and insight.insight_type != insight_type:
                 continue
 
-            insights.append({
-                "insight_id": insight.insight_id,
-                "type": insight.insight_type,
-                "title": insight.title,
-                "description": insight.description,
-                "confidence": insight.confidence_score,
-                "impact": insight.impact,
-                "status": insight.status,
-                "discovered_date": insight.discovered_date
-            })
+            insights.append(
+                {
+                    "insight_id": insight.insight_id,
+                    "type": insight.insight_type,
+                    "title": insight.title,
+                    "description": insight.description,
+                    "confidence": insight.confidence_score,
+                    "impact": insight.impact,
+                    "status": insight.status,
+                    "discovered_date": insight.discovered_date,
+                }
+            )
 
         return insights
 
@@ -1043,7 +1100,9 @@ class GlobalAgentFactory:
 _factory_instance: Optional[GlobalAgentFactory] = None
 
 
-async def get_factory(evolution_strategy: FactoryEvolutionStrategy = FactoryEvolutionStrategy.ADAPTIVE) -> GlobalAgentFactory:
+async def get_factory(
+    evolution_strategy: FactoryEvolutionStrategy = FactoryEvolutionStrategy.ADAPTIVE,
+) -> GlobalAgentFactory:
     """Get or create factory singleton"""
     global _factory_instance
 
@@ -1057,9 +1116,9 @@ async def get_factory(evolution_strategy: FactoryEvolutionStrategy = FactoryEvol
 # Example usage
 async def main():
     """Demo of Global Agent Factory"""
-    print("="*80)
+    print("=" * 80)
     print("GLOBAL AGENT FACTORY - Self-Evolving Agent Creation System")
-    print("="*80)
+    print("=" * 80)
     print()
 
     # Initialize factory
@@ -1074,7 +1133,7 @@ async def main():
         objective="Improve customer service response time by 60%",
         apqc_process="5.1",
         compliance_frameworks=["gdpr", "soc2"],
-        auto_optimize=True
+        auto_optimize=True,
     )
     print()
 
@@ -1087,8 +1146,8 @@ async def main():
             "total_executions": 1000,
             "successful_executions": 980,
             "avg_response_time": 245,
-            "user_satisfaction": 4.7
-        }
+            "user_satisfaction": 4.7,
+        },
     )
     print()
 
@@ -1105,9 +1164,9 @@ async def main():
         print(f"  {key}: {value}")
     print()
 
-    print("="*80)
+    print("=" * 80)
     print("Demo complete!")
-    print("="*80)
+    print("=" * 80)
 
 
 if __name__ == "__main__":

@@ -53,12 +53,12 @@ async def test_single_agent():
     print("=" * 60)
     print(f"Status: {result['status']}")
     print(f"Files Created: {len(result['files_created'])}")
-    for file_path in result['files_created']:
+    for file_path in result["files_created"]:
         print(f"  - {file_path}")
 
-    if result['errors']:
+    if result["errors"]:
         print(f"\nErrors:")
-        for error in result['errors']:
+        for error in result["errors"]:
             print(f"  - {error}")
 
     print("=" * 60)
@@ -97,7 +97,9 @@ async def test_batch_generation():
     print(f"Total: {result['total_agents']}")
     print(f"Completed: {result['completed']}")
     print(f"Failed: {result['failed']}")
-    print(f"Success Rate: {(result['completed']/result['total_agents']*100 if result['total_agents'] > 0 else 0):.1f}%")
+    print(
+        f"Success Rate: {(result['completed']/result['total_agents']*100 if result['total_agents'] > 0 else 0):.1f}%"
+    )
     print("=" * 60)
 
     return result
@@ -130,7 +132,7 @@ async def main():
     # Test 2: Batch generation (if single succeeded)
     if single_result.get("status") == "completed":
         user_choice = input("\nSingle agent test passed! Run batch test (3 agents)? (y/n): ")
-        if user_choice.lower() == 'y':
+        if user_choice.lower() == "y":
             await test_batch_generation()
         else:
             print("\nSkipping batch test.")

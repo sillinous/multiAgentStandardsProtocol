@@ -18,6 +18,7 @@ logger = logging.getLogger(__name__)
 @dataclass
 class ClientConfig:
     """Configuration for Agent Library Client"""
+
     base_url: str = "http://localhost:8000"
     timeout: float = 30.0
     verify_ssl: bool = True
@@ -59,7 +60,7 @@ class AgentLibraryClient:
             config: Client configuration. If None, uses defaults.
         """
         self.config = config or ClientConfig()
-        self.base_url = self.config.base_url.rstrip('/')
+        self.base_url = self.config.base_url.rstrip("/")
         self.client = None
         logger.info(f"Initialized Agent Library Client pointing to {self.base_url}")
 
@@ -292,10 +293,7 @@ class AgentLibraryClient:
 
         params = {"limit": limit}
         logger.info(f"Fetching execution history for agent: {agent_id}")
-        response = await self.client.get(
-            f"/api/v1/agents/{agent_id}/history",
-            params=params
-        )
+        response = await self.client.get(f"/api/v1/agents/{agent_id}/history", params=params)
         response.raise_for_status()
         return response.json()
 
@@ -351,10 +349,7 @@ class AgentLibraryClient:
         await self._ensure_client()
 
         logger.info(f"Registering agent: {agent_metadata.get('agent_id')}")
-        response = await self.client.post(
-            "/api/v1/agents/registry/register",
-            json=agent_metadata
-        )
+        response = await self.client.post("/api/v1/agents/registry/register", json=agent_metadata)
         response.raise_for_status()
         return response.json()
 
@@ -412,6 +407,7 @@ class AgentLibraryClient:
 # Convenience Functions
 # ============================================================================
 
+
 async def get_default_client() -> AgentLibraryClient:
     """
     Get a default client pointing to localhost.
@@ -426,6 +422,7 @@ async def get_default_client() -> AgentLibraryClient:
 # Example Usage
 # ============================================================================
 
+
 async def example_usage():
     """Example of how to use the client"""
     config = ClientConfig(base_url="http://localhost:8000")
@@ -437,20 +434,17 @@ async def example_usage():
         print(f"Found {agents['total']} agents")
 
         # Get specific agent
-        if agents['agents']:
-            agent = agents['agents'][0]
+        if agents["agents"]:
+            agent = agents["agents"][0]
             print(f"Agent: {agent['name']} ({agent['agent_id']})")
 
             # Execute the agent
             print("Executing agent...")
-            result = await client.execute_agent(
-                agent['agent_id'],
-                {"test": "data"}
-            )
+            result = await client.execute_agent(agent["agent_id"], {"test": "data"})
             print(f"Execution started: {result['execution_id']}")
 
             # Check status
-            status = await client.get_execution_status(result['execution_id'])
+            status = await client.get_execution_status(result["execution_id"])
             print(f"Status: {status['status']}")
 
         # Check system health

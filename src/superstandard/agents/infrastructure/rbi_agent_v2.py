@@ -2,7 +2,7 @@
 🌙 Moon Dev's RBI AI v2.0 (Research-Backtest-Implement-Execute)
 Built with love by Moon Dev 🚀
 
-NEW IN v2.0: EXECUTION LOOP! 
+NEW IN v2.0: EXECUTION LOOP!
 - Automatically executes backtests
 - Captures errors and stats
 - Loops back to debug agent on failures

@@ -14,9 +14,15 @@ from .message_bus import MessageBus, Message, MessagePriority
 from .shared_memory import SharedMemory
 from .consensus import ConsensusManager, VoteType
 from .protocols import (
-    ProtocolManager, A2AMessage, A2APerformative,
-    FIPAMessage, FIPAPerformative, AgentCapability,
-    MCPTool, PaymentRequest, PaymentType
+    ProtocolManager,
+    A2AMessage,
+    A2APerformative,
+    FIPAMessage,
+    FIPAPerformative,
+    AgentCapability,
+    MCPTool,
+    PaymentRequest,
+    PaymentType,
 )
 
 
@@ -26,9 +32,14 @@ class AutonomousAgent(ABC):
     Provides event-driven architecture with message bus integration
     """
 
-    def __init__(self, agent_id: str, message_bus: MessageBus,
-                 shared_memory: SharedMemory, consensus_manager: ConsensusManager,
-                 config: Optional[Dict[str, Any]] = None):
+    def __init__(
+        self,
+        agent_id: str,
+        message_bus: MessageBus,
+        shared_memory: SharedMemory,
+        consensus_manager: ConsensusManager,
+        config: Optional[Dict[str, Any]] = None,
+    ):
         """
         Initialize autonomous agent with protocol support
 
@@ -65,9 +76,11 @@ class AutonomousAgent(ABC):
 
         # Capabilities and tools
         self.capabilities = []  # List of AgentCapability
-        self.tools = []        # List of MCPTool this agent provides
+        self.tools = []  # List of MCPTool this agent provides
 
-        print(f"[{self.agent_id}] Initialized autonomous agent with protocols: {self.protocols.get_supported_protocols()}")
+        print(
+            f"[{self.agent_id}] Initialized autonomous agent with protocols: {self.protocols.get_supported_protocols()}"
+        )
 
     @abstractmethod
     def on_start(self):
@@ -133,13 +146,13 @@ class AutonomousAgent(ABC):
     def _setup_subscriptions(self):
         """Setup message bus subscriptions"""
         # Subscribe to agent-specific messages
-        self.subscribe(f'agent.{self.agent_id}.*', self._handle_direct_message)
+        self.subscribe(f"agent.{self.agent_id}.*", self._handle_direct_message)
 
         # Subscribe to broadcast messages
-        self.subscribe('broadcast.*', self._handle_broadcast)
+        self.subscribe("broadcast.*", self._handle_broadcast)
 
         # Subscribe to consensus messages
-        self.subscribe('consensus.*', self._handle_consensus_message)
+        self.subscribe("consensus.*", self._handle_consensus_message)
 
     def subscribe(self, topic: str, handler: Optional[Callable] = None):
         """
@@ -155,9 +168,13 @@ class AutonomousAgent(ABC):
             self.subscribed_topics.append(topic)
             print(f"[{self.agent_id}] Subscribed to {topic}")
 
-    def publish(self, topic: str, data: Dict[str, Any],
-                priority: MessagePriority = MessagePriority.NORMAL,
-                requires_response: bool = False) -> str:
+    def publish(
+        self,
+        topic: str,
+        data: Dict[str, Any],
+        priority: MessagePriority = MessagePriority.NORMAL,
+        requires_response: bool = False,
+    ) -> str:
         """
         Publish a message to the bus
 
@@ -178,14 +195,18 @@ class AutonomousAgent(ABC):
             sender=self.agent_id,
             priority=priority,
             correlation_id=correlation_id,
-            requires_response=requires_response
+            requires_response=requires_response,
         )
 
         self.messages_sent += 1
         return correlation_id
 
-    def send_direct_message(self, target_agent: str, data: Dict[str, Any],
-                          priority: MessagePriority = MessagePriority.NORMAL):
+    def send_direct_message(
+        self,
+        target_agent: str,
+        data: Dict[str, Any],
+        priority: MessagePriority = MessagePriority.NORMAL,
+    ):
         """
         Send direct message to another agent
 
@@ -194,11 +215,15 @@ class AutonomousAgent(ABC):
             data: Message payload
             priority: Message priority
         """
-        topic = f'agent.{target_agent}.direct'
+        topic = f"agent.{target_agent}.direct"
         self.publish(topic, data, priority)
 
-    def broadcast(self, event_type: str, data: Dict[str, Any],
-                 priority: MessagePriority = MessagePriority.NORMAL):
+    def broadcast(
+        self,
+        event_type: str,
+        data: Dict[str, Any],
+        priority: MessagePriority = MessagePriority.NORMAL,
+    ):
         """
         Broadcast message to all agents
 
@@ -207,12 +232,17 @@ class AutonomousAgent(ABC):
             data: Event data
             priority: Message priority
         """
-        topic = f'broadcast.{event_type}'
+        topic = f"broadcast.{event_type}"
         self.publish(topic, data, priority)
 
-    def propose_consensus(self, action: str, data: Dict[str, Any],
-                         min_votes: int = 3, threshold: float = 0.6,
-                         timeout_seconds: int = 30) -> str:
+    def propose_consensus(
+        self,
+        action: str,
+        data: Dict[str, Any],
+        min_votes: int = 3,
+        threshold: float = 0.6,
+        timeout_seconds: int = 30,
+    ) -> str:
         """
         Propose an action for consensus voting
 
@@ -232,13 +262,14 @@ class AutonomousAgent(ABC):
             data=data,
             min_votes=min_votes,
             threshold=threshold,
-            timeout_seconds=timeout_seconds
+            timeout_seconds=timeout_seconds,
         )
 
         return proposal_id
 
-    def vote(self, proposal_id: str, approve: bool, confidence: float,
-             reasoning: Optional[str] = None):
+    def vote(
+        self, proposal_id: str, approve: bool, confidence: float, reasoning: Optional[str] = None
+    ):
         """
         Cast a vote on a proposal
 
@@ -255,7 +286,7 @@ class AutonomousAgent(ABC):
             agent_id=self.agent_id,
             vote_type=vote_type,
             confidence=confidence,
-            reasoning=reasoning
+            reasoning=reasoning,
         )
 
         if success:
@@ -311,16 +342,16 @@ class AutonomousAgent(ABC):
         """Handle consensus-related messages"""
         topic = message.topic
 
-        if topic == 'consensus.vote_request':
+        if topic == "consensus.vote_request":
             # New proposal - agent can decide whether to vote
             proposal_data = message.data
             self._on_vote_request(proposal_data)
 
-        elif topic == 'consensus.decision_approved':
+        elif topic == "consensus.decision_approved":
             # Proposal was approved
             self._on_proposal_approved(message.data)
 
-        elif topic == 'consensus.decision_rejected':
+        elif topic == "consensus.decision_rejected":
             # Proposal was rejected
             self._on_proposal_rejected(message.data)
 
@@ -383,26 +414,31 @@ class AutonomousAgent(ABC):
     def get_stats(self) -> Dict[str, Any]:
         """Get agent statistics"""
         return {
-            'agent_id': self.agent_id,
-            'running': self.running,
-            'subscribed_topics': len(self.subscribed_topics),
-            'messages_sent': self.messages_sent,
-            'messages_received': self.messages_received,
-            'decisions_made': self.decisions_made,
-            'votes_cast': self.votes_cast,
-            'last_activity': self.last_activity.isoformat() if self.last_activity else None,
-            'capabilities_count': len(self.capabilities),
-            'tools_count': len(self.tools),
-            'protocols_supported': self.protocols.get_supported_protocols()
+            "agent_id": self.agent_id,
+            "running": self.running,
+            "subscribed_topics": len(self.subscribed_topics),
+            "messages_sent": self.messages_sent,
+            "messages_received": self.messages_received,
+            "decisions_made": self.decisions_made,
+            "votes_cast": self.votes_cast,
+            "last_activity": self.last_activity.isoformat() if self.last_activity else None,
+            "capabilities_count": len(self.capabilities),
+            "tools_count": len(self.tools),
+            "protocols_supported": self.protocols.get_supported_protocols(),
         }
 
     # ============================================================================
     # Protocol Methods - Standards Compliance
     # ============================================================================
 
-    def register_capability(self, capability_type: str, description: str,
-                           input_types: List[str], output_types: List[str],
-                           cost_model: Optional[Dict[str, Any]] = None):
+    def register_capability(
+        self,
+        capability_type: str,
+        description: str,
+        input_types: List[str],
+        output_types: List[str],
+        cost_model: Optional[Dict[str, Any]] = None,
+    ):
         """
         Register agent capability for discovery
 
@@ -420,7 +456,7 @@ class AutonomousAgent(ABC):
             input_types=input_types,
             output_types=output_types,
             protocols_supported=self.protocols.get_supported_protocols(),
-            cost_model=cost_model
+            cost_model=cost_model,
         )
 
         self.capabilities.append(capability)
@@ -428,9 +464,14 @@ class AutonomousAgent(ABC):
 
         print(f"[{self.agent_id}] Capability registered: {capability_type}")
 
-    def register_tool(self, tool_name: str, description: str,
-                     parameters: Dict[str, Any], cost: Optional[float] = None,
-                     rate_limit: Optional[int] = None):
+    def register_tool(
+        self,
+        tool_name: str,
+        description: str,
+        parameters: Dict[str, Any],
+        cost: Optional[float] = None,
+        rate_limit: Optional[int] = None,
+    ):
         """
         Register MCP tool for other agents to discover and use
 
@@ -447,7 +488,7 @@ class AutonomousAgent(ABC):
             parameters=parameters,
             provider=self.agent_id,
             cost=cost,
-            rate_limit=rate_limit
+            rate_limit=rate_limit,
         )
 
         self.tools.append(tool)
@@ -455,8 +496,9 @@ class AutonomousAgent(ABC):
 
         print(f"[{self.agent_id}] Tool registered: {tool_name}")
 
-    def discover_tools(self, provider: Optional[str] = None,
-                      capability: Optional[str] = None) -> List[MCPTool]:
+    def discover_tools(
+        self, provider: Optional[str] = None, capability: Optional[str] = None
+    ) -> List[MCPTool]:
         """
         Discover available tools from other agents
 
@@ -481,9 +523,13 @@ class AutonomousAgent(ABC):
         """
         return self.protocols.capabilities.discover_agents(capability_type)
 
-    def send_a2a_message(self, receiver: str, performative: A2APerformative,
-                        content: Dict[str, Any],
-                        conversation_id: Optional[str] = None):
+    def send_a2a_message(
+        self,
+        receiver: str,
+        performative: A2APerformative,
+        content: Dict[str, Any],
+        conversation_id: Optional[str] = None,
+    ):
         """
         Send A2A protocol standard message
 
@@ -501,14 +547,19 @@ class AutonomousAgent(ABC):
             sender=self.agent_id,
             receiver=receiver,
             content=content,
-            conversation_id=conversation_id
+            conversation_id=conversation_id,
         )
 
         self.protocols.send_a2a_message(message)
         self.messages_sent += 1
 
-    def send_fipa_message(self, receiver: str, performative: FIPAPerformative,
-                         content: str, protocol: Optional[str] = None):
+    def send_fipa_message(
+        self,
+        receiver: str,
+        performative: FIPAPerformative,
+        content: str,
+        protocol: Optional[str] = None,
+    ):
         """
         Send FIPA ACL compliant message
 
@@ -523,14 +574,15 @@ class AutonomousAgent(ABC):
             sender=self.agent_id,
             receiver=receiver,
             content=content,
-            protocol=protocol
+            protocol=protocol,
         )
 
         self.protocols.send_fipa_message(message)
         self.messages_sent += 1
 
-    def request_payment(self, to_agent: str, amount: float, currency: str,
-                       payment_type: PaymentType, reason: str) -> str:
+    def request_payment(
+        self, to_agent: str, amount: float, currency: str, payment_type: PaymentType, reason: str
+    ) -> str:
         """
         Request payment from another agent (A2Pay protocol)
 
@@ -550,13 +602,14 @@ class AutonomousAgent(ABC):
             amount=amount,
             currency=currency,
             payment_type=payment_type,
-            reason=reason
+            reason=reason,
         )
 
         return self.protocols.a2pay.request_payment(payment)
 
-    def propose_negotiation(self, recipient: str, terms: Dict[str, Any],
-                          timeout_seconds: int = 300) -> str:
+    def propose_negotiation(
+        self, recipient: str, terms: Dict[str, Any], timeout_seconds: int = 300
+    ) -> str:
         """
         Start negotiation with another agent (ANP protocol)
 
@@ -572,7 +625,7 @@ class AutonomousAgent(ABC):
             proposer=self.agent_id,
             recipient=recipient,
             terms=terms,
-            timeout_seconds=timeout_seconds
+            timeout_seconds=timeout_seconds,
         )
 
     def accept_negotiation(self, offer_id: str) -> bool:
@@ -583,8 +636,7 @@ class AutonomousAgent(ABC):
         """Reject a negotiation offer"""
         return self.protocols.anp.reject_offer(offer_id)
 
-    def invoke_tool(self, tool_name: str, provider: str,
-                   parameters: Dict[str, Any]) -> str:
+    def invoke_tool(self, tool_name: str, provider: str, parameters: Dict[str, Any]) -> str:
         """
         Invoke a tool from another agent (MCP protocol)
 

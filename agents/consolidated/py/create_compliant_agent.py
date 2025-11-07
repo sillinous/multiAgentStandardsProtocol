@@ -55,7 +55,7 @@ class CompliantAgentGenerator:
         "business": "Business logic and rules agents",
         "ml": "Machine learning and AI agents",
         "monitoring": "System monitoring and observability agents",
-        "security": "Security and compliance agents"
+        "security": "Security and compliance agents",
     }
 
     def __init__(self):
@@ -75,14 +75,14 @@ class CompliantAgentGenerator:
         category: str,
         capabilities: List[str],
         description: str,
-        version: str = "1.0.0"
+        version: str = "1.0.0",
     ) -> str:
         """Generate fully compliant agent code"""
 
         class_name = name if name.endswith("Agent") else f"{name}Agent"
         agent_id = self.to_snake_case(name)
 
-        capabilities_list = ',\n            '.join([f'"{cap}"' for cap in capabilities])
+        capabilities_list = ",\n            ".join([f'"{cap}"' for cap in capabilities])
 
         template = f'''"""
 {class_name} - {description}
@@ -646,9 +646,10 @@ if __name__ == "__main__":
     def to_snake_case(self, name: str) -> str:
         """Convert name to snake_case"""
         import re
-        name = re.sub('Agent$', '', name)
-        s1 = re.sub('(.)([A-Z][a-z]+)', r'\1_\2', name)
-        return re.sub('([a-z0-9])([A-Z])', r'\1_\2', s1).lower()
+
+        name = re.sub("Agent$", "", name)
+        s1 = re.sub("(.)([A-Z][a-z]+)", r"\1_\2", name)
+        return re.sub("([a-z0-9])([A-Z])", r"\1_\2", s1).lower()
 
     def create_compliant_agent(
         self,
@@ -656,7 +657,7 @@ if __name__ == "__main__":
         category: str,
         capabilities: List[str],
         description: str,
-        version: str = "1.0.0"
+        version: str = "1.0.0",
     ):
         """Create a fully compliant agent with all supporting files"""
 
@@ -671,16 +672,17 @@ if __name__ == "__main__":
         # Write files
         agent_file = AGENTS_DIR / category / f"{agent_id}.py"
 
-        with open(agent_file, 'w', encoding='utf-8') as f:
+        with open(agent_file, "w", encoding="utf-8") as f:
             f.write(agent_code)
 
         # Create __init__.py if it doesn't exist
         init_file = AGENTS_DIR / category / "__init__.py"
         if not init_file.exists():
-            with open(init_file, 'w') as f:
+            with open(init_file, "w") as f:
                 f.write(f'"""{self.CATEGORIES.get(category, "Custom")}"""\n')
 
-        print(f"""
+        print(
+            f"""
 [SUCCESS] Architecturally Compliant Agent Created!
 
 Agent: {class_name}
@@ -727,12 +729,14 @@ To use your agent:
 
     # Execute
     result = await agent.execute({{"type": "example_task"}})
-""")
+"""
+        )
 
 
 def interactive_mode():
     """Run in interactive mode"""
-    print("""
+    print(
+        """
     ============================================================
       Compliant Agent Generator - Architectural Standards v2.0
     ============================================================
@@ -742,7 +746,8 @@ def interactive_mode():
     - 5 Protocol Standards (A2A, A2P, ACP, ANP, MCP)
     - Resource Efficiency Standards
     - Vendor/Model/System Agnostic Design
-    """)
+    """
+    )
 
     generator = CompliantAgentGenerator()
 
@@ -766,7 +771,7 @@ def interactive_mode():
 
     # Get capabilities
     capabilities_input = input("\nCapabilities (comma-separated): ").strip()
-    capabilities = [cap.strip() for cap in capabilities_input.split(',') if cap.strip()]
+    capabilities = [cap.strip() for cap in capabilities_input.split(",") if cap.strip()]
 
     if not capabilities:
         print("[ERROR] At least one capability is required")
@@ -785,11 +790,8 @@ def interactive_mode():
 
 
 def main():
-    parser = argparse.ArgumentParser(
-        description="Generate architecturally compliant agents"
-    )
-    parser.add_argument("--interactive", "-i", action="store_true",
-                       help="Run in interactive mode")
+    parser = argparse.ArgumentParser(description="Generate architecturally compliant agents")
+    parser.add_argument("--interactive", "-i", action="store_true", help="Run in interactive mode")
     parser.add_argument("--name", "-n", help="Agent name")
     parser.add_argument("--category", "-c", help="Agent category")
     parser.add_argument("--capabilities", help="Comma-separated capabilities")
@@ -802,15 +804,11 @@ def main():
         interactive_mode()
     elif args.name and args.category and args.capabilities:
         generator = CompliantAgentGenerator()
-        capabilities = [cap.strip() for cap in args.capabilities.split(',')]
+        capabilities = [cap.strip() for cap in args.capabilities.split(",")]
         description = args.description or f"Agent for {args.name}"
 
         generator.create_compliant_agent(
-            args.name,
-            args.category,
-            capabilities,
-            description,
-            args.version
+            args.name, args.category, capabilities, description, args.version
         )
     else:
         parser.print_help()

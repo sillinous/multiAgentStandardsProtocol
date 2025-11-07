@@ -21,7 +21,7 @@ import time
 # Add parent directories to path
 sys.path.insert(0, str(Path(__file__).parent.parent.parent))
 
-from crates.agentic_protocols.python.acp_implementation import CoordinationManager
+from src.superstandard.protocols.acp_implementation import CoordinationManager
 
 
 async def simulate_agent_work(agent_name: str, task_description: str, duration: float):
@@ -32,9 +32,9 @@ async def simulate_agent_work(agent_name: str, task_description: str, duration: 
 
 
 async def main():
-    print("\n" + "="*70)
+    print("\n" + "=" * 70)
     print("SuperStandard ACP v1.0 - Multi-Agent Pipeline Coordination Demo")
-    print("="*70 + "\n")
+    print("=" * 70 + "\n")
 
     # Create coordination manager
     manager = CoordinationManager()
@@ -48,7 +48,7 @@ async def main():
         coordinator_id="supervisor-main",
         coordination_type="pipeline",
         goal="Process customer data through collection → analysis → reporting pipeline",
-        context={"project": "customer-insights", "priority": "high"}
+        context={"project": "customer-insights", "priority": "high"},
     )
     coord_id = coordination["coordination_id"]
     print(f"[+] Created coordination session: {coord_id}")
@@ -68,7 +68,7 @@ async def main():
         agent_id="data-collector-1",
         agent_type="collector",
         capabilities=["api_fetch", "data_extraction"],
-        role="data_provider"
+        role="data_provider",
     )
     print(f"[+] {result['agent_name']} joined as {result['role']}")
 
@@ -79,7 +79,7 @@ async def main():
         agent_id="data-analyzer-1",
         agent_type="analyzer",
         capabilities=["data_analysis", "aggregation"],
-        role="processor"
+        role="processor",
     )
     print(f"[+] {result['agent_name']} joined as {result['role']}")
 
@@ -90,7 +90,7 @@ async def main():
         agent_id="report-generator-1",
         agent_type="generator",
         capabilities=["reporting", "visualization"],
-        role="output_generator"
+        role="output_generator",
     )
     print(f"[+] {result['agent_name']} joined as {result['role']}")
 
@@ -108,7 +108,7 @@ async def main():
         description="Fetch customer data from CRM API",
         priority=1,
         input_data={"source": "crm_api", "date_range": "last_30_days"},
-        dependencies=[]
+        dependencies=[],
     )
     print(f"[+] Created task: {task1['task_id']}")
     print(f"    Description: {task1['description']}")
@@ -122,7 +122,7 @@ async def main():
         description="Analyze customer behavior patterns",
         priority=2,
         input_data={"analysis_type": "behavior_patterns"},
-        dependencies=[task1['task_id']]
+        dependencies=[task1["task_id"]],
     )
     print(f"[+] Created task: {task2['task_id']}")
     print(f"    Description: {task2['description']}")
@@ -136,7 +136,7 @@ async def main():
         description="Generate executive summary report",
         priority=3,
         input_data={"format": "pdf", "include_charts": True},
-        dependencies=[task2['task_id']]
+        dependencies=[task2["task_id"]],
     )
     print(f"[+] Created task: {task3['task_id']}")
     print(f"    Description: {task3['description']}")
@@ -149,27 +149,21 @@ async def main():
     # Assign Task 1 to Data Collector
     print("[*] Assigning Task 1 to data-collector-1...")
     result = await manager.assign_task(
-        coordination_id=coord_id,
-        task_id=task1['task_id'],
-        agent_id="data-collector-1"
+        coordination_id=coord_id, task_id=task1["task_id"], agent_id="data-collector-1"
     )
     print(f"[+] Task assigned: {result['status']}")
 
     # Assign Task 2 to Data Analyzer
     print("[*] Assigning Task 2 to data-analyzer-1...")
     result = await manager.assign_task(
-        coordination_id=coord_id,
-        task_id=task2['task_id'],
-        agent_id="data-analyzer-1"
+        coordination_id=coord_id, task_id=task2["task_id"], agent_id="data-analyzer-1"
     )
     print(f"[+] Task assigned: {result['status']}")
 
     # Assign Task 3 to Report Generator
     print("[*] Assigning Task 3 to report-generator-1...")
     result = await manager.assign_task(
-        coordination_id=coord_id,
-        task_id=task3['task_id'],
-        agent_id="report-generator-1"
+        coordination_id=coord_id, task_id=task3["task_id"], agent_id="report-generator-1"
     )
     print(f"[+] Task assigned: {result['status']}")
 
@@ -182,13 +176,13 @@ async def main():
     await simulate_agent_work("data-collector-1", "Fetching customer data from CRM API", 1.0)
     result = await manager.update_task_status(
         coordination_id=coord_id,
-        task_id=task1['task_id'],
+        task_id=task1["task_id"],
         status="completed",
         output_data={
             "records_fetched": 1500,
             "data_location": "s3://bucket/customer-data.json",
-            "timestamp": time.time()
-        }
+            "timestamp": time.time(),
+        },
     )
     print(f"      [+] Task 1 completed: {result['status']}")
 
@@ -200,8 +194,8 @@ async def main():
         updates={
             "collected_records": 1500,
             "data_ready": True,
-            "collection_timestamp": time.time()
-        }
+            "collection_timestamp": time.time(),
+        },
     )
     print("      [+] Shared state updated")
 
@@ -210,13 +204,13 @@ async def main():
     await simulate_agent_work("data-analyzer-1", "Analyzing customer behavior patterns", 1.5)
     result = await manager.update_task_status(
         coordination_id=coord_id,
-        task_id=task2['task_id'],
+        task_id=task2["task_id"],
         status="completed",
         output_data={
             "insights_found": 25,
             "top_pattern": "increased_weekend_activity",
-            "analysis_location": "s3://bucket/analysis-results.json"
-        }
+            "analysis_location": "s3://bucket/analysis-results.json",
+        },
     )
     print(f"      [+] Task 2 completed: {result['status']}")
 
@@ -228,8 +222,8 @@ async def main():
         updates={
             "analysis_complete": True,
             "insights_count": 25,
-            "analysis_timestamp": time.time()
-        }
+            "analysis_timestamp": time.time(),
+        },
     )
     print("      [+] Shared state updated")
 
@@ -238,13 +232,13 @@ async def main():
     await simulate_agent_work("report-generator-1", "Generating executive summary report", 1.0)
     result = await manager.update_task_status(
         coordination_id=coord_id,
-        task_id=task3['task_id'],
+        task_id=task3["task_id"],
         status="completed",
         output_data={
             "report_location": "s3://bucket/executive-summary.pdf",
             "pages": 15,
-            "charts": 8
-        }
+            "charts": 8,
+        },
     )
     print(f"      [+] Task 3 completed: {result['status']}")
 
@@ -256,8 +250,8 @@ async def main():
         updates={
             "report_complete": True,
             "report_url": "https://reports.example.com/executive-summary.pdf",
-            "completion_timestamp": time.time()
-        }
+            "completion_timestamp": time.time(),
+        },
     )
     print("      [+] Shared state updated")
 
@@ -275,14 +269,14 @@ async def main():
     print(f"    Completion: {progress['completion_percentage']:.1f}%")
 
     print(f"\n[*] Task Breakdown:")
-    for task in progress['tasks']:
+    for task in progress["tasks"]:
         print(f"    - {task['description']}")
         print(f"      Status: {task['status']}")
         print(f"      Assigned to: {task.get('assigned_to', 'Unassigned')}")
 
     print(f"\n[*] Shared State:")
-    for key, value in progress['shared_state'].items():
-        if 'timestamp' not in key:
+    for key, value in progress["shared_state"].items():
+        if "timestamp" not in key:
             print(f"    {key}: {value}")
 
     # Step 7: Complete coordination
@@ -293,9 +287,9 @@ async def main():
     print(f"[+] Coordination completed: {result['status']}")
     print(f"    Final state: {result['final_status']}")
 
-    print("\n" + "="*70)
+    print("\n" + "=" * 70)
     print("Pipeline coordination completed successfully!")
-    print("="*70)
+    print("=" * 70)
     print("\nKey Takeaways:")
     print("- 3 agents collaborated in a pipeline pattern")
     print("- Tasks executed in dependency order")

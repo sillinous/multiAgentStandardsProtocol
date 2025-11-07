@@ -36,9 +36,9 @@ class BaseAgentAnalyzer:
         for file in py_dir.glob("*.py"):
             if "base_agent" not in file.name.lower():
                 try:
-                    with open(file, 'r', encoding='utf-8') as f:
+                    with open(file, "r", encoding="utf-8") as f:
                         content = f.read()
-                        if re.search(r'^class\s+BaseAgent', content, re.MULTILINE):
+                        if re.search(r"^class\s+BaseAgent", content, re.MULTILINE):
                             self.analyze_file(file)
                 except:
                     pass
@@ -46,7 +46,7 @@ class BaseAgentAnalyzer:
     def analyze_file(self, file_path: Path):
         """Analyze a BaseAgent file"""
         try:
-            with open(file_path, 'r', encoding='utf-8') as f:
+            with open(file_path, "r", encoding="utf-8") as f:
                 content = f.read()
 
             # Extract key information
@@ -54,49 +54,49 @@ class BaseAgentAnalyzer:
                 "file": file_path.name,
                 "path": str(file_path),
                 "size": len(content),
-                "lines": len(content.split('\n')),
+                "lines": len(content.split("\n")),
                 "classes": [],
                 "imports": [],
                 "features": [],
-                "protocols": []
+                "protocols": [],
             }
 
             # Find classes
-            for match in re.finditer(r'^class\s+(\w+)', content, re.MULTILINE):
+            for match in re.finditer(r"^class\s+(\w+)", content, re.MULTILINE):
                 analysis["classes"].append(match.group(1))
 
             # Find imports
-            for match in re.finditer(r'^(?:from|import)\s+(.+?)(?:\s|$)', content, re.MULTILINE):
+            for match in re.finditer(r"^(?:from|import)\s+(.+?)(?:\s|$)", content, re.MULTILINE):
                 imp = match.group(1).strip()
-                if imp and not imp.startswith('#'):
+                if imp and not imp.startswith("#"):
                     analysis["imports"].append(imp[:50])
 
             # Detect features
-            if 'ABC' in content or 'abstract' in content.lower():
+            if "ABC" in content or "abstract" in content.lower():
                 analysis["features"].append("Abstract Base Class")
-            if 'ProtocolMixin' in content:
+            if "ProtocolMixin" in content:
                 analysis["features"].append("Protocol Support")
-            if 'async def' in content:
+            if "async def" in content:
                 analysis["features"].append("Async Operations")
-            if 'logging' in content:
+            if "logging" in content:
                 analysis["features"].append("Logging")
-            if 'ExchangeManager' in content:
+            if "ExchangeManager" in content:
                 analysis["features"].append("Trading/Exchange")
-            if 'learning' in content.lower():
+            if "learning" in content.lower():
                 analysis["features"].append("Learning System")
-            if 'tool' in content.lower() and 'discovery' in content.lower():
+            if "tool" in content.lower() and "discovery" in content.lower():
                 analysis["features"].append("Tool Discovery")
-            if 'collaborative' in content.lower():
+            if "collaborative" in content.lower():
                 analysis["features"].append("Collaboration")
 
             # Detect protocols
-            if 'A2A' in content:
+            if "A2A" in content:
                 analysis["protocols"].append("A2A")
-            if 'ANP' in content:
+            if "ANP" in content:
                 analysis["protocols"].append("ANP")
-            if 'ACP' in content:
+            if "ACP" in content:
                 analysis["protocols"].append("ACP")
-            if 'BAP' in content or 'Blockchain' in content:
+            if "BAP" in content or "Blockchain" in content:
                 analysis["protocols"].append("BAP")
 
             self.base_agents.append(analysis)
@@ -106,30 +106,30 @@ class BaseAgentAnalyzer:
 
     def print_analysis(self):
         """Print analysis results"""
-        print("\n" + "="*70)
+        print("\n" + "=" * 70)
         print("BASEAGENT ANALYSIS RESULTS")
-        print("="*70)
+        print("=" * 70)
 
         print(f"\nFound {len(self.base_agents)} BaseAgent implementations:\n")
 
         # Sort by size
-        sorted_agents = sorted(self.base_agents, key=lambda x: -x['lines'])
+        sorted_agents = sorted(self.base_agents, key=lambda x: -x["lines"])
 
         for i, agent in enumerate(sorted_agents, 1):
             print(f"{i}. {agent['file']}")
             print(f"   Size: {agent['lines']} lines ({agent['size']} bytes)")
             print(f"   Classes: {', '.join(agent['classes'][:5])}")
-            if agent['protocols']:
+            if agent["protocols"]:
                 print(f"   Protocols: {', '.join(agent['protocols'])}")
-            if agent['features']:
+            if agent["features"]:
                 print(f"   Features: {', '.join(agent['features'][:5])}")
             print()
 
     def generate_recommendations(self):
         """Generate consolidation recommendations"""
-        print("="*70)
+        print("=" * 70)
         print("CONSOLIDATION RECOMMENDATIONS")
-        print("="*70)
+        print("=" * 70)
 
         # Categorize by type
         trading_specific = []
@@ -138,10 +138,13 @@ class BaseAgentAnalyzer:
         basic = []
 
         for agent in self.base_agents:
-            if "Trading/Exchange" in agent['features']:
+            if "Trading/Exchange" in agent["features"]:
                 trading_specific.append(agent)
-            elif "Protocol Support" in agent['features']:
-                if any(f in agent['features'] for f in ["Learning System", "Tool Discovery", "Collaboration"]):
+            elif "Protocol Support" in agent["features"]:
+                if any(
+                    f in agent["features"]
+                    for f in ["Learning System", "Tool Discovery", "Collaboration"]
+                ):
                     enhanced.append(agent)
                 else:
                     protocol_compliant.append(agent)
@@ -168,7 +171,7 @@ class BaseAgentAnalyzer:
         print("\n### Recommended Strategy\n")
 
         if protocol_compliant:
-            canonical = max(protocol_compliant, key=lambda x: x['lines'])
+            canonical = max(protocol_compliant, key=lambda x: x["lines"])
             print(f"[OK] CANONICAL BASE: {canonical['file']}")
             print(f"   Reason: Protocol-compliant, general-purpose")
             print(f"   Features: {', '.join(canonical['features'])}")
@@ -176,7 +179,7 @@ class BaseAgentAnalyzer:
             print()
 
         if enhanced:
-            enhanced_agent = max(enhanced, key=lambda x: x['lines'])
+            enhanced_agent = max(enhanced, key=lambda x: x["lines"])
             print(f"[OK] ENHANCED BASE: {enhanced_agent['file']}")
             print(f"   Reason: Extends base with learning/collaboration")
             print(f"   Action: Keep as optional enhanced version")
@@ -207,31 +210,31 @@ class BaseAgentAnalyzer:
             f"**Total BaseAgent Implementations Found:** {len(self.base_agents)}",
             "",
             "## Detailed Analysis",
-            ""
+            "",
         ]
 
-        for agent in sorted(self.base_agents, key=lambda x: -x['lines']):
+        for agent in sorted(self.base_agents, key=lambda x: -x["lines"]):
             lines.append(f"### {agent['file']}")
             lines.append(f"- **Lines:** {agent['lines']}")
             lines.append(f"- **Size:** {agent['size']} bytes")
             lines.append(f"- **Classes:** {', '.join(agent['classes'])}")
-            if agent['protocols']:
+            if agent["protocols"]:
                 lines.append(f"- **Protocols:** {', '.join(agent['protocols'])}")
-            if agent['features']:
+            if agent["features"]:
                 lines.append(f"- **Features:** {', '.join(agent['features'])}")
             lines.append("")
 
-        with open(output_path, 'w', encoding='utf-8') as f:
-            f.write('\n'.join(lines))
+        with open(output_path, "w", encoding="utf-8") as f:
+            f.write("\n".join(lines))
 
         print(f"\nDetailed report saved to: {output_path}")
 
 
 def main():
     """Main execution"""
-    print("\n" + "="*70)
+    print("\n" + "=" * 70)
     print("SuperStandard BaseAgent Analysis Tool")
-    print("="*70)
+    print("=" * 70)
 
     base_path = Path(__file__).parent.parent
     agents_dir = base_path / "agents" / "consolidated"
@@ -242,9 +245,9 @@ def main():
     analyzer.generate_recommendations()
     analyzer.generate_report(base_path / "BASEAGENT_ANALYSIS.md")
 
-    print("\n" + "="*70)
+    print("\n" + "=" * 70)
     print("Analysis complete!")
-    print("="*70)
+    print("=" * 70)
 
 
 if __name__ == "__main__":

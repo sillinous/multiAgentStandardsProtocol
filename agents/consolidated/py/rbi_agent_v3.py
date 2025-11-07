@@ -63,10 +63,12 @@ AI_MAX_TOKENS = 4000
 
 # Import model factory with proper path handling
 import sys
-sys.path.append('/Users/md/Dropbox/dev/github/moon-dev-ai-agents-for-trading')
+
+sys.path.append("/Users/md/Dropbox/dev/github/moon-dev-ai-agents-for-trading")
 
 try:
     from src.models import model_factory
+
     print("✅ Successfully imported model_factory")
 except ImportError as e:
     print(f"⚠️ Could not import model_factory: {e}")
@@ -78,27 +80,27 @@ except ImportError as e:
 #                       grok-3, grok-3-mini, grok-code-fast-1
 RESEARCH_CONFIG = {
     "type": "xai",  # Using Grok 4 Fast Reasoning (2M context, cheap!)
-    "name": "grok-4-fast-reasoning"
+    "name": "grok-4-fast-reasoning",
 }
 
 BACKTEST_CONFIG = {
     "type": "xai",  # Using Grok 4 Fast Reasoning for backtest coding
-    "name": "grok-4-fast-reasoning"
+    "name": "grok-4-fast-reasoning",
 }
 
 DEBUG_CONFIG = {
     "type": "xai",  # Using Grok 4 Fast Reasoning for debugging
-    "name": "grok-4-fast-reasoning"
+    "name": "grok-4-fast-reasoning",
 }
 
 PACKAGE_CONFIG = {
     "type": "xai",  # Using Grok 4 Fast Reasoning for package checking
-    "name": "grok-4-fast-reasoning"
+    "name": "grok-4-fast-reasoning",
 }
 
 OPTIMIZE_CONFIG = {
     "type": "xai",  # Using Grok 4 Fast Reasoning for optimization
-    "name": "grok-4-fast-reasoning"
+    "name": "grok-4-fast-reasoning",
 }
 
 # 🎯🎯🎯 PROFIT TARGET CONFIGURATION 🎯🎯🎯
@@ -114,8 +116,8 @@ TARGET_RETURN = 50  # Target return in % (50 = 50%)
 CONDA_ENV = "tflow"  # Your conda environment
 MAX_DEBUG_ITERATIONS = 10  # Max times to try debugging before moving to optimization
 MAX_OPTIMIZATION_ITERATIONS = 10  # Max times to KEEP OPTIMIZING until target is hit! 🎯
-                                  # Agent runs this many optimization loops trying to achieve TARGET_RETURN
-                                  # Higher = more chances to hit target, but takes longer
+# Agent runs this many optimization loops trying to achieve TARGET_RETURN
+# Higher = more chances to hit target, but takes longer
 EXECUTION_TIMEOUT = 300  # 5 minutes
 
 # DeepSeek Configuration
@@ -141,8 +143,17 @@ PROCESSED_IDEAS_LOG = DATA_DIR / "processed_ideas.log"
 IDEAS_FILE = DATA_DIR / "ideas.txt"
 
 # Create main directories if they don't exist
-for dir in [DATA_DIR, TODAY_DIR, RESEARCH_DIR, BACKTEST_DIR, PACKAGE_DIR,
-            FINAL_BACKTEST_DIR, OPTIMIZATION_DIR, CHARTS_DIR, EXECUTION_DIR]:
+for dir in [
+    DATA_DIR,
+    TODAY_DIR,
+    RESEARCH_DIR,
+    BACKTEST_DIR,
+    PACKAGE_DIR,
+    FINAL_BACKTEST_DIR,
+    OPTIMIZATION_DIR,
+    CHARTS_DIR,
+    EXECUTION_DIR,
+]:
     dir.mkdir(parents=True, exist_ok=True)
 
 # All prompts (same as v1)
@@ -434,6 +445,7 @@ Return the COMPLETE optimized code with Moon Dev themed comments explaining what
 ONLY SEND BACK CODE, NO OTHER TEXT.
 """
 
+
 def parse_return_from_output(stdout: str) -> float:
     """
     Extract the Return [%] from backtest output
@@ -441,7 +453,7 @@ def parse_return_from_output(stdout: str) -> float:
     """
     try:
         # Look for pattern like "Return [%]                            45.67"
-        match = re.search(r'Return \[%\]\s+([-\d.]+)', stdout)
+        match = re.search(r"Return \[%\]\s+([-\d.]+)", stdout)
         if match:
             return_pct = float(match.group(1))
             cprint(f"📊 Extracted return: {return_pct}%", "cyan")
@@ -453,6 +465,7 @@ def parse_return_from_output(stdout: str) -> float:
         cprint(f"❌ Error parsing return: {str(e)}", "red")
         return None
 
+
 def execute_backtest(file_path: str, strategy_name: str) -> dict:
     """
     Execute a backtest file in conda environment and capture output
@@ -461,101 +474,98 @@ def execute_backtest(file_path: str, strategy_name: str) -> dict:
     cprint(f"\n🚀 Executing backtest: {strategy_name}", "cyan")
     cprint(f"📂 File: {file_path}", "cyan")
     cprint(f"🐍 Using conda env: {CONDA_ENV}", "cyan")
-    
+
     if not os.path.exists(file_path):
         raise FileNotFoundError(f"File not found: {file_path}")
-    
+
     # Build the command
-    cmd = [
-        "conda", "run", "-n", CONDA_ENV,
-        "python", str(file_path)
-    ]
-    
+    cmd = ["conda", "run", "-n", CONDA_ENV, "python", str(file_path)]
+
     start_time = datetime.now()
-    
+
     # Run the backtest
-    result = subprocess.run(
-        cmd,
-        capture_output=True,
-        text=True,
-        timeout=EXECUTION_TIMEOUT
-    )
-    
+    result = subprocess.run(cmd, capture_output=True, text=True, timeout=EXECUTION_TIMEOUT)
+
     execution_time = (datetime.now() - start_time).total_seconds()
-    
+
     output = {
         "success": result.returncode == 0,
         "return_code": result.returncode,
         "stdout": result.stdout,
         "stderr": result.stderr,
         "execution_time": execution_time,
-        "timestamp": datetime.now().isoformat()
+        "timestamp": datetime.now().isoformat(),
     }
-    
+
     # Save execution results
     result_file = EXECUTION_DIR / f"{strategy_name}_{datetime.now().strftime('%H%M%S')}.json"
-    with open(result_file, 'w') as f:
+    with open(result_file, "w") as f:
         json.dump(output, f, indent=2)
-    
+
     # Print results
-    if output['success']:
+    if output["success"]:
         cprint(f"✅ Backtest executed successfully in {execution_time:.2f}s!", "green")
-        if output['stdout']:
+        if output["stdout"]:
             cprint("\n📊 BACKTEST RESULTS:", "green")
-            print(output['stdout'])
+            print(output["stdout"])
     else:
         cprint(f"❌ Backtest failed with return code: {output['return_code']}", "red")
-        if output['stderr']:
+        if output["stderr"]:
             cprint("\n🐛 ERRORS:", "red")
-            print(output['stderr'])
-    
+            print(output["stderr"])
+
     return output
+
 
 def parse_execution_error(execution_result: dict) -> str:
     """Extract meaningful error message for debug agent"""
-    if execution_result.get('stderr'):
-        stderr = execution_result['stderr'].strip()
-        
+    if execution_result.get("stderr"):
+        stderr = execution_result["stderr"].strip()
+
         # Return the full stderr for better debugging context
         # This includes the full Python traceback, not just the conda error
         return stderr
-    return execution_result.get('error', 'Unknown error')
+    return execution_result.get("error", "Unknown error")
+
 
 def get_idea_hash(idea: str) -> str:
     """Generate a unique hash for an idea to track processing status"""
     # Create a hash of the idea to use as a unique identifier
-    return hashlib.md5(idea.encode('utf-8')).hexdigest()
+    return hashlib.md5(idea.encode("utf-8")).hexdigest()
+
 
 def is_idea_processed(idea: str) -> bool:
     """Check if an idea has already been processed"""
     if not PROCESSED_IDEAS_LOG.exists():
         return False
-        
+
     idea_hash = get_idea_hash(idea)
-    
-    with open(PROCESSED_IDEAS_LOG, 'r') as f:
-        processed_hashes = [line.strip().split(',')[0] for line in f if line.strip()]
-        
+
+    with open(PROCESSED_IDEAS_LOG, "r") as f:
+        processed_hashes = [line.strip().split(",")[0] for line in f if line.strip()]
+
     return idea_hash in processed_hashes
+
 
 def log_processed_idea(idea: str, strategy_name: str = "Unknown") -> None:
     """Log an idea as processed with timestamp and strategy name"""
     idea_hash = get_idea_hash(idea)
     timestamp = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
-    
+
     # Create the log file if it doesn't exist
     if not PROCESSED_IDEAS_LOG.exists():
         PROCESSED_IDEAS_LOG.parent.mkdir(parents=True, exist_ok=True)
-        with open(PROCESSED_IDEAS_LOG, 'w') as f:
+        with open(PROCESSED_IDEAS_LOG, "w") as f:
             f.write("# Moon Dev's RBI AI - Processed Ideas Log 🌙\n")
             f.write("# Format: hash,timestamp,strategy_name,idea_snippet\n")
-    
+
     # Add the entry
-    idea_snippet = idea[:50].replace(',', ';') + ('...' if len(idea) > 50 else '')
-    with open(PROCESSED_IDEAS_LOG, 'a') as f:
+    idea_snippet = idea[:50].replace(",", ";") + ("..." if len(idea) > 50 else "")
+    with open(PROCESSED_IDEAS_LOG, "a") as f:
         f.write(f"{idea_hash},{timestamp},{strategy_name},{idea_snippet}\n")
-    
+
     cprint(f"📝 Logged processed idea: {strategy_name}", "green")
+
 
 # Include all the original functions from v1
 def init_deepseek_client():
@@ -565,65 +575,65 @@ def init_deepseek_client():
         if not deepseek_key:
             cprint("⚠️ DEEPSEEK_KEY not found - DeepSeek models will not be available", "yellow")
             return None
-            
-        client = openai.OpenAI(
-            api_key=deepseek_key,
-            base_url=DEEPSEEK_BASE_URL
-        )
+
+        client = openai.OpenAI(api_key=deepseek_key, base_url=DEEPSEEK_BASE_URL)
         return client
     except Exception as e:
         print(f"❌ Error initializing DeepSeek client: {str(e)}")
         return None
 
+
 def has_nan_results(execution_result: dict) -> bool:
     """Check if backtest results contain NaN values indicating no trades"""
-    if not execution_result.get('success'):
+    if not execution_result.get("success"):
         return False
-        
-    stdout = execution_result.get('stdout', '')
-    
+
+    stdout = execution_result.get("stdout", "")
+
     # Look for indicators of no trades/NaN results
     nan_indicators = [
-        '# Trades                                    0',
-        'Win Rate [%]                              NaN',
-        'Exposure Time [%]                         0.0',
-        'Return [%]                                0.0'
+        "# Trades                                    0",
+        "Win Rate [%]                              NaN",
+        "Exposure Time [%]                         0.0",
+        "Return [%]                                0.0",
     ]
-    
+
     # Check if multiple NaN indicators are present
     nan_count = sum(1 for indicator in nan_indicators if indicator in stdout)
     return nan_count >= 2  # If 2+ indicators, likely no trades taken
 
+
 def analyze_no_trades_issue(execution_result: dict) -> str:
     """Analyze why strategy shows signals but no trades"""
-    stdout = execution_result.get('stdout', '')
-    
+    stdout = execution_result.get("stdout", "")
+
     # Check if entry signals are being printed but no trades executed
-    if 'ENTRY SIGNAL' in stdout and '# Trades                                    0' in stdout:
+    if "ENTRY SIGNAL" in stdout and "# Trades                                    0" in stdout:
         return "Strategy is generating entry signals but self.buy() calls are not executing. This usually means: 1) Position sizing issues (size parameter invalid), 2) Insufficient cash/equity, 3) Logic preventing buy execution, or 4) Missing actual self.buy() call in the code. The strategy prints signals but never calls self.buy()."
-    
-    elif '# Trades                                    0' in stdout:
+
+    elif "# Trades                                    0" in stdout:
         return "Strategy executed but took 0 trades, resulting in NaN values. The entry conditions are likely too restrictive or there are logic errors preventing trade execution."
-    
+
     return "Strategy executed but took 0 trades, resulting in NaN values. Please adjust the strategy logic to actually generate trading signals and take trades."
+
 
 def chat_with_model(system_prompt, user_content, model_config):
     """Chat with AI model using model factory"""
     model = model_factory.get_model(model_config["type"], model_config["name"])
     if not model:
-        raise ValueError(f"🚨 Could not initialize {model_config['type']} {model_config['name']} model!")
+        raise ValueError(
+            f"🚨 Could not initialize {model_config['type']} {model_config['name']} model!"
+        )
 
     cprint(f"🤖 Using {model_config['type']} model: {model_config['name']}", "cyan")
-    
+
     if model_config["type"] == "ollama":
         response = model.generate_response(
-            system_prompt=system_prompt,
-            user_content=user_content,
-            temperature=AI_TEMPERATURE
+            system_prompt=system_prompt, user_content=user_content, temperature=AI_TEMPERATURE
         )
         if isinstance(response, str):
             return response
-        if hasattr(response, 'content'):
+        if hasattr(response, "content"):
             return response.content
         return str(response)
     else:
@@ -631,42 +641,46 @@ def chat_with_model(system_prompt, user_content, model_config):
             system_prompt=system_prompt,
             user_content=user_content,
             temperature=AI_TEMPERATURE,
-            max_tokens=AI_MAX_TOKENS
+            max_tokens=AI_MAX_TOKENS,
         )
         if not response:
             raise ValueError("Model returned None response")
         return response.content
 
+
 def clean_model_output(output, content_type="text"):
     """Clean model output by removing thinking tags and extracting code from markdown"""
     cleaned_output = output
-    
+
     # Remove thinking tags if present
     if "<think>" in output and "</think>" in output:
         clean_content = output.split("</think>")[-1].strip()
         if not clean_content:
             import re
-            clean_content = re.sub(r'<think>.*?</think>', '', output, flags=re.DOTALL).strip()
+
+            clean_content = re.sub(r"<think>.*?</think>", "", output, flags=re.DOTALL).strip()
         if clean_content:
             cleaned_output = clean_content
-    
+
     # Extract code from markdown if needed
     if content_type == "code" and "```" in cleaned_output:
         try:
             import re
-            code_blocks = re.findall(r'```python\n(.*?)\n```', cleaned_output, re.DOTALL)
+
+            code_blocks = re.findall(r"```python\n(.*?)\n```", cleaned_output, re.DOTALL)
             if not code_blocks:
-                code_blocks = re.findall(r'```(?:python)?\n(.*?)\n```', cleaned_output, re.DOTALL)
+                code_blocks = re.findall(r"```(?:python)?\n(.*?)\n```", cleaned_output, re.DOTALL)
             if code_blocks:
                 cleaned_output = "\n\n".join(code_blocks)
         except Exception as e:
             cprint(f"❌ Error extracting code: {str(e)}", "red")
-    
+
     return cleaned_output
+
 
 def animate_progress(agent_name, stop_event):
     """Fun animation while AI is thinking"""
-    spinners = ['🌑', '🌒', '🌓', '🌔', '🌕', '🌖', '🌗', '🌘']
+    spinners = ["🌑", "🌒", "🌓", "🌔", "🌕", "🌖", "🌗", "🌘"]
     messages = [
         "brewing coffee ☕️",
         "studying charts 📊",
@@ -677,24 +691,25 @@ def animate_progress(agent_name, stop_event):
         "making magic ✨",
         "trading secrets 🤫",
         "Moon Dev approved 🌙",
-        "to the moon! 🚀"
+        "to the moon! 🚀",
     ]
-    
+
     spinner = itertools.cycle(spinners)
     message = itertools.cycle(messages)
-    
+
     while not stop_event.is_set():
-        sys.stdout.write(f'\r{next(spinner)} {agent_name} is {next(message)}...')
+        sys.stdout.write(f"\r{next(spinner)} {agent_name} is {next(message)}...")
         sys.stdout.flush()
         time.sleep(0.5)
-    sys.stdout.write('\r' + ' ' * 50 + '\r')
+    sys.stdout.write("\r" + " " * 50 + "\r")
     sys.stdout.flush()
+
 
 def run_with_animation(func, agent_name, *args, **kwargs):
     """Run a function with a fun loading animation"""
     stop_animation = threading.Event()
     animation_thread = threading.Thread(target=animate_progress, args=(agent_name, stop_animation))
-    
+
     try:
         animation_thread.start()
         result = func(*args, **kwargs)
@@ -703,22 +718,19 @@ def run_with_animation(func, agent_name, *args, **kwargs):
         stop_animation.set()
         animation_thread.join()
 
+
 # Include all the other functions from v1 (research, backtest, package, etc.)
 def research_strategy(content):
     """Research AI: Analyzes and creates trading strategy"""
     cprint("\n🔍 Starting Research AI...", "cyan")
-    
+
     output = run_with_animation(
-        chat_with_model,
-        "Research AI",
-        RESEARCH_PROMPT, 
-        content,
-        RESEARCH_CONFIG
+        chat_with_model, "Research AI", RESEARCH_PROMPT, content, RESEARCH_CONFIG
     )
-    
+
     if output:
         output = clean_model_output(output, "text")
-        
+
         # Extract strategy name
         strategy_name = "UnknownStrategy"
         if "STRATEGY_NAME:" in output:
@@ -728,93 +740,99 @@ def research_strategy(content):
                     strategy_name = name_section.split("\n\n")[0].strip()
                 else:
                     strategy_name = name_section.split("\n")[0].strip()
-                    
-                strategy_name = re.sub(r'[^\w\s-]', '', strategy_name)
-                strategy_name = re.sub(r'[\s]+', '', strategy_name)
-                
+
+                strategy_name = re.sub(r"[^\w\s-]", "", strategy_name)
+                strategy_name = re.sub(r"[\s]+", "", strategy_name)
+
                 cprint(f"✅ Strategy name: {strategy_name}", "green")
             except Exception as e:
                 cprint(f"⚠️ Error extracting strategy name: {str(e)}", "yellow")
-        
+
         # Save research output
         filepath = RESEARCH_DIR / f"{strategy_name}_strategy.txt"
-        with open(filepath, 'w') as f:
+        with open(filepath, "w") as f:
             f.write(output)
         cprint(f"📝 Research saved to {filepath}", "green")
         return output, strategy_name
     return None, None
 
+
 def create_backtest(strategy, strategy_name="UnknownStrategy"):
     """Backtest AI: Creates backtest implementation"""
     cprint("\n📊 Starting Backtest AI...", "cyan")
-    
+
     output = run_with_animation(
         chat_with_model,
         "Backtest AI",
         BACKTEST_PROMPT,
         f"Create a backtest for this strategy:\n\n{strategy}",
-        BACKTEST_CONFIG
+        BACKTEST_CONFIG,
     )
-    
+
     if output:
         output = clean_model_output(output, "code")
-        
+
         filepath = BACKTEST_DIR / f"{strategy_name}_BT.py"
-        with open(filepath, 'w') as f:
+        with open(filepath, "w") as f:
             f.write(output)
         cprint(f"🔥 Backtest saved to {filepath}", "green")
         return output
     return None
 
+
 def package_check(backtest_code, strategy_name="UnknownStrategy"):
     """Package AI: Ensures correct indicator packages are used"""
     cprint("\n📦 Starting Package AI...", "cyan")
-    
+
     output = run_with_animation(
         chat_with_model,
         "Package AI",
         PACKAGE_PROMPT,
         f"Check and fix indicator packages in this code:\n\n{backtest_code}",
-        PACKAGE_CONFIG
+        PACKAGE_CONFIG,
     )
-    
+
     if output:
         output = clean_model_output(output, "code")
-        
+
         filepath = PACKAGE_DIR / f"{strategy_name}_PKG.py"
-        with open(filepath, 'w') as f:
+        with open(filepath, "w") as f:
             f.write(output)
         cprint(f"📦 Package-fixed code saved to {filepath}", "green")
         return output
     return None
 
+
 def debug_backtest(backtest_code, error_message, strategy_name="UnknownStrategy", iteration=1):
     """Debug AI: Fixes technical issues in backtest code"""
     cprint(f"\n🔧 Starting Debug AI (iteration {iteration})...", "cyan")
     cprint(f"🐛 Error to fix: {error_message}", "yellow")
-    
+
     # Create debug prompt with specific error
     debug_prompt_with_error = DEBUG_PROMPT.format(error_message=error_message)
-    
+
     output = run_with_animation(
         chat_with_model,
         "Debug AI",
         debug_prompt_with_error,
         f"Fix this backtest code:\n\n{backtest_code}",
-        DEBUG_CONFIG
+        DEBUG_CONFIG,
     )
-    
+
     if output:
         output = clean_model_output(output, "code")
-        
+
         filepath = FINAL_BACKTEST_DIR / f"{strategy_name}_BTFinal_v{iteration}.py"
-        with open(filepath, 'w') as f:
+        with open(filepath, "w") as f:
             f.write(output)
         cprint(f"🔧 Debugged code saved to {filepath}", "green")
         return output
     return None
 
-def optimize_strategy(backtest_code, current_return, target_return, strategy_name="UnknownStrategy", iteration=1):
+
+def optimize_strategy(
+    backtest_code, current_return, target_return, strategy_name="UnknownStrategy", iteration=1
+):
     """Optimization AI: Improves strategy to hit target return"""
     cprint(f"\n🎯 Starting Optimization AI (iteration {iteration})...", "cyan")
     cprint(f"📊 Current Return: {current_return}%", "yellow")
@@ -823,8 +841,7 @@ def optimize_strategy(backtest_code, current_return, target_return, strategy_nam
 
     # Create optimization prompt with current performance
     optimize_prompt_with_stats = OPTIMIZE_PROMPT.format(
-        current_return=current_return,
-        target_return=target_return
+        current_return=current_return, target_return=target_return
     )
 
     output = run_with_animation(
@@ -832,18 +849,19 @@ def optimize_strategy(backtest_code, current_return, target_return, strategy_nam
         "Optimization AI",
         optimize_prompt_with_stats,
         f"Optimize this backtest code to hit the target:\n\n{backtest_code}",
-        OPTIMIZE_CONFIG
+        OPTIMIZE_CONFIG,
     )
 
     if output:
         output = clean_model_output(output, "code")
 
         filepath = OPTIMIZATION_DIR / f"{strategy_name}_OPT_v{iteration}.py"
-        with open(filepath, 'w') as f:
+        with open(filepath, "w") as f:
             f.write(output)
         cprint(f"🎯 Optimized code saved to {filepath}", "green")
         return output
     return None
+
 
 def process_trading_idea_with_execution(idea: str) -> None:
     """
@@ -854,78 +872,79 @@ def process_trading_idea_with_execution(idea: str) -> None:
     print("🎯 Now with OPTIMIZATION LOOP!")
     print(f"🎯 Target Return: {TARGET_RETURN}%")
     print(f"📝 Processing idea: {idea[:100]}...")
-    
+
     # Phase 1: Research
     print("\n🧪 Phase 1: Research")
     # For this example, using the idea directly
     strategy, strategy_name = research_strategy(idea)
-    
+
     if not strategy:
         raise ValueError("Research phase failed - no strategy generated")
-        
+
     print(f"🏷️ Strategy Name: {strategy_name}")
-    
+
     # Log the idea as processed once we have a strategy name
     log_processed_idea(idea, strategy_name)
-    
+
     # Phase 2: Backtest
     print("\n📈 Phase 2: Backtest")
     backtest = create_backtest(strategy, strategy_name)
-    
+
     if not backtest:
         raise ValueError("Backtest phase failed - no code generated")
-    
+
     # Phase 3: Package Check
     print("\n📦 Phase 3: Package Check")
     package_checked = package_check(backtest, strategy_name)
-    
+
     if not package_checked:
         raise ValueError("Package check failed - no fixed code generated")
-    
+
     # Save the package-checked version
     package_file = PACKAGE_DIR / f"{strategy_name}_PKG.py"
-    
+
     # Phase 4: EXECUTION LOOP! 🔄
     print("\n🔄 Phase 4: Execution Loop")
-    
+
     debug_iteration = 0
     current_code = package_checked
     current_file = package_file
     error_history = []  # Track previous errors to detect loops
-    
+
     while debug_iteration < MAX_DEBUG_ITERATIONS:
         # Execute the current code
         print(f"\n🚀 Execution attempt {debug_iteration + 1}/{MAX_DEBUG_ITERATIONS}")
         execution_result = execute_backtest(current_file, strategy_name)
-        
-        if execution_result['success']:
+
+        if execution_result["success"]:
             # Check if results have NaN values (no trades taken)
             if has_nan_results(execution_result):
                 print("\n⚠️ BACKTEST EXECUTED BUT NO TRADES TAKEN (NaN results)")
                 print("🔧 Sending to Debug AI to fix strategy logic...")
-                
+
                 # Analyze the specific no-trades issue
                 error_message = analyze_no_trades_issue(execution_result)
-                
+
                 debug_iteration += 1
-                
+
                 if debug_iteration < MAX_DEBUG_ITERATIONS:
                     debugged_code = debug_backtest(
-                        current_code, 
-                        error_message, 
-                        strategy_name, 
-                        debug_iteration
+                        current_code, error_message, strategy_name, debug_iteration
                     )
-                    
+
                     if not debugged_code:
                         raise ValueError("Debug AI failed to generate fixed code")
-                        
+
                     current_code = debugged_code
-                    current_file = FINAL_BACKTEST_DIR / f"{strategy_name}_BTFinal_v{debug_iteration}.py"
+                    current_file = (
+                        FINAL_BACKTEST_DIR / f"{strategy_name}_BTFinal_v{debug_iteration}.py"
+                    )
                     print("🔄 Retrying with debugged code...")
                     continue
                 else:
-                    print(f"\n❌ Max debug iterations ({MAX_DEBUG_ITERATIONS}) reached - strategy still not taking trades")
+                    print(
+                        f"\n❌ Max debug iterations ({MAX_DEBUG_ITERATIONS}) reached - strategy still not taking trades"
+                    )
                     print("🔄 Moving to next idea...")
                     return  # Move to next idea instead of crashing
             else:
@@ -933,12 +952,12 @@ def process_trading_idea_with_execution(idea: str) -> None:
                 print("\n🎉 BACKTEST EXECUTED SUCCESSFULLY WITH TRADES!")
 
                 # Extract the return %
-                current_return = parse_return_from_output(execution_result['stdout'])
+                current_return = parse_return_from_output(execution_result["stdout"])
 
                 if current_return is None:
                     print("⚠️ Could not parse return % - saving as working version")
                     final_file = FINAL_BACKTEST_DIR / f"{strategy_name}_BTFinal_WORKING.py"
-                    with open(final_file, 'w') as f:
+                    with open(final_file, "w") as f:
                         f.write(current_code)
                     print(f"✅ Final working backtest saved to: {final_file}")
                     break
@@ -953,8 +972,10 @@ def process_trading_idea_with_execution(idea: str) -> None:
                     print(f"🎉 Strategy returned {current_return}% (target was {TARGET_RETURN}%)")
 
                     # Save as TARGET_HIT version
-                    final_file = OPTIMIZATION_DIR / f"{strategy_name}_TARGET_HIT_{current_return}pct.py"
-                    with open(final_file, 'w') as f:
+                    final_file = (
+                        OPTIMIZATION_DIR / f"{strategy_name}_TARGET_HIT_{current_return}pct.py"
+                    )
+                    with open(final_file, "w") as f:
                         f.write(current_code)
 
                     print(f"✅ Target-hitting backtest saved to: {final_file}")
@@ -966,8 +987,11 @@ def process_trading_idea_with_execution(idea: str) -> None:
                     print(f"🎯 Starting OPTIMIZATION LOOP...")
 
                     # Save the working version
-                    working_file = FINAL_BACKTEST_DIR / f"{strategy_name}_BTFinal_WORKING_{current_return}pct.py"
-                    with open(working_file, 'w') as f:
+                    working_file = (
+                        FINAL_BACKTEST_DIR
+                        / f"{strategy_name}_BTFinal_WORKING_{current_return}pct.py"
+                    )
+                    with open(working_file, "w") as f:
                         f.write(current_code)
                     print(f"💾 Saved working version: {working_file}")
 
@@ -982,7 +1006,9 @@ def process_trading_idea_with_execution(idea: str) -> None:
 
                     while optimization_iteration < MAX_OPTIMIZATION_ITERATIONS:
                         optimization_iteration += 1
-                        print(f"\n🔄 Optimization attempt {optimization_iteration}/{MAX_OPTIMIZATION_ITERATIONS}")
+                        print(
+                            f"\n🔄 Optimization attempt {optimization_iteration}/{MAX_OPTIMIZATION_ITERATIONS}"
+                        )
 
                         # Optimize the strategy
                         optimized_code = optimize_strategy(
@@ -990,7 +1016,7 @@ def process_trading_idea_with_execution(idea: str) -> None:
                             best_return,
                             TARGET_RETURN,
                             strategy_name,
-                            optimization_iteration
+                            optimization_iteration,
                         )
 
                         if not optimized_code:
@@ -998,10 +1024,12 @@ def process_trading_idea_with_execution(idea: str) -> None:
                             break
 
                         # Save and execute the optimized version
-                        opt_file = OPTIMIZATION_DIR / f"{strategy_name}_OPT_v{optimization_iteration}.py"
+                        opt_file = (
+                            OPTIMIZATION_DIR / f"{strategy_name}_OPT_v{optimization_iteration}.py"
+                        )
                         opt_result = execute_backtest(opt_file, strategy_name)
 
-                        if not opt_result['success']:
+                        if not opt_result["success"]:
                             print(f"⚠️ Optimized code failed to execute, trying again...")
                             continue
 
@@ -1010,7 +1038,7 @@ def process_trading_idea_with_execution(idea: str) -> None:
                             continue
 
                         # Parse the new return
-                        new_return = parse_return_from_output(opt_result['stdout'])
+                        new_return = parse_return_from_output(opt_result["stdout"])
 
                         if new_return is None:
                             print(f"⚠️ Could not parse return, trying again...")
@@ -1023,20 +1051,31 @@ def process_trading_idea_with_execution(idea: str) -> None:
 
                         # Check if we improved
                         if new_return > best_return:
-                            print(f"✅ IMPROVEMENT! Return increased by {new_return - best_return:.2f}%")
+                            print(
+                                f"✅ IMPROVEMENT! Return increased by {new_return - best_return:.2f}%"
+                            )
                             best_return = new_return
                             best_code = optimized_code
-                            optimization_code = optimized_code  # Use improved version for next iteration
+                            optimization_code = (
+                                optimized_code  # Use improved version for next iteration
+                            )
 
                             # Did we hit the target?
                             if new_return >= TARGET_RETURN:
-                                print("\n🚀🚀🚀 TARGET RETURN ACHIEVED THROUGH OPTIMIZATION! 🚀🚀🚀")
-                                print(f"🎉 Strategy returned {new_return}% (target was {TARGET_RETURN}%)")
+                                print(
+                                    "\n🚀🚀🚀 TARGET RETURN ACHIEVED THROUGH OPTIMIZATION! 🚀🚀🚀"
+                                )
+                                print(
+                                    f"🎉 Strategy returned {new_return}% (target was {TARGET_RETURN}%)"
+                                )
                                 print(f"💪 Took {optimization_iteration} optimization iterations!")
 
                                 # Save as TARGET_HIT version
-                                final_file = OPTIMIZATION_DIR / f"{strategy_name}_TARGET_HIT_{new_return}pct.py"
-                                with open(final_file, 'w') as f:
+                                final_file = (
+                                    OPTIMIZATION_DIR
+                                    / f"{strategy_name}_TARGET_HIT_{new_return}pct.py"
+                                )
+                                with open(final_file, "w") as f:
                                     f.write(best_code)
 
                                 print(f"✅ Target-hitting backtest saved to: {final_file}")
@@ -1045,54 +1084,60 @@ def process_trading_idea_with_execution(idea: str) -> None:
                             print(f"⚠️ No improvement. Trying different optimization approach...")
 
                     # Maxed out optimization attempts
-                    print(f"\n⚠️ Reached max optimization iterations ({MAX_OPTIMIZATION_ITERATIONS})")
+                    print(
+                        f"\n⚠️ Reached max optimization iterations ({MAX_OPTIMIZATION_ITERATIONS})"
+                    )
                     print(f"📊 Best return achieved: {best_return}% (target was {TARGET_RETURN}%)")
                     print(f"📈 Gap remaining: {TARGET_RETURN - best_return}%")
 
                     # Save best version
                     best_file = OPTIMIZATION_DIR / f"{strategy_name}_BEST_{best_return}pct.py"
-                    with open(best_file, 'w') as f:
+                    with open(best_file, "w") as f:
                         f.write(best_code)
                     print(f"💾 Saved best version: {best_file}")
                     return  # Move to next idea
-            
+
         else:
             # Extract error and debug
             error_message = parse_execution_error(execution_result)
             print(f"\n🐛 Execution failed with error: {error_message}")
-            
+
             # Check for repeated errors (infinite loop detection)
-            error_signature = error_message.split('\n')[-1] if '\n' in error_message else error_message
+            error_signature = (
+                error_message.split("\n")[-1] if "\n" in error_message else error_message
+            )
             if error_signature in error_history:
                 print(f"\n🔄 DETECTED REPEATED ERROR: {error_signature}")
                 print("🛑 Breaking loop to prevent infinite debugging")
-                raise ValueError(f"Repeated error detected after {debug_iteration + 1} attempts: {error_signature}")
-            
+                raise ValueError(
+                    f"Repeated error detected after {debug_iteration + 1} attempts: {error_signature}"
+                )
+
             error_history.append(error_signature)
             debug_iteration += 1
-            
+
             if debug_iteration < MAX_DEBUG_ITERATIONS:
                 # Debug the code
                 print(f"\n🔧 Sending to Debug AI (attempt {debug_iteration})...")
                 debugged_code = debug_backtest(
-                    current_code, 
-                    error_message, 
-                    strategy_name, 
-                    debug_iteration
+                    current_code, error_message, strategy_name, debug_iteration
                 )
-                
+
                 if not debugged_code:
                     raise ValueError("Debug AI failed to generate fixed code")
-                    
+
                 current_code = debugged_code
                 current_file = FINAL_BACKTEST_DIR / f"{strategy_name}_BTFinal_v{debug_iteration}.py"
                 print("🔄 Retrying with debugged code...")
             else:
-                print(f"\n❌ Max debug iterations ({MAX_DEBUG_ITERATIONS}) reached - could not fix code")
+                print(
+                    f"\n❌ Max debug iterations ({MAX_DEBUG_ITERATIONS}) reached - could not fix code"
+                )
                 print("🔄 Moving to next idea...")
                 return  # Move to next idea instead of crashing
-    
+
     print("\n✨ Processing complete!")
+
 
 def main():
     """Main function - process ideas from file"""
@@ -1106,60 +1151,65 @@ def main():
 
     cprint(f"\n📂 RBI v3.0 Data Directory: {DATA_DIR}", "magenta")
     cprint(f"📝 Reading ideas from: {IDEAS_FILE}", "magenta")
-    
+
     # Use the ideas file from original RBI directory
     ideas_file = IDEAS_FILE
-    
+
     if not ideas_file.exists():
         cprint("❌ ideas.txt not found! Creating template...", "red")
         ideas_file.parent.mkdir(parents=True, exist_ok=True)
-        with open(ideas_file, 'w') as f:
+        with open(ideas_file, "w") as f:
             f.write("# Add your trading ideas here (one per line)\n")
             f.write("# Can be YouTube URLs, PDF links, or text descriptions\n")
             f.write("# Lines starting with # are ignored\n\n")
-            f.write("Create a simple RSI strategy that buys when RSI < 30 and sells when RSI > 70\n")
+            f.write(
+                "Create a simple RSI strategy that buys when RSI < 30 and sells when RSI > 70\n"
+            )
             f.write("Momentum strategy using 20/50 SMA crossover with volume confirmation\n")
         cprint(f"📝 Created template ideas.txt at: {ideas_file}", "yellow")
         cprint("💡 Add your trading ideas and run again!", "yellow")
         return
-        
-    with open(ideas_file, 'r') as f:
-        ideas = [line.strip() for line in f if line.strip() and not line.startswith('#')]
-        
+
+    with open(ideas_file, "r") as f:
+        ideas = [line.strip() for line in f if line.strip() and not line.startswith("#")]
+
     total_ideas = len(ideas)
     cprint(f"\n🎯 Found {total_ideas} trading ideas to process", "cyan")
-    
+
     # Count how many ideas have already been processed
     already_processed = sum(1 for idea in ideas if is_idea_processed(idea))
     new_ideas = total_ideas - already_processed
-    
+
     cprint(f"🔍 Status: {already_processed} already processed, {new_ideas} new ideas", "cyan")
-    
+
     for i, idea in enumerate(ideas, 1):
         # Check if this idea has already been processed
         if is_idea_processed(idea):
             cprint(f"\n{'='*50}", "red")
-            cprint(f"⏭️  SKIPPING idea {i}/{total_ideas} - ALREADY PROCESSED", "red", attrs=['reverse'])
-            idea_snippet = idea[:100] + ('...' if len(idea) > 100 else '')
+            cprint(
+                f"⏭️  SKIPPING idea {i}/{total_ideas} - ALREADY PROCESSED", "red", attrs=["reverse"]
+            )
+            idea_snippet = idea[:100] + ("..." if len(idea) > 100 else "")
             cprint(f"📝 Idea: {idea_snippet}", "red")
             cprint(f"{'='*50}\n", "red")
             continue
-        
+
         cprint(f"\n{'='*50}", "yellow")
         cprint(f"🌙 Processing idea {i}/{total_ideas}", "cyan")
         cprint(f"📝 Idea: {idea[:100]}{'...' if len(idea) > 100 else ''}", "yellow")
         cprint(f"{'='*50}\n", "yellow")
-        
+
         process_trading_idea_with_execution(idea)
-        
+
         cprint(f"\n{'='*50}", "green")
         cprint(f"✅ Completed idea {i}/{total_ideas}", "green")
         cprint(f"{'='*50}\n", "green")
-        
+
         # Break between ideas
         if i < total_ideas:
             cprint("😴 Taking a break before next idea...", "yellow")
             time.sleep(5)
+
 
 if __name__ == "__main__":
     main()

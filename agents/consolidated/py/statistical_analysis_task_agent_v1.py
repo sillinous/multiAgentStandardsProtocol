@@ -43,7 +43,11 @@ class StatisticalAnalysisTaskAgent(BaseAgent):
     and maximum reusability across APQC categories.
     """
 
-    def __init__(self, agent_id: str = "statistical_analysis_task_agent", config: Optional[Dict[str, Any]] = None):
+    def __init__(
+        self,
+        agent_id: str = "statistical_analysis_task_agent",
+        config: Optional[Dict[str, Any]] = None,
+    ):
         """
         Initialize Statistical Analysis Task Agent
 
@@ -54,8 +58,8 @@ class StatisticalAnalysisTaskAgent(BaseAgent):
         super().__init__(
             agent_id=agent_id,
             agent_type="analysis",
-            capabilities=['descriptive_stats', 'correlation_analysis', 'hypothesis_testing'],
-            config=config or {}
+            capabilities=["descriptive_stats", "correlation_analysis", "hypothesis_testing"],
+            config=config or {},
         )
 
         # Agent-specific initialization
@@ -65,24 +69,24 @@ class StatisticalAnalysisTaskAgent(BaseAgent):
             "reusable": True,
             "composable": True,
             "stateless": True,
-            "framework": "APQC 7.0.1"
+            "framework": "APQC 7.0.1",
         }
 
         logger.info(f"Initialized Statistical Analysis Task Agent [{self.agent_id}]")
 
     async def execute_task(self, task: Dict[str, Any]) -> Dict[str, Any]:
         """
-        Execute the analysis task
+                Execute the analysis task
 
-        Args:
-            task: Task parameters containing:
-                - dataset: list
-- analysis_type: string
+                Args:
+                    task: Task parameters containing:
+                        - dataset: list
+        - analysis_type: string
 
-        Returns:
-            Result dictionary containing:
-                - statistics: dict
-- p_values: dict
+                Returns:
+                    Result dictionary containing:
+                        - statistics: dict
+        - p_values: dict
         """
         try:
             logger.info(f"[{self.agent_id}] Executing analysis task")
@@ -102,7 +106,7 @@ class StatisticalAnalysisTaskAgent(BaseAgent):
                 "status": "success",
                 "agent_id": self.agent_id,
                 "timestamp": datetime.utcnow().isoformat(),
-                "result": output
+                "result": output,
             }
 
         except Exception as e:
@@ -111,7 +115,7 @@ class StatisticalAnalysisTaskAgent(BaseAgent):
                 "status": "error",
                 "agent_id": self.agent_id,
                 "timestamp": datetime.utcnow().isoformat(),
-                "error": str(e)
+                "error": str(e),
             }
 
     def _validate_inputs(self, task: Dict[str, Any]) -> None:
@@ -124,7 +128,7 @@ class StatisticalAnalysisTaskAgent(BaseAgent):
         Raises:
             ValueError: If required inputs are missing or invalid
         """
-        required_fields = ['dataset', 'analysis_type']
+        required_fields = ["dataset", "analysis_type"]
 
         for field in required_fields:
             if field not in task:
@@ -149,11 +153,7 @@ class StatisticalAnalysisTaskAgent(BaseAgent):
         logger.info(f"[{self.agent_id}] Executing core logic for analysis")
 
         # Placeholder implementation
-        result = {
-            "executed": True,
-            "task_type": "analysis",
-            "inputs_received": list(task.keys())
-        }
+        result = {"executed": True, "task_type": "analysis", "inputs_received": list(task.keys())}
 
         # Simulate async work
         await asyncio.sleep(0.1)
@@ -177,8 +177,8 @@ class StatisticalAnalysisTaskAgent(BaseAgent):
                 "agent_type": self.agent_type,
                 "level": 5,
                 "category": "analysis",
-                "timestamp": datetime.utcnow().isoformat()
-            }
+                "timestamp": datetime.utcnow().isoformat(),
+            },
         }
 
     async def handle_message(self, message: Dict[str, Any]) -> Dict[str, Any]:
@@ -200,10 +200,7 @@ class StatisticalAnalysisTaskAgent(BaseAgent):
         elif message_type == "capabilities":
             return self.get_capabilities()
         else:
-            return {
-                "status": "error",
-                "error": f"Unknown message type: {message_type}"
-            }
+            return {"status": "error", "error": f"Unknown message type: {message_type}"}
 
     def get_status(self) -> Dict[str, Any]:
         """
@@ -217,7 +214,7 @@ class StatisticalAnalysisTaskAgent(BaseAgent):
             "agent_type": self.agent_type,
             "status": "ready",
             "capabilities": self.capabilities,
-            "metadata": self.metadata
+            "metadata": self.metadata,
         }
 
     def get_capabilities(self) -> Dict[str, Any]:
@@ -230,11 +227,11 @@ class StatisticalAnalysisTaskAgent(BaseAgent):
         return {
             "agent_id": self.agent_id,
             "capabilities": self.capabilities,
-            "inputs": {'dataset': 'list', 'analysis_type': 'string'},
-            "outputs": {'statistics': 'dict', 'p_values': 'dict'},
+            "inputs": {"dataset": "list", "analysis_type": "string"},
+            "outputs": {"statistics": "dict", "p_values": "dict"},
             "level": 5,
             "reusable": True,
-            "composable": True
+            "composable": True,
         }
 
 
@@ -248,7 +245,7 @@ async def main():
     # Example task
     task = {
         # Add example inputs here
-                # "dataset": "example_dataset",
+        # "dataset": "example_dataset",
         # "analysis_type": "example_analysis_type",
     }
 

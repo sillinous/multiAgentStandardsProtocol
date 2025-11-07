@@ -82,88 +82,90 @@ Built with love by Moon Dev 🚀
 
 # 🏦 EXCHANGE SELECTION
 EXCHANGE = "ASTER"  # Options: "ASTER", "HYPERLIQUID", "SOLANA"
-                     # - "ASTER" = Aster DEX futures (supports long/short)
-                     # - "HYPERLIQUID" = HyperLiquid perpetuals (supports long/short)
-                     # - "SOLANA" = Solana on-chain DEX (long only)
+# - "ASTER" = Aster DEX futures (supports long/short)
+# - "HYPERLIQUID" = HyperLiquid perpetuals (supports long/short)
+# - "SOLANA" = Solana on-chain DEX (long only)
 
 # 🌊 AI MODE SELECTION
 USE_SWARM_MODE = True  # True = 6-model swarm consensus (~45-60s per token)
-                        # False = Single model fast execution (~10s per token)
+# False = Single model fast execution (~10s per token)
 
 # 📈 TRADING MODE SETTINGS
 LONG_ONLY = True  # True = Long positions only (works on all exchanges)
-                  # False = Long & Short positions (works on Aster/HyperLiquid)
-                  #
-                  # When LONG_ONLY = True:
-                  #   - "Buy" = Opens/maintains long position
-                  #   - "Sell" = Closes long position (exit to cash)
-                  #   - Can NOT open short positions
-                  #
-                  # When LONG_ONLY = False (Aster/HyperLiquid only):
-                  #   - "Buy" = Opens/maintains long position
-                  #   - "Sell" = Closes long OR opens short position
-                  #   - Full long/short capability
-                  #
-                  # Note: Solana is always LONG_ONLY (exchange limitation)
+# False = Long & Short positions (works on Aster/HyperLiquid)
+#
+# When LONG_ONLY = True:
+#   - "Buy" = Opens/maintains long position
+#   - "Sell" = Closes long position (exit to cash)
+#   - Can NOT open short positions
+#
+# When LONG_ONLY = False (Aster/HyperLiquid only):
+#   - "Buy" = Opens/maintains long position
+#   - "Sell" = Closes long OR opens short position
+#   - Full long/short capability
+#
+# Note: Solana is always LONG_ONLY (exchange limitation)
 
 # 🤖 SINGLE MODEL SETTINGS (only used when USE_SWARM_MODE = False)
-AI_MODEL_TYPE = 'xai'  # Options: 'groq', 'openai', 'claude', 'deepseek', 'xai', 'ollama'
-AI_MODEL_NAME = None   # None = use default, or specify: 'grok-4-fast-reasoning', 'claude-3-5-sonnet-latest', etc.
-AI_TEMPERATURE = 0.7   # Creativity vs precision (0-1)
-AI_MAX_TOKENS = 1024   # Max tokens for AI response
+AI_MODEL_TYPE = "xai"  # Options: 'groq', 'openai', 'claude', 'deepseek', 'xai', 'ollama'
+AI_MODEL_NAME = None  # None = use default, or specify: 'grok-4-fast-reasoning', 'claude-3-5-sonnet-latest', etc.
+AI_TEMPERATURE = 0.7  # Creativity vs precision (0-1)
+AI_MAX_TOKENS = 1024  # Max tokens for AI response
 
 # 💰 POSITION SIZING & RISK MANAGEMENT
-USE_PORTFOLIO_ALLOCATION = False # True = Use AI for portfolio allocation across multiple tokens
-                                 # False = Simple mode - trade single token at MAX_POSITION_PERCENTAGE
+USE_PORTFOLIO_ALLOCATION = False  # True = Use AI for portfolio allocation across multiple tokens
+# False = Simple mode - trade single token at MAX_POSITION_PERCENTAGE
 
-MAX_POSITION_PERCENTAGE = 90     # % of account balance to use as MARGIN per position (0-100)
-                                 # How it works per exchange:
-                                 # - ASTER/HYPERLIQUID: % of balance used as MARGIN (then multiplied by leverage)
-                                 #   Example: $100 balance, 90% = $90 margin
-                                 #            At 90x leverage = $90 × 90 = $8,100 notional position
-                                 # - SOLANA: Uses % of USDC balance directly (no leverage)
-                                 #   Example: 100 USDC, 90% = 90 USDC position
+MAX_POSITION_PERCENTAGE = 90  # % of account balance to use as MARGIN per position (0-100)
+# How it works per exchange:
+# - ASTER/HYPERLIQUID: % of balance used as MARGIN (then multiplied by leverage)
+#   Example: $100 balance, 90% = $90 margin
+#            At 90x leverage = $90 × 90 = $8,100 notional position
+# - SOLANA: Uses % of USDC balance directly (no leverage)
+#   Example: 100 USDC, 90% = 90 USDC position
 
-LEVERAGE = 9                    # Leverage multiplier (1-125x on Aster/HyperLiquid)
-                                 # Higher leverage = bigger position with same margin, higher liquidation risk
-                                 # Examples with $100 margin:
-                                 #           5x = $100 margin → $500 notional position
-                                 #          10x = $100 margin → $1,000 notional position
-                                 #          90x = $100 margin → $9,000 notional position
-                                 # Note: Only applies to Aster and HyperLiquid (ignored on Solana)
+LEVERAGE = 9  # Leverage multiplier (1-125x on Aster/HyperLiquid)
+# Higher leverage = bigger position with same margin, higher liquidation risk
+# Examples with $100 margin:
+#           5x = $100 margin → $500 notional position
+#          10x = $100 margin → $1,000 notional position
+#          90x = $100 margin → $9,000 notional position
+# Note: Only applies to Aster and HyperLiquid (ignored on Solana)
 
 # Stop Loss & Take Profit
-STOP_LOSS_PERCENTAGE = 5.0       # % loss to trigger stop loss exit (e.g., 5.0 = -5%)
-TAKE_PROFIT_PERCENTAGE = 5.0     # % gain to trigger take profit exit (e.g., 5.0 = +5%)
-PNL_CHECK_INTERVAL = 5           # Seconds between P&L checks when position is open
+STOP_LOSS_PERCENTAGE = 5.0  # % loss to trigger stop loss exit (e.g., 5.0 = -5%)
+TAKE_PROFIT_PERCENTAGE = 5.0  # % gain to trigger take profit exit (e.g., 5.0 = +5%)
+PNL_CHECK_INTERVAL = 5  # Seconds between P&L checks when position is open
 
 # Legacy settings (kept for compatibility, not used in new logic)
-usd_size = 25                    # [DEPRECATED] Use MAX_POSITION_PERCENTAGE instead
-max_usd_order_size = 3           # Maximum order chunk size in USD (for Solana chunking)
+usd_size = 25  # [DEPRECATED] Use MAX_POSITION_PERCENTAGE instead
+max_usd_order_size = 3  # Maximum order chunk size in USD (for Solana chunking)
 
 # 📊 MARKET DATA COLLECTION
-DAYSBACK_4_DATA = 3              # Days of historical data to fetch
-DATA_TIMEFRAME = '1H'            # Bar timeframe: 1m, 3m, 5m, 15m, 30m, 1H, 2H, 4H, 6H, 8H, 12H, 1D, 3D, 1W, 1M
-                                 # Current: 3 days @ 1H = ~72 bars
-                                 # For 15-min: '15m' = ~288 bars
-SAVE_OHLCV_DATA = False          # True = save data permanently, False = temp data only
+DAYSBACK_4_DATA = 3  # Days of historical data to fetch
+DATA_TIMEFRAME = (
+    "1H"  # Bar timeframe: 1m, 3m, 5m, 15m, 30m, 1H, 2H, 4H, 6H, 8H, 12H, 1D, 3D, 1W, 1M
+)
+# Current: 3 days @ 1H = ~72 bars
+# For 15-min: '15m' = ~288 bars
+SAVE_OHLCV_DATA = False  # True = save data permanently, False = temp data only
 
 # ⚡ TRADING EXECUTION SETTINGS
-slippage = 199                   # Slippage tolerance (199 = ~2%)
+slippage = 199  # Slippage tolerance (199 = ~2%)
 SLEEP_BETWEEN_RUNS_MINUTES = 15  # Minutes between trading cycles
 
 # 🎯 TOKEN CONFIGURATION
 
 # For SOLANA exchange: Use contract addresses
 USDC_ADDRESS = "EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v"  # Never trade
-SOL_ADDRESS = "So11111111111111111111111111111111111111111"   # Never trade
+SOL_ADDRESS = "So11111111111111111111111111111111111111111"  # Never trade
 EXCLUDED_TOKENS = [USDC_ADDRESS, SOL_ADDRESS]
 
 # ⚠️ IMPORTANT: The swarm will analyze ALL tokens in this list (one at a time)
 # Each token takes ~45-60 seconds in swarm mode
 # Comment out tokens you don't want to trade (add # at start of line)
 MONITORED_TOKENS = [
-    '9BB6NFEcjBCtnNLFko2FqVQBq8HHM13kCyYcdQbgpump',    # 🌬️ FART (DISABLED)
+    "9BB6NFEcjBCtnNLFko2FqVQBq8HHM13kCyYcdQbgpump",  # 🌬️ FART (DISABLED)
     #'DitHyRMQiSDhn5cnKMJV2CDDt6sVct96YrECiM49pump',   # 🏠 housecoin (ACTIVE)
 ]
 
@@ -171,7 +173,7 @@ MONITORED_TOKENS = [
 # ⚠️ IMPORTANT: Only used when EXCHANGE = "ASTER" or "HYPERLIQUID"
 # Add symbols you want to trade (e.g., BTC, ETH, SOL, etc.)
 SYMBOLS = [
-    'BTC',      # Bitcoin
+    "BTC",  # Bitcoin
     #'ETH',     # Ethereum
     #'SOL',     # Solana
 ]
@@ -281,13 +283,16 @@ if project_root not in sys.path:
 # Dynamic exchange imports based on EXCHANGE selection
 if EXCHANGE == "ASTER":
     from src import nice_funcs_aster as n
-    cprint("🏦 Exchange: Aster DEX (Futures)", "cyan", attrs=['bold'])
+
+    cprint("🏦 Exchange: Aster DEX (Futures)", "cyan", attrs=["bold"])
 elif EXCHANGE == "HYPERLIQUID":
     from src import nice_funcs_hyperliquid as n
-    cprint("🏦 Exchange: HyperLiquid (Perpetuals)", "cyan", attrs=['bold'])
+
+    cprint("🏦 Exchange: HyperLiquid (Perpetuals)", "cyan", attrs=["bold"])
 elif EXCHANGE == "SOLANA":
     from src import nice_funcs as n
-    cprint("🏦 Exchange: Solana (On-chain DEX)", "cyan", attrs=['bold'])
+
+    cprint("🏦 Exchange: Solana (On-chain DEX)", "cyan", attrs=["bold"])
 else:
     cprint(f"❌ Unknown exchange: {EXCHANGE}", "red")
     cprint("Available exchanges: ASTER, HYPERLIQUID, SOLANA", "yellow")
@@ -304,6 +309,7 @@ load_dotenv()
 # HELPER FUNCTIONS
 # ============================================================================
 
+
 def monitor_position_pnl(token, check_interval=PNL_CHECK_INTERVAL):
     """Monitor position P&L and exit if stop loss or take profit hit
 
@@ -315,8 +321,11 @@ def monitor_position_pnl(token, check_interval=PNL_CHECK_INTERVAL):
         bool: True if position closed, False if still open
     """
     try:
-        cprint(f"\n👁️  Monitoring {token} position for P&L targets...", "cyan", attrs=['bold'])
-        cprint(f"   Stop Loss: -{STOP_LOSS_PERCENTAGE}% | Take Profit: +{TAKE_PROFIT_PERCENTAGE}%", "white")
+        cprint(f"\n👁️  Monitoring {token} position for P&L targets...", "cyan", attrs=["bold"])
+        cprint(
+            f"   Stop Loss: -{STOP_LOSS_PERCENTAGE}% | Take Profit: +{TAKE_PROFIT_PERCENTAGE}%",
+            "white",
+        )
 
         while True:
             # Get current position
@@ -329,25 +338,36 @@ def monitor_position_pnl(token, check_interval=PNL_CHECK_INTERVAL):
                     return True
                 position = {"position_amount": position_usd}  # Simplified for Solana
 
-            if not position or (EXCHANGE in ["ASTER", "HYPERLIQUID"] and position.get('position_amount', 0) == 0):
+            if not position or (
+                EXCHANGE in ["ASTER", "HYPERLIQUID"] and position.get("position_amount", 0) == 0
+            ):
                 cprint(f"✅ No position found for {token}", "green")
                 return True
 
             # For Aster/HyperLiquid, check P&L percentage
             if EXCHANGE in ["ASTER", "HYPERLIQUID"]:
-                pnl_pct = position.get('pnl_percentage', 0)
-                pnl_usd = position.get('pnl', 0)
-                position_size = abs(position.get('position_amount', 0)) * position.get('mark_price', 0)
+                pnl_pct = position.get("pnl_percentage", 0)
+                pnl_usd = position.get("pnl", 0)
+                position_size = abs(position.get("position_amount", 0)) * position.get(
+                    "mark_price", 0
+                )
 
-                cprint(f"📊 Position: ${position_size:,.2f} | P&L: ${pnl_usd:,.2f} ({pnl_pct:+.2f}%)", "cyan")
+                cprint(
+                    f"📊 Position: ${position_size:,.2f} | P&L: ${pnl_usd:,.2f} ({pnl_pct:+.2f}%)",
+                    "cyan",
+                )
 
                 # Check stop loss
                 if pnl_pct <= -STOP_LOSS_PERCENTAGE:
-                    cprint(f"🛑 STOP LOSS HIT! P&L: {pnl_pct:.2f}% (target: -{STOP_LOSS_PERCENTAGE}%)", "red", attrs=['bold'])
+                    cprint(
+                        f"🛑 STOP LOSS HIT! P&L: {pnl_pct:.2f}% (target: -{STOP_LOSS_PERCENTAGE}%)",
+                        "red",
+                        attrs=["bold"],
+                    )
                     cprint(f"🔄 Closing position with limit orders...", "yellow")
 
                     # Close position using limit sell (for longs) or limit buy (for shorts)
-                    if position['position_amount'] > 0:
+                    if position["position_amount"] > 0:
                         # Long position - use limit_sell
                         n.limit_sell(token, position_size, slippage=0, leverage=LEVERAGE)
                     else:
@@ -358,11 +378,15 @@ def monitor_position_pnl(token, check_interval=PNL_CHECK_INTERVAL):
 
                 # Check take profit
                 if pnl_pct >= TAKE_PROFIT_PERCENTAGE:
-                    cprint(f"🎯 TAKE PROFIT HIT! P&L: {pnl_pct:.2f}% (target: +{TAKE_PROFIT_PERCENTAGE}%)", "green", attrs=['bold'])
+                    cprint(
+                        f"🎯 TAKE PROFIT HIT! P&L: {pnl_pct:.2f}% (target: +{TAKE_PROFIT_PERCENTAGE}%)",
+                        "green",
+                        attrs=["bold"],
+                    )
                     cprint(f"🔄 Closing position with limit orders...", "yellow")
 
                     # Close position using limit sell (for longs) or limit buy (for shorts)
-                    if position['position_amount'] > 0:
+                    if position["position_amount"] > 0:
                         # Long position - use limit_sell
                         n.limit_sell(token, position_size, slippage=0, leverage=LEVERAGE)
                     else:
@@ -393,9 +417,12 @@ def get_account_balance():
             # Get USD balance from futures exchange
             if EXCHANGE == "ASTER":
                 balance_dict = n.get_account_balance()  # Aster returns dict
-                balance = balance_dict.get('total_equity', 0)  # Use total equity for trading
+                balance = balance_dict.get("total_equity", 0)  # Use total equity for trading
                 cprint(f"💰 {EXCHANGE} Total Equity: ${balance:,.2f} USD", "cyan")
-                cprint(f"   Available: ${balance_dict.get('available', 0):,.2f} | Unrealized PnL: ${balance_dict.get('unrealized_pnl', 0):,.2f}", "white")
+                cprint(
+                    f"   Available: ${balance_dict.get('available', 0):,.2f} | Unrealized PnL: ${balance_dict.get('unrealized_pnl', 0):,.2f}",
+                    "white",
+                )
             else:  # HYPERLIQUID
                 account = n._get_account_from_env()
                 balance = n.get_account_value(account)  # HyperLiquid USD balance
@@ -410,8 +437,10 @@ def get_account_balance():
     except Exception as e:
         cprint(f"❌ Error getting account balance: {e}", "red")
         import traceback
+
         traceback.print_exc()
         return 0
+
 
 def calculate_position_size(account_balance):
     """Calculate position size based on account balance and MAX_POSITION_PERCENTAGE
@@ -428,34 +457,40 @@ def calculate_position_size(account_balance):
         margin_to_use = account_balance * (MAX_POSITION_PERCENTAGE / 100)
         notional_position = margin_to_use * LEVERAGE
 
-        cprint(f"\n📊 Position Calculation ({EXCHANGE}):", "yellow", attrs=['bold'])
+        cprint(f"\n📊 Position Calculation ({EXCHANGE}):", "yellow", attrs=["bold"])
         cprint(f"   💵 Account Balance: ${account_balance:,.2f}", "white")
         cprint(f"   📈 Max Position %: {MAX_POSITION_PERCENTAGE}%", "white")
-        cprint(f"   💰 Margin to Use: ${margin_to_use:,.2f}", "green", attrs=['bold'])
+        cprint(f"   💰 Margin to Use: ${margin_to_use:,.2f}", "green", attrs=["bold"])
         cprint(f"   ⚡ Leverage: {LEVERAGE}x", "white")
-        cprint(f"   💎 Notional Position: ${notional_position:,.2f}", "cyan", attrs=['bold'])
+        cprint(f"   💎 Notional Position: ${notional_position:,.2f}", "cyan", attrs=["bold"])
 
         return notional_position
     else:
         # For Solana: No leverage, direct position size
         position_size = account_balance * (MAX_POSITION_PERCENTAGE / 100)
 
-        cprint(f"\n📊 Position Calculation (SOLANA):", "yellow", attrs=['bold'])
+        cprint(f"\n📊 Position Calculation (SOLANA):", "yellow", attrs=["bold"])
         cprint(f"   💵 USDC Balance: ${account_balance:,.2f}", "white")
         cprint(f"   📈 Max Position %: {MAX_POSITION_PERCENTAGE}%", "white")
-        cprint(f"   💎 Position Size: ${position_size:,.2f}", "cyan", attrs=['bold'])
+        cprint(f"   💎 Position Size: ${position_size:,.2f}", "cyan", attrs=["bold"])
 
         return position_size
+
 
 # ============================================================================
 # TRADING AGENT CLASS
 # ============================================================================
 
+
 class TradingAgent:
     def __init__(self):
         # Check if using swarm mode or single model
         if USE_SWARM_MODE:
-            cprint(f"\n🌊 Initializing Trading Agent in SWARM MODE (6 AI consensus)...", "cyan", attrs=['bold'])
+            cprint(
+                f"\n🌊 Initializing Trading Agent in SWARM MODE (6 AI consensus)...",
+                "cyan",
+                attrs=["bold"],
+            )
             self.swarm = SwarmAgent()
             cprint("✅ Swarm mode initialized with 6 AI models!", "green")
 
@@ -479,10 +514,12 @@ class TradingAgent:
 
             cprint(f"✅ Using model: {self.model.model_name}", "green")
 
-        self.recommendations_df = pd.DataFrame(columns=['token', 'action', 'confidence', 'reasoning'])
+        self.recommendations_df = pd.DataFrame(
+            columns=["token", "action", "confidence", "reasoning"]
+        )
 
         # Show which tokens will be analyzed based on exchange
-        cprint("\n🎯 Active Tokens for Trading:", "yellow", attrs=['bold'])
+        cprint("\n🎯 Active Tokens for Trading:", "yellow", attrs=["bold"])
         if EXCHANGE in ["ASTER", "HYPERLIQUID"]:
             tokens_to_show = SYMBOLS
             cprint(f"🏦 Exchange: {EXCHANGE} (using symbols)", "cyan")
@@ -493,12 +530,15 @@ class TradingAgent:
         for i, token in enumerate(tokens_to_show, 1):
             token_display = token[:8] + "..." if len(token) > 8 else token
             cprint(f"   {i}. {token_display}", "cyan")
-        cprint(f"\n⏱️  Estimated swarm analysis time: ~{len(tokens_to_show) * 60} seconds ({len(tokens_to_show)} tokens × 60s)\n", "yellow")
+        cprint(
+            f"\n⏱️  Estimated swarm analysis time: ~{len(tokens_to_show) * 60} seconds ({len(tokens_to_show)} tokens × 60s)\n",
+            "yellow",
+        )
 
         # Show exchange and trading mode
-        cprint(f"\n🏦 Active Exchange: {EXCHANGE}", "yellow", attrs=['bold'])
+        cprint(f"\n🏦 Active Exchange: {EXCHANGE}", "yellow", attrs=["bold"])
 
-        cprint("📈 Trading Mode:", "yellow", attrs=['bold'])
+        cprint("📈 Trading Mode:", "yellow", attrs=["bold"])
         if LONG_ONLY:
             cprint("   📊 LONG ONLY - No shorting enabled", "cyan")
             cprint("   💡 SELL signals close positions, can't open shorts", "white")
@@ -515,11 +555,11 @@ class TradingAgent:
                 system_prompt=system_prompt,
                 user_content=user_content,
                 temperature=AI_TEMPERATURE,
-                max_tokens=AI_MAX_TOKENS
+                max_tokens=AI_MAX_TOKENS,
             )
 
             # Handle response format
-            if hasattr(response, 'content'):
+            if hasattr(response, "content"):
                 return response.content
             return str(response)
 
@@ -531,12 +571,14 @@ class TradingAgent:
         """Format market data into a clean, readable format for swarm analysis"""
         try:
             # Print market data visibility for confirmation
-            cprint(f"\n📊 MARKET DATA RECEIVED FOR {token[:8]}...", "cyan", attrs=['bold'])
+            cprint(f"\n📊 MARKET DATA RECEIVED FOR {token[:8]}...", "cyan", attrs=["bold"])
 
             # Check if market_data is a DataFrame
             if isinstance(market_data, pd.DataFrame):
                 cprint(f"✅ DataFrame received: {len(market_data)} bars", "green")
-                cprint(f"📅 Date range: {market_data.index[0]} to {market_data.index[-1]}", "yellow")
+                cprint(
+                    f"📅 Date range: {market_data.index[0]} to {market_data.index[-1]}", "yellow"
+                )
                 cprint(f"🕐 Timeframe: {DATA_TIMEFRAME}", "yellow")
 
                 # Show the first 5 bars
@@ -566,7 +608,7 @@ FULL DATASET:
                 formatted = f"TOKEN: {token}\nMARKET DATA:\n{str(market_data)}"
 
             # Add strategy signals if available
-            if isinstance(market_data, dict) and 'strategy_signals' in market_data:
+            if isinstance(market_data, dict) and "strategy_signals" in market_data:
                 formatted += f"\n\nSTRATEGY SIGNALS:\n{json.dumps(market_data['strategy_signals'], indent=2)}"
 
             cprint("\n✅ Market data formatted and ready for swarm!\n", "green")
@@ -632,7 +674,11 @@ FULL DATASET:
             reasoning += "\n".join(f"  - {vote}" for vote in model_votes)
             reasoning += f"\n\nMajority decision: {majority_action} ({confidence}% consensus)"
 
-            cprint(f"\n🌊 Swarm Consensus: {majority_action} with {confidence}% agreement", "cyan", attrs=['bold'])
+            cprint(
+                f"\n🌊 Swarm Consensus: {majority_action} with {confidence}% agreement",
+                "cyan",
+                attrs=["bold"],
+            )
 
             return majority_action, confidence, reasoning
 
@@ -650,15 +696,18 @@ FULL DATASET:
 
             # ============= SWARM MODE =============
             if USE_SWARM_MODE:
-                cprint(f"\n🌊 Analyzing {token[:8]}... with SWARM (6 AI models voting)", "cyan", attrs=['bold'])
+                cprint(
+                    f"\n🌊 Analyzing {token[:8]}... with SWARM (6 AI models voting)",
+                    "cyan",
+                    attrs=["bold"],
+                )
 
                 # Format market data for swarm
                 formatted_data = self._format_market_data_for_swarm(token, market_data)
 
                 # Query the swarm (takes ~45-60 seconds)
                 swarm_result = self.swarm.query(
-                    prompt=formatted_data,
-                    system_prompt=SWARM_TRADING_PROMPT
+                    prompt=formatted_data, system_prompt=SWARM_TRADING_PROMPT
                 )
 
                 if not swarm_result:
@@ -669,15 +718,22 @@ FULL DATASET:
                 action, confidence, reasoning = self._calculate_swarm_consensus(swarm_result)
 
                 # Add to recommendations DataFrame
-                self.recommendations_df = pd.concat([
-                    self.recommendations_df,
-                    pd.DataFrame([{
-                        'token': token,
-                        'action': action,
-                        'confidence': confidence,
-                        'reasoning': reasoning
-                    }])
-                ], ignore_index=True)
+                self.recommendations_df = pd.concat(
+                    [
+                        self.recommendations_df,
+                        pd.DataFrame(
+                            [
+                                {
+                                    "token": token,
+                                    "action": action,
+                                    "confidence": confidence,
+                                    "reasoning": reasoning,
+                                }
+                            ]
+                        ),
+                    ],
+                    ignore_index=True,
+                )
 
                 cprint(f"✅ Swarm analysis complete for {token[:8]}!", "green")
                 return swarm_result
@@ -686,7 +742,7 @@ FULL DATASET:
             else:
                 # Prepare strategy context
                 strategy_context = ""
-                if 'strategy_signals' in market_data:
+                if "strategy_signals" in market_data:
                     strategy_context = f"""
 Strategy Signals Available:
 {json.dumps(market_data['strategy_signals'], indent=2)}
@@ -697,7 +753,7 @@ Strategy Signals Available:
                 # Call AI model via model factory
                 response = self.chat_with_ai(
                     TRADING_PROMPT.format(strategy_context=strategy_context),
-                    f"Market Data to Analyze:\n{market_data}"
+                    f"Market Data to Analyze:\n{market_data}",
                 )
 
                 if not response:
@@ -705,30 +761,39 @@ Strategy Signals Available:
                     return None
 
                 # Parse the response
-                lines = response.split('\n')
+                lines = response.split("\n")
                 action = lines[0].strip() if lines else "NOTHING"
 
                 # Extract confidence from the response (assuming it's mentioned as a percentage)
                 confidence = 0
                 for line in lines:
-                    if 'confidence' in line.lower():
+                    if "confidence" in line.lower():
                         # Extract number from string like "Confidence: 75%"
                         try:
-                            confidence = int(''.join(filter(str.isdigit, line)))
+                            confidence = int("".join(filter(str.isdigit, line)))
                         except:
                             confidence = 50  # Default if not found
 
                 # Add to recommendations DataFrame with proper reasoning
-                reasoning = '\n'.join(lines[1:]) if len(lines) > 1 else "No detailed reasoning provided"
-                self.recommendations_df = pd.concat([
-                    self.recommendations_df,
-                    pd.DataFrame([{
-                        'token': token,
-                        'action': action,
-                        'confidence': confidence,
-                        'reasoning': reasoning
-                    }])
-                ], ignore_index=True)
+                reasoning = (
+                    "\n".join(lines[1:]) if len(lines) > 1 else "No detailed reasoning provided"
+                )
+                self.recommendations_df = pd.concat(
+                    [
+                        self.recommendations_df,
+                        pd.DataFrame(
+                            [
+                                {
+                                    "token": token,
+                                    "action": action,
+                                    "confidence": confidence,
+                                    "reasoning": reasoning,
+                                }
+                            ]
+                        ),
+                    ],
+                    ignore_index=True,
+                )
 
                 print(f"🎯 Moon Dev's AI Analysis Complete for {token[:4]}!")
                 return response
@@ -736,23 +801,33 @@ Strategy Signals Available:
         except Exception as e:
             print(f"❌ Error in AI analysis: {str(e)}")
             # Still add to DataFrame even on error, but mark as NOTHING with 0 confidence
-            self.recommendations_df = pd.concat([
-                self.recommendations_df,
-                pd.DataFrame([{
-                    'token': token,
-                    'action': "NOTHING",
-                    'confidence': 0,
-                    'reasoning': f"Error during analysis: {str(e)}"
-                }])
-            ], ignore_index=True)
+            self.recommendations_df = pd.concat(
+                [
+                    self.recommendations_df,
+                    pd.DataFrame(
+                        [
+                            {
+                                "token": token,
+                                "action": "NOTHING",
+                                "confidence": 0,
+                                "reasoning": f"Error during analysis: {str(e)}",
+                            }
+                        ]
+                    ),
+                ],
+                ignore_index=True,
+            )
             return None
-    
+
     def allocate_portfolio(self):
         """Get AI-recommended portfolio allocation"""
         try:
             cprint("\n💰 Calculating optimal portfolio allocation...", "cyan")
             max_position_size = usd_size * (MAX_POSITION_PERCENTAGE / 100)
-            cprint(f"🎯 Maximum position size: ${max_position_size:.2f} ({MAX_POSITION_PERCENTAGE}% of ${usd_size:.2f})", "cyan")
+            cprint(
+                f"🎯 Maximum position size: ${max_position_size:.2f} ({MAX_POSITION_PERCENTAGE}% of ${usd_size:.2f})",
+                "cyan",
+            )
 
             # Get allocation from AI via model factory
             # Use appropriate token list based on exchange
@@ -792,26 +867,29 @@ Example format:
             allocations = self.parse_allocation_response(response)
             if not allocations:
                 return None
-                
+
             # Fix USDC address if needed
             if "USDC_ADDRESS" in allocations:
                 amount = allocations.pop("USDC_ADDRESS")
                 allocations[USDC_ADDRESS] = amount
-                
+
             # Validate allocation totals
             total_allocated = sum(allocations.values())
             if total_allocated > usd_size:
-                cprint(f"❌ Total allocation ${total_allocated:.2f} exceeds portfolio size ${usd_size:.2f}", "red")
+                cprint(
+                    f"❌ Total allocation ${total_allocated:.2f} exceeds portfolio size ${usd_size:.2f}",
+                    "red",
+                )
                 return None
-                
+
             # Print allocations
             cprint("\n📊 Portfolio Allocation:", "green")
             for token, amount in allocations.items():
                 token_display = "USDC" if token == USDC_ADDRESS else token
                 cprint(f"  • {token_display}: ${amount:.2f}", "green")
-                
+
             return allocations
-            
+
         except Exception as e:
             cprint(f"❌ Error in portfolio allocation: {str(e)}", "red")
             return None
@@ -820,23 +898,23 @@ Example format:
         """Execute the allocations using AI entry for each position"""
         try:
             print("\n🚀 Moon Dev executing portfolio allocations...")
-            
+
             for token, amount in allocation_dict.items():
                 # Skip USDC and other excluded tokens
                 if token in EXCLUDED_TOKENS:
                     print(f"💵 Keeping ${amount:.2f} in {token}")
                     continue
-                    
+
                 print(f"\n🎯 Processing allocation for {token}...")
-                
+
                 try:
                     # Get current position value
                     current_position = n.get_token_balance_usd(token)
                     target_allocation = amount
-                    
+
                     print(f"🎯 Target allocation: ${target_allocation:.2f} USD")
                     print(f"📊 Current position: ${current_position:.2f} USD")
-                    
+
                     if current_position < target_allocation:
                         print(f"✨ Executing entry for {token}")
                         # Pass leverage for Aster/HyperLiquid, skip for Solana
@@ -847,12 +925,12 @@ Example format:
                         print(f"✅ Entry complete for {token}")
                     else:
                         print(f"⏸️ Position already at target size for {token}")
-                    
+
                 except Exception as e:
                     print(f"❌ Error executing entry for {token}: {str(e)}")
-                
+
                 time.sleep(2)  # Small delay between entries
-                
+
         except Exception as e:
             print(f"❌ Error executing allocations: {str(e)}")
             print("🔧 Moon Dev suggests checking the logs and trying again!")
@@ -862,21 +940,25 @@ Example format:
         cprint("\n🔄 Checking for positions to exit...", "white", "on_blue")
 
         for _, row in self.recommendations_df.iterrows():
-            token = row['token']
+            token = row["token"]
             token_short = token[:8] + "..." if len(token) > 8 else token
 
             # Skip excluded tokens (USDC and SOL)
             if token in EXCLUDED_TOKENS:
                 continue
 
-            action = row['action']
+            action = row["action"]
 
             # Check if we have a position
             current_position = n.get_token_balance_usd(token)
 
             cprint(f"\n{'='*60}", "cyan")
-            cprint(f"🎯 Token: {token_short}", "cyan", attrs=['bold'])
-            cprint(f"🤖 Swarm Signal: {action} ({row['confidence']}% confidence)", "yellow", attrs=['bold'])
+            cprint(f"🎯 Token: {token_short}", "cyan", attrs=["bold"])
+            cprint(
+                f"🤖 Swarm Signal: {action} ({row['confidence']}% confidence)",
+                "yellow",
+                attrs=["bold"],
+            )
             cprint(f"💼 Current Position: ${current_position:.2f}", "white")
             cprint(f"{'='*60}", "cyan")
 
@@ -885,7 +967,9 @@ Example format:
                 if action == "SELL":
                     cprint(f"🚨 SELL signal with position - CLOSING POSITION", "white", "on_red")
                     try:
-                        cprint(f"📉 Executing chunk_kill (${max_usd_order_size} chunks)...", "yellow")
+                        cprint(
+                            f"📉 Executing chunk_kill (${max_usd_order_size} chunks)...", "yellow"
+                        )
                         n.chunk_kill(token, max_usd_order_size, slippage)
                         cprint(f"✅ Position closed successfully!", "white", "on_green")
                     except Exception as e:
@@ -908,16 +992,26 @@ Example format:
                         account_balance = get_account_balance()
                         position_size = calculate_position_size(account_balance)
 
-                        cprint(f"📉 SELL signal with no position - OPENING SHORT", "white", "on_red")
-                        cprint(f"⚡ {EXCHANGE} mode: Opening ${position_size:,.2f} short position", "yellow")
+                        cprint(
+                            f"📉 SELL signal with no position - OPENING SHORT", "white", "on_red"
+                        )
+                        cprint(
+                            f"⚡ {EXCHANGE} mode: Opening ${position_size:,.2f} short position",
+                            "yellow",
+                        )
                         try:
                             # Check if we have the open_short function (Aster/HyperLiquid)
-                            if hasattr(n, 'open_short'):
-                                cprint(f"📉 Executing open_short (${position_size:,.2f})...", "yellow")
+                            if hasattr(n, "open_short"):
+                                cprint(
+                                    f"📉 Executing open_short (${position_size:,.2f})...", "yellow"
+                                )
                                 n.open_short(token, position_size, slippage, leverage=LEVERAGE)
                             else:
                                 # Fallback to market_sell which should open short on futures exchanges
-                                cprint(f"📉 Executing market_sell to open short (${position_size:,.2f})...", "yellow")
+                                cprint(
+                                    f"📉 Executing market_sell to open short (${position_size:,.2f})...",
+                                    "yellow",
+                                )
                                 n.market_sell(token, position_size, slippage, leverage=LEVERAGE)
                             cprint(f"✅ Short position opened successfully!", "white", "on_green")
                         except Exception as e:
@@ -935,7 +1029,9 @@ Example format:
                         account_balance = get_account_balance()
                         position_size = calculate_position_size(account_balance)
 
-                        cprint(f"💰 Opening position at MAX_POSITION_PERCENTAGE", "white", "on_green")
+                        cprint(
+                            f"💰 Opening position at MAX_POSITION_PERCENTAGE", "white", "on_green"
+                        )
                         try:
                             if EXCHANGE in ["ASTER", "HYPERLIQUID"]:
                                 success = n.ai_entry(token, position_size, leverage=LEVERAGE)
@@ -949,20 +1045,40 @@ Example format:
                                 time.sleep(2)  # Brief delay for order to settle
                                 if EXCHANGE in ["ASTER", "HYPERLIQUID"]:
                                     position = n.get_position(token)
-                                    if position and position.get('position_amount', 0) != 0:
-                                        pnl_pct = position.get('pnl_percentage', 0)
-                                        position_usd = abs(position.get('position_amount', 0)) * position.get('mark_price', 0)
-                                        cprint(f"📊 Confirmed: ${position_usd:,.2f} position | P&L: {pnl_pct:+.2f}%", "green", attrs=['bold'])
+                                    if position and position.get("position_amount", 0) != 0:
+                                        pnl_pct = position.get("pnl_percentage", 0)
+                                        position_usd = abs(
+                                            position.get("position_amount", 0)
+                                        ) * position.get("mark_price", 0)
+                                        cprint(
+                                            f"📊 Confirmed: ${position_usd:,.2f} position | P&L: {pnl_pct:+.2f}%",
+                                            "green",
+                                            attrs=["bold"],
+                                        )
                                     else:
-                                        cprint(f"⚠️  Warning: Position verification failed - no position found!", "yellow")
+                                        cprint(
+                                            f"⚠️  Warning: Position verification failed - no position found!",
+                                            "yellow",
+                                        )
                                 else:
                                     position_usd = n.get_token_balance_usd(token)
                                     if position_usd > 0:
-                                        cprint(f"📊 Confirmed: ${position_usd:,.2f} position", "green", attrs=['bold'])
+                                        cprint(
+                                            f"📊 Confirmed: ${position_usd:,.2f} position",
+                                            "green",
+                                            attrs=["bold"],
+                                        )
                                     else:
-                                        cprint(f"⚠️  Warning: Position verification failed - no position found!", "yellow")
+                                        cprint(
+                                            f"⚠️  Warning: Position verification failed - no position found!",
+                                            "yellow",
+                                        )
                             else:
-                                cprint(f"❌ Position not opened (check errors above)", "white", "on_red")
+                                cprint(
+                                    f"❌ Position not opened (check errors above)",
+                                    "white",
+                                    "on_red",
+                                )
                         except Exception as e:
                             cprint(f"❌ Error opening position: {str(e)}", "white", "on_red")
 
@@ -971,47 +1087,48 @@ Example format:
         try:
             # Handle TextBlock format from Claude 3
             if isinstance(response, list):
-                response = response[0].text if hasattr(response[0], 'text') else str(response[0])
-            
+                response = response[0].text if hasattr(response[0], "text") else str(response[0])
+
             print("🔍 Raw response received:")
             print(response)
-            
+
             # Find the JSON block between curly braces
-            start = response.find('{')
-            end = response.rfind('}') + 1
+            start = response.find("{")
+            end = response.rfind("}") + 1
             if start == -1 or end == 0:
                 raise ValueError("No JSON object found in response")
-            
+
             json_str = response[start:end]
-            
+
             # More aggressive JSON cleaning
-            json_str = (json_str
-                .replace('\n', '')          # Remove newlines
-                .replace('    ', '')        # Remove indentation
-                .replace('\t', '')          # Remove tabs
-                .replace('\\n', '')         # Remove escaped newlines
-                .replace(' ', '')           # Remove all spaces
-                .strip())                   # Remove leading/trailing whitespace
-            
+            json_str = (
+                json_str.replace("\n", "")  # Remove newlines
+                .replace("    ", "")  # Remove indentation
+                .replace("\t", "")  # Remove tabs
+                .replace("\\n", "")  # Remove escaped newlines
+                .replace(" ", "")  # Remove all spaces
+                .strip()
+            )  # Remove leading/trailing whitespace
+
             print("\n🧹 Cleaned JSON string:")
             print(json_str)
-            
+
             # Parse the cleaned JSON
             allocations = json.loads(json_str)
-            
+
             print("\n📊 Parsed allocations:")
             for token, amount in allocations.items():
                 print(f"  • {token}: ${amount}")
-            
+
             # Validate amounts are numbers
             for token, amount in allocations.items():
                 if not isinstance(amount, (int, float)):
                     raise ValueError(f"Invalid amount type for {token}: {type(amount)}")
                 if amount < 0:
                     raise ValueError(f"Negative allocation for {token}: {amount}")
-            
+
             return allocations
-            
+
         except Exception as e:
             print(f"❌ Error parsing allocation response: {str(e)}")
             print("🔍 Raw response:")
@@ -1028,19 +1145,19 @@ Example format:
                 json_str = cleaned_text.split("```json")[1].split("```")[0]
             else:
                 # Find the JSON object between curly braces
-                start = cleaned_text.find('{')
-                end = cleaned_text.rfind('}') + 1
+                start = cleaned_text.find("{")
+                end = cleaned_text.rfind("}") + 1
                 json_str = cleaned_text[start:end]
-            
+
             # Parse the JSON
             allocations = json.loads(json_str)
-            
+
             print("📊 Parsed allocations:")
             for token, amount in allocations.items():
                 print(f"  • {token}: ${amount}")
-            
+
             return allocations
-            
+
         except json.JSONDecodeError as e:
             print(f"❌ Error parsing allocation JSON: {e}")
             print(f"🔍 Raw text received:\n{allocation_text}")
@@ -1058,7 +1175,7 @@ Example format:
         try:
             current_time = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
             cprint(f"\n⏰ AI Agent Run Starting at {current_time}", "white", "on_green")
-            
+
             # Collect OHLCV data for all tokens using this agent's config
             # Use SYMBOLS for Aster/HyperLiquid, MONITORED_TOKENS for Solana
             if EXCHANGE in ["ASTER", "HYPERLIQUID"]:
@@ -1076,41 +1193,50 @@ Example format:
                 tokens=tokens_to_trade,
                 days_back=DAYSBACK_4_DATA,
                 timeframe=DATA_TIMEFRAME,
-                exchange=EXCHANGE  # Pass exchange to data collector
+                exchange=EXCHANGE,  # Pass exchange to data collector
             )
 
             cprint(f"📦 Market data received for {len(market_data)} tokens", "green")
             if len(market_data) == 0:
                 cprint("⚠️ WARNING: No market data collected! Check token list.", "red")
                 cprint(f"🔍 Tokens = {tokens_to_trade}", "red")
-            
+
             # Analyze each token's data
             for token, data in market_data.items():
                 cprint(f"\n🤖 AI Agent Analyzing Token: {token}", "white", "on_green")
-                
+
                 # Include strategy signals in analysis if available
                 if strategy_signals and token in strategy_signals:
-                    cprint(f"📊 Including {len(strategy_signals[token])} strategy signals in analysis", "cyan")
-                    data['strategy_signals'] = strategy_signals[token]
-                
+                    cprint(
+                        f"📊 Including {len(strategy_signals[token])} strategy signals in analysis",
+                        "cyan",
+                    )
+                    data["strategy_signals"] = strategy_signals[token]
+
                 analysis = self.analyze_market_data(token, data)
                 print(f"\n📈 Analysis for contract: {token}")
                 print(analysis)
-                print("\n" + "="*50 + "\n")
-            
+                print("\n" + "=" * 50 + "\n")
+
             # Show recommendations summary
             cprint("\n📊 Moon Dev's Trading Recommendations:", "white", "on_blue")
-            summary_df = self.recommendations_df[['token', 'action', 'confidence']].copy()
+            summary_df = self.recommendations_df[["token", "action", "confidence"]].copy()
             print(summary_df.to_string(index=False))
 
             # Handle exits first (always runs - manages SELL recommendations)
             self.handle_exits()
 
             # Portfolio allocation (only if enabled and there are BUY recommendations)
-            buy_recommendations = self.recommendations_df[self.recommendations_df['action'] == 'BUY']
+            buy_recommendations = self.recommendations_df[
+                self.recommendations_df["action"] == "BUY"
+            ]
 
             if USE_PORTFOLIO_ALLOCATION and len(buy_recommendations) > 0:
-                cprint(f"\n💰 Found {len(buy_recommendations)} BUY signal(s) - Using AI portfolio allocation...", "white", "on_green")
+                cprint(
+                    f"\n💰 Found {len(buy_recommendations)} BUY signal(s) - Using AI portfolio allocation...",
+                    "white",
+                    "on_green",
+                )
                 allocation = self.allocate_portfolio()
 
                 if allocation:
@@ -1124,24 +1250,27 @@ Example format:
                     cprint("\n⚠️ No allocations to execute!", "white", "on_yellow")
             elif not USE_PORTFOLIO_ALLOCATION and len(buy_recommendations) > 0:
                 cprint(f"\n💰 Found {len(buy_recommendations)} BUY signal(s)", "white", "on_green")
-                cprint("📊 Portfolio allocation is DISABLED - positions opened in handle_exits", "cyan")
+                cprint(
+                    "📊 Portfolio allocation is DISABLED - positions opened in handle_exits", "cyan"
+                )
             else:
                 cprint("\n⏭️  No BUY signals - No entries to make", "white", "on_blue")
                 cprint("📊 All signals were SELL or DO NOTHING", "cyan")
-            
+
             # Clean up temp data
             cprint("\n🧹 Cleaning up temporary data...", "white", "on_blue")
             try:
-                for file in os.listdir('temp_data'):
-                    if file.endswith('_latest.csv'):
-                        os.remove(os.path.join('temp_data', file))
+                for file in os.listdir("temp_data"):
+                    if file.endswith("_latest.csv"):
+                        os.remove(os.path.join("temp_data", file))
                 cprint("✨ Temp data cleaned successfully!", "white", "on_green")
             except Exception as e:
                 cprint(f"⚠️ Error cleaning temp data: {str(e)}", "white", "on_yellow")
-            
+
         except Exception as e:
             cprint(f"\n❌ Error in trading cycle: {str(e)}", "white", "on_red")
             cprint("🔧 Moon Dev suggests checking the logs and trying again!", "white", "on_blue")
+
 
 def main():
     """Main function to run the trading agent every 15 minutes"""
@@ -1161,7 +1290,7 @@ def main():
             for token in SYMBOLS if EXCHANGE in ["ASTER", "HYPERLIQUID"] else MONITORED_TOKENS:
                 if EXCHANGE in ["ASTER", "HYPERLIQUID"]:
                     position = n.get_position(token)
-                    if position and position.get('position_amount', 0) != 0:
+                    if position and position.get("position_amount", 0) != 0:
                         has_position = True
                         monitored_token = token
                         break
@@ -1174,15 +1303,21 @@ def main():
 
             if has_position and monitored_token:
                 # We have an open position - monitor P&L instead of sleeping
-                cprint(f"\n🔍 Open position detected for {monitored_token}", "yellow", attrs=['bold'])
+                cprint(
+                    f"\n🔍 Open position detected for {monitored_token}", "yellow", attrs=["bold"]
+                )
                 monitor_position_pnl(monitored_token)
                 cprint(f"\n✅ Position closed. Resuming normal trading cycle...", "green")
             else:
                 # No open position - sleep until next cycle
                 next_run = datetime.now() + timedelta(minutes=SLEEP_BETWEEN_RUNS_MINUTES)
-                cprint(f"\n⏳ No open positions. Next run at {next_run.strftime('%Y-%m-%d %H:%M:%S')}", "white", "on_green")
+                cprint(
+                    f"\n⏳ No open positions. Next run at {next_run.strftime('%Y-%m-%d %H:%M:%S')}",
+                    "white",
+                    "on_green",
+                )
                 time.sleep(INTERVAL)
-                
+
         except KeyboardInterrupt:
             cprint("\n👋 Moon Dev AI Agent shutting down gracefully...", "white", "on_blue")
             break
@@ -1192,5 +1327,6 @@ def main():
             # Still sleep and continue on error
             time.sleep(INTERVAL)
 
+
 if __name__ == "__main__":
-    main() 
+    main()

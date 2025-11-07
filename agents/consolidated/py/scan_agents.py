@@ -33,11 +33,7 @@ from typing import List, Dict, Any, Optional, Tuple
 # Add parent directory to path
 sys.path.insert(0, str(Path(__file__).parent.parent))
 
-from library.core.agent_registry import (
-    AgentRegistry,
-    ComplianceStatus,
-    ArchitecturalLawVersion
-)
+from library.core.agent_registry import AgentRegistry, ComplianceStatus, ArchitecturalLawVersion
 
 
 class AgentScanner:
@@ -92,8 +88,14 @@ class AgentScanner:
                     agent_data = self.analyze_agent_file(agent_file, category_name)
                     if agent_data:
                         agents.append(agent_data)
-                        status_icon = "[OK]" if agent_data['compliance_status'] == ComplianceStatus.COMPLIANT.value else "[!]"
-                        print(f"  {status_icon} {agent_data['agent_name']} v{agent_data['version']} - {agent_data['compliance_status']}")
+                        status_icon = (
+                            "[OK]"
+                            if agent_data["compliance_status"] == ComplianceStatus.COMPLIANT.value
+                            else "[!]"
+                        )
+                        print(
+                            f"  {status_icon} {agent_data['agent_name']} v{agent_data['version']} - {agent_data['compliance_status']}"
+                        )
                 except Exception as e:
                     print(f"  [ERROR] {agent_file.name}: {e}")
 
@@ -106,18 +108,14 @@ class AgentScanner:
         self.agents_found = agents
         return agents
 
-    def analyze_agent_file(
-        self,
-        file_path: Path,
-        category: str
-    ) -> Optional[Dict[str, Any]]:
+    def analyze_agent_file(self, file_path: Path, category: str) -> Optional[Dict[str, Any]]:
         """
         Analyze a single agent file
 
         Returns:
             Agent metadata dict or None if not a valid agent
         """
-        with open(file_path, 'r', encoding='utf-8') as f:
+        with open(file_path, "r", encoding="utf-8") as f:
             content = f.read()
 
         # Try to parse as Python
@@ -131,7 +129,7 @@ class AgentScanner:
         for node in ast.walk(tree):
             if isinstance(node, ast.ClassDef):
                 # Check if it's an agent (has Agent in name or inherits from BaseAgent)
-                if 'Agent' in node.name:
+                if "Agent" in node.name:
                     agent_class = node
                     break
 
@@ -160,16 +158,16 @@ class AgentScanner:
             "category": category,
             "version": version,
             "file_path": rel_path,
-            "compliance_status": compliance_data['status'].value,
+            "compliance_status": compliance_data["status"].value,
             "law_version": ArchitecturalLawVersion.V1_0_0.value,
-            "has_protocol_mixin": compliance_data['has_protocol_mixin'],
-            "has_base_agent": compliance_data['has_base_agent'],
-            "has_environment_config": compliance_data['has_environment_config'],
-            "has_health_check": compliance_data['has_health_check'],
-            "has_resource_monitoring": compliance_data['has_resource_monitoring'],
-            "protocols_supported": compliance_data['protocols'],
-            "capabilities": compliance_data['capabilities'],
-            "notes": compliance_data['notes']
+            "has_protocol_mixin": compliance_data["has_protocol_mixin"],
+            "has_base_agent": compliance_data["has_base_agent"],
+            "has_environment_config": compliance_data["has_environment_config"],
+            "has_health_check": compliance_data["has_health_check"],
+            "has_resource_monitoring": compliance_data["has_resource_monitoring"],
+            "protocols_supported": compliance_data["protocols"],
+            "capabilities": compliance_data["capabilities"],
+            "notes": compliance_data["notes"],
         }
 
     def _extract_agent_type(self, content: str, agent_name: str) -> str:
@@ -180,9 +178,9 @@ class AgentScanner:
             return match.group(1)
 
         # Fallback: convert class name to snake_case
-        agent_type = re.sub('Agent$', '', agent_name)
-        s1 = re.sub('(.)([A-Z][a-z]+)', r'\1_\2', agent_type)
-        return re.sub('([a-z0-9])([A-Z])', r'\1_\2', s1).lower()
+        agent_type = re.sub("Agent$", "", agent_name)
+        s1 = re.sub("(.)([A-Z][a-z]+)", r"\1_\2", agent_type)
+        return re.sub("([a-z0-9])([A-Z])", r"\1_\2", s1).lower()
 
     def _extract_version(self, content: str) -> str:
         """Extract version from content"""
@@ -192,17 +190,13 @@ class AgentScanner:
             return match.group(1)
 
         # Try version in docstring
-        match = re.search(r'Version:\s*(\d+\.\d+\.\d+)', content)
+        match = re.search(r"Version:\s*(\d+\.\d+\.\d+)", content)
         if match:
             return match.group(1)
 
         return "1.0.0"  # Default
 
-    def _analyze_compliance(
-        self,
-        content: str,
-        tree: ast.AST
-    ) -> Dict[str, Any]:
+    def _analyze_compliance(self, content: str, tree: ast.AST) -> Dict[str, Any]:
         """
         Analyze agent compliance with architectural standards
 
@@ -210,72 +204,68 @@ class AgentScanner:
             Dict with compliance details
         """
         compliance = {
-            'has_protocol_mixin': False,
-            'has_base_agent': False,
-            'has_environment_config': False,
-            'has_health_check': False,
-            'has_resource_monitoring': False,
-            'protocols': [],
-            'capabilities': [],
-            'notes': []
+            "has_protocol_mixin": False,
+            "has_base_agent": False,
+            "has_environment_config": False,
+            "has_health_check": False,
+            "has_resource_monitoring": False,
+            "protocols": [],
+            "capabilities": [],
+            "notes": [],
         }
 
         # Check for ProtocolMixin
-        if 'ProtocolMixin' in content:
-            compliance['has_protocol_mixin'] = True
-            compliance['protocols'] = ['A2A', 'A2P', 'ACP', 'ANP', 'MCP']
+        if "ProtocolMixin" in content:
+            compliance["has_protocol_mixin"] = True
+            compliance["protocols"] = ["A2A", "A2P", "ACP", "ANP", "MCP"]
 
         # Check for BaseAgent
-        if 'BaseAgent' in content:
-            compliance['has_base_agent'] = True
+        if "BaseAgent" in content:
+            compliance["has_base_agent"] = True
 
         # Check for environment config
-        if 'from_environment' in content or 'os.getenv' in content:
-            compliance['has_environment_config'] = True
+        if "from_environment" in content or "os.getenv" in content:
+            compliance["has_environment_config"] = True
 
         # Check for health check
-        if 'health_check' in content:
-            compliance['has_health_check'] = True
+        if "health_check" in content:
+            compliance["has_health_check"] = True
 
         # Check for resource monitoring
-        if '_get_memory_usage' in content or 'psutil' in content:
-            compliance['has_resource_monitoring'] = True
+        if "_get_memory_usage" in content or "psutil" in content:
+            compliance["has_resource_monitoring"] = True
 
         # Extract capabilities
-        capabilities_match = re.search(
-            r'capabilities_list\s*=\s*\[(.*?)\]',
-            content,
-            re.DOTALL
-        )
+        capabilities_match = re.search(r"capabilities_list\s*=\s*\[(.*?)\]", content, re.DOTALL)
         if capabilities_match:
             caps_str = capabilities_match.group(1)
             caps = re.findall(r'["\'](\w+)["\']', caps_str)
-            compliance['capabilities'] = caps
+            compliance["capabilities"] = caps
 
         # Determine compliance status
-        if compliance['has_protocol_mixin'] and \
-           compliance['has_base_agent'] and \
-           compliance['has_environment_config'] and \
-           compliance['has_health_check'] and \
-           compliance['has_resource_monitoring']:
+        if (
+            compliance["has_protocol_mixin"]
+            and compliance["has_base_agent"]
+            and compliance["has_environment_config"]
+            and compliance["has_health_check"]
+            and compliance["has_resource_monitoring"]
+        ):
             status = ComplianceStatus.COMPLIANT
-            compliance['notes'].append("Fully compliant with architectural standards v1.0.0")
-        elif compliance['has_base_agent']:
+            compliance["notes"].append("Fully compliant with architectural standards v1.0.0")
+        elif compliance["has_base_agent"]:
             status = ComplianceStatus.PARTIALLY_COMPLIANT
-            compliance['notes'].append("Has BaseAgent but missing compliance features")
+            compliance["notes"].append("Has BaseAgent but missing compliance features")
         else:
             status = ComplianceStatus.NON_COMPLIANT
-            compliance['notes'].append("Does not meet architectural standards")
+            compliance["notes"].append("Does not meet architectural standards")
 
-        compliance['status'] = status
-        compliance['notes'] = ' | '.join(compliance['notes'])
+        compliance["status"] = status
+        compliance["notes"] = " | ".join(compliance["notes"])
 
         return compliance
 
     def register_agents(
-        self,
-        registry: AgentRegistry,
-        agents: Optional[List[Dict[str, Any]]] = None
+        self, registry: AgentRegistry, agents: Optional[List[Dict[str, Any]]] = None
     ):
         """Register all scanned agents in registry"""
         if agents is None:
@@ -288,30 +278,34 @@ class AgentScanner:
         for agent in agents:
             try:
                 agent_id = registry.register_agent(
-                    agent_name=agent['agent_name'],
-                    agent_type=agent['agent_type'],
-                    category=agent['category'],
-                    version=agent['version'],
-                    file_path=agent['file_path'],
-                    compliance_status=ComplianceStatus(agent['compliance_status']),
-                    law_version=agent['law_version'],
-                    protocols_supported=agent['protocols_supported'],
-                    capabilities=agent['capabilities'],
-                    has_protocol_mixin=agent['has_protocol_mixin'],
-                    has_base_agent=agent['has_base_agent'],
-                    has_environment_config=agent['has_environment_config'],
-                    has_health_check=agent['has_health_check'],
-                    has_resource_monitoring=agent['has_resource_monitoring'],
-                    notes=agent['notes']
+                    agent_name=agent["agent_name"],
+                    agent_type=agent["agent_type"],
+                    category=agent["category"],
+                    version=agent["version"],
+                    file_path=agent["file_path"],
+                    compliance_status=ComplianceStatus(agent["compliance_status"]),
+                    law_version=agent["law_version"],
+                    protocols_supported=agent["protocols_supported"],
+                    capabilities=agent["capabilities"],
+                    has_protocol_mixin=agent["has_protocol_mixin"],
+                    has_base_agent=agent["has_base_agent"],
+                    has_environment_config=agent["has_environment_config"],
+                    has_health_check=agent["has_health_check"],
+                    has_resource_monitoring=agent["has_resource_monitoring"],
+                    notes=agent["notes"],
                 )
 
                 # Add non-compliant agents to retrofit queue
-                if agent['compliance_status'] != ComplianceStatus.COMPLIANT.value:
-                    priority = 5 if agent['compliance_status'] == ComplianceStatus.NON_COMPLIANT.value else 3
+                if agent["compliance_status"] != ComplianceStatus.COMPLIANT.value:
+                    priority = (
+                        5
+                        if agent["compliance_status"] == ComplianceStatus.NON_COMPLIANT.value
+                        else 3
+                    )
                     registry.add_to_retrofit_queue(
                         agent_id=agent_id,
                         priority=priority,
-                        notes=f"Auto-added by scanner: {agent['notes']}"
+                        notes=f"Auto-added by scanner: {agent['notes']}",
                     )
 
                 print(f"[OK] Registered: {agent['agent_name']} ({agent_id})")
@@ -324,33 +318,33 @@ class AgentScanner:
         print(f"{'='*60}\n")
 
     def generate_report(
-        self,
-        registry: AgentRegistry,
-        output_path: Optional[str] = None
+        self, registry: AgentRegistry, output_path: Optional[str] = None
     ) -> Dict[str, Any]:
         """Generate comprehensive compliance report"""
         report = registry.get_compliance_report()
 
         # Add scanner-specific data
-        report['agents_scanned'] = len(self.agents_found)
-        report['scan_timestamp'] = report['generated_at']
+        report["agents_scanned"] = len(self.agents_found)
+        report["scan_timestamp"] = report["generated_at"]
 
         # Group by compliance status
         by_status = {}
         for agent in self.agents_found:
-            status = agent['compliance_status']
+            status = agent["compliance_status"]
             if status not in by_status:
                 by_status[status] = []
-            by_status[status].append({
-                'name': agent['agent_name'],
-                'version': agent['version'],
-                'category': agent['category'],
-                'notes': agent['notes']
-            })
-        report['agents_by_status'] = by_status
+            by_status[status].append(
+                {
+                    "name": agent["agent_name"],
+                    "version": agent["version"],
+                    "category": agent["category"],
+                    "notes": agent["notes"],
+                }
+            )
+        report["agents_by_status"] = by_status
 
         if output_path:
-            with open(output_path, 'w') as f:
+            with open(output_path, "w") as f:
                 json.dump(report, f, indent=2)
             print(f"\nReport exported to: {output_path}")
 
@@ -365,7 +359,7 @@ class AgentScanner:
         # Count by status
         status_counts = {}
         for agent in self.agents_found:
-            status = agent['compliance_status']
+            status = agent["compliance_status"]
             status_counts[status] = status_counts.get(status, 0) + 1
 
         print(f"\n{'='*60}")
@@ -380,7 +374,7 @@ class AgentScanner:
         # Category breakdown
         category_counts = {}
         for agent in self.agents_found:
-            cat = agent['category']
+            cat = agent["category"]
             category_counts[cat] = category_counts.get(cat, 0) + 1
 
         print(f"\nBy Category:")
@@ -396,8 +390,9 @@ def main():
     )
     parser.add_argument("--category", "-c", help="Scan specific category only")
     parser.add_argument("--export", "-e", help="Export report to JSON file")
-    parser.add_argument("--no-register", action="store_true",
-                       help="Scan only, don't register in database")
+    parser.add_argument(
+        "--no-register", action="store_true", help="Scan only, don't register in database"
+    )
     parser.add_argument("--library-path", help="Path to agent library")
     parser.add_argument("--db-path", help="Path to registry database")
 
@@ -411,7 +406,7 @@ def main():
 
     # Filter by category if specified
     if args.category:
-        agents = [a for a in agents if a['category'] == args.category]
+        agents = [a for a in agents if a["category"] == args.category]
         print(f"Filtered to category: {args.category} ({len(agents)} agents)\n")
 
     # Print summary
@@ -439,7 +434,9 @@ def main():
         if retrofit_queue:
             print(f"\nRetrofit Queue (Top 10 by priority):")
             for agent in retrofit_queue:
-                print(f"  [{agent['retrofit_priority']}] {agent['agent_name']} v{agent['version']} - {agent['category']}")
+                print(
+                    f"  [{agent['retrofit_priority']}] {agent['agent_name']} v{agent['version']} - {agent['category']}"
+                )
 
         print(f"\n{'='*60}\n")
 
@@ -447,11 +444,11 @@ def main():
     elif args.export:
         # Export without registering
         report = {
-            "scan_timestamp": agents[0]['notes'] if agents else None,
+            "scan_timestamp": agents[0]["notes"] if agents else None,
             "agents_scanned": len(agents),
-            "agents": agents
+            "agents": agents,
         }
-        with open(args.export, 'w') as f:
+        with open(args.export, "w") as f:
             json.dump(report, f, indent=2)
         print(f"\nScan results exported to: {args.export}")
 

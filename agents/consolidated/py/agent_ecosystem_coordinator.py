@@ -26,16 +26,20 @@ from .documentation_maintenance_agent import documentation_maintainer, Documenta
 
 logger = logging.getLogger(__name__)
 
+
 class AgentRole(Enum):
     """Roles of agents in the ecosystem"""
+
     DEBT_TRACKER = "debt_tracker"
     ARCHITECTURE_REVIEWER = "architecture_reviewer"
     REFACTORING_COORDINATOR = "refactoring_coordinator"
     QUALITY_MONITOR = "quality_monitor"
     DOCUMENTATION_MAINTAINER = "documentation_maintainer"
 
+
 class TaskStatus(Enum):
     """Status of coordinated tasks"""
+
     PENDING = "pending"
     ASSIGNED = "assigned"
     IN_PROGRESS = "in_progress"
@@ -43,16 +47,20 @@ class TaskStatus(Enum):
     FAILED = "failed"
     CANCELLED = "cancelled"
 
+
 class CommunicationPriority(Enum):
     """Priority levels for inter-agent communication"""
+
     URGENT = "urgent"
     HIGH = "high"
     NORMAL = "normal"
     LOW = "low"
 
+
 @dataclass
 class AgentMessage:
     """Message exchanged between agents"""
+
     id: str
     sender: AgentRole
     recipient: AgentRole
@@ -65,9 +73,11 @@ class AgentMessage:
     response_deadline: Optional[datetime] = None
     correlation_id: Optional[str] = None
 
+
 @dataclass
 class CoordinatedTask:
     """Task coordinated across multiple agents"""
+
     id: str
     title: str
     description: str
@@ -83,9 +93,11 @@ class CoordinatedTask:
     deliverables: List[str] = field(default_factory=list)
     context: Dict[str, Any] = field(default_factory=dict)
 
+
 @dataclass
 class EcosystemMetrics:
     """Metrics for the agent ecosystem performance"""
+
     total_tasks_completed: int
     average_task_completion_time: float
     agent_utilization: Dict[AgentRole, float]
@@ -94,9 +106,11 @@ class EcosystemMetrics:
     knowledge_sharing_score: float
     overall_ecosystem_health: float
 
+
 @dataclass
 class WorkflowDefinition:
     """Definition of a coordinated workflow"""
+
     id: str
     name: str
     description: str
@@ -106,6 +120,7 @@ class WorkflowDefinition:
     failure_conditions: List[str]
     estimated_duration: timedelta
     required_agents: List[AgentRole]
+
 
 class AgentEcosystemCoordinator:
     """
@@ -132,7 +147,7 @@ class AgentEcosystemCoordinator:
             AgentRole.ARCHITECTURE_REVIEWER: architecture_reviewer,
             AgentRole.REFACTORING_COORDINATOR: refactoring_coordinator,
             AgentRole.QUALITY_MONITOR: quality_monitor,
-            AgentRole.DOCUMENTATION_MAINTAINER: documentation_maintainer
+            AgentRole.DOCUMENTATION_MAINTAINER: documentation_maintainer,
         }
 
     def _initialize_workflows(self) -> List[WorkflowDefinition]:
@@ -145,27 +160,45 @@ class AgentEcosystemCoordinator:
                 trigger_conditions=["manual_request", "scheduled_weekly"],
                 steps=[
                     {"agent": "debt_tracker", "action": "scan_codebase", "parallel": False},
-                    {"agent": "architecture_reviewer", "action": "analyze_architecture", "parallel": True},
-                    {"agent": "quality_monitor", "action": "run_quality_analysis", "parallel": True},
-                    {"agent": "documentation_maintainer", "action": "analyze_documentation_health", "parallel": True},
-                    {"agent": "refactoring_coordinator", "action": "analyze_and_prioritize_debt", "parallel": False}
+                    {
+                        "agent": "architecture_reviewer",
+                        "action": "analyze_architecture",
+                        "parallel": True,
+                    },
+                    {
+                        "agent": "quality_monitor",
+                        "action": "run_quality_analysis",
+                        "parallel": True,
+                    },
+                    {
+                        "agent": "documentation_maintainer",
+                        "action": "analyze_documentation_health",
+                        "parallel": True,
+                    },
+                    {
+                        "agent": "refactoring_coordinator",
+                        "action": "analyze_and_prioritize_debt",
+                        "parallel": False,
+                    },
                 ],
                 success_criteria=[
                     "All analyses completed successfully",
                     "Refactoring plan generated",
-                    "Reports exported"
+                    "Reports exported",
                 ],
                 failure_conditions=[
                     "Critical agent failure",
                     "Timeout exceeded",
-                    "Data inconsistency detected"
+                    "Data inconsistency detected",
                 ],
                 estimated_duration=timedelta(hours=2),
                 required_agents=[
-                    AgentRole.DEBT_TRACKER, AgentRole.ARCHITECTURE_REVIEWER,
-                    AgentRole.QUALITY_MONITOR, AgentRole.DOCUMENTATION_MAINTAINER,
-                    AgentRole.REFACTORING_COORDINATOR
-                ]
+                    AgentRole.DEBT_TRACKER,
+                    AgentRole.ARCHITECTURE_REVIEWER,
+                    AgentRole.QUALITY_MONITOR,
+                    AgentRole.DOCUMENTATION_MAINTAINER,
+                    AgentRole.REFACTORING_COORDINATOR,
+                ],
             ),
             WorkflowDefinition(
                 id="critical_issue_response",
@@ -173,25 +206,40 @@ class AgentEcosystemCoordinator:
                 description="Rapid response to critical technical debt or quality issues",
                 trigger_conditions=["critical_violation_detected", "security_issue_found"],
                 steps=[
-                    {"agent": "debt_tracker", "action": "analyze_critical_items", "parallel": False},
-                    {"agent": "quality_monitor", "action": "verify_issue_severity", "parallel": True},
-                    {"agent": "refactoring_coordinator", "action": "create_emergency_plan", "parallel": False},
-                    {"agent": "documentation_maintainer", "action": "document_incident", "parallel": True}
+                    {
+                        "agent": "debt_tracker",
+                        "action": "analyze_critical_items",
+                        "parallel": False,
+                    },
+                    {
+                        "agent": "quality_monitor",
+                        "action": "verify_issue_severity",
+                        "parallel": True,
+                    },
+                    {
+                        "agent": "refactoring_coordinator",
+                        "action": "create_emergency_plan",
+                        "parallel": False,
+                    },
+                    {
+                        "agent": "documentation_maintainer",
+                        "action": "document_incident",
+                        "parallel": True,
+                    },
                 ],
                 success_criteria=[
                     "Critical issue assessed",
                     "Emergency plan created",
-                    "Incident documented"
+                    "Incident documented",
                 ],
-                failure_conditions=[
-                    "Unable to assess severity",
-                    "Emergency plan creation failed"
-                ],
+                failure_conditions=["Unable to assess severity", "Emergency plan creation failed"],
                 estimated_duration=timedelta(hours=1),
                 required_agents=[
-                    AgentRole.DEBT_TRACKER, AgentRole.QUALITY_MONITOR,
-                    AgentRole.REFACTORING_COORDINATOR, AgentRole.DOCUMENTATION_MAINTAINER
-                ]
+                    AgentRole.DEBT_TRACKER,
+                    AgentRole.QUALITY_MONITOR,
+                    AgentRole.REFACTORING_COORDINATOR,
+                    AgentRole.DOCUMENTATION_MAINTAINER,
+                ],
             ),
             WorkflowDefinition(
                 id="architecture_improvement",
@@ -199,29 +247,47 @@ class AgentEcosystemCoordinator:
                 description="Coordinated effort to improve system architecture",
                 trigger_conditions=["architecture_violations_threshold", "manual_request"],
                 steps=[
-                    {"agent": "architecture_reviewer", "action": "comprehensive_analysis", "parallel": False},
+                    {
+                        "agent": "architecture_reviewer",
+                        "action": "comprehensive_analysis",
+                        "parallel": False,
+                    },
                     {"agent": "debt_tracker", "action": "identify_related_debt", "parallel": True},
-                    {"agent": "refactoring_coordinator", "action": "plan_architectural_refactoring", "parallel": False},
-                    {"agent": "documentation_maintainer", "action": "create_architecture_docs", "parallel": True},
-                    {"agent": "quality_monitor", "action": "establish_quality_gates", "parallel": True}
+                    {
+                        "agent": "refactoring_coordinator",
+                        "action": "plan_architectural_refactoring",
+                        "parallel": False,
+                    },
+                    {
+                        "agent": "documentation_maintainer",
+                        "action": "create_architecture_docs",
+                        "parallel": True,
+                    },
+                    {
+                        "agent": "quality_monitor",
+                        "action": "establish_quality_gates",
+                        "parallel": True,
+                    },
                 ],
                 success_criteria=[
                     "Architecture analysis completed",
                     "Refactoring plan approved",
                     "Documentation updated",
-                    "Quality gates established"
+                    "Quality gates established",
                 ],
                 failure_conditions=[
                     "Architecture analysis failed",
-                    "Stakeholder approval not obtained"
+                    "Stakeholder approval not obtained",
                 ],
                 estimated_duration=timedelta(days=3),
                 required_agents=[
-                    AgentRole.ARCHITECTURE_REVIEWER, AgentRole.DEBT_TRACKER,
-                    AgentRole.REFACTORING_COORDINATOR, AgentRole.DOCUMENTATION_MAINTAINER,
-                    AgentRole.QUALITY_MONITOR
-                ]
-            )
+                    AgentRole.ARCHITECTURE_REVIEWER,
+                    AgentRole.DEBT_TRACKER,
+                    AgentRole.REFACTORING_COORDINATOR,
+                    AgentRole.DOCUMENTATION_MAINTAINER,
+                    AgentRole.QUALITY_MONITOR,
+                ],
+            ),
         ]
 
     def _initialize_coordination_rules(self) -> Dict[str, Dict]:
@@ -231,26 +297,26 @@ class AgentEcosystemCoordinator:
                 "max_message_age_hours": 24,
                 "response_timeout_hours": 8,
                 "urgent_response_timeout_minutes": 30,
-                "max_concurrent_conversations": 5
+                "max_concurrent_conversations": 5,
             },
             "task_assignment_rules": {
                 "max_tasks_per_agent": 3,
                 "priority_threshold_for_preemption": 8,
                 "load_balancing_enabled": True,
-                "skill_matching_required": True
+                "skill_matching_required": True,
             },
             "collaboration_rules": {
                 "min_agents_for_consensus": 2,
                 "data_sharing_protocols": ["encrypted", "versioned", "audited"],
                 "conflict_resolution_method": "priority_based",
-                "knowledge_sharing_mandatory": True
+                "knowledge_sharing_mandatory": True,
             },
             "escalation_rules": {
                 "task_overdue_escalation_hours": 24,
                 "critical_issue_immediate_escalation": True,
                 "stakeholder_notification_threshold": "high_priority",
-                "automated_resolution_attempts": 3
-            }
+                "automated_resolution_attempts": 3,
+            },
         }
 
     def _initialize_metrics(self) -> EcosystemMetrics:
@@ -262,10 +328,12 @@ class AgentEcosystemCoordinator:
             communication_volume=defaultdict(int),
             collaboration_effectiveness=0.0,
             knowledge_sharing_score=0.0,
-            overall_ecosystem_health=0.0
+            overall_ecosystem_health=0.0,
         )
 
-    async def execute_workflow(self, workflow_id: str, context: Optional[Dict[str, Any]] = None) -> Dict[str, Any]:
+    async def execute_workflow(
+        self, workflow_id: str, context: Optional[Dict[str, Any]] = None
+    ) -> Dict[str, Any]:
         """
         Execute a predefined workflow with full coordination
 
@@ -292,7 +360,7 @@ class AgentEcosystemCoordinator:
             "context": context or {},
             "results": {},
             "errors": [],
-            "status": "running"
+            "status": "running",
         }
 
         try:
@@ -308,7 +376,9 @@ class AgentEcosystemCoordinator:
             execution_context["status"] = "completed" if success else "failed"
             execution_context["results"] = results
             execution_context["completion_time"] = datetime.now()
-            execution_context["duration"] = (execution_context["completion_time"] - start_time).total_seconds()
+            execution_context["duration"] = (
+                execution_context["completion_time"] - start_time
+            ).total_seconds()
 
             # Update metrics
             await self._update_workflow_metrics(workflow, execution_context)
@@ -324,7 +394,9 @@ class AgentEcosystemCoordinator:
             execution_context["completion_time"] = datetime.now()
             return execution_context
 
-    async def _create_workflow_tasks(self, workflow: WorkflowDefinition, execution_context: Dict[str, Any]):
+    async def _create_workflow_tasks(
+        self, workflow: WorkflowDefinition, execution_context: Dict[str, Any]
+    ):
         """Create coordinated tasks for workflow execution"""
         for i, step in enumerate(workflow.steps):
             task_id = f"{execution_context['execution_id']}_step_{i}"
@@ -345,13 +417,15 @@ class AgentEcosystemCoordinator:
                     "workflow_id": workflow.id,
                     "step_index": i,
                     "action": step["action"],
-                    "parallel": step.get("parallel", False)
-                }
+                    "parallel": step.get("parallel", False),
+                },
             )
 
             self.active_tasks[task_id] = task
 
-    async def _execute_workflow_steps(self, workflow: WorkflowDefinition, execution_context: Dict[str, Any]) -> Dict[str, Any]:
+    async def _execute_workflow_steps(
+        self, workflow: WorkflowDefinition, execution_context: Dict[str, Any]
+    ) -> Dict[str, Any]:
         """Execute workflow steps with proper coordination"""
         results = {}
 
@@ -377,13 +451,17 @@ class AgentEcosystemCoordinator:
             if len(step_group) == 1:
                 # Sequential execution
                 step = step_group[0]
-                result = await self._execute_agent_action(step["agent"], step["action"], execution_context)
+                result = await self._execute_agent_action(
+                    step["agent"], step["action"], execution_context
+                )
                 results[f"step_{group_index}_{step['agent']}"] = result
             else:
                 # Parallel execution
                 tasks = []
                 for step in step_group:
-                    task = self._execute_agent_action(step["agent"], step["action"], execution_context)
+                    task = self._execute_agent_action(
+                        step["agent"], step["action"], execution_context
+                    )
                     tasks.append((step["agent"], task))
 
                 # Wait for all parallel tasks to complete
@@ -396,7 +474,9 @@ class AgentEcosystemCoordinator:
 
         return results
 
-    async def _execute_agent_action(self, agent_name: str, action: str, execution_context: Dict[str, Any]) -> Any:
+    async def _execute_agent_action(
+        self, agent_name: str, action: str, execution_context: Dict[str, Any]
+    ) -> Any:
         """Execute a specific action on an agent"""
         agent_role = AgentRole(agent_name)
         agent = self.agents[agent_role]
@@ -465,8 +545,8 @@ class AgentEcosystemCoordinator:
                 content={
                     "action": action,
                     "execution_context": execution_context,
-                    "timestamp": datetime.now().isoformat()
-                }
+                    "timestamp": datetime.now().isoformat(),
+                },
             )
 
             return {"status": "completed", "action": action, "agent": agent_name}
@@ -475,7 +555,9 @@ class AgentEcosystemCoordinator:
             logger.error(f"❌ Failed to execute {action} on {agent_name}: {e}")
             raise
 
-    def _extract_debt_items_from_context(self, execution_context: Dict[str, Any]) -> List[TechnicalDebtItem]:
+    def _extract_debt_items_from_context(
+        self, execution_context: Dict[str, Any]
+    ) -> List[TechnicalDebtItem]:
         """Extract debt items from execution context"""
         debt_items = []
         for key, result in execution_context.get("results", {}).items():
@@ -485,7 +567,9 @@ class AgentEcosystemCoordinator:
                         debt_items.extend(items)
         return debt_items
 
-    def _extract_violations_from_context(self, execution_context: Dict[str, Any]) -> List[ArchitecturalViolation]:
+    def _extract_violations_from_context(
+        self, execution_context: Dict[str, Any]
+    ) -> List[ArchitecturalViolation]:
         """Extract architectural violations from execution context"""
         violations = []
         for key, result in execution_context.get("results", {}).items():
@@ -498,8 +582,7 @@ class AgentEcosystemCoordinator:
     def _extract_critical_violations(self, quality_report: QualityReport) -> Dict[str, Any]:
         """Extract critical violations from quality report"""
         critical_violations = [
-            v for v in quality_report.violations
-            if v.severity.value in ["blocker", "critical"]
+            v for v in quality_report.violations if v.severity.value in ["blocker", "critical"]
         ]
 
         return {
@@ -507,8 +590,8 @@ class AgentEcosystemCoordinator:
             "total_critical": len(critical_violations),
             "severity_breakdown": {
                 "blocker": len([v for v in critical_violations if v.severity.value == "blocker"]),
-                "critical": len([v for v in critical_violations if v.severity.value == "critical"])
-            }
+                "critical": len([v for v in critical_violations if v.severity.value == "critical"]),
+            },
         }
 
     def _extract_critical_items_from_context(self, execution_context: Dict[str, Any]) -> List[Any]:
@@ -518,10 +601,13 @@ class AgentEcosystemCoordinator:
             if isinstance(result, dict):
                 for category, items in result.items():
                     if isinstance(items, list):
-                        critical_items.extend([
-                            item for item in items
-                            if hasattr(item, 'severity') and item.severity.value == "critical"
-                        ])
+                        critical_items.extend(
+                            [
+                                item
+                                for item in items
+                                if hasattr(item, "severity") and item.severity.value == "critical"
+                            ]
+                        )
         return critical_items
 
     def _extract_arch_violations_from_context(self, execution_context: Dict[str, Any]) -> List[Any]:
@@ -532,7 +618,9 @@ class AgentEcosystemCoordinator:
                 violations.extend(result.get("violations", []))
         return violations
 
-    async def _create_incident_documentation(self, execution_context: Dict[str, Any]) -> Dict[str, Any]:
+    async def _create_incident_documentation(
+        self, execution_context: Dict[str, Any]
+    ) -> Dict[str, Any]:
         """Create incident documentation for critical issues"""
         incident_doc = {
             "incident_id": execution_context["execution_id"],
@@ -543,12 +631,14 @@ class AgentEcosystemCoordinator:
             "response_actions": [],
             "resolution_plan": execution_context.get("results", {}),
             "stakeholders_notified": [],
-            "status": "investigating"
+            "status": "investigating",
         }
 
         return incident_doc
 
-    async def _create_architecture_documentation(self, execution_context: Dict[str, Any]) -> Dict[str, Any]:
+    async def _create_architecture_documentation(
+        self, execution_context: Dict[str, Any]
+    ) -> Dict[str, Any]:
         """Create architecture documentation from analysis results"""
         arch_doc = {
             "document_type": "architectural_analysis",
@@ -556,7 +646,7 @@ class AgentEcosystemCoordinator:
             "analysis_results": execution_context.get("results", {}),
             "recommendations": [],
             "implementation_plan": {},
-            "stakeholder_approval": "pending"
+            "stakeholder_approval": "pending",
         }
 
         return arch_doc
@@ -571,17 +661,19 @@ class AgentEcosystemCoordinator:
             "timeline": "24-48 hours",
             "resource_requirements": [],
             "risk_mitigation": [],
-            "success_criteria": []
+            "success_criteria": [],
         }
 
         # Add immediate actions based on critical items
         for item in critical_items[:5]:  # Top 5 critical items
-            emergency_plan["immediate_actions"].append({
-                "item_id": getattr(item, 'id', 'unknown'),
-                "action": "immediate_fix_required",
-                "estimated_hours": 2,
-                "assigned_to": "senior_developer"
-            })
+            emergency_plan["immediate_actions"].append(
+                {
+                    "item_id": getattr(item, "id", "unknown"),
+                    "action": "immediate_fix_required",
+                    "estimated_hours": 2,
+                    "assigned_to": "senior_developer",
+                }
+            )
 
         return emergency_plan
 
@@ -594,17 +686,21 @@ class AgentEcosystemCoordinator:
             "refactoring_phases": [],
             "estimated_duration": "2-4 weeks",
             "resource_requirements": [],
-            "quality_gates": []
+            "quality_gates": [],
         }
 
         return refactoring_plan
 
-    async def _update_step_completion(self, workflow: WorkflowDefinition, step_index: int, execution_context: Dict[str, Any]):
+    async def _update_step_completion(
+        self, workflow: WorkflowDefinition, step_index: int, execution_context: Dict[str, Any]
+    ):
         """Update task status after step completion"""
         # Find and update relevant tasks
         for task_id, task in self.active_tasks.items():
-            if (task.context.get("workflow_id") == workflow.id and
-                task.context.get("step_index") == step_index):
+            if (
+                task.context.get("workflow_id") == workflow.id
+                and task.context.get("step_index") == step_index
+            ):
                 task.status = TaskStatus.COMPLETED
                 task.progress_percentage = 100.0
 
@@ -613,7 +709,9 @@ class AgentEcosystemCoordinator:
                 del self.active_tasks[task_id]
                 break
 
-    async def _validate_workflow_success(self, workflow: WorkflowDefinition, results: Dict[str, Any]) -> bool:
+    async def _validate_workflow_success(
+        self, workflow: WorkflowDefinition, results: Dict[str, Any]
+    ) -> bool:
         """Validate workflow success criteria"""
         for criteria in workflow.success_criteria:
             if not self._check_success_criteria(criteria, results):
@@ -627,7 +725,8 @@ class AgentEcosystemCoordinator:
         # Simple criteria checking - can be enhanced
         if "completed successfully" in criteria:
             return len(results) > 0 and all(
-                result.get("status") != "failed" for result in results.values()
+                result.get("status") != "failed"
+                for result in results.values()
                 if isinstance(result, dict)
             )
         elif "plan generated" in criteria:
@@ -637,7 +736,9 @@ class AgentEcosystemCoordinator:
         else:
             return True  # Default to true for unknown criteria
 
-    async def _update_workflow_metrics(self, workflow: WorkflowDefinition, execution_context: Dict[str, Any]):
+    async def _update_workflow_metrics(
+        self, workflow: WorkflowDefinition, execution_context: Dict[str, Any]
+    ):
         """Update ecosystem metrics after workflow completion"""
         self.performance_metrics.total_tasks_completed += len(workflow.steps)
 
@@ -648,8 +749,8 @@ class AgentEcosystemCoordinator:
             total_completed = self.performance_metrics.total_tasks_completed
 
             self.performance_metrics.average_task_completion_time = (
-                (current_avg * (total_completed - len(workflow.steps)) + new_duration) / total_completed
-            )
+                current_avg * (total_completed - len(workflow.steps)) + new_duration
+            ) / total_completed
 
         # Update agent utilization
         for agent in workflow.required_agents:
@@ -657,7 +758,9 @@ class AgentEcosystemCoordinator:
             self.performance_metrics.agent_utilization[agent] = min(100.0, current_util + 10.0)
 
         # Update communication volume
-        self.performance_metrics.communication_volume["workflow_messages"] += len(workflow.steps) * 2
+        self.performance_metrics.communication_volume["workflow_messages"] += (
+            len(workflow.steps) * 2
+        )
 
     async def _send_agent_message(
         self,
@@ -668,7 +771,7 @@ class AgentEcosystemCoordinator:
         subject: str,
         content: Dict[str, Any],
         requires_response: bool = False,
-        response_deadline: Optional[datetime] = None
+        response_deadline: Optional[datetime] = None,
     ) -> str:
         """Send message between agents"""
         message_id = str(uuid.uuid4())
@@ -682,7 +785,7 @@ class AgentEcosystemCoordinator:
             subject=subject,
             content=content,
             requires_response=requires_response,
-            response_deadline=response_deadline
+            response_deadline=response_deadline,
         )
 
         self.message_queue.append(message)
@@ -702,29 +805,33 @@ class AgentEcosystemCoordinator:
             "recent_activities": [],
             "performance_metrics": asdict(self.performance_metrics),
             "workflow_definitions": len(self.workflows),
-            "system_health": "healthy"
+            "system_health": "healthy",
         }
 
         # Agent status
         for role, agent in self.agents.items():
-            agent_tasks = [task for task in self.active_tasks.values() if task.primary_agent == role]
+            agent_tasks = [
+                task for task in self.active_tasks.values() if task.primary_agent == role
+            ]
             status["agent_status"][role.value] = {
                 "active_tasks": len(agent_tasks),
                 "utilization": self.performance_metrics.agent_utilization[role],
                 "last_activity": datetime.now().isoformat(),  # Simplified
-                "status": "active"
+                "status": "active",
             }
 
         # Recent activities
         recent_tasks = list(self.completed_tasks)[-10:]  # Last 10 completed tasks
         for task in recent_tasks:
-            status["recent_activities"].append({
-                "task_id": task.id,
-                "title": task.title,
-                "agent": task.primary_agent.value,
-                "completed_at": datetime.now().isoformat(),  # Simplified
-                "duration": task.estimated_duration.total_seconds()
-            })
+            status["recent_activities"].append(
+                {
+                    "task_id": task.id,
+                    "title": task.title,
+                    "agent": task.primary_agent.value,
+                    "completed_at": datetime.now().isoformat(),  # Simplified
+                    "duration": task.estimated_duration.total_seconds(),
+                }
+            )
 
         return status
 
@@ -736,7 +843,7 @@ class AgentEcosystemCoordinator:
             "analysis_type": "comprehensive",
             "requested_by": "system",
             "include_recommendations": True,
-            "export_reports": True
+            "export_reports": True,
         }
 
         result = await self.execute_workflow("comprehensive_debt_analysis", context)
@@ -748,7 +855,7 @@ class AgentEcosystemCoordinator:
             "workflow_result": result,
             "summary": summary,
             "recommendations": await self._extract_recommendations_from_results(result),
-            "next_actions": await self._suggest_next_actions(result)
+            "next_actions": await self._suggest_next_actions(result),
         }
 
     async def _generate_analysis_summary(self, workflow_result: Dict[str, Any]) -> Dict[str, Any]:
@@ -756,14 +863,17 @@ class AgentEcosystemCoordinator:
         summary = {
             "execution_status": workflow_result.get("status", "unknown"),
             "duration_seconds": workflow_result.get("duration", 0),
-            "agents_involved": len(set(
-                step.split("_")[2] for step in workflow_result.get("results", {}).keys()
-                if "_" in step
-            )),
+            "agents_involved": len(
+                set(
+                    step.split("_")[2]
+                    for step in workflow_result.get("results", {}).keys()
+                    if "_" in step
+                )
+            ),
             "issues_identified": 0,
             "critical_issues": 0,
             "recommendations_generated": 0,
-            "overall_health_score": 0.0
+            "overall_health_score": 0.0,
         }
 
         # Analyze results for metrics
@@ -772,16 +882,21 @@ class AgentEcosystemCoordinator:
             if isinstance(result, dict):
                 if "violations" in result:
                     summary["issues_identified"] += len(result["violations"])
-                    summary["critical_issues"] += len([
-                        v for v in result["violations"]
-                        if hasattr(v, 'severity') and v.severity.value == "critical"
-                    ])
+                    summary["critical_issues"] += len(
+                        [
+                            v
+                            for v in result["violations"]
+                            if hasattr(v, "severity") and v.severity.value == "critical"
+                        ]
+                    )
                 elif "recommendations" in result:
                     summary["recommendations_generated"] += len(result["recommendations"])
 
         return summary
 
-    async def _extract_recommendations_from_results(self, workflow_result: Dict[str, Any]) -> List[str]:
+    async def _extract_recommendations_from_results(
+        self, workflow_result: Dict[str, Any]
+    ) -> List[str]:
         """Extract all recommendations from workflow results"""
         recommendations = []
 
@@ -801,12 +916,14 @@ class AgentEcosystemCoordinator:
             "📋 Review generated refactoring plan and prioritize tasks",
             "👥 Assign refactoring tasks to development teams",
             "📊 Schedule regular technical debt monitoring",
-            "🔍 Set up automated quality gates in CI/CD pipeline"
+            "🔍 Set up automated quality gates in CI/CD pipeline",
         ]
 
         # Add specific actions based on results
         if workflow_result.get("status") == "completed":
-            next_actions.insert(0, "✅ Analysis completed successfully - proceed with implementation")
+            next_actions.insert(
+                0, "✅ Analysis completed successfully - proceed with implementation"
+            )
         else:
             next_actions.insert(0, "⚠️  Analysis incomplete - review errors and retry")
 
@@ -822,7 +939,7 @@ class AgentEcosystemCoordinator:
             "communication_log": [asdict(msg) for msg in list(self.message_queue)],
             "workflow_definitions": [asdict(wf) for wf in self.workflows],
             "coordination_rules": self.coordination_rules,
-            "performance_metrics": asdict(self.performance_metrics)
+            "performance_metrics": asdict(self.performance_metrics),
         }
 
         # JSON serialization helper
@@ -835,11 +952,12 @@ class AgentEcosystemCoordinator:
                 return obj.value
             return str(obj)
 
-        with open(output_path, 'w') as f:
+        with open(output_path, "w") as f:
             json.dump(report_data, f, indent=2, default=json_serializer)
 
         logger.info(f"🗂️  Ecosystem report exported to {output_path}")
         return output_path
+
 
 # Initialize the agent ecosystem coordinator
 ecosystem_coordinator = AgentEcosystemCoordinator(

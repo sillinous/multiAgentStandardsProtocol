@@ -56,7 +56,7 @@ async def demo_rest_api():
         collective_data = {
             "consciousness_id": "api_demo_collective",
             "persistent": False,
-            "auto_save": False
+            "auto_save": False,
         }
         async with session.post(f"{API_BASE}/api/consciousness/", json=collective_data) as resp:
             if resp.status == 200:
@@ -73,13 +73,12 @@ async def demo_rest_api():
         agents = [
             {"agent_id": "analyst_001", "initial_state": "awakening"},
             {"agent_id": "strategist_001", "initial_state": "awakening"},
-            {"agent_id": "optimizer_001", "initial_state": "awakening"}
+            {"agent_id": "optimizer_001", "initial_state": "awakening"},
         ]
 
         for agent in agents:
             async with session.post(
-                f"{API_BASE}/api/consciousness/api_demo_collective/agents",
-                json=agent
+                f"{API_BASE}/api/consciousness/api_demo_collective/agents", json=agent
             ) as resp:
                 data = await resp.json()
                 print(f"   {data['agent_id']}: {data['state']}")
@@ -101,43 +100,44 @@ async def demo_rest_api():
                 "agent_id": "analyst_001",
                 "thought_type": "observation",
                 "content": "Market shows 23% volatility in Q4",
-                "confidence": 0.92
+                "confidence": 0.92,
             },
             {
                 "agent_id": "strategist_001",
                 "thought_type": "question",
                 "content": "What are the key risk factors?",
-                "confidence": 0.75
+                "confidence": 0.75,
             },
             {
                 "agent_id": "optimizer_001",
                 "thought_type": "insight",
                 "content": "Portfolio rebalancing can reduce risk by 35%",
                 "confidence": 0.88,
-                "emotional_valence": 0.6
+                "emotional_valence": 0.6,
             },
             {
                 "agent_id": "analyst_001",
                 "thought_type": "inference",
                 "content": "Volatility correlates with sector concentration",
-                "confidence": 0.85
+                "confidence": 0.85,
             },
             {
                 "agent_id": "strategist_001",
                 "thought_type": "intention",
                 "content": "Should diversify across 5 key sectors",
-                "confidence": 0.80
-            }
+                "confidence": 0.80,
+            },
         ]
 
         for thought in thoughts:
             async with session.post(
-                f"{API_BASE}/api/consciousness/api_demo_collective/thoughts",
-                json=thought
+                f"{API_BASE}/api/consciousness/api_demo_collective/thoughts", json=thought
             ) as resp:
                 data = await resp.json()
-                print(f"   {data['agent_id']}: {data['thought_type']} "
-                      f"({data['entangled_with']} entanglements)")
+                print(
+                    f"   {data['agent_id']}: {data['thought_type']} "
+                    f"({data['entangled_with']} entanglements)"
+                )
 
         print()
 
@@ -145,7 +145,7 @@ async def demo_rest_api():
         print("6. Getting consciousness metrics...")
         async with session.get(f"{API_BASE}/api/consciousness/api_demo_collective/metrics") as resp:
             metrics = await resp.json()
-            m = metrics['metrics']
+            m = metrics["metrics"]
             print(f"   Total Thoughts: {m['total_thoughts']}")
             print(f"   In Superposition: {m['thoughts_in_superposition']}")
             print(f"   Entanglement Density: {m['entanglement_density']:.2f}")
@@ -154,22 +154,18 @@ async def demo_rest_api():
 
         # 7. Trigger consciousness collapse
         print("7. Triggering consciousness collapse...")
-        collapse_data = {
-            "query": "How can we optimize portfolio risk?",
-            "min_coherence": 0.4
-        }
+        collapse_data = {"query": "How can we optimize portfolio risk?", "min_coherence": 0.4}
         async with session.post(
-            f"{API_BASE}/api/consciousness/api_demo_collective/collapse",
-            json=collapse_data
+            f"{API_BASE}/api/consciousness/api_demo_collective/collapse", json=collapse_data
         ) as resp:
             data = await resp.json()
             print(f"   Query: {data['query']}")
             print(f"   Patterns Discovered: {data['patterns_discovered']}")
             print()
 
-            if data['patterns_discovered'] > 0:
+            if data["patterns_discovered"] > 0:
                 print("   Emergent Patterns:")
-                for i, pattern in enumerate(data['patterns'], 1):
+                for i, pattern in enumerate(data["patterns"], 1):
                     print(f"   {i}. {pattern['pattern_type'].upper()}")
                     print(f"      Coherence: {pattern['coherence_score']:.0%}")
                     print(f"      Novelty: {pattern['novelty_score']:.0%}")
@@ -182,7 +178,7 @@ async def demo_rest_api():
         async with session.get(f"{API_BASE}/api/consciousness/api_demo_collective/health") as resp:
             health = await resp.json()
             print(f"   Health Status: {health['health'].upper()}")
-            if health['issues']:
+            if health["issues"]:
                 print(f"   Issues: {', '.join(health['issues'])}")
             else:
                 print("   No issues detected")
@@ -193,10 +189,12 @@ async def demo_rest_api():
         async with session.get(f"{API_BASE}/api/consciousness/") as resp:
             data = await resp.json()
             print(f"   Total Collectives: {len(data['collectives'])}")
-            for collective in data['collectives']:
-                print(f"   - {collective['consciousness_id']}: "
-                      f"{collective['total_agents']} agents, "
-                      f"{collective['emergent_patterns']} patterns")
+            for collective in data["collectives"]:
+                print(
+                    f"   - {collective['consciousness_id']}: "
+                    f"{collective['total_agents']} agents, "
+                    f"{collective['emergent_patterns']} patterns"
+                )
         print()
 
 
@@ -214,7 +212,9 @@ async def demo_websocket():
     print()
 
     try:
-        async with websockets.connect(f"{WS_BASE}/api/consciousness/api_demo_collective/stream") as websocket:
+        async with websockets.connect(
+            f"{WS_BASE}/api/consciousness/api_demo_collective/stream"
+        ) as websocket:
             print("Connected! Listening for events...")
             print("-" * 80)
 
@@ -223,30 +223,40 @@ async def demo_websocket():
                 async with asyncio.timeout(10):
                     async for message in websocket:
                         data = json.loads(message)
-                        event_type = data.get('event_type', 'unknown')
+                        event_type = data.get("event_type", "unknown")
                         timestamp = datetime.now().strftime("%H:%M:%S")
 
-                        if event_type == 'connected':
+                        if event_type == "connected":
                             print(f"[{timestamp}] CONNECTED to collective")
-                            state = data.get('data', {})
-                            print(f"            Initial state: {state.get('total_agents', 0)} agents, "
-                                  f"{state.get('total_thoughts', 0)} thoughts")
-                        elif event_type == 'agent_registered':
-                            event_data = data.get('data', {})
-                            print(f"[{timestamp}] AGENT REGISTERED: {event_data.get('agent_id')} "
-                                  f"({event_data.get('state')})")
-                        elif event_type == 'thought_contributed':
-                            event_data = data.get('data', {})
-                            print(f"[{timestamp}] THOUGHT: {event_data.get('agent_id')} -> "
-                                  f"{event_data.get('thought_type')}")
-                        elif event_type == 'consciousness_collapsed':
-                            event_data = data.get('data', {})
-                            print(f"[{timestamp}] COLLAPSE: {event_data.get('patterns_discovered')} "
-                                  f"patterns discovered")
-                        elif event_type == 'pattern_discovered':
-                            event_data = data.get('data', {})
-                            print(f"[{timestamp}] PATTERN: {event_data.get('pattern_type')} "
-                                  f"(coherence: {event_data.get('coherence', 0):.0%})")
+                            state = data.get("data", {})
+                            print(
+                                f"            Initial state: {state.get('total_agents', 0)} agents, "
+                                f"{state.get('total_thoughts', 0)} thoughts"
+                            )
+                        elif event_type == "agent_registered":
+                            event_data = data.get("data", {})
+                            print(
+                                f"[{timestamp}] AGENT REGISTERED: {event_data.get('agent_id')} "
+                                f"({event_data.get('state')})"
+                            )
+                        elif event_type == "thought_contributed":
+                            event_data = data.get("data", {})
+                            print(
+                                f"[{timestamp}] THOUGHT: {event_data.get('agent_id')} -> "
+                                f"{event_data.get('thought_type')}"
+                            )
+                        elif event_type == "consciousness_collapsed":
+                            event_data = data.get("data", {})
+                            print(
+                                f"[{timestamp}] COLLAPSE: {event_data.get('patterns_discovered')} "
+                                f"patterns discovered"
+                            )
+                        elif event_type == "pattern_discovered":
+                            event_data = data.get("data", {})
+                            print(
+                                f"[{timestamp}] PATTERN: {event_data.get('pattern_type')} "
+                                f"(coherence: {event_data.get('coherence', 0):.0%})"
+                            )
                         else:
                             print(f"[{timestamp}] {event_type}: {data.get('data', {})}")
 
@@ -315,6 +325,7 @@ async def main():
     except Exception as e:
         print(f"Demo error: {e}")
         import traceback
+
         traceback.print_exc()
     finally:
         await cleanup()

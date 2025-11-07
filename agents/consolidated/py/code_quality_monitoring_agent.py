@@ -24,37 +24,45 @@ import statistics
 
 logger = logging.getLogger(__name__)
 
+
 class QualityMetricType(Enum):
     """Types of quality metrics following APQC quality management standards"""
-    COMPLEXITY = "complexity"                    # 11.1.4.1 - Manage code complexity
-    COVERAGE = "coverage"                       # 11.1.4.2 - Monitor test coverage
-    MAINTAINABILITY = "maintainability"         # 11.1.4.3 - Assess maintainability
-    RELIABILITY = "reliability"                 # 11.1.4.4 - Monitor reliability
-    SECURITY = "security"                       # 11.1.4.5 - Assess security quality
-    PERFORMANCE = "performance"                 # 11.1.4.6 - Monitor performance
-    DOCUMENTATION = "documentation"             # 11.1.4.7 - Track documentation quality
-    DUPLICATION = "duplication"                 # 11.1.4.8 - Monitor code duplication
-    STYLE = "style"                            # 11.1.4.9 - Enforce coding standards
-    DEPENDENCY = "dependency"                   # 11.1.4.10 - Monitor dependencies
+
+    COMPLEXITY = "complexity"  # 11.1.4.1 - Manage code complexity
+    COVERAGE = "coverage"  # 11.1.4.2 - Monitor test coverage
+    MAINTAINABILITY = "maintainability"  # 11.1.4.3 - Assess maintainability
+    RELIABILITY = "reliability"  # 11.1.4.4 - Monitor reliability
+    SECURITY = "security"  # 11.1.4.5 - Assess security quality
+    PERFORMANCE = "performance"  # 11.1.4.6 - Monitor performance
+    DOCUMENTATION = "documentation"  # 11.1.4.7 - Track documentation quality
+    DUPLICATION = "duplication"  # 11.1.4.8 - Monitor code duplication
+    STYLE = "style"  # 11.1.4.9 - Enforce coding standards
+    DEPENDENCY = "dependency"  # 11.1.4.10 - Monitor dependencies
+
 
 class QualityViolationSeverity(Enum):
     """Severity levels for quality violations"""
-    BLOCKER = "blocker"        # Prevents deployment
-    CRITICAL = "critical"      # Major quality issue
-    MAJOR = "major"           # Significant quality issue
-    MINOR = "minor"           # Minor quality issue
-    INFO = "info"             # Informational
+
+    BLOCKER = "blocker"  # Prevents deployment
+    CRITICAL = "critical"  # Major quality issue
+    MAJOR = "major"  # Significant quality issue
+    MINOR = "minor"  # Minor quality issue
+    INFO = "info"  # Informational
+
 
 class QualityTrend(Enum):
     """Quality trend indicators"""
-    IMPROVING = "improving"    # Quality metrics improving
-    STABLE = "stable"         # Quality metrics stable
-    DEGRADING = "degrading"   # Quality metrics degrading
-    UNKNOWN = "unknown"       # Insufficient data
+
+    IMPROVING = "improving"  # Quality metrics improving
+    STABLE = "stable"  # Quality metrics stable
+    DEGRADING = "degrading"  # Quality metrics degrading
+    UNKNOWN = "unknown"  # Insufficient data
+
 
 @dataclass
 class QualityMetric:
     """Individual quality metric measurement"""
+
     metric_type: QualityMetricType
     name: str
     value: float
@@ -65,9 +73,11 @@ class QualityMetric:
     timestamp: datetime = field(default_factory=datetime.now)
     context: Dict[str, Any] = field(default_factory=dict)
 
+
 @dataclass
 class QualityViolation:
     """Quality violation detected by monitoring"""
+
     id: str
     violation_type: str
     severity: QualityViolationSeverity
@@ -84,9 +94,11 @@ class QualityViolation:
     detected_at: datetime = field(default_factory=datetime.now)
     context: Dict[str, Any] = field(default_factory=dict)
 
+
 @dataclass
 class QualityReport:
     """Comprehensive quality report"""
+
     report_id: str
     generated_at: datetime
     project_root: str
@@ -99,14 +111,17 @@ class QualityReport:
     improvement_plan: Dict[str, Any]
     comparison_data: Optional[Dict[str, Any]] = None
 
+
 @dataclass
 class QualityGate:
     """Quality gate definition for deployment pipeline"""
+
     name: str
     description: str
     conditions: List[Dict[str, Any]]  # metric conditions that must be met
     blocking: bool  # Whether failure blocks deployment
     severity_threshold: QualityViolationSeverity
+
 
 class CodeQualityMonitoringAgent:
     """
@@ -132,20 +147,20 @@ class CodeQualityMonitoringAgent:
                 description="Blocks deployment if security vulnerabilities found",
                 conditions=[
                     {"metric": "security_violations", "operator": "==", "value": 0},
-                    {"metric": "security_hotspots", "operator": "<=", "value": 2}
+                    {"metric": "security_hotspots", "operator": "<=", "value": 2},
                 ],
                 blocking=True,
-                severity_threshold=QualityViolationSeverity.CRITICAL
+                severity_threshold=QualityViolationSeverity.CRITICAL,
             ),
             QualityGate(
                 name="Reliability Gate",
                 description="Ensures minimum reliability standards",
                 conditions=[
                     {"metric": "reliability_rating", "operator": "<=", "value": 2},
-                    {"metric": "bugs", "operator": "<=", "value": 10}
+                    {"metric": "bugs", "operator": "<=", "value": 10},
                 ],
                 blocking=True,
-                severity_threshold=QualityViolationSeverity.MAJOR
+                severity_threshold=QualityViolationSeverity.MAJOR,
             ),
             QualityGate(
                 name="Maintainability Gate",
@@ -153,21 +168,21 @@ class CodeQualityMonitoringAgent:
                 conditions=[
                     {"metric": "maintainability_rating", "operator": "<=", "value": 2},
                     {"metric": "code_smells", "operator": "<=", "value": 50},
-                    {"metric": "technical_debt_ratio", "operator": "<=", "value": 5.0}
+                    {"metric": "technical_debt_ratio", "operator": "<=", "value": 5.0},
                 ],
                 blocking=False,
-                severity_threshold=QualityViolationSeverity.MAJOR
+                severity_threshold=QualityViolationSeverity.MAJOR,
             ),
             QualityGate(
                 name="Coverage Gate",
                 description="Ensures minimum test coverage",
                 conditions=[
                     {"metric": "line_coverage", "operator": ">=", "value": 80.0},
-                    {"metric": "branch_coverage", "operator": ">=", "value": 70.0}
+                    {"metric": "branch_coverage", "operator": ">=", "value": 70.0},
                 ],
                 blocking=False,
-                severity_threshold=QualityViolationSeverity.MINOR
-            )
+                severity_threshold=QualityViolationSeverity.MINOR,
+            ),
         ]
 
     def _initialize_metric_thresholds(self) -> Dict[str, Dict[str, float]]:
@@ -176,29 +191,17 @@ class CodeQualityMonitoringAgent:
             "complexity": {
                 "cyclomatic_complexity_per_function": 10.0,
                 "cognitive_complexity_per_function": 15.0,
-                "cyclomatic_complexity_per_file": 50.0
+                "cyclomatic_complexity_per_file": 50.0,
             },
             "maintainability": {
                 "maintainability_index_min": 60.0,
                 "lines_of_code_per_function": 50.0,
-                "functions_per_file": 20.0
+                "functions_per_file": 20.0,
             },
-            "duplication": {
-                "duplication_percentage": 3.0,
-                "duplicated_lines": 100
-            },
-            "documentation": {
-                "comment_density": 20.0,
-                "public_documented_api": 90.0
-            },
-            "security": {
-                "security_hotspots": 0,
-                "vulnerabilities": 0
-            },
-            "reliability": {
-                "bugs_per_kloc": 1.0,
-                "reliability_rating": 2.0
-            }
+            "duplication": {"duplication_percentage": 3.0, "duplicated_lines": 100},
+            "documentation": {"comment_density": 20.0, "public_documented_api": 90.0},
+            "security": {"security_hotspots": 0, "vulnerabilities": 0},
+            "reliability": {"bugs_per_kloc": 1.0, "reliability_rating": 2.0},
         }
 
     def _initialize_monitoring_config(self) -> Dict[str, Any]:
@@ -206,15 +209,21 @@ class CodeQualityMonitoringAgent:
         return {
             "scan_frequency": "on_commit",  # on_commit, hourly, daily
             "exclude_patterns": [
-                "*/test/*", "*/tests/*", "*_test.py", "*test_*.py",
-                "*/migrations/*", "*/venv/*", "*/.venv/*",
-                "*/node_modules/*", "*/.git/*"
+                "*/test/*",
+                "*/tests/*",
+                "*_test.py",
+                "*test_*.py",
+                "*/migrations/*",
+                "*/venv/*",
+                "*/.venv/*",
+                "*/node_modules/*",
+                "*/.git/*",
             ],
             "include_file_extensions": [".py", ".js", ".ts", ".tsx"],
             "enable_auto_fix": False,
             "quality_gate_enforcement": True,
             "trend_analysis_window_days": 30,
-            "baseline_update_frequency": "weekly"
+            "baseline_update_frequency": "weekly",
         }
 
     async def run_quality_analysis(self, baseline_comparison: bool = True) -> QualityReport:
@@ -267,7 +276,7 @@ class CodeQualityMonitoringAgent:
             trends=trends,
             recommendations=recommendations,
             improvement_plan=improvement_plan,
-            comparison_data=comparison_data
+            comparison_data=comparison_data,
         )
 
         # Store in history
@@ -277,7 +286,9 @@ class CodeQualityMonitoringAgent:
         await self._update_baseline_if_needed(metrics)
 
         analysis_time = (datetime.now() - start_time).total_seconds()
-        logger.info(f"✅ Quality analysis completed in {analysis_time:.2f}s - Grade: {grade} ({overall_score:.1f}/100)")
+        logger.info(
+            f"✅ Quality analysis completed in {analysis_time:.2f}s - Grade: {grade} ({overall_score:.1f}/100)"
+        )
 
         return report
 
@@ -328,7 +339,7 @@ class CodeQualityMonitoringAgent:
 
         for file_path in python_files:
             try:
-                with open(file_path, 'r', encoding='utf-8', errors='ignore') as f:
+                with open(file_path, "r", encoding="utf-8", errors="ignore") as f:
                     content = f.read()
                     tree = ast.parse(content)
 
@@ -343,17 +354,21 @@ class CodeQualityMonitoringAgent:
                         total_functions += 1
 
                         # Check against thresholds
-                        threshold = self.metric_thresholds["complexity"]["cyclomatic_complexity_per_function"]
-                        metrics.append(QualityMetric(
-                            metric_type=QualityMetricType.COMPLEXITY,
-                            name="cyclomatic_complexity_function",
-                            value=func_complexity,
-                            threshold=threshold,
-                            unit="complexity_units",
-                            file_path=str(file_path.relative_to(self.project_root)),
-                            component=f"{file_path.stem}.{node.name}",
-                            context={"function_name": node.name, "line_number": node.lineno}
-                        ))
+                        threshold = self.metric_thresholds["complexity"][
+                            "cyclomatic_complexity_per_function"
+                        ]
+                        metrics.append(
+                            QualityMetric(
+                                metric_type=QualityMetricType.COMPLEXITY,
+                                name="cyclomatic_complexity_function",
+                                value=func_complexity,
+                                threshold=threshold,
+                                unit="complexity_units",
+                                file_path=str(file_path.relative_to(self.project_root)),
+                                component=f"{file_path.stem}.{node.name}",
+                                context={"function_name": node.name, "line_number": node.lineno},
+                            )
+                        )
 
             except Exception as e:
                 logger.error(f"Error analyzing complexity for {file_path}: {e}")
@@ -361,25 +376,33 @@ class CodeQualityMonitoringAgent:
         # Calculate aggregated metrics
         if total_functions > 0:
             avg_cyclomatic_complexity = total_cyclomatic_complexity / total_functions
-            metrics.append(QualityMetric(
-                metric_type=QualityMetricType.COMPLEXITY,
-                name="average_cyclomatic_complexity",
-                value=avg_cyclomatic_complexity,
-                threshold=self.metric_thresholds["complexity"]["cyclomatic_complexity_per_function"],
-                unit="complexity_units",
-                context={"total_functions": total_functions}
-            ))
+            metrics.append(
+                QualityMetric(
+                    metric_type=QualityMetricType.COMPLEXITY,
+                    name="average_cyclomatic_complexity",
+                    value=avg_cyclomatic_complexity,
+                    threshold=self.metric_thresholds["complexity"][
+                        "cyclomatic_complexity_per_function"
+                    ],
+                    unit="complexity_units",
+                    context={"total_functions": total_functions},
+                )
+            )
 
         if file_complexities:
             avg_file_complexity = statistics.mean(file_complexities)
-            metrics.append(QualityMetric(
-                metric_type=QualityMetricType.COMPLEXITY,
-                name="average_file_complexity",
-                value=avg_file_complexity,
-                threshold=self.metric_thresholds["complexity"]["cyclomatic_complexity_per_file"],
-                unit="complexity_units",
-                context={"total_files": len(file_complexities)}
-            ))
+            metrics.append(
+                QualityMetric(
+                    metric_type=QualityMetricType.COMPLEXITY,
+                    name="average_file_complexity",
+                    value=avg_file_complexity,
+                    threshold=self.metric_thresholds["complexity"][
+                        "cyclomatic_complexity_per_file"
+                    ],
+                    unit="complexity_units",
+                    context={"total_files": len(file_complexities)},
+                )
+            )
 
         return metrics
 
@@ -395,9 +418,9 @@ class CodeQualityMonitoringAgent:
 
         for file_path in python_files:
             try:
-                with open(file_path, 'r', encoding='utf-8', errors='ignore') as f:
+                with open(file_path, "r", encoding="utf-8", errors="ignore") as f:
                     content = f.read()
-                    lines = [line for line in content.split('\n') if line.strip()]
+                    lines = [line for line in content.split("\n") if line.strip()]
                     total_loc += len(lines)
 
                 tree = ast.parse(content)
@@ -408,18 +431,19 @@ class CodeQualityMonitoringAgent:
                 maintainability_index = self._calculate_maintainability_index(content, tree)
                 maintainability_indices.append(maintainability_index)
 
-                metrics.append(QualityMetric(
-                    metric_type=QualityMetricType.MAINTAINABILITY,
-                    name="maintainability_index",
-                    value=maintainability_index,
-                    threshold=self.metric_thresholds["maintainability"]["maintainability_index_min"],
-                    unit="index_points",
-                    file_path=str(file_path.relative_to(self.project_root)),
-                    context={
-                        "lines_of_code": len(lines),
-                        "function_count": len(functions)
-                    }
-                ))
+                metrics.append(
+                    QualityMetric(
+                        metric_type=QualityMetricType.MAINTAINABILITY,
+                        name="maintainability_index",
+                        value=maintainability_index,
+                        threshold=self.metric_thresholds["maintainability"][
+                            "maintainability_index_min"
+                        ],
+                        unit="index_points",
+                        file_path=str(file_path.relative_to(self.project_root)),
+                        context={"lines_of_code": len(lines), "function_count": len(functions)},
+                    )
+                )
 
             except Exception as e:
                 logger.error(f"Error analyzing maintainability for {file_path}: {e}")
@@ -427,23 +451,29 @@ class CodeQualityMonitoringAgent:
         # Aggregated metrics
         if maintainability_indices:
             avg_maintainability = statistics.mean(maintainability_indices)
-            metrics.append(QualityMetric(
-                metric_type=QualityMetricType.MAINTAINABILITY,
-                name="average_maintainability_index",
-                value=avg_maintainability,
-                threshold=self.metric_thresholds["maintainability"]["maintainability_index_min"],
-                unit="index_points",
-                context={"total_files": len(maintainability_indices)}
-            ))
+            metrics.append(
+                QualityMetric(
+                    metric_type=QualityMetricType.MAINTAINABILITY,
+                    name="average_maintainability_index",
+                    value=avg_maintainability,
+                    threshold=self.metric_thresholds["maintainability"][
+                        "maintainability_index_min"
+                    ],
+                    unit="index_points",
+                    context={"total_files": len(maintainability_indices)},
+                )
+            )
 
-        metrics.append(QualityMetric(
-            metric_type=QualityMetricType.MAINTAINABILITY,
-            name="total_lines_of_code",
-            value=total_loc,
-            threshold=None,
-            unit="lines",
-            context={"total_functions": total_functions}
-        ))
+        metrics.append(
+            QualityMetric(
+                metric_type=QualityMetricType.MAINTAINABILITY,
+                name="total_lines_of_code",
+                value=total_loc,
+                threshold=None,
+                unit="lines",
+                context={"total_functions": total_functions},
+            )
+        )
 
         return metrics
 
@@ -460,12 +490,12 @@ class CodeQualityMonitoringAgent:
 
         for file_path in python_files:
             try:
-                with open(file_path, 'r', encoding='utf-8', errors='ignore') as f:
+                with open(file_path, "r", encoding="utf-8", errors="ignore") as f:
                     lines = [line.strip() for line in f.readlines() if line.strip()]
 
                 for line in lines:
                     # Normalize line for duplication detection
-                    normalized_line = re.sub(r'\s+', ' ', line.lower())
+                    normalized_line = re.sub(r"\s+", " ", line.lower())
                     if len(normalized_line) > 10:  # Only consider substantial lines
                         line_counts[normalized_line] += 1
                         all_lines.append(line)
@@ -478,26 +508,27 @@ class CodeQualityMonitoringAgent:
         total_lines = len(all_lines)
         duplication_percentage = (duplicated_lines / total_lines * 100) if total_lines > 0 else 0
 
-        metrics.append(QualityMetric(
-            metric_type=QualityMetricType.DUPLICATION,
-            name="duplication_percentage",
-            value=duplication_percentage,
-            threshold=self.metric_thresholds["duplication"]["duplication_percentage"],
-            unit="percentage",
-            context={
-                "duplicated_lines": duplicated_lines,
-                "total_lines": total_lines
-            }
-        ))
+        metrics.append(
+            QualityMetric(
+                metric_type=QualityMetricType.DUPLICATION,
+                name="duplication_percentage",
+                value=duplication_percentage,
+                threshold=self.metric_thresholds["duplication"]["duplication_percentage"],
+                unit="percentage",
+                context={"duplicated_lines": duplicated_lines, "total_lines": total_lines},
+            )
+        )
 
-        metrics.append(QualityMetric(
-            metric_type=QualityMetricType.DUPLICATION,
-            name="duplicated_lines",
-            value=duplicated_lines,
-            threshold=self.metric_thresholds["duplication"]["duplicated_lines"],
-            unit="lines",
-            context={"total_files": len(python_files)}
-        ))
+        metrics.append(
+            QualityMetric(
+                metric_type=QualityMetricType.DUPLICATION,
+                name="duplicated_lines",
+                value=duplicated_lines,
+                threshold=self.metric_thresholds["duplication"]["duplicated_lines"],
+                unit="lines",
+                context={"total_files": len(python_files)},
+            )
+        )
 
         return metrics
 
@@ -516,16 +547,18 @@ class CodeQualityMonitoringAgent:
 
         for file_path in python_files:
             try:
-                with open(file_path, 'r', encoding='utf-8', errors='ignore') as f:
+                with open(file_path, "r", encoding="utf-8", errors="ignore") as f:
                     content = f.read()
-                    lines = content.split('\n')
+                    lines = content.split("\n")
 
                 # Count comments
-                comment_lines = [line for line in lines if line.strip().startswith('#')]
+                comment_lines = [line for line in lines if line.strip().startswith("#")]
                 total_comments += len(comment_lines)
 
                 # Count non-empty code lines
-                code_lines = [line for line in lines if line.strip() and not line.strip().startswith('#')]
+                code_lines = [
+                    line for line in lines if line.strip() and not line.strip().startswith("#")
+                ]
                 total_code_lines += len(code_lines)
 
                 tree = ast.parse(content)
@@ -546,45 +579,51 @@ class CodeQualityMonitoringAgent:
                 logger.error(f"Error analyzing documentation for {file_path}: {e}")
 
         # Calculate documentation metrics
-        function_doc_percentage = (documented_functions / total_functions * 100) if total_functions > 0 else 0
-        class_doc_percentage = (documented_classes / total_classes * 100) if total_classes > 0 else 0
+        function_doc_percentage = (
+            (documented_functions / total_functions * 100) if total_functions > 0 else 0
+        )
+        class_doc_percentage = (
+            (documented_classes / total_classes * 100) if total_classes > 0 else 0
+        )
         comment_density = (total_comments / total_code_lines * 100) if total_code_lines > 0 else 0
 
-        metrics.extend([
-            QualityMetric(
-                metric_type=QualityMetricType.DOCUMENTATION,
-                name="function_documentation_percentage",
-                value=function_doc_percentage,
-                threshold=self.metric_thresholds["documentation"]["public_documented_api"],
-                unit="percentage",
-                context={
-                    "documented_functions": documented_functions,
-                    "total_functions": total_functions
-                }
-            ),
-            QualityMetric(
-                metric_type=QualityMetricType.DOCUMENTATION,
-                name="class_documentation_percentage",
-                value=class_doc_percentage,
-                threshold=self.metric_thresholds["documentation"]["public_documented_api"],
-                unit="percentage",
-                context={
-                    "documented_classes": documented_classes,
-                    "total_classes": total_classes
-                }
-            ),
-            QualityMetric(
-                metric_type=QualityMetricType.DOCUMENTATION,
-                name="comment_density",
-                value=comment_density,
-                threshold=self.metric_thresholds["documentation"]["comment_density"],
-                unit="percentage",
-                context={
-                    "total_comments": total_comments,
-                    "total_code_lines": total_code_lines
-                }
-            )
-        ])
+        metrics.extend(
+            [
+                QualityMetric(
+                    metric_type=QualityMetricType.DOCUMENTATION,
+                    name="function_documentation_percentage",
+                    value=function_doc_percentage,
+                    threshold=self.metric_thresholds["documentation"]["public_documented_api"],
+                    unit="percentage",
+                    context={
+                        "documented_functions": documented_functions,
+                        "total_functions": total_functions,
+                    },
+                ),
+                QualityMetric(
+                    metric_type=QualityMetricType.DOCUMENTATION,
+                    name="class_documentation_percentage",
+                    value=class_doc_percentage,
+                    threshold=self.metric_thresholds["documentation"]["public_documented_api"],
+                    unit="percentage",
+                    context={
+                        "documented_classes": documented_classes,
+                        "total_classes": total_classes,
+                    },
+                ),
+                QualityMetric(
+                    metric_type=QualityMetricType.DOCUMENTATION,
+                    name="comment_density",
+                    value=comment_density,
+                    threshold=self.metric_thresholds["documentation"]["comment_density"],
+                    unit="percentage",
+                    context={
+                        "total_comments": total_comments,
+                        "total_code_lines": total_code_lines,
+                    },
+                ),
+            ]
+        )
 
         return metrics
 
@@ -601,7 +640,7 @@ class CodeQualityMonitoringAgent:
             "unsafe_pickle": r"pickle\.loads\s*\(|cPickle\.loads\s*\(",
             "weak_crypto": r"md5\(|sha1\(|DES\(|RC4\(",
             "hardcoded_urls": r"https?://[^'\"]*(?:localhost|127\.0\.0\.1)",
-            "debug_code": r"print\s*\(.*password|print\s*\(.*secret"
+            "debug_code": r"print\s*\(.*password|print\s*\(.*secret",
         }
 
         python_files = list(self.project_root.rglob("*.py"))
@@ -612,7 +651,7 @@ class CodeQualityMonitoringAgent:
 
         for file_path in python_files:
             try:
-                with open(file_path, 'r', encoding='utf-8', errors='ignore') as f:
+                with open(file_path, "r", encoding="utf-8", errors="ignore") as f:
                     content = f.read()
 
                 total_files_scanned += 1
@@ -628,28 +667,32 @@ class CodeQualityMonitoringAgent:
         total_security_issues = sum(security_issues.values())
 
         for issue_type, count in security_issues.items():
-            metrics.append(QualityMetric(
-                metric_type=QualityMetricType.SECURITY,
-                name=f"security_{issue_type}",
-                value=count,
-                threshold=self.metric_thresholds["security"]["security_hotspots"],
-                unit="count",
-                context={"issue_type": issue_type}
-            ))
+            metrics.append(
+                QualityMetric(
+                    metric_type=QualityMetricType.SECURITY,
+                    name=f"security_{issue_type}",
+                    value=count,
+                    threshold=self.metric_thresholds["security"]["security_hotspots"],
+                    unit="count",
+                    context={"issue_type": issue_type},
+                )
+            )
 
         # Overall security score
         security_score = max(0, 100 - (total_security_issues * 10))
-        metrics.append(QualityMetric(
-            metric_type=QualityMetricType.SECURITY,
-            name="security_score",
-            value=security_score,
-            threshold=80.0,
-            unit="score",
-            context={
-                "total_issues": total_security_issues,
-                "files_scanned": total_files_scanned
-            }
-        ))
+        metrics.append(
+            QualityMetric(
+                metric_type=QualityMetricType.SECURITY,
+                name="security_score",
+                value=security_score,
+                threshold=80.0,
+                unit="score",
+                context={
+                    "total_issues": total_security_issues,
+                    "files_scanned": total_files_scanned,
+                },
+            )
+        )
 
         return metrics
 
@@ -668,12 +711,15 @@ class CodeQualityMonitoringAgent:
 
         for file_path in python_files:
             try:
-                with open(file_path, 'r', encoding='utf-8', errors='ignore') as f:
+                with open(file_path, "r", encoding="utf-8", errors="ignore") as f:
                     content = f.read()
 
                 # Extract imports
-                import_matches = re.findall(r'^(?:from\s+([a-zA-Z_][a-zA-Z0-9_.]*)|import\s+([a-zA-Z_][a-zA-Z0-9_.]*)).*$',
-                                          content, re.MULTILINE)
+                import_matches = re.findall(
+                    r"^(?:from\s+([a-zA-Z_][a-zA-Z0-9_.]*)|import\s+([a-zA-Z_][a-zA-Z0-9_.]*)).*$",
+                    content,
+                    re.MULTILINE,
+                )
 
                 for match in import_matches:
                     import_name = match[0] or match[1]
@@ -681,7 +727,7 @@ class CodeQualityMonitoringAgent:
                         all_imports.add(import_name)
                         import_counts[import_name] += 1
 
-                        if import_name.startswith('app.') or not '.' in import_name.split('.')[0]:
+                        if import_name.startswith("app.") or not "." in import_name.split(".")[0]:
                             internal_imports.add(import_name)
                         else:
                             external_imports.add(import_name)
@@ -691,29 +737,33 @@ class CodeQualityMonitoringAgent:
 
         # Calculate dependency metrics
         total_dependencies = len(all_imports)
-        external_dependency_ratio = len(external_imports) / total_dependencies if total_dependencies > 0 else 0
+        external_dependency_ratio = (
+            len(external_imports) / total_dependencies if total_dependencies > 0 else 0
+        )
 
         # Find most used dependencies
         most_used = sorted(import_counts.items(), key=lambda x: x[1], reverse=True)[:10]
 
-        metrics.extend([
-            QualityMetric(
-                metric_type=QualityMetricType.DEPENDENCY,
-                name="total_dependencies",
-                value=total_dependencies,
-                threshold=None,
-                unit="count",
-                context={"external": len(external_imports), "internal": len(internal_imports)}
-            ),
-            QualityMetric(
-                metric_type=QualityMetricType.DEPENDENCY,
-                name="external_dependency_ratio",
-                value=external_dependency_ratio * 100,
-                threshold=70.0,  # Warning if >70% external
-                unit="percentage",
-                context={"most_used": most_used[:5]}
-            )
-        ])
+        metrics.extend(
+            [
+                QualityMetric(
+                    metric_type=QualityMetricType.DEPENDENCY,
+                    name="total_dependencies",
+                    value=total_dependencies,
+                    threshold=None,
+                    unit="count",
+                    context={"external": len(external_imports), "internal": len(internal_imports)},
+                ),
+                QualityMetric(
+                    metric_type=QualityMetricType.DEPENDENCY,
+                    name="external_dependency_ratio",
+                    value=external_dependency_ratio * 100,
+                    threshold=70.0,  # Warning if >70% external
+                    unit="percentage",
+                    context={"most_used": most_used[:5]},
+                ),
+            ]
+        )
 
         return metrics
 
@@ -727,7 +777,7 @@ class CodeQualityMonitoringAgent:
             "trailing_whitespace": r"\s+$",
             "mixed_indentation": r"^(\t+ +| +\t+)",
             "missing_docstrings": r"^(def|class)\s+\w+.*:\s*$",
-            "unused_imports": r"^import\s+\w+$|^from\s+\w+\s+import\s+\w+$"
+            "unused_imports": r"^import\s+\w+$|^from\s+\w+\s+import\s+\w+$",
         }
 
         python_files = list(self.project_root.rglob("*.py"))
@@ -738,7 +788,7 @@ class CodeQualityMonitoringAgent:
 
         for file_path in python_files:
             try:
-                with open(file_path, 'r', encoding='utf-8', errors='ignore') as f:
+                with open(file_path, "r", encoding="utf-8", errors="ignore") as f:
                     lines = f.readlines()
 
                 total_lines += len(lines)
@@ -753,29 +803,32 @@ class CodeQualityMonitoringAgent:
 
         # Calculate style metrics
         total_violations = sum(style_violations.values())
-        style_score = max(0, 100 - (total_violations / total_lines * 100)) if total_lines > 0 else 100
+        style_score = (
+            max(0, 100 - (total_violations / total_lines * 100)) if total_lines > 0 else 100
+        )
 
         for violation_type, count in style_violations.items():
-            metrics.append(QualityMetric(
-                metric_type=QualityMetricType.STYLE,
-                name=f"style_{violation_type}",
-                value=count,
-                threshold=total_lines * 0.05,  # 5% threshold
-                unit="count",
-                context={"violation_type": violation_type}
-            ))
+            metrics.append(
+                QualityMetric(
+                    metric_type=QualityMetricType.STYLE,
+                    name=f"style_{violation_type}",
+                    value=count,
+                    threshold=total_lines * 0.05,  # 5% threshold
+                    unit="count",
+                    context={"violation_type": violation_type},
+                )
+            )
 
-        metrics.append(QualityMetric(
-            metric_type=QualityMetricType.STYLE,
-            name="style_score",
-            value=style_score,
-            threshold=80.0,
-            unit="score",
-            context={
-                "total_violations": total_violations,
-                "total_lines": total_lines
-            }
-        ))
+        metrics.append(
+            QualityMetric(
+                metric_type=QualityMetricType.STYLE,
+                name="style_score",
+                value=style_score,
+                threshold=80.0,
+                unit="score",
+                context={"total_violations": total_violations, "total_lines": total_lines},
+            )
+        )
 
         return metrics
 
@@ -804,7 +857,7 @@ class CodeQualityMonitoringAgent:
     def _calculate_maintainability_index(self, content: str, tree: ast.AST) -> float:
         """Calculate maintainability index for code"""
         # Simplified maintainability index calculation
-        lines_of_code = len([line for line in content.split('\n') if line.strip()])
+        lines_of_code = len([line for line in content.split("\n") if line.strip()])
         cyclomatic_complexity = sum(
             self._calculate_cyclomatic_complexity(node)
             for node in ast.walk(tree)
@@ -816,9 +869,17 @@ class CodeQualityMonitoringAgent:
 
         # Maintainability Index formula (simplified)
         if lines_of_code > 0:
-            maintainability_index = max(0, (171 - 5.2 * (halstead_volume / 1000) -
-                                           0.23 * cyclomatic_complexity -
-                                           16.2 * (lines_of_code / 1000)) * 100 / 171)
+            maintainability_index = max(
+                0,
+                (
+                    171
+                    - 5.2 * (halstead_volume / 1000)
+                    - 0.23 * cyclomatic_complexity
+                    - 16.2 * (lines_of_code / 1000)
+                )
+                * 100
+                / 171,
+            )
         else:
             maintainability_index = 100
 
@@ -852,9 +913,9 @@ class CodeQualityMonitoringAgent:
         violations = []
 
         try:
-            with open(file_path, 'r', encoding='utf-8', errors='ignore') as f:
+            with open(file_path, "r", encoding="utf-8", errors="ignore") as f:
                 content = f.read()
-                lines = content.split('\n')
+                lines = content.split("\n")
 
             tree = ast.parse(content)
 
@@ -862,67 +923,75 @@ class CodeQualityMonitoringAgent:
             for i, line in enumerate(lines, 1):
                 # Long line violation
                 if len(line) > 120:
-                    violations.append(QualityViolation(
-                        id=f"long_line_{file_path}_{i}",
-                        violation_type="style",
-                        severity=QualityViolationSeverity.MINOR,
-                        title="Line too long",
-                        description=f"Line {i} is {len(line)} characters long (max 120)",
-                        file_path=str(file_path.relative_to(self.project_root)),
-                        line_number=i,
-                        column_number=120,
-                        rule_id="E501",
-                        rule_description="Line too long",
-                        suggested_fix="Break line into multiple lines",
-                        auto_fixable=False,
-                        technical_debt_minutes=2
-                    ))
+                    violations.append(
+                        QualityViolation(
+                            id=f"long_line_{file_path}_{i}",
+                            violation_type="style",
+                            severity=QualityViolationSeverity.MINOR,
+                            title="Line too long",
+                            description=f"Line {i} is {len(line)} characters long (max 120)",
+                            file_path=str(file_path.relative_to(self.project_root)),
+                            line_number=i,
+                            column_number=120,
+                            rule_id="E501",
+                            rule_description="Line too long",
+                            suggested_fix="Break line into multiple lines",
+                            auto_fixable=False,
+                            technical_debt_minutes=2,
+                        )
+                    )
 
                 # Security violation - hardcoded password
                 if re.search(r"password\s*=\s*['\"][^'\"]{3,}['\"]", line, re.IGNORECASE):
-                    violations.append(QualityViolation(
-                        id=f"hardcoded_password_{file_path}_{i}",
-                        violation_type="security",
-                        severity=QualityViolationSeverity.CRITICAL,
-                        title="Hardcoded password detected",
-                        description="Password appears to be hardcoded in source code",
-                        file_path=str(file_path.relative_to(self.project_root)),
-                        line_number=i,
-                        column_number=None,
-                        rule_id="S106",
-                        rule_description="Hardcoded credentials should not be used",
-                        suggested_fix="Use environment variables or secure configuration",
-                        auto_fixable=False,
-                        technical_debt_minutes=30
-                    ))
+                    violations.append(
+                        QualityViolation(
+                            id=f"hardcoded_password_{file_path}_{i}",
+                            violation_type="security",
+                            severity=QualityViolationSeverity.CRITICAL,
+                            title="Hardcoded password detected",
+                            description="Password appears to be hardcoded in source code",
+                            file_path=str(file_path.relative_to(self.project_root)),
+                            line_number=i,
+                            column_number=None,
+                            rule_id="S106",
+                            rule_description="Hardcoded credentials should not be used",
+                            suggested_fix="Use environment variables or secure configuration",
+                            auto_fixable=False,
+                            technical_debt_minutes=30,
+                        )
+                    )
 
             # Check function complexity
             for node in ast.walk(tree):
                 if isinstance(node, ast.FunctionDef):
                     complexity = self._calculate_cyclomatic_complexity(node)
                     if complexity > 10:
-                        violations.append(QualityViolation(
-                            id=f"complex_function_{file_path}_{node.lineno}",
-                            violation_type="complexity",
-                            severity=QualityViolationSeverity.MAJOR,
-                            title="Function too complex",
-                            description=f"Function '{node.name}' has cyclomatic complexity of {complexity}",
-                            file_path=str(file_path.relative_to(self.project_root)),
-                            line_number=node.lineno,
-                            column_number=node.col_offset,
-                            rule_id="C901",
-                            rule_description="Function is too complex",
-                            suggested_fix="Break function into smaller functions",
-                            auto_fixable=False,
-                            technical_debt_minutes=60
-                        ))
+                        violations.append(
+                            QualityViolation(
+                                id=f"complex_function_{file_path}_{node.lineno}",
+                                violation_type="complexity",
+                                severity=QualityViolationSeverity.MAJOR,
+                                title="Function too complex",
+                                description=f"Function '{node.name}' has cyclomatic complexity of {complexity}",
+                                file_path=str(file_path.relative_to(self.project_root)),
+                                line_number=node.lineno,
+                                column_number=node.col_offset,
+                                rule_id="C901",
+                                rule_description="Function is too complex",
+                                suggested_fix="Break function into smaller functions",
+                                auto_fixable=False,
+                                technical_debt_minutes=60,
+                            )
+                        )
 
         except Exception as e:
             logger.error(f"Error analyzing violations for {file_path}: {e}")
 
         return violations
 
-    async def _calculate_overall_score(self, metrics: List[QualityMetric], violations: List[QualityViolation]) -> Tuple[float, str]:
+    async def _calculate_overall_score(
+        self, metrics: List[QualityMetric], violations: List[QualityViolation]
+    ) -> Tuple[float, str]:
         """Calculate overall quality score and grade"""
         # Calculate base score from metrics
         metric_scores = []
@@ -967,7 +1036,9 @@ class CodeQualityMonitoringAgent:
 
         return overall_score, grade
 
-    async def _analyze_quality_trends(self, current_metrics: List[QualityMetric]) -> Dict[str, QualityTrend]:
+    async def _analyze_quality_trends(
+        self, current_metrics: List[QualityMetric]
+    ) -> Dict[str, QualityTrend]:
         """Analyze quality trends over time"""
         trends = {}
 
@@ -986,8 +1057,13 @@ class CodeQualityMonitoringAgent:
                     previous_value = previous_metrics[metric.name]
 
                     # Determine if higher or lower is better
-                    if metric.name in ["security_score", "style_score", "maintainability_index",
-                                     "function_documentation_percentage", "class_documentation_percentage"]:
+                    if metric.name in [
+                        "security_score",
+                        "style_score",
+                        "maintainability_index",
+                        "function_documentation_percentage",
+                        "class_documentation_percentage",
+                    ]:
                         # Higher is better
                         if current_value > previous_value * 1.05:  # 5% improvement threshold
                             trends[metric.name] = QualityTrend.IMPROVING
@@ -1008,12 +1084,19 @@ class CodeQualityMonitoringAgent:
 
         return trends
 
-    async def _generate_recommendations(self, metrics: List[QualityMetric], violations: List[QualityViolation], trends: Dict[str, QualityTrend]) -> List[str]:
+    async def _generate_recommendations(
+        self,
+        metrics: List[QualityMetric],
+        violations: List[QualityViolation],
+        trends: Dict[str, QualityTrend],
+    ) -> List[str]:
         """Generate actionable quality improvement recommendations"""
         recommendations = []
 
         # Critical violations
-        critical_violations = [v for v in violations if v.severity == QualityViolationSeverity.CRITICAL]
+        critical_violations = [
+            v for v in violations if v.severity == QualityViolationSeverity.CRITICAL
+        ]
         if critical_violations:
             recommendations.append(
                 f"🚨 CRITICAL: Address {len(critical_violations)} critical violations immediately - they block deployment"
@@ -1042,7 +1125,9 @@ class CodeQualityMonitoringAgent:
             )
 
         # Degrading trends
-        degrading_trends = [name for name, trend in trends.items() if trend == QualityTrend.DEGRADING]
+        degrading_trends = [
+            name for name, trend in trends.items() if trend == QualityTrend.DEGRADING
+        ]
         if degrading_trends:
             recommendations.append(
                 f"📉 Trends: Monitor degrading quality in {len(degrading_trends)} areas: {', '.join(degrading_trends[:3])}"
@@ -1056,7 +1141,9 @@ class CodeQualityMonitoringAgent:
             )
 
         # Positive reinforcement
-        improving_trends = [name for name, trend in trends.items() if trend == QualityTrend.IMPROVING]
+        improving_trends = [
+            name for name, trend in trends.items() if trend == QualityTrend.IMPROVING
+        ]
         if improving_trends:
             recommendations.append(
                 f"✅ Good progress: Quality improving in {len(improving_trends)} areas - keep up the momentum"
@@ -1064,20 +1151,26 @@ class CodeQualityMonitoringAgent:
 
         return recommendations
 
-    async def _create_improvement_plan(self, violations: List[QualityViolation], metrics: List[QualityMetric]) -> Dict[str, Any]:
+    async def _create_improvement_plan(
+        self, violations: List[QualityViolation], metrics: List[QualityMetric]
+    ) -> Dict[str, Any]:
         """Create structured improvement plan"""
         plan = {
             "immediate_actions": [],
             "short_term_goals": [],
             "long_term_initiatives": [],
-            "estimated_effort_hours": 0
+            "estimated_effort_hours": 0,
         }
 
         # Sort violations by severity and impact
-        sorted_violations = sorted(violations, key=lambda v: (
-            {"blocker": 5, "critical": 4, "major": 3, "minor": 2, "info": 1}[v.severity.value],
-            v.technical_debt_minutes
-        ), reverse=True)
+        sorted_violations = sorted(
+            violations,
+            key=lambda v: (
+                {"blocker": 5, "critical": 4, "major": 3, "minor": 2, "info": 1}[v.severity.value],
+                v.technical_debt_minutes,
+            ),
+            reverse=True,
+        )
 
         total_effort_minutes = 0
 
@@ -1091,10 +1184,13 @@ class CodeQualityMonitoringAgent:
                 "file": violation.file_path,
                 "severity": violation.severity.value,
                 "effort_hours": effort_hours,
-                "suggested_fix": violation.suggested_fix
+                "suggested_fix": violation.suggested_fix,
             }
 
-            if violation.severity in [QualityViolationSeverity.BLOCKER, QualityViolationSeverity.CRITICAL]:
+            if violation.severity in [
+                QualityViolationSeverity.BLOCKER,
+                QualityViolationSeverity.CRITICAL,
+            ]:
                 plan["immediate_actions"].append(action_item)
             elif violation.severity == QualityViolationSeverity.MAJOR:
                 plan["short_term_goals"].append(action_item)
@@ -1114,7 +1210,7 @@ class CodeQualityMonitoringAgent:
             "improved_metrics": [],
             "degraded_metrics": [],
             "stable_metrics": [],
-            "new_metrics": []
+            "new_metrics": [],
         }
 
         current_metric_dict = {m.name: m.value for m in current_metrics}
@@ -1122,13 +1218,17 @@ class CodeQualityMonitoringAgent:
         for metric_name, current_value in current_metric_dict.items():
             if metric_name in self.baseline_metrics:
                 baseline_value = self.baseline_metrics[metric_name]
-                change_percentage = ((current_value - baseline_value) / baseline_value * 100) if baseline_value != 0 else 0
+                change_percentage = (
+                    ((current_value - baseline_value) / baseline_value * 100)
+                    if baseline_value != 0
+                    else 0
+                )
 
                 metric_info = {
                     "name": metric_name,
                     "current": current_value,
                     "baseline": baseline_value,
-                    "change_percentage": change_percentage
+                    "change_percentage": change_percentage,
                 }
 
                 # Determine if higher or lower is better
@@ -1149,18 +1249,14 @@ class CodeQualityMonitoringAgent:
                     else:
                         comparison["stable_metrics"].append(metric_info)
             else:
-                comparison["new_metrics"].append({
-                    "name": metric_name,
-                    "current": current_value
-                })
+                comparison["new_metrics"].append({"name": metric_name, "current": current_value})
 
         return comparison
 
     async def _update_baseline_if_needed(self, metrics: List[QualityMetric]):
         """Update baseline metrics if criteria met"""
         # Update baseline weekly or if significant improvement
-        if (not self.baseline_metrics or
-            datetime.now().weekday() == 0):  # Monday
+        if not self.baseline_metrics or datetime.now().weekday() == 0:  # Monday
 
             self.baseline_metrics = {m.name: m.value for m in metrics}
             logger.info("📊 Baseline metrics updated")
@@ -1175,7 +1271,7 @@ class CodeQualityMonitoringAgent:
                 "description": gate.description,
                 "passed": True,
                 "blocking": gate.blocking,
-                "failed_conditions": []
+                "failed_conditions": [],
             }
 
             # Check each condition
@@ -1207,11 +1303,13 @@ class CodeQualityMonitoringAgent:
 
                     if not condition_passed:
                         gate_result["passed"] = False
-                        gate_result["failed_conditions"].append({
-                            "metric": metric_name,
-                            "expected": f"{operator} {expected_value}",
-                            "actual": metric_value
-                        })
+                        gate_result["failed_conditions"].append(
+                            {
+                                "metric": metric_name,
+                                "expected": f"{operator} {expected_value}",
+                                "actual": metric_value,
+                            }
+                        )
 
             gate_results.append(gate_result)
 
@@ -1223,7 +1321,7 @@ class CodeQualityMonitoringAgent:
             "overall_status": "PASSED" if all_passed else "FAILED",
             "blocking_failures": len(blocking_failures),
             "deployment_allowed": len(blocking_failures) == 0,
-            "gate_results": gate_results
+            "gate_results": gate_results,
         }
 
     async def export_quality_report(self, report: QualityReport, output_path: str) -> str:
@@ -1238,11 +1336,12 @@ class CodeQualityMonitoringAgent:
                 return obj.value
             return str(obj)
 
-        with open(output_path, 'w') as f:
+        with open(output_path, "w") as f:
             json.dump(report_data, f, indent=2, default=json_serializer)
 
         logger.info(f"📊 Quality report exported to {output_path}")
         return output_path
+
 
 # Initialize the code quality monitoring agent
 quality_monitor = CodeQualityMonitoringAgent(

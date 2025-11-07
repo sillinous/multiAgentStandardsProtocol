@@ -48,13 +48,15 @@ class RouteOptimizationLogisticsAgent(BaseAgent, ProtocolMixin):
     APQC_PROCESS_ID = "4.5.3"
 
     def __init__(self, config: RouteOptimizationLogisticsAgentConfig):
-        super().__init__(agent_id=config.apqc_agent_id, agent_type=config.agent_type, version=config.version)
+        super().__init__(
+            agent_id=config.apqc_agent_id, agent_type=config.agent_type, version=config.version
+        )
         self.config = config
         self.skills = {
-            'dijkstra_algorithm': 0.95,
-            'traffic_prediction': 0.92,
-            'eta_calculation': 0.90,
-            'multi_stop_optimization': 0.88
+            "dijkstra_algorithm": 0.95,
+            "traffic_prediction": 0.92,
+            "eta_calculation": 0.90,
+            "multi_stop_optimization": 0.88,
         }
 
     async def execute(self, input_data: Dict[str, Any]) -> Dict[str, Any]:
@@ -71,11 +73,11 @@ class RouteOptimizationLogisticsAgent(BaseAgent, ProtocolMixin):
             "optimization_criteria": "time"  # or "distance", "cost"
         }
         """
-        origin = input_data.get('origin', {})
-        destination = input_data.get('destination', {})
-        waypoints = input_data.get('waypoints', [])
-        traffic_conditions = input_data.get('traffic_conditions', {})
-        optimization_criteria = input_data.get('optimization_criteria', 'time')
+        origin = input_data.get("origin", {})
+        destination = input_data.get("destination", {})
+        waypoints = input_data.get("waypoints", [])
+        traffic_conditions = input_data.get("traffic_conditions", {})
+        optimization_criteria = input_data.get("optimization_criteria", "time")
 
         # Calculate optimal route
         optimal_route = self._calculate_optimal_route(
@@ -102,21 +104,16 @@ class RouteOptimizationLogisticsAgent(BaseAgent, ProtocolMixin):
                 "alternative_routes": alternatives,
                 "optimization_summary": {
                     "criteria": optimization_criteria,
-                    "total_distance_km": optimal_route['total_distance_km'],
-                    "estimated_duration_minutes": eta_analysis['estimated_minutes'],
-                    "traffic_impact_percent": eta_analysis['traffic_delay_percent'],
-                    "confidence_score": eta_analysis['confidence']
-                }
-            }
+                    "total_distance_km": optimal_route["total_distance_km"],
+                    "estimated_duration_minutes": eta_analysis["estimated_minutes"],
+                    "traffic_impact_percent": eta_analysis["traffic_delay_percent"],
+                    "confidence_score": eta_analysis["confidence"],
+                },
+            },
         }
 
     def _calculate_optimal_route(
-        self,
-        origin: Dict,
-        destination: Dict,
-        waypoints: List[Dict],
-        traffic: Dict,
-        criteria: str
+        self, origin: Dict, destination: Dict, waypoints: List[Dict], traffic: Dict, criteria: str
     ) -> Dict[str, Any]:
         """
         Calculate optimal route using modified Dijkstra's algorithm
@@ -133,17 +130,18 @@ class RouteOptimizationLogisticsAgent(BaseAgent, ProtocolMixin):
             end = all_points[i + 1]
 
             distance_km = self._haversine_distance(
-                start['lat'], start['lng'],
-                end['lat'], end['lng']
+                start["lat"], start["lng"], end["lat"], end["lng"]
             )
 
-            segments.append({
-                'from': start.get('name', f"Point {i}"),
-                'to': end.get('name', f"Point {i+1}"),
-                'distance_km': round(distance_km, 2),
-                'start_coords': {'lat': start['lat'], 'lng': start['lng']},
-                'end_coords': {'lat': end['lat'], 'lng': end['lng']}
-            })
+            segments.append(
+                {
+                    "from": start.get("name", f"Point {i}"),
+                    "to": end.get("name", f"Point {i+1}"),
+                    "distance_km": round(distance_km, 2),
+                    "start_coords": {"lat": start["lat"], "lng": start["lng"]},
+                    "end_coords": {"lat": end["lat"], "lng": end["lng"]},
+                }
+            )
 
             total_distance += distance_km
 
@@ -154,14 +152,12 @@ class RouteOptimizationLogisticsAgent(BaseAgent, ProtocolMixin):
             optimized_order = waypoints
 
         return {
-            'route_id': f"route_{datetime.now().strftime('%Y%m%d%H%M%S')}",
-            'segments': segments,
-            'total_distance_km': round(total_distance, 2),
-            'waypoint_sequence': [w.get('name', 'Waypoint') for w in optimized_order],
-            'optimization_criteria': criteria,
-            'coordinates': [
-                {'lat': p['lat'], 'lng': p['lng']} for p in all_points
-            ]
+            "route_id": f"route_{datetime.now().strftime('%Y%m%d%H%M%S')}",
+            "segments": segments,
+            "total_distance_km": round(total_distance, 2),
+            "waypoint_sequence": [w.get("name", "Waypoint") for w in optimized_order],
+            "optimization_criteria": criteria,
+            "coordinates": [{"lat": p["lat"], "lng": p["lng"]} for p in all_points],
         }
 
     def _haversine_distance(self, lat1: float, lon1: float, lat2: float, lon2: float) -> float:
@@ -176,16 +172,13 @@ class RouteOptimizationLogisticsAgent(BaseAgent, ProtocolMixin):
         delta_lat = radians(lat2 - lat1)
         delta_lon = radians(lon2 - lon1)
 
-        a = sin(delta_lat/2)**2 + cos(lat1_rad) * cos(lat2_rad) * sin(delta_lon/2)**2
-        c = 2 * atan2(sqrt(a), sqrt(1-a))
+        a = sin(delta_lat / 2) ** 2 + cos(lat1_rad) * cos(lat2_rad) * sin(delta_lon / 2) ** 2
+        c = 2 * atan2(sqrt(a), sqrt(1 - a))
 
         return R * c
 
     def _optimize_waypoint_order(
-        self,
-        origin: Dict,
-        destination: Dict,
-        waypoints: List[Dict]
+        self, origin: Dict, destination: Dict, waypoints: List[Dict]
     ) -> List[Dict]:
         """
         Optimize waypoint order using nearest neighbor heuristic
@@ -201,12 +194,11 @@ class RouteOptimizationLogisticsAgent(BaseAgent, ProtocolMixin):
         while remaining:
             # Find nearest remaining waypoint
             nearest_idx = 0
-            min_distance = float('inf')
+            min_distance = float("inf")
 
             for idx, waypoint in enumerate(remaining):
                 dist = self._haversine_distance(
-                    current['lat'], current['lng'],
-                    waypoint['lat'], waypoint['lng']
+                    current["lat"], current["lng"], waypoint["lat"], waypoint["lng"]
                 )
                 if dist < min_distance:
                     min_distance = dist
@@ -223,13 +215,13 @@ class RouteOptimizationLogisticsAgent(BaseAgent, ProtocolMixin):
         """
         Calculate estimated time of arrival with traffic considerations
         """
-        total_distance = route['total_distance_km']
+        total_distance = route["total_distance_km"]
 
         # Base speed assumptions (km/h)
         base_speed = 60  # Urban average
 
         # Traffic impact
-        congestion_index = traffic.get('congestion_index', 0.3)
+        congestion_index = traffic.get("congestion_index", 0.3)
         traffic_multiplier = 1 + (congestion_index * 0.5)  # Up to 50% slowdown
 
         # Adjusted speed
@@ -242,23 +234,25 @@ class RouteOptimizationLogisticsAgent(BaseAgent, ProtocolMixin):
         # Traffic delay
         base_minutes = (total_distance / base_speed) * 60
         traffic_delay_minutes = estimated_minutes - base_minutes
-        traffic_delay_percent = (traffic_delay_minutes / base_minutes) * 100 if base_minutes > 0 else 0
+        traffic_delay_percent = (
+            (traffic_delay_minutes / base_minutes) * 100 if base_minutes > 0 else 0
+        )
 
         # Confidence based on traffic severity
-        severity_map = {'low': 0.95, 'moderate': 0.85, 'high': 0.70, 'severe': 0.55}
-        confidence = severity_map.get(traffic.get('severity', 'moderate'), 0.80)
+        severity_map = {"low": 0.95, "moderate": 0.85, "high": 0.70, "severe": 0.55}
+        confidence = severity_map.get(traffic.get("severity", "moderate"), 0.80)
 
         eta_time = datetime.now() + timedelta(minutes=estimated_minutes)
 
         return {
-            'eta': eta_time.isoformat(),
-            'estimated_minutes': round(estimated_minutes, 1),
-            'base_minutes': round(base_minutes, 1),
-            'traffic_delay_minutes': round(traffic_delay_minutes, 1),
-            'traffic_delay_percent': round(traffic_delay_percent, 1),
-            'confidence': confidence,
-            'adjusted_speed_kmh': round(adjusted_speed, 1),
-            'traffic_severity': traffic.get('severity', 'moderate')
+            "eta": eta_time.isoformat(),
+            "estimated_minutes": round(estimated_minutes, 1),
+            "base_minutes": round(base_minutes, 1),
+            "traffic_delay_minutes": round(traffic_delay_minutes, 1),
+            "traffic_delay_percent": round(traffic_delay_percent, 1),
+            "confidence": confidence,
+            "adjusted_speed_kmh": round(adjusted_speed, 1),
+            "traffic_severity": traffic.get("severity", "moderate"),
         }
 
     def _generate_directions(self, route: Dict) -> List[Dict[str, str]]:
@@ -267,41 +261,47 @@ class RouteOptimizationLogisticsAgent(BaseAgent, ProtocolMixin):
         """
         directions = []
 
-        for idx, segment in enumerate(route['segments']):
+        for idx, segment in enumerate(route["segments"]):
             if idx == 0:
-                directions.append({
-                    'step': idx + 1,
-                    'instruction': f"Start at {segment['from']}",
-                    'distance_km': 0,
-                    'type': 'start'
-                })
+                directions.append(
+                    {
+                        "step": idx + 1,
+                        "instruction": f"Start at {segment['from']}",
+                        "distance_km": 0,
+                        "type": "start",
+                    }
+                )
 
             # Calculate bearing for direction
             bearing = self._calculate_bearing(
-                segment['start_coords']['lat'],
-                segment['start_coords']['lng'],
-                segment['end_coords']['lat'],
-                segment['end_coords']['lng']
+                segment["start_coords"]["lat"],
+                segment["start_coords"]["lng"],
+                segment["end_coords"]["lat"],
+                segment["end_coords"]["lng"],
             )
 
             direction_text = self._bearing_to_direction(bearing)
 
-            directions.append({
-                'step': idx + 2,
-                'instruction': f"Head {direction_text} to {segment['to']}",
-                'distance_km': segment['distance_km'],
-                'type': 'turn'
-            })
+            directions.append(
+                {
+                    "step": idx + 2,
+                    "instruction": f"Head {direction_text} to {segment['to']}",
+                    "distance_km": segment["distance_km"],
+                    "type": "turn",
+                }
+            )
 
         # Add final step
-        if route['segments']:
-            last_segment = route['segments'][-1]
-            directions.append({
-                'step': len(directions) + 1,
-                'instruction': f"Arrive at {last_segment['to']}",
-                'distance_km': 0,
-                'type': 'arrive'
-            })
+        if route["segments"]:
+            last_segment = route["segments"][-1]
+            directions.append(
+                {
+                    "step": len(directions) + 1,
+                    "instruction": f"Arrive at {last_segment['to']}",
+                    "distance_km": 0,
+                    "type": "arrive",
+                }
+            )
 
         return directions
 
@@ -325,24 +325,28 @@ class RouteOptimizationLogisticsAgent(BaseAgent, ProtocolMixin):
         """
         Convert bearing to cardinal direction
         """
-        directions = ['north', 'northeast', 'east', 'southeast',
-                     'south', 'southwest', 'west', 'northwest']
+        directions = [
+            "north",
+            "northeast",
+            "east",
+            "southeast",
+            "south",
+            "southwest",
+            "west",
+            "northwest",
+        ]
         index = int((bearing + 22.5) / 45) % 8
         return directions[index]
 
     def _calculate_alternative_routes(
-        self,
-        origin: Dict,
-        destination: Dict,
-        waypoints: List[Dict]
+        self, origin: Dict, destination: Dict, waypoints: List[Dict]
     ) -> List[Dict[str, Any]]:
         """
         Calculate alternative routes (simplified - in production would use routing APIs)
         """
         # Alternative 1: Direct route (no waypoints optimization)
         direct_distance = self._haversine_distance(
-            origin['lat'], origin['lng'],
-            destination['lat'], destination['lng']
+            origin["lat"], origin["lng"], destination["lat"], destination["lng"]
         )
 
         # Alternative 2: Highway route (simulated as 10% longer but faster)
@@ -355,19 +359,19 @@ class RouteOptimizationLogisticsAgent(BaseAgent, ProtocolMixin):
 
         return [
             {
-                'route_name': 'Highway Route',
-                'distance_km': round(highway_distance, 2),
-                'estimated_minutes': round(highway_time, 1),
-                'characteristics': ['fastest', 'tolls'],
-                'recommended': True
+                "route_name": "Highway Route",
+                "distance_km": round(highway_distance, 2),
+                "estimated_minutes": round(highway_time, 1),
+                "characteristics": ["fastest", "tolls"],
+                "recommended": True,
             },
             {
-                'route_name': 'Scenic Route',
-                'distance_km': round(scenic_distance, 2),
-                'estimated_minutes': round(scenic_time, 1),
-                'characteristics': ['scenic', 'no_tolls'],
-                'recommended': False
-            }
+                "route_name": "Scenic Route",
+                "distance_km": round(scenic_distance, 2),
+                "estimated_minutes": round(scenic_time, 1),
+                "characteristics": ["scenic", "no_tolls"],
+                "recommended": False,
+            },
         ]
 
     def get_input_schema(self) -> Dict[str, Any]:
@@ -381,21 +385,21 @@ class RouteOptimizationLogisticsAgent(BaseAgent, ProtocolMixin):
                     "properties": {
                         "lat": {"type": "number"},
                         "lng": {"type": "number"},
-                        "name": {"type": "string"}
-                    }
+                        "name": {"type": "string"},
+                    },
                 },
                 "destination": {
                     "type": "object",
                     "properties": {
                         "lat": {"type": "number"},
                         "lng": {"type": "number"},
-                        "name": {"type": "string"}
-                    }
+                        "name": {"type": "string"},
+                    },
                 },
                 "waypoints": {"type": "array"},
                 "traffic_conditions": {"type": "object"},
-                "optimization_criteria": {"type": "string", "enum": ["time", "distance", "cost"]}
-            }
+                "optimization_criteria": {"type": "string", "enum": ["time", "distance", "cost"]},
+            },
         }
 
     def get_output_schema(self) -> Dict[str, Any]:
@@ -406,8 +410,8 @@ class RouteOptimizationLogisticsAgent(BaseAgent, ProtocolMixin):
                 "optimal_route": {"type": "object"},
                 "eta_analysis": {"type": "object"},
                 "directions": {"type": "array"},
-                "alternative_routes": {"type": "array"}
-            }
+                "alternative_routes": {"type": "array"},
+            },
         }
 
 

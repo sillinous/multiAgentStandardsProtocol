@@ -47,13 +47,15 @@ class OptimizePricingStrategyRevenueAgent(BaseAgent, ProtocolMixin):
     APQC_PROCESS_ID = "3.3.3"
 
     def __init__(self, config: OptimizePricingStrategyRevenueAgentConfig):
-        super().__init__(agent_id=config.apqc_agent_id, agent_type=config.agent_type, version=config.version)
+        super().__init__(
+            agent_id=config.apqc_agent_id, agent_type=config.agent_type, version=config.version
+        )
         self.config = config
         self.skills = {
-            'dynamic_pricing': 0.94,
-            'elasticity_modeling': 0.91,
-            'revenue_optimization': 0.89,
-            'competitive_analysis': 0.86
+            "dynamic_pricing": 0.94,
+            "elasticity_modeling": 0.91,
+            "revenue_optimization": 0.89,
+            "competitive_analysis": 0.86,
         }
 
     async def execute(self, input_data: Dict[str, Any]) -> Dict[str, Any]:
@@ -90,11 +92,11 @@ class OptimizePricingStrategyRevenueAgent(BaseAgent, ProtocolMixin):
             }
         }
         """
-        conditions = input_data.get('current_conditions', {})
-        base_pricing = input_data.get('base_pricing', {})
-        elasticity_data = input_data.get('historical_elasticity', {})
-        competitors = input_data.get('competitor_pricing', {})
-        targets = input_data.get('revenue_targets', {})
+        conditions = input_data.get("current_conditions", {})
+        base_pricing = input_data.get("base_pricing", {})
+        elasticity_data = input_data.get("historical_elasticity", {})
+        competitors = input_data.get("competitor_pricing", {})
+        targets = input_data.get("revenue_targets", {})
 
         # Calculate optimal surge multiplier
         optimal_surge = self._calculate_optimal_surge(conditions, elasticity_data, targets)
@@ -103,13 +105,17 @@ class OptimizePricingStrategyRevenueAgent(BaseAgent, ProtocolMixin):
         elasticity_model = self._model_price_elasticity(elasticity_data, conditions)
 
         # Optimize discount strategy
-        discount_strategy = self._optimize_discount_strategy(optimal_surge, elasticity_model, conditions)
+        discount_strategy = self._optimize_discount_strategy(
+            optimal_surge, elasticity_model, conditions
+        )
 
         # Perform competitive analysis
         competitive_position = self._analyze_competitive_position(optimal_surge, competitors)
 
         # Calculate revenue projections
-        revenue_projection = self._project_revenue(optimal_surge, conditions, base_pricing, elasticity_model)
+        revenue_projection = self._project_revenue(
+            optimal_surge, conditions, base_pricing, elasticity_model
+        )
 
         # Generate pricing recommendations
         recommendations = self._generate_pricing_recommendations(
@@ -128,24 +134,21 @@ class OptimizePricingStrategyRevenueAgent(BaseAgent, ProtocolMixin):
                 "revenue_projection": revenue_projection,
                 "pricing_recommendations": recommendations,
                 "summary": {
-                    "recommended_multiplier": optimal_surge['multiplier'],
-                    "projected_revenue_per_hour": revenue_projection['hourly_revenue'],
-                    "expected_demand_change": elasticity_model['demand_change_percentage'],
-                    "competitive_advantage": competitive_position['market_position']
-                }
-            }
+                    "recommended_multiplier": optimal_surge["multiplier"],
+                    "projected_revenue_per_hour": revenue_projection["hourly_revenue"],
+                    "expected_demand_change": elasticity_model["demand_change_percentage"],
+                    "competitive_advantage": competitive_position["market_position"],
+                },
+            },
         }
 
     def _calculate_optimal_surge(
-        self,
-        conditions: Dict,
-        elasticity: Dict,
-        targets: Dict
+        self, conditions: Dict, elasticity: Dict, targets: Dict
     ) -> Dict[str, Any]:
         """Calculate optimal surge pricing multiplier"""
-        available_drivers = conditions.get('available_drivers', 100)
-        active_requests = conditions.get('active_ride_requests', 100)
-        wait_time = conditions.get('average_wait_time_minutes', 5)
+        available_drivers = conditions.get("available_drivers", 100)
+        active_requests = conditions.get("active_ride_requests", 100)
+        wait_time = conditions.get("average_wait_time_minutes", 5)
 
         # Supply-demand ratio
         supply_demand_ratio = available_drivers / active_requests if active_requests > 0 else 1.0
@@ -169,12 +172,12 @@ class OptimizePricingStrategyRevenueAgent(BaseAgent, ProtocolMixin):
             base_multiplier *= 1.15
 
         # Time of day adjustment
-        time_of_day = conditions.get('time_of_day', 'normal')
+        time_of_day = conditions.get("time_of_day", "normal")
         time_adjustments = {
-            'morning_peak': 1.1,
-            'evening_peak': 1.2,
-            'late_night': 1.15,
-            'normal': 1.0
+            "morning_peak": 1.1,
+            "evening_peak": 1.2,
+            "late_night": 1.15,
+            "normal": 1.0,
         }
         base_multiplier *= time_adjustments.get(time_of_day, 1.0)
 
@@ -186,27 +189,24 @@ class OptimizePricingStrategyRevenueAgent(BaseAgent, ProtocolMixin):
         final_multiplier = min(optimal_multiplier, 3.0)
 
         return {
-            'multiplier': round(final_multiplier, 2),
-            'supply_demand_ratio': round(supply_demand_ratio, 2),
-            'base_multiplier': round(base_multiplier, 2),
-            'optimization_applied': True,
-            'factors': {
-                'supply_demand': round(supply_demand_ratio, 2),
-                'wait_time_minutes': wait_time,
-                'time_of_day': time_of_day
+            "multiplier": round(final_multiplier, 2),
+            "supply_demand_ratio": round(supply_demand_ratio, 2),
+            "base_multiplier": round(base_multiplier, 2),
+            "optimization_applied": True,
+            "factors": {
+                "supply_demand": round(supply_demand_ratio, 2),
+                "wait_time_minutes": wait_time,
+                "time_of_day": time_of_day,
             },
-            'confidence': 0.85
+            "confidence": 0.85,
         }
 
     def _optimize_revenue_multiplier(
-        self,
-        base_multiplier: float,
-        elasticity: Dict,
-        targets: Dict
+        self, base_multiplier: float, elasticity: Dict, targets: Dict
     ) -> float:
         """Find multiplier that maximizes revenue given price elasticity"""
-        price_points = elasticity.get('price_points', [1.0, 1.5, 2.0])
-        demand_levels = elasticity.get('demand_levels', [100, 80, 60])
+        price_points = elasticity.get("price_points", [1.0, 1.5, 2.0])
+        demand_levels = elasticity.get("demand_levels", [100, 80, 60])
 
         if not price_points or not demand_levels:
             return base_multiplier
@@ -225,20 +225,16 @@ class OptimizePricingStrategyRevenueAgent(BaseAgent, ProtocolMixin):
 
         return blended
 
-    def _model_price_elasticity(
-        self,
-        elasticity_data: Dict,
-        conditions: Dict
-    ) -> Dict[str, Any]:
+    def _model_price_elasticity(self, elasticity_data: Dict, conditions: Dict) -> Dict[str, Any]:
         """Model price-demand elasticity"""
-        price_points = np.array(elasticity_data.get('price_points', [1.0, 1.5, 2.0]))
-        demand_levels = np.array(elasticity_data.get('demand_levels', [100, 80, 60]))
+        price_points = np.array(elasticity_data.get("price_points", [1.0, 1.5, 2.0]))
+        demand_levels = np.array(elasticity_data.get("demand_levels", [100, 80, 60]))
 
         if len(price_points) < 2:
             return {
-                'elasticity_coefficient': -0.5,
-                'demand_change_percentage': -10,
-                'model_confidence': 0.5
+                "elasticity_coefficient": -0.5,
+                "demand_change_percentage": -10,
+                "model_confidence": 0.5,
             }
 
         # Calculate elasticity coefficient
@@ -250,29 +246,28 @@ class OptimizePricingStrategyRevenueAgent(BaseAgent, ProtocolMixin):
         avg_elasticity = np.mean(elasticities)
 
         # Predict demand change for current conditions
-        current_multiplier = conditions.get('current_surge_multiplier', 1.0)
+        current_multiplier = conditions.get("current_surge_multiplier", 1.0)
         if current_multiplier > 1.0:
             demand_change = avg_elasticity * ((current_multiplier - 1.0) / 1.0) * 100
         else:
             demand_change = 0
 
         return {
-            'elasticity_coefficient': round(float(avg_elasticity), 3),
-            'demand_change_percentage': round(float(demand_change), 1),
-            'price_sensitivity': 'high' if avg_elasticity < -1.0 else 'moderate' if avg_elasticity < -0.5 else 'low',
-            'optimal_price_range': [float(price_points[0]), float(price_points[-1])],
-            'model_confidence': 0.80
+            "elasticity_coefficient": round(float(avg_elasticity), 3),
+            "demand_change_percentage": round(float(demand_change), 1),
+            "price_sensitivity": (
+                "high" if avg_elasticity < -1.0 else "moderate" if avg_elasticity < -0.5 else "low"
+            ),
+            "optimal_price_range": [float(price_points[0]), float(price_points[-1])],
+            "model_confidence": 0.80,
         }
 
     def _optimize_discount_strategy(
-        self,
-        surge: Dict,
-        elasticity: Dict,
-        conditions: Dict
+        self, surge: Dict, elasticity: Dict, conditions: Dict
     ) -> Dict[str, Any]:
         """Optimize promotional discount strategy"""
-        multiplier = surge['multiplier']
-        supply_demand_ratio = surge['supply_demand_ratio']
+        multiplier = surge["multiplier"]
+        supply_demand_ratio = surge["supply_demand_ratio"]
 
         discounts = []
 
@@ -281,70 +276,78 @@ class OptimizePricingStrategyRevenueAgent(BaseAgent, ProtocolMixin):
             # Significant oversupply
             discount_percentage = 20
             max_discount = 10.00
-            discounts.append({
-                'type': 'demand_stimulation',
-                'discount_percentage': discount_percentage,
-                'max_discount_amount': max_discount,
-                'target_segment': 'all_users',
-                'reason': 'High driver availability - stimulate demand',
-                'expected_demand_increase': 25
-            })
+            discounts.append(
+                {
+                    "type": "demand_stimulation",
+                    "discount_percentage": discount_percentage,
+                    "max_discount_amount": max_discount,
+                    "target_segment": "all_users",
+                    "reason": "High driver availability - stimulate demand",
+                    "expected_demand_increase": 25,
+                }
+            )
 
         elif supply_demand_ratio > 1.1:
             # Moderate oversupply
             discount_percentage = 10
             max_discount = 5.00
-            discounts.append({
-                'type': 'demand_stimulation',
-                'discount_percentage': discount_percentage,
-                'max_discount_amount': max_discount,
-                'target_segment': 'inactive_users',
-                'reason': 'Moderate oversupply - target lapsed users',
-                'expected_demand_increase': 15
-            })
+            discounts.append(
+                {
+                    "type": "demand_stimulation",
+                    "discount_percentage": discount_percentage,
+                    "max_discount_amount": max_discount,
+                    "target_segment": "inactive_users",
+                    "reason": "Moderate oversupply - target lapsed users",
+                    "expected_demand_increase": 15,
+                }
+            )
 
         # First-ride promotions (always available)
-        discounts.append({
-            'type': 'acquisition',
-            'discount_percentage': 50,
-            'max_discount_amount': 15.00,
-            'target_segment': 'new_users',
-            'reason': 'Customer acquisition',
-            'expected_conversion_rate': 0.30
-        })
+        discounts.append(
+            {
+                "type": "acquisition",
+                "discount_percentage": 50,
+                "max_discount_amount": 15.00,
+                "target_segment": "new_users",
+                "reason": "Customer acquisition",
+                "expected_conversion_rate": 0.30,
+            }
+        )
 
         # Loyalty rewards when not surging
         if multiplier <= 1.0:
-            discounts.append({
-                'type': 'loyalty',
-                'discount_percentage': 15,
-                'max_discount_amount': 8.00,
-                'target_segment': 'vip_users',
-                'reason': 'VIP customer retention',
-                'expected_retention_impact': 0.12
-            })
+            discounts.append(
+                {
+                    "type": "loyalty",
+                    "discount_percentage": 15,
+                    "max_discount_amount": 8.00,
+                    "target_segment": "vip_users",
+                    "reason": "VIP customer retention",
+                    "expected_retention_impact": 0.12,
+                }
+            )
 
         return {
-            'active_discount_strategies': discounts,
-            'total_strategies': len(discounts),
-            'estimated_cost_per_ride': sum(d.get('max_discount_amount', 0) for d in discounts) / len(discounts) if discounts else 0,
-            'recommended': supply_demand_ratio > 1.1
+            "active_discount_strategies": discounts,
+            "total_strategies": len(discounts),
+            "estimated_cost_per_ride": (
+                sum(d.get("max_discount_amount", 0) for d in discounts) / len(discounts)
+                if discounts
+                else 0
+            ),
+            "recommended": supply_demand_ratio > 1.1,
         }
 
-    def _analyze_competitive_position(
-        self,
-        surge: Dict,
-        competitors: Dict
-    ) -> Dict[str, Any]:
+    def _analyze_competitive_position(self, surge: Dict, competitors: Dict) -> Dict[str, Any]:
         """Analyze competitive pricing position"""
-        our_multiplier = surge['multiplier']
+        our_multiplier = surge["multiplier"]
 
         competitor_multipliers = []
         total_market_share = 0
 
         for comp_name, comp_data in competitors.items():
-            comp_mult = comp_data.get('base_multiplier', 1.0)
-            market_share = comp_data.get('market_share', 0)
+            comp_mult = comp_data.get("base_multiplier", 1.0)
+            market_share = comp_data.get("market_share", 0)
 
             competitor_multipliers.append(comp_mult)
             total_market_share += market_share
@@ -357,60 +360,60 @@ class OptimizePricingStrategyRevenueAgent(BaseAgent, ProtocolMixin):
             price_difference = our_multiplier - avg_competitor_price
 
             if price_difference > 0.3:
-                position = 'premium'
-                recommendation = 'Consider reducing surge to match market'
+                position = "premium"
+                recommendation = "Consider reducing surge to match market"
             elif price_difference < -0.3:
-                position = 'discount'
-                recommendation = 'Opportunity to increase prices'
+                position = "discount"
+                recommendation = "Opportunity to increase prices"
             else:
-                position = 'competitive'
-                recommendation = 'Maintain current pricing'
+                position = "competitive"
+                recommendation = "Maintain current pricing"
         else:
             avg_competitor_price = our_multiplier
             price_difference = 0
-            position = 'market_leader'
-            recommendation = 'No competitive data - focus on demand'
+            position = "market_leader"
+            recommendation = "No competitive data - focus on demand"
 
         return {
-            'our_multiplier': our_multiplier,
-            'average_competitor_multiplier': round(float(avg_competitor_price), 2),
-            'price_difference': round(float(price_difference), 2),
-            'market_position': position,
-            'recommendation': recommendation,
-            'competitive_advantage': price_difference < 0,
-            'total_competitor_market_share': round(total_market_share, 2)
+            "our_multiplier": our_multiplier,
+            "average_competitor_multiplier": round(float(avg_competitor_price), 2),
+            "price_difference": round(float(price_difference), 2),
+            "market_position": position,
+            "recommendation": recommendation,
+            "competitive_advantage": price_difference < 0,
+            "total_competitor_market_share": round(total_market_share, 2),
         }
 
     def _project_revenue(
-        self,
-        surge: Dict,
-        conditions: Dict,
-        base_pricing: Dict,
-        elasticity: Dict
+        self, surge: Dict, conditions: Dict, base_pricing: Dict, elasticity: Dict
     ) -> Dict[str, Any]:
         """Project revenue with optimal pricing"""
-        multiplier = surge['multiplier']
-        active_requests = conditions.get('active_ride_requests', 100)
+        multiplier = surge["multiplier"]
+        active_requests = conditions.get("active_ride_requests", 100)
 
         # Apply elasticity to estimate actual demand at this price
-        demand_change = elasticity.get('demand_change_percentage', 0)
+        demand_change = elasticity.get("demand_change_percentage", 0)
         adjusted_demand = active_requests * (1 + demand_change / 100)
 
         # Calculate average fare
-        base_fare = base_pricing.get('base_fare', 2.50)
+        base_fare = base_pricing.get("base_fare", 2.50)
         avg_distance_km = 8.0  # Assumed average
         avg_duration_min = 20.0  # Assumed average
 
-        cost_per_km = base_pricing.get('cost_per_km', 1.20)
-        cost_per_minute = base_pricing.get('cost_per_minute', 0.35)
+        cost_per_km = base_pricing.get("cost_per_km", 1.20)
+        cost_per_minute = base_pricing.get("cost_per_minute", 0.35)
 
-        base_ride_fare = base_fare + (cost_per_km * avg_distance_km) + (cost_per_minute * avg_duration_min)
-        minimum_fare = base_pricing.get('minimum_fare', 8.00)
+        base_ride_fare = (
+            base_fare + (cost_per_km * avg_distance_km) + (cost_per_minute * avg_duration_min)
+        )
+        minimum_fare = base_pricing.get("minimum_fare", 8.00)
 
         avg_fare = max(minimum_fare, base_ride_fare * multiplier)
 
         # Revenue calculation
-        hourly_rides = min(adjusted_demand, conditions.get('available_drivers', 100) * 2)  # 2 rides/driver/hour
+        hourly_rides = min(
+            adjusted_demand, conditions.get("available_drivers", 100) * 2
+        )  # 2 rides/driver/hour
         hourly_revenue = hourly_rides * avg_fare
 
         # Margin calculation (assume 75% to driver, 25% to platform)
@@ -418,67 +421,72 @@ class OptimizePricingStrategyRevenueAgent(BaseAgent, ProtocolMixin):
         driver_revenue = hourly_revenue * 0.75
 
         return {
-            'hourly_revenue': round(hourly_revenue, 2),
-            'platform_revenue': round(platform_revenue, 2),
-            'driver_revenue': round(driver_revenue, 2),
-            'expected_hourly_rides': round(hourly_rides, 0),
-            'average_fare': round(avg_fare, 2),
-            'demand_adjusted': True,
-            'margin_percentage': 0.25
+            "hourly_revenue": round(hourly_revenue, 2),
+            "platform_revenue": round(platform_revenue, 2),
+            "driver_revenue": round(driver_revenue, 2),
+            "expected_hourly_rides": round(hourly_rides, 0),
+            "average_fare": round(avg_fare, 2),
+            "demand_adjusted": True,
+            "margin_percentage": 0.25,
         }
 
     def _generate_pricing_recommendations(
-        self,
-        surge: Dict,
-        revenue: Dict,
-        competitive: Dict
+        self, surge: Dict, revenue: Dict, competitive: Dict
     ) -> List[Dict[str, Any]]:
         """Generate actionable pricing recommendations"""
         recommendations = []
 
-        multiplier = surge['multiplier']
+        multiplier = surge["multiplier"]
 
         # Surge activation recommendation
         if multiplier > 1.0:
-            recommendations.append({
-                'category': 'surge_pricing',
-                'priority': 'high',
-                'action': f"Activate {multiplier}x surge pricing",
-                'reason': f"Supply-demand ratio of {surge['supply_demand_ratio']:.2f} warrants surge",
-                'expected_impact': f"${revenue['hourly_revenue']:,.0f} hourly revenue",
-                'implementation': 'immediate'
-            })
+            recommendations.append(
+                {
+                    "category": "surge_pricing",
+                    "priority": "high",
+                    "action": f"Activate {multiplier}x surge pricing",
+                    "reason": f"Supply-demand ratio of {surge['supply_demand_ratio']:.2f} warrants surge",
+                    "expected_impact": f"${revenue['hourly_revenue']:,.0f} hourly revenue",
+                    "implementation": "immediate",
+                }
+            )
         else:
-            recommendations.append({
-                'category': 'base_pricing',
-                'priority': 'low',
-                'action': 'Maintain base pricing',
-                'reason': 'Supply-demand balanced',
-                'expected_impact': 'Stable demand',
-                'implementation': 'ongoing'
-            })
+            recommendations.append(
+                {
+                    "category": "base_pricing",
+                    "priority": "low",
+                    "action": "Maintain base pricing",
+                    "reason": "Supply-demand balanced",
+                    "expected_impact": "Stable demand",
+                    "implementation": "ongoing",
+                }
+            )
 
         # Competitive positioning
-        if competitive['market_position'] == 'premium':
-            recommendations.append({
-                'category': 'competitive',
-                'priority': 'medium',
-                'action': 'Monitor price sensitivity',
-                'reason': f"Pricing {competitive['price_difference']:.0%} above market average",
-                'expected_impact': 'Potential demand loss to competitors',
-                'implementation': 'continuous_monitoring'
-            })
+        if competitive["market_position"] == "premium":
+            recommendations.append(
+                {
+                    "category": "competitive",
+                    "priority": "medium",
+                    "action": "Monitor price sensitivity",
+                    "reason": f"Pricing {competitive['price_difference']:.0%} above market average",
+                    "expected_impact": "Potential demand loss to competitors",
+                    "implementation": "continuous_monitoring",
+                }
+            )
 
         # Revenue optimization
-        if revenue['hourly_revenue'] < 4000:
-            recommendations.append({
-                'category': 'revenue_optimization',
-                'priority': 'high',
-                'action': 'Implement demand stimulation discounts',
-                'reason': 'Revenue below target',
-                'expected_impact': '15-20% revenue increase',
-                'implementation': 'next_4_hours'
-            })
+        if revenue["hourly_revenue"] < 4000:
+            recommendations.append(
+                {
+                    "category": "revenue_optimization",
+                    "priority": "high",
+                    "action": "Implement demand stimulation discounts",
+                    "reason": "Revenue below target",
+                    "expected_impact": "15-20% revenue increase",
+                    "implementation": "next_4_hours",
+                }
+            )
 
         return recommendations
 
@@ -492,8 +500,8 @@ class OptimizePricingStrategyRevenueAgent(BaseAgent, ProtocolMixin):
                 "base_pricing": {"type": "object"},
                 "historical_elasticity": {"type": "object"},
                 "competitor_pricing": {"type": "object"},
-                "revenue_targets": {"type": "object"}
-            }
+                "revenue_targets": {"type": "object"},
+            },
         }
 
     def get_output_schema(self) -> Dict[str, Any]:
@@ -506,8 +514,8 @@ class OptimizePricingStrategyRevenueAgent(BaseAgent, ProtocolMixin):
                 "discount_strategy": {"type": "object"},
                 "competitive_position": {"type": "object"},
                 "revenue_projection": {"type": "object"},
-                "pricing_recommendations": {"type": "array"}
-            }
+                "pricing_recommendations": {"type": "array"},
+            },
         }
 
 

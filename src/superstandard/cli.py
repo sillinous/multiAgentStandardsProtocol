@@ -19,7 +19,7 @@ import json
 
 app = typer.Typer(
     name="superstandard",
-    help="SuperStandard - The Platform for Building Production-Grade Multi-Agent Systems"
+    help="SuperStandard - The Platform for Building Production-Grade Multi-Agent Systems",
 )
 console = Console()
 
@@ -88,7 +88,9 @@ def list(
     # Load agent catalog
     catalog_path = Path.cwd() / "AGENT_CATALOG.json"
     if not catalog_path.exists():
-        console.print("[yellow]No agent catalog found. Run: python scripts/analyze_agents.py[/yellow]")
+        console.print(
+            "[yellow]No agent catalog found. Run: python scripts/analyze_agents.py[/yellow]"
+        )
         return
 
     with open(catalog_path) as f:
@@ -251,7 +253,7 @@ def info(
     console.print(f"[cyan]Type:[/cyan] {agent.get('type', 'python')}")
     console.print(f"[cyan]File:[/cyan] {agent.get('file', 'Unknown')}")
 
-    description = agent.get('description', 'No description available')
+    description = agent.get("description", "No description available")
     console.print(f"\n[cyan]Description:[/cyan]\n{description[:500]}...")
 
     console.print()

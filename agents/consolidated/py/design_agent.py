@@ -16,7 +16,7 @@ import os
 import sys
 
 # Add library path for protocol-compliant BaseAgent
-sys.path.insert(0, os.path.join(os.path.dirname(__file__), '..', 'library'))
+sys.path.insert(0, os.path.join(os.path.dirname(__file__), "..", "library"))
 
 # CRITICAL: Import from protocol-compliant BaseAgent (THE SINGLE SOURCE OF TRUTH)
 from superstandard.agents.base.base_agent import BaseAgent, AgentCapability, MessageType
@@ -36,13 +36,13 @@ class DesignAgent(BaseAgent):
         self,
         agent_id: str = "design_agent_001",
         workspace_path: str = "./autonomous-ecosystem/workspace",
-        project_root: str = "."
+        project_root: str = ".",
     ):
         super().__init__(
             agent_id=agent_id,
             agent_type="design",
             capabilities=[AgentCapability.DESIGN],
-            workspace_path=workspace_path
+            workspace_path=workspace_path,
         )
         self.project_root = project_root
         self.design_specs_created = []
@@ -83,7 +83,7 @@ class DesignAgent(BaseAgent):
             "report_id": report.get("timestamp"),
             "insights": [],
             "design_recommendations": [],
-            "architectural_concerns": []
+            "architectural_concerns": [],
         }
 
         # Analyze critical issues
@@ -113,7 +113,7 @@ class DesignAgent(BaseAgent):
             "iteration": self.current_iteration,
             "agent_id": self.agent_id,
             "addresses_issues": [issue["id"] for issue in issues],
-            "specifications": []
+            "specifications": [],
         }
 
         # Group issues by component
@@ -133,15 +133,11 @@ class DesignAgent(BaseAgent):
         self.save_artifact(
             "design_specs",
             specifications,
-            f"design_specifications_{datetime.now().strftime('%Y%m%d_%H%M%S')}.json"
+            f"design_specifications_{datetime.now().strftime('%Y%m%d_%H%M%S')}.json",
         )
 
         # Send to orchestrator
-        self.send_message(
-            MessageType.DESIGN_SPEC,
-            "orchestrator",
-            specifications
-        )
+        self.send_message(MessageType.DESIGN_SPEC, "orchestrator", specifications)
 
         return specifications
 
@@ -157,7 +153,7 @@ class DesignAgent(BaseAgent):
             "technical_specification": await self._create_technical_spec(issue),
             "implementation_plan": await self._create_implementation_plan(issue),
             "testing_strategy": await self._create_testing_strategy(issue),
-            "estimated_effort": self._estimate_effort(issue)
+            "estimated_effort": self._estimate_effort(issue),
         }
 
         return solution
@@ -177,15 +173,24 @@ class DesignAgent(BaseAgent):
             "design_patterns": [],
             "implementation_complexity": "medium",
             "dependencies": [],
-            "testing_requirements": []
+            "testing_requirements": [],
         }
 
         # Analyze based on component with detailed insights
         if component == "backend":
             insight["root_cause"] = "Backend service or API endpoint issue"
-            insight["solution_approach"] = "Implement/fix backend endpoint with proper validation and error handling"
-            insight["design_patterns"] = ["RESTful API", "Service Layer Pattern", "Repository Pattern"]
-            insight["testing_requirements"] = ["Unit tests for service logic", "Integration tests for API endpoints"]
+            insight["solution_approach"] = (
+                "Implement/fix backend endpoint with proper validation and error handling"
+            )
+            insight["design_patterns"] = [
+                "RESTful API",
+                "Service Layer Pattern",
+                "Repository Pattern",
+            ]
+            insight["testing_requirements"] = [
+                "Unit tests for service logic",
+                "Integration tests for API endpoints",
+            ]
 
             if "database" in description.lower():
                 insight["dependencies"].append("Database schema and models")
@@ -196,44 +201,86 @@ class DesignAgent(BaseAgent):
 
         elif component == "frontend":
             insight["root_cause"] = "Frontend UI/UX or component issue"
-            insight["solution_approach"] = "Update React components with proper state management and error handling"
-            insight["design_patterns"] = ["Component Composition", "Container/Presentational Pattern", "Hooks Pattern"]
-            insight["testing_requirements"] = ["Component unit tests", "Integration tests", "E2E UI tests"]
+            insight["solution_approach"] = (
+                "Update React components with proper state management and error handling"
+            )
+            insight["design_patterns"] = [
+                "Component Composition",
+                "Container/Presentational Pattern",
+                "Hooks Pattern",
+            ]
+            insight["testing_requirements"] = [
+                "Component unit tests",
+                "Integration tests",
+                "E2E UI tests",
+            ]
             insight["dependencies"].append("Backend API endpoints")
 
         elif component == "e2e_workflows":
             insight["root_cause"] = "Missing or broken end-to-end workflow"
-            insight["solution_approach"] = "Design complete workflow orchestration with state management and error recovery"
+            insight["solution_approach"] = (
+                "Design complete workflow orchestration with state management and error recovery"
+            )
             insight["design_patterns"] = ["Saga Pattern", "Orchestration Pattern", "State Machine"]
             insight["implementation_complexity"] = "high"
-            insight["testing_requirements"] = ["E2E workflow tests", "Integration tests", "Performance tests"]
-            insight["dependencies"].extend(["Backend APIs", "Frontend UI", "Database", "AI Services"])
+            insight["testing_requirements"] = [
+                "E2E workflow tests",
+                "Integration tests",
+                "Performance tests",
+            ]
+            insight["dependencies"].extend(
+                ["Backend APIs", "Frontend UI", "Database", "AI Services"]
+            )
 
         elif component == "worker":
             insight["root_cause"] = "Background task processing issue"
-            insight["solution_approach"] = "Fix or implement Celery worker tasks with proper queue management"
-            insight["design_patterns"] = ["Task Queue Pattern", "Worker Pool Pattern", "Retry Pattern"]
+            insight["solution_approach"] = (
+                "Fix or implement Celery worker tasks with proper queue management"
+            )
+            insight["design_patterns"] = [
+                "Task Queue Pattern",
+                "Worker Pool Pattern",
+                "Retry Pattern",
+            ]
             insight["dependencies"].extend(["Redis", "Celery", "Backend services"])
 
         elif component == "ai_integration":
             insight["root_cause"] = "AI service integration issue"
-            insight["solution_approach"] = "Implement robust AI service integration with fallback and caching"
-            insight["design_patterns"] = ["Adapter Pattern", "Circuit Breaker", "Retry with Exponential Backoff"]
+            insight["solution_approach"] = (
+                "Implement robust AI service integration with fallback and caching"
+            )
+            insight["design_patterns"] = [
+                "Adapter Pattern",
+                "Circuit Breaker",
+                "Retry with Exponential Backoff",
+            ]
             insight["implementation_complexity"] = "high"
             insight["dependencies"].append("OpenAI API key and configuration")
-            insight["testing_requirements"].extend(["Mock AI responses", "Rate limit handling", "Error scenario tests"])
+            insight["testing_requirements"].extend(
+                ["Mock AI responses", "Rate limit handling", "Error scenario tests"]
+            )
 
         # Add design insight based on description keywords
         if "not implemented" in description.lower():
-            insight["design_insight"] = "Feature needs complete design and implementation from scratch - requires architectural planning"
+            insight["design_insight"] = (
+                "Feature needs complete design and implementation from scratch - requires architectural planning"
+            )
         elif "not accessible" in description.lower():
-            insight["design_insight"] = "Service availability issue - requires configuration review and deployment validation"
+            insight["design_insight"] = (
+                "Service availability issue - requires configuration review and deployment validation"
+            )
         elif "workflow" in description.lower():
-            insight["design_insight"] = "End-to-end process requires orchestration design with clear state transitions"
+            insight["design_insight"] = (
+                "End-to-end process requires orchestration design with clear state transitions"
+            )
         elif "integration" in description.lower():
-            insight["design_insight"] = "Integration requires adapter layer design and proper error handling"
+            insight["design_insight"] = (
+                "Integration requires adapter layer design and proper error handling"
+            )
         elif "not configured" in description.lower():
-            insight["design_insight"] = "Configuration management needed - consider environment-based config with validation"
+            insight["design_insight"] = (
+                "Configuration management needed - consider environment-based config with validation"
+            )
 
         # Determine complexity based on severity and dependencies
         if severity == "critical" and len(insight["dependencies"]) > 2:
@@ -256,8 +303,8 @@ class DesignAgent(BaseAgent):
                 "User can complete full workflow without manual intervention",
                 "All components integrated seamlessly",
                 "Error handling and recovery implemented",
-                "Performance meets expectations"
-            ]
+                "Performance meets expectations",
+            ],
         }
 
     def _identify_architectural_patterns(self, report: Dict[str, Any]) -> List[str]:
@@ -278,14 +325,14 @@ class DesignAgent(BaseAgent):
         if "e2e_workflows" in components:
             e2e_results = components["e2e_workflows"]
             if e2e_results.get("tests_failed", 0) > 0:
-                concerns.append("End-to-end workflows not complete - core vision not fully realized")
+                concerns.append(
+                    "End-to-end workflows not complete - core vision not fully realized"
+                )
 
         return concerns
 
     async def _create_component_specification(
-        self,
-        component: str,
-        issues: List[Dict[str, Any]]
+        self, component: str, issues: List[Dict[str, Any]]
     ) -> Dict[str, Any]:
         """Create specification for component fixes"""
         spec = {
@@ -297,20 +344,24 @@ class DesignAgent(BaseAgent):
             "requirements": [],
             "technical_approach": "",
             "acceptance_criteria": [],
-            "estimated_effort": "medium"
+            "estimated_effort": "medium",
         }
 
         # Build requirements from issues
         for issue in issues:
-            spec["requirements"].append({
-                "issue_id": issue["id"],
-                "requirement": issue.get("description"),
-                "recommendation": issue.get("recommendation")
-            })
+            spec["requirements"].append(
+                {
+                    "issue_id": issue["id"],
+                    "requirement": issue.get("description"),
+                    "recommendation": issue.get("recommendation"),
+                }
+            )
 
         # Determine technical approach
         if component == "e2e_workflows":
-            spec["technical_approach"] = """
+            spec[
+                "technical_approach"
+            ] = """
             1. Design complete workflow orchestration
             2. Implement market research input processing
             3. Integrate AI analysis for business opportunities
@@ -325,12 +376,14 @@ class DesignAgent(BaseAgent):
                 "Business plan is generated automatically",
                 "One-button deployment creates functional business",
                 "All steps complete without manual intervention",
-                "Errors are handled gracefully with user feedback"
+                "Errors are handled gracefully with user feedback",
             ]
             spec["estimated_effort"] = "high"
 
         elif component == "backend":
-            spec["technical_approach"] = """
+            spec[
+                "technical_approach"
+            ] = """
             1. Ensure backend server is properly configured
             2. Implement missing API endpoints
             3. Fix database connectivity issues
@@ -343,11 +396,13 @@ class DesignAgent(BaseAgent):
                 "All API endpoints respond correctly",
                 "Database operations work reliably",
                 "AI services integrated properly",
-                "Errors are logged and handled"
+                "Errors are logged and handled",
             ]
 
         elif component == "frontend":
-            spec["technical_approach"] = """
+            spec[
+                "technical_approach"
+            ] = """
             1. Ensure frontend server is properly configured
             2. Fix UI component issues
             3. Implement missing features
@@ -360,7 +415,7 @@ class DesignAgent(BaseAgent):
                 "All pages render correctly",
                 "User interactions work smoothly",
                 "Loading and error states are clear",
-                "UI is responsive and intuitive"
+                "UI is responsive and intuitive",
             ]
 
         return spec
@@ -391,7 +446,7 @@ class DesignAgent(BaseAgent):
             "dependencies": [],
             "risks": [],
             "code_structure": {},
-            "api_contracts": {}
+            "api_contracts": {},
         }
 
         # Add component-specific technical details
@@ -403,19 +458,19 @@ class DesignAgent(BaseAgent):
                 "key_files": [
                     "backend/app/api/endpoints/*.py - API route handlers",
                     "backend/app/services/*.py - Business logic",
-                    "backend/app/models/*.py - Database models"
-                ]
+                    "backend/app/models/*.py - Database models",
+                ],
             }
             spec["code_structure"] = {
                 "endpoint": "Define FastAPI router with @router.post/get/put/delete",
                 "service_layer": "Implement business logic in service functions",
                 "models": "Define SQLAlchemy models with relationships",
-                "validation": "Use Pydantic models for request/response validation"
+                "validation": "Use Pydantic models for request/response validation",
             }
             spec["api_contracts"] = {
                 "request_format": "JSON with proper type validation",
                 "response_format": "JSON with status codes (200, 201, 400, 404, 500)",
-                "error_handling": "Return {\"detail\": \"error message\"} on failures"
+                "error_handling": 'Return {"detail": "error message"} on failures',
             }
 
         elif component == "frontend":
@@ -427,14 +482,14 @@ class DesignAgent(BaseAgent):
                 "key_files": [
                     "frontend/src/pages/*.tsx - Next.js pages",
                     "frontend/src/components/*.tsx - React components",
-                    "frontend/src/lib/api.ts - API client"
-                ]
+                    "frontend/src/lib/api.ts - API client",
+                ],
             }
             spec["code_structure"] = {
                 "components": "Functional components with TypeScript interfaces",
                 "hooks": "Use useState, useEffect, useQuery for state management",
                 "api_calls": "Use axios via centralized API client",
-                "error_handling": "Display user-friendly error messages with loading states"
+                "error_handling": "Display user-friendly error messages with loading states",
             }
 
         elif component == "e2e_workflows":
@@ -446,14 +501,14 @@ class DesignAgent(BaseAgent):
                     "Market research input processor",
                     "AI analysis orchestrator",
                     "Business plan generator",
-                    "Deployment automation controller"
-                ]
+                    "Deployment automation controller",
+                ],
             }
             spec["code_structure"] = {
                 "workflow_endpoint": "POST /api/v1/workflows/execute with workflow_type parameter",
                 "state_machine": "Track workflow state: pending -> processing -> completed/failed",
                 "step_handlers": "Separate handlers for each workflow step",
-                "error_recovery": "Implement retry logic and rollback mechanisms"
+                "error_recovery": "Implement retry logic and rollback mechanisms",
             }
 
         elif component == "ai_integration":
@@ -461,13 +516,13 @@ class DesignAgent(BaseAgent):
                 "provider": "OpenAI GPT-4o-mini",
                 "integration_pattern": "Service layer with API wrapper",
                 "configuration": "Environment variables for API keys",
-                "caching": "Redis cache for repeated queries"
+                "caching": "Redis cache for repeated queries",
             }
             spec["code_structure"] = {
                 "ai_service": "Centralized AIService class with OpenAI client",
                 "prompt_templates": "Structured prompts for different analysis types",
                 "response_parsing": "Parse and validate AI responses",
-                "error_handling": "Handle rate limits, timeouts, invalid responses"
+                "error_handling": "Handle rate limits, timeouts, invalid responses",
             }
 
         # Add dependencies based on component
@@ -485,18 +540,18 @@ class DesignAgent(BaseAgent):
             spec["risks"] = [
                 "Complex orchestration - may require multiple iterations",
                 "Dependency on multiple services - one failure affects entire workflow",
-                "Long execution time - need proper timeout handling"
+                "Long execution time - need proper timeout handling",
             ]
         elif component == "ai_integration":
             spec["risks"] = [
                 "API rate limits - need proper throttling",
                 "Cost management - AI API calls are expensive",
-                "Response variability - AI responses may vary in quality"
+                "Response variability - AI responses may vary in quality",
             ]
         else:
             spec["risks"] = [
                 "Integration points with other components",
-                "Backward compatibility if modifying existing functionality"
+                "Backward compatibility if modifying existing functionality",
             ]
 
         return spec
@@ -515,10 +570,10 @@ class DesignAgent(BaseAgent):
                         "Define workflow state machine (states: idle, processing, completed, failed)",
                         "Identify all integration points (AI, DB, external APIs)",
                         "Design data flow and transformation steps",
-                        "Define error handling and rollback strategies"
+                        "Define error handling and rollback strategies",
                     ],
                     "deliverables": ["Workflow diagram", "State machine diagram", "API contracts"],
-                    "estimated_time": "4 hours"
+                    "estimated_time": "4 hours",
                 },
                 {
                     "step": 2,
@@ -527,10 +582,13 @@ class DesignAgent(BaseAgent):
                         "Create FastAPI endpoint for workflow initiation",
                         "Implement state management (database table for workflow state)",
                         "Add workflow coordination logic",
-                        "Implement progress tracking and status updates"
+                        "Implement progress tracking and status updates",
                     ],
-                    "deliverables": ["Workflow orchestrator service", "Database schema for workflow state"],
-                    "estimated_time": "6 hours"
+                    "deliverables": [
+                        "Workflow orchestrator service",
+                        "Database schema for workflow state",
+                    ],
+                    "estimated_time": "6 hours",
                 },
                 {
                     "step": 3,
@@ -540,10 +598,10 @@ class DesignAgent(BaseAgent):
                         "Step 2: AI analysis orchestration (call OpenAI APIs)",
                         "Step 3: Business plan generation and formatting",
                         "Step 4: Asset generation (if applicable)",
-                        "Step 5: Deployment automation (if applicable)"
+                        "Step 5: Deployment automation (if applicable)",
                     ],
                     "deliverables": ["Step handlers for each workflow phase"],
-                    "estimated_time": "10 hours"
+                    "estimated_time": "10 hours",
                 },
                 {
                     "step": 4,
@@ -552,10 +610,10 @@ class DesignAgent(BaseAgent):
                         "Implement try-catch blocks for each step",
                         "Add retry logic with exponential backoff",
                         "Implement rollback mechanisms for failed workflows",
-                        "Add logging and monitoring"
+                        "Add logging and monitoring",
                     ],
                     "deliverables": ["Error handling middleware", "Logging configuration"],
-                    "estimated_time": "4 hours"
+                    "estimated_time": "4 hours",
                 },
                 {
                     "step": 5,
@@ -564,10 +622,10 @@ class DesignAgent(BaseAgent):
                         "Unit tests for workflow orchestrator",
                         "Integration tests for each workflow step",
                         "E2E tests for complete workflow",
-                        "Performance tests for long-running workflows"
+                        "Performance tests for long-running workflows",
                     ],
                     "deliverables": ["Test suite with >90% coverage"],
-                    "estimated_time": "6 hours"
+                    "estimated_time": "6 hours",
                 },
                 {
                     "step": 6,
@@ -576,11 +634,11 @@ class DesignAgent(BaseAgent):
                         "Deploy to staging environment",
                         "Run validation tests",
                         "Performance monitoring setup",
-                        "Production deployment"
+                        "Production deployment",
                     ],
                     "deliverables": ["Deployed workflow", "Monitoring dashboards"],
-                    "estimated_time": "3 hours"
-                }
+                    "estimated_time": "3 hours",
+                },
             ]
 
         elif component == "backend":
@@ -591,9 +649,9 @@ class DesignAgent(BaseAgent):
                     "tasks": [
                         "Review existing API endpoints",
                         "Check database schema and models",
-                        "Identify integration points"
+                        "Identify integration points",
                     ],
-                    "estimated_time": "1 hour"
+                    "estimated_time": "1 hour",
                 },
                 {
                     "step": 2,
@@ -601,9 +659,9 @@ class DesignAgent(BaseAgent):
                     "tasks": [
                         "Define request/response schemas (Pydantic models)",
                         "Plan database operations (if needed)",
-                        "Design service layer logic"
+                        "Design service layer logic",
                     ],
-                    "estimated_time": "2 hours"
+                    "estimated_time": "2 hours",
                 },
                 {
                     "step": 3,
@@ -612,9 +670,9 @@ class DesignAgent(BaseAgent):
                         "Create FastAPI router and endpoint",
                         "Implement service layer functions",
                         "Add database models/migrations (if needed)",
-                        "Implement validation and error handling"
+                        "Implement validation and error handling",
                     ],
-                    "estimated_time": "4 hours"
+                    "estimated_time": "4 hours",
                 },
                 {
                     "step": 4,
@@ -622,20 +680,16 @@ class DesignAgent(BaseAgent):
                     "tasks": [
                         "Unit tests for service functions",
                         "Integration tests for API endpoints",
-                        "Test error scenarios"
+                        "Test error scenarios",
                     ],
-                    "estimated_time": "2 hours"
+                    "estimated_time": "2 hours",
                 },
                 {
                     "step": 5,
                     "title": "Deploy and validate",
-                    "tasks": [
-                        "Test locally",
-                        "Deploy to staging",
-                        "Validate with TestingAgent"
-                    ],
-                    "estimated_time": "1 hour"
-                }
+                    "tasks": ["Test locally", "Deploy to staging", "Validate with TestingAgent"],
+                    "estimated_time": "1 hour",
+                },
             ]
 
         elif component == "frontend":
@@ -646,9 +700,9 @@ class DesignAgent(BaseAgent):
                     "tasks": [
                         "Define component structure",
                         "Design user interactions and state management",
-                        "Plan API integration points"
+                        "Plan API integration points",
                     ],
-                    "estimated_time": "2 hours"
+                    "estimated_time": "2 hours",
                 },
                 {
                     "step": 2,
@@ -657,9 +711,9 @@ class DesignAgent(BaseAgent):
                         "Create TypeScript interfaces",
                         "Implement functional components with hooks",
                         "Add Tailwind CSS styling",
-                        "Implement API calls with error handling"
+                        "Implement API calls with error handling",
                     ],
-                    "estimated_time": "4 hours"
+                    "estimated_time": "4 hours",
                 },
                 {
                     "step": 3,
@@ -668,9 +722,9 @@ class DesignAgent(BaseAgent):
                         "Form validation (if applicable)",
                         "Loading states and spinners",
                         "Error message display",
-                        "Success feedback"
+                        "Success feedback",
                     ],
-                    "estimated_time": "2 hours"
+                    "estimated_time": "2 hours",
                 },
                 {
                     "step": 4,
@@ -679,10 +733,10 @@ class DesignAgent(BaseAgent):
                         "Component unit tests",
                         "Manual UI testing",
                         "Responsive design validation",
-                        "Accessibility check"
+                        "Accessibility check",
                     ],
-                    "estimated_time": "2 hours"
-                }
+                    "estimated_time": "2 hours",
+                },
             ]
 
         else:
@@ -692,32 +746,32 @@ class DesignAgent(BaseAgent):
                     "step": 1,
                     "title": "Analyze current implementation",
                     "tasks": ["Review existing code", "Identify root cause"],
-                    "estimated_time": "1 hour"
+                    "estimated_time": "1 hour",
                 },
                 {
                     "step": 2,
                     "title": "Design solution",
                     "tasks": ["Plan technical approach", "Identify dependencies"],
-                    "estimated_time": "1 hour"
+                    "estimated_time": "1 hour",
                 },
                 {
                     "step": 3,
                     "title": "Implement solution",
                     "tasks": ["Write code", "Add error handling", "Add logging"],
-                    "estimated_time": "3 hours"
+                    "estimated_time": "3 hours",
                 },
                 {
                     "step": 4,
                     "title": "Test solution",
                     "tasks": ["Unit tests", "Integration tests", "Manual validation"],
-                    "estimated_time": "2 hours"
+                    "estimated_time": "2 hours",
                 },
                 {
                     "step": 5,
                     "title": "Deploy and validate",
                     "tasks": ["Deploy", "Monitor", "Validate fix"],
-                    "estimated_time": "1 hour"
-                }
+                    "estimated_time": "1 hour",
+                },
             ]
 
     async def _create_testing_strategy(self, issue: Dict[str, Any]) -> Dict[str, Any]:
@@ -726,7 +780,7 @@ class DesignAgent(BaseAgent):
             "unit_tests": "Test individual functions and components",
             "integration_tests": "Test integration with other components",
             "e2e_tests": "Test complete workflow",
-            "validation": "Ensure issue is fully resolved"
+            "validation": "Ensure issue is fully resolved",
         }
 
     def _estimate_effort(self, issue: Dict[str, Any]) -> str:

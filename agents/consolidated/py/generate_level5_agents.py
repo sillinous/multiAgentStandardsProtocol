@@ -12,20 +12,23 @@ from pathlib import Path
 # Add parent directory to path
 sys.path.insert(0, str(Path(__file__).parent.parent))
 
+
 def get_agent_template(agent_spec):
     """Generate agent code from specification"""
 
-    agent_id = agent_spec['agent_id']
-    agent_type = agent_spec['agent_type']
-    name = agent_spec['name']
-    description = agent_spec['description']
-    category = agent_spec['category']
-    capabilities = agent_spec['capabilities']
-    inputs = agent_spec['inputs']
-    outputs = agent_spec['outputs']
+    agent_id = agent_spec["agent_id"]
+    agent_type = agent_spec["agent_type"]
+    name = agent_spec["name"]
+    description = agent_spec["description"]
+    category = agent_spec["category"]
+    capabilities = agent_spec["capabilities"]
+    inputs = agent_spec["inputs"]
+    outputs = agent_spec["outputs"]
 
     # Convert agent_id to class name
-    class_name = ''.join(word.title() for word in agent_id.replace('_agent', '').split('_')) + 'Agent'
+    class_name = (
+        "".join(word.title() for word in agent_id.replace("_agent", "").split("_")) + "Agent"
+    )
 
     template = f'''"""
 {name}
@@ -290,8 +293,8 @@ if __name__ == "__main__":
 def create_agent_file(agent_spec, output_dir):
     """Create agent file from specification"""
 
-    agent_id = agent_spec['agent_id']
-    category = agent_spec['category']
+    agent_id = agent_spec["agent_id"]
+    category = agent_spec["category"]
 
     # Create category directory
     category_path = os.path.join(output_dir, "tasks", category)
@@ -305,7 +308,7 @@ def create_agent_file(agent_spec, output_dir):
     code = get_agent_template(agent_spec)
 
     # Write file
-    with open(file_path, 'w', encoding='utf-8') as f:
+    with open(file_path, "w", encoding="utf-8") as f:
         f.write(code)
 
     return file_path
@@ -332,9 +335,14 @@ def main():
             "category": "data_extraction",
             "name": "Web Scraping Task Agent",
             "description": "Extract structured data from websites",
-            "capabilities": ["web_scraping", "javascript_rendering", "rate_limiting", "proxy_support"],
+            "capabilities": [
+                "web_scraping",
+                "javascript_rendering",
+                "rate_limiting",
+                "proxy_support",
+            ],
             "inputs": {"url": "string", "selectors": "dict", "rules": "dict"},
-            "outputs": {"data": "dict", "metadata": "dict"}
+            "outputs": {"data": "dict", "metadata": "dict"},
         },
         {
             "agent_id": "pdf_parsing_task_agent",
@@ -344,7 +352,7 @@ def main():
             "description": "Extract text, tables, and images from PDF documents",
             "capabilities": ["text_extraction", "table_parsing", "image_extraction", "ocr_support"],
             "inputs": {"pdf_path": "string", "extraction_mode": "string"},
-            "outputs": {"text": "string", "tables": "list", "images": "list"}
+            "outputs": {"text": "string", "tables": "list", "images": "list"},
         },
         {
             "agent_id": "api_data_fetcher_task_agent",
@@ -354,7 +362,7 @@ def main():
             "description": "Retrieve data from REST/GraphQL APIs",
             "capabilities": ["rest_api", "graphql", "oauth", "rate_limiting"],
             "inputs": {"endpoint": "string", "auth": "dict", "params": "dict"},
-            "outputs": {"data": "dict", "status_code": "int"}
+            "outputs": {"data": "dict", "status_code": "int"},
         },
         {
             "agent_id": "database_query_task_agent",
@@ -364,7 +372,7 @@ def main():
             "description": "Execute SQL queries and return results",
             "capabilities": ["sql_execution", "connection_pooling", "query_validation"],
             "inputs": {"connection_string": "string", "query": "string"},
-            "outputs": {"results": "list", "row_count": "int"}
+            "outputs": {"results": "list", "row_count": "int"},
         },
         {
             "agent_id": "email_extractor_task_agent",
@@ -374,7 +382,7 @@ def main():
             "description": "Extract structured data from emails",
             "capabilities": ["imap_support", "gmail_api", "attachment_extraction"],
             "inputs": {"email_source": "string", "filters": "dict"},
-            "outputs": {"emails": "list", "metadata": "dict"}
+            "outputs": {"emails": "list", "metadata": "dict"},
         },
         {
             "agent_id": "file_scanner_task_agent",
@@ -384,7 +392,7 @@ def main():
             "description": "Scan directories and catalog files",
             "capabilities": ["recursive_scan", "metadata_extraction", "hash_calculation"],
             "inputs": {"directory_path": "string", "patterns": "list"},
-            "outputs": {"files": "list", "metadata": "dict"}
+            "outputs": {"files": "list", "metadata": "dict"},
         },
         {
             "agent_id": "image_ocr_task_agent",
@@ -394,7 +402,7 @@ def main():
             "description": "Extract text from images using OCR",
             "capabilities": ["ocr_processing", "language_detection", "confidence_scoring"],
             "inputs": {"image_path": "string", "language": "string"},
-            "outputs": {"text": "string", "confidence": "float"}
+            "outputs": {"text": "string", "confidence": "float"},
         },
         {
             "agent_id": "social_media_collector_task_agent",
@@ -404,9 +412,8 @@ def main():
             "description": "Collect posts and metrics from social platforms",
             "capabilities": ["multi_platform", "api_management", "sentiment_tagging"],
             "inputs": {"platform": "string", "search_terms": "list", "date_range": "dict"},
-            "outputs": {"posts": "list", "metrics": "dict"}
+            "outputs": {"posts": "list", "metrics": "dict"},
         },
-
         # CATEGORY B: DATA TRANSFORMATION
         {
             "agent_id": "data_cleaning_task_agent",
@@ -414,9 +421,14 @@ def main():
             "category": "data_transformation",
             "name": "Data Cleaning Task Agent",
             "description": "Clean, normalize, and deduplicate data",
-            "capabilities": ["missing_value_handling", "deduplication", "validation", "standardization"],
+            "capabilities": [
+                "missing_value_handling",
+                "deduplication",
+                "validation",
+                "standardization",
+            ],
             "inputs": {"data": "dict", "cleaning_rules": "dict"},
-            "outputs": {"cleaned_data": "dict", "quality_report": "dict"}
+            "outputs": {"cleaned_data": "dict", "quality_report": "dict"},
         },
         {
             "agent_id": "data_enrichment_task_agent",
@@ -426,7 +438,7 @@ def main():
             "description": "Append additional data from external sources",
             "capabilities": ["company_enrichment", "contact_enrichment", "geographic_enrichment"],
             "inputs": {"records": "list", "enrichment_rules": "dict"},
-            "outputs": {"enriched_records": "list", "enrichment_stats": "dict"}
+            "outputs": {"enriched_records": "list", "enrichment_stats": "dict"},
         },
         {
             "agent_id": "data_categorization_task_agent",
@@ -436,7 +448,7 @@ def main():
             "description": "Classify records into predefined categories",
             "capabilities": ["rule_based_classification", "ml_classification", "multi_label"],
             "inputs": {"records": "list", "categories": "list"},
-            "outputs": {"categorized_records": "list", "confidence_scores": "dict"}
+            "outputs": {"categorized_records": "list", "confidence_scores": "dict"},
         },
         {
             "agent_id": "data_aggregation_task_agent",
@@ -446,7 +458,7 @@ def main():
             "description": "Group and aggregate data by dimensions",
             "capabilities": ["multi_dimensional_grouping", "aggregation_functions", "pivot_tables"],
             "inputs": {"dataset": "list", "dimensions": "list", "metrics": "list"},
-            "outputs": {"aggregated_data": "dict", "summary_stats": "dict"}
+            "outputs": {"aggregated_data": "dict", "summary_stats": "dict"},
         },
         {
             "agent_id": "data_validation_task_agent",
@@ -456,7 +468,7 @@ def main():
             "description": "Validate data against schemas and business rules",
             "capabilities": ["schema_validation", "business_rule_validation", "error_reporting"],
             "inputs": {"data": "dict", "schema": "dict", "rules": "list"},
-            "outputs": {"validation_result": "bool", "errors": "list"}
+            "outputs": {"validation_result": "bool", "errors": "list"},
         },
         {
             "agent_id": "data_formatting_task_agent",
@@ -466,7 +478,7 @@ def main():
             "description": "Convert data between formats",
             "capabilities": ["format_conversion", "schema_mapping", "compression"],
             "inputs": {"data": "dict", "source_format": "string", "target_format": "string"},
-            "outputs": {"formatted_data": "dict", "format_info": "dict"}
+            "outputs": {"formatted_data": "dict", "format_info": "dict"},
         },
         {
             "agent_id": "text_normalization_task_agent",
@@ -474,11 +486,15 @@ def main():
             "category": "data_transformation",
             "name": "Text Normalization Task Agent",
             "description": "Normalize text for consistent processing",
-            "capabilities": ["case_normalization", "punctuation_handling", "stemming", "lemmatization"],
+            "capabilities": [
+                "case_normalization",
+                "punctuation_handling",
+                "stemming",
+                "lemmatization",
+            ],
             "inputs": {"text": "string", "normalization_rules": "dict"},
-            "outputs": {"normalized_text": "string", "transformations": "list"}
+            "outputs": {"normalized_text": "string", "transformations": "list"},
         },
-
         # CATEGORY C: ANALYSIS
         {
             "agent_id": "sentiment_analysis_task_agent",
@@ -488,7 +504,7 @@ def main():
             "description": "Analyze sentiment of text content",
             "capabilities": ["sentiment_scoring", "emotion_detection", "aspect_based_sentiment"],
             "inputs": {"text": "string"},
-            "outputs": {"sentiment_score": "float", "label": "string", "confidence": "float"}
+            "outputs": {"sentiment_score": "float", "label": "string", "confidence": "float"},
         },
         {
             "agent_id": "entity_extraction_task_agent",
@@ -498,7 +514,7 @@ def main():
             "description": "Extract named entities from text",
             "capabilities": ["ner", "entity_linking", "coreference_resolution"],
             "inputs": {"text": "string"},
-            "outputs": {"entities": "list", "entity_types": "dict"}
+            "outputs": {"entities": "list", "entity_types": "dict"},
         },
         {
             "agent_id": "trend_detection_task_agent",
@@ -508,7 +524,7 @@ def main():
             "description": "Identify trends and patterns in time series data",
             "capabilities": ["trend_analysis", "seasonality_detection", "change_point_detection"],
             "inputs": {"time_series": "list", "detection_params": "dict"},
-            "outputs": {"trends": "list", "statistical_significance": "dict"}
+            "outputs": {"trends": "list", "statistical_significance": "dict"},
         },
         {
             "agent_id": "anomaly_detection_task_agent",
@@ -518,7 +534,7 @@ def main():
             "description": "Detect outliers and anomalies in data",
             "capabilities": ["statistical_methods", "ml_methods", "severity_scoring"],
             "inputs": {"dataset": "list", "detection_params": "dict"},
-            "outputs": {"anomalies": "list", "severity_scores": "dict"}
+            "outputs": {"anomalies": "list", "severity_scores": "dict"},
         },
         {
             "agent_id": "text_similarity_task_agent",
@@ -528,7 +544,7 @@ def main():
             "description": "Calculate similarity between text documents",
             "capabilities": ["cosine_similarity", "semantic_similarity", "fuzzy_matching"],
             "inputs": {"text1": "string", "text2": "string"},
-            "outputs": {"similarity_score": "float", "method": "string"}
+            "outputs": {"similarity_score": "float", "method": "string"},
         },
         {
             "agent_id": "keyword_extraction_task_agent",
@@ -538,7 +554,7 @@ def main():
             "description": "Extract important keywords and phrases from text",
             "capabilities": ["tfidf", "rake", "textrank", "phrase_extraction"],
             "inputs": {"text": "string", "num_keywords": "int"},
-            "outputs": {"keywords": "list", "relevance_scores": "dict"}
+            "outputs": {"keywords": "list", "relevance_scores": "dict"},
         },
         {
             "agent_id": "statistical_analysis_task_agent",
@@ -548,7 +564,7 @@ def main():
             "description": "Perform statistical analysis on datasets",
             "capabilities": ["descriptive_stats", "correlation_analysis", "hypothesis_testing"],
             "inputs": {"dataset": "list", "analysis_type": "string"},
-            "outputs": {"statistics": "dict", "p_values": "dict"}
+            "outputs": {"statistics": "dict", "p_values": "dict"},
         },
         {
             "agent_id": "classification_task_agent",
@@ -558,9 +574,8 @@ def main():
             "description": "Classify items using ML models",
             "capabilities": ["binary_classification", "multi_class", "confidence_calibration"],
             "inputs": {"items": "list", "model": "string"},
-            "outputs": {"classifications": "list", "confidence_scores": "dict"}
+            "outputs": {"classifications": "list", "confidence_scores": "dict"},
         },
-
         # CATEGORY D: OUTPUT GENERATION
         {
             "agent_id": "report_generator_task_agent",
@@ -570,7 +585,7 @@ def main():
             "description": "Generate formatted reports from data",
             "capabilities": ["pdf_generation", "html_generation", "template_rendering"],
             "inputs": {"data": "dict", "template": "string", "format": "string"},
-            "outputs": {"report": "string", "file_path": "string"}
+            "outputs": {"report": "string", "file_path": "string"},
         },
         {
             "agent_id": "chart_creation_task_agent",
@@ -580,7 +595,7 @@ def main():
             "description": "Generate data visualizations",
             "capabilities": ["multiple_chart_types", "interactive_charts", "custom_styling"],
             "inputs": {"data": "dict", "chart_type": "string", "style": "dict"},
-            "outputs": {"chart": "string", "file_path": "string"}
+            "outputs": {"chart": "string", "file_path": "string"},
         },
         {
             "agent_id": "email_sender_task_agent",
@@ -590,7 +605,7 @@ def main():
             "description": "Send formatted emails",
             "capabilities": ["html_email", "attachments", "template_rendering", "bulk_sending"],
             "inputs": {"recipients": "list", "subject": "string", "body": "string"},
-            "outputs": {"delivery_status": "dict", "message_ids": "list"}
+            "outputs": {"delivery_status": "dict", "message_ids": "list"},
         },
         {
             "agent_id": "notification_dispatcher_task_agent",
@@ -600,7 +615,7 @@ def main():
             "description": "Send notifications via multiple channels",
             "capabilities": ["multi_channel", "channel_fallback", "priority_routing"],
             "inputs": {"message": "string", "recipients": "list", "channels": "list"},
-            "outputs": {"delivery_confirmations": "dict", "failed_deliveries": "list"}
+            "outputs": {"delivery_confirmations": "dict", "failed_deliveries": "list"},
         },
         {
             "agent_id": "file_export_task_agent",
@@ -610,7 +625,7 @@ def main():
             "description": "Export data to various file formats",
             "capabilities": ["format_support", "compression", "cloud_upload"],
             "inputs": {"data": "dict", "format": "string", "destination": "string"},
-            "outputs": {"file_path": "string", "export_stats": "dict"}
+            "outputs": {"file_path": "string", "export_stats": "dict"},
         },
         {
             "agent_id": "dashboard_update_task_agent",
@@ -620,7 +635,7 @@ def main():
             "description": "Update dashboard metrics and visualizations",
             "capabilities": ["metric_push", "real_time_streaming", "alert_triggering"],
             "inputs": {"dashboard_id": "string", "metrics": "dict"},
-            "outputs": {"update_status": "dict", "alerts_triggered": "list"}
+            "outputs": {"update_status": "dict", "alerts_triggered": "list"},
         },
         {
             "agent_id": "api_response_formatter_task_agent",
@@ -630,8 +645,8 @@ def main():
             "description": "Format data for API responses",
             "capabilities": ["rest_formatting", "graphql_formatting", "schema_validation"],
             "inputs": {"data": "dict", "api_schema": "dict"},
-            "outputs": {"formatted_response": "dict", "validation_result": "bool"}
-        }
+            "outputs": {"formatted_response": "dict", "validation_result": "bool"},
+        },
     ]
 
     print(f"Generating {len(agents)} Level 5 Task Agents...")

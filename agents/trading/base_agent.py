@@ -18,6 +18,7 @@ from pathlib import Path
 import pandas as pd
 from termcolor import cprint
 
+
 class BaseAgent:
     def __init__(self, agent_type, use_exchange_manager=False):
         """
@@ -38,7 +39,10 @@ class BaseAgent:
                 from src.config import EXCHANGE
 
                 self.em = ExchangeManager()
-                cprint(f"✅ {agent_type.capitalize()} agent initialized with {EXCHANGE} exchange", "green")
+                cprint(
+                    f"✅ {agent_type.capitalize()} agent initialized with {EXCHANGE} exchange",
+                    "green",
+                )
 
                 # Store exchange type for convenience
                 self.exchange = EXCHANGE
@@ -49,18 +53,21 @@ class BaseAgent:
 
                 # Fallback to direct imports
                 from src import nice_funcs as n
+
                 self.n = n
-                self.exchange = 'solana'  # Default fallback
+                self.exchange = "solana"  # Default fallback
 
     def get_active_tokens(self):
         """Get the appropriate token/symbol list based on active exchange"""
         try:
             from src.config import get_active_tokens
+
             return get_active_tokens()
         except:
             from src.config import MONITORED_TOKENS
+
             return MONITORED_TOKENS
 
     def run(self):
         """Default run method - should be overridden by child classes"""
-        raise NotImplementedError("Each agent must implement its own run method") 
+        raise NotImplementedError("Each agent must implement its own run method")

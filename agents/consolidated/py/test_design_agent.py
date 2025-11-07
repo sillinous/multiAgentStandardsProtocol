@@ -29,9 +29,7 @@ async def test_design_agent():
     # Create DesignAgent instance
     print("[1/5] Creating DesignAgent instance...")
     agent = DesignAgent(
-        agent_id="test_design_agent_001",
-        workspace_path="./workspace",
-        project_root=".."
+        agent_id="test_design_agent_001", workspace_path="./workspace", project_root=".."
     )
     print(f"      [OK] DesignAgent created: {agent.agent_id}")
     print()
@@ -40,40 +38,35 @@ async def test_design_agent():
     print("[2/5] Creating mock test report with sample issues...")
     test_report = {
         "timestamp": datetime.now().isoformat(),
-        "summary": {
-            "total_tests": 10,
-            "passed": 6,
-            "failed": 4,
-            "coverage": 0.6
-        },
+        "summary": {"total_tests": 10, "passed": 6, "failed": 4, "coverage": 0.6},
         "critical_issues": [
             {
                 "id": "E2E-BUSINESS-PLAN-NOT-IMPLEMENTED",
                 "severity": "high",
                 "component": "e2e_workflows",
                 "description": "Business plan generation endpoint not implemented",
-                "recommendation": "Implement /api/v1/ai-analysis/business-plan endpoint"
+                "recommendation": "Implement /api/v1/ai-analysis/business-plan endpoint",
             },
             {
                 "id": "AI-OPENAI-NOT-CONFIGURED",
                 "severity": "high",
                 "component": "ai_integration",
                 "description": "OpenAI API key not configured",
-                "recommendation": "Set OPENAI_API_KEY in environment or via UI configuration"
-            }
+                "recommendation": "Set OPENAI_API_KEY in environment or via UI configuration",
+            },
         ],
         "enhancements": [
             {
                 "id": "ENH-E2E-001",
                 "priority": "high",
                 "description": "Complete end-to-end autonomous deployment workflow",
-                "rationale": "Critical for achieving market-research-to-deployment vision"
+                "rationale": "Critical for achieving market-research-to-deployment vision",
             }
         ],
         "components": {
             "backend": {"tests_run": 5, "tests_passed": 4, "tests_failed": 1},
-            "e2e_workflows": {"tests_run": 2, "tests_passed": 0, "tests_failed": 2}
-        }
+            "e2e_workflows": {"tests_run": 2, "tests_passed": 0, "tests_failed": 2},
+        },
     }
     print("      [OK] Mock test report created with 2 critical issues")
     print()
@@ -87,9 +80,11 @@ async def test_design_agent():
         print(f"      - Design recommendations: {len(analysis['design_recommendations'])}")
         print(f"      - Architectural concerns: {len(analysis['architectural_concerns'])}")
 
-        if analysis['insights']:
-            first_insight = analysis['insights'][0]
-            print(f"      - First insight complexity: {first_insight.get('implementation_complexity', 'N/A')}")
+        if analysis["insights"]:
+            first_insight = analysis["insights"][0]
+            print(
+                f"      - First insight complexity: {first_insight.get('implementation_complexity', 'N/A')}"
+            )
             print(f"      - Design patterns: {len(first_insight.get('design_patterns', []))}")
     except Exception as e:
         print(f"      [ERROR] Analysis failed: {e}")
@@ -105,16 +100,20 @@ async def test_design_agent():
         print(f"      - Estimated effort: {solution['estimated_effort']}")
 
         # Check technical spec detail
-        tech_spec = solution['technical_specification']
-        print(f"      - Technical details keys: {list(tech_spec.get('technical_details', {}).keys())}")
+        tech_spec = solution["technical_specification"]
+        print(
+            f"      - Technical details keys: {list(tech_spec.get('technical_details', {}).keys())}"
+        )
 
         # Check implementation plan detail
-        impl_plan = solution['implementation_plan']
+        impl_plan = solution["implementation_plan"]
         if impl_plan and isinstance(impl_plan, list) and len(impl_plan) > 0:
             print(f"      - Implementation plan steps: {len(impl_plan)}")
             if isinstance(impl_plan[0], dict):
                 print(f"      - First step: {impl_plan[0].get('title', 'N/A')}")
-                print(f"      - First step estimated time: {impl_plan[0].get('estimated_time', 'N/A')}")
+                print(
+                    f"      - First step estimated time: {impl_plan[0].get('estimated_time', 'N/A')}"
+                )
     except Exception as e:
         print(f"      [ERROR] Design solution failed: {e}")
     print()
@@ -128,8 +127,8 @@ async def test_design_agent():
         print(f"      - Addresses issues: {len(specifications['addresses_issues'])}")
         print(f"      - Specifications generated: {len(specifications['specifications'])}")
 
-        if specifications['specifications']:
-            first_spec = specifications['specifications'][0]
+        if specifications["specifications"]:
+            first_spec = specifications["specifications"][0]
             print(f"      - First spec component: {first_spec.get('component', 'N/A')}")
             print(f"      - Requirements count: {len(first_spec.get('requirements', []))}")
     except Exception as e:

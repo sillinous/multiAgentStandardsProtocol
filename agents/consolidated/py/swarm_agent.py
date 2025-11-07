@@ -63,10 +63,10 @@ SWARM_MODELS = {
     # Provider: (enabled, model_type, model_name)
     "claude": (True, "claude", "claude-sonnet-4-5"),  # Claude 4.5 Sonnet - Latest & Greatest!
     "openai": (True, "openai", "gpt-5"),  # GPT-5 - Most advanced model!
-    #"ollama_qwen": (True, "ollama", "qwen3:8b"),  # Qwen3 8B via Ollama - Fast local reasoning! (Replaces Gemini)
+    # "ollama_qwen": (True, "ollama", "qwen3:8b"),  # Qwen3 8B via Ollama - Fast local reasoning! (Replaces Gemini)
     "xai": (True, "xai", "grok-4-fast-reasoning"),  # Grok-4 fast reasoning
     "deepseek": (True, "deepseek", "deepseek-chat"),  # DeepSeek for reasoning (API)
-    #"ollama": (True, "ollama", "DeepSeek-R1:latest"),  # DeepSeek-R1 local model - 90s timeout
+    # "ollama": (True, "ollama", "DeepSeek-R1:latest"),  # DeepSeek-R1 local model - 90s timeout
 }
 
 # Default parameters for model queries
@@ -99,6 +99,7 @@ RESULTS_DIR = Path(project_root) / "src" / "data" / "swarm_agent"
 # END CONFIGURATION
 # ============================================
 
+
 class SwarmAgent:
     """Moon Dev's Swarm Agent for multi-model consensus"""
 
@@ -120,9 +121,9 @@ class SwarmAgent:
         # Initialize models
         self._initialize_models()
 
-        cprint("\n" + "="*60, "cyan")
-        cprint("🌙 Moon Dev's Swarm Agent Initialized 🌙", "cyan", attrs=['bold'])
-        cprint("="*60, "cyan")
+        cprint("\n" + "=" * 60, "cyan")
+        cprint("🌙 Moon Dev's Swarm Agent Initialized 🌙", "cyan", attrs=["bold"])
+        cprint("=" * 60, "cyan")
         cprint(f"\n🤖 Active Models in Swarm: {len(self.active_models)}", "green")
         for name in self.active_models.keys():
             cprint(f"   ✅ {name}", "green")
@@ -140,7 +141,7 @@ class SwarmAgent:
                     self.active_models[provider] = {
                         "model": model,
                         "type": model_type,
-                        "name": model_name
+                        "name": model_name,
                     }
                     cprint(f"✅ Initialized {provider}: {model_name}", "green")
                 else:
@@ -148,8 +149,9 @@ class SwarmAgent:
             except Exception as e:
                 cprint(f"❌ Error initializing {provider}: {e}", "red")
 
-    def _query_single_model(self, provider: str, model_info: Dict, prompt: str,
-                          system_prompt: Optional[str] = None) -> Tuple[str, Dict]:
+    def _query_single_model(
+        self, provider: str, model_info: Dict, prompt: str, system_prompt: Optional[str] = None
+    ) -> Tuple[str, Dict]:
         """
         Query a single model
 
@@ -168,7 +170,7 @@ class SwarmAgent:
                 system_prompt=system_prompt,
                 user_content=prompt,
                 temperature=DEFAULT_TEMPERATURE,
-                max_tokens=DEFAULT_MAX_TOKENS
+                max_tokens=DEFAULT_MAX_TOKENS,
             )
 
             elapsed = time.time() - start_time
@@ -179,7 +181,7 @@ class SwarmAgent:
                 "response": response,
                 "success": True,
                 "error": None,
-                "response_time": round(elapsed, 2)
+                "response_time": round(elapsed, 2),
             }
 
         except Exception as e:
@@ -192,7 +194,7 @@ class SwarmAgent:
                 "response": None,
                 "success": False,
                 "error": str(e),
-                "response_time": round(elapsed, 2)
+                "response_time": round(elapsed, 2),
             }
 
     def query(self, prompt: str, system_prompt: Optional[str] = None) -> Dict[str, Any]:
@@ -206,11 +208,15 @@ class SwarmAgent:
         Returns:
             Dict containing individual responses and metadata
         """
-        cprint(f"\n🌊 Initiating Swarm Query with {len(self.active_models)} models...", "cyan", attrs=['bold'])
+        cprint(
+            f"\n🌊 Initiating Swarm Query with {len(self.active_models)} models...",
+            "cyan",
+            attrs=["bold"],
+        )
         cprint(f"📝 Prompt: {prompt[:100]}{'...' if len(prompt) > 100 else ''}", "blue")
 
         # Show which models are being called in parallel
-        cprint(f"\n🚀 Calling models in parallel:", "yellow", attrs=['bold'])
+        cprint(f"\n🚀 Calling models in parallel:", "yellow", attrs=["bold"])
         for provider, model_info in self.active_models.items():
             cprint(f"   → {provider.upper()}: {model_info['name']}", "cyan")
 
@@ -222,11 +228,7 @@ class SwarmAgent:
             # Submit all queries
             futures = {
                 executor.submit(
-                    self._query_single_model,
-                    provider,
-                    model_info,
-                    prompt,
-                    system_prompt
+                    self._query_single_model, provider, model_info, prompt, system_prompt
                 ): provider
                 for provider, model_info in self.active_models.items()
             }
@@ -241,7 +243,10 @@ class SwarmAgent:
                     provider = futures[future]
                     completed_count += 1
 
-                    cprint(f"\n⏳ Waiting for responses... ({completed_count}/{total_models} completed)", "yellow")
+                    cprint(
+                        f"\n⏳ Waiting for responses... ({completed_count}/{total_models} completed)",
+                        "yellow",
+                    )
                     cprint(f"🔄 Processing: {provider}...", "cyan")
 
                     try:
@@ -249,19 +254,24 @@ class SwarmAgent:
                         all_responses[provider] = response
 
                         if response["success"]:
-                            cprint(f"   ✅ {provider} responded ({response['response_time']}s)", "green")
+                            cprint(
+                                f"   ✅ {provider} responded ({response['response_time']}s)",
+                                "green",
+                            )
                         else:
                             cprint(f"   ❌ {provider} failed: {response['error']}", "red")
 
                     except TimeoutError:
-                        cprint(f"   ⏰ {provider} timed out (>{MODEL_TIMEOUT}s) - skipping", "yellow")
+                        cprint(
+                            f"   ⏰ {provider} timed out (>{MODEL_TIMEOUT}s) - skipping", "yellow"
+                        )
                         all_responses[provider] = {
                             "provider": provider,
                             "model": "timeout",
                             "response": None,
                             "success": False,
                             "error": f"Timeout after {MODEL_TIMEOUT}s",
-                            "response_time": MODEL_TIMEOUT
+                            "response_time": MODEL_TIMEOUT,
                         }
                     except Exception as e:
                         cprint(f"   💥 {provider} error: {str(e)}", "red")
@@ -271,7 +281,7 @@ class SwarmAgent:
                             "response": None,
                             "success": False,
                             "error": str(e),
-                            "response_time": 0
+                            "response_time": 0,
                         }
 
             except TimeoutError:
@@ -287,7 +297,7 @@ class SwarmAgent:
                             "response": None,
                             "success": False,
                             "error": f"Global timeout - no response received",
-                            "response_time": MODEL_TIMEOUT
+                            "response_time": MODEL_TIMEOUT,
                         }
 
         # Generate consensus review summary (with model mapping)
@@ -298,10 +308,10 @@ class SwarmAgent:
         for provider, data in all_responses.items():
             if data["success"]:
                 # Extract clean text from ModelResponse
-                if hasattr(data['response'], 'content'):
-                    response_text = data['response'].content
+                if hasattr(data["response"], "content"):
+                    response_text = data["response"].content
                 else:
-                    response_text = str(data['response'])
+                    response_text = str(data["response"])
 
                 # Strip out <think> tags from Ollama responses
                 response_text = self._strip_think_tags(response_text)
@@ -309,14 +319,14 @@ class SwarmAgent:
                 clean_responses[provider] = {
                     "response": response_text,
                     "response_time": data["response_time"],
-                    "success": True
+                    "success": True,
                 }
             else:
                 clean_responses[provider] = {
                     "response": None,
                     "error": data["error"],
                     "response_time": data["response_time"],
-                    "success": False
+                    "success": False,
                 }
 
         # Prepare results
@@ -333,8 +343,8 @@ class SwarmAgent:
                 "total_models": len(self.active_models),
                 "successful_responses": sum(1 for r in all_responses.values() if r["success"]),
                 "failed_responses": sum(1 for r in all_responses.values() if not r["success"]),
-                "total_time": total_time
-            }
+                "total_time": total_time,
+            },
         }
 
         # Save results if enabled
@@ -346,12 +356,14 @@ class SwarmAgent:
     def _strip_think_tags(self, text: str) -> str:
         """Remove <think>...</think> tags from response text"""
         # Remove <think>...</think> blocks (multiline)
-        text = re.sub(r'<think>.*?</think>', '', text, flags=re.DOTALL)
+        text = re.sub(r"<think>.*?</think>", "", text, flags=re.DOTALL)
         # Clean up extra whitespace
-        text = re.sub(r'\n{3,}', '\n\n', text)
+        text = re.sub(r"\n{3,}", "\n\n", text)
         return text.strip()
 
-    def _generate_consensus_review(self, responses: Dict[str, Dict], original_prompt: str) -> Tuple[str, Dict]:
+    def _generate_consensus_review(
+        self, responses: Dict[str, Dict], original_prompt: str
+    ) -> Tuple[str, Dict]:
         """
         Generate a consensus review summary using the consensus reviewer AI
 
@@ -367,7 +379,8 @@ class SwarmAgent:
         try:
             # Get successful responses only
             successful_responses = [
-                (provider, r["response"]) for provider, r in responses.items()
+                (provider, r["response"])
+                for provider, r in responses.items()
                 if r["success"] and r["response"]
             ]
 
@@ -381,7 +394,7 @@ class SwarmAgent:
                 model_mapping[f"AI #{i}"] = provider.upper()
 
                 # Extract clean text
-                if hasattr(response, 'content'):
+                if hasattr(response, "content"):
                     response_text = response.content
                 else:
                     response_text = str(response)
@@ -399,8 +412,7 @@ class SwarmAgent:
             # Build the full prompt for consensus reviewer
             responses_text = "\n".join(formatted_responses)
             full_prompt = CONSENSUS_REVIEWER_PROMPT.format(
-                num_models=len(successful_responses),
-                responses=responses_text
+                num_models=len(successful_responses), responses=responses_text
             )
 
             # Get consensus reviewer model
@@ -417,11 +429,11 @@ class SwarmAgent:
                 system_prompt="You are a consensus analyzer. Provide clear, concise 3-sentence summaries.",
                 user_content=f"Original Question: {original_prompt}\n\n{full_prompt}",
                 temperature=0.3,  # Lower temperature for more focused summary
-                max_tokens=200  # Short and concise
+                max_tokens=200,  # Short and concise
             )
 
             # Extract clean text
-            if hasattr(review_response, 'content'):
+            if hasattr(review_response, "content"):
                 consensus_summary = review_response.content.strip()
             else:
                 consensus_summary = str(review_response).strip()
@@ -439,7 +451,7 @@ class SwarmAgent:
         timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
         filename = self.results_dir / f"swarm_result_{timestamp}.json"
 
-        with open(filename, 'w') as f:
+        with open(filename, "w") as f:
             json.dump(result, f, indent=2, default=str)
 
         cprint(f"\n💾 Results saved to: {filename.relative_to(Path(project_root))}", "blue")
@@ -448,9 +460,9 @@ class SwarmAgent:
         """Print a summary of the swarm results"""
         metadata = result["metadata"]
 
-        cprint("\n" + "="*60, "green")
-        cprint("🎯 SWARM CONSENSUS", "green", attrs=['bold'])
-        cprint("="*60, "green")
+        cprint("\n" + "=" * 60, "green")
+        cprint("🎯 SWARM CONSENSUS", "green", attrs=["bold"])
+        cprint("=" * 60, "green")
 
         # Show model mapping first
         if "model_mapping" in result and result["model_mapping"]:
@@ -460,12 +472,15 @@ class SwarmAgent:
 
         # Show AI-generated consensus summary
         if "consensus_summary" in result:
-            cprint("\n🧠 AI CONSENSUS SUMMARY:", "magenta", attrs=['bold'])
+            cprint("\n🧠 AI CONSENSUS SUMMARY:", "magenta", attrs=["bold"])
             cprint(f"{result['consensus_summary']}\n", "white")
 
         cprint(f"⚡ Performance:", "cyan")
         cprint(f"   Total Time: {metadata['total_time']}s", "white")
-        cprint(f"   Success Rate: {metadata['successful_responses']}/{metadata['total_models']}", "white")
+        cprint(
+            f"   Success Rate: {metadata['successful_responses']}/{metadata['total_models']}",
+            "white",
+        )
 
     def query_dataframe(self, prompt: str, system_prompt: Optional[str] = None) -> pd.DataFrame:
         """
@@ -479,22 +494,26 @@ class SwarmAgent:
         # Convert responses to DataFrame
         data = []
         for provider, response_data in result["responses"].items():
-            data.append({
-                "provider": provider,
-                "response": response_data["response"][:500] if response_data["response"] else None,
-                "success": response_data["success"],
-                "error": response_data.get("error"),
-                "response_time": response_data["response_time"]
-            })
+            data.append(
+                {
+                    "provider": provider,
+                    "response": (
+                        response_data["response"][:500] if response_data["response"] else None
+                    ),
+                    "success": response_data["success"],
+                    "error": response_data.get("error"),
+                    "response_time": response_data["response_time"],
+                }
+            )
 
         return pd.DataFrame(data)
 
 
 def main():
     """Simple interactive swarm query"""
-    cprint("\n" + "="*60, "cyan")
-    cprint("🌙 Moon Dev's Swarm Agent 🌙", "cyan", attrs=['bold'])
-    cprint("="*60, "cyan")
+    cprint("\n" + "=" * 60, "cyan")
+    cprint("🌙 Moon Dev's Swarm Agent 🌙", "cyan", attrs=["bold"])
+    cprint("=" * 60, "cyan")
 
     # Initialize swarm
     swarm = SwarmAgent()
@@ -511,9 +530,9 @@ def main():
     result = swarm.query(prompt)
 
     # Show individual responses
-    cprint("\n" + "="*60, "cyan")
-    cprint("📋 AI RESPONSES", "cyan", attrs=['bold'])
-    cprint("="*60, "cyan")
+    cprint("\n" + "=" * 60, "cyan")
+    cprint("📋 AI RESPONSES", "cyan", attrs=["bold"])
+    cprint("=" * 60, "cyan")
 
     # Create reverse mapping to show AI numbers
     reverse_mapping = {}
@@ -526,11 +545,11 @@ def main():
             # Get AI number if available
             ai_label = reverse_mapping.get(provider, "")
             if ai_label:
-                cprint(f"\n🤖 {ai_label} ({provider.upper()}):", "yellow", attrs=['bold'])
+                cprint(f"\n🤖 {ai_label} ({provider.upper()}):", "yellow", attrs=["bold"])
             else:
-                cprint(f"\n🤖 {provider.upper()}:", "yellow", attrs=['bold'])
+                cprint(f"\n🤖 {provider.upper()}:", "yellow", attrs=["bold"])
 
-            response_text = data['response']
+            response_text = data["response"]
 
             # Truncate if too long (show first 800 chars)
             if len(response_text) > 800:
@@ -546,7 +565,7 @@ def main():
     # Show summary
     swarm._print_summary(result)
 
-    cprint("\n✨ Swarm query complete! 🌙", "cyan", attrs=['bold'])
+    cprint("\n✨ Swarm query complete! 🌙", "cyan", attrs=["bold"])
 
 
 if __name__ == "__main__":

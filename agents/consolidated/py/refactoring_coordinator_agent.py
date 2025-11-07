@@ -18,45 +18,59 @@ from pathlib import Path
 import heapq
 from collections import defaultdict
 
-from .technical_debt_tracking_agent import TechnicalDebtItem, TechnicalDebtSeverity, TechnicalDebtCategory
+from .technical_debt_tracking_agent import (
+    TechnicalDebtItem,
+    TechnicalDebtSeverity,
+    TechnicalDebtCategory,
+)
 from .architecture_review_agent import ArchitecturalViolation, ArchitecturalViolationType
 
 logger = logging.getLogger(__name__)
 
+
 class RefactoringPriority(Enum):
     """Refactoring priority levels following APQC development process prioritization"""
-    CRITICAL = "critical"      # Immediate action required (security, production blockers)
-    HIGH = "high"             # Next sprint planning cycle
-    MEDIUM = "medium"         # Planned refactoring initiatives
-    LOW = "low"               # Continuous improvement backlog
-    DEFERRED = "deferred"     # Future consideration
+
+    CRITICAL = "critical"  # Immediate action required (security, production blockers)
+    HIGH = "high"  # Next sprint planning cycle
+    MEDIUM = "medium"  # Planned refactoring initiatives
+    LOW = "low"  # Continuous improvement backlog
+    DEFERRED = "deferred"  # Future consideration
+
 
 class RefactoringComplexity(Enum):
     """Complexity assessment for refactoring efforts"""
-    TRIVIAL = "trivial"       # < 2 hours, single file
-    SIMPLE = "simple"         # 2-8 hours, few files
-    MODERATE = "moderate"     # 1-3 days, multiple components
-    COMPLEX = "complex"       # 1-2 weeks, architectural changes
-    EPIC = "epic"            # > 2 weeks, major refactoring
+
+    TRIVIAL = "trivial"  # < 2 hours, single file
+    SIMPLE = "simple"  # 2-8 hours, few files
+    MODERATE = "moderate"  # 1-3 days, multiple components
+    COMPLEX = "complex"  # 1-2 weeks, architectural changes
+    EPIC = "epic"  # > 2 weeks, major refactoring
+
 
 class RefactoringImpact(Enum):
     """Impact assessment following APQC risk classification"""
-    MINIMAL = "minimal"       # Isolated changes, low risk
-    MODERATE = "moderate"     # Some dependency changes, medium risk
-    SIGNIFICANT = "significant" # Cross-component changes, high risk
-    MAJOR = "major"          # Architectural changes, very high risk
+
+    MINIMAL = "minimal"  # Isolated changes, low risk
+    MODERATE = "moderate"  # Some dependency changes, medium risk
+    SIGNIFICANT = "significant"  # Cross-component changes, high risk
+    MAJOR = "major"  # Architectural changes, very high risk
+
 
 @dataclass
 class RefactoringDependency:
     """Dependency relationship between refactoring tasks"""
+
     task_id: str
     dependency_id: str
     dependency_type: str  # blocks, requires, enhances
     description: str
 
+
 @dataclass
 class RefactoringTask:
     """Individual refactoring task with comprehensive planning details"""
+
     id: str
     title: str
     description: str
@@ -116,9 +130,11 @@ class RefactoringTask:
     tags: List[str] = field(default_factory=list)
     technical_context: Dict[str, Any] = field(default_factory=dict)
 
+
 @dataclass
 class RefactoringInitiative:
     """Collection of related refactoring tasks forming a cohesive initiative"""
+
     id: str
     name: str
     description: str
@@ -131,6 +147,7 @@ class RefactoringInitiative:
     success_metrics: List[str]
     status: str = "planned"
     progress_percentage: float = 0.0
+
 
 class RefactoringCoordinatorAgent:
     """
@@ -160,7 +177,7 @@ class RefactoringCoordinatorAgent:
             "sprint_duration": timedelta(weeks=2),
             "planning_buffer": timedelta(days=2),
             "code_freeze_periods": [],  # List of (start, end) datetime tuples
-            "holiday_calendar": []  # List of holiday dates
+            "holiday_calendar": [],  # List of holiday dates
         }
 
     def _initialize_business_priorities(self) -> Dict[str, float]:
@@ -173,7 +190,7 @@ class RefactoringCoordinatorAgent:
             "compliance": 0.9,
             "scalability": 0.8,
             "usability": 0.5,
-            "documentation": 0.4
+            "documentation": 0.4,
         }
 
     def _initialize_team_capacity(self) -> Dict[str, Dict]:
@@ -183,32 +200,32 @@ class RefactoringCoordinatorAgent:
                 "capacity_hours_per_sprint": 120,
                 "current_allocation": 0.0,
                 "skills": ["python", "architecture", "database", "api"],
-                "availability": 1.0
+                "availability": 1.0,
             },
             "frontend_team": {
                 "capacity_hours_per_sprint": 80,
                 "current_allocation": 0.0,
                 "skills": ["javascript", "react", "ui", "css"],
-                "availability": 1.0
+                "availability": 1.0,
             },
             "devops_team": {
                 "capacity_hours_per_sprint": 40,
                 "current_allocation": 0.0,
                 "skills": ["infrastructure", "deployment", "monitoring"],
-                "availability": 1.0
+                "availability": 1.0,
             },
             "qa_team": {
                 "capacity_hours_per_sprint": 60,
                 "current_allocation": 0.0,
                 "skills": ["testing", "automation", "quality"],
-                "availability": 1.0
-            }
+                "availability": 1.0,
+            },
         }
 
     async def analyze_and_prioritize_debt(
         self,
         debt_items: List[TechnicalDebtItem],
-        architectural_violations: List[ArchitecturalViolation]
+        architectural_violations: List[ArchitecturalViolation],
     ) -> Dict[str, Any]:
         """
         Analyze technical debt and architectural violations to create prioritized refactoring plan
@@ -251,24 +268,31 @@ class RefactoringCoordinatorAgent:
         analysis_report = {
             "analysis_timestamp": datetime.now().isoformat(),
             "summary": await self._generate_summary(),
-            "prioritized_tasks": [asdict(task) for task in sorted(
-                self.refactoring_tasks.values(),
-                key=lambda t: self._get_priority_score(t),
-                reverse=True
-            )],
+            "prioritized_tasks": [
+                asdict(task)
+                for task in sorted(
+                    self.refactoring_tasks.values(),
+                    key=lambda t: self._get_priority_score(t),
+                    reverse=True,
+                )
+            ],
             "scheduling_plan": scheduling_plan,
             "initiatives": [asdict(initiative) for initiative in self.initiatives.values()],
             "resource_allocation": await self._analyze_resource_allocation(),
             "risk_assessment": await self._assess_refactoring_risks(),
             "recommendations": await self._generate_recommendations(),
-            "metrics": await self._calculate_planning_metrics()
+            "metrics": await self._calculate_planning_metrics(),
         }
 
-        logger.info(f"✅ Refactoring analysis completed: {len(consolidated_tasks)} tasks prioritized")
+        logger.info(
+            f"✅ Refactoring analysis completed: {len(consolidated_tasks)} tasks prioritized"
+        )
 
         return analysis_report
 
-    async def _create_tasks_from_debt_items(self, debt_items: List[TechnicalDebtItem]) -> List[RefactoringTask]:
+    async def _create_tasks_from_debt_items(
+        self, debt_items: List[TechnicalDebtItem]
+    ) -> List[RefactoringTask]:
         """Create refactoring tasks from technical debt items"""
         tasks = []
 
@@ -295,14 +319,16 @@ class RefactoringCoordinatorAgent:
                 deployment_considerations=self._assess_deployment_considerations(debt_item),
                 tags=debt_item.tags + [debt_item.category.value],
                 technical_context=debt_item.technical_context,
-                apqc_process_reference=debt_item.apqc_process_reference
+                apqc_process_reference=debt_item.apqc_process_reference,
             )
 
             tasks.append(task)
 
         return tasks
 
-    async def _create_tasks_from_violations(self, violations: List[ArchitecturalViolation]) -> List[RefactoringTask]:
+    async def _create_tasks_from_violations(
+        self, violations: List[ArchitecturalViolation]
+    ) -> List[RefactoringTask]:
         """Create refactoring tasks from architectural violations"""
         tasks = []
 
@@ -326,17 +352,21 @@ class RefactoringCoordinatorAgent:
                 affected_files=violation.affected_components,
                 test_requirements=self._determine_violation_test_requirements(violation),
                 documentation_updates=["Architecture documentation update"],
-                deployment_considerations=self._assess_violation_deployment_considerations(violation),
+                deployment_considerations=self._assess_violation_deployment_considerations(
+                    violation
+                ),
                 tags=[violation.violation_type.value, "architecture"],
                 technical_context=violation.violation_details,
-                apqc_process_reference=violation.apqc_process_reference
+                apqc_process_reference=violation.apqc_process_reference,
             )
 
             tasks.append(task)
 
         return tasks
 
-    async def _consolidate_related_tasks(self, tasks: List[RefactoringTask]) -> List[RefactoringTask]:
+    async def _consolidate_related_tasks(
+        self, tasks: List[RefactoringTask]
+    ) -> List[RefactoringTask]:
         """Identify and consolidate related refactoring tasks"""
         consolidated_tasks = []
         task_groups = defaultdict(list)
@@ -377,33 +407,46 @@ class RefactoringCoordinatorAgent:
             complexity=self._calculate_merged_complexity(tasks),
             impact=self._calculate_merged_impact(tasks),
             debt_items=[item for task in tasks for item in task.debt_items],
-            architectural_violations=[violation for task in tasks for violation in task.architectural_violations],
-            estimated_hours=sum(task.estimated_hours for task in tasks) * 0.8,  # 20% efficiency gain
+            architectural_violations=[
+                violation for task in tasks for violation in task.architectural_violations
+            ],
+            estimated_hours=sum(task.estimated_hours for task in tasks)
+            * 0.8,  # 20% efficiency gain
             confidence_level=min(task.confidence_level for task in tasks),
-            complexity_factors=list(set(factor for task in tasks for factor in task.complexity_factors)),
+            complexity_factors=list(
+                set(factor for task in tasks for factor in task.complexity_factors)
+            ),
             business_value=f"Combined business value from {len(tasks)} improvements",
             business_justification=base_task.business_justification,
             risk_assessment=self._consolidate_risk_assessments(tasks),
             success_criteria=[criterion for task in tasks for criterion in task.success_criteria],
             affected_files=list(set(file for task in tasks for file in task.affected_files)),
             test_requirements=list(set(req for task in tasks for req in task.test_requirements)),
-            documentation_updates=list(set(update for task in tasks for update in task.documentation_updates)),
-            deployment_considerations=list(set(
-                consideration for task in tasks for consideration in task.deployment_considerations
-            )),
+            documentation_updates=list(
+                set(update for task in tasks for update in task.documentation_updates)
+            ),
+            deployment_considerations=list(
+                set(
+                    consideration
+                    for task in tasks
+                    for consideration in task.deployment_considerations
+                )
+            ),
             tags=list(set(tag for task in tasks for tag in task.tags)) + ["consolidated"],
-            technical_context={"merged_from": [task.id for task in tasks]}
+            technical_context={"merged_from": [task.id for task in tasks]},
         )
 
         return merged_task
 
-    def _map_debt_severity_to_priority(self, severity: TechnicalDebtSeverity) -> RefactoringPriority:
+    def _map_debt_severity_to_priority(
+        self, severity: TechnicalDebtSeverity
+    ) -> RefactoringPriority:
         """Map technical debt severity to refactoring priority"""
         mapping = {
             TechnicalDebtSeverity.CRITICAL: RefactoringPriority.CRITICAL,
             TechnicalDebtSeverity.HIGH: RefactoringPriority.HIGH,
             TechnicalDebtSeverity.MEDIUM: RefactoringPriority.MEDIUM,
-            TechnicalDebtSeverity.LOW: RefactoringPriority.LOW
+            TechnicalDebtSeverity.LOW: RefactoringPriority.LOW,
         }
         return mapping.get(severity, RefactoringPriority.MEDIUM)
 
@@ -413,7 +456,7 @@ class RefactoringCoordinatorAgent:
             "critical": RefactoringPriority.CRITICAL,
             "high": RefactoringPriority.HIGH,
             "medium": RefactoringPriority.MEDIUM,
-            "low": RefactoringPriority.LOW
+            "low": RefactoringPriority.LOW,
         }
         return mapping.get(severity, RefactoringPriority.MEDIUM)
 
@@ -432,7 +475,9 @@ class RefactoringCoordinatorAgent:
         else:
             return RefactoringComplexity.EPIC
 
-    def _estimate_violation_complexity(self, violation: ArchitecturalViolation) -> RefactoringComplexity:
+    def _estimate_violation_complexity(
+        self, violation: ArchitecturalViolation
+    ) -> RefactoringComplexity:
         """Estimate complexity for architectural violation resolution"""
         effort_hours = self._parse_effort_estimation(violation.effort_estimation)
 
@@ -448,9 +493,15 @@ class RefactoringCoordinatorAgent:
 
     def _assess_debt_impact(self, debt_item: TechnicalDebtItem) -> RefactoringImpact:
         """Assess impact of technical debt resolution"""
-        if debt_item.category in [TechnicalDebtCategory.SECURITY, TechnicalDebtCategory.ARCHITECTURE]:
+        if debt_item.category in [
+            TechnicalDebtCategory.SECURITY,
+            TechnicalDebtCategory.ARCHITECTURE,
+        ]:
             return RefactoringImpact.SIGNIFICANT
-        elif debt_item.category in [TechnicalDebtCategory.PERFORMANCE, TechnicalDebtCategory.CONFIGURATION]:
+        elif debt_item.category in [
+            TechnicalDebtCategory.PERFORMANCE,
+            TechnicalDebtCategory.CONFIGURATION,
+        ]:
             return RefactoringImpact.MODERATE
         else:
             return RefactoringImpact.MINIMAL
@@ -459,12 +510,12 @@ class RefactoringCoordinatorAgent:
         """Assess impact of architectural violation resolution"""
         if violation.violation_type in [
             ArchitecturalViolationType.CIRCULAR_DEPENDENCY,
-            ArchitecturalViolationType.LAYERING_VIOLATION
+            ArchitecturalViolationType.LAYERING_VIOLATION,
         ]:
             return RefactoringImpact.SIGNIFICANT
         elif violation.violation_type in [
             ArchitecturalViolationType.TIGHT_COUPLING,
-            ArchitecturalViolationType.SINGLE_RESPONSIBILITY
+            ArchitecturalViolationType.SINGLE_RESPONSIBILITY,
         ]:
             return RefactoringImpact.MODERATE
         else:
@@ -475,18 +526,18 @@ class RefactoringCoordinatorAgent:
         import re
 
         # Extract numbers from effort estimation
-        numbers = re.findall(r'\d+', effort_str.lower())
+        numbers = re.findall(r"\d+", effort_str.lower())
         if not numbers:
             return 4.0  # Default
 
         base_hours = float(numbers[0])
 
-        if 'week' in effort_str.lower():
+        if "week" in effort_str.lower():
             return base_hours * 40  # 40 hours per week
-        elif 'day' in effort_str.lower():
-            return base_hours * 8   # 8 hours per day
+        elif "day" in effort_str.lower():
+            return base_hours * 8  # 8 hours per day
         else:
-            return base_hours       # Assume hours
+            return base_hours  # Assume hours
 
     def _calculate_confidence_level(self, debt_item: TechnicalDebtItem) -> float:
         """Calculate confidence level for effort estimation"""
@@ -494,9 +545,15 @@ class RefactoringCoordinatorAgent:
         confidence = 0.7
 
         # Adjust based on category familiarity
-        if debt_item.category in [TechnicalDebtCategory.CODE_QUALITY, TechnicalDebtCategory.DOCUMENTATION]:
+        if debt_item.category in [
+            TechnicalDebtCategory.CODE_QUALITY,
+            TechnicalDebtCategory.DOCUMENTATION,
+        ]:
             confidence += 0.2
-        elif debt_item.category in [TechnicalDebtCategory.ARCHITECTURE, TechnicalDebtCategory.SECURITY]:
+        elif debt_item.category in [
+            TechnicalDebtCategory.ARCHITECTURE,
+            TechnicalDebtCategory.SECURITY,
+        ]:
             confidence -= 0.1
 
         return min(1.0, max(0.3, confidence))
@@ -518,7 +575,9 @@ class RefactoringCoordinatorAgent:
 
         return factors
 
-    def _identify_violation_complexity_factors(self, violation: ArchitecturalViolation) -> List[str]:
+    def _identify_violation_complexity_factors(
+        self, violation: ArchitecturalViolation
+    ) -> List[str]:
         """Identify complexity factors for architectural violations"""
         factors = []
 
@@ -538,7 +597,7 @@ class RefactoringCoordinatorAgent:
         criteria = [
             f"Technical debt item {debt_item.id} resolved",
             "Code quality metrics improved",
-            "No regression in existing functionality"
+            "No regression in existing functionality",
         ]
 
         if debt_item.category == TechnicalDebtCategory.SECURITY:
@@ -555,7 +614,7 @@ class RefactoringCoordinatorAgent:
         criteria = [
             f"Architectural violation {violation.id} resolved",
             "Architecture review passed",
-            "Documentation updated"
+            "Documentation updated",
         ]
 
         if violation.violation_type == ArchitecturalViolationType.CIRCULAR_DEPENDENCY:
@@ -580,7 +639,9 @@ class RefactoringCoordinatorAgent:
 
         return requirements
 
-    def _determine_violation_test_requirements(self, violation: ArchitecturalViolation) -> List[str]:
+    def _determine_violation_test_requirements(
+        self, violation: ArchitecturalViolation
+    ) -> List[str]:
         """Determine testing requirements for violation resolution"""
         requirements = ["Architecture tests added", "Dependency tests updated"]
 
@@ -620,7 +681,9 @@ class RefactoringCoordinatorAgent:
 
         return considerations
 
-    def _assess_violation_deployment_considerations(self, violation: ArchitecturalViolation) -> List[str]:
+    def _assess_violation_deployment_considerations(
+        self, violation: ArchitecturalViolation
+    ) -> List[str]:
         """Assess deployment considerations for violation resolution"""
         considerations = ["Architecture validation", "Backward compatibility check"]
 
@@ -638,7 +701,7 @@ class RefactoringCoordinatorAgent:
             RefactoringComplexity.SIMPLE: 2,
             RefactoringComplexity.MODERATE: 3,
             RefactoringComplexity.COMPLEX: 4,
-            RefactoringComplexity.EPIC: 5
+            RefactoringComplexity.EPIC: 5,
         }
 
         total_complexity = sum(complexity_values[task.complexity] for task in tasks)
@@ -662,7 +725,7 @@ class RefactoringCoordinatorAgent:
             RefactoringImpact.MINIMAL: 1,
             RefactoringImpact.MODERATE: 2,
             RefactoringImpact.SIGNIFICANT: 3,
-            RefactoringImpact.MAJOR: 4
+            RefactoringImpact.MAJOR: 4,
         }
 
         max_impact = max(impact_values[task.impact] for task in tasks)
@@ -706,7 +769,7 @@ class RefactoringCoordinatorAgent:
             RefactoringPriority.HIGH: 75,
             RefactoringPriority.MEDIUM: 50,
             RefactoringPriority.LOW: 25,
-            RefactoringPriority.DEFERRED: 10
+            RefactoringPriority.DEFERRED: 10,
         }
 
         base_score = priority_scores[task.priority]
@@ -723,7 +786,7 @@ class RefactoringCoordinatorAgent:
             RefactoringComplexity.SIMPLE: 1.1,
             RefactoringComplexity.MODERATE: 1.0,
             RefactoringComplexity.COMPLEX: 0.9,
-            RefactoringComplexity.EPIC: 0.8
+            RefactoringComplexity.EPIC: 0.8,
         }
 
         complexity_factor = complexity_factors[task.complexity]
@@ -733,7 +796,7 @@ class RefactoringCoordinatorAgent:
             RefactoringImpact.MINIMAL: 0.8,
             RefactoringImpact.MODERATE: 1.0,
             RefactoringImpact.SIGNIFICANT: 1.2,
-            RefactoringImpact.MAJOR: 1.5
+            RefactoringImpact.MAJOR: 1.5,
         }
 
         impact_multiplier = impact_multipliers[task.impact]
@@ -745,8 +808,14 @@ class RefactoringCoordinatorAgent:
         roi_factor = business_multiplier / (task.estimated_hours / 8)  # Convert to days
 
         # Final score calculation
-        final_score = (base_score * business_multiplier * complexity_factor *
-                      impact_multiplier * confidence_factor * roi_factor)
+        final_score = (
+            base_score
+            * business_multiplier
+            * complexity_factor
+            * impact_multiplier
+            * confidence_factor
+            * roi_factor
+        )
 
         return final_score
 
@@ -765,7 +834,7 @@ class RefactoringCoordinatorAgent:
             RefactoringPriority.HIGH: 4,
             RefactoringPriority.MEDIUM: 3,
             RefactoringPriority.LOW: 2,
-            RefactoringPriority.DEFERRED: 1
+            RefactoringPriority.DEFERRED: 1,
         }
         return values.get(priority, 3)
 
@@ -778,12 +847,15 @@ class RefactoringCoordinatorAgent:
                     # Check for file overlap
                     if set(task1.affected_files) & set(task2.affected_files):
                         # Tasks affecting same files should have dependency
-                        if task1.priority.value in ["critical", "high"] and task2.priority.value in ["medium", "low"]:
+                        if task1.priority.value in [
+                            "critical",
+                            "high",
+                        ] and task2.priority.value in ["medium", "low"]:
                             dependency = RefactoringDependency(
                                 task_id=task2.id,
                                 dependency_id=task1.id,
                                 dependency_type="blocks",
-                                description=f"High priority task {task1.id} blocks {task2.id}"
+                                description=f"High priority task {task1.id} blocks {task2.id}",
                             )
                             task2.dependencies.append(dependency)
                             task1.blocks.append(task2.id)
@@ -798,9 +870,7 @@ class RefactoringCoordinatorAgent:
 
         # Sort tasks by priority score
         sorted_tasks = sorted(
-            self.refactoring_tasks.values(),
-            key=self._get_priority_score,
-            reverse=True
+            self.refactoring_tasks.values(), key=self._get_priority_score, reverse=True
         )
 
         current_sprint_start = sprint_start
@@ -813,8 +883,10 @@ class RefactoringCoordinatorAgent:
             team_capacity = self.team_capacity[required_team]["capacity_hours_per_sprint"]
 
             # Check if task fits in current sprint
-            if (current_sprint_hours + task.estimated_hours <= team_capacity and
-                len(current_sprint_tasks) < self.scheduling_constraints["max_concurrent_tasks"]):
+            if (
+                current_sprint_hours + task.estimated_hours <= team_capacity
+                and len(current_sprint_tasks) < self.scheduling_constraints["max_concurrent_tasks"]
+            ):
 
                 # Add to current sprint
                 task.target_start_date = current_sprint_start
@@ -853,7 +925,7 @@ class RefactoringCoordinatorAgent:
             "team_allocations": team_allocations,
             "sprint_breakdown": self._create_sprint_breakdown(scheduled_tasks),
             "critical_path": await self._identify_critical_path(scheduled_tasks),
-            "resource_constraints": await self._identify_resource_constraints()
+            "resource_constraints": await self._identify_resource_constraints(),
         }
 
     def _determine_required_team(self, task: RefactoringTask) -> str:
@@ -878,14 +950,16 @@ class RefactoringCoordinatorAgent:
 
         for task in tasks:
             if task.sprint:
-                sprint_breakdown[task.sprint].append({
-                    "task_id": task.id,
-                    "title": task.title,
-                    "priority": task.priority.value,
-                    "estimated_hours": task.estimated_hours,
-                    "team": task.team,
-                    "complexity": task.complexity.value
-                })
+                sprint_breakdown[task.sprint].append(
+                    {
+                        "task_id": task.id,
+                        "title": task.title,
+                        "priority": task.priority.value,
+                        "estimated_hours": task.estimated_hours,
+                        "team": task.team,
+                        "complexity": task.complexity.value,
+                    }
+                )
 
         return dict(sprint_breakdown)
 
@@ -900,7 +974,10 @@ class RefactoringCoordinatorAgent:
         constraints = []
 
         for team, capacity_info in self.team_capacity.items():
-            if capacity_info["current_allocation"] > capacity_info["capacity_hours_per_sprint"] * 0.8:
+            if (
+                capacity_info["current_allocation"]
+                > capacity_info["capacity_hours_per_sprint"] * 0.8
+            ):
                 constraints.append(f"{team} is over 80% capacity")
 
         return constraints
@@ -921,8 +998,7 @@ class RefactoringCoordinatorAgent:
         for theme, task_ids in theme_groups.items():
             if len(task_ids) >= 3:  # Minimum 3 tasks for an initiative
                 total_hours = sum(
-                    self.refactoring_tasks[task_id].estimated_hours
-                    for task_id in task_ids
+                    self.refactoring_tasks[task_id].estimated_hours for task_id in task_ids
                 )
 
                 initiative = RefactoringInitiative(
@@ -938,8 +1014,8 @@ class RefactoringCoordinatorAgent:
                     success_metrics=[
                         f"All {len(task_ids)} {theme} tasks completed",
                         f"{theme} quality metrics improved by 25%",
-                        "No regression in functionality"
-                    ]
+                        "No regression in functionality",
+                    ],
                 )
 
                 initiatives.append(initiative)
@@ -967,19 +1043,25 @@ class RefactoringCoordinatorAgent:
             "complexity_breakdown": dict(complexity_breakdown),
             "total_initiatives": len(self.initiatives),
             "immediate_actions_required": priority_breakdown.get("critical", 0),
-            "key_recommendation": await self._get_key_recommendation()
+            "key_recommendation": await self._get_key_recommendation(),
         }
 
     async def _get_key_recommendation(self) -> str:
         """Get key recommendation based on analysis"""
-        critical_count = len([t for t in self.refactoring_tasks.values()
-                            if t.priority == RefactoringPriority.CRITICAL])
+        critical_count = len(
+            [
+                t
+                for t in self.refactoring_tasks.values()
+                if t.priority == RefactoringPriority.CRITICAL
+            ]
+        )
 
         if critical_count > 0:
             return f"Immediate action required: {critical_count} critical issues must be addressed before next release"
 
-        high_count = len([t for t in self.refactoring_tasks.values()
-                         if t.priority == RefactoringPriority.HIGH])
+        high_count = len(
+            [t for t in self.refactoring_tasks.values() if t.priority == RefactoringPriority.HIGH]
+        )
 
         if high_count > 5:
             return f"Consider dedicated refactoring sprint: {high_count} high priority items identified"
@@ -1007,7 +1089,7 @@ class RefactoringCoordinatorAgent:
                 for team, workload in team_workload.items()
                 if team in self.team_capacity
             },
-            "recommendations": await self._get_resource_recommendations(team_workload)
+            "recommendations": await self._get_resource_recommendations(team_workload),
         }
 
     async def _get_resource_recommendations(self, team_workload: Dict[str, float]) -> List[str]:
@@ -1020,9 +1102,13 @@ class RefactoringCoordinatorAgent:
                 utilization = workload / capacity
 
                 if utilization > 1.2:
-                    recommendations.append(f"⚠️  {team} is overallocated by {(utilization-1)*100:.0f}% - consider additional resources")
+                    recommendations.append(
+                        f"⚠️  {team} is overallocated by {(utilization-1)*100:.0f}% - consider additional resources"
+                    )
                 elif utilization > 0.9:
-                    recommendations.append(f"📊 {team} is near capacity - monitor workload carefully")
+                    recommendations.append(
+                        f"📊 {team} is near capacity - monitor workload carefully"
+                    )
 
         return recommendations
 
@@ -1032,19 +1118,29 @@ class RefactoringCoordinatorAgent:
         risk_score = 0
 
         # High impact tasks
-        high_impact_tasks = [t for t in self.refactoring_tasks.values()
-                           if t.impact in [RefactoringImpact.SIGNIFICANT, RefactoringImpact.MAJOR]]
+        high_impact_tasks = [
+            t
+            for t in self.refactoring_tasks.values()
+            if t.impact in [RefactoringImpact.SIGNIFICANT, RefactoringImpact.MAJOR]
+        ]
 
         if high_impact_tasks:
-            risks.append(f"High impact changes: {len(high_impact_tasks)} tasks may affect multiple components")
+            risks.append(
+                f"High impact changes: {len(high_impact_tasks)} tasks may affect multiple components"
+            )
             risk_score += len(high_impact_tasks) * 2
 
         # Complex tasks
-        complex_tasks = [t for t in self.refactoring_tasks.values()
-                        if t.complexity in [RefactoringComplexity.COMPLEX, RefactoringComplexity.EPIC]]
+        complex_tasks = [
+            t
+            for t in self.refactoring_tasks.values()
+            if t.complexity in [RefactoringComplexity.COMPLEX, RefactoringComplexity.EPIC]
+        ]
 
         if complex_tasks:
-            risks.append(f"Complex refactoring: {len(complex_tasks)} tasks require significant effort")
+            risks.append(
+                f"Complex refactoring: {len(complex_tasks)} tasks require significant effort"
+            )
             risk_score += len(complex_tasks)
 
         # Resource constraints
@@ -1058,7 +1154,9 @@ class RefactoringCoordinatorAgent:
             risk_score += overallocated_teams * 3
 
         # Dependencies
-        tasks_with_dependencies = len([t for t in self.refactoring_tasks.values() if t.dependencies])
+        tasks_with_dependencies = len(
+            [t for t in self.refactoring_tasks.values() if t.dependencies]
+        )
         if tasks_with_dependencies > len(self.refactoring_tasks) * 0.3:
             risks.append("High dependency complexity may cause scheduling delays")
             risk_score += 2
@@ -1066,12 +1164,8 @@ class RefactoringCoordinatorAgent:
         return {
             "identified_risks": risks,
             "risk_score": risk_score,
-            "risk_level": (
-                "High" if risk_score > 15 else
-                "Medium" if risk_score > 8 else
-                "Low"
-            ),
-            "mitigation_strategies": await self._generate_risk_mitigation_strategies(risks)
+            "risk_level": ("High" if risk_score > 15 else "Medium" if risk_score > 8 else "Low"),
+            "mitigation_strategies": await self._generate_risk_mitigation_strategies(risks),
         }
 
     async def _generate_risk_mitigation_strategies(self, risks: List[str]) -> List[str]:
@@ -1082,7 +1176,7 @@ class RefactoringCoordinatorAgent:
             "🔄 Use feature flags for gradual rollout of architectural changes",
             "👥 Conduct peer reviews for all complex refactoring tasks",
             "📊 Monitor key metrics throughout refactoring implementation",
-            "⏱️  Implement time-boxed refactoring sessions to control scope creep"
+            "⏱️  Implement time-boxed refactoring sessions to control scope creep",
         ]
 
         # Add specific strategies based on identified risks
@@ -1102,24 +1196,29 @@ class RefactoringCoordinatorAgent:
         recommendations = []
 
         # Critical tasks
-        critical_tasks = [t for t in self.refactoring_tasks.values()
-                         if t.priority == RefactoringPriority.CRITICAL]
+        critical_tasks = [
+            t for t in self.refactoring_tasks.values() if t.priority == RefactoringPriority.CRITICAL
+        ]
         if critical_tasks:
             recommendations.append(
                 f"🚨 IMMEDIATE ACTION: Address {len(critical_tasks)} critical refactoring tasks within 1 week"
             )
 
         # Quick wins
-        quick_wins = [t for t in self.refactoring_tasks.values()
-                     if t.complexity == RefactoringComplexity.TRIVIAL and t.estimated_hours <= 2]
+        quick_wins = [
+            t
+            for t in self.refactoring_tasks.values()
+            if t.complexity == RefactoringComplexity.TRIVIAL and t.estimated_hours <= 2
+        ]
         if quick_wins:
             recommendations.append(
                 f"⚡ Quick wins available: {len(quick_wins)} trivial tasks can be completed in next sprint"
             )
 
         # Consolidation opportunities
-        consolidated_tasks = [t for t in self.refactoring_tasks.values()
-                            if "consolidated" in t.tags]
+        consolidated_tasks = [
+            t for t in self.refactoring_tasks.values() if "consolidated" in t.tags
+        ]
         if consolidated_tasks:
             recommendations.append(
                 f"🔄 Efficiency gain: {len(consolidated_tasks)} consolidated tasks identified for batch processing"
@@ -1129,9 +1228,13 @@ class RefactoringCoordinatorAgent:
         team_utilization = {}
         for task in self.refactoring_tasks.values():
             if task.team:
-                team_utilization[task.team] = team_utilization.get(task.team, 0) + task.estimated_hours
+                team_utilization[task.team] = (
+                    team_utilization.get(task.team, 0) + task.estimated_hours
+                )
 
-        max_utilized_team = max(team_utilization.items(), key=lambda x: x[1]) if team_utilization else None
+        max_utilized_team = (
+            max(team_utilization.items(), key=lambda x: x[1]) if team_utilization else None
+        )
         if max_utilized_team and max_utilized_team[1] > 80:
             recommendations.append(
                 f"⚖️  Load balancing needed: {max_utilized_team[0]} has {max_utilized_team[1]} hours allocated"
@@ -1159,11 +1262,15 @@ class RefactoringCoordinatorAgent:
         confidence_scores = [task.confidence_level for task in self.refactoring_tasks.values()]
         avg_confidence = sum(confidence_scores) / len(confidence_scores)
 
-        priority_scores = [self._get_priority_score(task) for task in self.refactoring_tasks.values()]
+        priority_scores = [
+            self._get_priority_score(task) for task in self.refactoring_tasks.values()
+        ]
         avg_priority_score = sum(priority_scores) / len(priority_scores)
 
         # Calculate efficiency metrics
-        consolidated_tasks = len([t for t in self.refactoring_tasks.values() if "consolidated" in t.tags])
+        consolidated_tasks = len(
+            [t for t in self.refactoring_tasks.values() if "consolidated" in t.tags]
+        )
         consolidation_ratio = consolidated_tasks / total_tasks
 
         return {
@@ -1173,8 +1280,15 @@ class RefactoringCoordinatorAgent:
             "consolidation_ratio": consolidation_ratio,
             "estimated_completion_weeks": total_hours / 40,
             "tasks_per_week": total_tasks / max(1, total_hours / 40),
-            "high_priority_percentage": len([t for t in self.refactoring_tasks.values()
-                                           if t.priority in [RefactoringPriority.CRITICAL, RefactoringPriority.HIGH]]) / total_tasks * 100
+            "high_priority_percentage": len(
+                [
+                    t
+                    for t in self.refactoring_tasks.values()
+                    if t.priority in [RefactoringPriority.CRITICAL, RefactoringPriority.HIGH]
+                ]
+            )
+            / total_tasks
+            * 100,
         }
 
     async def export_refactoring_plan(self, output_path: str) -> str:
@@ -1184,10 +1298,12 @@ class RefactoringCoordinatorAgent:
             "export_timestamp": datetime.now().isoformat(),
             "project_root": str(self.project_root),
             "tasks": {task_id: asdict(task) for task_id, task in self.refactoring_tasks.items()},
-            "initiatives": {init_id: asdict(initiative) for init_id, initiative in self.initiatives.items()},
+            "initiatives": {
+                init_id: asdict(initiative) for init_id, initiative in self.initiatives.items()
+            },
             "scheduling_constraints": self.scheduling_constraints,
             "team_capacity": self.team_capacity,
-            "business_priorities": self.business_priorities
+            "business_priorities": self.business_priorities,
         }
 
         # Convert datetime objects for JSON serialization
@@ -1200,11 +1316,12 @@ class RefactoringCoordinatorAgent:
                 return obj.value
             return str(obj)
 
-        with open(output_path, 'w') as f:
+        with open(output_path, "w") as f:
             json.dump(plan_data, f, indent=2, default=json_serializer)
 
         logger.info(f"📋 Refactoring plan exported to {output_path}")
         return output_path
+
 
 # Initialize the refactoring coordinator agent
 refactoring_coordinator = RefactoringCoordinatorAgent(

@@ -10,10 +10,11 @@ Usage:
 import asyncio
 import sys
 
+
 async def main():
-    print("\n" + "="*70)
+    print("\n" + "=" * 70)
     print("SuperStandard v1.0 - Protocol Testing Suite")
-    print("="*70 + "\n")
+    print("=" * 70 + "\n")
 
     all_passed = True
 
@@ -21,7 +22,8 @@ async def main():
     print("Test 1: ANP (Agent Network Protocol)")
     print("-" * 70)
     try:
-        from crates.agentic_protocols.python.anp_implementation import example_usage
+        from src.superstandard.protocols.anp_implementation import example_usage
+
         await example_usage()
         print("[PASS] ANP Test PASSED\n")
     except Exception as e:
@@ -32,7 +34,8 @@ async def main():
     print("\nTest 2: ACP (Agent Coordination Protocol)")
     print("-" * 70)
     try:
-        from crates.agentic_protocols.python.acp_implementation import example_usage as acp_example
+        from src.superstandard.protocols.acp_implementation import example_usage as acp_example
+
         await acp_example()
         print("[PASS] ACP Test PASSED\n")
     except Exception as e:
@@ -46,13 +49,14 @@ async def main():
         from agents.consolidated.py.blockchain_agentic_protocol import (
             BlockchainAgenticProtocol,
             AgentWallet,
-            TokenType
+            TokenType,
         )
 
         bap = BlockchainAgenticProtocol(config={})
 
         # Test wallet creation
         from decimal import Decimal
+
         wallet = AgentWallet(
             wallet_id="wallet-001",
             agent_id="test-agent",
@@ -61,8 +65,8 @@ async def main():
             token_balances={
                 TokenType.REPUTATION: Decimal("100.0"),
                 TokenType.UTILITY: Decimal("500.0"),
-                TokenType.GOVERNANCE: Decimal("50.0")
-            }
+                TokenType.GOVERNANCE: Decimal("50.0"),
+            },
         )
         await bap.wallet_manager.store_wallet(wallet)
         print(f"[+] Wallet created: {wallet.agent_id}")
@@ -78,8 +82,8 @@ async def main():
                 "category": "analytics",
                 "proficiency_level": 0.92,
                 "description": "Advanced data analysis capability",
-                "authority": "SuperStandard Certification"
-            }
+                "authority": "SuperStandard Certification",
+            },
         )
         print(f"[+] NFT minted: {nft.nft_id}")
         print(f"    Capability: {nft.capability_name}")
@@ -89,14 +93,15 @@ async def main():
     except Exception as e:
         print(f"[FAIL] BAP Test FAILED: {e}\n")
         import traceback
+
         traceback.print_exc()
         all_passed = False
 
     # Summary
-    print("="*70)
+    print("=" * 70)
     if all_passed:
         print("[SUCCESS] ALL TESTS PASSED! SuperStandard v1.0 is ready!")
-        print("="*70)
+        print("=" * 70)
         print("\nYou can now:")
         print("- Run the built-in examples")
         print("- Integrate protocols into your applications")
@@ -105,8 +110,9 @@ async def main():
         return 0
     else:
         print("[FAIL] SOME TESTS FAILED - Please check the errors above")
-        print("="*70)
+        print("=" * 70)
         return 1
+
 
 if __name__ == "__main__":
     exit_code = asyncio.run(main())

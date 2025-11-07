@@ -93,7 +93,7 @@ class SegmentCustomersSalesMarketingAgentConfig:
             agent_id=os.getenv("AGENT_ID", "apqc_3_0_p8q9r0s1"),
             log_level=os.getenv("LOG_LEVEL", "INFO"),
             max_retries=int(os.getenv("MAX_RETRIES", "3")),
-            timeout_seconds=int(os.getenv("TIMEOUT_SECONDS", "300"))
+            timeout_seconds=int(os.getenv("TIMEOUT_SECONDS", "300")),
         )
 
 
@@ -161,55 +161,71 @@ class SegmentCustomersSalesMarketingAgent(BaseAgent, ProtocolMixin):
     def __init__(self, config: SegmentCustomersSalesMarketingAgentConfig):
         """Initialize agent"""
         super().__init__(
-            agent_id=config.agent_id,
-            agent_type=config.agent_type,
-            version=config.version
+            agent_id=config.agent_id, agent_type=config.agent_type, version=config.version
         )
 
         self.config = config
         self.capabilities_list = [
-            'rfm_analysis', 'clustering', 'clv_calculation', 'behavioral_segmentation',
-            'predictive_analytics', 'cohort_analysis', 'value_scoring', 'segment_profiling'
+            "rfm_analysis",
+            "clustering",
+            "clv_calculation",
+            "behavioral_segmentation",
+            "predictive_analytics",
+            "cohort_analysis",
+            "value_scoring",
+            "segment_profiling",
         ]
         self.skills = {
-            'rfm_analysis': 0.92,
-            'clustering': 0.89,
-            'clv_calculation': 0.87,
-            'segmentation': 0.90
+            "rfm_analysis": 0.92,
+            "clustering": 0.89,
+            "clv_calculation": 0.87,
+            "segmentation": 0.90,
         }
         self.interfaces = {
-            'inputs': ['customer_transactions', 'purchase_history', 'engagement_data', 'customer_attributes'],
-            'outputs': ['customer_segments', 'rfm_scores', 'clusters', 'clv_estimates', 'segment_profiles', 'recommendations'],
-            'protocols': ['message_passing', 'event_driven', 'api_rest']
+            "inputs": [
+                "customer_transactions",
+                "purchase_history",
+                "engagement_data",
+                "customer_attributes",
+            ],
+            "outputs": [
+                "customer_segments",
+                "rfm_scores",
+                "clusters",
+                "clv_estimates",
+                "segment_profiles",
+                "recommendations",
+            ],
+            "protocols": ["message_passing", "event_driven", "api_rest"],
         }
         self.behavior = {
-            'autonomous_level': 0.92,
-            'collaboration_mode': 'orchestrated',
-            'learning_enabled': True,
-            'self_improvement': True
+            "autonomous_level": 0.92,
+            "collaboration_mode": "orchestrated",
+            "learning_enabled": True,
+            "self_improvement": True,
         }
         self.resources = {
-            'compute': 'adaptive',
-            'memory': 'adaptive',
-            'api_budget': 'dynamic',
-            'priority': 'high'
+            "compute": "adaptive",
+            "memory": "adaptive",
+            "api_budget": "dynamic",
+            "priority": "high",
         }
         self.integration = {
-            'compatible_agents': ['3.0', '4.0', '6.0', '8.0'],
-            'required_services': ['analytics_engine', 'customer_database', 'ml_platform'],
-            'ontology_level': 'L2_customer_intelligence'
+            "compatible_agents": ["3.0", "4.0", "6.0", "8.0"],
+            "required_services": ["analytics_engine", "customer_database", "ml_platform"],
+            "ontology_level": "L2_customer_intelligence",
         }
         self.quality = {
-            'testing_required': True,
-            'qa_threshold': 0.90,
-            'consensus_weight': 1.0,
-            'error_handling': 'graceful_degradation'
+            "testing_required": True,
+            "qa_threshold": 0.90,
+            "consensus_weight": 1.0,
+            "error_handling": "graceful_degradation",
         }
         self.deployment = {
-            'runtime': 'ray_actor',
-            'scaling': 'horizontal',
-            'health_checks': True,
-            'monitoring': True
+            "runtime": "ray_actor",
+            "scaling": "horizontal",
+            "health_checks": True,
+            "monitoring": True,
         }
 
         # Initialize state
@@ -218,7 +234,7 @@ class SegmentCustomersSalesMarketingAgent(BaseAgent, ProtocolMixin):
             "tasks_processed": 0,
             "last_activity": datetime.now().isoformat(),
             "performance_metrics": {},
-            "learning_data": {} if self.config.learning_enabled else None
+            "learning_data": {} if self.config.learning_enabled else None,
         }
 
         self._initialize_protocols()
@@ -265,16 +281,16 @@ class SegmentCustomersSalesMarketingAgent(BaseAgent, ProtocolMixin):
                 return {
                     "status": "error",
                     "message": "Invalid input data",
-                    "error_handling": self.config.error_handling
+                    "error_handling": self.config.error_handling,
                 }
 
             # Extract input parameters
-            transactions = input_data.get('customer_transactions', [])
-            purchase_history = input_data.get('purchase_history', [])
-            engagement_data = input_data.get('engagement_data', {})
-            analysis_date = input_data.get('analysis_date', datetime.now())
-            num_clusters = input_data.get('num_clusters', 5)
-            clv_period = input_data.get('clv_period_months', 12)
+            transactions = input_data.get("customer_transactions", [])
+            purchase_history = input_data.get("purchase_history", [])
+            engagement_data = input_data.get("engagement_data", {})
+            analysis_date = input_data.get("analysis_date", datetime.now())
+            num_clusters = input_data.get("num_clusters", 5)
+            clv_period = input_data.get("clv_period_months", 12)
 
             # Perform RFM Analysis
             rfm_scores = self._calculate_rfm_scores(transactions, analysis_date)
@@ -291,9 +307,7 @@ class SegmentCustomersSalesMarketingAgent(BaseAgent, ProtocolMixin):
             )
 
             # Create customer segments
-            customer_segments = self._create_customer_segments(
-                rfm_scores, clusters, clv_estimates
-            )
+            customer_segments = self._create_customer_segments(rfm_scores, clusters, clv_estimates)
 
             # Generate recommendations
             recommendations = self._generate_recommendations(segment_profiles)
@@ -314,9 +328,11 @@ class SegmentCustomersSalesMarketingAgent(BaseAgent, ProtocolMixin):
                         "total_customers": len(rfm_scores),
                         "num_segments": len(segment_profiles),
                         "total_clv": sum(clv_estimates.values()),
-                        "avg_clv": sum(clv_estimates.values()) / len(clv_estimates) if clv_estimates else 0
-                    }
-                }
+                        "avg_clv": (
+                            sum(clv_estimates.values()) / len(clv_estimates) if clv_estimates else 0
+                        ),
+                    },
+                },
             }
 
             # Update state
@@ -332,17 +348,11 @@ class SegmentCustomersSalesMarketingAgent(BaseAgent, ProtocolMixin):
         except Exception as e:
             self.log("error", f"Execution error: {str(e)}")
             if self.config.error_handling == "graceful_degradation":
-                return {
-                    "status": "degraded",
-                    "message": str(e),
-                    "partial_result": {}
-                }
+                return {"status": "degraded", "message": str(e), "partial_result": {}}
             raise
 
     def _calculate_rfm_scores(
-        self,
-        transactions: List[Dict[str, Any]],
-        analysis_date: datetime
+        self, transactions: List[Dict[str, Any]], analysis_date: datetime
     ) -> Dict[str, Dict[str, Any]]:
         """
         Calculate RFM (Recency, Frequency, Monetary) scores for customer segmentation.
@@ -361,55 +371,59 @@ class SegmentCustomersSalesMarketingAgent(BaseAgent, ProtocolMixin):
         Returns:
             Dictionary of customer RFM scores and segments
         """
-        customer_data = defaultdict(lambda: {
-            'last_purchase': None,
-            'purchase_count': 0,
-            'total_spend': 0.0,
-            'transactions': []
-        })
+        customer_data = defaultdict(
+            lambda: {
+                "last_purchase": None,
+                "purchase_count": 0,
+                "total_spend": 0.0,
+                "transactions": [],
+            }
+        )
 
         # Aggregate transaction data by customer
         for txn in transactions:
-            customer_id = txn.get('customer_id')
-            txn_date = txn.get('date')
-            amount = txn.get('amount', 0.0)
+            customer_id = txn.get("customer_id")
+            txn_date = txn.get("date")
+            amount = txn.get("amount", 0.0)
 
             if isinstance(txn_date, str):
                 txn_date = datetime.fromisoformat(txn_date)
 
-            customer_data[customer_id]['purchase_count'] += 1
-            customer_data[customer_id]['total_spend'] += amount
-            customer_data[customer_id]['transactions'].append(txn)
+            customer_data[customer_id]["purchase_count"] += 1
+            customer_data[customer_id]["total_spend"] += amount
+            customer_data[customer_id]["transactions"].append(txn)
 
-            if (customer_data[customer_id]['last_purchase'] is None or
-                txn_date > customer_data[customer_id]['last_purchase']):
-                customer_data[customer_id]['last_purchase'] = txn_date
+            if (
+                customer_data[customer_id]["last_purchase"] is None
+                or txn_date > customer_data[customer_id]["last_purchase"]
+            ):
+                customer_data[customer_id]["last_purchase"] = txn_date
 
         # Calculate RFM values
         rfm_values = {}
         for customer_id, data in customer_data.items():
-            if data['last_purchase']:
-                recency_days = (analysis_date - data['last_purchase']).days
+            if data["last_purchase"]:
+                recency_days = (analysis_date - data["last_purchase"]).days
             else:
                 recency_days = 9999  # Max recency for customers with no purchases
 
             rfm_values[customer_id] = {
-                'recency': recency_days,
-                'frequency': data['purchase_count'],
-                'monetary': data['total_spend']
+                "recency": recency_days,
+                "frequency": data["purchase_count"],
+                "monetary": data["total_spend"],
             }
 
         # Calculate quintile scores (1-5)
-        recency_list = [v['recency'] for v in rfm_values.values()]
-        frequency_list = [v['frequency'] for v in rfm_values.values()]
-        monetary_list = [v['monetary'] for v in rfm_values.values()]
+        recency_list = [v["recency"] for v in rfm_values.values()]
+        frequency_list = [v["frequency"] for v in rfm_values.values()]
+        monetary_list = [v["monetary"] for v in rfm_values.values()]
 
         rfm_scores = {}
         for customer_id, values in rfm_values.items():
             # Recency: Lower is better, so invert the score
-            r_score = 6 - self._quintile_score(values['recency'], recency_list)
-            f_score = self._quintile_score(values['frequency'], frequency_list)
-            m_score = self._quintile_score(values['monetary'], monetary_list)
+            r_score = 6 - self._quintile_score(values["recency"], recency_list)
+            f_score = self._quintile_score(values["frequency"], frequency_list)
+            m_score = self._quintile_score(values["monetary"], monetary_list)
 
             rfm_score = r_score * 100 + f_score * 10 + m_score
 
@@ -417,14 +431,14 @@ class SegmentCustomersSalesMarketingAgent(BaseAgent, ProtocolMixin):
             segment = self._determine_rfm_segment(r_score, f_score, m_score)
 
             rfm_scores[customer_id] = {
-                'recency_days': values['recency'],
-                'frequency_count': values['frequency'],
-                'monetary_value': values['monetary'],
-                'recency_score': r_score,
-                'frequency_score': f_score,
-                'monetary_score': m_score,
-                'rfm_score': rfm_score,
-                'rfm_segment': segment
+                "recency_days": values["recency"],
+                "frequency_count": values["frequency"],
+                "monetary_value": values["monetary"],
+                "recency_score": r_score,
+                "frequency_score": f_score,
+                "monetary_score": m_score,
+                "rfm_score": rfm_score,
+                "rfm_segment": segment,
             }
 
         return rfm_scores
@@ -525,9 +539,7 @@ class SegmentCustomersSalesMarketingAgent(BaseAgent, ProtocolMixin):
             return "Other"
 
     def _calculate_clv(
-        self,
-        purchase_history: List[Dict[str, Any]],
-        period_months: int
+        self, purchase_history: List[Dict[str, Any]], period_months: int
     ) -> Dict[str, float]:
         """
         Calculate Customer Lifetime Value (CLV) using historical purchase patterns.
@@ -548,17 +560,14 @@ class SegmentCustomersSalesMarketingAgent(BaseAgent, ProtocolMixin):
         customer_purchases = defaultdict(list)
 
         for purchase in purchase_history:
-            customer_id = purchase.get('customer_id')
-            amount = purchase.get('amount', 0.0)
-            date = purchase.get('date')
+            customer_id = purchase.get("customer_id")
+            amount = purchase.get("amount", 0.0)
+            date = purchase.get("date")
 
             if isinstance(date, str):
                 date = datetime.fromisoformat(date)
 
-            customer_purchases[customer_id].append({
-                'amount': amount,
-                'date': date
-            })
+            customer_purchases[customer_id].append({"amount": amount, "date": date})
 
         clv_estimates = {}
 
@@ -568,15 +577,17 @@ class SegmentCustomersSalesMarketingAgent(BaseAgent, ProtocolMixin):
                 continue
 
             # Calculate average purchase value
-            avg_purchase_value = sum(p['amount'] for p in purchases) / len(purchases)
+            avg_purchase_value = sum(p["amount"] for p in purchases) / len(purchases)
 
             # Calculate purchase frequency (purchases per month)
-            sorted_purchases = sorted(purchases, key=lambda x: x['date'])
-            first_purchase = sorted_purchases[0]['date']
-            last_purchase = sorted_purchases[-1]['date']
+            sorted_purchases = sorted(purchases, key=lambda x: x["date"])
+            first_purchase = sorted_purchases[0]["date"]
+            last_purchase = sorted_purchases[-1]["date"]
 
             months_active = max(1, (last_purchase - first_purchase).days / 30)
-            purchase_frequency = len(purchases) / months_active if months_active > 0 else len(purchases)
+            purchase_frequency = (
+                len(purchases) / months_active if months_active > 0 else len(purchases)
+            )
 
             # Estimate customer lifespan (simplified: use period_months)
             # In production, this would use churn prediction models
@@ -586,7 +597,7 @@ class SegmentCustomersSalesMarketingAgent(BaseAgent, ProtocolMixin):
             # Assuming 30% gross margin (configurable in production)
             gross_margin = 0.30
 
-            clv = (avg_purchase_value * purchase_frequency * customer_lifespan_months * gross_margin)
+            clv = avg_purchase_value * purchase_frequency * customer_lifespan_months * gross_margin
             clv_estimates[customer_id] = round(clv, 2)
 
         return clv_estimates
@@ -595,7 +606,7 @@ class SegmentCustomersSalesMarketingAgent(BaseAgent, ProtocolMixin):
         self,
         rfm_scores: Dict[str, Dict[str, Any]],
         clv_estimates: Dict[str, float],
-        num_clusters: int
+        num_clusters: int,
     ) -> Dict[str, int]:
         """
         Perform K-means clustering on customer data for behavioral segmentation.
@@ -620,10 +631,10 @@ class SegmentCustomersSalesMarketingAgent(BaseAgent, ProtocolMixin):
 
             # Normalize features (min-max normalization)
             feature_vector = [
-                rfm['recency_score'] / 5.0,
-                rfm['frequency_score'] / 5.0,
-                rfm['monetary_score'] / 5.0,
-                min(clv / 10000.0, 1.0)  # Normalize CLV (cap at 10k for normalization)
+                rfm["recency_score"] / 5.0,
+                rfm["frequency_score"] / 5.0,
+                rfm["monetary_score"] / 5.0,
+                min(clv / 10000.0, 1.0),  # Normalize CLV (cap at 10k for normalization)
             ]
 
             features.append(feature_vector)
@@ -638,7 +649,9 @@ class SegmentCustomersSalesMarketingAgent(BaseAgent, ProtocolMixin):
 
         # Initialize centroids randomly
         np.random.seed(42)
-        centroid_indices = np.random.choice(len(features), min(num_clusters, len(features)), replace=False)
+        centroid_indices = np.random.choice(
+            len(features), min(num_clusters, len(features)), replace=False
+        )
         centroids = np_features[centroid_indices]
 
         # Iterate to convergence (max 100 iterations)
@@ -648,10 +661,12 @@ class SegmentCustomersSalesMarketingAgent(BaseAgent, ProtocolMixin):
             labels = np.argmin(distances, axis=1)
 
             # Update centroids
-            new_centroids = np.array([
-                np_features[labels == k].mean(axis=0) if np.any(labels == k) else centroids[k]
-                for k in range(num_clusters)
-            ])
+            new_centroids = np.array(
+                [
+                    np_features[labels == k].mean(axis=0) if np.any(labels == k) else centroids[k]
+                    for k in range(num_clusters)
+                ]
+            )
 
             # Check convergence
             if np.allclose(centroids, new_centroids):
@@ -660,10 +675,7 @@ class SegmentCustomersSalesMarketingAgent(BaseAgent, ProtocolMixin):
             centroids = new_centroids
 
         # Create customer to cluster mapping
-        clusters = {
-            customer_ids[i]: int(labels[i])
-            for i in range(len(customer_ids))
-        }
+        clusters = {customer_ids[i]: int(labels[i]) for i in range(len(customer_ids))}
 
         return clusters
 
@@ -672,7 +684,7 @@ class SegmentCustomersSalesMarketingAgent(BaseAgent, ProtocolMixin):
         rfm_scores: Dict[str, Dict[str, Any]],
         clv_estimates: Dict[str, float],
         clusters: Dict[str, int],
-        engagement_data: Dict[str, Any]
+        engagement_data: Dict[str, Any],
     ) -> List[Dict[str, Any]]:
         """
         Generate detailed profiles for each customer segment.
@@ -695,9 +707,9 @@ class SegmentCustomersSalesMarketingAgent(BaseAgent, ProtocolMixin):
 
         for cluster_id, customer_list in cluster_groups.items():
             # Calculate aggregate metrics
-            avg_recency = np.mean([rfm_scores[c]['recency_days'] for c in customer_list])
-            avg_frequency = np.mean([rfm_scores[c]['frequency_count'] for c in customer_list])
-            avg_monetary = np.mean([rfm_scores[c]['monetary_value'] for c in customer_list])
+            avg_recency = np.mean([rfm_scores[c]["recency_days"] for c in customer_list])
+            avg_frequency = np.mean([rfm_scores[c]["frequency_count"] for c in customer_list])
+            avg_monetary = np.mean([rfm_scores[c]["monetary_value"] for c in customer_list])
             avg_clv = np.mean([clv_estimates.get(c, 0) for c in customer_list])
 
             total_clv = sum([clv_estimates.get(c, 0) for c in customer_list])
@@ -732,16 +744,16 @@ class SegmentCustomersSalesMarketingAgent(BaseAgent, ProtocolMixin):
                     "avg_monetary_value": round(avg_monetary, 2),
                     "avg_clv": round(avg_clv, 2),
                     "total_clv": round(total_clv, 2),
-                    "pct_of_total_customers": round(customer_count / len(rfm_scores) * 100, 1)
+                    "pct_of_total_customers": round(customer_count / len(rfm_scores) * 100, 1),
                 },
                 "recommended_strategy": strategy,
-                "priority": "high" if avg_clv > 1000 else "medium" if avg_clv > 500 else "low"
+                "priority": "high" if avg_clv > 1000 else "medium" if avg_clv > 500 else "low",
             }
 
             segment_profiles.append(profile)
 
         # Sort by total CLV descending
-        segment_profiles.sort(key=lambda x: x['metrics']['total_clv'], reverse=True)
+        segment_profiles.sort(key=lambda x: x["metrics"]["total_clv"], reverse=True)
 
         return segment_profiles
 
@@ -749,7 +761,7 @@ class SegmentCustomersSalesMarketingAgent(BaseAgent, ProtocolMixin):
         self,
         rfm_scores: Dict[str, Dict[str, Any]],
         clusters: Dict[str, int],
-        clv_estimates: Dict[str, float]
+        clv_estimates: Dict[str, float],
     ) -> List[Dict[str, Any]]:
         """
         Create customer segment assignments with detailed attributes.
@@ -767,17 +779,16 @@ class SegmentCustomersSalesMarketingAgent(BaseAgent, ProtocolMixin):
         for customer_id, rfm in rfm_scores.items():
             segment = {
                 "customer_id": customer_id,
-                "rfm_segment": rfm['rfm_segment'],
+                "rfm_segment": rfm["rfm_segment"],
                 "cluster_id": clusters.get(customer_id, -1),
-                "rfm_score": rfm['rfm_score'],
+                "rfm_score": rfm["rfm_score"],
                 "clv_estimate": clv_estimates.get(customer_id, 0),
-                "recency_days": rfm['recency_days'],
-                "frequency": rfm['frequency_count'],
-                "monetary_value": rfm['monetary_value'],
+                "recency_days": rfm["recency_days"],
+                "frequency": rfm["frequency_count"],
+                "monetary_value": rfm["monetary_value"],
                 "customer_tier": self._determine_customer_tier(
-                    rfm['rfm_score'],
-                    clv_estimates.get(customer_id, 0)
-                )
+                    rfm["rfm_score"], clv_estimates.get(customer_id, 0)
+                ),
             }
 
             customer_segments.append(segment)
@@ -805,8 +816,7 @@ class SegmentCustomersSalesMarketingAgent(BaseAgent, ProtocolMixin):
             return "Bronze"
 
     def _generate_recommendations(
-        self,
-        segment_profiles: List[Dict[str, Any]]
+        self, segment_profiles: List[Dict[str, Any]]
     ) -> List[Dict[str, Any]]:
         """
         Generate actionable recommendations based on segment analysis.
@@ -821,64 +831,72 @@ class SegmentCustomersSalesMarketingAgent(BaseAgent, ProtocolMixin):
 
         for profile in segment_profiles:
             recommendation = {
-                "segment_id": profile['segment_id'],
-                "segment_name": profile['segment_name'],
-                "priority": profile['priority'],
+                "segment_id": profile["segment_id"],
+                "segment_name": profile["segment_name"],
+                "priority": profile["priority"],
                 "actions": [],
-                "expected_impact": {}
+                "expected_impact": {},
             }
 
             # Generate specific actions based on segment characteristics
-            avg_recency = profile['metrics']['avg_recency_days']
-            avg_frequency = profile['metrics']['avg_frequency']
-            total_clv = profile['metrics']['total_clv']
+            avg_recency = profile["metrics"]["avg_recency_days"]
+            avg_frequency = profile["metrics"]["avg_frequency"]
+            total_clv = profile["metrics"]["total_clv"]
 
             if avg_recency < 30 and total_clv > 10000:
-                recommendation['actions'].extend([
-                    "Launch VIP loyalty program with exclusive benefits",
-                    "Provide dedicated account management",
-                    "Offer early access to new products",
-                    "Create referral incentive program"
-                ])
-                recommendation['expected_impact'] = {
+                recommendation["actions"].extend(
+                    [
+                        "Launch VIP loyalty program with exclusive benefits",
+                        "Provide dedicated account management",
+                        "Offer early access to new products",
+                        "Create referral incentive program",
+                    ]
+                )
+                recommendation["expected_impact"] = {
                     "retention_increase": "15-25%",
-                    "revenue_lift": "20-30%"
+                    "revenue_lift": "20-30%",
                 }
 
             elif avg_recency > 180:
-                recommendation['actions'].extend([
-                    "Execute win-back email campaign with special offers",
-                    "Conduct survey to understand disengagement",
-                    "Offer re-activation discount or incentive",
-                    "Review and address potential product/service issues"
-                ])
-                recommendation['expected_impact'] = {
+                recommendation["actions"].extend(
+                    [
+                        "Execute win-back email campaign with special offers",
+                        "Conduct survey to understand disengagement",
+                        "Offer re-activation discount or incentive",
+                        "Review and address potential product/service issues",
+                    ]
+                )
+                recommendation["expected_impact"] = {
                     "reactivation_rate": "10-15%",
-                    "recovered_revenue": f"${total_clv * 0.1:.0f}"
+                    "recovered_revenue": f"${total_clv * 0.1:.0f}",
                 }
 
             elif avg_frequency > 3:
-                recommendation['actions'].extend([
-                    "Implement cross-sell campaigns for complementary products",
-                    "Develop personalized product recommendations",
-                    "Create engagement programs to increase frequency",
-                    "Test upsell offers for premium tiers"
-                ])
-                recommendation['expected_impact'] = {
+                recommendation["actions"].extend(
+                    [
+                        "Implement cross-sell campaigns for complementary products",
+                        "Develop personalized product recommendations",
+                        "Create engagement programs to increase frequency",
+                        "Test upsell offers for premium tiers",
+                    ]
+                )
+                recommendation["expected_impact"] = {
                     "frequency_increase": "10-20%",
-                    "basket_size_increase": "15-25%"
+                    "basket_size_increase": "15-25%",
                 }
 
             else:
-                recommendation['actions'].extend([
-                    "Nurture with educational content",
-                    "Gradually introduce product portfolio",
-                    "Build trust through value-first approach",
-                    "Monitor engagement and adjust strategy"
-                ])
-                recommendation['expected_impact'] = {
+                recommendation["actions"].extend(
+                    [
+                        "Nurture with educational content",
+                        "Gradually introduce product portfolio",
+                        "Build trust through value-first approach",
+                        "Monitor engagement and adjust strategy",
+                    ]
+                )
+                recommendation["expected_impact"] = {
                     "conversion_to_loyal": "20-30%",
-                    "ltv_growth": "50-75%"
+                    "ltv_growth": "50-75%",
                 }
 
             recommendations.append(recommendation)
@@ -893,11 +911,11 @@ class SegmentCustomersSalesMarketingAgent(BaseAgent, ProtocolMixin):
         if self.state["learning_data"] is not None:
             learning_entry = {
                 "timestamp": datetime.now().isoformat(),
-                "customers_analyzed": len(result['output'].get('customer_segments', [])),
-                "segments_created": len(result['output'].get('segment_profiles', [])),
-                "total_clv": result['output']['metrics'].get('total_clv', 0),
+                "customers_analyzed": len(result["output"].get("customer_segments", [])),
+                "segments_created": len(result["output"].get("segment_profiles", [])),
+                "total_clv": result["output"]["metrics"].get("total_clv", 0),
                 "result_status": result.get("status"),
-                "performance": {}
+                "performance": {},
             }
 
             if "learning_history" not in self.state["learning_data"]:
@@ -911,7 +929,7 @@ class SegmentCustomersSalesMarketingAgent(BaseAgent, ProtocolMixin):
             return False
 
         # Check for required data
-        if 'customer_transactions' not in input_data:
+        if "customer_transactions" not in input_data:
             return False
 
         return True
@@ -929,7 +947,7 @@ class SegmentCustomersSalesMarketingAgent(BaseAgent, ProtocolMixin):
             "apqc_metadata": {
                 "category_id": self.APQC_CATEGORY_ID,
                 "process_id": self.APQC_PROCESS_ID,
-                "framework_version": self.APQC_FRAMEWORK_VERSION
+                "framework_version": self.APQC_FRAMEWORK_VERSION,
             },
             "protocols": self.get_supported_protocols(),
             "capabilities": self.capabilities_list,
@@ -941,23 +959,23 @@ class SegmentCustomersSalesMarketingAgent(BaseAgent, ProtocolMixin):
                 "atomic": True,
                 "composable": True,
                 "orchestratable": True,
-                "vendor_agnostic": True
+                "vendor_agnostic": True,
             },
             "performance": {
                 "tasks_processed": self.state["tasks_processed"],
                 "memory_mb": memory_usage,
-                "last_activity": self.state["last_activity"]
+                "last_activity": self.state["last_activity"],
             },
             "behavior": {
                 "autonomous_level": self.config.autonomous_level,
                 "learning_enabled": self.config.learning_enabled,
-                "collaboration_mode": self.config.collaboration_mode
+                "collaboration_mode": self.config.collaboration_mode,
             },
             "deployment": {
                 "runtime": self.config.runtime,
                 "scaling": self.config.scaling,
-                "monitoring": self.config.monitoring
-            }
+                "monitoring": self.config.monitoring,
+            },
         }
 
         return health
@@ -988,35 +1006,29 @@ class SegmentCustomersSalesMarketingAgent(BaseAgent, ProtocolMixin):
                         "properties": {
                             "customer_id": {"type": "string"},
                             "date": {"type": "string", "format": "date-time"},
-                            "amount": {"type": "number"}
-                        }
-                    }
+                            "amount": {"type": "number"},
+                        },
+                    },
                 },
-                "purchase_history": {
-                    "type": "array",
-                    "description": "Historical purchase data"
-                },
-                "engagement_data": {
-                    "type": "object",
-                    "description": "Customer engagement metrics"
-                },
+                "purchase_history": {"type": "array", "description": "Historical purchase data"},
+                "engagement_data": {"type": "object", "description": "Customer engagement metrics"},
                 "analysis_date": {
                     "type": "string",
                     "format": "date-time",
-                    "description": "Reference date for analysis"
+                    "description": "Reference date for analysis",
                 },
                 "num_clusters": {
                     "type": "integer",
                     "default": 5,
-                    "description": "Number of clusters for segmentation"
+                    "description": "Number of clusters for segmentation",
                 },
                 "clv_period_months": {
                     "type": "integer",
                     "default": 12,
-                    "description": "Months to predict CLV"
-                }
+                    "description": "Months to predict CLV",
+                },
             },
-            "required": ["customer_transactions"]
+            "required": ["customer_transactions"],
         }
 
     def get_output_schema(self) -> Dict[str, Any]:
@@ -1040,11 +1052,11 @@ class SegmentCustomersSalesMarketingAgent(BaseAgent, ProtocolMixin):
                         "clv_estimates": {"type": "object"},
                         "segment_profiles": {"type": "array"},
                         "recommendations": {"type": "array"},
-                        "metrics": {"type": "object"}
-                    }
-                }
+                        "metrics": {"type": "object"},
+                    },
+                },
             },
-            "required": ["status", "apqc_process_id", "agent_id", "timestamp", "output"]
+            "required": ["status", "apqc_process_id", "agent_id", "timestamp", "output"],
         }
 
     def log(self, level: str, message: str):
@@ -1055,7 +1067,7 @@ class SegmentCustomersSalesMarketingAgent(BaseAgent, ProtocolMixin):
 
 # Convenience function for agent creation
 def create_segment_customers_sales_marketing_agent(
-    config: Optional[SegmentCustomersSalesMarketingAgentConfig] = None
+    config: Optional[SegmentCustomersSalesMarketingAgentConfig] = None,
 ) -> SegmentCustomersSalesMarketingAgent:
     """Create SegmentCustomersSalesMarketingAgent instance"""
     if config is None:

@@ -18,6 +18,7 @@ from enum import Enum
 
 import sys
 import os
+
 sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
 from superstandard.agents.base.base_agent import BaseAgent, AgentCapability, MessageType
@@ -25,6 +26,7 @@ from superstandard.agents.base.base_agent import BaseAgent, AgentCapability, Mes
 
 class ActivityType(Enum):
     """Types of agent activities"""
+
     SPAWNED = "spawned"
     TASK_ASSIGNED = "task_assigned"
     TASK_STARTED = "task_started"
@@ -41,6 +43,7 @@ class ActivityType(Enum):
 @dataclass
 class AgentActivity:
     """Record of a single agent activity"""
+
     activity_id: str
     timestamp: datetime
     agent_id: str
@@ -55,6 +58,7 @@ class AgentActivity:
 @dataclass
 class AgentMetrics:
     """Performance metrics for an agent"""
+
     agent_id: str
     agent_type: str
     tasks_completed: int = 0
@@ -86,13 +90,13 @@ class AgentActivityTracker(BaseAgent):
     def __init__(
         self,
         agent_id: str = "activity_tracker_001",
-        workspace_path: str = "./autonomous-ecosystem/workspace"
+        workspace_path: str = "./autonomous-ecosystem/workspace",
     ):
         super().__init__(
             agent_id=agent_id,
             agent_type="activity_tracker",
             capabilities=[AgentCapability.ORCHESTRATION],
-            workspace_path=workspace_path
+            workspace_path=workspace_path,
         )
 
         # Activity storage
@@ -125,10 +129,7 @@ class AgentActivityTracker(BaseAgent):
         elif task_type == "get_coordination_patterns":
             return await self._get_coordination_patterns(task)
         else:
-            return {
-                "success": False,
-                "error": f"Unknown task type: {task_type}"
-            }
+            return {"success": False, "error": f"Unknown task type: {task_type}"}
 
     async def analyze(self, input_data: Dict[str, Any]) -> Dict[str, Any]:
         """Analyze agent ecosystem health and patterns"""
@@ -161,7 +162,7 @@ class AgentActivityTracker(BaseAgent):
                 description=task["description"],
                 details=task.get("details", {}),
                 duration_ms=task.get("duration_ms"),
-                success=task.get("success")
+                success=task.get("success"),
             )
 
             # Store activity
@@ -184,14 +185,11 @@ class AgentActivityTracker(BaseAgent):
             return {
                 "success": True,
                 "activity_id": activity.activity_id,
-                "timestamp": activity.timestamp.isoformat()
+                "timestamp": activity.timestamp.isoformat(),
             }
 
         except Exception as e:
-            return {
-                "success": False,
-                "error": str(e)
-            }
+            return {"success": False, "error": str(e)}
 
     def _update_metrics(self, activity: AgentActivity):
         """Update agent metrics based on activity"""
@@ -199,10 +197,7 @@ class AgentActivityTracker(BaseAgent):
 
         # Initialize metrics if needed
         if agent_id not in self.metrics:
-            self.metrics[agent_id] = AgentMetrics(
-                agent_id=agent_id,
-                agent_type=activity.agent_type
-            )
+            self.metrics[agent_id] = AgentMetrics(agent_id=agent_id, agent_type=activity.agent_type)
 
         metrics = self.metrics[agent_id]
         metrics.last_activity = activity.timestamp
@@ -262,15 +257,9 @@ class AgentActivityTracker(BaseAgent):
                 # Convert datetime to ISO string
                 if metrics_dict.get("last_activity"):
                     metrics_dict["last_activity"] = metrics_dict["last_activity"].isoformat()
-                return {
-                    "success": True,
-                    "metrics": metrics_dict
-                }
+                return {"success": True, "metrics": metrics_dict}
             else:
-                return {
-                    "success": False,
-                    "error": f"No metrics found for agent: {agent_id}"
-                }
+                return {"success": False, "error": f"No metrics found for agent: {agent_id}"}
         else:
             # Return all metrics
             all_metrics = {}
@@ -281,11 +270,7 @@ class AgentActivityTracker(BaseAgent):
                     metrics_dict["last_activity"] = metrics_dict["last_activity"].isoformat()
                 all_metrics[agent_id] = metrics_dict
 
-            return {
-                "success": True,
-                "total_agents": len(self.metrics),
-                "metrics": all_metrics
-            }
+            return {"success": True, "total_agents": len(self.metrics), "metrics": all_metrics}
 
     async def _get_activity_feed(self, task: Dict[str, Any]) -> Dict[str, Any]:
         """Get recent activity feed"""
@@ -318,17 +303,18 @@ class AgentActivityTracker(BaseAgent):
                     "description": a.description,
                     "details": a.details,
                     "duration_ms": a.duration_ms,
-                    "success": a.success
+                    "success": a.success,
                 }
                 for a in activities
-            ]
+            ],
         }
 
     async def _get_system_health(self, task: Dict[str, Any]) -> Dict[str, Any]:
         """Get overall system health metrics"""
         total_agents = len(self.metrics)
         active_agents = sum(
-            1 for m in self.metrics.values()
+            1
+            for m in self.metrics.values()
             if m.last_activity and (datetime.now() - m.last_activity).seconds < 60
         )
 
@@ -348,18 +334,22 @@ class AgentActivityTracker(BaseAgent):
                 "tasks_completed": total_completed,
                 "tasks_failed": total_failed,
                 "overall_success_rate": round(overall_success_rate, 2),
-                "total_messages": sum(m.messages_sent + m.messages_received for m in self.metrics.values()),
+                "total_messages": sum(
+                    m.messages_sent + m.messages_received for m in self.metrics.values()
+                ),
                 "total_errors": sum(m.errors_count for m in self.metrics.values()),
-                "uptime_seconds": (datetime.now() - self.start_time).total_seconds()
-            }
+                "uptime_seconds": (datetime.now() - self.start_time).total_seconds(),
+            },
         }
 
     async def _get_coordination_patterns(self, task: Dict[str, Any]) -> Dict[str, Any]:
         """Analyze agent coordination patterns"""
         # Find communication activities
         comm_activities = [
-            a for a in self.activities
-            if a.activity_type in [ActivityType.COMMUNICATION_SENT, ActivityType.COMMUNICATION_RECEIVED]
+            a
+            for a in self.activities
+            if a.activity_type
+            in [ActivityType.COMMUNICATION_SENT, ActivityType.COMMUNICATION_RECEIVED]
         ]
 
         # Build communication graph
@@ -378,11 +368,7 @@ class AgentActivityTracker(BaseAgent):
         collaborations = []
         for sender, receivers in comm_graph.items():
             for receiver, count in receivers.items():
-                collaborations.append({
-                    "from": sender,
-                    "to": receiver,
-                    "message_count": count
-                })
+                collaborations.append({"from": sender, "to": receiver, "message_count": count})
 
         collaborations.sort(key=lambda x: x["message_count"], reverse=True)
 
@@ -390,7 +376,7 @@ class AgentActivityTracker(BaseAgent):
             "success": True,
             "total_communications": len(comm_activities),
             "unique_connections": len(collaborations),
-            "top_collaborations": collaborations[:20]
+            "top_collaborations": collaborations[:20],
         }
 
     # =====================================================================
@@ -407,18 +393,19 @@ class AgentActivityTracker(BaseAgent):
                 for activity_type, activities in self.activities_by_type.items()
             },
             "top_performers": self._get_top_performers(5),
-            "recent_activity": len([
-                a for a in self.activities
-                if (datetime.now() - a.timestamp).seconds < 300  # Last 5 minutes
-            ])
+            "recent_activity": len(
+                [
+                    a
+                    for a in self.activities
+                    if (datetime.now() - a.timestamp).seconds < 300  # Last 5 minutes
+                ]
+            ),
         }
 
     def _analyze_performance(self) -> Dict[str, Any]:
         """Detailed performance analysis"""
         sorted_metrics = sorted(
-            self.metrics.values(),
-            key=lambda m: m.tasks_completed,
-            reverse=True
+            self.metrics.values(), key=lambda m: m.tasks_completed, reverse=True
         )
 
         return {
@@ -428,7 +415,7 @@ class AgentActivityTracker(BaseAgent):
                     "agent_type": m.agent_type,
                     "tasks_completed": m.tasks_completed,
                     "success_rate": round(m.success_rate * 100, 2),
-                    "avg_execution_time_ms": round(m.avg_execution_time_ms, 2)
+                    "avg_execution_time_ms": round(m.avg_execution_time_ms, 2),
                 }
                 for m in sorted_metrics[:10]
             ],
@@ -436,14 +423,14 @@ class AgentActivityTracker(BaseAgent):
                 [
                     {
                         "agent_id": m.agent_id,
-                        "avg_execution_time_ms": round(m.avg_execution_time_ms, 2)
+                        "avg_execution_time_ms": round(m.avg_execution_time_ms, 2),
                     }
                     for m in self.metrics.values()
                     if m.avg_execution_time_ms > 0
                 ],
                 key=lambda x: x["avg_execution_time_ms"],
-                reverse=True
-            )[:10]
+                reverse=True,
+            )[:10],
         }
 
     def _analyze_bottlenecks(self) -> Dict[str, Any]:
@@ -453,35 +440,38 @@ class AgentActivityTracker(BaseAgent):
         for agent_id, metrics in self.metrics.items():
             # High failure rate
             if metrics.tasks_failed > 0 and metrics.success_rate < 0.8:
-                bottlenecks.append({
-                    "agent_id": agent_id,
-                    "issue": "high_failure_rate",
-                    "success_rate": round(metrics.success_rate * 100, 2),
-                    "severity": "high"
-                })
+                bottlenecks.append(
+                    {
+                        "agent_id": agent_id,
+                        "issue": "high_failure_rate",
+                        "success_rate": round(metrics.success_rate * 100, 2),
+                        "severity": "high",
+                    }
+                )
 
             # Slow execution
             if metrics.avg_execution_time_ms > 5000:  # 5 seconds
-                bottlenecks.append({
-                    "agent_id": agent_id,
-                    "issue": "slow_execution",
-                    "avg_time_ms": round(metrics.avg_execution_time_ms, 2),
-                    "severity": "medium"
-                })
+                bottlenecks.append(
+                    {
+                        "agent_id": agent_id,
+                        "issue": "slow_execution",
+                        "avg_time_ms": round(metrics.avg_execution_time_ms, 2),
+                        "severity": "medium",
+                    }
+                )
 
             # High error rate
             if metrics.errors_count > 10:
-                bottlenecks.append({
-                    "agent_id": agent_id,
-                    "issue": "frequent_errors",
-                    "error_count": metrics.errors_count,
-                    "severity": "high"
-                })
+                bottlenecks.append(
+                    {
+                        "agent_id": agent_id,
+                        "issue": "frequent_errors",
+                        "error_count": metrics.errors_count,
+                        "severity": "high",
+                    }
+                )
 
-        return {
-            "bottlenecks_found": len(bottlenecks),
-            "bottlenecks": bottlenecks
-        }
+        return {"bottlenecks_found": len(bottlenecks), "bottlenecks": bottlenecks}
 
     def _analyze_coordination(self) -> Dict[str, Any]:
         """Analyze coordination effectiveness"""
@@ -502,15 +492,13 @@ class AgentActivityTracker(BaseAgent):
             "messages_received": received,
             "isolated_agents": len(isolated),
             "isolated_agent_ids": isolated,
-            "coordination_health": "good" if len(isolated) == 0 else "needs_improvement"
+            "coordination_health": "good" if len(isolated) == 0 else "needs_improvement",
         }
 
     def _get_top_performers(self, limit: int = 5) -> List[Dict]:
         """Get top performing agents"""
         sorted_metrics = sorted(
-            self.metrics.values(),
-            key=lambda m: (m.success_rate, m.tasks_completed),
-            reverse=True
+            self.metrics.values(), key=lambda m: (m.success_rate, m.tasks_completed), reverse=True
         )
 
         return [
@@ -518,7 +506,7 @@ class AgentActivityTracker(BaseAgent):
                 "agent_id": m.agent_id,
                 "agent_type": m.agent_type,
                 "tasks_completed": m.tasks_completed,
-                "success_rate": round(m.success_rate * 100, 2)
+                "success_rate": round(m.success_rate * 100, 2),
             }
             for m in sorted_metrics[:limit]
         ]
@@ -529,23 +517,31 @@ class AgentActivityTracker(BaseAgent):
 
     def log_agent_spawn(self, agent_id: str, agent_type: str):
         """Log when an agent is spawned"""
-        asyncio.create_task(self._log_activity({
-            "agent_id": agent_id,
-            "agent_type": agent_type,
-            "activity_type": "spawned",
-            "description": f"Agent {agent_type} spawned",
-            "details": {"timestamp": datetime.now().isoformat()}
-        }))
+        asyncio.create_task(
+            self._log_activity(
+                {
+                    "agent_id": agent_id,
+                    "agent_type": agent_type,
+                    "activity_type": "spawned",
+                    "description": f"Agent {agent_type} spawned",
+                    "details": {"timestamp": datetime.now().isoformat()},
+                }
+            )
+        )
 
     def log_task_start(self, agent_id: str, agent_type: str, task_description: str):
         """Log task start"""
-        asyncio.create_task(self._log_activity({
-            "agent_id": agent_id,
-            "agent_type": agent_type,
-            "activity_type": "task_started",
-            "description": task_description,
-            "details": {"start_time": datetime.now().isoformat()}
-        }))
+        asyncio.create_task(
+            self._log_activity(
+                {
+                    "agent_id": agent_id,
+                    "agent_type": agent_type,
+                    "activity_type": "task_started",
+                    "description": task_description,
+                    "details": {"start_time": datetime.now().isoformat()},
+                }
+            )
+        )
 
     def log_task_complete(
         self,
@@ -553,26 +549,26 @@ class AgentActivityTracker(BaseAgent):
         agent_type: str,
         task_description: str,
         duration_ms: float,
-        success: bool = True
+        success: bool = True,
     ):
         """Log task completion"""
-        asyncio.create_task(self._log_activity({
-            "agent_id": agent_id,
-            "agent_type": agent_type,
-            "activity_type": "task_completed" if success else "task_failed",
-            "description": task_description,
-            "details": {},
-            "duration_ms": duration_ms,
-            "success": success
-        }))
+        asyncio.create_task(
+            self._log_activity(
+                {
+                    "agent_id": agent_id,
+                    "agent_type": agent_type,
+                    "activity_type": "task_completed" if success else "task_failed",
+                    "description": task_description,
+                    "details": {},
+                    "duration_ms": duration_ms,
+                    "success": success,
+                }
+            )
+        )
 
     def get_live_feed(self, limit: int = 50) -> List[Dict]:
         """Get live activity feed for dashboard"""
-        activities = sorted(
-            list(self.recent_feed),
-            key=lambda a: a.timestamp,
-            reverse=True
-        )[:limit]
+        activities = sorted(list(self.recent_feed), key=lambda a: a.timestamp, reverse=True)[:limit]
 
         return [
             {
@@ -581,7 +577,7 @@ class AgentActivityTracker(BaseAgent):
                 "agent_type": a.agent_type,
                 "activity_type": a.activity_type.value,
                 "description": a.description,
-                "success": a.success
+                "success": a.success,
             }
             for a in activities
         ]
@@ -600,12 +596,13 @@ class AgentActivityTracker(BaseAgent):
             "success_rate": round(metrics.success_rate * 100, 2),
             "avg_execution_time_ms": round(metrics.avg_execution_time_ms, 2),
             "uptime_seconds": round(metrics.uptime_seconds, 2),
-            "last_activity": metrics.last_activity.isoformat() if metrics.last_activity else None
+            "last_activity": metrics.last_activity.isoformat() if metrics.last_activity else None,
         }
 
 
 # Singleton instance
 _activity_tracker = None
+
 
 def get_activity_tracker() -> AgentActivityTracker:
     """Get or create activity tracker instance"""
@@ -623,31 +620,37 @@ if __name__ == "__main__":
         tracker = get_activity_tracker()
 
         # Simulate some activities
-        await tracker._log_activity({
-            "agent_id": "test_agent_001",
-            "agent_type": "test_agent",
-            "activity_type": "spawned",
-            "description": "Test agent spawned",
-            "details": {}
-        })
+        await tracker._log_activity(
+            {
+                "agent_id": "test_agent_001",
+                "agent_type": "test_agent",
+                "activity_type": "spawned",
+                "description": "Test agent spawned",
+                "details": {},
+            }
+        )
 
-        await tracker._log_activity({
-            "agent_id": "test_agent_001",
-            "agent_type": "test_agent",
-            "activity_type": "task_started",
-            "description": "Processing test data",
-            "details": {"task_id": "task_001"}
-        })
+        await tracker._log_activity(
+            {
+                "agent_id": "test_agent_001",
+                "agent_type": "test_agent",
+                "activity_type": "task_started",
+                "description": "Processing test data",
+                "details": {"task_id": "task_001"},
+            }
+        )
 
-        await tracker._log_activity({
-            "agent_id": "test_agent_001",
-            "agent_type": "test_agent",
-            "activity_type": "task_completed",
-            "description": "Test data processed",
-            "details": {"task_id": "task_001"},
-            "duration_ms": 1250.5,
-            "success": True
-        })
+        await tracker._log_activity(
+            {
+                "agent_id": "test_agent_001",
+                "agent_type": "test_agent",
+                "activity_type": "task_completed",
+                "description": "Test data processed",
+                "details": {"task_id": "task_001"},
+                "duration_ms": 1250.5,
+                "success": True,
+            }
+        )
 
         # Get metrics
         result = await tracker._get_agent_metrics({"agent_id": "test_agent_001"})
@@ -656,7 +659,11 @@ if __name__ == "__main__":
         if result.get("success") and "metrics" in result:
             metrics = result["metrics"]
             if "last_activity" in metrics and metrics["last_activity"]:
-                metrics["last_activity"] = metrics["last_activity"].isoformat() if hasattr(metrics["last_activity"], 'isoformat') else str(metrics["last_activity"])
+                metrics["last_activity"] = (
+                    metrics["last_activity"].isoformat()
+                    if hasattr(metrics["last_activity"], "isoformat")
+                    else str(metrics["last_activity"])
+                )
         print(json.dumps(result, indent=2))
 
         # Get activity feed

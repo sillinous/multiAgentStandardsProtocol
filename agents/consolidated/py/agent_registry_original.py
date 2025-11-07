@@ -39,22 +39,22 @@ AGENT_REGISTRY: Dict[str, Dict[str, Any]] = {
                 "description": "Execute market buy orders",
                 "inputs": ["token_address", "amount_usd"],
                 "outputs": ["transaction_hash", "execution_price"],
-                "category": "trading"
+                "category": "trading",
             },
             {
                 "name": "market_sell",
                 "description": "Execute market sell orders",
                 "inputs": ["token_address", "amount_usd"],
                 "outputs": ["transaction_hash", "execution_price"],
-                "category": "trading"
+                "category": "trading",
             },
             {
                 "name": "get_position",
                 "description": "Check current position in token",
                 "inputs": ["token_address"],
                 "outputs": ["amount", "entry_price", "current_price", "pnl"],
-                "category": "trading"
-            }
+                "category": "trading",
+            },
         ],
     },
     # Risk Management Agents
@@ -68,15 +68,15 @@ AGENT_REGISTRY: Dict[str, Dict[str, Any]] = {
                 "description": "Calculate portfolio risk metrics",
                 "inputs": ["portfolio_state"],
                 "outputs": ["risk_level", "max_loss", "recommendations"],
-                "category": "risk"
+                "category": "risk",
             },
             {
                 "name": "check_position_limit",
                 "description": "Validate position size against limits",
                 "inputs": ["token_address", "proposed_size"],
                 "outputs": ["is_valid", "recommended_size"],
-                "category": "risk"
-            }
+                "category": "risk",
+            },
         ],
     },
     # Market Analysis Agents
@@ -90,7 +90,7 @@ AGENT_REGISTRY: Dict[str, Dict[str, Any]] = {
                 "description": "Analyze sentiment for a token",
                 "inputs": ["token_symbol"],
                 "outputs": ["sentiment_score", "confidence", "sources"],
-                "category": "analysis"
+                "category": "analysis",
             }
         ],
     },
@@ -104,7 +104,7 @@ AGENT_REGISTRY: Dict[str, Dict[str, Any]] = {
                 "description": "Track large wallet movements",
                 "inputs": ["token_address"],
                 "outputs": ["whale_movements", "volume", "direction"],
-                "category": "analysis"
+                "category": "analysis",
             }
         ],
     },
@@ -118,7 +118,7 @@ AGENT_REGISTRY: Dict[str, Dict[str, Any]] = {
                 "description": "Retrieve current funding rates",
                 "inputs": ["token_symbol", "exchange"],
                 "outputs": ["funding_rate", "next_funding_time"],
-                "category": "analysis"
+                "category": "analysis",
             }
         ],
     },
@@ -132,7 +132,7 @@ AGENT_REGISTRY: Dict[str, Dict[str, Any]] = {
                 "description": "Identify liquidation price levels",
                 "inputs": ["token_address"],
                 "outputs": ["liquidation_zones", "cluster_levels"],
-                "category": "analysis"
+                "category": "analysis",
             }
         ],
     },
@@ -146,7 +146,7 @@ AGENT_REGISTRY: Dict[str, Dict[str, Any]] = {
                 "description": "Perform technical analysis on charts",
                 "inputs": ["token_address", "timeframe"],
                 "outputs": ["patterns", "support_levels", "resistance_levels", "signals"],
-                "category": "analysis"
+                "category": "analysis",
             }
         ],
     },
@@ -161,7 +161,7 @@ AGENT_REGISTRY: Dict[str, Dict[str, Any]] = {
                 "description": "Research market conditions",
                 "inputs": ["token_address"],
                 "outputs": ["research_report", "key_findings"],
-                "category": "research"
+                "category": "research",
             }
         ],
     },
@@ -175,15 +175,15 @@ AGENT_REGISTRY: Dict[str, Dict[str, Any]] = {
                 "description": "Extract strategy from research material",
                 "inputs": ["video_url", "pdf_content"],
                 "outputs": ["strategy_code", "backtest_results"],
-                "category": "research"
+                "category": "research",
             },
             {
                 "name": "generate_backtest",
                 "description": "Generate and execute backtest",
                 "inputs": ["strategy_code", "historical_data"],
                 "outputs": ["performance_metrics", "backtest_report"],
-                "category": "research"
-            }
+                "category": "research",
+            },
         ],
     },
     "strategy_agent": {
@@ -196,7 +196,7 @@ AGENT_REGISTRY: Dict[str, Dict[str, Any]] = {
                 "description": "Design new trading strategy",
                 "inputs": ["market_conditions", "objectives"],
                 "outputs": ["strategy_spec", "expected_performance"],
-                "category": "research"
+                "category": "research",
             }
         ],
     },
@@ -211,7 +211,7 @@ AGENT_REGISTRY: Dict[str, Dict[str, Any]] = {
                 "description": "Answer questions about markets and strategies",
                 "inputs": ["user_query"],
                 "outputs": ["response", "confidence"],
-                "category": "communication"
+                "category": "communication",
             }
         ],
     },
@@ -225,7 +225,7 @@ AGENT_REGISTRY: Dict[str, Dict[str, Any]] = {
                 "description": "Analyze crypto tweets for signals",
                 "inputs": ["token_symbol"],
                 "outputs": ["tweet_sentiment", "trending_topics"],
-                "category": "communication"
+                "category": "communication",
             }
         ],
     },
@@ -239,7 +239,7 @@ AGENT_REGISTRY: Dict[str, Dict[str, Any]] = {
                 "description": "Create analysis video clips",
                 "inputs": ["analysis_data", "token"],
                 "outputs": ["video_url", "metadata"],
-                "category": "communication"
+                "category": "communication",
             }
         ],
     },
@@ -254,7 +254,7 @@ AGENT_REGISTRY: Dict[str, Dict[str, Any]] = {
                 "description": "Execute sniping strategy on new token",
                 "inputs": ["token_contract", "initial_liquidity"],
                 "outputs": ["execution_price", "transaction_details"],
-                "category": "specialized"
+                "category": "specialized",
             }
         ],
     },
@@ -268,7 +268,7 @@ AGENT_REGISTRY: Dict[str, Dict[str, Any]] = {
                 "description": "Optimize for Solana blockchain",
                 "inputs": ["transaction_params"],
                 "outputs": ["optimized_params", "estimated_cost"],
-                "category": "specialized"
+                "category": "specialized",
             }
         ],
     },
@@ -282,7 +282,7 @@ AGENT_REGISTRY: Dict[str, Dict[str, Any]] = {
                 "description": "Validate trading compliance",
                 "inputs": ["trade_details"],
                 "outputs": ["is_compliant", "warnings"],
-                "category": "specialized"
+                "category": "specialized",
             }
         ],
     },
@@ -318,7 +318,7 @@ class AgentRegistry:
                 outputs=cap["outputs"],
                 category=cap["category"],
                 reliability_score=0.95,
-                avg_execution_time_seconds=1.5
+                avg_execution_time_seconds=1.5,
             )
             for cap in metadata.get("capabilities", [])
         ]
@@ -338,7 +338,7 @@ class AgentRegistry:
             memory_usage_mb=128.5,
             last_execution=None,
             last_error=None,
-            timestamp=datetime.now().isoformat()
+            timestamp=datetime.now().isoformat(),
         )
 
         # Create agent info
@@ -359,7 +359,7 @@ class AgentRegistry:
             recent_logs=[],
             recent_decisions=[],
             registered_at=datetime.now().isoformat(),
-            last_heartbeat=datetime.now().isoformat()
+            last_heartbeat=datetime.now().isoformat(),
         )
 
     async def get_all_agents(self) -> List[Dict[str, Any]]:
@@ -383,10 +383,7 @@ class AgentRegistry:
         if not self.initialized:
             await self.initialize()
 
-        matching = [
-            agent for agent in self.agents.values()
-            if agent.agent_type == category
-        ]
+        matching = [agent for agent in self.agents.values() if agent.agent_type == category]
         return [asdict(agent) for agent in matching]
 
     async def get_agent_library(self) -> Dict[str, List[Dict[str, Any]]]:
@@ -401,21 +398,19 @@ class AgentRegistry:
             if category not in library:
                 library[category] = []
 
-            library[category].append({
-                "agent_id": agent.agent_id,
-                "name": agent.name,
-                "description": agent.description,
-                "capabilities": [
-                    {
-                        "name": cap.name,
-                        "description": cap.description,
-                        "category": cap.category
-                    }
-                    for cap in agent.capabilities
-                ],
-                "status": agent.status.value,
-                "health_level": agent.health_level.value
-            })
+            library[category].append(
+                {
+                    "agent_id": agent.agent_id,
+                    "name": agent.name,
+                    "description": agent.description,
+                    "capabilities": [
+                        {"name": cap.name, "description": cap.description, "category": cap.category}
+                        for cap in agent.capabilities
+                    ],
+                    "status": agent.status.value,
+                    "health_level": agent.health_level.value,
+                }
+            )
 
         return library
 

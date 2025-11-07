@@ -1095,7 +1095,7 @@ blockchain_agentic_protocol: Optional[BlockchainAgenticProtocol] = None
 
 
 async def initialize_blockchain_agentic_protocol(
-    config: Dict[str, Any]
+    config: Dict[str, Any],
 ) -> BlockchainAgenticProtocol:
     """Initialize global blockchain-agentic protocol"""
     global blockchain_agentic_protocol

@@ -27,11 +27,7 @@ async def test_qa_agent():
 
     # Create QAAgent instance
     print("[1/3] Creating QAAgent instance...")
-    agent = QAAgent(
-        agent_id="test_qa_agent_001",
-        workspace_path="./workspace",
-        project_root=".."
-    )
+    agent = QAAgent(agent_id="test_qa_agent_001", workspace_path="./workspace", project_root="..")
     print(f"      [OK] QAAgent created: {agent.agent_id}")
     print()
 
@@ -44,7 +40,7 @@ async def test_qa_agent():
             {
                 "file": "backend/app/api/endpoints/ai_analysis.py",
                 "type": "code_added",
-                "description": "Added business plan generation endpoint"
+                "description": "Added business plan generation endpoint",
             }
         ],
         "tests_added": ["test_ai_analysis.py"],
@@ -93,7 +89,7 @@ async def business_plan(request: BusinessPlanRequest) -> BusinessPlanResponse:
         )
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
-'''
+''',
             },
             {
                 "file": "backend/tests/test_ai_analysis.py",
@@ -131,9 +127,9 @@ class TestBusinessPlan:
         assert result.status_code == 200
         assert "business_plan" in result.json()
         assert result.json()["status"] == "completed"
-'''
-            }
-        ]
+''',
+            },
+        ],
     }
 
     specification = {
@@ -141,7 +137,7 @@ class TestBusinessPlan:
         "component": "e2e_workflows",
         "requirements": [
             {"issue_id": "E2E-001", "requirement": "Implement business plan generation"}
-        ]
+        ],
     }
 
     print("      [OK] Mock implementation created")
@@ -162,8 +158,8 @@ class TestBusinessPlan:
 
         # Show findings breakdown
         finding_types = {}
-        for finding in review['findings']:
-            ftype = finding.get('type', 'unknown')
+        for finding in review["findings"]:
+            ftype = finding.get("type", "unknown")
             finding_types[ftype] = finding_types.get(ftype, 0) + 1
 
         print("      Findings breakdown:")
@@ -171,7 +167,7 @@ class TestBusinessPlan:
             print(f"        {ftype}: {count}")
         print()
 
-        if review['status'] == 'approved':
+        if review["status"] == "approved":
             print("      [SUCCESS] Implementation APPROVED!")
         else:
             print(f"      [REJECTED] {review['recommendations']}")
@@ -179,9 +175,9 @@ class TestBusinessPlan:
 
         # Show some findings details
         print("      Sample findings:")
-        for finding in review['findings'][:5]:
-            severity = finding.get('severity', 'unknown')
-            desc = finding.get('description', 'No description')
+        for finding in review["findings"][:5]:
+            severity = finding.get("severity", "unknown")
+            desc = finding.get("description", "No description")
             print(f"        [{severity.upper()}] {desc}")
 
     except Exception as e:

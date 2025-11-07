@@ -48,13 +48,15 @@ class DispatchManagementLogisticsAgent(BaseAgent, ProtocolMixin):
     APQC_PROCESS_ID = "4.5.1"
 
     def __init__(self, config: DispatchManagementLogisticsAgentConfig):
-        super().__init__(agent_id=config.apqc_agent_id, agent_type=config.agent_type, version=config.version)
+        super().__init__(
+            agent_id=config.apqc_agent_id, agent_type=config.agent_type, version=config.version
+        )
         self.config = config
         self.skills = {
-            'assignment_optimization': 0.94,
-            'capacity_management': 0.91,
-            'demand_matching': 0.89,
-            'surge_detection': 0.87
+            "assignment_optimization": 0.94,
+            "capacity_management": 0.91,
+            "demand_matching": 0.89,
+            "surge_detection": 0.87,
         }
 
     async def execute(self, input_data: Dict[str, Any]) -> Dict[str, Any]:
@@ -90,15 +92,17 @@ class DispatchManagementLogisticsAgent(BaseAgent, ProtocolMixin):
             }
         }
         """
-        ride_requests = input_data.get('ride_requests', [])
-        available_drivers = input_data.get('available_drivers', [])
-        market_conditions = input_data.get('market_conditions', {})
+        ride_requests = input_data.get("ride_requests", [])
+        available_drivers = input_data.get("available_drivers", [])
+        market_conditions = input_data.get("market_conditions", {})
 
         # Perform driver assignment
         assignments = self._optimize_driver_assignment(ride_requests, available_drivers)
 
         # Analyze capacity and utilization
-        capacity_analysis = self._analyze_capacity(available_drivers, ride_requests, market_conditions)
+        capacity_analysis = self._analyze_capacity(
+            available_drivers, ride_requests, market_conditions
+        )
 
         # Detect surge pricing needs
         surge_analysis = self._analyze_surge_conditions(market_conditions, assignments)
@@ -115,14 +119,14 @@ class DispatchManagementLogisticsAgent(BaseAgent, ProtocolMixin):
                 "capacity_analysis": capacity_analysis,
                 "surge_analysis": surge_analysis,
                 "dispatch_metrics": metrics,
-                "recommendations": self._generate_recommendations(capacity_analysis, surge_analysis)
-            }
+                "recommendations": self._generate_recommendations(
+                    capacity_analysis, surge_analysis
+                ),
+            },
         }
 
     def _optimize_driver_assignment(
-        self,
-        requests: List[Dict],
-        drivers: List[Dict]
+        self, requests: List[Dict], drivers: List[Dict]
     ) -> List[Dict[str, Any]]:
         """
         Assign drivers to ride requests using Hungarian algorithm approximation
@@ -132,10 +136,10 @@ class DispatchManagementLogisticsAgent(BaseAgent, ProtocolMixin):
         # Create cost matrix (distance + wait time)
         for request in requests:
             best_driver = None
-            min_cost = float('inf')
+            min_cost = float("inf")
 
             for driver in drivers:
-                if driver['status'] != 'available':
+                if driver["status"] != "available":
                     continue
 
                 # Calculate assignment cost
@@ -148,38 +152,44 @@ class DispatchManagementLogisticsAgent(BaseAgent, ProtocolMixin):
             if best_driver:
                 # Calculate ETA to pickup
                 pickup_distance = self._calculate_distance(
-                    driver['location']['lat'], driver['location']['lng'],
-                    request['rider_location']['lat'], request['rider_location']['lng']
+                    driver["location"]["lat"],
+                    driver["location"]["lng"],
+                    request["rider_location"]["lat"],
+                    request["rider_location"]["lng"],
                 )
                 pickup_time_minutes = (pickup_distance / 40) * 60  # 40 km/h urban average
 
                 assignment = {
-                    'request_id': request['request_id'],
-                    'driver_id': best_driver['driver_id'],
-                    'assignment_cost': round(min_cost, 2),
-                    'pickup_distance_km': round(pickup_distance, 2),
-                    'estimated_pickup_minutes': round(pickup_time_minutes, 1),
-                    'driver_rating': best_driver['rating'],
-                    'match_quality': self._calculate_match_quality(request, best_driver, pickup_distance),
-                    'assigned_at': datetime.now().isoformat()
+                    "request_id": request["request_id"],
+                    "driver_id": best_driver["driver_id"],
+                    "assignment_cost": round(min_cost, 2),
+                    "pickup_distance_km": round(pickup_distance, 2),
+                    "estimated_pickup_minutes": round(pickup_time_minutes, 1),
+                    "driver_rating": best_driver["rating"],
+                    "match_quality": self._calculate_match_quality(
+                        request, best_driver, pickup_distance
+                    ),
+                    "assigned_at": datetime.now().isoformat(),
                 }
 
                 assignments.append(assignment)
 
                 # Mark driver as assigned (in practice, would update database)
-                best_driver['status'] = 'assigned'
+                best_driver["status"] = "assigned"
 
         # Handle unassigned requests
-        assigned_ids = {a['request_id'] for a in assignments}
+        assigned_ids = {a["request_id"] for a in assignments}
         for request in requests:
-            if request['request_id'] not in assigned_ids:
-                assignments.append({
-                    'request_id': request['request_id'],
-                    'driver_id': None,
-                    'status': 'unassigned',
-                    'reason': 'no_available_drivers',
-                    'wait_queue_position': len(assignments) + 1
-                })
+            if request["request_id"] not in assigned_ids:
+                assignments.append(
+                    {
+                        "request_id": request["request_id"],
+                        "driver_id": None,
+                        "status": "unassigned",
+                        "reason": "no_available_drivers",
+                        "wait_queue_position": len(assignments) + 1,
+                    }
+                )
 
         return assignments
 
@@ -190,23 +200,25 @@ class DispatchManagementLogisticsAgent(BaseAgent, ProtocolMixin):
         """
         # Distance to pickup
         distance = self._calculate_distance(
-            driver['location']['lat'], driver['location']['lng'],
-            request['rider_location']['lat'], request['rider_location']['lng']
+            driver["location"]["lat"],
+            driver["location"]["lng"],
+            request["rider_location"]["lat"],
+            request["rider_location"]["lng"],
         )
 
         # Time component
         time_cost = distance / 40  # Normalize by speed
 
         # Quality penalties
-        rating_penalty = (5.0 - driver['rating']) * 0.5  # Penalize lower ratings
-        acceptance_penalty = (1.0 - driver.get('acceptance_rate', 0.9)) * 2  # Penalize low acceptance
+        rating_penalty = (5.0 - driver["rating"]) * 0.5  # Penalize lower ratings
+        acceptance_penalty = (
+            1.0 - driver.get("acceptance_rate", 0.9)
+        ) * 2  # Penalize low acceptance
 
         # Priority adjustment
-        priority_multiplier = {
-            'urgent': 0.5,
-            'standard': 1.0,
-            'economy': 1.5
-        }.get(request.get('priority', 'standard'), 1.0)
+        priority_multiplier = {"urgent": 0.5, "standard": 1.0, "economy": 1.5}.get(
+            request.get("priority", "standard"), 1.0
+        )
 
         total_cost = (time_cost + rating_penalty + acceptance_penalty) * priority_multiplier
 
@@ -222,8 +234,8 @@ class DispatchManagementLogisticsAgent(BaseAgent, ProtocolMixin):
         delta_lat = radians(lat2 - lat1)
         delta_lon = radians(lon2 - lon1)
 
-        a = sin(delta_lat/2)**2 + cos(lat1_rad) * cos(lat2_rad) * sin(delta_lon/2)**2
-        c = 2 * atan2(sqrt(a), sqrt(1-a))
+        a = sin(delta_lat / 2) ** 2 + cos(lat1_rad) * cos(lat2_rad) * sin(delta_lon / 2) ** 2
+        c = 2 * atan2(sqrt(a), sqrt(1 - a))
 
         return R * c
 
@@ -238,81 +250,78 @@ class DispatchManagementLogisticsAgent(BaseAgent, ProtocolMixin):
             score -= (distance - 5) * 5
 
         # Rating bonus
-        score += (driver['rating'] - 4.0) * 10
+        score += (driver["rating"] - 4.0) * 10
 
         # Acceptance rate bonus
-        score += (driver.get('acceptance_rate', 0.9) - 0.8) * 20
+        score += (driver.get("acceptance_rate", 0.9) - 0.8) * 20
 
         # Capacity check
-        if driver['vehicle_capacity'] < request.get('passenger_count', 1):
+        if driver["vehicle_capacity"] < request.get("passenger_count", 1):
             score -= 50
 
         score = max(0, min(100, score))
 
         if score >= 85:
-            return 'excellent'
+            return "excellent"
         elif score >= 70:
-            return 'good'
+            return "good"
         elif score >= 50:
-            return 'fair'
+            return "fair"
         else:
-            return 'poor'
+            return "poor"
 
     def _analyze_capacity(
-        self,
-        drivers: List[Dict],
-        requests: List[Dict],
-        market: Dict
+        self, drivers: List[Dict], requests: List[Dict], market: Dict
     ) -> Dict[str, Any]:
         """
         Analyze fleet capacity and utilization
         """
         total_drivers = len(drivers)
-        available_drivers = sum(1 for d in drivers if d['status'] == 'available')
+        available_drivers = sum(1 for d in drivers if d["status"] == "available")
         total_requests = len(requests)
 
         # Supply-demand ratio
-        supply_demand_ratio = available_drivers / total_requests if total_requests > 0 else float('inf')
+        supply_demand_ratio = (
+            available_drivers / total_requests if total_requests > 0 else float("inf")
+        )
 
         # Utilization rate
-        utilization_rate = (total_drivers - available_drivers) / total_drivers if total_drivers > 0 else 0
+        utilization_rate = (
+            (total_drivers - available_drivers) / total_drivers if total_drivers > 0 else 0
+        )
 
         # Capacity status
         if supply_demand_ratio < 0.6:
-            capacity_status = 'constrained'
-            capacity_health = 'critical'
+            capacity_status = "constrained"
+            capacity_health = "critical"
         elif supply_demand_ratio < 1.0:
-            capacity_status = 'tight'
-            capacity_health = 'warning'
+            capacity_status = "tight"
+            capacity_health = "warning"
         elif supply_demand_ratio < 1.5:
-            capacity_status = 'balanced'
-            capacity_health = 'healthy'
+            capacity_status = "balanced"
+            capacity_health = "healthy"
         else:
-            capacity_status = 'surplus'
-            capacity_health = 'optimal'
+            capacity_status = "surplus"
+            capacity_health = "optimal"
 
         return {
-            'total_drivers': total_drivers,
-            'available_drivers': available_drivers,
-            'total_requests': total_requests,
-            'supply_demand_ratio': round(supply_demand_ratio, 2),
-            'utilization_rate': round(utilization_rate, 2),
-            'capacity_status': capacity_status,
-            'capacity_health': capacity_health,
-            'estimated_wait_time_minutes': market.get('average_wait_time_minutes', 0)
+            "total_drivers": total_drivers,
+            "available_drivers": available_drivers,
+            "total_requests": total_requests,
+            "supply_demand_ratio": round(supply_demand_ratio, 2),
+            "utilization_rate": round(utilization_rate, 2),
+            "capacity_status": capacity_status,
+            "capacity_health": capacity_health,
+            "estimated_wait_time_minutes": market.get("average_wait_time_minutes", 0),
         }
 
-    def _analyze_surge_conditions(
-        self,
-        market: Dict,
-        assignments: List[Dict]
-    ) -> Dict[str, Any]:
+    def _analyze_surge_conditions(self, market: Dict, assignments: List[Dict]) -> Dict[str, Any]:
         """
         Analyze if surge pricing should be activated
         """
-        active_requests = market.get('active_requests', 0)
-        available_drivers = market.get('available_drivers', 0)
-        avg_wait_time = market.get('average_wait_time_minutes', 0)
+        active_requests = market.get("active_requests", 0)
+        available_drivers = market.get("available_drivers", 0)
+        avg_wait_time = market.get("average_wait_time_minutes", 0)
 
         # Calculate surge multiplier
         if available_drivers == 0:
@@ -338,79 +347,84 @@ class DispatchManagementLogisticsAgent(BaseAgent, ProtocolMixin):
         surge_active = surge_multiplier > 1.0
 
         # Unassigned requests
-        unassigned_count = sum(1 for a in assignments if a.get('driver_id') is None)
+        unassigned_count = sum(1 for a in assignments if a.get("driver_id") is None)
 
         return {
-            'surge_active': surge_active,
-            'surge_multiplier': round(surge_multiplier, 2),
-            'demand_supply_ratio': round(active_requests / available_drivers, 2) if available_drivers > 0 else 999,
-            'average_wait_time_minutes': avg_wait_time,
-            'unassigned_requests': unassigned_count,
-            'surge_reason': self._get_surge_reason(surge_multiplier, avg_wait_time, unassigned_count)
+            "surge_active": surge_active,
+            "surge_multiplier": round(surge_multiplier, 2),
+            "demand_supply_ratio": (
+                round(active_requests / available_drivers, 2) if available_drivers > 0 else 999
+            ),
+            "average_wait_time_minutes": avg_wait_time,
+            "unassigned_requests": unassigned_count,
+            "surge_reason": self._get_surge_reason(
+                surge_multiplier, avg_wait_time, unassigned_count
+            ),
         }
 
     def _get_surge_reason(self, multiplier: float, wait_time: float, unassigned: int) -> str:
         """Determine primary reason for surge"""
         if multiplier <= 1.0:
-            return 'normal_operations'
+            return "normal_operations"
         elif unassigned > 5:
-            return 'high_unassigned_requests'
+            return "high_unassigned_requests"
         elif wait_time > 15:
-            return 'extended_wait_times'
+            return "extended_wait_times"
         else:
-            return 'high_demand'
+            return "high_demand"
 
     def _calculate_dispatch_metrics(
-        self,
-        assignments: List[Dict],
-        capacity: Dict,
-        surge: Dict
+        self, assignments: List[Dict], capacity: Dict, surge: Dict
     ) -> Dict[str, Any]:
         """
         Calculate key dispatch performance metrics
         """
-        total_assignments = len([a for a in assignments if a.get('driver_id')])
+        total_assignments = len([a for a in assignments if a.get("driver_id")])
         total_requests = len(assignments)
 
         assignment_rate = total_assignments / total_requests if total_requests > 0 else 0
 
         # Average pickup time
-        pickup_times = [a['estimated_pickup_minutes'] for a in assignments if 'estimated_pickup_minutes' in a]
+        pickup_times = [
+            a["estimated_pickup_minutes"] for a in assignments if "estimated_pickup_minutes" in a
+        ]
         avg_pickup_time = np.mean(pickup_times) if pickup_times else 0
 
         # Match quality distribution
         quality_counts = {}
         for a in assignments:
-            quality = a.get('match_quality', 'unknown')
+            quality = a.get("match_quality", "unknown")
             quality_counts[quality] = quality_counts.get(quality, 0) + 1
 
         return {
-            'assignment_rate': round(assignment_rate, 2),
-            'total_assignments': total_assignments,
-            'total_requests': total_requests,
-            'average_pickup_time_minutes': round(avg_pickup_time, 1),
-            'match_quality_distribution': quality_counts,
-            'surge_multiplier': surge['surge_multiplier'],
-            'utilization_rate': capacity['utilization_rate']
+            "assignment_rate": round(assignment_rate, 2),
+            "total_assignments": total_assignments,
+            "total_requests": total_requests,
+            "average_pickup_time_minutes": round(avg_pickup_time, 1),
+            "match_quality_distribution": quality_counts,
+            "surge_multiplier": surge["surge_multiplier"],
+            "utilization_rate": capacity["utilization_rate"],
         }
 
     def _generate_recommendations(self, capacity: Dict, surge: Dict) -> List[str]:
         """Generate actionable recommendations"""
         recommendations = []
 
-        if capacity['capacity_health'] == 'critical':
+        if capacity["capacity_health"] == "critical":
             recommendations.append("URGENT: Activate driver incentives to increase supply")
             recommendations.append("Consider increasing surge multiplier to reduce demand")
 
-        if surge['surge_active']:
-            recommendations.append(f"Surge pricing active at {surge['surge_multiplier']}x - monitor closely")
+        if surge["surge_active"]:
+            recommendations.append(
+                f"Surge pricing active at {surge['surge_multiplier']}x - monitor closely"
+            )
             recommendations.append("Send notifications to offline drivers in high-demand areas")
 
-        if capacity['supply_demand_ratio'] > 2.0:
+        if capacity["supply_demand_ratio"] > 2.0:
             recommendations.append("Surplus capacity detected - consider promotional discounts")
             recommendations.append("Reduce driver idle time with proactive positioning")
 
-        if surge['average_wait_time_minutes'] > 10:
+        if surge["average_wait_time_minutes"] > 10:
             recommendations.append("Average wait time elevated - optimize driver positioning")
 
         if not recommendations:
@@ -426,8 +440,8 @@ class DispatchManagementLogisticsAgent(BaseAgent, ProtocolMixin):
             "properties": {
                 "ride_requests": {"type": "array"},
                 "available_drivers": {"type": "array"},
-                "market_conditions": {"type": "object"}
-            }
+                "market_conditions": {"type": "object"},
+            },
         }
 
     def get_output_schema(self) -> Dict[str, Any]:
@@ -438,8 +452,8 @@ class DispatchManagementLogisticsAgent(BaseAgent, ProtocolMixin):
                 "driver_assignments": {"type": "array"},
                 "capacity_analysis": {"type": "object"},
                 "surge_analysis": {"type": "object"},
-                "dispatch_metrics": {"type": "object"}
-            }
+                "dispatch_metrics": {"type": "object"},
+            },
         }
 
 

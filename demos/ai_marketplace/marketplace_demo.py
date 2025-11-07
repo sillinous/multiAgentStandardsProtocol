@@ -26,17 +26,17 @@ from decimal import Decimal
 # Add parent directories to path
 sys.path.insert(0, str(Path(__file__).parent.parent.parent))
 
-from crates.agentic_protocols.python.anp_implementation import (
+from src.superstandard.protocols.anp_implementation import (
     AgentNetworkRegistry,
     ANPRegistration,
     DiscoveryQuery,
-    AgentStatus
+    AgentStatus,
 )
-from crates.agentic_protocols.python.acp_implementation import CoordinationManager
+from src.superstandard.protocols.acp_implementation import CoordinationManager
 from agents.consolidated.py.blockchain_agentic_protocol import (
     BlockchainAgenticProtocol,
     AgentWallet,
-    TokenType
+    TokenType,
 )
 
 
@@ -62,7 +62,7 @@ class AIAgent:
                 "status": "completed",
                 "data_collected": f"Data for: {task_description}",
                 "sources": ["Source A", "Source B", "Source C"],
-                "record_count": 1500
+                "record_count": 1500,
             }
         elif self.agent_type == "analyst":
             return {
@@ -70,32 +70,32 @@ class AIAgent:
                 "insights": [
                     f"Key insight 1 from {task_description}",
                     f"Key insight 2 from {task_description}",
-                    f"Trend identified in {task_description}"
+                    f"Trend identified in {task_description}",
                 ],
-                "confidence": 0.92
+                "confidence": 0.92,
             }
         elif self.agent_type == "writer":
             return {
                 "status": "completed",
                 "report": f"Comprehensive report on {task_description}",
                 "sections": ["Introduction", "Analysis", "Findings", "Conclusion"],
-                "word_count": 2500
+                "word_count": 2500,
             }
         elif self.agent_type == "validator":
             return {
                 "status": "completed",
                 "validation": "passed",
                 "quality_score": 0.95,
-                "recommendations": ["Excellent work", "Ready for publication"]
+                "recommendations": ["Excellent work", "Ready for publication"],
             }
         else:
             return {"status": "completed", "result": f"Processed: {task_description}"}
 
 
 async def main():
-    print("\n" + "="*80)
+    print("\n" + "=" * 80)
     print("SuperStandard v1.0 - AI Research Marketplace Demo")
-    print("="*80)
+    print("=" * 80)
     print("\nA complete demonstration of ANP + ACP + BAP protocols working together\n")
 
     # ========================================================================
@@ -122,16 +122,36 @@ async def main():
 
     # Create AI agents
     agents = [
-        AIAgent("collector-01", "Data Collector Alpha", "data_collector",
-                ["data_collection", "web_scraping", "api_integration"]),
-        AIAgent("analyst-01", "AI Analyst Prime", "analyst",
-                ["data_analysis", "pattern_recognition", "ml_inference"]),
-        AIAgent("writer-01", "Report Writer Pro", "writer",
-                ["report_generation", "content_creation", "summarization"]),
-        AIAgent("validator-01", "Quality Validator", "validator",
-                ["quality_assurance", "validation", "peer_review"]),
-        AIAgent("coordinator-01", "Marketplace Coordinator", "coordinator",
-                ["task_orchestration", "agent_management", "workflow_design"])
+        AIAgent(
+            "collector-01",
+            "Data Collector Alpha",
+            "data_collector",
+            ["data_collection", "web_scraping", "api_integration"],
+        ),
+        AIAgent(
+            "analyst-01",
+            "AI Analyst Prime",
+            "analyst",
+            ["data_analysis", "pattern_recognition", "ml_inference"],
+        ),
+        AIAgent(
+            "writer-01",
+            "Report Writer Pro",
+            "writer",
+            ["report_generation", "content_creation", "summarization"],
+        ),
+        AIAgent(
+            "validator-01",
+            "Quality Validator",
+            "validator",
+            ["quality_assurance", "validation", "peer_review"],
+        ),
+        AIAgent(
+            "coordinator-01",
+            "Marketplace Coordinator",
+            "coordinator",
+            ["task_orchestration", "agent_management", "workflow_design"],
+        ),
     ]
 
     # Register agents on network (ANP)
@@ -140,7 +160,7 @@ async def main():
             agent_id=agent.agent_id,
             agent_type=agent.agent_type,
             capabilities=agent.capabilities,
-            endpoints={"api": f"http://localhost:8000/{agent.agent_id}"}
+            endpoints={"api": f"http://localhost:8000/{agent.agent_id}"},
         )
         result = await anp_registry.register_agent(registration)
         print(f"[+] Registered: {agent.name}")
@@ -190,8 +210,8 @@ async def main():
             token_balances={
                 TokenType.REPUTATION: Decimal("100.0"),
                 TokenType.UTILITY: Decimal("1000.0"),
-                TokenType.GOVERNANCE: Decimal("50.0")
-            }
+                TokenType.GOVERNANCE: Decimal("50.0"),
+            },
         )
         await bap.wallet_manager.store_wallet(wallet)
         wallets_created += 1
@@ -214,8 +234,8 @@ async def main():
         coordination_plan={
             "project": "AI Market Analysis Q4 2025",
             "client": "Tech Research Institute",
-            "deadline": "2025-12-15"
-        }
+            "deadline": "2025-12-15",
+        },
     )
     coord_id = coordination["coordination_id"]
     coord_details = coordination["coordination"]
@@ -232,7 +252,7 @@ async def main():
             agent_id=agent.agent_id,
             agent_type=agent.agent_type,
             capabilities=agent.capabilities,
-            role="contributor"
+            role="contributor",
         )
     print(f"[+] {len(agents)-1} agents joined the coordination")
     print()
@@ -250,9 +270,9 @@ async def main():
         description="Collect AI market data from multiple sources",
         priority=1,
         input_data={"sources": ["market_reports", "competitor_analysis", "trends"]},
-        dependencies=[]
+        dependencies=[],
     )
-    await acp_manager.assign_task(coord_id, task1['task_id'], "collector-01")
+    await acp_manager.assign_task(coord_id, task1["task_id"], "collector-01")
     print(f"[+] Task 1 assigned: Data Collection -> collector-01")
 
     # Task 2: Data Analysis
@@ -262,9 +282,9 @@ async def main():
         description="Analyze collected data and identify key insights",
         priority=2,
         input_data={"analysis_type": "market_trends"},
-        dependencies=[task1['task_id']]
+        dependencies=[task1["task_id"]],
     )
-    await acp_manager.assign_task(coord_id, task2['task_id'], "analyst-01")
+    await acp_manager.assign_task(coord_id, task2["task_id"], "analyst-01")
     print(f"[+] Task 2 assigned: Analysis -> analyst-01")
 
     # Task 3: Report Writing
@@ -273,10 +293,13 @@ async def main():
         task_type="report_generation",
         description="Generate comprehensive market research report",
         priority=3,
-        input_data={"format": "pdf", "sections": ["executive_summary", "findings", "recommendations"]},
-        dependencies=[task2['task_id']]
+        input_data={
+            "format": "pdf",
+            "sections": ["executive_summary", "findings", "recommendations"],
+        },
+        dependencies=[task2["task_id"]],
     )
-    await acp_manager.assign_task(coord_id, task3['task_id'], "writer-01")
+    await acp_manager.assign_task(coord_id, task3["task_id"], "writer-01")
     print(f"[+] Task 3 assigned: Report Writing -> writer-01")
 
     # Task 4: Quality Validation
@@ -286,9 +309,9 @@ async def main():
         description="Validate report quality and accuracy",
         priority=4,
         input_data={"quality_standards": ["accuracy", "completeness", "clarity"]},
-        dependencies=[task3['task_id']]
+        dependencies=[task3["task_id"]],
     )
-    await acp_manager.assign_task(coord_id, task4['task_id'], "validator-01")
+    await acp_manager.assign_task(coord_id, task4["task_id"], "validator-01")
     print(f"[+] Task 4 assigned: Validation -> validator-01")
     print()
 
@@ -303,27 +326,23 @@ async def main():
         (task1, agents[0], "Data Collection"),
         (task2, agents[1], "Data Analysis"),
         (task3, agents[2], "Report Writing"),
-        (task4, agents[3], "Quality Validation")
+        (task4, agents[3], "Quality Validation"),
     ]
 
     for task, agent, task_name in tasks:
         print(f"\n[*] {task_name} ({agent.name})...")
 
         # Extract task details
-        task_details = task['task']
+        task_details = task["task"]
 
         # Simulate agent executing task
         result = await agent.execute_task(
-            task_details['description'],
-            task_details.get('input_data', {})
+            task_details["description"], task_details.get("input_data", {})
         )
 
         # Update task status
         await acp_manager.update_task_status(
-            coord_id,
-            task['task_id'],
-            "completed",
-            output_data=result
+            coord_id, task["task_id"], "completed", output_data=result
         )
 
         print(f"    [+] Task completed!")
@@ -347,7 +366,7 @@ async def main():
         {"agent": agents[0], "name": "Market_Data_Collection", "category": "data"},
         {"agent": agents[1], "name": "AI_Market_Analysis", "category": "analytics"},
         {"agent": agents[2], "name": "Research_Report_Q4_2025", "category": "content"},
-        {"agent": agents[3], "name": "Quality_Certification", "category": "validation"}
+        {"agent": agents[3], "name": "Quality_Certification", "category": "validation"},
     ]
 
     for spec in nft_specs:
@@ -358,8 +377,8 @@ async def main():
                 "category": spec["category"],
                 "proficiency_level": 0.90 + (len(nfts_minted) * 0.02),
                 "description": f"Knowledge NFT from {spec['agent'].name}",
-                "authority": "AI Research Marketplace"
-            }
+                "authority": "AI Research Marketplace",
+            },
         )
         nfts_minted.append(nft)
         spec["agent"].knowledge_created.append(nft.nft_id)
@@ -396,7 +415,7 @@ async def main():
         ("collector-01", 200),
         ("analyst-01", 300),
         ("writer-01", 250),
-        ("validator-01", 150)
+        ("validator-01", 150),
     ]
 
     total_distributed = 0
@@ -446,9 +465,9 @@ async def main():
         print(f"    NFTs created: {len(agent.knowledge_created)}")
         print(f"    UTILITY balance: {wallet.token_balances[TokenType.UTILITY]}")
 
-    print("\n" + "="*80)
+    print("\n" + "=" * 80)
     print("MARKETPLACE DEMO COMPLETED SUCCESSFULLY!")
-    print("="*80)
+    print("=" * 80)
     print("\nKey Achievements:")
     print("- 5 AI agents registered and discovered (ANP)")
     print("- 4 tasks coordinated in pipeline pattern (ACP)")

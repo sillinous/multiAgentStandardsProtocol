@@ -85,13 +85,15 @@ class ManageRelationsWithBoardOfDirectorsRelationshipManagementAgentConfig:
     timeout_seconds: int = field(default_factory=lambda: int(os.getenv("TIMEOUT_SECONDS", "300")))
 
     @classmethod
-    def from_environment(cls) -> "ManageRelationsWithBoardOfDirectorsRelationshipManagementAgentConfig":
+    def from_environment(
+        cls,
+    ) -> "ManageRelationsWithBoardOfDirectorsRelationshipManagementAgentConfig":
         """Create configuration from environment variables (Redeployable)"""
         return cls(
             agent_id=os.getenv("AGENT_ID", "apqc_11_0_11db2096"),
             log_level=os.getenv("LOG_LEVEL", "INFO"),
             max_retries=int(os.getenv("MAX_RETRIES", "3")),
-            timeout_seconds=int(os.getenv("TIMEOUT_SECONDS", "300"))
+            timeout_seconds=int(os.getenv("TIMEOUT_SECONDS", "300")),
         )
 
 
@@ -147,23 +149,73 @@ class ManageRelationsWithBoardOfDirectorsRelationshipManagementAgent(BaseAgent, 
     APQC_PROCESS_ID = "11.0.3"
     APQC_FRAMEWORK_VERSION = "7.0.1"
 
-    def __init__(self, config: ManageRelationsWithBoardOfDirectorsRelationshipManagementAgentConfig):
+    def __init__(
+        self, config: ManageRelationsWithBoardOfDirectorsRelationshipManagementAgentConfig
+    ):
         """Initialize agent"""
         super().__init__(
-            agent_id=config.agent_id,
-            agent_type=config.agent_type,
-            version=config.version
+            agent_id=config.agent_id, agent_type=config.agent_type, version=config.version
         )
 
         self.config = config
-        self.capabilities_list = ['analysis', 'decision_making', 'communication', 'collaboration', 'learning', 'stakeholder_engagement', 'relationship_building', 'communication']
-        self.skills = {'data_analysis': 0.8, 'pattern_recognition': 0.85, 'optimization': 0.75, 'communication': 0.7, 'collaboration': 0.8}
-        self.interfaces = {'inputs': ['data_structured', 'data_unstructured', 'messages', 'events', 'metrics'], 'outputs': ['analysis_reports', 'recommendations', 'decisions', 'artifacts', 'metrics', 'events'], 'protocols': ['message_passing', 'event_driven', 'api_rest']}
-        self.behavior = {'autonomous_level': 0.9, 'collaboration_mode': 'orchestrated', 'learning_enabled': True, 'self_improvement': True}
-        self.resources = {'compute': 'adaptive', 'memory': 'adaptive', 'api_budget': 'dynamic', 'priority': 'medium'}
-        self.integration = {'compatible_agents': ['1.0', '10.0'], 'required_services': ['knowledge_graph', 'vector_db', 'event_bus'], 'ontology_level': 'L3_strategic'}
-        self.quality = {'testing_required': True, 'qa_threshold': 0.85, 'consensus_weight': 1.0, 'error_handling': 'graceful_degradation'}
-        self.deployment = {'runtime': 'ray_actor', 'scaling': 'horizontal', 'health_checks': True, 'monitoring': True}
+        self.capabilities_list = [
+            "analysis",
+            "decision_making",
+            "communication",
+            "collaboration",
+            "learning",
+            "stakeholder_engagement",
+            "relationship_building",
+            "communication",
+        ]
+        self.skills = {
+            "data_analysis": 0.8,
+            "pattern_recognition": 0.85,
+            "optimization": 0.75,
+            "communication": 0.7,
+            "collaboration": 0.8,
+        }
+        self.interfaces = {
+            "inputs": ["data_structured", "data_unstructured", "messages", "events", "metrics"],
+            "outputs": [
+                "analysis_reports",
+                "recommendations",
+                "decisions",
+                "artifacts",
+                "metrics",
+                "events",
+            ],
+            "protocols": ["message_passing", "event_driven", "api_rest"],
+        }
+        self.behavior = {
+            "autonomous_level": 0.9,
+            "collaboration_mode": "orchestrated",
+            "learning_enabled": True,
+            "self_improvement": True,
+        }
+        self.resources = {
+            "compute": "adaptive",
+            "memory": "adaptive",
+            "api_budget": "dynamic",
+            "priority": "medium",
+        }
+        self.integration = {
+            "compatible_agents": ["1.0", "10.0"],
+            "required_services": ["knowledge_graph", "vector_db", "event_bus"],
+            "ontology_level": "L3_strategic",
+        }
+        self.quality = {
+            "testing_required": True,
+            "qa_threshold": 0.85,
+            "consensus_weight": 1.0,
+            "error_handling": "graceful_degradation",
+        }
+        self.deployment = {
+            "runtime": "ray_actor",
+            "scaling": "horizontal",
+            "health_checks": True,
+            "monitoring": True,
+        }
 
         # Initialize state
         self.state = {
@@ -171,7 +223,7 @@ class ManageRelationsWithBoardOfDirectorsRelationshipManagementAgent(BaseAgent, 
             "tasks_processed": 0,
             "last_activity": datetime.now().isoformat(),
             "performance_metrics": {},
-            "learning_data": {} if self.config.learning_enabled else None
+            "learning_data": {} if self.config.learning_enabled else None,
         }
 
         self._initialize_protocols()
@@ -180,7 +232,9 @@ class ManageRelationsWithBoardOfDirectorsRelationshipManagementAgent(BaseAgent, 
     @classmethod
     def from_environment(cls) -> "ManageRelationsWithBoardOfDirectorsRelationshipManagementAgent":
         """Create agent from environment variables (Redeployable)"""
-        config = ManageRelationsWithBoardOfDirectorsRelationshipManagementAgentConfig.from_environment()
+        config = (
+            ManageRelationsWithBoardOfDirectorsRelationshipManagementAgentConfig.from_environment()
+        )
         return cls(config)
 
     def _initialize_protocols(self):
@@ -211,7 +265,7 @@ class ManageRelationsWithBoardOfDirectorsRelationshipManagementAgent(BaseAgent, 
                 return {
                     "status": "error",
                     "message": "Invalid input data",
-                    "error_handling": self.config.error_handling
+                    "error_handling": self.config.error_handling,
                 }
 
             # Process based on agent type and capabilities
@@ -230,11 +284,7 @@ class ManageRelationsWithBoardOfDirectorsRelationshipManagementAgent(BaseAgent, 
         except Exception as e:
             self.log("error", f"Execution error: {str(e)}")
             if self.config.error_handling == "graceful_degradation":
-                return {
-                    "status": "degraded",
-                    "message": str(e),
-                    "partial_result": {}
-                }
+                return {"status": "degraded", "message": str(e), "partial_result": {}}
             raise
 
     async def _process_relationship_management(self, input_data: Dict[str, Any]) -> Dict[str, Any]:
@@ -262,8 +312,8 @@ class ManageRelationsWithBoardOfDirectorsRelationshipManagementAgent(BaseAgent, 
                 "decisions": [],
                 "artifacts": [],
                 "metrics": {},
-                "events": []
-            }
+                "events": [],
+            },
         }
 
         return result
@@ -279,7 +329,7 @@ class ManageRelationsWithBoardOfDirectorsRelationshipManagementAgent(BaseAgent, 
                 "timestamp": datetime.now().isoformat(),
                 "input_summary": str(input_data)[:100],
                 "result_status": result.get("status"),
-                "performance": {}
+                "performance": {},
             }
 
             if "learning_history" not in self.state["learning_data"]:
@@ -311,7 +361,7 @@ class ManageRelationsWithBoardOfDirectorsRelationshipManagementAgent(BaseAgent, 
             "apqc_metadata": {
                 "category_id": self.APQC_CATEGORY_ID,
                 "process_id": self.APQC_PROCESS_ID,
-                "framework_version": self.APQC_FRAMEWORK_VERSION
+                "framework_version": self.APQC_FRAMEWORK_VERSION,
             },
             "protocols": self.get_supported_protocols(),
             "capabilities": self.capabilities_list,
@@ -323,23 +373,23 @@ class ManageRelationsWithBoardOfDirectorsRelationshipManagementAgent(BaseAgent, 
                 "atomic": True,
                 "composable": True,
                 "orchestratable": True,
-                "vendor_agnostic": True
+                "vendor_agnostic": True,
             },
             "performance": {
                 "tasks_processed": self.state["tasks_processed"],
                 "memory_mb": memory_usage,
-                "last_activity": self.state["last_activity"]
+                "last_activity": self.state["last_activity"],
             },
             "behavior": {
                 "autonomous_level": self.config.autonomous_level,
                 "learning_enabled": self.config.learning_enabled,
-                "collaboration_mode": self.config.collaboration_mode
+                "collaboration_mode": self.config.collaboration_mode,
             },
             "deployment": {
                 "runtime": self.config.runtime,
                 "scaling": self.config.scaling,
-                "monitoring": self.config.monitoring
-            }
+                "monitoring": self.config.monitoring,
+            },
         }
 
         return health
@@ -365,9 +415,13 @@ class ManageRelationsWithBoardOfDirectorsRelationshipManagementAgent(BaseAgent, 
                 "task_type": {"type": "string", "description": "Type of task to execute"},
                 "data": {"type": "object", "description": "Task data"},
                 "context": {"type": "object", "description": "Execution context"},
-                "priority": {"type": "string", "enum": ["low", "medium", "high"], "default": "medium"}
+                "priority": {
+                    "type": "string",
+                    "enum": ["low", "medium", "high"],
+                    "default": "medium",
+                },
             },
-            "required": ["task_type", "data"]
+            "required": ["task_type", "data"],
         }
 
     def get_output_schema(self) -> Dict[str, Any]:
@@ -390,11 +444,11 @@ class ManageRelationsWithBoardOfDirectorsRelationshipManagementAgent(BaseAgent, 
                         "decisions": {"type": "array"},
                         "artifacts": {"type": "array"},
                         "metrics": {"type": "object"},
-                        "events": {"type": "array"}
-                    }
-                }
+                        "events": {"type": "array"},
+                    },
+                },
             },
-            "required": ["status", "apqc_process_id", "agent_id", "timestamp", "output"]
+            "required": ["status", "apqc_process_id", "agent_id", "timestamp", "output"],
         }
 
     def log(self, level: str, message: str):
@@ -404,7 +458,9 @@ class ManageRelationsWithBoardOfDirectorsRelationshipManagementAgent(BaseAgent, 
 
 
 # Convenience function for agent creation
-def create_manage_relations_with_board_of_directors_relationship_management_agent(config: Optional[ManageRelationsWithBoardOfDirectorsRelationshipManagementAgentConfig] = None) -> ManageRelationsWithBoardOfDirectorsRelationshipManagementAgent:
+def create_manage_relations_with_board_of_directors_relationship_management_agent(
+    config: Optional[ManageRelationsWithBoardOfDirectorsRelationshipManagementAgentConfig] = None,
+) -> ManageRelationsWithBoardOfDirectorsRelationshipManagementAgent:
     """Create ManageRelationsWithBoardOfDirectorsRelationshipManagementAgent instance"""
     if config is None:
         config = ManageRelationsWithBoardOfDirectorsRelationshipManagementAgentConfig()

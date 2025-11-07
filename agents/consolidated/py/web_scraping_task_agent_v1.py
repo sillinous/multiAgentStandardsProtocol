@@ -45,7 +45,9 @@ class WebScrapingTaskAgent(BaseAgent):
     and maximum reusability across APQC categories.
     """
 
-    def __init__(self, agent_id: str = "web_scraping_task_agent", config: Optional[Dict[str, Any]] = None):
+    def __init__(
+        self, agent_id: str = "web_scraping_task_agent", config: Optional[Dict[str, Any]] = None
+    ):
         """
         Initialize Web Scraping Task Agent
 
@@ -56,8 +58,8 @@ class WebScrapingTaskAgent(BaseAgent):
         super().__init__(
             agent_id=agent_id,
             agent_type="data_extraction",
-            capabilities=['web_scraping', 'javascript_rendering', 'rate_limiting', 'proxy_support'],
-            config=config or {}
+            capabilities=["web_scraping", "javascript_rendering", "rate_limiting", "proxy_support"],
+            config=config or {},
         )
 
         # Agent-specific initialization
@@ -67,25 +69,25 @@ class WebScrapingTaskAgent(BaseAgent):
             "reusable": True,
             "composable": True,
             "stateless": True,
-            "framework": "APQC 7.0.1"
+            "framework": "APQC 7.0.1",
         }
 
         logger.info(f"Initialized Web Scraping Task Agent [{self.agent_id}]")
 
     async def execute_task(self, task: Dict[str, Any]) -> Dict[str, Any]:
         """
-        Execute the data extraction task
+                Execute the data extraction task
 
-        Args:
-            task: Task parameters containing:
-                - url: string
-- selectors: dict
-- rules: dict
+                Args:
+                    task: Task parameters containing:
+                        - url: string
+        - selectors: dict
+        - rules: dict
 
-        Returns:
-            Result dictionary containing:
-                - data: dict
-- metadata: dict
+                Returns:
+                    Result dictionary containing:
+                        - data: dict
+        - metadata: dict
         """
         try:
             logger.info(f"[{self.agent_id}] Executing data_extraction task")
@@ -105,7 +107,7 @@ class WebScrapingTaskAgent(BaseAgent):
                 "status": "success",
                 "agent_id": self.agent_id,
                 "timestamp": datetime.utcnow().isoformat(),
-                "result": output
+                "result": output,
             }
 
         except Exception as e:
@@ -114,7 +116,7 @@ class WebScrapingTaskAgent(BaseAgent):
                 "status": "error",
                 "agent_id": self.agent_id,
                 "timestamp": datetime.utcnow().isoformat(),
-                "error": str(e)
+                "error": str(e),
             }
 
     def _validate_inputs(self, task: Dict[str, Any]) -> None:
@@ -127,7 +129,7 @@ class WebScrapingTaskAgent(BaseAgent):
         Raises:
             ValueError: If required inputs are missing or invalid
         """
-        required_fields = ['url', 'selectors', 'rules']
+        required_fields = ["url", "selectors", "rules"]
 
         for field in required_fields:
             if field not in task:
@@ -155,7 +157,7 @@ class WebScrapingTaskAgent(BaseAgent):
         result = {
             "executed": True,
             "task_type": "data_extraction",
-            "inputs_received": list(task.keys())
+            "inputs_received": list(task.keys()),
         }
 
         # Simulate async work
@@ -180,8 +182,8 @@ class WebScrapingTaskAgent(BaseAgent):
                 "agent_type": self.agent_type,
                 "level": 5,
                 "category": "data_extraction",
-                "timestamp": datetime.utcnow().isoformat()
-            }
+                "timestamp": datetime.utcnow().isoformat(),
+            },
         }
 
     async def handle_message(self, message: Dict[str, Any]) -> Dict[str, Any]:
@@ -203,10 +205,7 @@ class WebScrapingTaskAgent(BaseAgent):
         elif message_type == "capabilities":
             return self.get_capabilities()
         else:
-            return {
-                "status": "error",
-                "error": f"Unknown message type: {message_type}"
-            }
+            return {"status": "error", "error": f"Unknown message type: {message_type}"}
 
     def get_status(self) -> Dict[str, Any]:
         """
@@ -220,7 +219,7 @@ class WebScrapingTaskAgent(BaseAgent):
             "agent_type": self.agent_type,
             "status": "ready",
             "capabilities": self.capabilities,
-            "metadata": self.metadata
+            "metadata": self.metadata,
         }
 
     def get_capabilities(self) -> Dict[str, Any]:
@@ -233,11 +232,11 @@ class WebScrapingTaskAgent(BaseAgent):
         return {
             "agent_id": self.agent_id,
             "capabilities": self.capabilities,
-            "inputs": {'url': 'string', 'selectors': 'dict', 'rules': 'dict'},
-            "outputs": {'data': 'dict', 'metadata': 'dict'},
+            "inputs": {"url": "string", "selectors": "dict", "rules": "dict"},
+            "outputs": {"data": "dict", "metadata": "dict"},
             "level": 5,
             "reusable": True,
-            "composable": True
+            "composable": True,
         }
 
 
@@ -251,7 +250,7 @@ async def main():
     # Example task
     task = {
         # Add example inputs here
-                # "url": "example_url",
+        # "url": "example_url",
         # "selectors": "example_selectors",
         # "rules": "example_rules",
     }

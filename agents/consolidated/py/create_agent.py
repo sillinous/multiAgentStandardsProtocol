@@ -48,7 +48,7 @@ class AgentTemplateGenerator:
         "business": "Business logic and rules agents",
         "ml": "Machine learning and AI agents",
         "monitoring": "System monitoring and observability agents",
-        "security": "Security and compliance agents"
+        "security": "Security and compliance agents",
     }
 
     def __init__(self):
@@ -68,14 +68,14 @@ class AgentTemplateGenerator:
         category: str,
         capabilities: List[str],
         description: str,
-        version: str = "1.0.0"
+        version: str = "1.0.0",
     ) -> str:
         """Generate agent Python code"""
 
         class_name = name if name.endswith("Agent") else f"{name}Agent"
         agent_id = self.to_snake_case(name)
 
-        capabilities_list = ',\n        '.join([f'"{cap}"' for cap in capabilities])
+        capabilities_list = ",\n        ".join([f'"{cap}"' for cap in capabilities])
 
         template = f'''"""
 {class_name} - {description}
@@ -332,12 +332,7 @@ if __name__ == "__main__":
 
         return template
 
-    def generate_test_code(
-        self,
-        name: str,
-        category: str,
-        capabilities: List[str]
-    ) -> str:
+    def generate_test_code(self, name: str, category: str, capabilities: List[str]) -> str:
         """Generate test code for the agent"""
 
         class_name = name if name.endswith("Agent") else f"{name}Agent"
@@ -453,19 +448,14 @@ class Test{class_name}:
         return template
 
     def generate_documentation(
-        self,
-        name: str,
-        category: str,
-        capabilities: List[str],
-        description: str,
-        version: str
+        self, name: str, category: str, capabilities: List[str], description: str, version: str
     ) -> str:
         """Generate documentation for the agent"""
 
         class_name = name if name.endswith("Agent") else f"{name}Agent"
         agent_id = self.to_snake_case(name)
 
-        template = f'''# {class_name}
+        template = f"""# {class_name}
 
 **Version:** {version}
 **Category:** {self.CATEGORIES.get(category, "Custom")}
@@ -709,16 +699,17 @@ For issues, questions, or contributions:
 ---
 
 **Last Updated:** {datetime.now().strftime("%Y-%m-%d")}
-'''
+"""
 
         return template
 
     def to_snake_case(self, name: str) -> str:
         """Convert name to snake_case"""
         import re
-        name = re.sub('Agent$', '', name)  # Remove Agent suffix if present
-        s1 = re.sub('(.)([A-Z][a-z]+)', r'\1_\2', name)
-        return re.sub('([a-z0-9])([A-Z])', r'\1_\2', s1).lower()
+
+        name = re.sub("Agent$", "", name)  # Remove Agent suffix if present
+        s1 = re.sub("(.)([A-Z][a-z]+)", r"\1_\2", name)
+        return re.sub("([a-z0-9])([A-Z])", r"\1_\2", s1).lower()
 
     def create_agent(
         self,
@@ -726,7 +717,7 @@ For issues, questions, or contributions:
         category: str,
         capabilities: List[str],
         description: str,
-        version: str = "1.0.0"
+        version: str = "1.0.0",
     ):
         """Create a new agent with all supporting files"""
 
@@ -743,22 +734,23 @@ For issues, questions, or contributions:
         test_file = TESTS_DIR / f"test_{agent_id}.py"
         docs_file = DOCS_DIR / f"{agent_id}.md"
 
-        with open(agent_file, 'w') as f:
+        with open(agent_file, "w") as f:
             f.write(agent_code)
 
-        with open(test_file, 'w') as f:
+        with open(test_file, "w") as f:
             f.write(test_code)
 
-        with open(docs_file, 'w') as f:
+        with open(docs_file, "w") as f:
             f.write(docs)
 
         # Create __init__.py if it doesn't exist
         init_file = AGENTS_DIR / category / "__init__.py"
         if not init_file.exists():
-            with open(init_file, 'w') as f:
+            with open(init_file, "w") as f:
                 f.write(f'"""{self.CATEGORIES.get(category, "Custom")}"""\n')
 
-        print(f"""
+        print(
+            f"""
 [SUCCESS] Agent Created Successfully!
 
 Agent: {class_name}
@@ -781,16 +773,19 @@ To use your agent:
     from agents.{category}.{agent_id} import get_{agent_id}
     agent = get_{agent_id}()
     result = await agent.execute_task({{"type": "example_task"}})
-""")
+"""
+        )
 
 
 def interactive_mode():
     """Run in interactive mode"""
-    print("""
+    print(
+        """
     ╔═══════════════════════════════════════════════════╗
     ║   Agent Template Generator - Interactive Mode     ║
     ╚═══════════════════════════════════════════════════╝
-    """)
+    """
+    )
 
     generator = AgentTemplateGenerator()
 
@@ -813,8 +808,10 @@ def interactive_mode():
         return
 
     # Get capabilities
-    capabilities_input = input("\nCapabilities (comma-separated, e.g., 'route_optimization,traffic_awareness'): ").strip()
-    capabilities = [cap.strip() for cap in capabilities_input.split(',') if cap.strip()]
+    capabilities_input = input(
+        "\nCapabilities (comma-separated, e.g., 'route_optimization,traffic_awareness'): "
+    ).strip()
+    capabilities = [cap.strip() for cap in capabilities_input.split(",") if cap.strip()]
 
     if not capabilities:
         print("❌ At least one capability is required")
@@ -847,16 +844,10 @@ def main():
         interactive_mode()
     elif args.name and args.category and args.capabilities:
         generator = AgentTemplateGenerator()
-        capabilities = [cap.strip() for cap in args.capabilities.split(',')]
+        capabilities = [cap.strip() for cap in args.capabilities.split(",")]
         description = args.description or f"Agent for {args.name}"
 
-        generator.create_agent(
-            args.name,
-            args.category,
-            capabilities,
-            description,
-            args.version
-        )
+        generator.create_agent(args.name, args.category, capabilities, description, args.version)
     else:
         parser.print_help()
 

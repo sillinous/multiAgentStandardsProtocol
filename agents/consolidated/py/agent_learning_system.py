@@ -34,6 +34,7 @@ import hashlib
 
 class ExperienceType(Enum):
     """Types of agent experiences"""
+
     SUCCESS = "success"
     FAILURE = "failure"
     OPTIMIZATION = "optimization"
@@ -43,6 +44,7 @@ class ExperienceType(Enum):
 
 class LearningStrategy(Enum):
     """Learning strategies"""
+
     REINFORCEMENT = "reinforcement"
     SUPERVISED = "supervised"
     UNSUPERVISED = "unsupervised"
@@ -53,6 +55,7 @@ class LearningStrategy(Enum):
 @dataclass
 class Experience:
     """Single experience record"""
+
     experience_id: str
     agent_id: str
     agent_type: str
@@ -71,6 +74,7 @@ class Experience:
 @dataclass
 class KnowledgeNode:
     """Node in knowledge graph"""
+
     node_id: str
     knowledge_type: str  # pattern, rule, strategy, best_practice
     content: Dict[str, Any]
@@ -86,6 +90,7 @@ class KnowledgeNode:
 @dataclass
 class LearningGoal:
     """Agent learning objective"""
+
     goal_id: str
     agent_id: str
     goal_type: str  # performance, efficiency, accuracy, collaboration
@@ -159,7 +164,8 @@ class AgentLearningSystem:
         cursor = self.conn.cursor()
 
         # Experiences table
-        cursor.execute("""
+        cursor.execute(
+            """
             CREATE TABLE IF NOT EXISTS experiences (
                 experience_id TEXT PRIMARY KEY,
                 agent_id TEXT NOT NULL,
@@ -176,10 +182,12 @@ class AgentLearningSystem:
                 metadata_json TEXT,
                 created_at TEXT NOT NULL
             )
-        """)
+        """
+        )
 
         # Knowledge graph table
-        cursor.execute("""
+        cursor.execute(
+            """
             CREATE TABLE IF NOT EXISTS knowledge_graph (
                 node_id TEXT PRIMARY KEY,
                 knowledge_type TEXT NOT NULL,
@@ -192,10 +200,12 @@ class AgentLearningSystem:
                 updated_at TEXT NOT NULL,
                 tags_json TEXT
             )
-        """)
+        """
+        )
 
         # Learning goals table
-        cursor.execute("""
+        cursor.execute(
+            """
             CREATE TABLE IF NOT EXISTS learning_goals (
                 goal_id TEXT PRIMARY KEY,
                 agent_id TEXT NOT NULL,
@@ -210,10 +220,12 @@ class AgentLearningSystem:
                 created_at TEXT NOT NULL,
                 updated_at TEXT NOT NULL
             )
-        """)
+        """
+        )
 
         # Patterns table (learned patterns)
-        cursor.execute("""
+        cursor.execute(
+            """
             CREATE TABLE IF NOT EXISTS learned_patterns (
                 pattern_id TEXT PRIMARY KEY,
                 pattern_type TEXT NOT NULL,
@@ -225,10 +237,12 @@ class AgentLearningSystem:
                 created_at TEXT NOT NULL,
                 last_validated TEXT
             )
-        """)
+        """
+        )
 
         # Agent performance tracking
-        cursor.execute("""
+        cursor.execute(
+            """
             CREATE TABLE IF NOT EXISTS agent_performance (
                 id INTEGER PRIMARY KEY AUTOINCREMENT,
                 agent_id TEXT NOT NULL,
@@ -237,10 +251,12 @@ class AgentLearningSystem:
                 timestamp TEXT NOT NULL,
                 context_json TEXT
             )
-        """)
+        """
+        )
 
         # Knowledge transfer log
-        cursor.execute("""
+        cursor.execute(
+            """
             CREATE TABLE IF NOT EXISTS knowledge_transfers (
                 transfer_id TEXT PRIMARY KEY,
                 from_agent_id TEXT NOT NULL,
@@ -251,15 +267,26 @@ class AgentLearningSystem:
                 feedback_json TEXT,
                 transferred_at TEXT NOT NULL
             )
-        """)
+        """
+        )
 
         # Create indexes
         cursor.execute("CREATE INDEX IF NOT EXISTS idx_experiences_agent ON experiences(agent_id)")
-        cursor.execute("CREATE INDEX IF NOT EXISTS idx_experiences_type ON experiences(experience_type)")
-        cursor.execute("CREATE INDEX IF NOT EXISTS idx_experiences_timestamp ON experiences(timestamp)")
-        cursor.execute("CREATE INDEX IF NOT EXISTS idx_knowledge_type ON knowledge_graph(knowledge_type)")
-        cursor.execute("CREATE INDEX IF NOT EXISTS idx_patterns_type ON learned_patterns(pattern_type)")
-        cursor.execute("CREATE INDEX IF NOT EXISTS idx_performance_agent ON agent_performance(agent_id)")
+        cursor.execute(
+            "CREATE INDEX IF NOT EXISTS idx_experiences_type ON experiences(experience_type)"
+        )
+        cursor.execute(
+            "CREATE INDEX IF NOT EXISTS idx_experiences_timestamp ON experiences(timestamp)"
+        )
+        cursor.execute(
+            "CREATE INDEX IF NOT EXISTS idx_knowledge_type ON knowledge_graph(knowledge_type)"
+        )
+        cursor.execute(
+            "CREATE INDEX IF NOT EXISTS idx_patterns_type ON learned_patterns(pattern_type)"
+        )
+        cursor.execute(
+            "CREATE INDEX IF NOT EXISTS idx_performance_agent ON agent_performance(agent_id)"
+        )
 
         self.conn.commit()
 
@@ -273,7 +300,7 @@ class AgentLearningSystem:
         outcome: Dict[str, Any],
         reward: float,
         confidence: float = 0.0,
-        metadata: Optional[Dict[str, Any]] = None
+        metadata: Optional[Dict[str, Any]] = None,
     ) -> str:
         """
         Record an agent experience for learning
@@ -296,28 +323,42 @@ class AgentLearningSystem:
         experience_id = self._generate_experience_id(agent_id, timestamp)
 
         cursor = self.conn.cursor()
-        cursor.execute("""
+        cursor.execute(
+            """
             INSERT INTO experiences (
                 experience_id, agent_id, agent_type, experience_type,
                 timestamp, context_json, action_json, outcome_json,
                 reward, confidence, metadata_json, created_at
             ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
-        """, (
-            experience_id, agent_id, agent_type, experience_type.value,
-            timestamp, json.dumps(context), json.dumps(action), json.dumps(outcome),
-            reward, confidence, json.dumps(metadata or {}), timestamp
-        ))
+        """,
+            (
+                experience_id,
+                agent_id,
+                agent_type,
+                experience_type.value,
+                timestamp,
+                json.dumps(context),
+                json.dumps(action),
+                json.dumps(outcome),
+                reward,
+                confidence,
+                json.dumps(metadata or {}),
+                timestamp,
+            ),
+        )
 
         self.conn.commit()
 
         # Add to buffer for quick access
-        self.experience_buffer.append({
-            'experience_id': experience_id,
-            'agent_id': agent_id,
-            'agent_type': agent_type,
-            'timestamp': timestamp,
-            'reward': reward
-        })
+        self.experience_buffer.append(
+            {
+                "experience_id": experience_id,
+                "agent_id": agent_id,
+                "agent_type": agent_type,
+                "timestamp": timestamp,
+                "reward": reward,
+            }
+        )
 
         # Trigger pattern learning if enough experiences
         if len(self.experience_buffer) >= 50:
@@ -326,10 +367,7 @@ class AgentLearningSystem:
         return experience_id
 
     def get_recommendations(
-        self,
-        agent_id: str,
-        current_context: Dict[str, Any],
-        top_k: int = 5
+        self, agent_id: str, current_context: Dict[str, Any], top_k: int = 5
     ) -> List[Dict[str, Any]]:
         """
         Get action recommendations based on learned experiences
@@ -345,34 +383,39 @@ class AgentLearningSystem:
         cursor = self.conn.cursor()
 
         # Get similar past experiences
-        cursor.execute("""
+        cursor.execute(
+            """
             SELECT experience_id, context_json, action_json, outcome_json, reward, confidence
             FROM experiences
             WHERE agent_id = ? AND experience_type = ?
             ORDER BY timestamp DESC
             LIMIT 100
-        """, (agent_id, ExperienceType.SUCCESS.value))
+        """,
+            (agent_id, ExperienceType.SUCCESS.value),
+        )
 
         experiences = cursor.fetchall()
 
         # Score experiences by context similarity
         scored_actions = []
         for exp in experiences:
-            exp_context = json.loads(exp['context_json'])
+            exp_context = json.loads(exp["context_json"])
             similarity = self._calculate_context_similarity(current_context, exp_context)
 
             if similarity > 0.3:  # Threshold for relevance
-                action = json.loads(exp['action_json'])
-                scored_actions.append({
-                    'action': action,
-                    'confidence': similarity * exp['reward'] * (exp['confidence'] + 1) / 2,
-                    'context_similarity': similarity,
-                    'past_reward': exp['reward'],
-                    'source_experience': exp['experience_id']
-                })
+                action = json.loads(exp["action_json"])
+                scored_actions.append(
+                    {
+                        "action": action,
+                        "confidence": similarity * exp["reward"] * (exp["confidence"] + 1) / 2,
+                        "context_similarity": similarity,
+                        "past_reward": exp["reward"],
+                        "source_experience": exp["experience_id"],
+                    }
+                )
 
         # Sort by confidence and return top-k
-        scored_actions.sort(key=lambda x: x['confidence'], reverse=True)
+        scored_actions.sort(key=lambda x: x["confidence"], reverse=True)
         return scored_actions[:top_k]
 
     def share_knowledge(
@@ -382,7 +425,7 @@ class AgentLearningSystem:
         content: Dict[str, Any],
         confidence: float,
         tags: Optional[List[str]] = None,
-        target_agents: Optional[List[str]] = None
+        target_agents: Optional[List[str]] = None,
     ) -> str:
         """
         Share knowledge across agents
@@ -404,45 +447,63 @@ class AgentLearningSystem:
         cursor = self.conn.cursor()
 
         # Create knowledge node
-        cursor.execute("""
+        cursor.execute(
+            """
             INSERT OR REPLACE INTO knowledge_graph (
                 node_id, knowledge_type, content_json, confidence,
                 source_agents_json, validation_score, usage_count,
                 created_at, updated_at, tags_json
             ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
-        """, (
-            node_id, knowledge_type, json.dumps(content), confidence,
-            json.dumps([from_agent]), 0.0, 0,
-            timestamp, timestamp, json.dumps(tags or [])
-        ))
+        """,
+            (
+                node_id,
+                knowledge_type,
+                json.dumps(content),
+                confidence,
+                json.dumps([from_agent]),
+                0.0,
+                0,
+                timestamp,
+                timestamp,
+                json.dumps(tags or []),
+            ),
+        )
 
         # Log knowledge transfers
         if target_agents:
             for target in target_agents:
-                transfer_id = f"transfer_{node_id}_{target}_{datetime.now().strftime('%Y%m%d%H%M%S')}"
-                cursor.execute("""
+                transfer_id = (
+                    f"transfer_{node_id}_{target}_{datetime.now().strftime('%Y%m%d%H%M%S')}"
+                )
+                cursor.execute(
+                    """
                     INSERT INTO knowledge_transfers (
                         transfer_id, from_agent_id, to_agent_id,
                         knowledge_node_id, transfer_type, transferred_at
                     ) VALUES (?, ?, ?, ?, ?, ?)
-                """, (transfer_id, from_agent, target, node_id, "direct", timestamp))
+                """,
+                    (transfer_id, from_agent, target, node_id, "direct", timestamp),
+                )
         else:
             # Broadcast to all agents
             transfer_id = f"transfer_{node_id}_broadcast_{datetime.now().strftime('%Y%m%d%H%M%S')}"
-            cursor.execute("""
+            cursor.execute(
+                """
                 INSERT INTO knowledge_transfers (
                     transfer_id, from_agent_id, to_agent_id,
                     knowledge_node_id, transfer_type, transferred_at
                 ) VALUES (?, ?, ?, ?, ?, ?)
-            """, (transfer_id, from_agent, None, node_id, "broadcast", timestamp))
+            """,
+                (transfer_id, from_agent, None, node_id, "broadcast", timestamp),
+            )
 
         self.conn.commit()
 
         # Update cache
         self.knowledge_cache[node_id] = {
-            'type': knowledge_type,
-            'content': content,
-            'confidence': confidence
+            "type": knowledge_type,
+            "content": content,
+            "confidence": confidence,
         }
 
         return node_id
@@ -452,7 +513,7 @@ class AgentLearningSystem:
         agent_id: str,
         knowledge_type: Optional[str] = None,
         min_confidence: float = 0.5,
-        tags: Optional[List[str]] = None
+        tags: Optional[List[str]] = None,
     ) -> List[Dict[str, Any]]:
         """
         Retrieve shared knowledge relevant to agent
@@ -489,19 +550,19 @@ class AgentLearningSystem:
         knowledge_list = []
         for row in results:
             knowledge = {
-                'node_id': row['node_id'],
-                'knowledge_type': row['knowledge_type'],
-                'content': json.loads(row['content_json']),
-                'confidence': row['confidence'],
-                'source_agents': json.loads(row['source_agents_json']),
-                'validation_score': row['validation_score'],
-                'usage_count': row['usage_count'],
-                'tags': json.loads(row['tags_json']) if row['tags_json'] else []
+                "node_id": row["node_id"],
+                "knowledge_type": row["knowledge_type"],
+                "content": json.loads(row["content_json"]),
+                "confidence": row["confidence"],
+                "source_agents": json.loads(row["source_agents_json"]),
+                "validation_score": row["validation_score"],
+                "usage_count": row["usage_count"],
+                "tags": json.loads(row["tags_json"]) if row["tags_json"] else [],
             }
 
             # Filter by tags if specified
             if tags:
-                if any(tag in knowledge['tags'] for tag in tags):
+                if any(tag in knowledge["tags"] for tag in tags):
                     knowledge_list.append(knowledge)
             else:
                 knowledge_list.append(knowledge)
@@ -516,7 +577,7 @@ class AgentLearningSystem:
         current_value: float,
         target_value: float,
         strategy: str,
-        deadline: Optional[str] = None
+        deadline: Optional[str] = None,
     ) -> str:
         """
         Set a learning goal for an agent
@@ -537,26 +598,34 @@ class AgentLearningSystem:
         goal_id = f"goal_{agent_id}_{target_metric}_{datetime.now().strftime('%Y%m%d%H%M%S')}"
 
         cursor = self.conn.cursor()
-        cursor.execute("""
+        cursor.execute(
+            """
             INSERT INTO learning_goals (
                 goal_id, agent_id, goal_type, target_metric,
                 current_value, target_value, deadline, progress,
                 strategy, status, created_at, updated_at
             ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
-        """, (
-            goal_id, agent_id, goal_type, target_metric,
-            current_value, target_value, deadline, 0.0,
-            strategy, 'active', timestamp, timestamp
-        ))
+        """,
+            (
+                goal_id,
+                agent_id,
+                goal_type,
+                target_metric,
+                current_value,
+                target_value,
+                deadline,
+                0.0,
+                strategy,
+                "active",
+                timestamp,
+                timestamp,
+            ),
+        )
 
         self.conn.commit()
         return goal_id
 
-    def update_goal_progress(
-        self,
-        goal_id: str,
-        new_value: float
-    ) -> Dict[str, Any]:
+    def update_goal_progress(self, goal_id: str, new_value: float) -> Dict[str, Any]:
         """
         Update progress on a learning goal
 
@@ -577,35 +646,38 @@ class AgentLearningSystem:
             raise ValueError(f"Goal {goal_id} not found")
 
         # Calculate progress
-        current = goal['current_value']
-        target = goal['target_value']
+        current = goal["current_value"]
+        target = goal["target_value"]
         progress = (new_value - current) / (target - current) if target != current else 1.0
         progress = max(0.0, min(1.0, progress))
 
         # Update status
-        status = 'achieved' if progress >= 1.0 else 'active'
+        status = "achieved" if progress >= 1.0 else "active"
 
-        cursor.execute("""
+        cursor.execute(
+            """
             UPDATE learning_goals
             SET current_value = ?, progress = ?, status = ?, updated_at = ?
             WHERE goal_id = ?
-        """, (new_value, progress, status, datetime.now().isoformat(), goal_id))
+        """,
+            (new_value, progress, status, datetime.now().isoformat(), goal_id),
+        )
 
         self.conn.commit()
 
         return {
-            'goal_id': goal_id,
-            'progress': progress,
-            'status': status,
-            'current_value': new_value,
-            'target_value': target
+            "goal_id": goal_id,
+            "progress": progress,
+            "status": status,
+            "current_value": new_value,
+            "target_value": target,
         }
 
     def discover_patterns(
         self,
         agent_id: Optional[str] = None,
         experience_type: Optional[ExperienceType] = None,
-        min_support: int = 3
+        min_support: int = 3,
     ) -> List[Dict[str, Any]]:
         """
         Discover patterns from experiences
@@ -641,52 +713,58 @@ class AgentLearningSystem:
         pattern_groups = defaultdict(list)
 
         for exp in experiences:
-            context = json.loads(exp['context_json'])
+            context = json.loads(exp["context_json"])
             pattern_key = self._extract_pattern_key(context)
-            pattern_groups[pattern_key].append({
-                'action': json.loads(exp['action_json']),
-                'outcome': json.loads(exp['outcome_json']),
-                'reward': exp['reward']
-            })
+            pattern_groups[pattern_key].append(
+                {
+                    "action": json.loads(exp["action_json"]),
+                    "outcome": json.loads(exp["outcome_json"]),
+                    "reward": exp["reward"],
+                }
+            )
 
         # Identify significant patterns
         patterns = []
         for pattern_key, group in pattern_groups.items():
             if len(group) >= min_support:
-                avg_reward = np.mean([item['reward'] for item in group])
+                avg_reward = np.mean([item["reward"] for item in group])
 
                 if avg_reward > 0.5:  # Positive pattern
                     pattern = {
-                        'pattern_key': pattern_key,
-                        'support_count': len(group),
-                        'average_reward': float(avg_reward),
-                        'confidence': float(min(len(group) / 10, 1.0)),
-                        'type': 'success_pattern',
-                        'discovered_at': datetime.now().isoformat()
+                        "pattern_key": pattern_key,
+                        "support_count": len(group),
+                        "average_reward": float(avg_reward),
+                        "confidence": float(min(len(group) / 10, 1.0)),
+                        "type": "success_pattern",
+                        "discovered_at": datetime.now().isoformat(),
                     }
                     patterns.append(pattern)
 
                     # Save pattern
                     pattern_id = f"pattern_{hashlib.md5(pattern_key.encode()).hexdigest()[:8]}"
-                    cursor.execute("""
+                    cursor.execute(
+                        """
                         INSERT OR REPLACE INTO learned_patterns (
                             pattern_id, pattern_type, pattern_data_json,
                             confidence, support_count, discovered_by, created_at
                         ) VALUES (?, ?, ?, ?, ?, ?, ?)
-                    """, (
-                        pattern_id, 'success_pattern', json.dumps(pattern),
-                        pattern['confidence'], len(group),
-                        agent_id or 'system', datetime.now().isoformat()
-                    ))
+                    """,
+                        (
+                            pattern_id,
+                            "success_pattern",
+                            json.dumps(pattern),
+                            pattern["confidence"],
+                            len(group),
+                            agent_id or "system",
+                            datetime.now().isoformat(),
+                        ),
+                    )
 
         self.conn.commit()
         return patterns
 
     def get_agent_performance_trend(
-        self,
-        agent_id: str,
-        metric_name: str,
-        days: int = 7
+        self, agent_id: str, metric_name: str, days: int = 7
     ) -> Dict[str, Any]:
         """
         Get performance trend for an agent
@@ -703,46 +781,47 @@ class AgentLearningSystem:
 
         cutoff_date = (datetime.now() - timedelta(days=days)).isoformat()
 
-        cursor.execute("""
+        cursor.execute(
+            """
             SELECT metric_value, timestamp
             FROM agent_performance
             WHERE agent_id = ? AND metric_name = ? AND timestamp >= ?
             ORDER BY timestamp ASC
-        """, (agent_id, metric_name, cutoff_date))
+        """,
+            (agent_id, metric_name, cutoff_date),
+        )
 
         data_points = cursor.fetchall()
 
         if not data_points:
-            return {'trend': 'no_data', 'values': []}
+            return {"trend": "no_data", "values": []}
 
-        values = [row['metric_value'] for row in data_points]
+        values = [row["metric_value"] for row in data_points]
 
         # Calculate trend
         if len(values) >= 2:
-            first_half_avg = np.mean(values[:len(values)//2])
-            second_half_avg = np.mean(values[len(values)//2:])
+            first_half_avg = np.mean(values[: len(values) // 2])
+            second_half_avg = np.mean(values[len(values) // 2 :])
 
             if second_half_avg > first_half_avg * 1.05:
-                trend = 'improving'
+                trend = "improving"
             elif second_half_avg < first_half_avg * 0.95:
-                trend = 'declining'
+                trend = "declining"
             else:
-                trend = 'stable'
+                trend = "stable"
         else:
-            trend = 'insufficient_data'
+            trend = "insufficient_data"
 
         return {
-            'trend': trend,
-            'values': values,
-            'average': float(np.mean(values)),
-            'recent_average': float(np.mean(values[-min(10, len(values)):])),
-            'data_points': len(values)
+            "trend": trend,
+            "values": values,
+            "average": float(np.mean(values)),
+            "recent_average": float(np.mean(values[-min(10, len(values)) :])),
+            "data_points": len(values),
         }
 
     def _calculate_context_similarity(
-        self,
-        context1: Dict[str, Any],
-        context2: Dict[str, Any]
+        self, context1: Dict[str, Any], context2: Dict[str, Any]
     ) -> float:
         """Calculate similarity between two contexts"""
         # Simple Jaccard similarity on keys and values
@@ -788,31 +867,33 @@ class AgentLearningSystem:
 
         # Total experiences
         cursor.execute("SELECT COUNT(*) FROM experiences")
-        stats['total_experiences'] = cursor.fetchone()[0]
+        stats["total_experiences"] = cursor.fetchone()[0]
 
         # Experiences by type
-        cursor.execute("""
+        cursor.execute(
+            """
             SELECT experience_type, COUNT(*) as count
             FROM experiences
             GROUP BY experience_type
-        """)
-        stats['by_type'] = {row[0]: row[1] for row in cursor.fetchall()}
+        """
+        )
+        stats["by_type"] = {row[0]: row[1] for row in cursor.fetchall()}
 
         # Knowledge nodes
         cursor.execute("SELECT COUNT(*) FROM knowledge_graph")
-        stats['knowledge_nodes'] = cursor.fetchone()[0]
+        stats["knowledge_nodes"] = cursor.fetchone()[0]
 
         # Learned patterns
         cursor.execute("SELECT COUNT(*) FROM learned_patterns")
-        stats['learned_patterns'] = cursor.fetchone()[0]
+        stats["learned_patterns"] = cursor.fetchone()[0]
 
         # Active learning goals
         cursor.execute("SELECT COUNT(*) FROM learning_goals WHERE status = 'active'")
-        stats['active_learning_goals'] = cursor.fetchone()[0]
+        stats["active_learning_goals"] = cursor.fetchone()[0]
 
         # Knowledge transfers
         cursor.execute("SELECT COUNT(*) FROM knowledge_transfers")
-        stats['knowledge_transfers'] = cursor.fetchone()[0]
+        stats["knowledge_transfers"] = cursor.fetchone()[0]
 
         return stats
 

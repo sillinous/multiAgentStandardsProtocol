@@ -35,7 +35,7 @@ class ContentAgent(BaseAgent):
         self,
         agent_id: str = "apqc_3_0_content_intelligence",
         workspace_path: str = "./workspace",
-        **kwargs
+        **kwargs,
     ):
         super().__init__(
             agent_id=agent_id,
@@ -43,9 +43,9 @@ class ContentAgent(BaseAgent):
             capabilities=[
                 AgentCapability.ANALYSIS,
                 AgentCapability.COMMUNICATION,
-                AgentCapability.COLLABORATION
+                AgentCapability.COLLABORATION,
             ],
-            workspace_path=workspace_path
+            workspace_path=workspace_path,
         )
 
         print(f"[{self.agent_id}] Content Agent initialized")
@@ -71,7 +71,7 @@ class ContentAgent(BaseAgent):
             "agent_id": self.agent_id,
             "analysis_complete": True,
             "insights": ["Analysis successful", "Patterns identified"],
-            "confidence": 0.85
+            "confidence": 0.85,
         }
 
 
@@ -79,14 +79,12 @@ class ContentAgent(BaseAgent):
 async def main():
     agent = ContentAgent()
 
-    result = await agent.execute_task({
-        "type": "analyze",
-        "data": {"test": "data"}
-    })
+    result = await agent.execute_task({"type": "analyze", "data": {"test": "data"}})
 
     print(f"Result: {result}")
 
 
 if __name__ == "__main__":
     import asyncio
+
     asyncio.run(main())

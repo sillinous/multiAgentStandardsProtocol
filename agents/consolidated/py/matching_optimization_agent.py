@@ -11,7 +11,8 @@ import math
 
 import sys
 import os
-sys.path.append(os.path.join(os.path.dirname(__file__), '../..'))
+
+sys.path.append(os.path.join(os.path.dirname(__file__), "../.."))
 
 from superstandard.agents.base.base_agent import BaseAgent, AgentCapability
 
@@ -19,6 +20,7 @@ from superstandard.agents.base.base_agent import BaseAgent, AgentCapability
 @dataclass
 class Rider:
     """Rider information"""
+
     id: str
     location: Tuple[float, float]
     destination: Tuple[float, float]
@@ -30,6 +32,7 @@ class Rider:
 @dataclass
 class Driver:
     """Driver information"""
+
     id: str
     location: Tuple[float, float]
     capacity: int
@@ -41,6 +44,7 @@ class Driver:
 @dataclass
 class Match:
     """Rider-driver match"""
+
     rider_id: str
     driver_id: str
     quality_score: float
@@ -55,12 +59,16 @@ class MatchingOptimizationAgent(BaseAgent):
     Uses weighted scoring: wait time (40%), distance (30%), occupancy (30%)
     """
 
-    def __init__(self, agent_id: str = "matching_optimization_agent", workspace_path: str = "./autonomous-ecosystem/workspace"):
+    def __init__(
+        self,
+        agent_id: str = "matching_optimization_agent",
+        workspace_path: str = "./autonomous-ecosystem/workspace",
+    ):
         super().__init__(
             agent_id=agent_id,
             agent_type="matching_optimization",
             capabilities=[AgentCapability.ORCHESTRATION],
-            workspace_path=workspace_path
+            workspace_path=workspace_path,
         )
 
         # Scoring weights
@@ -90,10 +98,7 @@ class MatchingOptimizationAgent(BaseAgent):
         elif action == "calculate_match_quality":
             return await self._handle_match_quality(task)
         else:
-            return {
-                "success": False,
-                "error": f"Unknown action: {action}"
-            }
+            return {"success": False, "error": f"Unknown action: {action}"}
 
     async def analyze(self, input_data: Dict[str, Any]) -> Dict[str, Any]:
         """
@@ -112,7 +117,7 @@ class MatchingOptimizationAgent(BaseAgent):
                 "timestamp": datetime.now().isoformat(),
                 "total_matches": 0,
                 "average_quality": 0.0,
-                "recommendations": ["No matches to analyze"]
+                "recommendations": ["No matches to analyze"],
             }
 
         # Calculate metrics
@@ -128,15 +133,15 @@ class MatchingOptimizationAgent(BaseAgent):
             "average_wait_minutes": round(avg_wait, 2),
             "average_pickup_distance_km": round(avg_distance, 2),
             "efficiency_rating": self._calculate_efficiency_rating(avg_quality),
-            "recommendations": self._generate_matching_recommendations(avg_quality, avg_wait, avg_distance)
+            "recommendations": self._generate_matching_recommendations(
+                avg_quality, avg_wait, avg_distance
+            ),
         }
 
         return analysis
 
     def find_best_matches(
-        self,
-        riders: List[Dict[str, Any]],
-        drivers: List[Dict[str, Any]]
+        self, riders: List[Dict[str, Any]], drivers: List[Dict[str, Any]]
     ) -> List[Match]:
         """
         Find optimal rider-driver matches
@@ -172,7 +177,7 @@ class MatchingOptimizationAgent(BaseAgent):
                         quality_score=quality_score,
                         wait_time_minutes=details["wait_time_minutes"],
                         pickup_distance_km=details["pickup_distance_km"],
-                        details=details
+                        details=details,
                     )
                     all_matches.append(match)
 
@@ -192,11 +197,7 @@ class MatchingOptimizationAgent(BaseAgent):
 
         return selected_matches
 
-    def calculate_match_quality(
-        self,
-        rider: Rider,
-        driver: Driver
-    ) -> Tuple[float, Dict[str, Any]]:
+    def calculate_match_quality(self, rider: Rider, driver: Driver) -> Tuple[float, Dict[str, Any]]:
         """
         Calculate quality score for a rider-driver match
 
@@ -240,9 +241,9 @@ class MatchingOptimizationAgent(BaseAgent):
 
         # Weighted total score
         total_score = (
-            self.weight_wait_time * wait_score +
-            self.weight_distance * distance_score +
-            self.weight_occupancy * occupancy_score
+            self.weight_wait_time * wait_score
+            + self.weight_distance * distance_score
+            + self.weight_occupancy * occupancy_score
         )
 
         details = {
@@ -251,16 +252,16 @@ class MatchingOptimizationAgent(BaseAgent):
             "wait_score": round(wait_score, 3),
             "distance_score": round(distance_score, 3),
             "occupancy_score": round(occupancy_score, 3),
-            "vehicle_utilization": round((driver.current_occupancy + rider.passengers) / driver.capacity, 2),
-            "total_score": round(total_score, 3)
+            "vehicle_utilization": round(
+                (driver.current_occupancy + rider.passengers) / driver.capacity, 2
+            ),
+            "total_score": round(total_score, 3),
         }
 
         return total_score, details
 
     def optimize_multi_rider_routes(
-        self,
-        driver: Dict[str, Any],
-        riders: List[Dict[str, Any]]
+        self, driver: Dict[str, Any], riders: List[Dict[str, Any]]
     ) -> Dict[str, Any]:
         """
         Optimize route for picking up multiple riders
@@ -282,7 +283,7 @@ class MatchingOptimizationAgent(BaseAgent):
                 "success": False,
                 "error": "Capacity exceeded",
                 "capacity": driver_obj.capacity,
-                "requested": total_passengers
+                "requested": total_passengers,
             }
 
         # Simple greedy approach: pick up closest riders first
@@ -297,19 +298,21 @@ class MatchingOptimizationAgent(BaseAgent):
             # Find closest rider
             closest_rider = min(
                 remaining_riders,
-                key=lambda r: self._calculate_distance(current_location, r.location)
+                key=lambda r: self._calculate_distance(current_location, r.location),
             )
 
             pickup_distance = self._calculate_distance(current_location, closest_rider.location)
             pickup_time = (pickup_distance / self.avg_speed) * 60
 
             route.append(closest_rider.location)
-            pickup_sequence.append({
-                "rider_id": closest_rider.id,
-                "pickup_location": closest_rider.location,
-                "distance_from_previous": round(pickup_distance, 2),
-                "time_from_previous_minutes": round(pickup_time, 2)
-            })
+            pickup_sequence.append(
+                {
+                    "rider_id": closest_rider.id,
+                    "pickup_location": closest_rider.location,
+                    "distance_from_previous": round(pickup_distance, 2),
+                    "time_from_previous_minutes": round(pickup_time, 2),
+                }
+            )
 
             total_distance += pickup_distance
             total_time += pickup_time
@@ -324,7 +327,7 @@ class MatchingOptimizationAgent(BaseAgent):
             "total_pickup_distance_km": round(total_distance, 2),
             "total_pickup_time_minutes": round(total_time, 2),
             "total_riders": len(rider_objects),
-            "route": route
+            "route": route,
         }
 
     async def _handle_find_matches(self, task: Dict[str, Any]) -> Dict[str, Any]:
@@ -338,7 +341,7 @@ class MatchingOptimizationAgent(BaseAgent):
             "success": True,
             "matches": [self._match_to_dict(m) for m in matches],
             "count": len(matches),
-            "agent_id": self.agent_id
+            "agent_id": self.agent_id,
         }
 
     async def _handle_multi_rider_optimization(self, task: Dict[str, Any]) -> Dict[str, Any]:
@@ -365,10 +368,12 @@ class MatchingOptimizationAgent(BaseAgent):
             "success": True,
             "quality_score": quality_score,
             "details": details,
-            "agent_id": self.agent_id
+            "agent_id": self.agent_id,
         }
 
-    def _calculate_distance(self, point1: Tuple[float, float], point2: Tuple[float, float]) -> float:
+    def _calculate_distance(
+        self, point1: Tuple[float, float], point2: Tuple[float, float]
+    ) -> float:
         """Calculate distance using Haversine formula"""
         lat1, lon1 = point1
         lat2, lon2 = point2
@@ -378,9 +383,10 @@ class MatchingOptimizationAgent(BaseAgent):
         dlat = math.radians(lat2 - lat1)
         dlon = math.radians(lon2 - lon1)
 
-        a = (math.sin(dlat / 2) ** 2 +
-             math.cos(math.radians(lat1)) * math.cos(math.radians(lat2)) *
-             math.sin(dlon / 2) ** 2)
+        a = (
+            math.sin(dlat / 2) ** 2
+            + math.cos(math.radians(lat1)) * math.cos(math.radians(lat2)) * math.sin(dlon / 2) ** 2
+        )
 
         c = 2 * math.atan2(math.sqrt(a), math.sqrt(1 - a))
 
@@ -398,7 +404,7 @@ class MatchingOptimizationAgent(BaseAgent):
             destination=tuple(d["destination"]),
             request_time=request_time,
             max_wait_minutes=d.get("max_wait_minutes", 10.0),
-            passengers=d.get("passengers", 1)
+            passengers=d.get("passengers", 1),
         )
 
     def _dict_to_driver(self, d: Dict[str, Any]) -> Driver:
@@ -409,7 +415,7 @@ class MatchingOptimizationAgent(BaseAgent):
             capacity=d.get("capacity", 4),
             current_occupancy=d.get("current_occupancy", 0),
             available=d.get("available", True),
-            current_route=d.get("current_route")
+            current_route=d.get("current_route"),
         )
 
     def _match_to_dict(self, match: Match) -> Dict[str, Any]:
@@ -420,7 +426,7 @@ class MatchingOptimizationAgent(BaseAgent):
             "quality_score": match.quality_score,
             "wait_time_minutes": match.wait_time_minutes,
             "pickup_distance_km": match.pickup_distance_km,
-            "details": match.details
+            "details": match.details,
         }
 
     def _calculate_efficiency_rating(self, avg_quality: float) -> str:
@@ -435,10 +441,7 @@ class MatchingOptimizationAgent(BaseAgent):
             return "Poor"
 
     def _generate_matching_recommendations(
-        self,
-        avg_quality: float,
-        avg_wait: float,
-        avg_distance: float
+        self, avg_quality: float, avg_wait: float, avg_distance: float
     ) -> List[str]:
         """Generate recommendations for matching optimization"""
         recommendations = []
@@ -447,7 +450,9 @@ class MatchingOptimizationAgent(BaseAgent):
             recommendations.append("Consider expanding driver pool or reducing service area")
 
         if avg_wait > 8.0:
-            recommendations.append("Wait times are high - increase driver availability in busy areas")
+            recommendations.append(
+                "Wait times are high - increase driver availability in busy areas"
+            )
 
         if avg_distance > 3.0:
             recommendations.append("Pickup distances are long - optimize driver positioning")

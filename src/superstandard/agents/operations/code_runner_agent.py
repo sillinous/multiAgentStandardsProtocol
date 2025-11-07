@@ -1,11 +1,11 @@
 """
 building an agent to run code
 
-Essentially, this agent can run code inside of cursor, and then get the error and send it 
-to composer and then apply the air and go on an infinite loop of working on and fixing code. 
-Everybody will have different places, different x y coordinates for things. So you'll need to 
-change your x y coordinates by using the script in the scripts folder called find coordinates. 
- 
+Essentially, this agent can run code inside of cursor, and then get the error and send it
+to composer and then apply the air and go on an infinite loop of working on and fixing code.
+Everybody will have different places, different x y coordinates for things. So you'll need to
+change your x y coordinates by using the script in the scripts folder called find coordinates.
+
 """
 
 """

@@ -40,8 +40,12 @@ sys.path.insert(0, str(project_root))
 # Try to import agent manager, but don't fail if unavailable
 try:
     from src.orchestration.agent_manager import (
-        memory_manager, learning_manager, output_manager, AgentStatus
+        memory_manager,
+        learning_manager,
+        output_manager,
+        AgentStatus,
     )
+
     HAS_AGENT_MANAGER = True
 except ImportError:
     HAS_AGENT_MANAGER = False
@@ -49,12 +53,15 @@ except ImportError:
 # Import BaseAgent optionally
 try:
     from superstandard.agents.base.base_agent import BaseAgent
+
     HAS_BASE_AGENT = True
 except ImportError:
     HAS_BASE_AGENT = False
+
     class BaseAgent:
         def __init__(self):
             self.name = "evolution_agent"
+
 
 logger = logging.getLogger(__name__)
 
@@ -62,6 +69,7 @@ logger = logging.getLogger(__name__)
 @dataclass
 class CodePatch:
     """Represents a code patch generated from learning"""
+
     patch_id: str
     agent_name: str
     agent_filename: str
@@ -85,23 +93,35 @@ class CodePatch:
     def to_dict(self) -> Dict[str, Any]:
         """Convert to dictionary for storage"""
         return {
-            'patch_id': self.patch_id,
-            'agent_name': self.agent_name,
-            'agent_filename': self.agent_filename,
-            'learning_id': self.learning_id,
-            'category': self.category,
-            'description': self.description,
-            'confidence': self.confidence,
-            'expected_impact': self.expected_impact,
-            'created_at': self.created_at.isoformat() if isinstance(self.created_at, datetime) else self.created_at,
-            'validated': self.validated,
-            'backtested': self.backtested,
-            'improvement_percentage': self.improvement_percentage,
-            'deployed': self.deployed,
-            'deployed_at': self.deployed_at.isoformat() if isinstance(self.deployed_at, datetime) else self.deployed_at,
-            'rolled_back': self.rolled_back,
-            'rolled_back_at': self.rolled_back_at.isoformat() if isinstance(self.rolled_back_at, datetime) else self.rolled_back_at,
-            'status': self.status
+            "patch_id": self.patch_id,
+            "agent_name": self.agent_name,
+            "agent_filename": self.agent_filename,
+            "learning_id": self.learning_id,
+            "category": self.category,
+            "description": self.description,
+            "confidence": self.confidence,
+            "expected_impact": self.expected_impact,
+            "created_at": (
+                self.created_at.isoformat()
+                if isinstance(self.created_at, datetime)
+                else self.created_at
+            ),
+            "validated": self.validated,
+            "backtested": self.backtested,
+            "improvement_percentage": self.improvement_percentage,
+            "deployed": self.deployed,
+            "deployed_at": (
+                self.deployed_at.isoformat()
+                if isinstance(self.deployed_at, datetime)
+                else self.deployed_at
+            ),
+            "rolled_back": self.rolled_back,
+            "rolled_back_at": (
+                self.rolled_back_at.isoformat()
+                if isinstance(self.rolled_back_at, datetime)
+                else self.rolled_back_at
+            ),
+            "status": self.status,
         }
 
 
@@ -125,20 +145,18 @@ class CodePatchGenerator:
         try:
             # Load original agent code
             # Handle both 'trading' and 'trading_agent' naming conventions
-            agent_base_name = agent_name.replace('_agent', '')
+            agent_base_name = agent_name.replace("_agent", "")
             agent_file = project_root / "src" / "agents" / f"{agent_base_name}_agent.py"
 
             if not agent_file.exists():
                 self.logger.error(f"Agent file not found: {agent_file}")
                 return None
 
-            with open(agent_file, 'r') as f:
+            with open(agent_file, "r") as f:
                 original_code = f.read()
 
             # Generate patch based on learning category
-            patch_info = self._generate_patch_code(
-                agent_name, original_code, learning
-            )
+            patch_info = self._generate_patch_code(agent_name, original_code, learning)
 
             if not patch_info:
                 return None
@@ -148,14 +166,14 @@ class CodePatchGenerator:
                 patch_id=self._generate_patch_id(agent_base_name),
                 agent_name=agent_base_name,
                 agent_filename=agent_file.name,
-                learning_id=learning.get('learning_id', 'unknown'),
-                category=learning.get('category', 'unknown'),
-                description=patch_info['description'],
+                learning_id=learning.get("learning_id", "unknown"),
+                category=learning.get("category", "unknown"),
+                description=patch_info["description"],
                 original_code=original_code,
-                patched_code=patch_info['patched_code'],
-                confidence=learning.get('confidence', 0.0),
-                expected_impact=patch_info['expected_impact'],
-                status='pending'
+                patched_code=patch_info["patched_code"],
+                confidence=learning.get("confidence", 0.0),
+                expected_impact=patch_info["expected_impact"],
+                status="pending",
             )
 
             self.logger.info(f"Generated patch for {agent_name}: {patch.patch_id}")
@@ -173,9 +191,9 @@ class CodePatchGenerator:
         code generation using templates or LLM-based generation.
         """
         try:
-            content = learning.get('content', {})
-            pattern = content.get('pattern', '')
-            confidence = learning.get('confidence', 0.0)
+            content = learning.get("content", {})
+            pattern = content.get("pattern", "")
+            confidence = learning.get("confidence", 0.0)
 
             # Only generate patches for high-confidence learnings
             if confidence < 0.85:
@@ -188,7 +206,7 @@ class CodePatchGenerator:
             execute_method = None
             for node in ast.walk(tree):
                 if isinstance(node, ast.FunctionDef):
-                    if node.name in ['run', 'execute', 'execute_strategy']:
+                    if node.name in ["run", "execute", "execute_strategy"]:
                         execute_method = node.name
                         break
 
@@ -196,11 +214,11 @@ class CodePatchGenerator:
                 return None
 
             # Generate patch based on pattern
-            if 'divergence' in pattern.lower():
+            if "divergence" in pattern.lower():
                 patch_code = self._generate_divergence_patch(code, execute_method)
-            elif 'momentum' in pattern.lower():
+            elif "momentum" in pattern.lower():
                 patch_code = self._generate_momentum_patch(code, execute_method)
-            elif 'reversal' in pattern.lower():
+            elif "reversal" in pattern.lower():
                 patch_code = self._generate_reversal_patch(code, execute_method)
             else:
                 # Generic patch: add condition check
@@ -210,9 +228,9 @@ class CodePatchGenerator:
                 return None
 
             return {
-                'description': f"Add {pattern} detection to {agent_name}",
-                'patched_code': patch_code,
-                'expected_impact': f"+{int(confidence * 30)}% win rate improvement"
+                "description": f"Add {pattern} detection to {agent_name}",
+                "patched_code": patch_code,
+                "expected_impact": f"+{int(confidence * 30)}% win rate improvement",
             }
 
         except Exception as e:
@@ -221,45 +239,51 @@ class CodePatchGenerator:
 
     def _generate_divergence_patch(self, code: str, method_name: str) -> str:
         """Generate divergence detection patch"""
-        return code.replace(
-            f"def {method_name}(",
-            f"""def {method_name}("""
-        ) + "\n\n    # Divergence Detection Patch\n" \
-            "    def check_divergence(self):\n" \
-            "        \"\"\"Check for RSI/Price divergence\"\"\"\n" \
-            "        if self.rsi > 70 and self.price_trending_down:\n" \
-            "            return 'sell_divergence'\n" \
-            "        elif self.rsi < 30 and self.price_trending_up:\n" \
-            "            return 'buy_divergence'\n" \
+        return (
+            code.replace(f"def {method_name}(", f"""def {method_name}(""")
+            + "\n\n    # Divergence Detection Patch\n"
+            "    def check_divergence(self):\n"
+            '        """Check for RSI/Price divergence"""\n'
+            "        if self.rsi > 70 and self.price_trending_down:\n"
+            "            return 'sell_divergence'\n"
+            "        elif self.rsi < 30 and self.price_trending_up:\n"
+            "            return 'buy_divergence'\n"
             "        return None\n"
+        )
 
     def _generate_momentum_patch(self, code: str, method_name: str) -> str:
         """Generate momentum detection patch"""
-        return code + "\n\n    # Momentum Detection Patch\n" \
-            "    def check_momentum(self):\n" \
-            "        \"\"\"Check for momentum extremes\"\"\"\n" \
-            "        if self.macd > 0 and self.macd > self.macd_signal:\n" \
-            "            return 'bullish_momentum'\n" \
-            "        elif self.macd < 0 and self.macd < self.macd_signal:\n" \
-            "            return 'bearish_momentum'\n" \
+        return (
+            code + "\n\n    # Momentum Detection Patch\n"
+            "    def check_momentum(self):\n"
+            '        """Check for momentum extremes"""\n'
+            "        if self.macd > 0 and self.macd > self.macd_signal:\n"
+            "            return 'bullish_momentum'\n"
+            "        elif self.macd < 0 and self.macd < self.macd_signal:\n"
+            "            return 'bearish_momentum'\n"
             "        return None\n"
+        )
 
     def _generate_reversal_patch(self, code: str, method_name: str) -> str:
         """Generate reversal detection patch"""
-        return code + "\n\n    # Reversal Detection Patch\n" \
-            "    def check_reversal(self):\n" \
-            "        \"\"\"Check for potential reversals\"\"\"\n" \
-            "        if self.price_change > 5 and self.volume_surge:\n" \
-            "            return 'reversal_signal'\n" \
+        return (
+            code + "\n\n    # Reversal Detection Patch\n"
+            "    def check_reversal(self):\n"
+            '        """Check for potential reversals"""\n'
+            "        if self.price_change > 5 and self.volume_surge:\n"
+            "            return 'reversal_signal'\n"
             "        return None\n"
+        )
 
     def _generate_generic_patch(self, code: str, method_name: str, pattern: str) -> str:
         """Generate generic patch for custom patterns"""
-        return code + f"\n\n    # Pattern Detection Patch: {pattern}\n" \
-            f"    def check_{pattern.replace(' ', '_').lower()}(self):\n" \
-            f"        \"\"\"Check for {pattern} pattern\"\"\"\n" \
-            f"        # Pattern-specific logic here\n" \
+        return (
+            code + f"\n\n    # Pattern Detection Patch: {pattern}\n"
+            f"    def check_{pattern.replace(' ', '_').lower()}(self):\n"
+            f'        """Check for {pattern} pattern"""\n'
+            f"        # Pattern-specific logic here\n"
             f"        return None\n"
+        )
 
     def _generate_patch_id(self, agent_name: str) -> str:
         """Generate unique patch ID"""
@@ -304,10 +328,10 @@ class PatchValidator:
         is_valid = len(errors) == 0
         if is_valid:
             patch.validated = True
-            patch.status = 'validated'
+            patch.status = "validated"
             self.logger.info(f"Patch {patch.patch_id} validated successfully")
         else:
-            patch.status = 'failed'
+            patch.status = "failed"
             self.logger.warning(f"Patch {patch.patch_id} validation failed: {errors}")
 
         return is_valid, errors
@@ -334,13 +358,7 @@ class PatchValidator:
         """Check for potentially dangerous operations"""
         # Only block the most dangerous patterns
         # open() is common in agents and generally safe for reading
-        dangerous_patterns = [
-            'exec(',
-            'eval(',
-            '__import__',
-            'os.system',
-            'subprocess.call'
-        ]
+        dangerous_patterns = ["exec(", "eval(", "__import__", "os.system", "subprocess.call"]
 
         for pattern in dangerous_patterns:
             if pattern in code:
@@ -378,12 +396,12 @@ class AutoBacktester:
             # For now, we'll simulate backtest results
             metrics = self._simulate_backtest(patch)
 
-            improvement = metrics['improvement_percentage']
+            improvement = metrics["improvement_percentage"]
             should_deploy = improvement > (self.improvement_threshold * 100)
 
             patch.backtested = True
             patch.improvement_percentage = improvement
-            patch.status = 'backtested'
+            patch.status = "backtested"
 
             self.logger.info(
                 f"Backtest complete for {patch.patch_id}: "
@@ -408,15 +426,15 @@ class AutoBacktester:
         base_improvement = confidence * 25  # Scale confidence to percentage
 
         return {
-            'original_win_rate': 0.55,
-            'patched_win_rate': 0.55 + (base_improvement / 100),
-            'original_sharpe': 1.2,
-            'patched_sharpe': 1.2 + (base_improvement / 100),
-            'original_profit': 1000,
-            'patched_profit': 1000 * (1 + base_improvement / 100),
-            'max_drawdown': 0.15,
-            'trades_analyzed': 100,
-            'improvement_percentage': base_improvement
+            "original_win_rate": 0.55,
+            "patched_win_rate": 0.55 + (base_improvement / 100),
+            "original_sharpe": 1.2,
+            "patched_sharpe": 1.2 + (base_improvement / 100),
+            "original_profit": 1000,
+            "patched_profit": 1000 * (1 + base_improvement / 100),
+            "max_drawdown": 0.15,
+            "trades_analyzed": 100,
+            "improvement_percentage": base_improvement,
         }
 
 
@@ -452,12 +470,12 @@ class PatchDeployer:
             self.logger.info(f"Created backup: {backup_path}")
 
             # Deploy patch
-            with open(agent_file, 'w') as f:
+            with open(agent_file, "w") as f:
                 f.write(patch.patched_code)
 
             patch.deployed = True
             patch.deployed_at = datetime.now()
-            patch.status = 'deployed'
+            patch.status = "deployed"
 
             message = f"Patch {patch.patch_id} deployed to {patch.agent_name}"
             self.logger.info(message)
@@ -467,7 +485,7 @@ class PatchDeployer:
         except Exception as e:
             message = f"Error deploying patch {patch.patch_id}: {e}"
             self.logger.error(message)
-            patch.status = 'failed'
+            patch.status = "failed"
             return False, message
 
     def rollback_patch(self, patch: CodePatch) -> Tuple[bool, str]:
@@ -494,7 +512,7 @@ class PatchDeployer:
 
             patch.rolled_back = True
             patch.rolled_back_at = datetime.now()
-            patch.status = 'rolled_back'
+            patch.status = "rolled_back"
 
             message = f"Patch {patch.patch_id} rolled back from {patch.agent_name}"
             self.logger.info(message)
@@ -592,11 +610,11 @@ class CodeEvolutionManager:
             processed = 0
             for learning_file in learnings_dir.glob("*.json"):
                 try:
-                    with open(learning_file, 'r') as f:
+                    with open(learning_file, "r") as f:
                         learning_data = json.load(f)
 
                     # Extract agent name from filename
-                    agent_name = learning_file.stem.rsplit('_', 1)[0]
+                    agent_name = learning_file.stem.rsplit("_", 1)[0]
 
                     # Process high-confidence learnings
                     if isinstance(learning_data, list):
@@ -605,7 +623,7 @@ class CodeEvolutionManager:
                         learnings = [learning_data]
 
                     for learning in learnings:
-                        confidence = learning.get('confidence', 0.0)
+                        confidence = learning.get("confidence", 0.0)
                         if confidence >= min_confidence:
                             patch = self.evolve_agent(agent_name, learning)
                             if patch:
@@ -623,7 +641,7 @@ class CodeEvolutionManager:
         """Save patch metadata to file"""
         try:
             patch_file = self.patches_dir / f"{patch.patch_id}.json"
-            with open(patch_file, 'w') as f:
+            with open(patch_file, "w") as f:
                 json.dump(patch.to_dict(), f, indent=2)
         except Exception as e:
             self.logger.error(f"Error saving patch metadata: {e}")
@@ -633,9 +651,9 @@ class CodeEvolutionManager:
         patches = []
         for patch_file in self.patches_dir.glob("*.json"):
             try:
-                with open(patch_file, 'r') as f:
+                with open(patch_file, "r") as f:
                     patch_data = json.load(f)
-                if agent_name is None or patch_data['agent_name'] == agent_name:
+                if agent_name is None or patch_data["agent_name"] == agent_name:
                     patches.append(patch_data)
             except Exception as e:
                 self.logger.error(f"Error reading patch file {patch_file}: {e}")
@@ -680,50 +698,48 @@ class CodeEvolutionAgent(BaseAgent):
         """Generate evolution report"""
         patches = self.manager.get_patch_history()
 
-        deployed = [p for p in patches if p['deployed']]
-        rolled_back = [p for p in patches if p['rolled_back']]
-        failed = [p for p in patches if p['status'] == 'failed']
+        deployed = [p for p in patches if p["deployed"]]
+        rolled_back = [p for p in patches if p["rolled_back"]]
+        failed = [p for p in patches if p["status"] == "failed"]
 
-        avg_improvement = sum(p['improvement_percentage'] for p in deployed) / len(deployed) \
-            if deployed else 0
+        avg_improvement = (
+            sum(p["improvement_percentage"] for p in deployed) / len(deployed) if deployed else 0
+        )
 
         return {
-            'timestamp': datetime.now().isoformat(),
-            'total_patches_generated': len(patches),
-            'deployed_patches': len(deployed),
-            'rolled_back_patches': len(rolled_back),
-            'failed_patches': len(failed),
-            'average_improvement': avg_improvement,
-            'deployed': [p['agent_name'] for p in deployed],
-            'rolled_back': [p['agent_name'] for p in rolled_back],
-            'status': 'complete'
+            "timestamp": datetime.now().isoformat(),
+            "total_patches_generated": len(patches),
+            "deployed_patches": len(deployed),
+            "rolled_back_patches": len(rolled_back),
+            "failed_patches": len(failed),
+            "average_improvement": avg_improvement,
+            "deployed": [p["agent_name"] for p in deployed],
+            "rolled_back": [p["agent_name"] for p in rolled_back],
+            "status": "complete",
         }
 
     def _record_output(self, output: Dict[str, Any]):
         """Record agent output"""
         if HAS_AGENT_MANAGER:
             output_manager.store_output(
-                agent_name='evolution_agent',
+                agent_name="evolution_agent",
                 execution_id=f"evolution_{datetime.now().isoformat()}",
                 status=AgentStatus.SUCCESS,
-                output_data=output
+                output_data=output,
             )
 
     def _record_error(self, error: str):
         """Record agent error"""
         if HAS_AGENT_MANAGER:
             output_manager.store_output(
-                agent_name='evolution_agent',
-                status=AgentStatus.FAILED,
-                errors=[error]
+                agent_name="evolution_agent", status=AgentStatus.FAILED, errors=[error]
             )
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     # Configure logging
     logging.basicConfig(
-        level=logging.INFO,
-        format='%(asctime)s - %(name)s - %(levelname)s - %(message)s'
+        level=logging.INFO, format="%(asctime)s - %(name)s - %(levelname)s - %(message)s"
     )
 
     # Run evolution agent

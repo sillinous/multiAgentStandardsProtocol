@@ -24,16 +24,18 @@ logger = logging.getLogger(__name__)
 
 class QualityMode(Enum):
     """Quality modes for AI processing"""
-    FAST = "fast"      # Local LLM only (ZERO credits)
-    AUTO = "auto"      # Smart routing based on complexity
-    HIGH = "high"      # Cloud API (premium quality)
+
+    FAST = "fast"  # Local LLM only (ZERO credits)
+    AUTO = "auto"  # Smart routing based on complexity
+    HIGH = "high"  # Cloud API (premium quality)
 
 
 class TaskComplexity(Enum):
     """Task complexity assessment"""
-    SIMPLE = "simple"      # Use local LLM
+
+    SIMPLE = "simple"  # Use local LLM
     MODERATE = "moderate"  # Prefer local, cloud if needed
-    COMPLEX = "complex"    # Requires cloud API
+    COMPLEX = "complex"  # Requires cloud API
 
 
 class HybridBaseAgent:
@@ -71,11 +73,7 @@ class HybridBaseAgent:
     """
 
     def __init__(
-        self,
-        name: str,
-        agent_id: str = None,
-        version: str = "1.0.0",
-        capabilities: list = None
+        self, name: str, agent_id: str = None, version: str = "1.0.0", capabilities: list = None
     ):
         self.name = name
         self.agent_id = agent_id or f"{name.lower().replace(' ', '_')}_v1"
@@ -95,7 +93,7 @@ class HybridBaseAgent:
             "local_requests": 0,
             "cloud_requests": 0,
             "credits_saved": 0.0,
-            "failed_requests": 0
+            "failed_requests": 0,
         }
 
         logger.info(f"🤖 Hybrid Agent '{name}' initialized (Ollama: {self.ollama.available})")
@@ -106,7 +104,7 @@ class HybridBaseAgent:
         quality: str = "auto",
         force_local: bool = False,
         force_cloud: bool = False,
-        **kwargs
+        **kwargs,
     ) -> Dict[str, Any]:
         """
         Execute agent task with automatic routing.
@@ -138,7 +136,7 @@ class HybridBaseAgent:
                 quality=quality,
                 force_local=force_local,
                 force_cloud=force_cloud,
-                **kwargs
+                **kwargs,
             )
 
             # Execute processing
@@ -161,7 +159,7 @@ class HybridBaseAgent:
                 "credits_used": credits_used,
                 "processing_time_ms": processing_time,
                 "agent_id": self.agent_id,
-                "agent_name": self.name
+                "agent_name": self.name,
             }
 
             if method == "local":
@@ -188,7 +186,7 @@ class HybridBaseAgent:
                         "method": "cloud",
                         "credits_used": self._estimate_credit_cost(input_data),
                         "fallback": True,
-                        "agent_id": self.agent_id
+                        "agent_id": self.agent_id,
                     }
                 except Exception as fallback_error:
                     logger.error(f"❌ Fallback also failed: {fallback_error}")
@@ -196,12 +194,7 @@ class HybridBaseAgent:
             raise
 
     def _determine_method(
-        self,
-        input_data: Any,
-        quality: str,
-        force_local: bool,
-        force_cloud: bool,
-        **kwargs
+        self, input_data: Any, quality: str, force_local: bool, force_cloud: bool, **kwargs
     ) -> str:
         """
         Determine whether to use local or cloud processing.
@@ -273,9 +266,7 @@ class HybridBaseAgent:
         Raises:
             NotImplementedError if not overridden
         """
-        raise NotImplementedError(
-            f"{self.name} must implement _process_local() method"
-        )
+        raise NotImplementedError(f"{self.name} must implement _process_local() method")
 
     async def _process_cloud(self, input_data: Any, **kwargs) -> Any:
         """
@@ -286,9 +277,7 @@ class HybridBaseAgent:
         Raises:
             NotImplementedError if not overridden
         """
-        raise NotImplementedError(
-            f"{self.name} must implement _process_cloud() method"
-        )
+        raise NotImplementedError(f"{self.name} must implement _process_cloud() method")
 
     def _estimate_credit_cost(self, input_data: Any) -> float:
         """
@@ -306,7 +295,7 @@ class HybridBaseAgent:
         model: str = "gpt-4o-mini",
         temperature: float = 0.7,
         response_format: dict = None,
-        max_tokens: int = 1000
+        max_tokens: int = 1000,
     ) -> str:
         """
         Helper method to call OpenAI API.
@@ -334,7 +323,7 @@ class HybridBaseAgent:
             "model": model,
             "messages": messages,
             "temperature": temperature,
-            "max_tokens": max_tokens
+            "max_tokens": max_tokens,
         }
 
         if response_format:
@@ -344,11 +333,7 @@ class HybridBaseAgent:
         return response.choices[0].message.content
 
     async def call_ollama(
-        self,
-        prompt: str,
-        model: str = None,
-        temperature: float = 0.7,
-        max_tokens: int = 500
+        self, prompt: str, model: str = None, temperature: float = 0.7, max_tokens: int = 500
     ) -> str:
         """
         Helper method to call Ollama local LLM.
@@ -363,10 +348,7 @@ class HybridBaseAgent:
             Response text from Ollama
         """
         return await self.ollama.generate(
-            prompt=prompt,
-            model=model,
-            temperature=temperature,
-            max_tokens=max_tokens
+            prompt=prompt, model=model, temperature=temperature, max_tokens=max_tokens
         )
 
     def get_stats(self) -> Dict[str, Any]:
@@ -376,9 +358,11 @@ class HybridBaseAgent:
             **self.stats,
             "local_percentage": (self.stats["local_requests"] / total * 100) if total > 0 else 0,
             "cloud_percentage": (self.stats["cloud_requests"] / total * 100) if total > 0 else 0,
-            "success_rate": ((total - self.stats["failed_requests"]) / total * 100) if total > 0 else 0,
+            "success_rate": (
+                ((total - self.stats["failed_requests"]) / total * 100) if total > 0 else 0
+            ),
             "estimated_cost_saved": self.stats["credits_saved"] * 1.0,
-            "ollama_available": self.ollama.available
+            "ollama_available": self.ollama.available,
         }
 
     def get_capabilities_manifest(self) -> Dict[str, Any]:
@@ -395,17 +379,14 @@ class HybridBaseAgent:
             "hybrid_mode": True,
             "supports_local": self.ollama.available,
             "supports_cloud": self.openai_client is not None,
-            "cost": {
-                "local": "FREE (0 credits)",
-                "cloud": "~$0.01-0.02 per request"
-            },
+            "cost": {"local": "FREE (0 credits)", "cloud": "~$0.01-0.02 per request"},
             "quality_modes": ["fast", "auto", "high"],
             "input_schema": {
                 "input_data": "any (agent-specific)",
                 "quality": "string (fast/auto/high)",
                 "force_local": "boolean",
-                "force_cloud": "boolean"
-            }
+                "force_cloud": "boolean",
+            },
         }
 
 
@@ -418,8 +399,8 @@ class LegacyAgentAdapter(HybridBaseAgent):
 
     def __init__(self, legacy_agent_instance, name: str = None):
         super().__init__(
-            name=name or getattr(legacy_agent_instance, 'name', 'Legacy Agent'),
-            agent_id=f"legacy_{legacy_agent_instance.__class__.__name__.lower()}_v1"
+            name=name or getattr(legacy_agent_instance, "name", "Legacy Agent"),
+            agent_id=f"legacy_{legacy_agent_instance.__class__.__name__.lower()}_v1",
         )
         self.legacy_agent = legacy_agent_instance
 
@@ -431,9 +412,9 @@ class LegacyAgentAdapter(HybridBaseAgent):
 
     async def _process_cloud(self, input_data: Any, **kwargs) -> Any:
         """Delegate to legacy agent's analyze method"""
-        if hasattr(self.legacy_agent, 'analyze'):
-            result = self.legacy_agent.analyze(input_data, kwargs.get('context'))
-            if hasattr(result, 'data'):
+        if hasattr(self.legacy_agent, "analyze"):
+            result = self.legacy_agent.analyze(input_data, kwargs.get("context"))
+            if hasattr(result, "data"):
                 return result.data
             return result
         else:

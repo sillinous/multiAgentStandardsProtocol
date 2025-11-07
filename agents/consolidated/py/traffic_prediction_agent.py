@@ -12,13 +12,15 @@ from enum import Enum
 
 import sys
 import os
-sys.path.append(os.path.join(os.path.dirname(__file__), '../..'))
+
+sys.path.append(os.path.join(os.path.dirname(__file__), "../.."))
 
 from superstandard.agents.base.base_agent import BaseAgent, AgentCapability
 
 
 class CongestionLevel(Enum):
     """Traffic congestion levels"""
+
     LOW = "low"
     MODERATE = "moderate"
     HIGH = "high"
@@ -31,26 +33,49 @@ class TrafficPredictionAgent(BaseAgent):
     Uses time-of-day heuristics and distance-based calculations.
     """
 
-    def __init__(self, agent_id: str = "traffic_prediction_agent", workspace_path: str = "./autonomous-ecosystem/workspace"):
+    def __init__(
+        self,
+        agent_id: str = "traffic_prediction_agent",
+        workspace_path: str = "./autonomous-ecosystem/workspace",
+    ):
         super().__init__(
             agent_id=agent_id,
             agent_type="traffic_prediction",
             capabilities=[AgentCapability.ORCHESTRATION],
-            workspace_path=workspace_path
+            workspace_path=workspace_path,
         )
 
         # Traffic patterns by hour (multiplier on base speed)
         self.traffic_patterns = {
             # Early morning (12 AM - 6 AM): Light traffic
-            0: 1.0, 1: 1.0, 2: 1.0, 3: 1.0, 4: 1.1, 5: 1.2,
+            0: 1.0,
+            1: 1.0,
+            2: 1.0,
+            3: 1.0,
+            4: 1.1,
+            5: 1.2,
             # Morning rush (6 AM - 10 AM): Heavy traffic
-            6: 1.5, 7: 2.0, 8: 2.5, 9: 2.0, 10: 1.5,
+            6: 1.5,
+            7: 2.0,
+            8: 2.5,
+            9: 2.0,
+            10: 1.5,
             # Midday (10 AM - 3 PM): Moderate traffic
-            11: 1.3, 12: 1.4, 13: 1.4, 14: 1.3, 15: 1.3,
+            11: 1.3,
+            12: 1.4,
+            13: 1.4,
+            14: 1.3,
+            15: 1.3,
             # Evening rush (3 PM - 7 PM): Heavy traffic
-            16: 1.8, 17: 2.5, 18: 2.3, 19: 1.8,
+            16: 1.8,
+            17: 2.5,
+            18: 2.3,
+            19: 1.8,
             # Evening (7 PM - 12 AM): Moderate to light
-            20: 1.4, 21: 1.2, 22: 1.1, 23: 1.0
+            20: 1.4,
+            21: 1.2,
+            22: 1.1,
+            23: 1.0,
         }
 
         # Base speed in km/h
@@ -75,10 +100,7 @@ class TrafficPredictionAgent(BaseAgent):
         elif action == "suggest_alternates":
             return await self._handle_alternate_routes(task)
         else:
-            return {
-                "success": False,
-                "error": f"Unknown action: {action}"
-            }
+            return {"success": False, "error": f"Unknown action: {action}"}
 
     async def analyze(self, input_data: Dict[str, Any]) -> Dict[str, Any]:
         """
@@ -103,7 +125,7 @@ class TrafficPredictionAgent(BaseAgent):
             "congestion_level": congestion.value,
             "traffic_multiplier": self.traffic_patterns[hour],
             "recommendations": self._generate_recommendations(hour, congestion),
-            "confidence": 0.85
+            "confidence": 0.85,
         }
 
         return analysis
@@ -112,7 +134,7 @@ class TrafficPredictionAgent(BaseAgent):
         self,
         origin: Tuple[float, float],
         destination: Tuple[float, float],
-        departure_time: Optional[datetime] = None
+        departure_time: Optional[datetime] = None,
     ) -> Dict[str, Any]:
         """
         Predict travel time between two points
@@ -143,6 +165,7 @@ class TrafficPredictionAgent(BaseAgent):
 
         # Add some randomness for realism (±10%)
         import random
+
         variance = random.uniform(0.9, 1.1)
         predicted_time_minutes *= variance
 
@@ -156,7 +179,7 @@ class TrafficPredictionAgent(BaseAgent):
             "arrival_time": self._add_minutes(departure_time, predicted_time_minutes).isoformat(),
             "congestion_level": congestion.value,
             "traffic_multiplier": traffic_multiplier,
-            "confidence": 0.82
+            "confidence": 0.82,
         }
 
     def get_congestion_hotspots(self, area_bounds: Dict[str, Any]) -> List[Dict[str, Any]]:
@@ -178,25 +201,26 @@ class TrafficPredictionAgent(BaseAgent):
         if traffic_mult >= 2.0:  # Heavy traffic
             # Generate 3-5 hotspots
             import random
+
             num_hotspots = random.randint(3, 5)
 
             for i in range(num_hotspots):
-                lat = random.uniform(area_bounds['south'], area_bounds['north'])
-                lon = random.uniform(area_bounds['west'], area_bounds['east'])
+                lat = random.uniform(area_bounds["south"], area_bounds["north"])
+                lon = random.uniform(area_bounds["west"], area_bounds["east"])
 
-                hotspots.append({
-                    "location": {"lat": lat, "lon": lon},
-                    "severity": "high" if traffic_mult > 2.3 else "moderate",
-                    "delay_minutes": round(random.uniform(5, 15), 1),
-                    "affected_radius_km": round(random.uniform(0.5, 2.0), 2)
-                })
+                hotspots.append(
+                    {
+                        "location": {"lat": lat, "lon": lon},
+                        "severity": "high" if traffic_mult > 2.3 else "moderate",
+                        "delay_minutes": round(random.uniform(5, 15), 1),
+                        "affected_radius_km": round(random.uniform(0.5, 2.0), 2),
+                    }
+                )
 
         return hotspots
 
     def suggest_alternate_routes(
-        self,
-        route: List[Tuple[float, float]],
-        current_time: Optional[datetime] = None
+        self, route: List[Tuple[float, float]], current_time: Optional[datetime] = None
     ) -> List[Dict[str, Any]]:
         """
         Suggest alternate routes based on traffic conditions
@@ -218,21 +242,25 @@ class TrafficPredictionAgent(BaseAgent):
 
         if congestion in [CongestionLevel.HIGH, CongestionLevel.SEVERE]:
             # Suggest time-shifted routes
-            alternates.append({
-                "type": "time_shift",
-                "recommendation": "Depart 30 minutes earlier",
-                "time_adjustment": -30,
-                "expected_savings_minutes": 15,
-                "confidence": 0.80
-            })
+            alternates.append(
+                {
+                    "type": "time_shift",
+                    "recommendation": "Depart 30 minutes earlier",
+                    "time_adjustment": -30,
+                    "expected_savings_minutes": 15,
+                    "confidence": 0.80,
+                }
+            )
 
-            alternates.append({
-                "type": "time_shift",
-                "recommendation": "Depart 60 minutes later",
-                "time_adjustment": 60,
-                "expected_savings_minutes": 20,
-                "confidence": 0.75
-            })
+            alternates.append(
+                {
+                    "type": "time_shift",
+                    "recommendation": "Depart 60 minutes later",
+                    "time_adjustment": 60,
+                    "expected_savings_minutes": 20,
+                    "confidence": 0.75,
+                }
+            )
 
         return alternates
 
@@ -247,18 +275,13 @@ class TrafficPredictionAgent(BaseAgent):
 
         prediction = self.predict_travel_time(origin, destination, departure_time)
 
-        return {
-            "success": True,
-            "prediction": prediction,
-            "agent_id": self.agent_id
-        }
+        return {"success": True, "prediction": prediction, "agent_id": self.agent_id}
 
     async def _handle_hotspot_detection(self, task: Dict[str, Any]) -> Dict[str, Any]:
         """Handle hotspot detection task"""
-        area_bounds = task.get("area_bounds", {
-            "north": 37.8, "south": 37.7,
-            "east": -122.3, "west": -122.5
-        })
+        area_bounds = task.get(
+            "area_bounds", {"north": 37.8, "south": 37.7, "east": -122.3, "west": -122.5}
+        )
 
         hotspots = self.get_congestion_hotspots(area_bounds)
 
@@ -266,7 +289,7 @@ class TrafficPredictionAgent(BaseAgent):
             "success": True,
             "hotspots": hotspots,
             "count": len(hotspots),
-            "agent_id": self.agent_id
+            "agent_id": self.agent_id,
         }
 
     async def _handle_alternate_routes(self, task: Dict[str, Any]) -> Dict[str, Any]:
@@ -279,13 +302,11 @@ class TrafficPredictionAgent(BaseAgent):
 
         alternates = self.suggest_alternate_routes(route, current_time)
 
-        return {
-            "success": True,
-            "alternates": alternates,
-            "agent_id": self.agent_id
-        }
+        return {"success": True, "alternates": alternates, "agent_id": self.agent_id}
 
-    def _calculate_distance(self, point1: Tuple[float, float], point2: Tuple[float, float]) -> float:
+    def _calculate_distance(
+        self, point1: Tuple[float, float], point2: Tuple[float, float]
+    ) -> float:
         """Calculate distance between two lat/lon points using Haversine formula"""
         lat1, lon1 = point1
         lat2, lon2 = point2
@@ -295,9 +316,10 @@ class TrafficPredictionAgent(BaseAgent):
         dlat = math.radians(lat2 - lat1)
         dlon = math.radians(lon2 - lon1)
 
-        a = (math.sin(dlat / 2) ** 2 +
-             math.cos(math.radians(lat1)) * math.cos(math.radians(lat2)) *
-             math.sin(dlon / 2) ** 2)
+        a = (
+            math.sin(dlat / 2) ** 2
+            + math.cos(math.radians(lat1)) * math.cos(math.radians(lat2)) * math.sin(dlon / 2) ** 2
+        )
 
         c = 2 * math.atan2(math.sqrt(a), math.sqrt(1 - a))
         distance = R * c
@@ -320,6 +342,7 @@ class TrafficPredictionAgent(BaseAgent):
     def _add_minutes(self, dt: datetime, minutes: float) -> datetime:
         """Add minutes to a datetime"""
         from datetime import timedelta
+
         return dt + timedelta(minutes=minutes)
 
     def _generate_recommendations(self, hour: int, congestion: CongestionLevel) -> List[str]:

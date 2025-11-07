@@ -44,7 +44,11 @@ class SocialMediaCollectorTaskAgent(BaseAgent):
     and maximum reusability across APQC categories.
     """
 
-    def __init__(self, agent_id: str = "social_media_collector_task_agent", config: Optional[Dict[str, Any]] = None):
+    def __init__(
+        self,
+        agent_id: str = "social_media_collector_task_agent",
+        config: Optional[Dict[str, Any]] = None,
+    ):
         """
         Initialize Social Media Data Collector Task Agent
 
@@ -55,8 +59,8 @@ class SocialMediaCollectorTaskAgent(BaseAgent):
         super().__init__(
             agent_id=agent_id,
             agent_type="data_extraction",
-            capabilities=['multi_platform', 'api_management', 'sentiment_tagging'],
-            config=config or {}
+            capabilities=["multi_platform", "api_management", "sentiment_tagging"],
+            config=config or {},
         )
 
         # Agent-specific initialization
@@ -66,25 +70,25 @@ class SocialMediaCollectorTaskAgent(BaseAgent):
             "reusable": True,
             "composable": True,
             "stateless": True,
-            "framework": "APQC 7.0.1"
+            "framework": "APQC 7.0.1",
         }
 
         logger.info(f"Initialized Social Media Data Collector Task Agent [{self.agent_id}]")
 
     async def execute_task(self, task: Dict[str, Any]) -> Dict[str, Any]:
         """
-        Execute the data extraction task
+                Execute the data extraction task
 
-        Args:
-            task: Task parameters containing:
-                - platform: string
-- search_terms: list
-- date_range: dict
+                Args:
+                    task: Task parameters containing:
+                        - platform: string
+        - search_terms: list
+        - date_range: dict
 
-        Returns:
-            Result dictionary containing:
-                - posts: list
-- metrics: dict
+                Returns:
+                    Result dictionary containing:
+                        - posts: list
+        - metrics: dict
         """
         try:
             logger.info(f"[{self.agent_id}] Executing data_extraction task")
@@ -104,7 +108,7 @@ class SocialMediaCollectorTaskAgent(BaseAgent):
                 "status": "success",
                 "agent_id": self.agent_id,
                 "timestamp": datetime.utcnow().isoformat(),
-                "result": output
+                "result": output,
             }
 
         except Exception as e:
@@ -113,7 +117,7 @@ class SocialMediaCollectorTaskAgent(BaseAgent):
                 "status": "error",
                 "agent_id": self.agent_id,
                 "timestamp": datetime.utcnow().isoformat(),
-                "error": str(e)
+                "error": str(e),
             }
 
     def _validate_inputs(self, task: Dict[str, Any]) -> None:
@@ -126,7 +130,7 @@ class SocialMediaCollectorTaskAgent(BaseAgent):
         Raises:
             ValueError: If required inputs are missing or invalid
         """
-        required_fields = ['platform', 'search_terms', 'date_range']
+        required_fields = ["platform", "search_terms", "date_range"]
 
         for field in required_fields:
             if field not in task:
@@ -154,7 +158,7 @@ class SocialMediaCollectorTaskAgent(BaseAgent):
         result = {
             "executed": True,
             "task_type": "data_extraction",
-            "inputs_received": list(task.keys())
+            "inputs_received": list(task.keys()),
         }
 
         # Simulate async work
@@ -179,8 +183,8 @@ class SocialMediaCollectorTaskAgent(BaseAgent):
                 "agent_type": self.agent_type,
                 "level": 5,
                 "category": "data_extraction",
-                "timestamp": datetime.utcnow().isoformat()
-            }
+                "timestamp": datetime.utcnow().isoformat(),
+            },
         }
 
     async def handle_message(self, message: Dict[str, Any]) -> Dict[str, Any]:
@@ -202,10 +206,7 @@ class SocialMediaCollectorTaskAgent(BaseAgent):
         elif message_type == "capabilities":
             return self.get_capabilities()
         else:
-            return {
-                "status": "error",
-                "error": f"Unknown message type: {message_type}"
-            }
+            return {"status": "error", "error": f"Unknown message type: {message_type}"}
 
     def get_status(self) -> Dict[str, Any]:
         """
@@ -219,7 +220,7 @@ class SocialMediaCollectorTaskAgent(BaseAgent):
             "agent_type": self.agent_type,
             "status": "ready",
             "capabilities": self.capabilities,
-            "metadata": self.metadata
+            "metadata": self.metadata,
         }
 
     def get_capabilities(self) -> Dict[str, Any]:
@@ -232,11 +233,11 @@ class SocialMediaCollectorTaskAgent(BaseAgent):
         return {
             "agent_id": self.agent_id,
             "capabilities": self.capabilities,
-            "inputs": {'platform': 'string', 'search_terms': 'list', 'date_range': 'dict'},
-            "outputs": {'posts': 'list', 'metrics': 'dict'},
+            "inputs": {"platform": "string", "search_terms": "list", "date_range": "dict"},
+            "outputs": {"posts": "list", "metrics": "dict"},
             "level": 5,
             "reusable": True,
-            "composable": True
+            "composable": True,
         }
 
 
@@ -250,7 +251,7 @@ async def main():
     # Example task
     task = {
         # Add example inputs here
-                # "platform": "example_platform",
+        # "platform": "example_platform",
         # "search_terms": "example_search_terms",
         # "date_range": "example_date_range",
     }

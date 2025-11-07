@@ -49,33 +49,37 @@ from superstandard.protocols.anp_implementation import (
     AgentNetworkRegistry,
     ANPRegistration,
     DiscoveryQuery,
-    AgentStatus
+    AgentStatus,
 )
 from superstandard.protocols.acp_implementation import (
     CoordinationManager,
     CoordinationType,
-    TaskStatus
+    TaskStatus,
 )
 from superstandard.protocols.consciousness_protocol import (
     CollectiveConsciousness,
     ThoughtType,
-    ConsciousnessState
+    ConsciousnessState,
 )
 
 # ============================================================================
 # Pydantic Models for API
 # ============================================================================
 
+
 class AgentRegistrationRequest(BaseModel):
     """Request to register an agent on the network."""
+
     agent_id: str = Field(..., description="Unique agent identifier")
     agent_type: str = Field(..., description="Type of agent (analyst, processor, etc.)")
     capabilities: List[str] = Field(default=[], description="Agent capabilities")
     endpoints: Dict[str, str] = Field(default={}, description="Agent endpoints")
     metadata: Dict[str, Any] = Field(default={}, description="Additional metadata")
 
+
 class AgentDiscoveryRequest(BaseModel):
     """Request to discover agents by criteria."""
+
     capabilities: Optional[List[str]] = None
     agent_type: Optional[str] = None
     health_status: Optional[str] = None
@@ -84,23 +88,31 @@ class AgentDiscoveryRequest(BaseModel):
     max_load: Optional[float] = None
     limit: int = 100
 
+
 class SessionCreationRequest(BaseModel):
     """Request to create coordination session."""
+
     name: str = Field(..., description="Session name")
-    coordination_type: str = Field(..., description="Type: pipeline, swarm, supervisor, negotiation")
+    coordination_type: str = Field(
+        ..., description="Type: pipeline, swarm, supervisor, negotiation"
+    )
     description: Optional[str] = None
     metadata: Dict[str, Any] = Field(default={}, description="Session metadata")
 
+
 class TaskCreationRequest(BaseModel):
     """Request to add task to session."""
+
     task_type: str = Field(..., description="Type of task")
     description: str = Field(..., description="Task description")
     priority: int = Field(default=5, description="Priority (1-10)")
     input_data: Dict[str, Any] = Field(default={}, description="Task input data")
     dependencies: List[str] = Field(default=[], description="Task dependencies")
 
+
 class ThoughtSubmissionRequest(BaseModel):
     """Request to submit thought to collective."""
+
     agent_id: str
     thought_type: str  # observation, inference, intuition, insight, intention, question
     content: str
@@ -108,15 +120,19 @@ class ThoughtSubmissionRequest(BaseModel):
     emotional_valence: Optional[float] = None
     context: Dict[str, Any] = Field(default={})
 
+
 class CollectiveQueryRequest(BaseModel):
     """Request to query collective consciousness."""
+
     query: str
     min_coherence: float = 0.5
     max_patterns: int = 10
 
+
 # ============================================================================
 # Global State - Protocol Instances
 # ============================================================================
+
 
 class ServerState:
     """Global server state managing all protocol instances."""
@@ -132,7 +148,7 @@ class ServerState:
             "admin": [],
             "network": [],
             "coordination": [],
-            "consciousness": []
+            "consciousness": [],
         }
 
         # Stats tracking
@@ -141,7 +157,7 @@ class ServerState:
             "total_sessions_created": 0,
             "total_thoughts_submitted": 0,
             "total_patterns_discovered": 0,
-            "server_start_time": datetime.utcnow()
+            "server_start_time": datetime.utcnow(),
         }
 
     def get_default_collective(self) -> CollectiveConsciousness:
@@ -166,6 +182,7 @@ class ServerState:
         for ws in disconnected:
             self.ws_connections[channel].remove(ws)
 
+
 # Initialize global state
 state = ServerState()
 
@@ -176,7 +193,7 @@ state = ServerState()
 app = FastAPI(
     title="SuperStandard Multi-Agent Platform API",
     description="Production-ready API for ANP, ACP, and AConsP protocols",
-    version="1.0.0"
+    version="1.0.0",
 )
 
 # CORS middleware for browser access
@@ -192,10 +209,12 @@ app.add_middleware(
 # Static File Serving - Dashboards
 # ============================================================================
 
+
 @app.get("/")
 async def root():
     """Redirect to user control panel."""
-    return HTMLResponse(content="""
+    return HTMLResponse(
+        content="""
     <html>
         <head>
             <meta http-equiv="refresh" content="0; url=/dashboard/user" />
@@ -204,7 +223,9 @@ async def root():
             <p>Redirecting to <a href="/dashboard/user">User Control Panel</a>...</p>
         </body>
     </html>
-    """)
+    """
+    )
+
 
 @app.get("/dashboard/user")
 async def user_dashboard():
@@ -212,11 +233,13 @@ async def user_dashboard():
     dashboard_path = Path(__file__).parent / "user_control_panel.html"
     return FileResponse(dashboard_path)
 
+
 @app.get("/dashboard/admin")
 async def admin_dashboard():
     """Serve admin dashboard."""
     dashboard_path = Path(__file__).parent / "admin_dashboard.html"
     return FileResponse(dashboard_path)
+
 
 @app.get("/dashboard/network")
 async def network_dashboard():
@@ -224,11 +247,13 @@ async def network_dashboard():
     dashboard_path = Path(__file__).parent / "network_dashboard.html"
     return FileResponse(dashboard_path)
 
+
 @app.get("/dashboard/coordination")
 async def coordination_dashboard():
     """Serve ACP coordination dashboard."""
     dashboard_path = Path(__file__).parent / "coordination_dashboard.html"
     return FileResponse(dashboard_path)
+
 
 @app.get("/dashboard/consciousness")
 async def consciousness_dashboard():
@@ -236,9 +261,11 @@ async def consciousness_dashboard():
     dashboard_path = Path(__file__).parent / "consciousness_dashboard.html"
     return FileResponse(dashboard_path)
 
+
 # ============================================================================
 # ANP (Agent Network Protocol) Endpoints
 # ============================================================================
+
 
 @app.post("/api/anp/agents/register")
 async def register_agent(request: AgentRegistrationRequest, background_tasks: BackgroundTasks):
@@ -251,7 +278,7 @@ async def register_agent(request: AgentRegistrationRequest, background_tasks: Ba
             capabilities=request.capabilities,
             endpoints=request.endpoints,
             health_status=AgentStatus.HEALTHY.value,
-            metadata=request.metadata
+            metadata=request.metadata,
         )
 
         success = await state.network_registry.register_agent(registration)
@@ -267,8 +294,8 @@ async def register_agent(request: AgentRegistrationRequest, background_tasks: Ba
                     "type": "agent_registered",
                     "agent_id": request.agent_id,
                     "agent_type": request.agent_type,
-                    "timestamp": datetime.utcnow().isoformat()
-                }
+                    "timestamp": datetime.utcnow().isoformat(),
+                },
             )
 
             background_tasks.add_task(
@@ -278,18 +305,19 @@ async def register_agent(request: AgentRegistrationRequest, background_tasks: Ba
                     "type": "activity",
                     "category": "agent",
                     "message": f"Agent {request.agent_id} registered ({request.agent_type})",
-                    "timestamp": datetime.utcnow().isoformat()
-                }
+                    "timestamp": datetime.utcnow().isoformat(),
+                },
             )
 
         return {
             "success": success,
             "agent_id": request.agent_id,
-            "message": "Agent registered successfully" if success else "Registration failed"
+            "message": "Agent registered successfully" if success else "Registration failed",
         }
 
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
+
 
 @app.post("/api/anp/agents/discover")
 async def discover_agents(request: AgentDiscoveryRequest):
@@ -302,7 +330,7 @@ async def discover_agents(request: AgentDiscoveryRequest):
             tags=request.tags,
             region=request.region,
             max_load=request.max_load,
-            limit=request.limit
+            limit=request.limit,
         )
 
         result = await state.network_registry.discover_agents(query)
@@ -311,32 +339,34 @@ async def discover_agents(request: AgentDiscoveryRequest):
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
 
+
 @app.get("/api/anp/agents")
 async def list_agents():
     """List all registered agents."""
     try:
         agents = []
         for agent_id, agent_info in state.network_registry.agents.items():
-            agents.append({
-                "agent_id": agent_info.agent_id,
-                "agent_type": agent_info.agent_type,
-                "capabilities": agent_info.capabilities,
-                "health_status": agent_info.health_status,
-                "load_score": agent_info.load_score,
-                "region": agent_info.region,
-                "tags": agent_info.tags,
-                "endpoints": agent_info.endpoints,
-                "last_heartbeat": agent_info.last_heartbeat.isoformat() if agent_info.last_heartbeat else None
-            })
+            agents.append(
+                {
+                    "agent_id": agent_info.agent_id,
+                    "agent_type": agent_info.agent_type,
+                    "capabilities": agent_info.capabilities,
+                    "health_status": agent_info.health_status,
+                    "load_score": agent_info.load_score,
+                    "region": agent_info.region,
+                    "tags": agent_info.tags,
+                    "endpoints": agent_info.endpoints,
+                    "last_heartbeat": (
+                        agent_info.last_heartbeat.isoformat() if agent_info.last_heartbeat else None
+                    ),
+                }
+            )
 
-        return {
-            "success": True,
-            "count": len(agents),
-            "agents": agents
-        }
+        return {"success": True, "count": len(agents), "agents": agents}
 
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
+
 
 @app.post("/api/anp/agents/{agent_id}/heartbeat")
 async def agent_heartbeat(agent_id: str, health_status: str = "healthy", load_score: float = 0.0):
@@ -347,11 +377,12 @@ async def agent_heartbeat(agent_id: str, health_status: str = "healthy", load_sc
         return {
             "success": success,
             "agent_id": agent_id,
-            "timestamp": datetime.utcnow().isoformat()
+            "timestamp": datetime.utcnow().isoformat(),
         }
 
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
+
 
 @app.get("/api/anp/stats")
 async def anp_stats():
@@ -359,7 +390,8 @@ async def anp_stats():
     try:
         total_agents = len(state.network_registry.agents)
         healthy_agents = sum(
-            1 for a in state.network_registry.agents.values()
+            1
+            for a in state.network_registry.agents.values()
             if a.health_status == AgentStatus.HEALTHY.value
         )
 
@@ -373,15 +405,17 @@ async def anp_stats():
             "total_capabilities": len(all_capabilities),
             "discoveries_24h": state.stats["total_agents_registered"],  # Simplified
             "heartbeat_rate": 0,  # TODO: Track actual heartbeat rate
-            "network_uptime": 99.9  # TODO: Calculate actual uptime
+            "network_uptime": 99.9,  # TODO: Calculate actual uptime
         }
 
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
 
+
 # ============================================================================
 # ACP (Agent Coordination Protocol) Endpoints
 # ============================================================================
+
 
 @app.post("/api/acp/sessions")
 async def create_session(request: SessionCreationRequest, background_tasks: BackgroundTasks):
@@ -392,7 +426,7 @@ async def create_session(request: SessionCreationRequest, background_tasks: Back
             "pipeline": CoordinationType.PIPELINE,
             "swarm": CoordinationType.SWARM,
             "supervisor": CoordinationType.SUPERVISOR,
-            "negotiation": CoordinationType.NEGOTIATION
+            "negotiation": CoordinationType.NEGOTIATION,
         }
 
         coord_type = coord_type_map.get(request.coordination_type.lower())
@@ -400,9 +434,7 @@ async def create_session(request: SessionCreationRequest, background_tasks: Back
             raise HTTPException(status_code=400, detail="Invalid coordination type")
 
         session_id = await state.coordination_manager.create_coordination(
-            request.name,
-            coord_type,
-            request.metadata
+            request.name, coord_type, request.metadata
         )
 
         if session_id:
@@ -417,8 +449,8 @@ async def create_session(request: SessionCreationRequest, background_tasks: Back
                     "session_id": session_id,
                     "name": request.name,
                     "coordination_type": request.coordination_type,
-                    "timestamp": datetime.utcnow().isoformat()
-                }
+                    "timestamp": datetime.utcnow().isoformat(),
+                },
             )
 
             background_tasks.add_task(
@@ -428,19 +460,20 @@ async def create_session(request: SessionCreationRequest, background_tasks: Back
                     "type": "activity",
                     "category": "session",
                     "message": f"New {request.coordination_type} session: {request.name}",
-                    "timestamp": datetime.utcnow().isoformat()
-                }
+                    "timestamp": datetime.utcnow().isoformat(),
+                },
             )
 
         return {
             "success": session_id is not None,
             "session_id": session_id,
             "name": request.name,
-            "coordination_type": request.coordination_type
+            "coordination_type": request.coordination_type,
         }
 
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
+
 
 @app.get("/api/acp/sessions")
 async def list_sessions():
@@ -449,32 +482,32 @@ async def list_sessions():
         sessions = []
         for session_id, session in state.coordination_manager.sessions.items():
             completed_tasks = sum(
-                1 for t in session.tasks.values()
-                if t.status == TaskStatus.COMPLETED.value
+                1 for t in session.tasks.values() if t.status == TaskStatus.COMPLETED.value
             )
 
-            sessions.append({
-                "session_id": session.session_id,
-                "name": session.coordination_type,  # TODO: Add name field to session
-                "coordination_type": session.coordination_type,
-                "status": session.status,
-                "total_tasks": len(session.tasks),
-                "completed_tasks": completed_tasks,
-                "participant_count": len(session.participants),
-                "created_at": session.created_at.isoformat()
-            })
+            sessions.append(
+                {
+                    "session_id": session.session_id,
+                    "name": session.coordination_type,  # TODO: Add name field to session
+                    "coordination_type": session.coordination_type,
+                    "status": session.status,
+                    "total_tasks": len(session.tasks),
+                    "completed_tasks": completed_tasks,
+                    "participant_count": len(session.participants),
+                    "created_at": session.created_at.isoformat(),
+                }
+            )
 
-        return {
-            "success": True,
-            "count": len(sessions),
-            "sessions": sessions
-        }
+        return {"success": True, "count": len(sessions), "sessions": sessions}
 
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
 
+
 @app.post("/api/acp/sessions/{session_id}/tasks")
-async def add_task(session_id: str, request: TaskCreationRequest, background_tasks: BackgroundTasks):
+async def add_task(
+    session_id: str, request: TaskCreationRequest, background_tasks: BackgroundTasks
+):
     """Add a task to a coordination session."""
     try:
         task_id = await state.coordination_manager.add_task(
@@ -483,7 +516,7 @@ async def add_task(session_id: str, request: TaskCreationRequest, background_tas
             request.description,
             request.priority,
             request.dependencies,
-            request.input_data
+            request.input_data,
         )
 
         if task_id:
@@ -496,18 +529,15 @@ async def add_task(session_id: str, request: TaskCreationRequest, background_tas
                     "session_id": session_id,
                     "task_id": task_id,
                     "task_type": request.task_type,
-                    "timestamp": datetime.utcnow().isoformat()
-                }
+                    "timestamp": datetime.utcnow().isoformat(),
+                },
             )
 
-        return {
-            "success": task_id is not None,
-            "task_id": task_id,
-            "session_id": session_id
-        }
+        return {"success": task_id is not None, "task_id": task_id, "session_id": session_id}
 
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
+
 
 @app.get("/api/acp/sessions/{session_id}/tasks")
 async def list_tasks(session_id: str):
@@ -519,39 +549,34 @@ async def list_tasks(session_id: str):
 
         tasks = []
         for task_id, task in session.tasks.items():
-            tasks.append({
-                "task_id": task.task_id,
-                "task_type": task.task_type,
-                "description": task.description,
-                "status": task.status,
-                "priority": task.priority,
-                "assigned_to": task.assigned_to,
-                "progress": task.progress,
-                "dependencies": task.dependencies
-            })
+            tasks.append(
+                {
+                    "task_id": task.task_id,
+                    "task_type": task.task_type,
+                    "description": task.description,
+                    "status": task.status,
+                    "priority": task.priority,
+                    "assigned_to": task.assigned_to,
+                    "progress": task.progress,
+                    "dependencies": task.dependencies,
+                }
+            )
 
-        return {
-            "success": True,
-            "session_id": session_id,
-            "count": len(tasks),
-            "tasks": tasks
-        }
+        return {"success": True, "session_id": session_id, "count": len(tasks), "tasks": tasks}
 
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
+
 
 @app.get("/api/acp/stats")
 async def acp_stats():
     """Get ACP coordination statistics."""
     try:
         active_sessions = sum(
-            1 for s in state.coordination_manager.sessions.values()
-            if s.status == "active"
+            1 for s in state.coordination_manager.sessions.values() if s.status == "active"
         )
 
-        total_tasks = sum(
-            len(s.tasks) for s in state.coordination_manager.sessions.values()
-        )
+        total_tasks = sum(len(s.tasks) for s in state.coordination_manager.sessions.values())
 
         completed_tasks = sum(
             sum(1 for t in s.tasks.values() if t.status == TaskStatus.COMPLETED.value)
@@ -569,21 +594,21 @@ async def acp_stats():
             "total_tasks": total_tasks,
             "completed_tasks": completed_tasks,
             "completion_rate": round(completion_rate, 1),
-            "total_participants": total_participants
+            "total_participants": total_participants,
         }
 
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
 
+
 # ============================================================================
 # AConsP (Agent Consciousness Protocol) Endpoints
 # ============================================================================
 
+
 @app.post("/api/aconsp/collectives/{collective_id}/thoughts")
 async def submit_thought(
-    collective_id: str,
-    request: ThoughtSubmissionRequest,
-    background_tasks: BackgroundTasks
+    collective_id: str, request: ThoughtSubmissionRequest, background_tasks: BackgroundTasks
 ):
     """Submit a thought to collective consciousness."""
     try:
@@ -600,7 +625,7 @@ async def submit_thought(
             "intuition": ThoughtType.INTUITION,
             "insight": ThoughtType.INSIGHT,
             "intention": ThoughtType.INTENTION,
-            "question": ThoughtType.QUESTION
+            "question": ThoughtType.QUESTION,
         }
 
         thought_type = thought_type_map.get(request.thought_type.lower())
@@ -614,7 +639,7 @@ async def submit_thought(
             request.content,
             request.confidence,
             request.emotional_valence,
-            request.context
+            request.context,
         )
 
         if thought:
@@ -630,8 +655,8 @@ async def submit_thought(
                     "agent_id": request.agent_id,
                     "thought_type": request.thought_type,
                     "content": request.content,
-                    "timestamp": datetime.utcnow().isoformat()
-                }
+                    "timestamp": datetime.utcnow().isoformat(),
+                },
             )
 
             background_tasks.add_task(
@@ -641,18 +666,19 @@ async def submit_thought(
                     "type": "activity",
                     "category": "thought",
                     "message": f"{request.agent_id} shared {request.thought_type}: {request.content[:50]}...",
-                    "timestamp": datetime.utcnow().isoformat()
-                }
+                    "timestamp": datetime.utcnow().isoformat(),
+                },
             )
 
         return {
             "success": thought is not None,
             "thought_id": thought.thought_id if thought else None,
-            "collective_id": collective_id
+            "collective_id": collective_id,
         }
 
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
+
 
 @app.post("/api/aconsp/collectives/{collective_id}/query")
 async def query_collective(collective_id: str, request: CollectiveQueryRequest):
@@ -663,9 +689,7 @@ async def query_collective(collective_id: str, request: CollectiveQueryRequest):
             raise HTTPException(status_code=404, detail="Collective not found")
 
         patterns = await collective.collapse_consciousness(
-            request.query,
-            request.min_coherence,
-            request.max_patterns
+            request.query, request.min_coherence, request.max_patterns
         )
 
         if patterns:
@@ -683,14 +707,15 @@ async def query_collective(collective_id: str, request: CollectiveQueryRequest):
                     "novelty_score": p.novelty_score,
                     "impact_potential": p.impact_potential,
                     "contributing_agents": p.contributing_agents,
-                    "synthesis": p.synthesis
+                    "synthesis": p.synthesis,
                 }
                 for p in patterns
-            ]
+            ],
         }
 
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
+
 
 @app.get("/api/aconsp/collectives/{collective_id}/state")
 async def get_collective_state(collective_id: str):
@@ -702,14 +727,11 @@ async def get_collective_state(collective_id: str):
 
         collective_state = await collective.get_collective_state()
 
-        return {
-            "success": True,
-            "collective_id": collective_id,
-            "state": collective_state
-        }
+        return {"success": True, "collective_id": collective_id, "state": collective_state}
 
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
+
 
 @app.get("/api/aconsp/stats")
 async def aconsp_stats():
@@ -717,17 +739,15 @@ async def aconsp_stats():
     try:
         total_collectives = len(state.collectives)
 
-        total_thoughts = sum(
-            len(c.thought_superposition) for c in state.collectives.values()
-        )
+        total_thoughts = sum(len(c.thought_superposition) for c in state.collectives.values())
 
         total_patterns = state.stats["total_patterns_discovered"]
 
         # Calculate average awareness
         if state.collectives:
-            avg_awareness = sum(
-                c.collective_awareness for c in state.collectives.values()
-            ) / len(state.collectives)
+            avg_awareness = sum(c.collective_awareness for c in state.collectives.values()) / len(
+                state.collectives
+            )
         else:
             avg_awareness = 0
 
@@ -735,15 +755,17 @@ async def aconsp_stats():
             "total_collectives": total_collectives,
             "total_thoughts": total_thoughts,
             "total_patterns": total_patterns,
-            "average_awareness": round(avg_awareness, 1)
+            "average_awareness": round(avg_awareness, 1),
         }
 
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
 
+
 # ============================================================================
 # Admin / System Endpoints
 # ============================================================================
+
 
 @app.get("/api/admin/stats")
 async def admin_stats():
@@ -762,15 +784,16 @@ async def admin_stats():
                 "total_agents_registered": state.stats["total_agents_registered"],
                 "total_sessions_created": state.stats["total_sessions_created"],
                 "total_thoughts_submitted": state.stats["total_thoughts_submitted"],
-                "total_patterns_discovered": state.stats["total_patterns_discovered"]
+                "total_patterns_discovered": state.stats["total_patterns_discovered"],
             },
             "anp": anp_stats_data,
             "acp": acp_stats_data,
-            "aconsp": aconsp_stats_data
+            "aconsp": aconsp_stats_data,
         }
 
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
+
 
 @app.get("/api/health")
 async def health_check():
@@ -778,16 +801,14 @@ async def health_check():
     return {
         "status": "healthy",
         "timestamp": datetime.utcnow().isoformat(),
-        "protocols": {
-            "anp": "operational",
-            "acp": "operational",
-            "aconsp": "operational"
-        }
+        "protocols": {"anp": "operational", "acp": "operational", "aconsp": "operational"},
     }
+
 
 # ============================================================================
 # WebSocket Endpoints for Real-Time Updates
 # ============================================================================
+
 
 @app.websocket("/ws/admin")
 async def websocket_admin(websocket: WebSocket):
@@ -802,6 +823,7 @@ async def websocket_admin(websocket: WebSocket):
     except WebSocketDisconnect:
         state.ws_connections["admin"].remove(websocket)
 
+
 @app.websocket("/ws/network")
 async def websocket_network(websocket: WebSocket):
     """WebSocket for network dashboard real-time updates."""
@@ -813,6 +835,7 @@ async def websocket_network(websocket: WebSocket):
             await websocket.receive_text()
     except WebSocketDisconnect:
         state.ws_connections["network"].remove(websocket)
+
 
 @app.websocket("/ws/coordination")
 async def websocket_coordination(websocket: WebSocket):
@@ -826,6 +849,7 @@ async def websocket_coordination(websocket: WebSocket):
     except WebSocketDisconnect:
         state.ws_connections["coordination"].remove(websocket)
 
+
 @app.websocket("/ws/consciousness")
 async def websocket_consciousness(websocket: WebSocket):
     """WebSocket for consciousness dashboard real-time updates."""
@@ -838,9 +862,11 @@ async def websocket_consciousness(websocket: WebSocket):
     except WebSocketDisconnect:
         state.ws_connections["consciousness"].remove(websocket)
 
+
 # ============================================================================
 # Startup / Shutdown Events
 # ============================================================================
+
 
 @app.on_event("startup")
 async def startup_event():
@@ -866,6 +892,7 @@ async def startup_event():
     print()
     print("=" * 80)
 
+
 @app.on_event("shutdown")
 async def shutdown_event():
     """Cleanup on server shutdown."""
@@ -881,4 +908,5 @@ async def shutdown_event():
 
 if __name__ == "__main__":
     import uvicorn
+
     uvicorn.run(app, host="0.0.0.0", port=8080)

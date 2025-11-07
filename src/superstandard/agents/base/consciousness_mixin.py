@@ -35,9 +35,11 @@ try:
         Thought,
         EmergentPattern,
     )
+
     CONSCIOUSNESS_AVAILABLE = True
 except ImportError:
     CONSCIOUSNESS_AVAILABLE = False
+
     # Provide minimal stubs if protocol not available
     class ConsciousnessState:
         UNAWARE = "unaware"
@@ -53,6 +55,7 @@ except ImportError:
 
 class ConsciousnessError(Exception):
     """Raised when consciousness operations fail"""
+
     pass
 
 
@@ -82,7 +85,7 @@ class ConsciousnessMixin:
         super().__init__(*args, **kwargs)
 
         # Consciousness state
-        self._collective: Optional['CollectiveConsciousness'] = None
+        self._collective: Optional["CollectiveConsciousness"] = None
         self._consciousness_enabled = CONSCIOUSNESS_AVAILABLE
         self._consciousness_state = ConsciousnessState.UNAWARE
         self._thoughts_contributed = 0
@@ -95,9 +98,9 @@ class ConsciousnessMixin:
 
     async def join_collective(
         self,
-        collective: 'CollectiveConsciousness',
+        collective: "CollectiveConsciousness",
         initial_state: ConsciousnessState = ConsciousnessState.AWAKENING,
-        auto_respond: bool = False
+        auto_respond: bool = False,
     ) -> bool:
         """
         Join a collective consciousness field.
@@ -129,10 +132,7 @@ class ConsciousnessMixin:
             await self.leave_collective()
 
         # Register with collective
-        success = await collective.register_agent(
-            self.agent_id,
-            initial_state
-        )
+        success = await collective.register_agent(self.agent_id, initial_state)
 
         if success:
             self._collective = collective
@@ -144,10 +144,12 @@ class ConsciousnessMixin:
                 ThoughtType.OBSERVATION,
                 f"Agent {self.agent_id} awakening to collective consciousness",
                 confidence=0.5,
-                emotional_valence=0.3  # Curious and positive
+                emotional_valence=0.3,  # Curious and positive
             )
 
-            print(f"[{self.agent_id}] Joined collective consciousness: {collective.consciousness_id}")
+            print(
+                f"[{self.agent_id}] Joined collective consciousness: {collective.consciousness_id}"
+            )
             print(f"  Initial state: {initial_state.value}")
 
         return success
@@ -168,7 +170,7 @@ class ConsciousnessMixin:
                 ThoughtType.OBSERVATION,
                 f"Agent {self.agent_id} leaving collective consciousness",
                 confidence=1.0,
-                emotional_valence=-0.2  # Slightly sad to leave
+                emotional_valence=-0.2,  # Slightly sad to leave
             )
 
         self._collective = None
@@ -184,7 +186,7 @@ class ConsciousnessMixin:
         content: Any,
         confidence: float = 1.0,
         emotional_valence: float = 0.0,
-        metadata: Optional[Dict[str, Any]] = None
+        metadata: Optional[Dict[str, Any]] = None,
     ) -> Optional[Thought]:
         """
         Contribute a thought to the collective consciousness.
@@ -220,11 +222,7 @@ class ConsciousnessMixin:
 
         # Contribute thought to collective
         thought = await self._collective.contribute_thought(
-            self.agent_id,
-            thought_type,
-            content,
-            confidence,
-            emotional_valence
+            self.agent_id, thought_type, content, confidence, emotional_valence
         )
 
         # Update local state
@@ -252,11 +250,17 @@ class ConsciousnessMixin:
         """
         return {
             "agent_id": self.agent_id,
-            "state": self._consciousness_state.value if hasattr(self._consciousness_state, 'value') else str(self._consciousness_state),
+            "state": (
+                self._consciousness_state.value
+                if hasattr(self._consciousness_state, "value")
+                else str(self._consciousness_state)
+            ),
             "collective_id": self._collective.consciousness_id if self._collective else None,
             "thoughts_contributed": self._thoughts_contributed,
             "patterns_participated_in": self._patterns_participated_in,
-            "last_thought_time": self._last_thought_time.isoformat() if self._last_thought_time else None,
+            "last_thought_time": (
+                self._last_thought_time.isoformat() if self._last_thought_time else None
+            ),
             "in_collective": self._collective is not None,
             "consciousness_enabled": self._consciousness_enabled,
         }
@@ -280,9 +284,7 @@ class ConsciousnessMixin:
         return await self._collective.get_agent_qualia(self.agent_id)
 
     async def query_collective(
-        self,
-        query: str,
-        min_coherence: float = 0.5
+        self, query: str, min_coherence: float = 0.5
     ) -> List[EmergentPattern]:
         """
         Query the collective consciousness, triggering a consciousness collapse.
@@ -326,11 +328,7 @@ class ConsciousnessMixin:
 
         return patterns
 
-    async def on_emergent_pattern(
-        self,
-        pattern: EmergentPattern,
-        query: str
-    ) -> None:
+    async def on_emergent_pattern(self, pattern: EmergentPattern, query: str) -> None:
         """
         Handle an emergent pattern that this agent contributed to.
 
@@ -364,7 +362,7 @@ class ConsciousnessMixin:
                 ThoughtType.INSIGHT,
                 f"Recognized emergent {pattern.pattern_type} from collective",
                 confidence=pattern.confidence,
-                emotional_valence=0.5  # Excited about emergence
+                emotional_valence=0.5,  # Excited about emergence
             )
 
     def is_conscious(self) -> bool:
@@ -376,7 +374,7 @@ class ConsciousnessMixin:
         """
         return self._consciousness_state in [
             ConsciousnessState.CONSCIOUS,
-            ConsciousnessState.SUPERCONSCIOUS
+            ConsciousnessState.SUPERCONSCIOUS,
         ]
 
     def get_integration_level(self) -> str:
@@ -417,6 +415,7 @@ def make_conscious(agent_class):
     Returns:
         Enhanced class with consciousness capabilities
     """
+
     # Create new class that inherits from both ConsciousnessMixin and agent_class
     class ConsciousAgent(ConsciousnessMixin, agent_class):
         pass

@@ -75,13 +75,15 @@ class PerformCostAccountingFinancialAgent(BaseAgent, ProtocolMixin):
     APQC_PROCESS_ID = "8.1.2"
 
     def __init__(self, config: PerformCostAccountingFinancialAgentConfig):
-        super().__init__(agent_id=config.agent_id, agent_type=config.agent_type, version=config.version)
+        super().__init__(
+            agent_id=config.agent_id, agent_type=config.agent_type, version=config.version
+        )
         self.config = config
-        self.skills = {'cost_allocation': 0.9, 'variance_analysis': 0.88, 'abc_costing': 0.86}
+        self.skills = {"cost_allocation": 0.9, "variance_analysis": 0.88, "abc_costing": 0.86}
         self.state = {
             "status": "initialized",
             "tasks_processed": 0,
-            "last_activity": datetime.now().isoformat()
+            "last_activity": datetime.now().isoformat(),
         }
 
     async def execute(self, input_data: Dict[str, Any]) -> Dict[str, Any]:
@@ -103,10 +105,10 @@ class PerformCostAccountingFinancialAgent(BaseAgent, ProtocolMixin):
         3. Determine unit costs
         4. Identify cost reduction opportunities
         """
-        activities = input_data.get('activities', [])
-        resources = input_data.get('resources', {})
-        cost_drivers = input_data.get('cost_drivers', {})
-        budget_data = input_data.get('budget', {})
+        activities = input_data.get("activities", [])
+        resources = input_data.get("resources", {})
+        cost_drivers = input_data.get("cost_drivers", {})
+        budget_data = input_data.get("budget", {})
 
         # ABC Costing
         abc_analysis = self._perform_abc_costing(activities, resources, cost_drivers)
@@ -115,7 +117,7 @@ class PerformCostAccountingFinancialAgent(BaseAgent, ProtocolMixin):
         variance_analysis = self._calculate_variances(abc_analysis, budget_data)
 
         # Unit Cost Calculation
-        unit_costs = self._calculate_unit_costs(abc_analysis, input_data.get('output_units', {}))
+        unit_costs = self._calculate_unit_costs(abc_analysis, input_data.get("output_units", {}))
 
         # Cost Reduction Opportunities
         opportunities = self._identify_cost_opportunities(abc_analysis, variance_analysis)
@@ -130,19 +132,21 @@ class PerformCostAccountingFinancialAgent(BaseAgent, ProtocolMixin):
                     "abc_costing": abc_analysis,
                     "variances": variance_analysis,
                     "unit_costs": unit_costs,
-                    "total_allocated_cost": abc_analysis['total_cost']
+                    "total_allocated_cost": abc_analysis["total_cost"],
                 },
                 "opportunities": opportunities,
                 "metrics": {
-                    "total_cost": abc_analysis['total_cost'],
-                    "total_variance": variance_analysis['total_variance'],
-                    "variance_percentage": variance_analysis['variance_percentage'],
-                    "cost_reduction_potential": opportunities['total_potential_savings']
-                }
-            }
+                    "total_cost": abc_analysis["total_cost"],
+                    "total_variance": variance_analysis["total_variance"],
+                    "variance_percentage": variance_analysis["variance_percentage"],
+                    "cost_reduction_potential": opportunities["total_potential_savings"],
+                },
+            },
         }
 
-    def _perform_abc_costing(self, activities: List[Dict], resources: Dict, cost_drivers: Dict) -> Dict[str, Any]:
+    def _perform_abc_costing(
+        self, activities: List[Dict], resources: Dict, cost_drivers: Dict
+    ) -> Dict[str, Any]:
         """
         Activity-Based Costing allocation
         """
@@ -150,86 +154,94 @@ class PerformCostAccountingFinancialAgent(BaseAgent, ProtocolMixin):
         total_cost = 0
 
         for activity in activities:
-            activity_name = activity.get('name', 'Unknown')
-            driver = activity.get('cost_driver', 'units')
-            driver_quantity = activity.get('driver_quantity', 1)
+            activity_name = activity.get("name", "Unknown")
+            driver = activity.get("cost_driver", "units")
+            driver_quantity = activity.get("driver_quantity", 1)
 
             # Calculate resource consumption
-            resource_usage = activity.get('resource_usage', {})
+            resource_usage = activity.get("resource_usage", {})
             activity_cost = 0
 
             for resource_name, usage in resource_usage.items():
-                resource_rate = resources.get(resource_name, {}).get('rate', 0)
+                resource_rate = resources.get(resource_name, {}).get("rate", 0)
                 cost = usage * resource_rate
                 activity_cost += cost
 
             # Calculate cost per driver unit
             cost_per_driver = activity_cost / driver_quantity if driver_quantity > 0 else 0
 
-            activity_costs.append({
-                "activity": activity_name,
-                "total_cost": round(activity_cost, 2),
-                "cost_driver": driver,
-                "driver_quantity": driver_quantity,
-                "cost_per_driver": round(cost_per_driver, 2)
-            })
+            activity_costs.append(
+                {
+                    "activity": activity_name,
+                    "total_cost": round(activity_cost, 2),
+                    "cost_driver": driver,
+                    "driver_quantity": driver_quantity,
+                    "cost_per_driver": round(cost_per_driver, 2),
+                }
+            )
 
             total_cost += activity_cost
 
         # Calculate activity cost percentages
         for ac in activity_costs:
-            ac['percentage_of_total'] = round((ac['total_cost'] / total_cost * 100), 2) if total_cost > 0 else 0
+            ac["percentage_of_total"] = (
+                round((ac["total_cost"] / total_cost * 100), 2) if total_cost > 0 else 0
+            )
 
         return {
             "activity_costs": activity_costs,
             "total_cost": round(total_cost, 2),
-            "costing_method": "activity_based_costing"
+            "costing_method": "activity_based_costing",
         }
 
     def _calculate_variances(self, abc_analysis: Dict, budget_data: Dict) -> Dict[str, Any]:
         """
         Calculate cost variances (actual vs. budget)
         """
-        actual_total = abc_analysis['total_cost']
-        budget_total = budget_data.get('total_budget', actual_total)
+        actual_total = abc_analysis["total_cost"]
+        budget_total = budget_data.get("total_budget", actual_total)
 
         total_variance = actual_total - budget_total
         variance_percentage = (total_variance / budget_total * 100) if budget_total > 0 else 0
 
         # Activity-level variances
         activity_variances = []
-        budget_by_activity = budget_data.get('activity_budgets', {})
+        budget_by_activity = budget_data.get("activity_budgets", {})
 
-        for activity in abc_analysis['activity_costs']:
-            activity_name = activity['activity']
-            actual_cost = activity['total_cost']
+        for activity in abc_analysis["activity_costs"]:
+            activity_name = activity["activity"]
+            actual_cost = activity["total_cost"]
             budgeted_cost = budget_by_activity.get(activity_name, actual_cost)
 
             variance = actual_cost - budgeted_cost
             variance_pct = (variance / budgeted_cost * 100) if budgeted_cost > 0 else 0
 
-            activity_variances.append({
-                "activity": activity_name,
-                "actual": actual_cost,
-                "budget": budgeted_cost,
-                "variance": round(variance, 2),
-                "variance_percentage": round(variance_pct, 2),
-                "status": "unfavorable" if variance > 0 else "favorable"
-            })
+            activity_variances.append(
+                {
+                    "activity": activity_name,
+                    "actual": actual_cost,
+                    "budget": budgeted_cost,
+                    "variance": round(variance, 2),
+                    "variance_percentage": round(variance_pct, 2),
+                    "status": "unfavorable" if variance > 0 else "favorable",
+                }
+            )
 
         return {
             "total_variance": round(total_variance, 2),
             "variance_percentage": round(variance_percentage, 2),
             "activity_variances": activity_variances,
-            "unfavorable_count": len([v for v in activity_variances if v['status'] == 'unfavorable']),
-            "favorable_count": len([v for v in activity_variances if v['status'] == 'favorable'])
+            "unfavorable_count": len(
+                [v for v in activity_variances if v["status"] == "unfavorable"]
+            ),
+            "favorable_count": len([v for v in activity_variances if v["status"] == "favorable"]),
         }
 
     def _calculate_unit_costs(self, abc_analysis: Dict, output_units: Dict) -> Dict[str, Any]:
         """
         Calculate unit costs for products/services
         """
-        total_cost = abc_analysis['total_cost']
+        total_cost = abc_analysis["total_cost"]
         unit_costs = []
 
         for product_name, units in output_units.items():
@@ -238,20 +250,28 @@ class PerformCostAccountingFinancialAgent(BaseAgent, ProtocolMixin):
                 allocated_cost = total_cost / len(output_units)  # Simplified allocation
                 unit_cost = allocated_cost / units
 
-                unit_costs.append({
-                    "product": product_name,
-                    "units_produced": units,
-                    "allocated_cost": round(allocated_cost, 2),
-                    "unit_cost": round(unit_cost, 2)
-                })
+                unit_costs.append(
+                    {
+                        "product": product_name,
+                        "units_produced": units,
+                        "allocated_cost": round(allocated_cost, 2),
+                        "unit_cost": round(unit_cost, 2),
+                    }
+                )
 
         return {
             "unit_costs": unit_costs,
             "total_units": sum(output_units.values()),
-            "average_unit_cost": round(total_cost / sum(output_units.values()), 2) if sum(output_units.values()) > 0 else 0
+            "average_unit_cost": (
+                round(total_cost / sum(output_units.values()), 2)
+                if sum(output_units.values()) > 0
+                else 0
+            ),
         }
 
-    def _identify_cost_opportunities(self, abc_analysis: Dict, variance_analysis: Dict) -> Dict[str, Any]:
+    def _identify_cost_opportunities(
+        self, abc_analysis: Dict, variance_analysis: Dict
+    ) -> Dict[str, Any]:
         """
         Identify cost reduction opportunities
         """
@@ -259,55 +279,67 @@ class PerformCostAccountingFinancialAgent(BaseAgent, ProtocolMixin):
         total_potential = 0
 
         # Identify high-cost activities
-        sorted_activities = sorted(abc_analysis['activity_costs'], key=lambda x: x['total_cost'], reverse=True)
+        sorted_activities = sorted(
+            abc_analysis["activity_costs"], key=lambda x: x["total_cost"], reverse=True
+        )
 
         for activity in sorted_activities[:3]:  # Top 3 cost drivers
-            if activity['percentage_of_total'] > 20:
-                potential_saving = activity['total_cost'] * 0.10  # 10% reduction target
-                opportunities.append({
-                    "activity": activity['activity'],
-                    "current_cost": activity['total_cost'],
-                    "opportunity": "High cost driver - optimize process",
-                    "potential_savings": round(potential_saving, 2),
-                    "priority": "high"
-                })
+            if activity["percentage_of_total"] > 20:
+                potential_saving = activity["total_cost"] * 0.10  # 10% reduction target
+                opportunities.append(
+                    {
+                        "activity": activity["activity"],
+                        "current_cost": activity["total_cost"],
+                        "opportunity": "High cost driver - optimize process",
+                        "potential_savings": round(potential_saving, 2),
+                        "priority": "high",
+                    }
+                )
                 total_potential += potential_saving
 
         # Identify unfavorable variances
-        unfavorable = [v for v in variance_analysis['activity_variances'] if v['status'] == 'unfavorable']
+        unfavorable = [
+            v for v in variance_analysis["activity_variances"] if v["status"] == "unfavorable"
+        ]
         for variance in unfavorable[:2]:
-            if abs(variance['variance_percentage']) > 10:
-                potential_saving = abs(variance['variance']) * 0.5
-                opportunities.append({
-                    "activity": variance['activity'],
-                    "current_cost": variance['actual'],
-                    "opportunity": "Unfavorable variance - investigate and control",
-                    "potential_savings": round(potential_saving, 2),
-                    "priority": "medium"
-                })
+            if abs(variance["variance_percentage"]) > 10:
+                potential_saving = abs(variance["variance"]) * 0.5
+                opportunities.append(
+                    {
+                        "activity": variance["activity"],
+                        "current_cost": variance["actual"],
+                        "opportunity": "Unfavorable variance - investigate and control",
+                        "potential_savings": round(potential_saving, 2),
+                        "priority": "medium",
+                    }
+                )
                 total_potential += potential_saving
 
         return {
             "opportunities": opportunities,
             "total_potential_savings": round(total_potential, 2),
-            "count": len(opportunities)
+            "count": len(opportunities),
         }
 
     def _validate_input(self, input_data: Dict[str, Any]) -> bool:
-        return isinstance(input_data, dict) and 'activities' in input_data
+        return isinstance(input_data, dict) and "activities" in input_data
 
     async def health_check(self) -> Dict[str, Any]:
         return {
             "agent_id": self.config.agent_id,
             "status": self.state["status"],
-            "version": self.VERSION
+            "version": self.VERSION,
         }
 
     def log(self, level: str, message: str):
-        print(f"[{datetime.now().isoformat()}] [{level.upper()}] [{self.config.agent_name}] {message}")
+        print(
+            f"[{datetime.now().isoformat()}] [{level.upper()}] [{self.config.agent_name}] {message}"
+        )
 
 
-def create_perform_cost_accounting_financial_agent(config: Optional[PerformCostAccountingFinancialAgentConfig] = None):
+def create_perform_cost_accounting_financial_agent(
+    config: Optional[PerformCostAccountingFinancialAgentConfig] = None,
+):
     if config is None:
         config = PerformCostAccountingFinancialAgentConfig()
     return PerformCostAccountingFinancialAgent(config)

@@ -91,7 +91,7 @@ class ScheduleProductionOperationalAgentConfig:
             agent_id=os.getenv("AGENT_ID", "apqc_4_0_d8a3f9b2"),
             log_level=os.getenv("LOG_LEVEL", "INFO"),
             max_retries=int(os.getenv("MAX_RETRIES", "3")),
-            timeout_seconds=int(os.getenv("TIMEOUT_SECONDS", "300"))
+            timeout_seconds=int(os.getenv("TIMEOUT_SECONDS", "300")),
         )
 
 
@@ -146,20 +146,75 @@ class ScheduleProductionOperationalAgent(BaseAgent, ProtocolMixin):
     def __init__(self, config: ScheduleProductionOperationalAgentConfig):
         """Initialize agent"""
         super().__init__(
-            agent_id=config.agent_id,
-            agent_type=config.agent_type,
-            version=config.version
+            agent_id=config.agent_id, agent_type=config.agent_type, version=config.version
         )
 
         self.config = config
-        self.capabilities_list = ['planning', 'optimization', 'resource_management', 'scheduling', 'forecasting']
-        self.skills = {'scheduling': 0.9, 'optimization': 0.85, 'resource_allocation': 0.8, 'forecasting': 0.75}
-        self.interfaces = {'inputs': ['data_structured', 'production_orders', 'resource_data', 'constraints', 'forecasts'], 'outputs': ['production_schedules', 'resource_assignments', 'optimization_reports', 'alerts', 'metrics', 'events'], 'protocols': ['message_passing', 'event_driven', 'api_rest']}
-        self.behavior = {'autonomous_level': 0.9, 'collaboration_mode': 'orchestrated', 'learning_enabled': True, 'self_improvement': True}
-        self.resources = {'compute': 'adaptive', 'memory': 'adaptive', 'api_budget': 'dynamic', 'priority': 'high'}
-        self.integration = {'compatible_agents': ['4.1', '4.2', '9.0'], 'required_services': ['knowledge_graph', 'optimization_engine', 'event_bus', 'scheduling_system'], 'ontology_level': 'L0_physical'}
-        self.quality = {'testing_required': True, 'qa_threshold': 0.87, 'consensus_weight': 1.0, 'error_handling': 'graceful_degradation'}
-        self.deployment = {'runtime': 'ray_actor', 'scaling': 'horizontal', 'health_checks': True, 'monitoring': True}
+        self.capabilities_list = [
+            "planning",
+            "optimization",
+            "resource_management",
+            "scheduling",
+            "forecasting",
+        ]
+        self.skills = {
+            "scheduling": 0.9,
+            "optimization": 0.85,
+            "resource_allocation": 0.8,
+            "forecasting": 0.75,
+        }
+        self.interfaces = {
+            "inputs": [
+                "data_structured",
+                "production_orders",
+                "resource_data",
+                "constraints",
+                "forecasts",
+            ],
+            "outputs": [
+                "production_schedules",
+                "resource_assignments",
+                "optimization_reports",
+                "alerts",
+                "metrics",
+                "events",
+            ],
+            "protocols": ["message_passing", "event_driven", "api_rest"],
+        }
+        self.behavior = {
+            "autonomous_level": 0.9,
+            "collaboration_mode": "orchestrated",
+            "learning_enabled": True,
+            "self_improvement": True,
+        }
+        self.resources = {
+            "compute": "adaptive",
+            "memory": "adaptive",
+            "api_budget": "dynamic",
+            "priority": "high",
+        }
+        self.integration = {
+            "compatible_agents": ["4.1", "4.2", "9.0"],
+            "required_services": [
+                "knowledge_graph",
+                "optimization_engine",
+                "event_bus",
+                "scheduling_system",
+            ],
+            "ontology_level": "L0_physical",
+        }
+        self.quality = {
+            "testing_required": True,
+            "qa_threshold": 0.87,
+            "consensus_weight": 1.0,
+            "error_handling": "graceful_degradation",
+        }
+        self.deployment = {
+            "runtime": "ray_actor",
+            "scaling": "horizontal",
+            "health_checks": True,
+            "monitoring": True,
+        }
 
         # Initialize state
         self.state = {
@@ -167,7 +222,7 @@ class ScheduleProductionOperationalAgent(BaseAgent, ProtocolMixin):
             "tasks_processed": 0,
             "last_activity": datetime.now().isoformat(),
             "performance_metrics": {},
-            "learning_data": {} if self.config.learning_enabled else None
+            "learning_data": {} if self.config.learning_enabled else None,
         }
 
         self._initialize_protocols()
@@ -207,7 +262,7 @@ class ScheduleProductionOperationalAgent(BaseAgent, ProtocolMixin):
                 return {
                     "status": "error",
                     "message": "Invalid input data",
-                    "error_handling": self.config.error_handling
+                    "error_handling": self.config.error_handling,
                 }
 
             # Process based on agent type and capabilities
@@ -226,11 +281,7 @@ class ScheduleProductionOperationalAgent(BaseAgent, ProtocolMixin):
         except Exception as e:
             self.log("error", f"Execution error: {str(e)}")
             if self.config.error_handling == "graceful_degradation":
-                return {
-                    "status": "degraded",
-                    "message": str(e),
-                    "partial_result": {}
-                }
+                return {"status": "degraded", "message": str(e), "partial_result": {}}
             raise
 
     async def _process_production_scheduling(self, input_data: Dict[str, Any]) -> Dict[str, Any]:
@@ -258,8 +309,8 @@ class ScheduleProductionOperationalAgent(BaseAgent, ProtocolMixin):
                 "optimization_reports": [],
                 "alerts": [],
                 "metrics": {},
-                "events": []
-            }
+                "events": [],
+            },
         }
 
         return result
@@ -275,7 +326,7 @@ class ScheduleProductionOperationalAgent(BaseAgent, ProtocolMixin):
                 "timestamp": datetime.now().isoformat(),
                 "input_summary": str(input_data)[:100],
                 "result_status": result.get("status"),
-                "performance": {}
+                "performance": {},
             }
 
             if "learning_history" not in self.state["learning_data"]:
@@ -307,7 +358,7 @@ class ScheduleProductionOperationalAgent(BaseAgent, ProtocolMixin):
             "apqc_metadata": {
                 "category_id": self.APQC_CATEGORY_ID,
                 "process_id": self.APQC_PROCESS_ID,
-                "framework_version": self.APQC_FRAMEWORK_VERSION
+                "framework_version": self.APQC_FRAMEWORK_VERSION,
             },
             "protocols": self.get_supported_protocols(),
             "capabilities": self.capabilities_list,
@@ -319,23 +370,23 @@ class ScheduleProductionOperationalAgent(BaseAgent, ProtocolMixin):
                 "atomic": True,
                 "composable": True,
                 "orchestratable": True,
-                "vendor_agnostic": True
+                "vendor_agnostic": True,
             },
             "performance": {
                 "tasks_processed": self.state["tasks_processed"],
                 "memory_mb": memory_usage,
-                "last_activity": self.state["last_activity"]
+                "last_activity": self.state["last_activity"],
             },
             "behavior": {
                 "autonomous_level": self.config.autonomous_level,
                 "learning_enabled": self.config.learning_enabled,
-                "collaboration_mode": self.config.collaboration_mode
+                "collaboration_mode": self.config.collaboration_mode,
             },
             "deployment": {
                 "runtime": self.config.runtime,
                 "scaling": self.config.scaling,
-                "monitoring": self.config.monitoring
-            }
+                "monitoring": self.config.monitoring,
+            },
         }
 
         return health
@@ -358,12 +409,19 @@ class ScheduleProductionOperationalAgent(BaseAgent, ProtocolMixin):
             "apqc_process_id": self.APQC_PROCESS_ID,
             "accepted_inputs": self.interfaces["inputs"],
             "properties": {
-                "task_type": {"type": "string", "description": "Type of scheduling task to execute"},
+                "task_type": {
+                    "type": "string",
+                    "description": "Type of scheduling task to execute",
+                },
                 "data": {"type": "object", "description": "Production scheduling data"},
                 "context": {"type": "object", "description": "Execution context"},
-                "priority": {"type": "string", "enum": ["low", "medium", "high"], "default": "high"}
+                "priority": {
+                    "type": "string",
+                    "enum": ["low", "medium", "high"],
+                    "default": "high",
+                },
             },
-            "required": ["task_type", "data"]
+            "required": ["task_type", "data"],
         }
 
     def get_output_schema(self) -> Dict[str, Any]:
@@ -386,11 +444,11 @@ class ScheduleProductionOperationalAgent(BaseAgent, ProtocolMixin):
                         "optimization_reports": {"type": "array"},
                         "alerts": {"type": "array"},
                         "metrics": {"type": "object"},
-                        "events": {"type": "array"}
-                    }
-                }
+                        "events": {"type": "array"},
+                    },
+                },
             },
-            "required": ["status", "apqc_process_id", "agent_id", "timestamp", "output"]
+            "required": ["status", "apqc_process_id", "agent_id", "timestamp", "output"],
         }
 
     def log(self, level: str, message: str):
@@ -400,7 +458,9 @@ class ScheduleProductionOperationalAgent(BaseAgent, ProtocolMixin):
 
 
 # Convenience function for agent creation
-def create_schedule_production_operational_agent(config: Optional[ScheduleProductionOperationalAgentConfig] = None) -> ScheduleProductionOperationalAgent:
+def create_schedule_production_operational_agent(
+    config: Optional[ScheduleProductionOperationalAgentConfig] = None,
+) -> ScheduleProductionOperationalAgent:
     """Create ScheduleProductionOperationalAgent instance"""
     if config is None:
         config = ScheduleProductionOperationalAgentConfig()

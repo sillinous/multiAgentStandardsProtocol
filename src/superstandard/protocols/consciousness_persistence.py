@@ -39,12 +39,14 @@ from superstandard.protocols.consciousness_protocol import (
 
 class PersistenceError(Exception):
     """Raised when persistence operations fail"""
+
     pass
 
 
 # ============================================================================
 # Abstract Storage Backend
 # ============================================================================
+
 
 class StorageBackend(ABC):
     """
@@ -55,54 +57,34 @@ class StorageBackend(ABC):
     """
 
     @abstractmethod
-    async def save_consciousness(
-        self,
-        consciousness_id: str,
-        state: Dict[str, Any]
-    ) -> bool:
+    async def save_consciousness(self, consciousness_id: str, state: Dict[str, Any]) -> bool:
         """Save complete consciousness state."""
         pass
 
     @abstractmethod
-    async def load_consciousness(
-        self,
-        consciousness_id: str
-    ) -> Optional[Dict[str, Any]]:
+    async def load_consciousness(self, consciousness_id: str) -> Optional[Dict[str, Any]]:
         """Load consciousness state."""
         pass
 
     @abstractmethod
-    async def save_thought(
-        self,
-        consciousness_id: str,
-        thought: Dict[str, Any]
-    ) -> bool:
+    async def save_thought(self, consciousness_id: str, thought: Dict[str, Any]) -> bool:
         """Save individual thought."""
         pass
 
     @abstractmethod
     async def load_thoughts(
-        self,
-        consciousness_id: str,
-        limit: Optional[int] = None
+        self, consciousness_id: str, limit: Optional[int] = None
     ) -> List[Dict[str, Any]]:
         """Load thoughts."""
         pass
 
     @abstractmethod
-    async def save_pattern(
-        self,
-        consciousness_id: str,
-        pattern: Dict[str, Any]
-    ) -> bool:
+    async def save_pattern(self, consciousness_id: str, pattern: Dict[str, Any]) -> bool:
         """Save emergent pattern."""
         pass
 
     @abstractmethod
-    async def load_patterns(
-        self,
-        consciousness_id: str
-    ) -> List[Dict[str, Any]]:
+    async def load_patterns(self, consciousness_id: str) -> List[Dict[str, Any]]:
         """Load emergent patterns."""
         pass
 
@@ -120,6 +102,7 @@ class StorageBackend(ABC):
 # ============================================================================
 # JSON File Storage Backend
 # ============================================================================
+
 
 class JSONStorageBackend(StorageBackend):
     """
@@ -154,11 +137,7 @@ class JSONStorageBackend(StorageBackend):
         path.mkdir(parents=True, exist_ok=True)
         return path
 
-    async def save_consciousness(
-        self,
-        consciousness_id: str,
-        state: Dict[str, Any]
-    ) -> bool:
+    async def save_consciousness(self, consciousness_id: str, state: Dict[str, Any]) -> bool:
         """Save consciousness state to JSON file."""
         try:
             consciousness_dir = self._get_consciousness_dir(consciousness_id)
@@ -168,7 +147,7 @@ class JSONStorageBackend(StorageBackend):
             state["persisted_at"] = datetime.utcnow().isoformat()
 
             # Save to file
-            with open(file_path, 'w') as f:
+            with open(file_path, "w") as f:
                 json.dump(state, f, indent=2, default=str)
 
             return True
@@ -176,10 +155,7 @@ class JSONStorageBackend(StorageBackend):
         except Exception as e:
             raise PersistenceError(f"Failed to save consciousness: {e}")
 
-    async def load_consciousness(
-        self,
-        consciousness_id: str
-    ) -> Optional[Dict[str, Any]]:
+    async def load_consciousness(self, consciousness_id: str) -> Optional[Dict[str, Any]]:
         """Load consciousness state from JSON file."""
         try:
             consciousness_dir = self._get_consciousness_dir(consciousness_id)
@@ -188,17 +164,13 @@ class JSONStorageBackend(StorageBackend):
             if not file_path.exists():
                 return None
 
-            with open(file_path, 'r') as f:
+            with open(file_path, "r") as f:
                 return json.load(f)
 
         except Exception as e:
             raise PersistenceError(f"Failed to load consciousness: {e}")
 
-    async def save_thought(
-        self,
-        consciousness_id: str,
-        thought: Dict[str, Any]
-    ) -> bool:
+    async def save_thought(self, consciousness_id: str, thought: Dict[str, Any]) -> bool:
         """Save individual thought."""
         try:
             consciousness_dir = self._get_consciousness_dir(consciousness_id)
@@ -209,7 +181,7 @@ class JSONStorageBackend(StorageBackend):
             filename = f"thought_{timestamp.replace(':', '-')}.json"
             file_path = thoughts_dir / filename
 
-            with open(file_path, 'w') as f:
+            with open(file_path, "w") as f:
                 json.dump(thought, f, indent=2, default=str)
 
             return True
@@ -218,9 +190,7 @@ class JSONStorageBackend(StorageBackend):
             raise PersistenceError(f"Failed to save thought: {e}")
 
     async def load_thoughts(
-        self,
-        consciousness_id: str,
-        limit: Optional[int] = None
+        self, consciousness_id: str, limit: Optional[int] = None
     ) -> List[Dict[str, Any]]:
         """Load thoughts."""
         try:
@@ -237,7 +207,7 @@ class JSONStorageBackend(StorageBackend):
                 files = files[-limit:]  # Get most recent
 
             for file_path in files:
-                with open(file_path, 'r') as f:
+                with open(file_path, "r") as f:
                     thoughts.append(json.load(f))
 
             return thoughts
@@ -245,11 +215,7 @@ class JSONStorageBackend(StorageBackend):
         except Exception as e:
             raise PersistenceError(f"Failed to load thoughts: {e}")
 
-    async def save_pattern(
-        self,
-        consciousness_id: str,
-        pattern: Dict[str, Any]
-    ) -> bool:
+    async def save_pattern(self, consciousness_id: str, pattern: Dict[str, Any]) -> bool:
         """Save emergent pattern."""
         try:
             consciousness_dir = self._get_consciousness_dir(consciousness_id)
@@ -259,7 +225,7 @@ class JSONStorageBackend(StorageBackend):
             pattern_id = pattern.get("pattern_id", f"pattern_{datetime.utcnow().timestamp()}")
             file_path = patterns_dir / f"{pattern_id}.json"
 
-            with open(file_path, 'w') as f:
+            with open(file_path, "w") as f:
                 json.dump(pattern, f, indent=2, default=str)
 
             return True
@@ -267,10 +233,7 @@ class JSONStorageBackend(StorageBackend):
         except Exception as e:
             raise PersistenceError(f"Failed to save pattern: {e}")
 
-    async def load_patterns(
-        self,
-        consciousness_id: str
-    ) -> List[Dict[str, Any]]:
+    async def load_patterns(self, consciousness_id: str) -> List[Dict[str, Any]]:
         """Load emergent patterns."""
         try:
             consciousness_dir = self._get_consciousness_dir(consciousness_id)
@@ -281,7 +244,7 @@ class JSONStorageBackend(StorageBackend):
 
             patterns = []
             for file_path in patterns_dir.glob("*.json"):
-                with open(file_path, 'r') as f:
+                with open(file_path, "r") as f:
                     patterns.append(json.load(f))
 
             return patterns
@@ -297,6 +260,7 @@ class JSONStorageBackend(StorageBackend):
         """Delete consciousness state."""
         try:
             import shutil
+
             consciousness_dir = self._get_consciousness_dir(consciousness_id)
             shutil.rmtree(consciousness_dir)
             return True
@@ -307,6 +271,7 @@ class JSONStorageBackend(StorageBackend):
 # ============================================================================
 # Persistent Collective Consciousness
 # ============================================================================
+
 
 class PersistentCollectiveConsciousness(CollectiveConsciousness):
     """
@@ -333,7 +298,7 @@ class PersistentCollectiveConsciousness(CollectiveConsciousness):
         auto_save: bool = True,
         save_interval: int = 60,  # seconds
         persist_thoughts: bool = True,
-        persist_patterns: bool = True
+        persist_patterns: bool = True,
     ):
         """
         Initialize persistent collective consciousness.
@@ -412,14 +377,16 @@ class PersistentCollectiveConsciousness(CollectiveConsciousness):
             # Serialize agents
             agents_data = []
             for agent_id, snapshot in self.agents.items():
-                agents_data.append({
-                    "agent_id": agent_id,
-                    "state": snapshot.state.value,
-                    "awareness_level": snapshot.awareness_level,
-                    "integration_score": snapshot.integration_score,
-                    "thought_count": len(snapshot.thoughts),
-                    "qualia": snapshot.qualia,
-                })
+                agents_data.append(
+                    {
+                        "agent_id": agent_id,
+                        "state": snapshot.state.value,
+                        "awareness_level": snapshot.awareness_level,
+                        "integration_score": snapshot.integration_score,
+                        "thought_count": len(snapshot.thoughts),
+                        "qualia": snapshot.qualia,
+                    }
+                )
 
             # Get metrics
             state = self.get_consciousness_state()
@@ -434,10 +401,7 @@ class PersistentCollectiveConsciousness(CollectiveConsciousness):
             }
 
             # Save main state
-            await self.storage.save_consciousness(
-                self.consciousness_id,
-                consciousness_data
-            )
+            await self.storage.save_consciousness(self.consciousness_id, consciousness_data)
 
             return True
 
@@ -467,7 +431,7 @@ class PersistentCollectiveConsciousness(CollectiveConsciousness):
                     thoughts=[],  # Thoughts loaded separately
                     awareness_level=agent_data["awareness_level"],
                     integration_score=agent_data["integration_score"],
-                    qualia=agent_data.get("qualia", {})
+                    qualia=agent_data.get("qualia", {}),
                 )
                 self.agents[agent_data["agent_id"]] = snapshot
 
@@ -511,7 +475,7 @@ class PersistentCollectiveConsciousness(CollectiveConsciousness):
                     "confidence": thought.confidence,
                     "emotional_valence": thought.emotional_valence,
                     "quantum_state": thought.quantum_state,
-                }
+                },
             )
 
         return thought
@@ -523,10 +487,7 @@ class PersistentCollectiveConsciousness(CollectiveConsciousness):
         # Persist patterns
         if self.persist_patterns:
             for pattern in patterns:
-                await self.storage.save_pattern(
-                    self.consciousness_id,
-                    pattern.to_dict()
-                )
+                await self.storage.save_pattern(self.consciousness_id, pattern.to_dict())
 
         return patterns
 

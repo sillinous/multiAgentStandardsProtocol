@@ -75,7 +75,9 @@ class AgentRegistry:
                     category=agent_data.get("category", "general"),
                     type=agent_data.get("type", "python"),
                     file=agent_data.get("file", ""),
-                    description=agent_data.get("description", "")[:200],  # Truncate long descriptions
+                    description=agent_data.get("description", "")[
+                        :200
+                    ],  # Truncate long descriptions
                 )
                 self._agents[metadata.name] = metadata
 
@@ -116,9 +118,7 @@ class AgentRegistry:
 
         return agents
 
-    def _extract_metadata(
-        self, file_path: Path, name: str, category: str
-    ) -> AgentMetadata:
+    def _extract_metadata(self, file_path: Path, name: str, category: str) -> AgentMetadata:
         """Extract metadata from agent file"""
 
         description = ""
@@ -200,10 +200,7 @@ class AgentRegistry:
                 continue
 
             # Query match (name or description)
-            if (
-                query_lower in agent.name.lower()
-                or query_lower in agent.description.lower()
-            ):
+            if query_lower in agent.name.lower() or query_lower in agent.description.lower():
                 results.append(agent)
 
         return results
@@ -248,9 +245,7 @@ class AgentRegistry:
             "total_agents": len(self._agents),
             "categories": len(categories),
             "agents_by_category": categories,
-            "top_categories": sorted(
-                categories.items(), key=lambda x: x[1], reverse=True
-            )[:10],
+            "top_categories": sorted(categories.items(), key=lambda x: x[1], reverse=True)[:10],
         }
 
     def register_agent(self, metadata: AgentMetadata):
@@ -286,7 +281,9 @@ class AgentRegistry:
 
     def __repr__(self) -> str:
         """String representation"""
-        return f"<AgentRegistry: {len(self._agents)} agents, {len(self.list_categories())} categories>"
+        return (
+            f"<AgentRegistry: {len(self._agents)} agents, {len(self.list_categories())} categories>"
+        )
 
 
 # Global registry instance
@@ -362,7 +359,7 @@ if __name__ == "__main__":
     print(f"  Total: {stats['total_agents']}")
     print(f"  Categories: {stats['categories']}")
     print(f"\n  Top categories:")
-    for cat, count in stats['top_categories'][:5]:
+    for cat, count in stats["top_categories"][:5]:
         print(f"    {cat}: {count} agents")
 
     # Search example

@@ -27,23 +27,28 @@ import json
 API_BASE_URL = "http://localhost:8000/api/v1/autonomous"
 ANTHROPIC_API_KEY = os.environ.get("ANTHROPIC_API_KEY", "")
 
+
 def print_section(title):
     """Print a section header"""
     print("\n" + "=" * 80)
     print(f"  {title}")
     print("=" * 80 + "\n")
 
+
 def print_success(message):
     """Print success message"""
     print(f"[SUCCESS] {message}")
+
 
 def print_info(message):
     """Print info message"""
     print(f"[INFO] {message}")
 
+
 def print_error(message):
     """Print error message"""
     print(f"[ERROR] {message}")
+
 
 def api_request(method, endpoint, data=None, params=None):
     """Make API request with error handling"""
@@ -61,13 +66,16 @@ def api_request(method, endpoint, data=None, params=None):
 
     except requests.exceptions.ConnectionError:
         print_error("Cannot connect to API. Is the backend server running?")
-        print_info("Start the server with: python -m uvicorn app.main:app --reload --host 0.0.0.0 --port 8000")
+        print_info(
+            "Start the server with: python -m uvicorn app.main:app --reload --host 0.0.0.0 --port 8000"
+        )
         sys.exit(1)
     except requests.exceptions.RequestException as e:
         print_error(f"API request failed: {e}")
-        if hasattr(e.response, 'text'):
+        if hasattr(e.response, "text"):
             print(f"Response: {e.response.text}")
         return None
+
 
 def demo_1_create_agents():
     """Demo 1: Create individual agents"""
@@ -77,7 +85,7 @@ def demo_1_create_agents():
         ("testing", "Automated Testing Agent"),
         ("design", "System Design Agent"),
         ("development", "Code Development Agent"),
-        ("qa", "Quality Assurance Agent")
+        ("qa", "Quality Assurance Agent"),
     ]
 
     created_agents = []
@@ -85,13 +93,7 @@ def demo_1_create_agents():
     for agent_type, description in agent_types:
         print_info(f"Creating {description}...")
 
-        data = {
-            "agent_type": agent_type,
-            "config": {
-                "auto_start": True,
-                "max_iterations": 10
-            }
-        }
+        data = {"agent_type": agent_type, "config": {"auto_start": True, "max_iterations": 10}}
 
         result = api_request("POST", "/agents", data=data)
 
@@ -104,6 +106,7 @@ def demo_1_create_agents():
             time.sleep(0.5)
 
     return created_agents
+
 
 def demo_2_list_agents():
     """Demo 2: List all active agents"""
@@ -122,6 +125,7 @@ def demo_2_list_agents():
 
     return result
 
+
 def demo_3_assign_task():
     """Demo 3: Assign task to an agent"""
     print_section("DEMO 3: Assigning Tasks to Agents")
@@ -139,9 +143,9 @@ def demo_3_assign_task():
         "task_type": "analyze_codebase",
         "task_data": {
             "target": "./",
-            "focus_areas": ["performance", "security", "maintainability"]
+            "focus_areas": ["performance", "security", "maintainability"],
         },
-        "priority": "high"
+        "priority": "high",
     }
 
     result = api_request("POST", f"/agents/{agent['agent_id']}/tasks", data=task_data)
@@ -152,6 +156,7 @@ def demo_3_assign_task():
         print(f"  Status: {result['status']}")
 
     return result
+
 
 def demo_4_agent_factory():
     """Demo 4: Generate agents using Agent Factory"""
@@ -165,8 +170,8 @@ def demo_4_agent_factory():
         "priority_categories": [
             "Develop and Manage Products and Services",
             "Market and Sell Products and Services",
-            "Manage Information Technology"
-        ]
+            "Manage Information Technology",
+        ],
     }
 
     result = api_request("POST", "/agents/factory/generate", data=data)
@@ -179,6 +184,7 @@ def demo_4_agent_factory():
             print(f"    Status: {agent['status']}")
 
     return result
+
 
 def demo_5_improvement_cycle():
     """Demo 5: Run autonomous improvement cycle"""
@@ -199,10 +205,7 @@ def demo_5_improvement_cycle():
     else:
         supervised = True  # For demo, always supervised
 
-    params = {
-        "supervised": supervised,
-        "max_cycles": 2  # Limited for demo
-    }
+    params = {"supervised": supervised, "max_cycles": 2}  # Limited for demo
 
     print_info("Starting improvement cycle (this may take a few minutes)...")
     result = api_request("POST", "/agents/orchestrator/improvement-cycle", params=params)
@@ -216,6 +219,7 @@ def demo_5_improvement_cycle():
         print(f"\n  Summary: {result['summary']}")
 
     return result
+
 
 def demo_6_monitor_agents():
     """Demo 6: Real-time agent monitoring"""
@@ -235,6 +239,7 @@ def demo_6_monitor_agents():
                 print(f"    Iteration: {status['current_iteration']}")
                 print(f"    Workspace: {status['workspace']}")
                 print(f"    Messages: {status['message_count']}")
+
 
 def run_investor_demo():
     """Run complete investor demonstration"""
@@ -292,9 +297,11 @@ def run_investor_demo():
     except Exception as e:
         print_error(f"Demo failed: {e}")
         import traceback
+
         traceback.print_exc()
 
     print("\n" + "=" * 80)
+
 
 if __name__ == "__main__":
     run_investor_demo()

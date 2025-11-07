@@ -15,6 +15,7 @@ import io
 BASE_URL = "http://localhost:8000"
 FACTORY_URL = f"{BASE_URL}/api/v1/factory"
 
+
 def test_health_check():
     """Test 1: Verify API is healthy"""
     print("\n🧪 Test 1: Health Check")
@@ -28,6 +29,7 @@ def test_health_check():
     assert response.json()["status"] == "healthy"
     print("✅ PASSED: API is healthy")
     return True
+
 
 def test_list_templates():
     """Test 2: List all available templates"""
@@ -47,6 +49,7 @@ def test_list_templates():
     print(f"✅ PASSED: Retrieved {len(templates)} templates")
     return templates
 
+
 def test_get_template_details(template_id):
     """Test 3: Get details for a specific template"""
     print(f"\n🧪 Test 3: Get Template Details ({template_id})")
@@ -62,9 +65,10 @@ def test_get_template_details(template_id):
     print(f"Capabilities: {len(template['capabilities'])} defined")
 
     assert response.status_code == 200
-    assert template['template_id'] == template_id
+    assert template["template_id"] == template_id
     print("✅ PASSED: Template details retrieved")
     return template
+
 
 def test_get_recommendations():
     """Test 4: Get AI-powered template recommendations"""
@@ -74,15 +78,12 @@ def test_get_recommendations():
     request_data = {
         "business_objective": "Improve customer service response time by 60% and increase satisfaction by 35%",
         "industry": "technology",
-        "organization_size": "smb"
+        "organization_size": "smb",
     }
 
     print(f"Request: {json.dumps(request_data, indent=2)}")
 
-    response = requests.post(
-        f"{FACTORY_URL}/templates/recommend",
-        json=request_data
-    )
+    response = requests.post(f"{FACTORY_URL}/templates/recommend", json=request_data)
     print(f"Status Code: {response.status_code}")
 
     recommendations = response.json()
@@ -90,7 +91,7 @@ def test_get_recommendations():
 
     # Handle different response formats
     if isinstance(recommendations, dict):
-        recs_list = recommendations.get('recommendations', [recommendations])
+        recs_list = recommendations.get("recommendations", [recommendations])
     elif isinstance(recommendations, list):
         recs_list = recommendations
     else:
@@ -99,16 +100,19 @@ def test_get_recommendations():
     print(f"\nTop Recommendations ({len(recs_list)} total):")
     for rec in recs_list[:3]:
         if isinstance(rec, dict):
-            score = rec.get('score', rec.get('match_score', 0))
-            template = rec.get('template', rec)
-            template_name = template.get('name', 'Unknown') if isinstance(template, dict) else 'Unknown'
-            reasoning = rec.get('reasoning', 'N/A')
+            score = rec.get("score", rec.get("match_score", 0))
+            template = rec.get("template", rec)
+            template_name = (
+                template.get("name", "Unknown") if isinstance(template, dict) else "Unknown"
+            )
+            reasoning = rec.get("reasoning", "N/A")
             print(f"  {score:.1f}% - {template_name}")
             print(f"        Reason: {reasoning}")
 
     assert response.status_code == 200
     print("✅ PASSED: Recommendations generated")
     return recommendations
+
 
 def test_get_statistics():
     """Test 5: Get factory statistics"""
@@ -129,6 +133,7 @@ def test_get_statistics():
     print("✅ PASSED: Statistics retrieved")
     return stats
 
+
 def test_create_agent():
     """Test 6: Create a complete agent (THE BIG ONE!)"""
     print("\n🧪 Test 6: Create Agent (End-to-End)")
@@ -138,43 +143,46 @@ def test_create_agent():
         "agent_name": "E2E_Test_Customer_Service_Bot",
         "description": "Automated customer service agent for handling inquiries and support tickets",
         "business_objective": "Reduce response time by 60% while improving customer satisfaction by 35%",
-
         # Template selection
         "template_id": "apqc-5.1-customer-service-optimizer",
         "apqc_process": "5.1",
-
         # Customization
         "custom_capabilities": ["sentiment_analysis", "ticket_routing"],
         "integration_targets": ["slack", "zendesk"],
-
         # Compliance
         "compliance_frameworks": ["gdpr", "soc2"],
         "data_residency": "EU",
         "encryption_required": True,
-
         # Performance
         "performance_tier": "optimized",
         "max_response_time_ms": 500,
         "concurrent_users": 200,
-
         # Deployment
         "deployment_format": "docker",
         "cloud_provider": "aws",
-
         # Additional
         "industry": "technology",
-        "organization_size": "smb"
+        "organization_size": "smb",
     }
 
     print("Creating agent with specification:")
-    print(json.dumps({k: v for k, v in agent_spec.items() if k in ['agent_name', 'template_id', 'compliance_frameworks']}, indent=2))
+    print(
+        json.dumps(
+            {
+                k: v
+                for k, v in agent_spec.items()
+                if k in ["agent_name", "template_id", "compliance_frameworks"]
+            },
+            indent=2,
+        )
+    )
 
     start_time = time.time()
 
     response = requests.post(
         f"{FACTORY_URL}/create-agent",
         json=agent_spec,
-        timeout=60  # Allow up to 60 seconds for generation
+        timeout=60,  # Allow up to 60 seconds for generation
     )
 
     elapsed_time = time.time() - start_time
@@ -190,20 +198,25 @@ def test_create_agent():
         print(f"Code Quality Score: {result['code_quality_score']}/100")
         print(f"Lines of Code: {result['lines_of_code']}")
         print(f"Template Used: {result.get('template_id', 'N/A')}")
-        if 'generated_files' in result:
+        if "generated_files" in result:
             print(f"\nGenerated Files:")
-            for file_info in result['generated_files']:
+            for file_info in result["generated_files"]:
                 print(f"  - {file_info['filename']} ({file_info['size_bytes']} bytes)")
 
-        assert result['code_quality_score'] >= 85, f"Quality score {result['code_quality_score']} below threshold"
+        assert (
+            result["code_quality_score"] >= 85
+        ), f"Quality score {result['code_quality_score']} below threshold"
         assert elapsed_time < 30, f"Generation took {elapsed_time}s, expected <30s"
 
-        print(f"\n✅ PASSED: Agent generated in {elapsed_time:.2f}s with quality {result['code_quality_score']}/100")
+        print(
+            f"\n✅ PASSED: Agent generated in {elapsed_time:.2f}s with quality {result['code_quality_score']}/100"
+        )
         return result
     else:
         print(f"\n❌ FAILED: {response.status_code}")
         print(f"Error: {response.text}")
         raise AssertionError(f"Agent creation failed: {response.text}")
+
 
 def test_get_agent_details(agent_id):
     """Test 7: Get details of generated agent"""
@@ -223,6 +236,7 @@ def test_get_agent_details(agent_id):
     print("✅ PASSED: Agent details retrieved")
     return agent
 
+
 def test_download_agent(agent_id):
     """Test 8: Download agent package"""
     print(f"\n🧪 Test 8: Download Agent Package ({agent_id})")
@@ -234,7 +248,7 @@ def test_download_agent(agent_id):
     print(f"Content-Length: {len(response.content)} bytes")
 
     assert response.status_code == 200
-    assert response.headers.get('content-type') == 'application/zip'
+    assert response.headers.get("content-type") == "application/zip"
 
     # Verify ZIP contents
     zip_file = zipfile.ZipFile(io.BytesIO(response.content))
@@ -246,11 +260,7 @@ def test_download_agent(agent_id):
         print(f"  - {filename} ({file_info.file_size} bytes)")
 
     # Verify expected files exist
-    expected_files = [
-        'requirements.txt',
-        'Dockerfile',
-        'README.md'
-    ]
+    expected_files = ["requirements.txt", "Dockerfile", "README.md"]
 
     for expected in expected_files:
         matching = [f for f in files if expected in f]
@@ -258,6 +268,7 @@ def test_download_agent(agent_id):
 
     print(f"\n✅ PASSED: Agent package downloaded with {len(files)} files")
     return response.content
+
 
 def test_statistics_after_creation():
     """Test 9: Verify statistics updated after creation"""
@@ -267,8 +278,8 @@ def test_statistics_after_creation():
     response = requests.get(f"{FACTORY_URL}/statistics")
     stats = response.json()
 
-    agents_generated = stats['generation']['total_agents_generated']
-    avg_quality = stats['generation']['average_code_quality']
+    agents_generated = stats["generation"]["total_agents_generated"]
+    avg_quality = stats["generation"]["average_code_quality"]
 
     print(f"Updated Statistics:")
     print(f"  Total Agents Generated: {agents_generated}")
@@ -278,6 +289,7 @@ def test_statistics_after_creation():
 
     print("✅ PASSED: Statistics updated correctly")
     return stats
+
 
 def run_all_tests():
     """Run complete end-to-end test suite"""
@@ -290,14 +302,14 @@ def run_all_tests():
         print("\n📋 PHASE 1: API VERIFICATION")
         test_health_check()
         templates = test_list_templates()
-        test_get_template_details(templates[4]['template_id'])  # Customer Service template
+        test_get_template_details(templates[4]["template_id"])  # Customer Service template
         test_get_recommendations()
         initial_stats = test_get_statistics()
 
         # Phase 2: Agent Generation (Critical Test)
         print("\n📋 PHASE 2: AGENT GENERATION")
         agent_result = test_create_agent()
-        agent_id = agent_result['agent_id']
+        agent_id = agent_result["agent_id"]
 
         # Phase 3: Agent Retrieval
         print("\n📋 PHASE 3: AGENT RETRIEVAL")
@@ -317,7 +329,9 @@ def run_all_tests():
         print(f"  ✅ Agent generated successfully")
         print(f"  ✅ Quality score: {agent_result['code_quality_score']}/100")
         print(f"  ✅ Package size: {len(zip_content):,} bytes")
-        print(f"  ✅ Statistics updated: {final_stats['generation']['total_agents_generated']} agents")
+        print(
+            f"  ✅ Statistics updated: {final_stats['generation']['total_agents_generated']} agents"
+        )
         print("\n🚀 The Agent Factory is FULLY OPERATIONAL!")
 
         return True
@@ -332,8 +346,10 @@ def run_all_tests():
     except Exception as e:
         print(f"\n❌ UNEXPECTED ERROR: {str(e)}")
         import traceback
+
         traceback.print_exc()
         return False
+
 
 if __name__ == "__main__":
     success = run_all_tests()

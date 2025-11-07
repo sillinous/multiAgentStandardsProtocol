@@ -41,8 +41,10 @@ async def get_agent_management() -> AgentManagementSystem:
 # Pydantic Models
 # ============================================================================
 
+
 class AgentCapabilityModel(BaseModel):
     """Agent capability model"""
+
     name: str
     description: str
     inputs: List[str]
@@ -53,6 +55,7 @@ class AgentCapabilityModel(BaseModel):
 
 class RegisterAgentRequest(BaseModel):
     """Request to register new agent"""
+
     agent_id: str
     agent_type: str
     name: str
@@ -64,23 +67,22 @@ class RegisterAgentRequest(BaseModel):
 
 class UpdateAgentParametersRequest(BaseModel):
     """Request to update agent parameters"""
+
     parameters: Dict[str, Any]
 
 
 class AdjustAgentBehaviorRequest(BaseModel):
     """Request to adjust agent behavior"""
+
     adjustments: Dict[str, Any] = Field(
         ...,
-        example={
-            "risk_tolerance": "high",
-            "decision_threshold": 0.8,
-            "execution_speed": "fast"
-        }
+        example={"risk_tolerance": "high", "decision_threshold": 0.8, "execution_speed": "fast"},
     )
 
 
 class CreateTeamRequest(BaseModel):
     """Request to create agent team"""
+
     team_id: str
     name: str
     objective: str
@@ -93,6 +95,7 @@ class CreateTeamRequest(BaseModel):
 # API Router
 # ============================================================================
 
+
 def create_agent_management_router() -> APIRouter:
     """Create agent management API router"""
     router = APIRouter(prefix="/api/v4/agents", tags=["Phase 9 Agent Management"])
@@ -102,48 +105,39 @@ def create_agent_management_router() -> APIRouter:
     # ====================================================================
 
     @router.get(
-        "",
-        summary="List All Agents",
-        description="Get complete list of all registered agents"
+        "", summary="List All Agents", description="Get complete list of all registered agents"
     )
     async def list_agents() -> Dict[str, Any]:
         """List all registered agents"""
         try:
             mgmt = await get_agent_management()
             agents = await mgmt.list_all_agents()
-            return {
-                "count": len(agents),
-                "agents": agents,
-                "timestamp": datetime.now().isoformat()
-            }
+            return {"count": len(agents), "agents": agents, "timestamp": datetime.now().isoformat()}
         except Exception as e:
             raise HTTPException(status_code=400, detail=str(e))
 
     @router.get(
         "/library",
         summary="Get Agent Library",
-        description="Get agent library organized by category"
+        description="Get agent library organized by category",
     )
     async def get_agent_library() -> Dict[str, Any]:
         """Get agent library organized by capability categories"""
         try:
             mgmt = await get_agent_management()
             library = await mgmt.get_agent_library()
-            return {
-                "library": library,
-                "timestamp": datetime.now().isoformat()
-            }
+            return {"library": library, "timestamp": datetime.now().isoformat()}
         except Exception as e:
             raise HTTPException(status_code=400, detail=str(e))
 
     @router.get(
-        "/search",
-        summary="Search Agents",
-        description="Search agents by capability or category"
+        "/search", summary="Search Agents", description="Search agents by capability or category"
     )
     async def search_agents(
         capability: Optional[str] = Query(None, description="Search by capability name"),
-        category: Optional[str] = Query(None, description="Search by category (trading, research, etc.)")
+        category: Optional[str] = Query(
+            None, description="Search by category (trading, research, etc.)"
+        ),
     ) -> Dict[str, Any]:
         """Search agents by capability or category"""
         try:
@@ -155,7 +149,7 @@ def create_agent_management_router() -> APIRouter:
                     "search_type": "capability",
                     "query": capability,
                     "count": len(agents),
-                    "agents": agents
+                    "agents": agents,
                 }
             elif category:
                 agents = await mgmt.find_agents_by_category(category)
@@ -163,10 +157,12 @@ def create_agent_management_router() -> APIRouter:
                     "search_type": "category",
                     "query": category,
                     "count": len(agents),
-                    "agents": agents
+                    "agents": agents,
                 }
             else:
-                raise HTTPException(status_code=400, detail="Must specify 'capability' or 'category'")
+                raise HTTPException(
+                    status_code=400, detail="Must specify 'capability' or 'category'"
+                )
 
         except HTTPException:
             raise
@@ -180,7 +176,7 @@ def create_agent_management_router() -> APIRouter:
     @router.post(
         "/register",
         summary="Register New Agent",
-        description="Register a new agent in the management system"
+        description="Register a new agent in the management system",
     )
     async def register_agent(request: RegisterAgentRequest) -> Dict[str, Any]:
         """Register a new agent"""
@@ -193,7 +189,7 @@ def create_agent_management_router() -> APIRouter:
                 description=request.description,
                 version=request.version,
                 capabilities=request.capabilities,
-                parameters=request.parameters
+                parameters=request.parameters,
             )
             return result
         except Exception as e:
@@ -202,7 +198,7 @@ def create_agent_management_router() -> APIRouter:
     @router.get(
         "/{agent_id}",
         summary="Get Agent Info",
-        description="Get complete information for specific agent"
+        description="Get complete information for specific agent",
     )
     async def get_agent_info(agent_id: str) -> Dict[str, Any]:
         """Get agent information"""
@@ -226,11 +222,10 @@ def create_agent_management_router() -> APIRouter:
     @router.post(
         "/{agent_id}/start",
         summary="Start Agent",
-        description="Start an agent with optional parameters"
+        description="Start an agent with optional parameters",
     )
     async def start_agent(
-        agent_id: str,
-        request: Optional[Dict[str, Any]] = Body(None)
+        agent_id: str, request: Optional[Dict[str, Any]] = Body(None)
     ) -> Dict[str, Any]:
         """Start an agent"""
         try:
@@ -239,9 +234,7 @@ def create_agent_management_router() -> APIRouter:
             environment = request.get("environment") if request else None
 
             result = await mgmt.start_agent(
-                agent_id=agent_id,
-                parameters=parameters,
-                environment=environment
+                agent_id=agent_id, parameters=parameters, environment=environment
             )
 
             if "error" in result:
@@ -253,11 +246,7 @@ def create_agent_management_router() -> APIRouter:
         except Exception as e:
             raise HTTPException(status_code=400, detail=str(e))
 
-    @router.post(
-        "/{agent_id}/stop",
-        summary="Stop Agent",
-        description="Stop an agent gracefully"
-    )
+    @router.post("/{agent_id}/stop", summary="Stop Agent", description="Stop an agent gracefully")
     async def stop_agent(agent_id: str) -> Dict[str, Any]:
         """Stop an agent"""
         try:
@@ -276,7 +265,7 @@ def create_agent_management_router() -> APIRouter:
     @router.post(
         "/{agent_id}/pause",
         summary="Pause Agent",
-        description="Pause agent execution (can be resumed)"
+        description="Pause agent execution (can be resumed)",
     )
     async def pause_agent(agent_id: str) -> Dict[str, Any]:
         """Pause an agent"""
@@ -293,11 +282,7 @@ def create_agent_management_router() -> APIRouter:
         except Exception as e:
             raise HTTPException(status_code=400, detail=str(e))
 
-    @router.post(
-        "/{agent_id}/resume",
-        summary="Resume Agent",
-        description="Resume paused agent"
-    )
+    @router.post("/{agent_id}/resume", summary="Resume Agent", description="Resume paused agent")
     async def resume_agent(agent_id: str) -> Dict[str, Any]:
         """Resume an agent"""
         try:
@@ -320,11 +305,10 @@ def create_agent_management_router() -> APIRouter:
     @router.put(
         "/{agent_id}/parameters",
         summary="Update Agent Parameters",
-        description="Dynamically update agent parameters"
+        description="Dynamically update agent parameters",
     )
     async def update_agent_parameters(
-        agent_id: str,
-        request: UpdateAgentParametersRequest
+        agent_id: str, request: UpdateAgentParametersRequest
     ) -> Dict[str, Any]:
         """Update agent parameters"""
         try:
@@ -343,11 +327,10 @@ def create_agent_management_router() -> APIRouter:
     @router.post(
         "/{agent_id}/adjust",
         summary="Adjust Agent Behavior",
-        description="Dynamically adjust agent behavior (risk, thresholds, speed, etc.)"
+        description="Dynamically adjust agent behavior (risk, thresholds, speed, etc.)",
     )
     async def adjust_agent_behavior(
-        agent_id: str,
-        request: AdjustAgentBehaviorRequest
+        agent_id: str, request: AdjustAgentBehaviorRequest
     ) -> Dict[str, Any]:
         """Adjust agent behavior"""
         try:
@@ -370,7 +353,7 @@ def create_agent_management_router() -> APIRouter:
     @router.get(
         "/{agent_id}/metrics",
         summary="Get Agent Metrics",
-        description="Get real-time agent metrics and performance"
+        description="Get real-time agent metrics and performance",
     )
     async def get_agent_metrics(agent_id: str) -> Dict[str, Any]:
         """Get agent metrics"""
@@ -390,12 +373,9 @@ def create_agent_management_router() -> APIRouter:
     @router.get(
         "/{agent_id}/activity",
         summary="Get Agent Activity Feed",
-        description="Get recent logs and decisions for agent"
+        description="Get recent logs and decisions for agent",
     )
-    async def get_agent_activity(
-        agent_id: str,
-        limit: int = Query(50, le=200)
-    ) -> Dict[str, Any]:
+    async def get_agent_activity(agent_id: str, limit: int = Query(50, le=200)) -> Dict[str, Any]:
         """Get agent activity feed"""
         try:
             mgmt = await get_agent_management()
@@ -404,11 +384,7 @@ def create_agent_management_router() -> APIRouter:
             if not activity and not (await mgmt.get_agent_info(agent_id)):
                 raise HTTPException(status_code=404, detail=f"Agent {agent_id} not found")
 
-            return {
-                "agent_id": agent_id,
-                "activity_count": len(activity),
-                "activity": activity
-            }
+            return {"agent_id": agent_id, "activity_count": len(activity), "activity": activity}
         except HTTPException:
             raise
         except Exception as e:
@@ -417,12 +393,14 @@ def create_agent_management_router() -> APIRouter:
     @router.get(
         "/{agent_id}/logs",
         summary="Get Agent Logs",
-        description="Get agent event logs with optional filtering"
+        description="Get agent event logs with optional filtering",
     )
     async def get_agent_logs(
         agent_id: str,
-        level: Optional[str] = Query(None, description="Filter by log level: DEBUG, INFO, WARN, ERROR"),
-        limit: int = Query(100, le=1000)
+        level: Optional[str] = Query(
+            None, description="Filter by log level: DEBUG, INFO, WARN, ERROR"
+        ),
+        limit: int = Query(100, le=1000),
     ) -> Dict[str, Any]:
         """Get agent logs"""
         try:
@@ -436,7 +414,7 @@ def create_agent_management_router() -> APIRouter:
                 "agent_id": agent_id,
                 "log_count": len(logs),
                 "level_filter": level,
-                "logs": logs
+                "logs": logs,
             }
         except HTTPException:
             raise
@@ -446,12 +424,10 @@ def create_agent_management_router() -> APIRouter:
     @router.get(
         "/{agent_id}/decisions",
         summary="Get Agent Decisions",
-        description="Get agent decision history with confidence scores"
+        description="Get agent decision history with confidence scores",
     )
     async def get_agent_decisions(
-        agent_id: str,
-        decision_type: Optional[str] = Query(None),
-        limit: int = Query(100, le=1000)
+        agent_id: str, decision_type: Optional[str] = Query(None), limit: int = Query(100, le=1000)
     ) -> Dict[str, Any]:
         """Get agent decisions"""
         try:
@@ -465,7 +441,7 @@ def create_agent_management_router() -> APIRouter:
                 "agent_id": agent_id,
                 "decision_count": len(decisions),
                 "type_filter": decision_type,
-                "decisions": decisions
+                "decisions": decisions,
             }
         except HTTPException:
             raise
@@ -475,7 +451,7 @@ def create_agent_management_router() -> APIRouter:
     @router.get(
         "/{agent_id}/relationships",
         summary="Get Agent Relationships",
-        description="Get agent's teams and collaborators"
+        description="Get agent's teams and collaborators",
     )
     async def get_agent_relationships(agent_id: str) -> Dict[str, Any]:
         """Get agent relationships"""
@@ -495,11 +471,10 @@ def create_agent_management_router() -> APIRouter:
     @router.get(
         "/{agent_id}/patterns",
         summary="Analyze Agent Patterns",
-        description="Analyze decision and error patterns for agent"
+        description="Analyze decision and error patterns for agent",
     )
     async def analyze_agent_patterns(
-        agent_id: str,
-        window_size: int = Query(100, ge=10, le=1000)
+        agent_id: str, window_size: int = Query(100, ge=10, le=1000)
     ) -> Dict[str, Any]:
         """Analyze agent patterns"""
         try:
@@ -522,14 +497,13 @@ def create_agent_management_router() -> APIRouter:
 # Dashboard Router
 # ============================================================================
 
+
 def create_dashboard_router() -> APIRouter:
     """Create dashboard API router"""
     router = APIRouter(prefix="/api/v4/dashboard", tags=["Phase 9 Dashboard"])
 
     @router.get(
-        "/summary",
-        summary="Dashboard Summary",
-        description="Get high-level dashboard summary"
+        "/summary", summary="Dashboard Summary", description="Get high-level dashboard summary"
     )
     async def get_dashboard_summary() -> Dict[str, Any]:
         """Get dashboard summary"""
@@ -547,15 +521,12 @@ def create_dashboard_router() -> APIRouter:
 # Teams Router
 # ============================================================================
 
+
 def create_teams_router() -> APIRouter:
     """Create teams API router"""
     router = APIRouter(prefix="/api/v4/teams", tags=["Phase 9 Teams"])
 
-    @router.post(
-        "",
-        summary="Create Team",
-        description="Create a team of agents"
-    )
+    @router.post("", summary="Create Team", description="Create a team of agents")
     async def create_team(request: CreateTeamRequest) -> Dict[str, Any]:
         """Create agent team"""
         try:
@@ -566,7 +537,7 @@ def create_teams_router() -> APIRouter:
                 objective=request.objective,
                 agent_ids=request.agent_ids,
                 lead_agent=request.lead_agent,
-                voting_mechanism=request.voting_mechanism
+                voting_mechanism=request.voting_mechanism,
             )
 
             if "error" in result:
@@ -578,11 +549,7 @@ def create_teams_router() -> APIRouter:
         except Exception as e:
             raise HTTPException(status_code=400, detail=str(e))
 
-    @router.get(
-        "/{team_id}",
-        summary="Get Team Info",
-        description="Get team information"
-    )
+    @router.get("/{team_id}", summary="Get Team Info", description="Get team information")
     async def get_team_info(team_id: str) -> Dict[str, Any]:
         """Get team information"""
         try:
@@ -605,18 +572,15 @@ def create_teams_router() -> APIRouter:
 # Memory Router
 # ============================================================================
 
+
 def create_memory_router() -> APIRouter:
     """Create environmental memory router"""
     router = APIRouter(prefix="/api/v4/memory", tags=["Phase 9 Environmental Memory"])
 
     @router.post(
-        "/write",
-        summary="Write to Memory",
-        description="Write data to environmental memory"
+        "/write", summary="Write to Memory", description="Write data to environmental memory"
     )
-    async def write_memory(
-        request: Dict[str, Any] = Body(...)
-    ) -> Dict[str, Any]:
+    async def write_memory(request: Dict[str, Any] = Body(...)) -> Dict[str, Any]:
         """Write to environmental memory"""
         try:
             mgmt = await get_agent_management()
@@ -625,27 +589,19 @@ def create_memory_router() -> APIRouter:
             ttl_seconds = request.get("ttl_seconds")
 
             memory_id = await mgmt.write_environmental_memory(
-                memory_type=memory_type,
-                data=data,
-                ttl_seconds=ttl_seconds
+                memory_type=memory_type, data=data, ttl_seconds=ttl_seconds
             )
 
-            return {
-                "memory_id": memory_id,
-                "type": memory_type,
-                "status": "written"
-            }
+            return {"memory_id": memory_id, "type": memory_type, "status": "written"}
         except Exception as e:
             raise HTTPException(status_code=400, detail=str(e))
 
     @router.post(
-        "/read",
-        summary="Read from Memory",
-        description="Read data from environmental memory"
+        "/read", summary="Read from Memory", description="Read data from environmental memory"
     )
     async def read_memory(
         agent_id: str = Query(..., description="Agent reading the memory"),
-        memory_type: Optional[str] = Query(None, description="Filter by memory type")
+        memory_type: Optional[str] = Query(None, description="Filter by memory type"),
     ) -> Dict[str, Any]:
         """Read from environmental memory"""
         try:
@@ -656,7 +612,7 @@ def create_memory_router() -> APIRouter:
                 "agent_id": agent_id,
                 "memory_type_filter": memory_type,
                 "entry_count": len(entries),
-                "entries": entries
+                "entries": entries,
             }
         except Exception as e:
             raise HTTPException(status_code=400, detail=str(e))
@@ -667,6 +623,7 @@ def create_memory_router() -> APIRouter:
 # ============================================================================
 # Integration Helper
 # ============================================================================
+
 
 def register_agent_management_routes(app) -> None:
     """Register all agent management routes with FastAPI app"""

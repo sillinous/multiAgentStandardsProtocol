@@ -58,39 +58,42 @@ logger = logging.getLogger(__name__)
 
 class GeneType(Enum):
     """Types of genes in agent DNA"""
-    ARCHITECTURE = "architecture"      # How agent is structured
-    BEHAVIOR = "behavior"              # How agent decides
-    PERFORMANCE = "performance"        # How agent optimizes
-    INTEGRATION = "integration"        # How agent communicates
-    ADAPTATION = "adaptation"          # How agent learns
-    CREATIVITY = "creativity"          # How agent explores
-    RELIABILITY = "reliability"        # How agent handles errors
-    EFFICIENCY = "efficiency"          # Resource optimization
+
+    ARCHITECTURE = "architecture"  # How agent is structured
+    BEHAVIOR = "behavior"  # How agent decides
+    PERFORMANCE = "performance"  # How agent optimizes
+    INTEGRATION = "integration"  # How agent communicates
+    ADAPTATION = "adaptation"  # How agent learns
+    CREATIVITY = "creativity"  # How agent explores
+    RELIABILITY = "reliability"  # How agent handles errors
+    EFFICIENCY = "efficiency"  # Resource optimization
 
 
 class MutationType(Enum):
     """Types of mutations"""
-    POINT = "point"                    # Single gene change
-    INSERTION = "insertion"            # Add new gene
-    DELETION = "deletion"              # Remove gene
-    DUPLICATION = "duplication"        # Duplicate gene
-    INVERSION = "inversion"            # Reverse gene sequence
-    CROSSOVER = "crossover"            # Exchange with another agent
+
+    POINT = "point"  # Single gene change
+    INSERTION = "insertion"  # Add new gene
+    DELETION = "deletion"  # Remove gene
+    DUPLICATION = "duplication"  # Duplicate gene
+    INVERSION = "inversion"  # Reverse gene sequence
+    CROSSOVER = "crossover"  # Exchange with another agent
 
 
 @dataclass
 class Gene:
     """A single gene in agent DNA"""
+
     gene_id: str
     gene_type: GeneType
     name: str
     value: Any
-    dominant: bool = True              # Dominant vs recessive
-    expression_level: float = 1.0      # 0-1, how strongly expressed
-    mutation_rate: float = 0.01        # Probability of mutation
+    dominant: bool = True  # Dominant vs recessive
+    expression_level: float = 1.0  # 0-1, how strongly expressed
+    mutation_rate: float = 0.01  # Probability of mutation
     metadata: Dict[str, Any] = field(default_factory=dict)
 
-    def mutate(self) -> 'Gene':
+    def mutate(self) -> "Gene":
         """Create a mutated copy of this gene"""
         if random.random() > self.mutation_rate:
             return self  # No mutation
@@ -103,7 +106,7 @@ class Gene:
             dominant=self.dominant if random.random() > 0.1 else not self.dominant,
             expression_level=max(0.1, min(1.0, self.expression_level + random.gauss(0, 0.1))),
             mutation_rate=self.mutation_rate,
-            metadata={**self.metadata, "parent_gene": self.gene_id, "mutated": True}
+            metadata={**self.metadata, "parent_gene": self.gene_id, "mutated": True},
         )
 
         return mutated
@@ -137,6 +140,7 @@ class Gene:
 @dataclass
 class Chromosome:
     """A chromosome containing related genes"""
+
     chromosome_id: str
     name: str
     genes: List[Gene]
@@ -156,6 +160,7 @@ class Chromosome:
 @dataclass
 class AgentDNA:
     """Complete genetic code for an agent"""
+
     dna_id: str
     agent_id: str
     generation: int
@@ -176,11 +181,7 @@ class AgentDNA:
 
     def express_phenotype(self) -> Dict[str, Any]:
         """Express DNA into observable traits (phenotype)"""
-        phenotype = {
-            "dna_id": self.dna_id,
-            "generation": self.generation,
-            "traits": {}
-        }
+        phenotype = {"dna_id": self.dna_id, "generation": self.generation, "traits": {}}
 
         for chromosome in self.chromosomes:
             chromosome_traits = chromosome.express()
@@ -261,7 +262,8 @@ class GeneticEvolutionEngine:
         cursor = conn.cursor()
 
         # DNA records
-        cursor.execute("""
+        cursor.execute(
+            """
             CREATE TABLE IF NOT EXISTS agent_dna (
                 dna_id TEXT PRIMARY KEY,
                 agent_id TEXT,
@@ -274,10 +276,12 @@ class GeneticEvolutionEngine:
                 crossover_count INTEGER,
                 dna_data TEXT
             )
-        """)
+        """
+        )
 
         # Breeding records
-        cursor.execute("""
+        cursor.execute(
+            """
             CREATE TABLE IF NOT EXISTS breeding_events (
                 event_id TEXT PRIMARY KEY,
                 parent1_dna_id TEXT,
@@ -287,10 +291,12 @@ class GeneticEvolutionEngine:
                 mutations_applied TEXT,
                 event_date TEXT
             )
-        """)
+        """
+        )
 
         # Fitness history
-        cursor.execute("""
+        cursor.execute(
+            """
             CREATE TABLE IF NOT EXISTS fitness_history (
                 record_id INTEGER PRIMARY KEY AUTOINCREMENT,
                 dna_id TEXT,
@@ -299,10 +305,12 @@ class GeneticEvolutionEngine:
                 fitness_components TEXT,
                 recorded_date TEXT
             )
-        """)
+        """
+        )
 
         # Population statistics
-        cursor.execute("""
+        cursor.execute(
+            """
             CREATE TABLE IF NOT EXISTS population_stats (
                 generation INTEGER PRIMARY KEY,
                 population_size INTEGER,
@@ -313,7 +321,8 @@ class GeneticEvolutionEngine:
                 statistics_json TEXT,
                 recorded_date TEXT
             )
-        """)
+        """
+        )
 
         conn.commit()
         conn.close()
@@ -321,10 +330,7 @@ class GeneticEvolutionEngine:
         logger.info(f"Genetics database initialized: {self.db_path}")
 
     def create_founder_dna(
-        self,
-        agent_id: str,
-        template_id: str,
-        base_traits: Dict[str, Any]
+        self, agent_id: str, template_id: str, base_traits: Dict[str, Any]
     ) -> AgentDNA:
         """
         Create founding DNA for a new agent lineage
@@ -345,35 +351,36 @@ class GeneticEvolutionEngine:
                     gene_type=GeneType.ARCHITECTURE,
                     name=key,
                     value=value,
-                    dominant=True
+                    dominant=True,
                 )
                 arch_genes.append(gene)
 
-        chromosomes.append(Chromosome(
-            chromosome_id="chr_architecture",
-            name="Architecture",
-            genes=arch_genes,
-            linkage_group="structural"
-        ))
+        chromosomes.append(
+            Chromosome(
+                chromosome_id="chr_architecture",
+                name="Architecture",
+                genes=arch_genes,
+                linkage_group="structural",
+            )
+        )
 
         # Behavior chromosome
         behavior_genes = []
         if "behavior" in base_traits:
             for key, value in base_traits["behavior"].items():
                 gene = Gene(
-                    gene_id=f"gene_behav_{key}",
-                    gene_type=GeneType.BEHAVIOR,
-                    name=key,
-                    value=value
+                    gene_id=f"gene_behav_{key}", gene_type=GeneType.BEHAVIOR, name=key, value=value
                 )
                 behavior_genes.append(gene)
 
-        chromosomes.append(Chromosome(
-            chromosome_id="chr_behavior",
-            name="Behavior",
-            genes=behavior_genes,
-            linkage_group="functional"
-        ))
+        chromosomes.append(
+            Chromosome(
+                chromosome_id="chr_behavior",
+                name="Behavior",
+                genes=behavior_genes,
+                linkage_group="functional",
+            )
+        )
 
         # Create DNA
         dna = AgentDNA(
@@ -382,7 +389,7 @@ class GeneticEvolutionEngine:
             generation=0,
             chromosomes=chromosomes,
             parent_dna_ids=[],
-            ancestor_dna_ids=[]
+            ancestor_dna_ids=[],
         )
 
         # Store in database
@@ -392,11 +399,7 @@ class GeneticEvolutionEngine:
 
         return dna
 
-    def crossover(
-        self,
-        parent1_dna: AgentDNA,
-        parent2_dna: AgentDNA
-    ) -> AgentDNA:
+    def crossover(self, parent1_dna: AgentDNA, parent2_dna: AgentDNA) -> AgentDNA:
         """
         Breed two agents to create offspring
 
@@ -423,7 +426,7 @@ class GeneticEvolutionEngine:
                 chromosome_id=f"chr_{i}_offspring",
                 name=chr1.name,
                 genes=offspring_genes,
-                linkage_group=chr1.linkage_group
+                linkage_group=chr1.linkage_group,
             )
 
             offspring_chromosomes.append(offspring_chromosome)
@@ -435,8 +438,14 @@ class GeneticEvolutionEngine:
             generation=parent1_dna.generation + 1,
             chromosomes=offspring_chromosomes,
             parent_dna_ids=[parent1_dna.dna_id, parent2_dna.dna_id],
-            ancestor_dna_ids=list(set(parent1_dna.ancestor_dna_ids + parent2_dna.ancestor_dna_ids + [parent1_dna.dna_id, parent2_dna.dna_id])),
-            crossover_count=1
+            ancestor_dna_ids=list(
+                set(
+                    parent1_dna.ancestor_dna_ids
+                    + parent2_dna.ancestor_dna_ids
+                    + [parent1_dna.dna_id, parent2_dna.dna_id]
+                )
+            ),
+            crossover_count=1,
         )
 
         # Store breeding event
@@ -469,7 +478,7 @@ class GeneticEvolutionEngine:
                 chromosome_id=chromosome.chromosome_id,
                 name=chromosome.name,
                 genes=mutated_genes,
-                linkage_group=chromosome.linkage_group
+                linkage_group=chromosome.linkage_group,
             )
 
             mutated_chromosomes.append(mutated_chromosome)
@@ -481,11 +490,7 @@ class GeneticEvolutionEngine:
 
         return dna
 
-    def select_parents(
-        self,
-        population: List[AgentDNA],
-        num_parents: int = 2
-    ) -> List[AgentDNA]:
+    def select_parents(self, population: List[AgentDNA], num_parents: int = 2) -> List[AgentDNA]:
         """
         Select parents for breeding using fitness-based selection
 
@@ -505,9 +510,7 @@ class GeneticEvolutionEngine:
         return parents
 
     def evolve_generation(
-        self,
-        population: List[AgentDNA],
-        performance_data: Dict[str, Dict[str, Any]]
+        self, population: List[AgentDNA], performance_data: Dict[str, Dict[str, Any]]
     ) -> List[AgentDNA]:
         """
         Evolve population by one generation
@@ -562,7 +565,9 @@ class GeneticEvolutionEngine:
 
         self.generation += 1
 
-        logger.info(f"Generation {self.generation} complete: {len(new_population)} agents, avg fitness: {np.mean([dna.fitness_score for dna in new_population]):.3f}")
+        logger.info(
+            f"Generation {self.generation} complete: {len(new_population)} agents, avg fitness: {np.mean([dna.fitness_score for dna in new_population]):.3f}"
+        )
 
         return new_population
 
@@ -571,45 +576,55 @@ class GeneticEvolutionEngine:
         conn = sqlite3.connect(self.db_path)
         cursor = conn.cursor()
 
-        cursor.execute("""
+        cursor.execute(
+            """
             INSERT OR REPLACE INTO agent_dna (
                 dna_id, agent_id, generation, parent_dna_ids,
                 fitness_score, fitness_components, birth_date,
                 mutations_count, crossover_count, dna_data
             ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
-        """, (
-            dna.dna_id, dna.agent_id, dna.generation,
-            json.dumps(dna.parent_dna_ids),
-            dna.fitness_score, json.dumps(dna.fitness_components),
-            dna.birth_date, dna.mutations_count, dna.crossover_count,
-            json.dumps(asdict(dna))
-        ))
+        """,
+            (
+                dna.dna_id,
+                dna.agent_id,
+                dna.generation,
+                json.dumps(dna.parent_dna_ids),
+                dna.fitness_score,
+                json.dumps(dna.fitness_components),
+                dna.birth_date,
+                dna.mutations_count,
+                dna.crossover_count,
+                json.dumps(asdict(dna)),
+            ),
+        )
 
         conn.commit()
         conn.close()
 
-    def _record_breeding_event(
-        self,
-        parent1: AgentDNA,
-        parent2: AgentDNA,
-        offspring: AgentDNA
-    ):
+    def _record_breeding_event(self, parent1: AgentDNA, parent2: AgentDNA, offspring: AgentDNA):
         """Record breeding event"""
         conn = sqlite3.connect(self.db_path)
         cursor = conn.cursor()
 
         event_id = f"breed_{datetime.now().strftime('%Y%m%d%H%M%S')}_{offspring.dna_id}"
 
-        cursor.execute("""
+        cursor.execute(
+            """
             INSERT INTO breeding_events (
                 event_id, parent1_dna_id, parent2_dna_id,
                 offspring_dna_id, crossover_points, mutations_applied, event_date
             ) VALUES (?, ?, ?, ?, ?, ?, ?)
-        """, (
-            event_id, parent1.dna_id, parent2.dna_id,
-            offspring.dna_id, json.dumps([]), json.dumps([]),
-            datetime.now().isoformat()
-        ))
+        """,
+            (
+                event_id,
+                parent1.dna_id,
+                parent2.dna_id,
+                offspring.dna_id,
+                json.dumps([]),
+                json.dumps([]),
+                datetime.now().isoformat(),
+            ),
+        )
 
         conn.commit()
         conn.close()
@@ -624,23 +639,30 @@ class GeneticEvolutionEngine:
             "avg_fitness": float(np.mean(fitness_scores)),
             "max_fitness": float(np.max(fitness_scores)),
             "min_fitness": float(np.min(fitness_scores)),
-            "std_fitness": float(np.std(fitness_scores))
+            "std_fitness": float(np.std(fitness_scores)),
         }
 
         conn = sqlite3.connect(self.db_path)
         cursor = conn.cursor()
 
-        cursor.execute("""
+        cursor.execute(
+            """
             INSERT INTO population_stats (
                 generation, population_size, avg_fitness, max_fitness,
                 min_fitness, diversity_score, statistics_json, recorded_date
             ) VALUES (?, ?, ?, ?, ?, ?, ?, ?)
-        """, (
-            stats["generation"], stats["population_size"],
-            stats["avg_fitness"], stats["max_fitness"],
-            stats["min_fitness"], 0.0,  # TODO: Calculate diversity
-            json.dumps(stats), datetime.now().isoformat()
-        ))
+        """,
+            (
+                stats["generation"],
+                stats["population_size"],
+                stats["avg_fitness"],
+                stats["max_fitness"],
+                stats["min_fitness"],
+                0.0,  # TODO: Calculate diversity
+                json.dumps(stats),
+                datetime.now().isoformat(),
+            ),
+        )
 
         conn.commit()
         conn.close()
@@ -649,9 +671,9 @@ class GeneticEvolutionEngine:
 # Example usage
 async def demo_genetic_evolution():
     """Demo of genetic evolution system"""
-    print("="*80)
+    print("=" * 80)
     print("AGENT DNA & GENETIC EVOLUTION - Revolutionary Innovation")
-    print("="*80)
+    print("=" * 80)
     print()
 
     # Initialize engine
@@ -669,13 +691,13 @@ async def demo_genetic_evolution():
                 "architecture": {
                     "model_type": "neural_network",
                     "layers": random.randint(2, 5),
-                    "hidden_units": random.randint(64, 256)
+                    "hidden_units": random.randint(64, 256),
                 },
                 "behavior": {
                     "learning_rate": random.uniform(0.001, 0.1),
-                    "exploration_rate": random.uniform(0.1, 0.9)
-                }
-            }
+                    "exploration_rate": random.uniform(0.1, 0.9),
+                },
+            },
         )
         population.append(dna)
 
@@ -690,7 +712,7 @@ async def demo_genetic_evolution():
             "success_rate": random.uniform(0.7, 0.95),
             "avg_response_time": random.uniform(100, 500),
             "code_quality": random.uniform(70, 95),
-            "business_value": random.uniform(60, 90)
+            "business_value": random.uniform(60, 90),
         }
 
     print("✓ Performance data collected\n")
@@ -708,11 +730,12 @@ async def demo_genetic_evolution():
     print(f"  Best Fitness: {np.max(fitness_scores):.3f}")
     print(f"  Worst Fitness: {np.min(fitness_scores):.3f}")
 
-    print("\n" + "="*80)
+    print("\n" + "=" * 80)
     print("✅ Genetic evolution demo complete!")
-    print("="*80)
+    print("=" * 80)
 
 
 if __name__ == "__main__":
     import asyncio
+
     asyncio.run(demo_genetic_evolution())

@@ -52,6 +52,7 @@ from library.core.collaborative_problem_solving import ProblemCategory, ProblemS
 @dataclass
 class ResearchPaper:
     """Research paper data model"""
+
     paper_id: str
     title: str
     authors: List[str]
@@ -71,6 +72,7 @@ class ResearchPaper:
 @dataclass
 class ExtractedAlgorithm:
     """Extracted algorithm from research"""
+
     algorithm_id: str
     paper_id: str
     name: str
@@ -88,6 +90,7 @@ class ExtractedAlgorithm:
 @dataclass
 class ResearchIntegration:
     """Research integration record"""
+
     integration_id: str
     algorithm_id: str
     paper_id: str
@@ -154,16 +157,14 @@ class ResearchIntelligenceAgent(EnhancedBaseAgent):
     """
 
     def __init__(
-        self,
-        agent_id: str = "research_intelligence_001",
-        config: Optional[Dict[str, Any]] = None
+        self, agent_id: str = "research_intelligence_001", config: Optional[Dict[str, Any]] = None
     ):
         super().__init__(
             agent_id=agent_id,
             agent_type="research_intelligence",
             enable_learning=True,
             enable_tool_discovery=True,
-            enable_problem_solving=True
+            enable_problem_solving=True,
         )
 
         # Research monitoring configuration
@@ -178,16 +179,31 @@ class ResearchIntelligenceAgent(EnhancedBaseAgent):
             "cs.MA",  # Multiagent Systems
             "cs.CL",  # Computation and Language
             "cs.NE",  # Neural and Evolutionary Computing
-            "stat.ML"  # Statistics - Machine Learning
+            "stat.ML",  # Statistics - Machine Learning
         ]
 
         # Keywords for relevance scoring
         self.high_value_keywords = [
-            "agent", "multi-agent", "autonomous", "learning", "reinforcement",
-            "federated", "distributed", "collaboration", "coordination",
-            "optimization", "reasoning", "planning", "decision-making",
-            "knowledge graph", "transfer learning", "meta-learning",
-            "few-shot", "zero-shot", "self-supervised", "continual learning"
+            "agent",
+            "multi-agent",
+            "autonomous",
+            "learning",
+            "reinforcement",
+            "federated",
+            "distributed",
+            "collaboration",
+            "coordination",
+            "optimization",
+            "reasoning",
+            "planning",
+            "decision-making",
+            "knowledge graph",
+            "transfer learning",
+            "meta-learning",
+            "few-shot",
+            "zero-shot",
+            "self-supervised",
+            "continual learning",
         ]
 
         # State management
@@ -203,7 +219,7 @@ class ResearchIntelligenceAgent(EnhancedBaseAgent):
             "algorithm_extraction",
             "code_generation",
             "performance_validation",
-            "automatic_integration"
+            "automatic_integration",
         ]
 
     async def _configure_data_sources(self):
@@ -223,14 +239,13 @@ class ResearchIntelligenceAgent(EnhancedBaseAgent):
                 current_value=0.0,
                 target_value=50.0,
                 strategy="reinforcement",
-                deadline=(datetime.now() + timedelta(days=365)).isoformat()
+                deadline=(datetime.now() + timedelta(days=365)).isoformat(),
             )
 
         # Learn from past successful integrations
         if self.enable_learning:
             learned = await self.learn_from_peers(
-                knowledge_type="best_practice",
-                min_confidence=0.8
+                knowledge_type="best_practice", min_confidence=0.8
             )
             self.logger.info(f"Learned {len(learned)} research integration best practices")
 
@@ -240,26 +255,19 @@ class ResearchIntelligenceAgent(EnhancedBaseAgent):
         """Fetch data needed for execution"""
         action = input_data.get("action", "scan_research")
 
-        fetched_data = {
-            "timestamp": datetime.now().isoformat(),
-            "action": action
-        }
+        fetched_data = {"timestamp": datetime.now().isoformat(), "action": action}
 
         # Get learned recommendations for this action
         if self.learning_system and action in ["analyze_paper", "extract_algorithms"]:
             recommendations = self.learning_system.get_recommendations(
-                agent_id=self.agent_id,
-                current_context={"action": action},
-                top_k=3
+                agent_id=self.agent_id, current_context={"action": action}, top_k=3
             )
             fetched_data["learned_recommendations"] = recommendations
 
         return fetched_data
 
     async def _execute_logic(
-        self,
-        input_data: Dict[str, Any],
-        fetched_data: Dict[str, Any]
+        self, input_data: Dict[str, Any], fetched_data: Dict[str, Any]
     ) -> Dict[str, Any]:
         """Core research intelligence logic"""
         action = input_data.get("action", "scan_research")
@@ -277,15 +285,10 @@ class ResearchIntelligenceAgent(EnhancedBaseAgent):
         elif action == "get_insights":
             return await self._get_research_insights(input_data, fetched_data)
         else:
-            return {
-                "success": False,
-                "error": f"Unknown action: {action}"
-            }
+            return {"success": False, "error": f"Unknown action: {action}"}
 
     async def _scan_research(
-        self,
-        input_data: Dict[str, Any],
-        fetched_data: Dict[str, Any]
+        self, input_data: Dict[str, Any], fetched_data: Dict[str, Any]
     ) -> Dict[str, Any]:
         """Scan arXiv for new research papers"""
         sources = input_data.get("sources", ["arxiv"])
@@ -320,12 +323,12 @@ class ResearchIntelligenceAgent(EnhancedBaseAgent):
                     "paper_count": len(high_relevance_papers),
                     "top_paper": {
                         "title": high_relevance_papers[0].title,
-                        "relevance": high_relevance_papers[0].relevance_score
+                        "relevance": high_relevance_papers[0].relevance_score,
                     },
-                    "categories": categories
+                    "categories": categories,
                 },
                 confidence=0.9,
-                tags=["research", "arxiv", "discovery"]
+                tags=["research", "arxiv", "discovery"],
             )
 
         return {
@@ -339,18 +342,14 @@ class ResearchIntelligenceAgent(EnhancedBaseAgent):
                     "authors": p.authors[:3],  # First 3 authors
                     "relevance_score": p.relevance_score,
                     "url": p.url,
-                    "published": p.published_date
+                    "published": p.published_date,
                 }
                 for p in high_relevance_papers[:10]  # Top 10
             ],
-            "timestamp": datetime.now().isoformat()
+            "timestamp": datetime.now().isoformat(),
         }
 
-    async def _scan_arxiv(
-        self,
-        categories: List[str],
-        days_back: int
-    ) -> List[ResearchPaper]:
+    async def _scan_arxiv(self, categories: List[str], days_back: int) -> List[ResearchPaper]:
         """Scan arXiv for papers in specified categories"""
         papers = []
 
@@ -368,7 +367,7 @@ class ResearchIntelligenceAgent(EnhancedBaseAgent):
             "start": 0,
             "max_results": 100,  # Limit to 100 per scan
             "sortBy": "submittedDate",
-            "sortOrder": "descending"
+            "sortOrder": "descending",
         }
 
         url = f"{self.arxiv_base_url}?{'&'.join(f'{k}={v}' for k, v in params.items())}"
@@ -401,7 +400,7 @@ class ResearchIntelligenceAgent(EnhancedBaseAgent):
                     pdf_url=entry.id.replace("/abs/", "/pdf/") + ".pdf",
                     published_date=entry.published,
                     categories=paper_categories,
-                    metadata={"source": "arxiv"}
+                    metadata={"source": "arxiv"},
                 )
 
                 papers.append(paper)
@@ -440,18 +439,12 @@ class ResearchIntelligenceAgent(EnhancedBaseAgent):
             recency_score = 0.5
 
         # Combine scores (weighted)
-        score = (
-            keyword_score * 0.5 +
-            category_score * 0.3 +
-            recency_score * 0.2
-        )
+        score = keyword_score * 0.5 + category_score * 0.3 + recency_score * 0.2
 
         return min(score, 1.0)
 
     async def _analyze_paper(
-        self,
-        input_data: Dict[str, Any],
-        fetched_data: Dict[str, Any]
+        self, input_data: Dict[str, Any], fetched_data: Dict[str, Any]
     ) -> Dict[str, Any]:
         """Deep analysis of a specific paper"""
         paper_id = input_data.get("paper_id")
@@ -477,14 +470,10 @@ class ResearchIntelligenceAgent(EnhancedBaseAgent):
             "applicability": self._assess_applicability(paper),
             "integration_complexity": self._estimate_integration_complexity(paper),
             "estimated_impact": self._estimate_impact(paper),
-            "recommendation": "integrate" if paper.relevance_score > 0.8 else "monitor"
+            "recommendation": "integrate" if paper.relevance_score > 0.8 else "monitor",
         }
 
-        return {
-            "success": True,
-            "analysis": analysis,
-            "timestamp": datetime.now().isoformat()
-        }
+        return {"success": True, "analysis": analysis, "timestamp": datetime.now().isoformat()}
 
     def _extract_key_contributions(self, paper: ResearchPaper) -> List[str]:
         """Extract key contributions from paper"""
@@ -525,7 +514,7 @@ class ResearchIntelligenceAgent(EnhancedBaseAgent):
             "neural network": "neural_network",
             "graph neural": "gnn",
             "federated": "federated_learning",
-            "meta-learning": "meta_learning"
+            "meta-learning": "meta_learning",
         }
 
         for pattern, algo_id in algorithm_patterns.items():
@@ -540,7 +529,7 @@ class ResearchIntelligenceAgent(EnhancedBaseAgent):
             "learning_system": 0.0,
             "tool_discovery": 0.0,
             "problem_solving": 0.0,
-            "general": 0.0
+            "general": 0.0,
         }
 
         text = (paper.title + " " + paper.abstract).lower()
@@ -580,13 +569,11 @@ class ResearchIntelligenceAgent(EnhancedBaseAgent):
             "performance_improvement": "10-30%",  # Estimated
             "applicability": "medium-high",
             "risk": "low",
-            "time_to_integrate": "2-4 weeks"
+            "time_to_integrate": "2-4 weeks",
         }
 
     async def _extract_algorithms(
-        self,
-        input_data: Dict[str, Any],
-        fetched_data: Dict[str, Any]
+        self, input_data: Dict[str, Any], fetched_data: Dict[str, Any]
     ) -> Dict[str, Any]:
         """Extract algorithms from a paper"""
         paper_id = input_data.get("paper_id")
@@ -613,28 +600,28 @@ class ResearchIntelligenceAgent(EnhancedBaseAgent):
                 generated_code="# Code generation pending",
                 test_cases=[],
                 performance_metrics={},
-                integration_ready=False
+                integration_ready=False,
             )
 
             self.extracted_algorithms[algorithm.algorithm_id] = algorithm
-            extracted.append({
-                "algorithm_id": algorithm.algorithm_id,
-                "name": algorithm.name,
-                "description": algorithm.description
-            })
+            extracted.append(
+                {
+                    "algorithm_id": algorithm.algorithm_id,
+                    "name": algorithm.name,
+                    "description": algorithm.description,
+                }
+            )
 
         return {
             "success": True,
             "paper_id": paper_id,
             "algorithms_extracted": len(extracted),
             "algorithms": extracted,
-            "timestamp": datetime.now().isoformat()
+            "timestamp": datetime.now().isoformat(),
         }
 
     async def _generate_code(
-        self,
-        input_data: Dict[str, Any],
-        fetched_data: Dict[str, Any]
+        self, input_data: Dict[str, Any], fetched_data: Dict[str, Any]
     ) -> Dict[str, Any]:
         """Generate production code from extracted algorithm"""
         algorithm_id = input_data.get("algorithm_id")
@@ -657,7 +644,7 @@ class ResearchIntelligenceAgent(EnhancedBaseAgent):
             "generated_code": generated_code,
             "language": algorithm.implementation_language,
             "integration_ready": True,
-            "timestamp": datetime.now().isoformat()
+            "timestamp": datetime.now().isoformat(),
         }
 
     def _generate_production_code(self, algorithm: ExtractedAlgorithm) -> str:
@@ -690,9 +677,7 @@ def process_data(data):
 """
 
     async def _integrate_research(
-        self,
-        input_data: Dict[str, Any],
-        fetched_data: Dict[str, Any]
+        self, input_data: Dict[str, Any], fetched_data: Dict[str, Any]
     ) -> Dict[str, Any]:
         """Integrate research into agent factory"""
         algorithm_id = input_data.get("algorithm_id")
@@ -716,7 +701,7 @@ def process_data(data):
             performance_improvement=0.0,  # To be measured
             validation_results={},
             rollback_possible=True,
-            status="testing"
+            status="testing",
         )
 
         self.integrations[integration.integration_id] = integration
@@ -730,15 +715,13 @@ def process_data(data):
             "next_steps": [
                 "Run validation tests",
                 "Measure performance improvement",
-                "Deploy to production if validated"
+                "Deploy to production if validated",
             ],
-            "timestamp": datetime.now().isoformat()
+            "timestamp": datetime.now().isoformat(),
         }
 
     async def _get_research_insights(
-        self,
-        input_data: Dict[str, Any],
-        fetched_data: Dict[str, Any]
+        self, input_data: Dict[str, Any], fetched_data: Dict[str, Any]
     ) -> Dict[str, Any]:
         """Get insights from research intelligence activities"""
         time_range_days = input_data.get("days", 30)
@@ -746,38 +729,29 @@ def process_data(data):
         insights = {
             "total_papers_discovered": len(self.discovered_papers),
             "high_relevance_papers": sum(
-                1 for p in self.discovered_papers.values()
-                if p.relevance_score > 0.7
+                1 for p in self.discovered_papers.values() if p.relevance_score > 0.7
             ),
             "algorithms_extracted": len(self.extracted_algorithms),
             "integrations_completed": sum(
-                1 for i in self.integrations.values()
-                if i.status == "deployed"
+                1 for i in self.integrations.values() if i.status == "deployed"
             ),
             "integrations_testing": sum(
-                1 for i in self.integrations.values()
-                if i.status == "testing"
+                1 for i in self.integrations.values() if i.status == "testing"
             ),
             "top_papers": [
                 {
                     "paper_id": p.paper_id,
                     "title": p.title,
                     "relevance": p.relevance_score,
-                    "status": p.integration_status
+                    "status": p.integration_status,
                 }
                 for p in sorted(
-                    self.discovered_papers.values(),
-                    key=lambda x: x.relevance_score,
-                    reverse=True
+                    self.discovered_papers.values(), key=lambda x: x.relevance_score, reverse=True
                 )[:5]
-            ]
+            ],
         }
 
-        return {
-            "success": True,
-            "insights": insights,
-            "timestamp": datetime.now().isoformat()
-        }
+        return {"success": True, "insights": insights, "timestamp": datetime.now().isoformat()}
 
     def _calculate_reward(self, input_data: Dict[str, Any], result: Dict[str, Any]) -> float:
         """Calculate reward signal for learning"""
@@ -811,7 +785,7 @@ def process_data(data):
 
 # Factory function
 def create_research_intelligence_agent(
-    config: Optional[Dict[str, Any]] = None
+    config: Optional[Dict[str, Any]] = None,
 ) -> ResearchIntelligenceAgent:
     """Create Research Intelligence Agent instance"""
     return ResearchIntelligenceAgent(config=config)
@@ -836,17 +810,19 @@ async def main():
     print("Example 1: Scanning arXiv for Recent Research")
     print("-" * 80)
 
-    result = await agent.execute({
-        "action": "scan_research",
-        "sources": ["arxiv"],
-        "categories": ["cs.AI", "cs.LG", "cs.MA"],
-        "days_back": 7  # Last 7 days
-    })
+    result = await agent.execute(
+        {
+            "action": "scan_research",
+            "sources": ["arxiv"],
+            "categories": ["cs.AI", "cs.LG", "cs.MA"],
+            "days_back": 7,  # Last 7 days
+        }
+    )
 
     print(f"Papers found: {result['total_papers_found']}")
     print(f"High relevance: {result['high_relevance_papers']}")
     print(f"\nTop papers:")
-    for i, paper in enumerate(result['papers'][:3], 1):
+    for i, paper in enumerate(result["papers"][:3], 1):
         print(f"  {i}. {paper['title']}")
         print(f"     Relevance: {paper['relevance_score']:.2f}")
         print(f"     URL: {paper['url']}\n")
@@ -855,12 +831,9 @@ async def main():
     print("\nExample 2: Research Intelligence Insights")
     print("-" * 80)
 
-    insights_result = await agent.execute({
-        "action": "get_insights",
-        "days": 30
-    })
+    insights_result = await agent.execute({"action": "get_insights", "days": 30})
 
-    insights = insights_result['insights']
+    insights = insights_result["insights"]
     print(f"Total papers discovered: {insights['total_papers_discovered']}")
     print(f"Algorithms extracted: {insights['algorithms_extracted']}")
     print(f"Integrations completed: {insights['integrations_completed']}\n")

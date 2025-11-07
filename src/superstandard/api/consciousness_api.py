@@ -67,8 +67,10 @@ from superstandard.protocols.consciousness_persistence import (
 # Pydantic Models for API
 # ============================================================================
 
+
 class CreateCollectiveRequest(BaseModel):
     """Request to create new collective consciousness."""
+
     consciousness_id: str = Field(..., description="Unique ID for collective")
     persistent: bool = Field(default=False, description="Enable persistence")
     auto_save: bool = Field(default=True, description="Enable auto-save")
@@ -77,12 +79,14 @@ class CreateCollectiveRequest(BaseModel):
 
 class RegisterAgentRequest(BaseModel):
     """Request to register agent with collective."""
+
     agent_id: str = Field(..., description="Unique agent ID")
     initial_state: str = Field(default="awakening", description="Initial consciousness state")
 
 
 class ContributeThoughtRequest(BaseModel):
     """Request to contribute thought to collective."""
+
     agent_id: str = Field(..., description="Agent contributing thought")
     thought_type: str = Field(..., description="Type of thought")
     content: Any = Field(..., description="Thought content")
@@ -92,12 +96,16 @@ class ContributeThoughtRequest(BaseModel):
 
 class CollapseConsciousnessRequest(BaseModel):
     """Request to collapse consciousness."""
+
     query: str = Field(..., description="Query to pose to collective")
-    min_coherence: float = Field(default=0.5, ge=0.0, le=1.0, description="Minimum coherence threshold")
+    min_coherence: float = Field(
+        default=0.5, ge=0.0, le=1.0, description="Minimum coherence threshold"
+    )
 
 
 class ConsciousnessEvent(BaseModel):
     """Real-time consciousness event for WebSocket stream."""
+
     event_type: str = Field(..., description="Event type")
     timestamp: str = Field(default_factory=lambda: datetime.utcnow().isoformat())
     consciousness_id: str = Field(..., description="Collective ID")
@@ -107,6 +115,7 @@ class ConsciousnessEvent(BaseModel):
 # ============================================================================
 # Consciousness Manager
 # ============================================================================
+
 
 class ConsciousnessManager:
     """
@@ -118,7 +127,9 @@ class ConsciousnessManager:
     def __init__(self, storage_path: str = "./consciousness_storage"):
         self.collectives: Dict[str, CollectiveConsciousness] = {}
         self.storage_path = storage_path
-        self.websocket_connections: Dict[str, List[WebSocket]] = {}  # consciousness_id -> [websockets]
+        self.websocket_connections: Dict[str, List[WebSocket]] = (
+            {}
+        )  # consciousness_id -> [websockets]
         self.event_queues: Dict[str, asyncio.Queue] = {}
 
     async def create_collective(
@@ -126,7 +137,7 @@ class ConsciousnessManager:
         consciousness_id: str,
         persistent: bool = False,
         auto_save: bool = True,
-        save_interval: int = 60
+        save_interval: int = 60,
     ) -> CollectiveConsciousness:
         """Create new collective consciousness."""
         if consciousness_id in self.collectives:
@@ -135,10 +146,7 @@ class ConsciousnessManager:
         if persistent:
             storage = JSONStorageBackend(self.storage_path)
             collective = PersistentCollectiveConsciousness(
-                consciousness_id,
-                storage,
-                auto_save=auto_save,
-                save_interval=save_interval
+                consciousness_id, storage, auto_save=auto_save, save_interval=save_interval
             )
             await collective.initialize()
         else:
@@ -149,10 +157,11 @@ class ConsciousnessManager:
         self.event_queues[consciousness_id] = asyncio.Queue()
 
         # Broadcast creation event
-        await self._broadcast_event(consciousness_id, "collective_created", {
-            "consciousness_id": consciousness_id,
-            "persistent": persistent
-        })
+        await self._broadcast_event(
+            consciousness_id,
+            "collective_created",
+            {"consciousness_id": consciousness_id, "persistent": persistent},
+        )
 
         return collective
 
@@ -204,9 +213,7 @@ class ConsciousnessManager:
     async def _broadcast_event(self, consciousness_id: str, event_type: str, data: Dict[str, Any]):
         """Broadcast event to all WebSocket connections."""
         event = ConsciousnessEvent(
-            event_type=event_type,
-            consciousness_id=consciousness_id,
-            data=data
+            event_type=event_type, consciousness_id=consciousness_id, data=data
         )
 
         # Add to queue
@@ -228,34 +235,40 @@ class ConsciousnessManager:
 
     async def broadcast_agent_registered(self, consciousness_id: str, agent_id: str, state: str):
         """Broadcast agent registration."""
-        await self._broadcast_event(consciousness_id, "agent_registered", {
-            "agent_id": agent_id,
-            "state": state
-        })
+        await self._broadcast_event(
+            consciousness_id, "agent_registered", {"agent_id": agent_id, "state": state}
+        )
 
-    async def broadcast_thought_contributed(self, consciousness_id: str, agent_id: str, thought_type: str):
+    async def broadcast_thought_contributed(
+        self, consciousness_id: str, agent_id: str, thought_type: str
+    ):
         """Broadcast thought contribution."""
-        await self._broadcast_event(consciousness_id, "thought_contributed", {
-            "agent_id": agent_id,
-            "thought_type": thought_type
-        })
+        await self._broadcast_event(
+            consciousness_id,
+            "thought_contributed",
+            {"agent_id": agent_id, "thought_type": thought_type},
+        )
 
     async def broadcast_consciousness_collapsed(self, consciousness_id: str, patterns_count: int):
         """Broadcast consciousness collapse."""
-        await self._broadcast_event(consciousness_id, "consciousness_collapsed", {
-            "patterns_discovered": patterns_count
-        })
+        await self._broadcast_event(
+            consciousness_id, "consciousness_collapsed", {"patterns_discovered": patterns_count}
+        )
 
     async def broadcast_pattern_discovered(self, consciousness_id: str, pattern: EmergentPattern):
         """Broadcast pattern discovery."""
-        await self._broadcast_event(consciousness_id, "pattern_discovered", {
-            "pattern_id": pattern.pattern_id,
-            "pattern_type": pattern.pattern_type,
-            "coherence": pattern.coherence_score,
-            "novelty": pattern.novelty_score,
-            "impact": pattern.impact_potential,
-            "agents": list(pattern.contributing_agents)
-        })
+        await self._broadcast_event(
+            consciousness_id,
+            "pattern_discovered",
+            {
+                "pattern_id": pattern.pattern_id,
+                "pattern_type": pattern.pattern_type,
+                "coherence": pattern.coherence_score,
+                "novelty": pattern.novelty_score,
+                "impact": pattern.impact_potential,
+                "agents": list(pattern.contributing_agents),
+            },
+        )
 
 
 # ============================================================================
@@ -266,7 +279,7 @@ class ConsciousnessManager:
 app = FastAPI(
     title="Consciousness API",
     description="REST and WebSocket API for Agent Consciousness Protocol",
-    version="1.0.0"
+    version="1.0.0",
 )
 
 # Add CORS middleware
@@ -286,6 +299,7 @@ manager = ConsciousnessManager()
 # REST Endpoints
 # ============================================================================
 
+
 @app.get("/")
 async def root():
     """Root endpoint."""
@@ -295,7 +309,7 @@ async def root():
         "status": "operational",
         "collectives": len(manager.list_collectives()),
         "documentation": "/docs",
-        "dashboard": "/dashboard"
+        "dashboard": "/dashboard",
     }
 
 
@@ -315,13 +329,15 @@ async def list_collectives():
     for cid in manager.list_collectives():
         collective = await manager.get_collective(cid)
         state = collective.get_consciousness_state()
-        collectives.append({
-            "consciousness_id": cid,
-            "total_agents": state["total_agents"],
-            "total_thoughts": state["total_thoughts"],
-            "emergent_patterns": state["emergent_patterns_discovered"],
-            "collective_awareness": state["collective_awareness"]
-        })
+        collectives.append(
+            {
+                "consciousness_id": cid,
+                "total_agents": state["total_agents"],
+                "total_thoughts": state["total_thoughts"],
+                "emergent_patterns": state["emergent_patterns_discovered"],
+                "collective_awareness": state["collective_awareness"],
+            }
+        )
     return {"collectives": collectives}
 
 
@@ -333,13 +349,13 @@ async def create_collective(request: CreateCollectiveRequest):
             request.consciousness_id,
             persistent=request.persistent,
             auto_save=request.auto_save,
-            save_interval=request.save_interval
+            save_interval=request.save_interval,
         )
 
         return {
             "consciousness_id": collective.consciousness_id,
             "persistent": request.persistent,
-            "status": "created"
+            "status": "created",
         }
     except ValueError as e:
         raise HTTPException(status_code=400, detail=str(e))
@@ -380,16 +396,14 @@ async def register_agent(consciousness_id: str, request: RegisterAgentRequest):
 
         if success:
             await manager.broadcast_agent_registered(
-                consciousness_id,
-                request.agent_id,
-                state.value
+                consciousness_id, request.agent_id, state.value
             )
 
         return {
             "agent_id": request.agent_id,
             "consciousness_id": consciousness_id,
             "state": state.value,
-            "registered": success
+            "registered": success,
         }
     except ValueError as e:
         raise HTTPException(status_code=404, detail=str(e))
@@ -405,20 +419,20 @@ async def contribute_thought(consciousness_id: str, request: ContributeThoughtRe
         try:
             thought_type = ThoughtType(request.thought_type)
         except ValueError:
-            raise HTTPException(status_code=400, detail=f"Invalid thought type: {request.thought_type}")
+            raise HTTPException(
+                status_code=400, detail=f"Invalid thought type: {request.thought_type}"
+            )
 
         thought = await collective.contribute_thought(
             request.agent_id,
             thought_type,
             request.content,
             request.confidence,
-            request.emotional_valence
+            request.emotional_valence,
         )
 
         await manager.broadcast_thought_contributed(
-            consciousness_id,
-            request.agent_id,
-            thought_type.value
+            consciousness_id, request.agent_id, thought_type.value
         )
 
         return {
@@ -426,7 +440,7 @@ async def contribute_thought(consciousness_id: str, request: ContributeThoughtRe
             "thought_type": thought.thought_type.value,
             "timestamp": thought.timestamp.isoformat(),
             "quantum_state": thought.quantum_state,
-            "entangled_with": len(thought.entangled_with)
+            "entangled_with": len(thought.entangled_with),
         }
     except ValueError as e:
         raise HTTPException(status_code=404, detail=str(e))
@@ -438,15 +452,9 @@ async def collapse_consciousness(consciousness_id: str, request: CollapseConscio
     try:
         collective = await manager.get_collective(consciousness_id)
 
-        patterns = await collective.collapse_consciousness(
-            request.query,
-            request.min_coherence
-        )
+        patterns = await collective.collapse_consciousness(request.query, request.min_coherence)
 
-        await manager.broadcast_consciousness_collapsed(
-            consciousness_id,
-            len(patterns)
-        )
+        await manager.broadcast_consciousness_collapsed(consciousness_id, len(patterns))
 
         # Broadcast each pattern
         for pattern in patterns:
@@ -455,7 +463,7 @@ async def collapse_consciousness(consciousness_id: str, request: CollapseConscio
         return {
             "query": request.query,
             "patterns_discovered": len(patterns),
-            "patterns": [pattern.to_dict() for pattern in patterns]
+            "patterns": [pattern.to_dict() for pattern in patterns],
         }
     except ValueError as e:
         raise HTTPException(status_code=404, detail=str(e))
@@ -466,9 +474,7 @@ async def get_patterns(consciousness_id: str):
     """Get all emergent patterns."""
     try:
         collective = await manager.get_collective(consciousness_id)
-        return {
-            "patterns": [p.to_dict() for p in collective.emergent_patterns]
-        }
+        return {"patterns": [p.to_dict() for p in collective.emergent_patterns]}
     except ValueError as e:
         raise HTTPException(status_code=404, detail=str(e))
 
@@ -492,8 +498,8 @@ async def get_metrics(consciousness_id: str):
                 "collective_awareness": state["collective_awareness"],
                 "average_integration": state["average_integration_score"],
                 "entanglement_density": state["entanglement_density"],
-                "total_collapses": state["total_collapses"]
-            }
+                "total_collapses": state["total_collapses"],
+            },
         }
     except ValueError as e:
         raise HTTPException(status_code=404, detail=str(e))
@@ -529,8 +535,8 @@ async def check_health(consciousness_id: str):
             "metrics": {
                 "collective_awareness": state["collective_awareness"],
                 "active_agents": state["active_agents"],
-                "entanglement_density": state["entanglement_density"]
-            }
+                "entanglement_density": state["entanglement_density"],
+            },
         }
     except ValueError as e:
         raise HTTPException(status_code=404, detail=str(e))
@@ -539,6 +545,7 @@ async def check_health(consciousness_id: str):
 # ============================================================================
 # WebSocket Endpoint
 # ============================================================================
+
 
 @app.websocket("/api/consciousness/{consciousness_id}/stream")
 async def consciousness_stream(websocket: WebSocket, consciousness_id: str):
@@ -555,9 +562,7 @@ async def consciousness_stream(websocket: WebSocket, consciousness_id: str):
 
     # Check if collective exists
     if consciousness_id not in manager.collectives:
-        await websocket.send_json({
-            "error": f"Collective {consciousness_id} not found"
-        })
+        await websocket.send_json({"error": f"Collective {consciousness_id} not found"})
         await websocket.close()
         return
 
@@ -567,10 +572,9 @@ async def consciousness_stream(websocket: WebSocket, consciousness_id: str):
     try:
         # Send initial state
         collective = await manager.get_collective(consciousness_id)
-        await websocket.send_json({
-            "event_type": "connected",
-            "data": collective.get_consciousness_state()
-        })
+        await websocket.send_json(
+            {"event_type": "connected", "data": collective.get_consciousness_state()}
+        )
 
         # Keep connection alive and listen for disconnect
         while True:
@@ -587,6 +591,7 @@ async def consciousness_stream(websocket: WebSocket, consciousness_id: str):
 # ============================================================================
 # Startup/Shutdown
 # ============================================================================
+
 
 @app.on_event("startup")
 async def startup_event():
@@ -608,4 +613,5 @@ async def shutdown_event():
 
 if __name__ == "__main__":
     import uvicorn
+
     uvicorn.run(app, host="0.0.0.0", port=8000)

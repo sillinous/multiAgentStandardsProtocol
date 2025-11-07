@@ -33,15 +33,18 @@ try:
         AgentStatus,
         DiscoveryQuery,
     )
+
     ANP_AVAILABLE = True
 except ImportError:
     ANP_AVAILABLE = False
+
     class AgentStatus:
         HEALTHY = "healthy"
 
 
 class NetworkError(Exception):
     """Raised when network operations fail"""
+
     pass
 
 
@@ -70,7 +73,7 @@ class NetworkAwareMixin:
         super().__init__(*args, **kwargs)
 
         # Network state
-        self._network_registry: Optional['AgentNetworkRegistry'] = None
+        self._network_registry: Optional["AgentNetworkRegistry"] = None
         self._network_enabled = ANP_AVAILABLE
         self._network_registered = False
         self._heartbeat_task: Optional[asyncio.Task] = None
@@ -79,10 +82,10 @@ class NetworkAwareMixin:
 
     async def register_on_network(
         self,
-        registry: 'AgentNetworkRegistry',
+        registry: "AgentNetworkRegistry",
         endpoints: Optional[Dict[str, str]] = None,
         metadata: Optional[Dict[str, Any]] = None,
-        auto_heartbeat: bool = True
+        auto_heartbeat: bool = True,
     ) -> bool:
         """
         Register agent with network registry.
@@ -110,9 +113,7 @@ class NetworkAwareMixin:
             )
         """
         if not self._network_enabled:
-            raise NetworkError(
-                "ANP protocol not available. Install anp_implementation module."
-            )
+            raise NetworkError("ANP protocol not available. Install anp_implementation module.")
 
         if self._network_registered and self._network_registry is not None:
             # Already registered - deregister first
@@ -123,10 +124,10 @@ class NetworkAwareMixin:
             action="register",
             agent_id=self.agent_id,
             agent_type=self.agent_type,
-            capabilities=self.capabilities_list if hasattr(self, 'capabilities_list') else [],
+            capabilities=self.capabilities_list if hasattr(self, "capabilities_list") else [],
             endpoints=endpoints or {},
             health_status=AgentStatus.HEALTHY.value,
-            metadata=metadata or {}
+            metadata=metadata or {},
         )
 
         # Register with registry
@@ -168,9 +169,7 @@ class NetworkAwareMixin:
 
         # Deregister
         registration = ANPRegistration(
-            action="deregister",
-            agent_id=self.agent_id,
-            agent_type=self.agent_type
+            action="deregister", agent_id=self.agent_id, agent_type=self.agent_type
         )
 
         success = await self._network_registry.deregister_agent(self.agent_id)
@@ -191,7 +190,7 @@ class NetworkAwareMixin:
         tags: Optional[List[str]] = None,
         region: Optional[str] = None,
         max_load: Optional[float] = None,
-        limit: int = 100
+        limit: int = 100,
     ) -> List[Dict[str, Any]]:
         """
         Discover other agents in the network.
@@ -232,7 +231,7 @@ class NetworkAwareMixin:
             tags=tags,
             region=region,
             max_load=max_load,
-            limit=limit
+            limit=limit,
         )
 
         # Execute discovery
@@ -245,9 +244,7 @@ class NetworkAwareMixin:
         return result.get("agents", [])
 
     async def send_heartbeat(
-        self,
-        health_status: Optional[str] = None,
-        load_score: Optional[float] = None
+        self, health_status: Optional[str] = None, load_score: Optional[float] = None
     ) -> bool:
         """
         Send heartbeat to network registry.
@@ -275,13 +272,11 @@ class NetworkAwareMixin:
             agent_id=self.agent_id,
             agent_type=self.agent_type,
             health_status=health_status or AgentStatus.HEALTHY.value,
-            metadata={"load_score": load_score} if load_score is not None else {}
+            metadata={"load_score": load_score} if load_score is not None else {},
         )
 
         success = await self._network_registry.heartbeat(
-            self.agent_id,
-            health_status or AgentStatus.HEALTHY.value,
-            load_score or 0.0
+            self.agent_id, health_status or AgentStatus.HEALTHY.value, load_score or 0.0
         )
 
         if success:
@@ -289,11 +284,7 @@ class NetworkAwareMixin:
 
         return success
 
-    async def update_status(
-        self,
-        health_status: str,
-        load_score: Optional[float] = None
-    ) -> bool:
+    async def update_status(self, health_status: str, load_score: Optional[float] = None) -> bool:
         """
         Update agent health status.
 
@@ -322,7 +313,9 @@ class NetworkAwareMixin:
             "agent_id": self.agent_id,
             "registered": self._network_registered,
             "registry_id": id(self._network_registry) if self._network_registry else None,
-            "last_heartbeat": self._last_heartbeat_time.isoformat() if self._last_heartbeat_time else None,
+            "last_heartbeat": (
+                self._last_heartbeat_time.isoformat() if self._last_heartbeat_time else None
+            ),
             "auto_heartbeat": self._heartbeat_task is not None,
             "heartbeat_interval": self._heartbeat_interval,
             "network_enabled": self._network_enabled,
@@ -348,7 +341,7 @@ class NetworkAwareMixin:
         """
         return self._network_registered
 
-    def get_network_registry(self) -> Optional['AgentNetworkRegistry']:
+    def get_network_registry(self) -> Optional["AgentNetworkRegistry"]:
         """
         Get the network registry this agent is registered with.
 
@@ -375,6 +368,7 @@ def network_aware(agent_class):
     Returns:
         Enhanced class with network capabilities
     """
+
     class NetworkAwareAgent(NetworkAwareMixin, agent_class):
         pass
 

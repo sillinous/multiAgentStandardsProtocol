@@ -53,7 +53,11 @@ def list_agents() -> List[AgentOut]:
 def create_agent(payload: AgentCreate) -> AgentOut:
     db = SessionLocal()
     try:
-        a = Agent(name=payload.name, config=payload.config, schedule_interval_sec=payload.schedule_interval_sec)
+        a = Agent(
+            name=payload.name,
+            config=payload.config,
+            schedule_interval_sec=payload.schedule_interval_sec,
+        )
         db.add(a)
         db.commit()
         db.refresh(a)
@@ -190,7 +194,9 @@ def trigger_run(agent_id: str) -> AgentRunOut:
         db.commit()
         db.refresh(run)
         # Log entry
-        log = AgentLog(agent_id=a.id, level="info", message="Run completed", meta={"run_id": run.id})
+        log = AgentLog(
+            agent_id=a.id, level="info", message="Run completed", meta={"run_id": run.id}
+        )
         db.add(log)
         db.commit()
         return AgentRunOut(
@@ -221,7 +227,13 @@ def get_status(agent_id: str) -> AgentStatus:
 def get_logs(agent_id: str) -> List[AgentLogOut]:
     db = SessionLocal()
     try:
-        logs = db.query(AgentLog).filter(AgentLog.agent_id == agent_id).order_by(AgentLog.timestamp.desc()).limit(200).all()
+        logs = (
+            db.query(AgentLog)
+            .filter(AgentLog.agent_id == agent_id)
+            .order_by(AgentLog.timestamp.desc())
+            .limit(200)
+            .all()
+        )
         return [
             AgentLogOut(
                 id=l.id,
@@ -235,4 +247,3 @@ def get_logs(agent_id: str) -> List[AgentLogOut]:
         ]
     finally:
         db.close()
-

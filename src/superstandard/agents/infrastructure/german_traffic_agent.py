@@ -35,7 +35,7 @@ import logging
 # Add parent directory to path for imports
 sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), "../../..")))
 
-from library.core.base_agent import TrafficIntelligenceAgent, register_agent
+from src.superstandard.agents.base.base_agent import TrafficIntelligenceAgent, register_agent
 from library.core.api_budget_manager import APIBudgetManager
 from library.data_sources.traffic_sources import (
     HERETrafficAPI,

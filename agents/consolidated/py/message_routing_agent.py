@@ -11,9 +11,16 @@ from collections import defaultdict
 import uuid
 
 from .interfaces import (
-    AgentMessage, AgentResponse, AgentEvent, AgentIdentifier,
-    MessageType, Priority, AgentTeam, ProcessStatus,
-    AgentCommunicationInterface, BaseAgent
+    AgentMessage,
+    AgentResponse,
+    AgentEvent,
+    AgentIdentifier,
+    MessageType,
+    Priority,
+    AgentTeam,
+    ProcessStatus,
+    AgentCommunicationInterface,
+    BaseAgent,
 )
 from .message_bus import message_bus, MessageBus
 from .workflow_orchestrator import workflow_orchestrator
@@ -53,9 +60,9 @@ class MessageRoutingAgent(BaseAgent):
                 "rate_limiting",
                 "agent_discovery",
                 "health_monitoring",
-                "analytics"
+                "analytics",
             ],
-            status="active"
+            status="active",
         )
 
         super().__init__(identifier)
@@ -126,7 +133,7 @@ class MessageRoutingAgent(BaseAgent):
                 source_agent=self.identifier,
                 status="error",
                 error_message=f"Routing failed: {str(e)}",
-                execution_time_ms=0
+                execution_time_ms=0,
             )
 
     async def broadcast_event(self, event: AgentEvent) -> List[AgentResponse]:
@@ -148,8 +155,7 @@ class MessageRoutingAgent(BaseAgent):
             self.routing_stats["broadcast_errors"] += 1
             return []
 
-    async def route_to_best_agent(self, message: AgentMessage,
-                                  team: AgentTeam) -> AgentResponse:
+    async def route_to_best_agent(self, message: AgentMessage, team: AgentTeam) -> AgentResponse:
         """
         Intelligently route message to best available agent in team
         Uses load balancing and health status
@@ -164,14 +170,11 @@ class MessageRoutingAgent(BaseAgent):
                     source_agent=self.identifier,
                     status="error",
                     error_message=f"No available agents in team {team.value}",
-                    execution_time_ms=0
+                    execution_time_ms=0,
                 )
 
             # Filter healthy agents
-            healthy_agents = [
-                agent for agent in agents
-                if self._is_agent_healthy(agent.id)
-            ]
+            healthy_agents = [agent for agent in agents if self._is_agent_healthy(agent.id)]
 
             if not healthy_agents:
                 # Fallback to any available agent
@@ -193,17 +196,12 @@ class MessageRoutingAgent(BaseAgent):
                 source_agent=self.identifier,
                 status="error",
                 error_message=f"Smart routing failed: {str(e)}",
-                execution_time_ms=0
+                execution_time_ms=0,
             )
 
-    async def subscribe_to_events(self, event_types: List[str],
-                                 callback) -> str:
+    async def subscribe_to_events(self, event_types: List[str], callback) -> str:
         """Subscribe to specific event types"""
-        return await self.message_bus.subscribe_to_events(
-            self.identifier.id,
-            event_types,
-            callback
-        )
+        return await self.message_bus.subscribe_to_events(self.identifier.id, event_types, callback)
 
     async def register_agent(self, agent: AgentIdentifier) -> bool:
         """Register new agent with routing system"""
@@ -216,7 +214,7 @@ class MessageRoutingAgent(BaseAgent):
                     "status": "healthy",
                     "last_seen": datetime.utcnow(),
                     "message_count": 0,
-                    "error_count": 0
+                    "error_count": 0,
                 }
 
                 logger.info(f"Agent {agent.name} registered with routing system")
@@ -265,7 +263,7 @@ class MessageRoutingAgent(BaseAgent):
                 "total_broadcasts": self.routing_stats.get("total_broadcasts", 0),
                 "broadcast_recipients": self.routing_stats.get("broadcast_recipients", 0),
                 "agents_registered": self.routing_stats.get("agents_registered", 0),
-                "routing_errors": self.routing_stats.get("routing_errors", 0)
+                "routing_errors": self.routing_stats.get("routing_errors", 0),
             },
             "priority_distribution": dict(self.priority_distribution),
             "team_message_distribution": dict(self.team_message_counts),
@@ -273,15 +271,13 @@ class MessageRoutingAgent(BaseAgent):
             "agent_health": {
                 "total_agents": len(self.agent_health_status),
                 "healthy_agents": sum(
-                    1 for h in self.agent_health_status.values()
-                    if h["status"] == "healthy"
+                    1 for h in self.agent_health_status.values() if h["status"] == "healthy"
                 ),
                 "unhealthy_agents": sum(
-                    1 for h in self.agent_health_status.values()
-                    if h["status"] != "healthy"
-                )
+                    1 for h in self.agent_health_status.values() if h["status"] != "healthy"
+                ),
             },
-            "timestamp": datetime.utcnow().isoformat()
+            "timestamp": datetime.utcnow().isoformat(),
         }
 
     async def get_agent_health_report(self) -> Dict[str, Any]:
@@ -291,7 +287,7 @@ class MessageRoutingAgent(BaseAgent):
             "total_agents": len(self.agent_health_status),
             "health_check_interval": self.health_check_interval_seconds,
             "last_health_check": self.last_health_check.isoformat(),
-            "timestamp": datetime.utcnow().isoformat()
+            "timestamp": datetime.utcnow().isoformat(),
         }
 
     async def get_message_history(self, limit: int = 100) -> List[Dict[str, Any]]:
@@ -306,7 +302,7 @@ class MessageRoutingAgent(BaseAgent):
             "workflow_orchestrator": "unknown",
             "checks_performed": [],
             "issues_found": [],
-            "timestamp": datetime.utcnow().isoformat()
+            "timestamp": datetime.utcnow().isoformat(),
         }
 
         # Check message bus
@@ -378,14 +374,14 @@ class MessageRoutingAgent(BaseAgent):
             "source": message.source_agent.id,
             "target": message.target_agent.id if message.target_agent else "broadcast",
             "priority": message.priority.value,
-            "timestamp": message.timestamp.isoformat()
+            "timestamp": message.timestamp.isoformat(),
         }
 
         self.message_history.append(message_record)
 
         # Trim history to max size
         if len(self.message_history) > self.max_history:
-            self.message_history = self.message_history[-self.max_history:]
+            self.message_history = self.message_history[-self.max_history :]
 
     def _is_agent_healthy(self, agent_id: str) -> bool:
         """Check if agent is healthy"""
@@ -439,10 +435,7 @@ class MessageRoutingAgent(BaseAgent):
         # Route the message
         response = await self.send_message(message)
 
-        return {
-            "routed": True,
-            "response": response.dict()
-        }
+        return {"routed": True, "response": response.dict()}
 
     async def _handle_broadcast(self, message: AgentMessage) -> Dict[str, Any]:
         """Handle broadcast message"""
@@ -451,15 +444,12 @@ class MessageRoutingAgent(BaseAgent):
             event_type="broadcast_message",
             source_agent=message.source_agent,
             scope="enterprise",
-            payload=message.payload
+            payload=message.payload,
         )
 
         responses = await self.broadcast_event(event)
 
-        return {
-            "broadcast": True,
-            "recipients": len(responses)
-        }
+        return {"broadcast": True, "recipients": len(responses)}
 
     async def _handle_event(self, message: AgentMessage) -> Dict[str, Any]:
         """Handle event message"""
@@ -470,10 +460,7 @@ class MessageRoutingAgent(BaseAgent):
             event = AgentEvent(**event_data)
             responses = await self.broadcast_event(event)
 
-            return {
-                "event_broadcast": True,
-                "recipients": len(responses)
-            }
+            return {"event_broadcast": True, "recipients": len(responses)}
 
         return {"event_broadcast": False, "error": "No event data"}
 
@@ -482,10 +469,7 @@ class MessageRoutingAgent(BaseAgent):
         # Route to workflow orchestrator
         task_data = message.payload.get("task", {})
 
-        return {
-            "task_routed": True,
-            "task_id": task_data.get("id", "unknown")
-        }
+        return {"task_routed": True, "task_id": task_data.get("id", "unknown")}
 
     async def _handle_agent_registered(self, event: AgentEvent):
         """Handle agent registration event"""
@@ -496,7 +480,7 @@ class MessageRoutingAgent(BaseAgent):
                 "status": "healthy",
                 "last_seen": datetime.utcnow(),
                 "message_count": 0,
-                "error_count": 0
+                "error_count": 0,
             }
 
             logger.info(f"Agent {agent_id} registration event processed")

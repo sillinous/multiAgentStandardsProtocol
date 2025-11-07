@@ -244,7 +244,9 @@ class TestBaseAgentInheritance:
             async def execute(self, input_data):
                 return {"custom": True}
 
-        agent = CustomAgent({"agent_id": "custom", "name": "Custom", "description": "Test", "capabilities": []})
+        agent = CustomAgent(
+            {"agent_id": "custom", "name": "Custom", "description": "Test", "capabilities": []}
+        )
         assert isinstance(agent, BaseAgent)
         assert isinstance(agent, CustomAgent)
 
@@ -255,7 +257,9 @@ class TestBaseAgentInheritance:
             async def execute(self, input_data):
                 return {"overridden": True, "input": input_data}
 
-        agent = OverrideAgent({"agent_id": "override", "name": "Override", "description": "Test", "capabilities": []})
+        agent = OverrideAgent(
+            {"agent_id": "override", "name": "Override", "description": "Test", "capabilities": []}
+        )
         result = asyncio.run(agent.execute("test"))
         assert result["overridden"] is True
 

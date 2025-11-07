@@ -15,6 +15,7 @@ from enum import Enum
 
 class AgentStatus(str, Enum):
     """Agent development status"""
+
     PRODUCTION = "production"
     BETA = "beta"
     DEVELOPMENT = "development"
@@ -24,6 +25,7 @@ class AgentStatus(str, Enum):
 
 class ArchitectureDebtSeverity(str, Enum):
     """Severity levels for architecture debt"""
+
     CRITICAL = "critical"
     HIGH = "high"
     MEDIUM = "medium"
@@ -34,6 +36,7 @@ class ArchitectureDebtSeverity(str, Enum):
 @dataclass
 class ArchitectureDebtItem:
     """Architecture debt tracking item"""
+
     id: str
     agent_id: str
     title: str
@@ -50,6 +53,7 @@ class ArchitectureDebtItem:
 @dataclass
 class AgentIndexEntry:
     """Quick index entry for an agent"""
+
     agent_id: str
     class_name: str
     file_path: str
@@ -97,9 +101,9 @@ class AgentIndexSystem:
         """Load index from disk"""
         if self.index_file.exists():
             try:
-                with open(self.index_file, 'r') as f:
+                with open(self.index_file, "r") as f:
                     data = json.load(f)
-                    for item in data.get('agents', []):
+                    for item in data.get("agents", []):
                         entry = AgentIndexEntry(**item)
                         self._add_to_indices(entry)
             except Exception as e:
@@ -107,9 +111,9 @@ class AgentIndexSystem:
 
         if self.debt_file.exists():
             try:
-                with open(self.debt_file, 'r') as f:
+                with open(self.debt_file, "r") as f:
                     data = json.load(f)
-                    for item in data.get('debt_items', []):
+                    for item in data.get("debt_items", []):
                         debt = ArchitectureDebtItem(**item)
                         self.debt_items[debt.id] = debt
             except Exception as e:
@@ -119,24 +123,24 @@ class AgentIndexSystem:
         """Save index to disk"""
         # Save agent index
         data = {
-            'version': '1.0',
-            'generated_at': datetime.now().isoformat(),
-            'total_agents': len(self.agents_by_id),
-            'agents': [asdict(agent) for agent in self.agents_by_id.values()]
+            "version": "1.0",
+            "generated_at": datetime.now().isoformat(),
+            "total_agents": len(self.agents_by_id),
+            "agents": [asdict(agent) for agent in self.agents_by_id.values()],
         }
 
-        with open(self.index_file, 'w') as f:
+        with open(self.index_file, "w") as f:
             json.dump(data, f, indent=2)
 
         # Save architecture debt
         debt_data = {
-            'version': '1.0',
-            'generated_at': datetime.now().isoformat(),
-            'total_items': len(self.debt_items),
-            'debt_items': [asdict(item) for item in self.debt_items.values()]
+            "version": "1.0",
+            "generated_at": datetime.now().isoformat(),
+            "total_items": len(self.debt_items),
+            "debt_items": [asdict(item) for item in self.debt_items.values()],
         }
 
-        with open(self.debt_file, 'w') as f:
+        with open(self.debt_file, "w") as f:
             json.dump(debt_data, f, indent=2)
 
     def _add_to_indices(self, entry: AgentIndexEntry):
@@ -159,7 +163,7 @@ class AgentIndexSystem:
         description: Optional[str] = None,
         capabilities: Optional[List[str]] = None,
         dependencies: Optional[List[str]] = None,
-        registered: bool = False
+        registered: bool = False,
     ) -> AgentIndexEntry:
         """Add or update agent in index"""
         entry = AgentIndexEntry(
@@ -172,7 +176,7 @@ class AgentIndexSystem:
             capabilities=capabilities or [],
             dependencies=dependencies or [],
             registered=registered,
-            last_updated=datetime.now().isoformat()
+            last_updated=datetime.now().isoformat(),
         )
 
         self._add_to_indices(entry)
@@ -217,7 +221,7 @@ class AgentIndexSystem:
         description: str,
         severity: ArchitectureDebtSeverity,
         category: str,
-        estimated_effort_hours: Optional[int] = None
+        estimated_effort_hours: Optional[int] = None,
     ) -> ArchitectureDebtItem:
         """Add architecture debt item"""
         debt_id = f"debt_{len(self.debt_items) + 1:04d}"
@@ -230,7 +234,7 @@ class AgentIndexSystem:
             severity=severity,
             category=category,
             created_at=datetime.now().isoformat(),
-            estimated_effort_hours=estimated_effort_hours
+            estimated_effort_hours=estimated_effort_hours,
         )
 
         self.debt_items[debt_id] = debt
@@ -248,8 +252,11 @@ class AgentIndexSystem:
         if not agent:
             return []
 
-        return [self.debt_items[debt_id] for debt_id in agent.architecture_debt
-                if debt_id in self.debt_items]
+        return [
+            self.debt_items[debt_id]
+            for debt_id in agent.architecture_debt
+            if debt_id in self.debt_items
+        ]
 
     def get_all_debt(self, status: Optional[str] = None) -> List[ArchitectureDebtItem]:
         """Get all architecture debt items, optionally filtered by status"""
@@ -280,36 +287,34 @@ class AgentIndexSystem:
             by_status[status] = by_status.get(status, 0) + 1
 
         debt_stats = {
-            'total': len(self.debt_items),
-            'open': sum(1 for d in self.debt_items.values() if d.status == 'open'),
-            'in_progress': sum(1 for d in self.debt_items.values() if d.status == 'in_progress'),
-            'resolved': sum(1 for d in self.debt_items.values() if d.status == 'resolved'),
-            'by_severity': {}
+            "total": len(self.debt_items),
+            "open": sum(1 for d in self.debt_items.values() if d.status == "open"),
+            "in_progress": sum(1 for d in self.debt_items.values() if d.status == "in_progress"),
+            "resolved": sum(1 for d in self.debt_items.values() if d.status == "resolved"),
+            "by_severity": {},
         }
 
         for debt in self.debt_items.values():
-            if debt.status != 'resolved':
+            if debt.status != "resolved":
                 severity = debt.severity.value
-                debt_stats['by_severity'][severity] = debt_stats['by_severity'].get(severity, 0) + 1
+                debt_stats["by_severity"][severity] = debt_stats["by_severity"].get(severity, 0) + 1
 
         return {
-            'total_agents': total,
-            'registered_agents': registered,
-            'unregistered_agents': total - registered,
-            'registration_rate': f"{(registered / total * 100):.1f}%" if total > 0 else "0%",
-            'by_category': by_category,
-            'by_status': by_status,
-            'architecture_debt': debt_stats
+            "total_agents": total,
+            "registered_agents": registered,
+            "unregistered_agents": total - registered,
+            "registration_rate": f"{(registered / total * 100):.1f}%" if total > 0 else "0%",
+            "by_category": by_category,
+            "by_status": by_status,
+            "architecture_debt": debt_stats,
         }
 
     def search(
-        self,
-        query: str,
-        search_fields: Optional[List[str]] = None
+        self, query: str, search_fields: Optional[List[str]] = None
     ) -> List[AgentIndexEntry]:
         """Search agents by query string"""
         if search_fields is None:
-            search_fields = ['agent_id', 'class_name', 'description', 'capabilities']
+            search_fields = ["agent_id", "class_name", "description", "capabilities"]
 
         query_lower = query.lower()
         results = []
@@ -317,13 +322,17 @@ class AgentIndexSystem:
         for agent in self.agents_by_id.values():
             match = False
 
-            if 'agent_id' in search_fields and query_lower in agent.agent_id.lower():
+            if "agent_id" in search_fields and query_lower in agent.agent_id.lower():
                 match = True
-            if 'class_name' in search_fields and query_lower in agent.class_name.lower():
+            if "class_name" in search_fields and query_lower in agent.class_name.lower():
                 match = True
-            if 'description' in search_fields and agent.description and query_lower in agent.description.lower():
+            if (
+                "description" in search_fields
+                and agent.description
+                and query_lower in agent.description.lower()
+            ):
                 match = True
-            if 'capabilities' in search_fields:
+            if "capabilities" in search_fields:
                 for cap in agent.capabilities:
                     if query_lower in cap.lower():
                         match = True
@@ -337,6 +346,7 @@ class AgentIndexSystem:
 
 # Global instance
 _agent_index = None
+
 
 def get_agent_index() -> AgentIndexSystem:
     """Get global agent index instance"""
@@ -373,7 +383,7 @@ def track_debt(
     description: str,
     severity: ArchitectureDebtSeverity = ArchitectureDebtSeverity.MEDIUM,
     category: str = "code_quality",
-    estimated_effort_hours: Optional[int] = None
+    estimated_effort_hours: Optional[int] = None,
 ) -> ArchitectureDebtItem:
     """Quick function to track architecture debt"""
     return get_agent_index().add_architecture_debt(

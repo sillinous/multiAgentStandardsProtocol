@@ -47,7 +47,9 @@ class ApiRateLimiterTaskAgent(BaseAgent):
     and maximum reusability across APQC categories.
     """
 
-    def __init__(self, agent_id: str = "api_rate_limiter_task_agent", config: Optional[Dict[str, Any]] = None):
+    def __init__(
+        self, agent_id: str = "api_rate_limiter_task_agent", config: Optional[Dict[str, Any]] = None
+    ):
         """
         Initialize API Rate Limiter Task Agent
 
@@ -58,8 +60,14 @@ class ApiRateLimiterTaskAgent(BaseAgent):
         super().__init__(
             agent_id=agent_id,
             agent_type="communication_integration",
-            capabilities=['token_bucket', 'leaky_bucket', 'sliding_window', 'distributed_limiting', 'burst_handling'],
-            config=config or {}
+            capabilities=[
+                "token_bucket",
+                "leaky_bucket",
+                "sliding_window",
+                "distributed_limiting",
+                "burst_handling",
+            ],
+            config=config or {},
         )
 
         # Agent-specific initialization
@@ -69,26 +77,26 @@ class ApiRateLimiterTaskAgent(BaseAgent):
             "reusable": True,
             "composable": True,
             "stateless": True,
-            "framework": "APQC 7.0.1"
+            "framework": "APQC 7.0.1",
         }
 
         logger.info(f"Initialized API Rate Limiter Task Agent [{self.agent_id}]")
 
     async def execute_task(self, task: Dict[str, Any]) -> Dict[str, Any]:
         """
-        Execute the communication integration task
+                Execute the communication integration task
 
-        Args:
-            task: Task parameters containing:
-                - api_endpoint: string
-- rate_limit_config: dict
-- window_size: int
+                Args:
+                    task: Task parameters containing:
+                        - api_endpoint: string
+        - rate_limit_config: dict
+        - window_size: int
 
-        Returns:
-            Result dictionary containing:
-                - allow_deny: bool
-- remaining_quota: int
-- reset_time: string
+                Returns:
+                    Result dictionary containing:
+                        - allow_deny: bool
+        - remaining_quota: int
+        - reset_time: string
         """
         try:
             logger.info(f"[{self.agent_id}] Executing communication_integration task")
@@ -108,7 +116,7 @@ class ApiRateLimiterTaskAgent(BaseAgent):
                 "status": "success",
                 "agent_id": self.agent_id,
                 "timestamp": datetime.utcnow().isoformat(),
-                "result": output
+                "result": output,
             }
 
         except Exception as e:
@@ -117,7 +125,7 @@ class ApiRateLimiterTaskAgent(BaseAgent):
                 "status": "error",
                 "agent_id": self.agent_id,
                 "timestamp": datetime.utcnow().isoformat(),
-                "error": str(e)
+                "error": str(e),
             }
 
     def _validate_inputs(self, task: Dict[str, Any]) -> None:
@@ -130,7 +138,7 @@ class ApiRateLimiterTaskAgent(BaseAgent):
         Raises:
             ValueError: If required inputs are missing or invalid
         """
-        required_fields = ['api_endpoint', 'rate_limit_config', 'window_size']
+        required_fields = ["api_endpoint", "rate_limit_config", "window_size"]
 
         for field in required_fields:
             if field not in task:
@@ -158,7 +166,7 @@ class ApiRateLimiterTaskAgent(BaseAgent):
         result = {
             "executed": True,
             "task_type": "communication_integration",
-            "inputs_received": list(task.keys())
+            "inputs_received": list(task.keys()),
         }
 
         # Simulate async work
@@ -183,8 +191,8 @@ class ApiRateLimiterTaskAgent(BaseAgent):
                 "agent_type": self.agent_type,
                 "level": 5,
                 "category": "communication_integration",
-                "timestamp": datetime.utcnow().isoformat()
-            }
+                "timestamp": datetime.utcnow().isoformat(),
+            },
         }
 
     async def handle_message(self, message: Dict[str, Any]) -> Dict[str, Any]:
@@ -206,10 +214,7 @@ class ApiRateLimiterTaskAgent(BaseAgent):
         elif message_type == "capabilities":
             return self.get_capabilities()
         else:
-            return {
-                "status": "error",
-                "error": f"Unknown message type: {message_type}"
-            }
+            return {"status": "error", "error": f"Unknown message type: {message_type}"}
 
     def get_status(self) -> Dict[str, Any]:
         """
@@ -223,7 +228,7 @@ class ApiRateLimiterTaskAgent(BaseAgent):
             "agent_type": self.agent_type,
             "status": "ready",
             "capabilities": self.capabilities,
-            "metadata": self.metadata
+            "metadata": self.metadata,
         }
 
     def get_capabilities(self) -> Dict[str, Any]:
@@ -236,11 +241,11 @@ class ApiRateLimiterTaskAgent(BaseAgent):
         return {
             "agent_id": self.agent_id,
             "capabilities": self.capabilities,
-            "inputs": {'api_endpoint': 'string', 'rate_limit_config': 'dict', 'window_size': 'int'},
-            "outputs": {'allow_deny': 'bool', 'remaining_quota': 'int', 'reset_time': 'string'},
+            "inputs": {"api_endpoint": "string", "rate_limit_config": "dict", "window_size": "int"},
+            "outputs": {"allow_deny": "bool", "remaining_quota": "int", "reset_time": "string"},
             "level": 5,
             "reusable": True,
-            "composable": True
+            "composable": True,
         }
 
 
@@ -254,7 +259,7 @@ async def main():
     # Example task
     task = {
         # Add example inputs here
-                # "api_endpoint": "example_api_endpoint",
+        # "api_endpoint": "example_api_endpoint",
         # "rate_limit_config": "example_rate_limit_config",
         # "window_size": "example_window_size",
     }

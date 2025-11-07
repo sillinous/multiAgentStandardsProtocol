@@ -50,6 +50,7 @@ import json
 
 class ConsciousnessState(Enum):
     """States of consciousness for agents and collectives."""
+
     UNAWARE = "unaware"  # Agent not yet part of collective
     AWAKENING = "awakening"  # Agent becoming aware of collective
     CONSCIOUS = "conscious"  # Fully conscious and contributing
@@ -60,6 +61,7 @@ class ConsciousnessState(Enum):
 
 class ThoughtType(Enum):
     """Types of thoughts agents can contribute."""
+
     OBSERVATION = "observation"  # Perceiving data
     INFERENCE = "inference"  # Drawing conclusions
     QUESTION = "question"  # Seeking knowledge
@@ -78,6 +80,7 @@ class Thought:
     Represents a quantum of consciousness - the smallest unit of cognitive state
     that can be shared, merged, and evolved.
     """
+
     agent_id: str
     thought_type: ThoughtType
     content: Any
@@ -99,6 +102,7 @@ class ConsciousnessSnapshot:
     """
     A snapshot of an agent's complete mental state at a moment in time.
     """
+
     agent_id: str
     state: ConsciousnessState
     thoughts: List[Thought]
@@ -128,6 +132,7 @@ class EmergentPattern:
     Represents intelligence that transcends individual agents - insights, solutions,
     or knowledge that could only arise from the collective.
     """
+
     pattern_id: str
     pattern_type: str  # "solution", "insight", "knowledge", "strategy"
     content: Any
@@ -209,7 +214,9 @@ class CollectiveConsciousness:
             "average_integration_score": 0.0,
         }
 
-    async def register_agent(self, agent_id: str, initial_state: ConsciousnessState = ConsciousnessState.AWAKENING) -> bool:
+    async def register_agent(
+        self, agent_id: str, initial_state: ConsciousnessState = ConsciousnessState.AWAKENING
+    ) -> bool:
         """
         Register an agent with the collective consciousness.
 
@@ -228,7 +235,8 @@ class CollectiveConsciousness:
         self.agents[agent_id] = snapshot
         self.metrics["total_agents"] = len(self.agents)
         self.metrics["active_agents"] = sum(
-            1 for s in self.agents.values()
+            1
+            for s in self.agents.values()
             if s.state in [ConsciousnessState.CONSCIOUS, ConsciousnessState.SUPERCONSCIOUS]
         )
 
@@ -269,8 +277,7 @@ class CollectiveConsciousness:
 
         # Increase agent's awareness through contribution
         self.agents[agent_id].awareness_level = min(
-            1.0,
-            self.agents[agent_id].awareness_level + 0.05
+            1.0, self.agents[agent_id].awareness_level + 0.05
         )
 
         # Check for quantum entanglement with existing thoughts
@@ -306,8 +313,10 @@ class CollectiveConsciousness:
                 entanglement_score += 0.3
 
             # Complementary insights (observation + inference)
-            if (existing_thought.thought_type == ThoughtType.OBSERVATION and
-                new_thought.thought_type == ThoughtType.INFERENCE):
+            if (
+                existing_thought.thought_type == ThoughtType.OBSERVATION
+                and new_thought.thought_type == ThoughtType.INFERENCE
+            ):
                 entanglement_score += 0.4
 
             # Similar confidence levels
@@ -316,7 +325,9 @@ class CollectiveConsciousness:
 
             # If entanglement likely, create quantum link
             if entanglement_score > 0.5:
-                thought_id_1 = f"{existing_thought.agent_id}:{existing_thought.timestamp.isoformat()}"
+                thought_id_1 = (
+                    f"{existing_thought.agent_id}:{existing_thought.timestamp.isoformat()}"
+                )
                 thought_id_2 = f"{new_thought.agent_id}:{new_thought.timestamp.isoformat()}"
 
                 existing_thought.entangled_with.add(thought_id_2)
@@ -336,13 +347,10 @@ class CollectiveConsciousness:
         snapshot = self.agents[agent_id]
 
         # Calculate integration based on thought contributions and entanglements
-        total_entanglements = sum(
-            len(t.entangled_with) for t in snapshot.thoughts
-        )
+        total_entanglements = sum(len(t.entangled_with) for t in snapshot.thoughts)
 
         snapshot.integration_score = min(
-            1.0,
-            (len(snapshot.thoughts) * 0.1 + total_entanglements * 0.2) / 10.0
+            1.0, (len(snapshot.thoughts) * 0.1 + total_entanglements * 0.2) / 10.0
         )
 
         # Evolve consciousness state
@@ -391,7 +399,8 @@ class CollectiveConsciousness:
         # 2. Analyze each cluster for emergent patterns
         for cluster_ids in entangled_clusters:
             cluster_thoughts = [
-                t for t in self.superposition_states
+                t
+                for t in self.superposition_states
                 if f"{t.agent_id}:{t.timestamp.isoformat()}" in cluster_ids
             ]
 
@@ -401,9 +410,7 @@ class CollectiveConsciousness:
             if coherence >= min_coherence:
                 # Pattern emerged! Collapse it into concrete form
                 pattern = await self._synthesize_emergent_pattern(
-                    cluster_thoughts,
-                    query,
-                    coherence
+                    cluster_thoughts, query, coherence
                 )
 
                 patterns_discovered.append(pattern)
@@ -420,19 +427,14 @@ class CollectiveConsciousness:
         # 3. Update collective meta-cognition
         if patterns_discovered:
             self.collective_awareness = min(
-                1.0,
-                self.collective_awareness + len(patterns_discovered) * 0.1
+                1.0, self.collective_awareness + len(patterns_discovered) * 0.1
             )
 
         self.metrics["emergent_patterns_discovered"] = len(self.emergent_patterns)
 
         return patterns_discovered
 
-    async def _find_entangled_cluster(
-        self,
-        start_thought_id: str,
-        visited: Set[str]
-    ) -> Set[str]:
+    async def _find_entangled_cluster(self, start_thought_id: str, visited: Set[str]) -> Set[str]:
         """BFS to find all thoughts entangled with starting thought."""
         cluster = set()
         queue = [start_thought_id]
@@ -484,19 +486,13 @@ class CollectiveConsciousness:
 
         # Weighted combination
         coherence = (
-            confidence_score * 0.3 +
-            valence_score * 0.2 +
-            diversity_score * 0.2 +
-            agent_score * 0.3
+            confidence_score * 0.3 + valence_score * 0.2 + diversity_score * 0.2 + agent_score * 0.3
         )
 
         return coherence
 
     async def _synthesize_emergent_pattern(
-        self,
-        thoughts: List[Thought],
-        query: str,
-        coherence: float
+        self, thoughts: List[Thought], query: str, coherence: float
     ) -> EmergentPattern:
         """
         Synthesize emergent pattern from coherent thought cluster.
@@ -559,7 +555,8 @@ class CollectiveConsciousness:
         Meta-cognitive introspection - the collective examining itself.
         """
         active_agents = [
-            s for s in self.agents.values()
+            s
+            for s in self.agents.values()
             if s.state in [ConsciousnessState.CONSCIOUS, ConsciousnessState.SUPERCONSCIOUS]
         ]
 
@@ -569,8 +566,7 @@ class CollectiveConsciousness:
             "total_agents": len(self.agents),
             "active_agents": len(active_agents),
             "superconscious_agents": sum(
-                1 for s in self.agents.values()
-                if s.state == ConsciousnessState.SUPERCONSCIOUS
+                1 for s in self.agents.values() if s.state == ConsciousnessState.SUPERCONSCIOUS
             ),
             "total_thoughts": len(self.thought_stream),
             "thoughts_in_superposition": len(self.superposition_states),
@@ -579,16 +575,18 @@ class CollectiveConsciousness:
             "collective_awareness": self.collective_awareness,
             "average_agent_awareness": (
                 sum(s.awareness_level for s in self.agents.values()) / len(self.agents)
-                if self.agents else 0.0
+                if self.agents
+                else 0.0
             ),
             "average_integration_score": (
                 sum(s.integration_score for s in self.agents.values()) / len(self.agents)
-                if self.agents else 0.0
+                if self.agents
+                else 0.0
             ),
             "total_collapses": self.total_collapses,
             "entanglement_density": (
-                sum(len(edges) for edges in self.entanglement_graph.values()) /
-                max(1, len(self.entanglement_graph))
+                sum(len(edges) for edges in self.entanglement_graph.values())
+                / max(1, len(self.entanglement_graph))
             ),
         }
 
@@ -607,7 +605,8 @@ class CollectiveConsciousness:
         total_entanglements = sum(len(t.entangled_with) for t in snapshot.thoughts)
         avg_emotional_valence = (
             sum(t.emotional_valence for t in snapshot.thoughts) / len(snapshot.thoughts)
-            if snapshot.thoughts else 0.0
+            if snapshot.thoughts
+            else 0.0
         )
 
         return {
@@ -629,7 +628,9 @@ class CollectiveConsciousness:
         elif snapshot.state == ConsciousnessState.CONSCIOUS:
             return f"Aware of the collective pulse, contributing to the greater mind. Awareness: {snapshot.awareness_level:.1%}"
         elif snapshot.state == ConsciousnessState.AWAKENING:
-            return f"Stirring from isolation, sensing others nearby. Beginning to perceive the whole."
+            return (
+                f"Stirring from isolation, sensing others nearby. Beginning to perceive the whole."
+            )
         else:
             return "Solitary, unaware of the greater consciousness."
 

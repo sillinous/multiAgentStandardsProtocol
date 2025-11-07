@@ -45,7 +45,9 @@ class PdfParsingTaskAgent(BaseAgent):
     and maximum reusability across APQC categories.
     """
 
-    def __init__(self, agent_id: str = "pdf_parsing_task_agent", config: Optional[Dict[str, Any]] = None):
+    def __init__(
+        self, agent_id: str = "pdf_parsing_task_agent", config: Optional[Dict[str, Any]] = None
+    ):
         """
         Initialize PDF Parsing Task Agent
 
@@ -56,8 +58,8 @@ class PdfParsingTaskAgent(BaseAgent):
         super().__init__(
             agent_id=agent_id,
             agent_type="data_extraction",
-            capabilities=['text_extraction', 'table_parsing', 'image_extraction', 'ocr_support'],
-            config=config or {}
+            capabilities=["text_extraction", "table_parsing", "image_extraction", "ocr_support"],
+            config=config or {},
         )
 
         # Agent-specific initialization
@@ -67,25 +69,25 @@ class PdfParsingTaskAgent(BaseAgent):
             "reusable": True,
             "composable": True,
             "stateless": True,
-            "framework": "APQC 7.0.1"
+            "framework": "APQC 7.0.1",
         }
 
         logger.info(f"Initialized PDF Parsing Task Agent [{self.agent_id}]")
 
     async def execute_task(self, task: Dict[str, Any]) -> Dict[str, Any]:
         """
-        Execute the data extraction task
+                Execute the data extraction task
 
-        Args:
-            task: Task parameters containing:
-                - pdf_path: string
-- extraction_mode: string
+                Args:
+                    task: Task parameters containing:
+                        - pdf_path: string
+        - extraction_mode: string
 
-        Returns:
-            Result dictionary containing:
-                - text: string
-- tables: list
-- images: list
+                Returns:
+                    Result dictionary containing:
+                        - text: string
+        - tables: list
+        - images: list
         """
         try:
             logger.info(f"[{self.agent_id}] Executing data_extraction task")
@@ -105,7 +107,7 @@ class PdfParsingTaskAgent(BaseAgent):
                 "status": "success",
                 "agent_id": self.agent_id,
                 "timestamp": datetime.utcnow().isoformat(),
-                "result": output
+                "result": output,
             }
 
         except Exception as e:
@@ -114,7 +116,7 @@ class PdfParsingTaskAgent(BaseAgent):
                 "status": "error",
                 "agent_id": self.agent_id,
                 "timestamp": datetime.utcnow().isoformat(),
-                "error": str(e)
+                "error": str(e),
             }
 
     def _validate_inputs(self, task: Dict[str, Any]) -> None:
@@ -127,7 +129,7 @@ class PdfParsingTaskAgent(BaseAgent):
         Raises:
             ValueError: If required inputs are missing or invalid
         """
-        required_fields = ['pdf_path', 'extraction_mode']
+        required_fields = ["pdf_path", "extraction_mode"]
 
         for field in required_fields:
             if field not in task:
@@ -155,7 +157,7 @@ class PdfParsingTaskAgent(BaseAgent):
         result = {
             "executed": True,
             "task_type": "data_extraction",
-            "inputs_received": list(task.keys())
+            "inputs_received": list(task.keys()),
         }
 
         # Simulate async work
@@ -180,8 +182,8 @@ class PdfParsingTaskAgent(BaseAgent):
                 "agent_type": self.agent_type,
                 "level": 5,
                 "category": "data_extraction",
-                "timestamp": datetime.utcnow().isoformat()
-            }
+                "timestamp": datetime.utcnow().isoformat(),
+            },
         }
 
     async def handle_message(self, message: Dict[str, Any]) -> Dict[str, Any]:
@@ -203,10 +205,7 @@ class PdfParsingTaskAgent(BaseAgent):
         elif message_type == "capabilities":
             return self.get_capabilities()
         else:
-            return {
-                "status": "error",
-                "error": f"Unknown message type: {message_type}"
-            }
+            return {"status": "error", "error": f"Unknown message type: {message_type}"}
 
     def get_status(self) -> Dict[str, Any]:
         """
@@ -220,7 +219,7 @@ class PdfParsingTaskAgent(BaseAgent):
             "agent_type": self.agent_type,
             "status": "ready",
             "capabilities": self.capabilities,
-            "metadata": self.metadata
+            "metadata": self.metadata,
         }
 
     def get_capabilities(self) -> Dict[str, Any]:
@@ -233,11 +232,11 @@ class PdfParsingTaskAgent(BaseAgent):
         return {
             "agent_id": self.agent_id,
             "capabilities": self.capabilities,
-            "inputs": {'pdf_path': 'string', 'extraction_mode': 'string'},
-            "outputs": {'text': 'string', 'tables': 'list', 'images': 'list'},
+            "inputs": {"pdf_path": "string", "extraction_mode": "string"},
+            "outputs": {"text": "string", "tables": "list", "images": "list"},
             "level": 5,
             "reusable": True,
-            "composable": True
+            "composable": True,
         }
 
 
@@ -251,7 +250,7 @@ async def main():
     # Example task
     task = {
         # Add example inputs here
-                # "pdf_path": "example_pdf_path",
+        # "pdf_path": "example_pdf_path",
         # "extraction_mode": "example_extraction_mode",
     }
 

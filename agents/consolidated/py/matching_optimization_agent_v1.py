@@ -31,7 +31,8 @@ from enum import Enum
 
 # Core framework imports
 import sys
-sys.path.append(os.path.join(os.path.dirname(__file__), '../..'))
+
+sys.path.append(os.path.join(os.path.dirname(__file__), "../.."))
 
 from superstandard.agents.base.base_agent import BaseAgent
 from library.core.protocols import (
@@ -39,7 +40,7 @@ from library.core.protocols import (
     A2AMessage,
     A2PTransaction,
     ACPCoordination,
-    ANPRegistration
+    ANPRegistration,
 )
 
 # Version constants
@@ -52,9 +53,11 @@ AGENT_NAME = "MatchingOptimizationAgent"
 # DOMAIN MODELS
 # ============================================================================
 
+
 @dataclass
 class Rider:
     """Rider information"""
+
     id: str
     location: Tuple[float, float]
     destination: Tuple[float, float]
@@ -66,6 +69,7 @@ class Rider:
 @dataclass
 class Driver:
     """Driver information"""
+
     id: str
     location: Tuple[float, float]
     capacity: int
@@ -77,6 +81,7 @@ class Driver:
 @dataclass
 class Match:
     """Rider-driver match"""
+
     rider_id: str
     driver_id: str
     quality_score: float
@@ -88,6 +93,7 @@ class Match:
 # ============================================================================
 # CONFIGURATION
 # ============================================================================
+
 
 @dataclass
 class MatchingOptimizationAgentConfig:
@@ -147,7 +153,9 @@ class MatchingOptimizationAgentConfig:
             weight_distance=float(os.getenv(f"{AGENT_TYPE.upper()}_WEIGHT_DISTANCE", "0.30")),
             weight_occupancy=float(os.getenv(f"{AGENT_TYPE.upper()}_WEIGHT_OCCUPANCY", "0.30")),
             avg_speed_kmh=float(os.getenv(f"{AGENT_TYPE.upper()}_AVG_SPEED_KMH", "35.0")),
-            max_acceptable_distance_km=float(os.getenv(f"{AGENT_TYPE.upper()}_MAX_ACCEPTABLE_DISTANCE_KM", "5.0")),
+            max_acceptable_distance_km=float(
+                os.getenv(f"{AGENT_TYPE.upper()}_MAX_ACCEPTABLE_DISTANCE_KM", "5.0")
+            ),
             cache_ttl_seconds=int(os.getenv(f"{AGENT_TYPE.upper()}_CACHE_TTL_SECONDS", "30")),
         )
 
@@ -207,6 +215,7 @@ class MatchingOptimizationAgentConfig:
 # AGENT IMPLEMENTATION
 # ============================================================================
 
+
 class MatchingOptimizationAgent(BaseAgent, ProtocolMixin):
     """
     Optimizes rider-driver matching using wait time, distance, and vehicle occupancy.
@@ -222,11 +231,7 @@ class MatchingOptimizationAgent(BaseAgent, ProtocolMixin):
     - Health checks implemented
     """
 
-    def __init__(
-        self,
-        agent_id: str,
-        config: MatchingOptimizationAgentConfig
-    ):
+    def __init__(self, agent_id: str, config: MatchingOptimizationAgentConfig):
         """
         Initialize MatchingOptimizationAgent
 
@@ -262,8 +267,7 @@ class MatchingOptimizationAgent(BaseAgent, ProtocolMixin):
 
         # Resource monitoring
         self._resource_monitor = ResourceMonitor(
-            max_memory_mb=config.max_memory_mb,
-            max_cpu_percent=config.max_cpu_percent
+            max_memory_mb=config.max_memory_mb, max_cpu_percent=config.max_cpu_percent
         )
 
         # Agent state
@@ -349,7 +353,12 @@ class MatchingOptimizationAgent(BaseAgent, ProtocolMixin):
             else:
                 result = {
                     "error": f"Unknown task type: {task_type}",
-                    "supported_tasks": ["find_matches", "optimize_multi_rider", "calculate_match_quality", "analyze"]
+                    "supported_tasks": [
+                        "find_matches",
+                        "optimize_multi_rider",
+                        "calculate_match_quality",
+                        "analyze",
+                    ],
                 }
 
             # Update metrics
@@ -367,7 +376,7 @@ class MatchingOptimizationAgent(BaseAgent, ProtocolMixin):
                 "version": AGENT_VERSION,
                 "result": result,
                 "execution_time_ms": execution_time_ms,
-                "timestamp": datetime.now().isoformat()
+                "timestamp": datetime.now().isoformat(),
             }
 
         except Exception as e:
@@ -379,7 +388,7 @@ class MatchingOptimizationAgent(BaseAgent, ProtocolMixin):
                 "agent_id": self.agent_id,
                 "error": str(e),
                 "error_type": type(e).__name__,
-                "timestamp": datetime.now().isoformat()
+                "timestamp": datetime.now().isoformat(),
             }
 
     # ========================================================================
@@ -399,9 +408,7 @@ class MatchingOptimizationAgent(BaseAgent, ProtocolMixin):
         return {}
 
     async def _execute_logic(
-        self,
-        input_data: Dict[str, Any],
-        fetched_data: Dict[str, Any]
+        self, input_data: Dict[str, Any], fetched_data: Dict[str, Any]
     ) -> Dict[str, Any]:
         """Core execution logic - delegates to execute() method"""
         return await self.execute(input_data)
@@ -455,7 +462,7 @@ class MatchingOptimizationAgent(BaseAgent, ProtocolMixin):
                 "timestamp": datetime.now().isoformat(),
                 "total_matches": 0,
                 "average_quality": 0.0,
-                "recommendations": ["No matches to analyze"]
+                "recommendations": ["No matches to analyze"],
             }
 
         # Calculate metrics
@@ -471,7 +478,9 @@ class MatchingOptimizationAgent(BaseAgent, ProtocolMixin):
             "average_wait_minutes": round(avg_wait, 2),
             "average_pickup_distance_km": round(avg_distance, 2),
             "efficiency_rating": self._calculate_efficiency_rating(avg_quality),
-            "recommendations": self._generate_matching_recommendations(avg_quality, avg_wait, avg_distance)
+            "recommendations": self._generate_matching_recommendations(
+                avg_quality, avg_wait, avg_distance
+            ),
         }
 
     # ========================================================================
@@ -479,9 +488,7 @@ class MatchingOptimizationAgent(BaseAgent, ProtocolMixin):
     # ========================================================================
 
     def find_best_matches(
-        self,
-        riders: List[Dict[str, Any]],
-        drivers: List[Dict[str, Any]]
+        self, riders: List[Dict[str, Any]], drivers: List[Dict[str, Any]]
     ) -> List[Match]:
         """
         Find optimal rider-driver matches
@@ -517,7 +524,7 @@ class MatchingOptimizationAgent(BaseAgent, ProtocolMixin):
                         quality_score=quality_score,
                         wait_time_minutes=details["wait_time_minutes"],
                         pickup_distance_km=details["pickup_distance_km"],
-                        details=details
+                        details=details,
                     )
                     all_matches.append(match)
 
@@ -540,11 +547,7 @@ class MatchingOptimizationAgent(BaseAgent, ProtocolMixin):
 
         return selected_matches
 
-    def calculate_match_quality(
-        self,
-        rider: Rider,
-        driver: Driver
-    ) -> Tuple[float, Dict[str, Any]]:
+    def calculate_match_quality(self, rider: Rider, driver: Driver) -> Tuple[float, Dict[str, Any]]:
         """
         Calculate quality score for a rider-driver match
 
@@ -587,9 +590,9 @@ class MatchingOptimizationAgent(BaseAgent, ProtocolMixin):
 
         # Weighted total score
         total_score = (
-            self.typed_config.weight_wait_time * wait_score +
-            self.typed_config.weight_distance * distance_score +
-            self.typed_config.weight_occupancy * occupancy_score
+            self.typed_config.weight_wait_time * wait_score
+            + self.typed_config.weight_distance * distance_score
+            + self.typed_config.weight_occupancy * occupancy_score
         )
 
         details = {
@@ -598,16 +601,16 @@ class MatchingOptimizationAgent(BaseAgent, ProtocolMixin):
             "wait_score": round(wait_score, 3),
             "distance_score": round(distance_score, 3),
             "occupancy_score": round(occupancy_score, 3),
-            "vehicle_utilization": round((driver.current_occupancy + rider.passengers) / driver.capacity, 2),
-            "total_score": round(total_score, 3)
+            "vehicle_utilization": round(
+                (driver.current_occupancy + rider.passengers) / driver.capacity, 2
+            ),
+            "total_score": round(total_score, 3),
         }
 
         return total_score, details
 
     def optimize_multi_rider_routes(
-        self,
-        driver: Dict[str, Any],
-        riders: List[Dict[str, Any]]
+        self, driver: Dict[str, Any], riders: List[Dict[str, Any]]
     ) -> Dict[str, Any]:
         """
         Optimize route for picking up multiple riders
@@ -629,7 +632,7 @@ class MatchingOptimizationAgent(BaseAgent, ProtocolMixin):
                 "success": False,
                 "error": "Capacity exceeded",
                 "capacity": driver_obj.capacity,
-                "requested": total_passengers
+                "requested": total_passengers,
             }
 
         # Simple greedy approach: pick up closest riders first
@@ -644,19 +647,21 @@ class MatchingOptimizationAgent(BaseAgent, ProtocolMixin):
             # Find closest rider
             closest_rider = min(
                 remaining_riders,
-                key=lambda r: self._calculate_distance(current_location, r.location)
+                key=lambda r: self._calculate_distance(current_location, r.location),
             )
 
             pickup_distance = self._calculate_distance(current_location, closest_rider.location)
             pickup_time = (pickup_distance / self.typed_config.avg_speed_kmh) * 60
 
             route.append(closest_rider.location)
-            pickup_sequence.append({
-                "rider_id": closest_rider.id,
-                "pickup_location": closest_rider.location,
-                "distance_from_previous": round(pickup_distance, 2),
-                "time_from_previous_minutes": round(pickup_time, 2)
-            })
+            pickup_sequence.append(
+                {
+                    "rider_id": closest_rider.id,
+                    "pickup_location": closest_rider.location,
+                    "distance_from_previous": round(pickup_distance, 2),
+                    "time_from_previous_minutes": round(pickup_time, 2),
+                }
+            )
 
             total_distance += pickup_distance
             total_time += pickup_time
@@ -671,14 +676,16 @@ class MatchingOptimizationAgent(BaseAgent, ProtocolMixin):
             "total_pickup_distance_km": round(total_distance, 2),
             "total_pickup_time_minutes": round(total_time, 2),
             "total_riders": len(rider_objects),
-            "route": route
+            "route": route,
         }
 
     # ========================================================================
     # HELPER METHODS
     # ========================================================================
 
-    def _calculate_distance(self, point1: Tuple[float, float], point2: Tuple[float, float]) -> float:
+    def _calculate_distance(
+        self, point1: Tuple[float, float], point2: Tuple[float, float]
+    ) -> float:
         """Calculate distance using Haversine formula"""
         lat1, lon1 = point1
         lat2, lon2 = point2
@@ -688,9 +695,10 @@ class MatchingOptimizationAgent(BaseAgent, ProtocolMixin):
         dlat = math.radians(lat2 - lat1)
         dlon = math.radians(lon2 - lon1)
 
-        a = (math.sin(dlat / 2) ** 2 +
-             math.cos(math.radians(lat1)) * math.cos(math.radians(lat2)) *
-             math.sin(dlon / 2) ** 2)
+        a = (
+            math.sin(dlat / 2) ** 2
+            + math.cos(math.radians(lat1)) * math.cos(math.radians(lat2)) * math.sin(dlon / 2) ** 2
+        )
 
         c = 2 * math.atan2(math.sqrt(a), math.sqrt(1 - a))
 
@@ -708,7 +716,7 @@ class MatchingOptimizationAgent(BaseAgent, ProtocolMixin):
             destination=tuple(d["destination"]),
             request_time=request_time,
             max_wait_minutes=d.get("max_wait_minutes", 10.0),
-            passengers=d.get("passengers", 1)
+            passengers=d.get("passengers", 1),
         )
 
     def _dict_to_driver(self, d: Dict[str, Any]) -> Driver:
@@ -719,7 +727,7 @@ class MatchingOptimizationAgent(BaseAgent, ProtocolMixin):
             capacity=d.get("capacity", 4),
             current_occupancy=d.get("current_occupancy", 0),
             available=d.get("available", True),
-            current_route=d.get("current_route")
+            current_route=d.get("current_route"),
         )
 
     def _match_to_dict(self, match: Match) -> Dict[str, Any]:
@@ -730,7 +738,7 @@ class MatchingOptimizationAgent(BaseAgent, ProtocolMixin):
             "quality_score": match.quality_score,
             "wait_time_minutes": match.wait_time_minutes,
             "pickup_distance_km": match.pickup_distance_km,
-            "details": match.details
+            "details": match.details,
         }
 
     def _calculate_efficiency_rating(self, avg_quality: float) -> str:
@@ -745,10 +753,7 @@ class MatchingOptimizationAgent(BaseAgent, ProtocolMixin):
             return "Poor"
 
     def _generate_matching_recommendations(
-        self,
-        avg_quality: float,
-        avg_wait: float,
-        avg_distance: float
+        self, avg_quality: float, avg_wait: float, avg_distance: float
     ) -> List[str]:
         """Generate recommendations for matching optimization"""
         recommendations = []
@@ -757,7 +762,9 @@ class MatchingOptimizationAgent(BaseAgent, ProtocolMixin):
             recommendations.append("Consider expanding driver pool or reducing service area")
 
         if avg_wait > 8.0:
-            recommendations.append("Wait times are high - increase driver availability in busy areas")
+            recommendations.append(
+                "Wait times are high - increase driver availability in busy areas"
+            )
 
         if avg_distance > 3.0:
             recommendations.append("Pickup distances are long - optimize driver positioning")
@@ -794,14 +801,14 @@ class MatchingOptimizationAgent(BaseAgent, ProtocolMixin):
             return {
                 "status": "shutdown",
                 "agent_id": self.agent_id,
-                "final_metrics": self.metrics.copy()
+                "final_metrics": self.metrics.copy(),
             }
 
         except Exception as e:
             return {
                 "status": "error",
                 "reason": f"Shutdown failed: {str(e)}",
-                "agent_id": self.agent_id
+                "agent_id": self.agent_id,
             }
 
     # ========================================================================
@@ -826,12 +833,9 @@ class MatchingOptimizationAgent(BaseAgent, ProtocolMixin):
             "initialized": self.state["initialized"],
             "tasks_processed": self.state["tasks_processed"],
             "last_activity": self.state["last_activity"],
-            "metrics": {
-                **self.metrics,
-                "avg_match_quality": round(avg_match_quality, 3)
-            },
+            "metrics": {**self.metrics, "avg_match_quality": round(avg_match_quality, 3)},
             "resources": resource_status,
-            "timestamp": datetime.now().isoformat()
+            "timestamp": datetime.now().isoformat(),
         }
 
     # ========================================================================
@@ -847,12 +851,16 @@ class MatchingOptimizationAgent(BaseAgent, ProtocolMixin):
         registration = ANPRegistration(
             action="register",
             agent_id=self.agent_id,
-            capabilities=["rider_driver_matching", "multi_rider_optimization", "match_quality_scoring"],
+            capabilities=[
+                "rider_driver_matching",
+                "multi_rider_optimization",
+                "match_quality_scoring",
+            ],
             endpoints={
                 "health": f"/agents/{self.agent_id}/health",
                 "execute": f"/agents/{self.agent_id}/execute",
             },
-            health_status="healthy"
+            health_status="healthy",
         )
 
         self.logger.info(f"Registering on agent network: {self.typed_config.agent_network_url}")
@@ -870,7 +878,7 @@ class MatchingOptimizationAgent(BaseAgent, ProtocolMixin):
             agent_id=self.agent_id,
             capabilities=[],
             endpoints={},
-            health_status="unhealthy"
+            health_status="unhealthy",
         )
 
         self.logger.info("Deregistering from network")
@@ -894,8 +902,8 @@ class MatchingOptimizationAgent(BaseAgent, ProtocolMixin):
             total = self.metrics["total_executions"]
             current_avg = self.metrics["avg_execution_time_ms"]
             self.metrics["avg_execution_time_ms"] = (
-                (current_avg * (total - 1) + execution_time_ms) / total
-            )
+                current_avg * (total - 1) + execution_time_ms
+            ) / total
 
     def get_metrics(self) -> Dict[str, Any]:
         """Get agent metrics"""
@@ -905,13 +913,14 @@ class MatchingOptimizationAgent(BaseAgent, ProtocolMixin):
                 self.metrics["successful_executions"] / self.metrics["total_executions"]
                 if self.metrics["total_executions"] > 0
                 else 0.0
-            )
+            ),
         }
 
 
 # ============================================================================
 # RESOURCE MONITORING
 # ============================================================================
+
 
 class ResourceMonitor:
     """Monitor agent resource usage"""
@@ -924,6 +933,7 @@ class ResourceMonitor:
         """Check if agent has sufficient resources"""
         try:
             import psutil
+
             process = psutil.Process(os.getpid())
 
             memory_mb = process.memory_info().rss / 1024 / 1024
@@ -943,6 +953,7 @@ class ResourceMonitor:
         """Get current resource usage"""
         try:
             import psutil
+
             process = psutil.Process(os.getpid())
             memory_mb = process.memory_info().rss / 1024 / 1024
             cpu_percent = process.cpu_percent(interval=0.1)
@@ -956,13 +967,12 @@ class ResourceMonitor:
             }
 
         except ImportError:
-            return {
-                "error": "psutil not available - install with: pip install psutil"
-            }
+            return {"error": "psutil not available - install with: pip install psutil"}
 
 
 class ResourceExhaustionError(Exception):
     """Raised when agent exceeds resource limits"""
+
     pass
 
 
@@ -970,13 +980,14 @@ class ResourceExhaustionError(Exception):
 # FACTORY & REGISTRATION
 # ============================================================================
 
+
 def create_matching_optimization_agent(
-    agent_id: Optional[str] = None,
-    config: Optional[MatchingOptimizationAgentConfig] = None
+    agent_id: Optional[str] = None, config: Optional[MatchingOptimizationAgentConfig] = None
 ) -> MatchingOptimizationAgent:
     """Factory function to create MatchingOptimizationAgent instance"""
     if agent_id is None:
         from uuid import uuid4
+
         agent_id = f"{AGENT_TYPE}_{str(uuid4())[:8]}"
 
     if config is None:
@@ -989,6 +1000,7 @@ def create_matching_optimization_agent(
 # ============================================================================
 # CLI ENTRY POINT
 # ============================================================================
+
 
 async def main():
     """CLI entry point for standalone agent execution"""
@@ -1006,7 +1018,8 @@ async def main():
     # Load config
     if args.config_file:
         import json
-        with open(args.config_file, 'r') as f:
+
+        with open(args.config_file, "r") as f:
             config_dict = json.load(f)
         config = MatchingOptimizationAgentConfig(**config_dict)
     else:
@@ -1027,19 +1040,27 @@ async def main():
     # Test mode
     if args.test:
         test_riders = [
-            {"id": "r1", "location": (37.7749, -122.4194), "destination": (37.3382, -121.8863), "request_time": datetime.now().isoformat()},
-            {"id": "r2", "location": (37.8, -122.4), "destination": (37.35, -121.9), "request_time": datetime.now().isoformat()},
+            {
+                "id": "r1",
+                "location": (37.7749, -122.4194),
+                "destination": (37.3382, -121.8863),
+                "request_time": datetime.now().isoformat(),
+            },
+            {
+                "id": "r2",
+                "location": (37.8, -122.4),
+                "destination": (37.35, -121.9),
+                "request_time": datetime.now().isoformat(),
+            },
         ]
         test_drivers = [
             {"id": "d1", "location": (37.77, -122.42), "capacity": 4, "available": True},
             {"id": "d2", "location": (37.81, -122.39), "capacity": 4, "available": True},
         ]
 
-        result = await agent.execute({
-            "action": "find_matches",
-            "riders": test_riders,
-            "drivers": test_drivers
-        })
+        result = await agent.execute(
+            {"action": "find_matches", "riders": test_riders, "drivers": test_drivers}
+        )
         print(f"Test Result: {result}")
         await agent.shutdown()
         return

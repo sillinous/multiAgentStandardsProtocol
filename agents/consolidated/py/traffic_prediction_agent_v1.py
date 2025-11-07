@@ -32,7 +32,8 @@ from enum import Enum
 
 # Core framework imports
 import sys
-sys.path.append(os.path.join(os.path.dirname(__file__), '../..'))
+
+sys.path.append(os.path.join(os.path.dirname(__file__), "../.."))
 
 from superstandard.agents.base.base_agent import BaseAgent
 from library.core.protocols import (
@@ -40,7 +41,7 @@ from library.core.protocols import (
     A2AMessage,
     A2PTransaction,
     ACPCoordination,
-    ANPRegistration
+    ANPRegistration,
 )
 
 # Version constants
@@ -53,8 +54,10 @@ AGENT_NAME = "TrafficPredictionAgent"
 # ENUMS
 # ============================================================================
 
+
 class CongestionLevel(Enum):
     """Traffic congestion levels"""
+
     LOW = "low"
     MODERATE = "moderate"
     HIGH = "high"
@@ -64,6 +67,7 @@ class CongestionLevel(Enum):
 # ============================================================================
 # CONFIGURATION
 # ============================================================================
+
 
 @dataclass
 class TrafficPredictionAgentConfig:
@@ -99,18 +103,39 @@ class TrafficPredictionAgentConfig:
     cache_ttl_seconds: int = 60
 
     # Traffic patterns by hour (multiplier on base speed)
-    traffic_patterns: Dict[int, float] = field(default_factory=lambda: {
-        # Early morning (12 AM - 6 AM): Light traffic
-        0: 1.0, 1: 1.0, 2: 1.0, 3: 1.0, 4: 1.1, 5: 1.2,
-        # Morning rush (6 AM - 10 AM): Heavy traffic
-        6: 1.5, 7: 2.0, 8: 2.5, 9: 2.0, 10: 1.5,
-        # Midday (10 AM - 3 PM): Moderate traffic
-        11: 1.3, 12: 1.4, 13: 1.4, 14: 1.3, 15: 1.3,
-        # Evening rush (3 PM - 7 PM): Heavy traffic
-        16: 1.8, 17: 2.5, 18: 2.3, 19: 1.8,
-        # Evening (7 PM - 12 AM): Moderate to light
-        20: 1.4, 21: 1.2, 22: 1.1, 23: 1.0
-    })
+    traffic_patterns: Dict[int, float] = field(
+        default_factory=lambda: {
+            # Early morning (12 AM - 6 AM): Light traffic
+            0: 1.0,
+            1: 1.0,
+            2: 1.0,
+            3: 1.0,
+            4: 1.1,
+            5: 1.2,
+            # Morning rush (6 AM - 10 AM): Heavy traffic
+            6: 1.5,
+            7: 2.0,
+            8: 2.5,
+            9: 2.0,
+            10: 1.5,
+            # Midday (10 AM - 3 PM): Moderate traffic
+            11: 1.3,
+            12: 1.4,
+            13: 1.4,
+            14: 1.3,
+            15: 1.3,
+            # Evening rush (3 PM - 7 PM): Heavy traffic
+            16: 1.8,
+            17: 2.5,
+            18: 2.3,
+            19: 1.8,
+            # Evening (7 PM - 12 AM): Moderate to light
+            20: 1.4,
+            21: 1.2,
+            22: 1.1,
+            23: 1.0,
+        }
+    )
 
     @classmethod
     def from_environment(cls) -> "TrafficPredictionAgentConfig":
@@ -131,7 +156,9 @@ class TrafficPredictionAgentConfig:
             agent_network_url=os.getenv(f"{AGENT_TYPE.upper()}_NETWORK_URL"),
             coordinator_url=os.getenv(f"{AGENT_TYPE.upper()}_COORDINATOR_URL"),
             base_speed_kmh=float(os.getenv(f"{AGENT_TYPE.upper()}_BASE_SPEED_KMH", "40.0")),
-            prediction_variance=float(os.getenv(f"{AGENT_TYPE.upper()}_PREDICTION_VARIANCE", "0.1")),
+            prediction_variance=float(
+                os.getenv(f"{AGENT_TYPE.upper()}_PREDICTION_VARIANCE", "0.1")
+            ),
             cache_ttl_seconds=int(os.getenv(f"{AGENT_TYPE.upper()}_CACHE_TTL_SECONDS", "60")),
         )
 
@@ -183,6 +210,7 @@ class TrafficPredictionAgentConfig:
 # AGENT IMPLEMENTATION
 # ============================================================================
 
+
 class TrafficPredictionAgent(BaseAgent, ProtocolMixin):
     """
     Predicts travel times and congestion patterns using time-based heuristics
@@ -199,11 +227,7 @@ class TrafficPredictionAgent(BaseAgent, ProtocolMixin):
     - Health checks implemented
     """
 
-    def __init__(
-        self,
-        agent_id: str,
-        config: TrafficPredictionAgentConfig
-    ):
+    def __init__(self, agent_id: str, config: TrafficPredictionAgentConfig):
         """
         Initialize TrafficPredictionAgent
 
@@ -239,8 +263,7 @@ class TrafficPredictionAgent(BaseAgent, ProtocolMixin):
 
         # Resource monitoring
         self._resource_monitor = ResourceMonitor(
-            max_memory_mb=config.max_memory_mb,
-            max_cpu_percent=config.max_cpu_percent
+            max_memory_mb=config.max_memory_mb, max_cpu_percent=config.max_cpu_percent
         )
 
         # Agent state
@@ -345,7 +368,12 @@ class TrafficPredictionAgent(BaseAgent, ProtocolMixin):
             else:
                 result = {
                     "error": f"Unknown task type: {task_type}",
-                    "supported_tasks": ["predict_travel_time", "get_hotspots", "suggest_alternates", "analyze"]
+                    "supported_tasks": [
+                        "predict_travel_time",
+                        "get_hotspots",
+                        "suggest_alternates",
+                        "analyze",
+                    ],
                 }
 
             # Update metrics
@@ -363,7 +391,7 @@ class TrafficPredictionAgent(BaseAgent, ProtocolMixin):
                 "version": AGENT_VERSION,
                 "result": result,
                 "execution_time_ms": execution_time_ms,
-                "timestamp": datetime.now().isoformat()
+                "timestamp": datetime.now().isoformat(),
             }
 
         except Exception as e:
@@ -375,7 +403,7 @@ class TrafficPredictionAgent(BaseAgent, ProtocolMixin):
                 "agent_id": self.agent_id,
                 "error": str(e),
                 "error_type": type(e).__name__,
-                "timestamp": datetime.now().isoformat()
+                "timestamp": datetime.now().isoformat(),
             }
 
     # ========================================================================
@@ -395,9 +423,7 @@ class TrafficPredictionAgent(BaseAgent, ProtocolMixin):
         return {}
 
     async def _execute_logic(
-        self,
-        input_data: Dict[str, Any],
-        fetched_data: Dict[str, Any]
+        self, input_data: Dict[str, Any], fetched_data: Dict[str, Any]
     ) -> Dict[str, Any]:
         """Core execution logic - delegates to execute() method"""
         return await self.execute(input_data)
@@ -424,10 +450,9 @@ class TrafficPredictionAgent(BaseAgent, ProtocolMixin):
 
     async def _handle_hotspot_detection(self, task: Dict[str, Any]) -> Dict[str, Any]:
         """Handle hotspot detection task"""
-        area_bounds = task.get("area_bounds", {
-            "north": 37.8, "south": 37.7,
-            "east": -122.3, "west": -122.5
-        })
+        area_bounds = task.get(
+            "area_bounds", {"north": 37.8, "south": 37.7, "east": -122.3, "west": -122.5}
+        )
 
         hotspots = self.get_congestion_hotspots(area_bounds)
 
@@ -467,7 +492,7 @@ class TrafficPredictionAgent(BaseAgent, ProtocolMixin):
             "congestion_level": congestion.value,
             "traffic_multiplier": self.typed_config.traffic_patterns[hour],
             "recommendations": self._generate_recommendations(hour, congestion),
-            "confidence": 0.85
+            "confidence": 0.85,
         }
 
     # ========================================================================
@@ -478,7 +503,7 @@ class TrafficPredictionAgent(BaseAgent, ProtocolMixin):
         self,
         origin: Tuple[float, float],
         destination: Tuple[float, float],
-        departure_time: Optional[datetime] = None
+        departure_time: Optional[datetime] = None,
     ) -> Dict[str, Any]:
         """
         Predict travel time between two points
@@ -498,10 +523,10 @@ class TrafficPredictionAgent(BaseAgent, ProtocolMixin):
         cache_key = f"{origin}_{destination}_{departure_time.hour}"
         if cache_key in self._prediction_cache:
             cache_entry = self._prediction_cache[cache_key]
-            age_seconds = (datetime.now() - cache_entry['timestamp']).total_seconds()
+            age_seconds = (datetime.now() - cache_entry["timestamp"]).total_seconds()
             if age_seconds < self.typed_config.cache_ttl_seconds:
                 self.metrics["cache_hits"] += 1
-                return cache_entry['prediction']
+                return cache_entry["prediction"]
 
         self.metrics["cache_misses"] += 1
 
@@ -519,7 +544,10 @@ class TrafficPredictionAgent(BaseAgent, ProtocolMixin):
         predicted_time_minutes = base_time_minutes * traffic_multiplier
 
         # Add randomness for realism
-        variance_range = 1.0 - self.typed_config.prediction_variance, 1.0 + self.typed_config.prediction_variance
+        variance_range = (
+            1.0 - self.typed_config.prediction_variance,
+            1.0 + self.typed_config.prediction_variance,
+        )
         variance = random.uniform(*variance_range)
         predicted_time_minutes *= variance
 
@@ -533,14 +561,11 @@ class TrafficPredictionAgent(BaseAgent, ProtocolMixin):
             "arrival_time": self._add_minutes(departure_time, predicted_time_minutes).isoformat(),
             "congestion_level": congestion.value,
             "traffic_multiplier": traffic_multiplier,
-            "confidence": 0.82
+            "confidence": 0.82,
         }
 
         # Cache it
-        self._prediction_cache[cache_key] = {
-            'timestamp': datetime.now(),
-            'prediction': prediction
-        }
+        self._prediction_cache[cache_key] = {"timestamp": datetime.now(), "prediction": prediction}
 
         return prediction
 
@@ -565,22 +590,22 @@ class TrafficPredictionAgent(BaseAgent, ProtocolMixin):
             num_hotspots = random.randint(3, 5)
 
             for i in range(num_hotspots):
-                lat = random.uniform(area_bounds['south'], area_bounds['north'])
-                lon = random.uniform(area_bounds['west'], area_bounds['east'])
+                lat = random.uniform(area_bounds["south"], area_bounds["north"])
+                lon = random.uniform(area_bounds["west"], area_bounds["east"])
 
-                hotspots.append({
-                    "location": {"lat": lat, "lon": lon},
-                    "severity": "high" if traffic_mult > 2.3 else "moderate",
-                    "delay_minutes": round(random.uniform(5, 15), 1),
-                    "affected_radius_km": round(random.uniform(0.5, 2.0), 2)
-                })
+                hotspots.append(
+                    {
+                        "location": {"lat": lat, "lon": lon},
+                        "severity": "high" if traffic_mult > 2.3 else "moderate",
+                        "delay_minutes": round(random.uniform(5, 15), 1),
+                        "affected_radius_km": round(random.uniform(0.5, 2.0), 2),
+                    }
+                )
 
         return hotspots
 
     def suggest_alternate_routes(
-        self,
-        route: List[Tuple[float, float]],
-        current_time: Optional[datetime] = None
+        self, route: List[Tuple[float, float]], current_time: Optional[datetime] = None
     ) -> List[Dict[str, Any]]:
         """
         Suggest alternate routes based on traffic conditions
@@ -602,21 +627,25 @@ class TrafficPredictionAgent(BaseAgent, ProtocolMixin):
 
         if congestion in [CongestionLevel.HIGH, CongestionLevel.SEVERE]:
             # Suggest time-shifted routes
-            alternates.append({
-                "type": "time_shift",
-                "recommendation": "Depart 30 minutes earlier",
-                "time_adjustment": -30,
-                "expected_savings_minutes": 15,
-                "confidence": 0.80
-            })
+            alternates.append(
+                {
+                    "type": "time_shift",
+                    "recommendation": "Depart 30 minutes earlier",
+                    "time_adjustment": -30,
+                    "expected_savings_minutes": 15,
+                    "confidence": 0.80,
+                }
+            )
 
-            alternates.append({
-                "type": "time_shift",
-                "recommendation": "Depart 60 minutes later",
-                "time_adjustment": 60,
-                "expected_savings_minutes": 20,
-                "confidence": 0.75
-            })
+            alternates.append(
+                {
+                    "type": "time_shift",
+                    "recommendation": "Depart 60 minutes later",
+                    "time_adjustment": 60,
+                    "expected_savings_minutes": 20,
+                    "confidence": 0.75,
+                }
+            )
 
         return alternates
 
@@ -624,7 +653,9 @@ class TrafficPredictionAgent(BaseAgent, ProtocolMixin):
     # HELPER METHODS
     # ========================================================================
 
-    def _calculate_distance(self, point1: Tuple[float, float], point2: Tuple[float, float]) -> float:
+    def _calculate_distance(
+        self, point1: Tuple[float, float], point2: Tuple[float, float]
+    ) -> float:
         """Calculate distance between two lat/lon points using Haversine formula"""
         lat1, lon1 = point1
         lat2, lon2 = point2
@@ -634,9 +665,10 @@ class TrafficPredictionAgent(BaseAgent, ProtocolMixin):
         dlat = math.radians(lat2 - lat1)
         dlon = math.radians(lon2 - lon1)
 
-        a = (math.sin(dlat / 2) ** 2 +
-             math.cos(math.radians(lat1)) * math.cos(math.radians(lat2)) *
-             math.sin(dlon / 2) ** 2)
+        a = (
+            math.sin(dlat / 2) ** 2
+            + math.cos(math.radians(lat1)) * math.cos(math.radians(lat2)) * math.sin(dlon / 2) ** 2
+        )
 
         c = 2 * math.atan2(math.sqrt(a), math.sqrt(1 - a))
         distance = R * c
@@ -707,14 +739,14 @@ class TrafficPredictionAgent(BaseAgent, ProtocolMixin):
             return {
                 "status": "shutdown",
                 "agent_id": self.agent_id,
-                "final_metrics": self.metrics.copy()
+                "final_metrics": self.metrics.copy(),
             }
 
         except Exception as e:
             return {
                 "status": "error",
                 "reason": f"Shutdown failed: {str(e)}",
-                "agent_id": self.agent_id
+                "agent_id": self.agent_id,
             }
 
     # ========================================================================
@@ -748,10 +780,10 @@ class TrafficPredictionAgent(BaseAgent, ProtocolMixin):
             "metrics": {
                 **self.metrics,
                 "cache_size": cache_size,
-                "cache_hit_rate": round(cache_hit_rate, 3)
+                "cache_hit_rate": round(cache_hit_rate, 3),
             },
             "resources": resource_status,
-            "timestamp": datetime.now().isoformat()
+            "timestamp": datetime.now().isoformat(),
         }
 
     # ========================================================================
@@ -776,7 +808,7 @@ class TrafficPredictionAgent(BaseAgent, ProtocolMixin):
                 "health": f"/agents/{self.agent_id}/health",
                 "execute": f"/agents/{self.agent_id}/execute",
             },
-            health_status="healthy"
+            health_status="healthy",
         )
 
         self.logger.info(f"Registering on agent network: {self.typed_config.agent_network_url}")
@@ -794,7 +826,7 @@ class TrafficPredictionAgent(BaseAgent, ProtocolMixin):
             agent_id=self.agent_id,
             capabilities=[],
             endpoints={},
-            health_status="unhealthy"
+            health_status="unhealthy",
         )
 
         self.logger.info("Deregistering from network")
@@ -818,8 +850,8 @@ class TrafficPredictionAgent(BaseAgent, ProtocolMixin):
             total = self.metrics["total_executions"]
             current_avg = self.metrics["avg_execution_time_ms"]
             self.metrics["avg_execution_time_ms"] = (
-                (current_avg * (total - 1) + execution_time_ms) / total
-            )
+                current_avg * (total - 1) + execution_time_ms
+            ) / total
 
     def get_metrics(self) -> Dict[str, Any]:
         """Get agent metrics"""
@@ -829,13 +861,14 @@ class TrafficPredictionAgent(BaseAgent, ProtocolMixin):
                 self.metrics["successful_executions"] / self.metrics["total_executions"]
                 if self.metrics["total_executions"] > 0
                 else 0.0
-            )
+            ),
         }
 
 
 # ============================================================================
 # RESOURCE MONITORING
 # ============================================================================
+
 
 class ResourceMonitor:
     """
@@ -894,13 +927,12 @@ class ResourceMonitor:
             }
 
         except ImportError:
-            return {
-                "error": "psutil not available - install with: pip install psutil"
-            }
+            return {"error": "psutil not available - install with: pip install psutil"}
 
 
 class ResourceExhaustionError(Exception):
     """Raised when agent exceeds resource limits"""
+
     pass
 
 
@@ -908,9 +940,9 @@ class ResourceExhaustionError(Exception):
 # FACTORY & REGISTRATION
 # ============================================================================
 
+
 def create_traffic_prediction_agent(
-    agent_id: Optional[str] = None,
-    config: Optional[TrafficPredictionAgentConfig] = None
+    agent_id: Optional[str] = None, config: Optional[TrafficPredictionAgentConfig] = None
 ) -> TrafficPredictionAgent:
     """
     Factory function to create TrafficPredictionAgent instance
@@ -924,6 +956,7 @@ def create_traffic_prediction_agent(
     """
     if agent_id is None:
         from uuid import uuid4
+
         agent_id = f"{AGENT_TYPE}_{str(uuid4())[:8]}"
 
     if config is None:
@@ -936,6 +969,7 @@ def create_traffic_prediction_agent(
 # ============================================================================
 # CLI ENTRY POINT (for standalone execution)
 # ============================================================================
+
 
 async def main():
     """CLI entry point for standalone agent execution"""
@@ -953,7 +987,8 @@ async def main():
     # Load config
     if args.config_file:
         import json
-        with open(args.config_file, 'r') as f:
+
+        with open(args.config_file, "r") as f:
             config_dict = json.load(f)
         config = TrafficPredictionAgentConfig(**config_dict)
     else:
@@ -973,12 +1008,14 @@ async def main():
 
     # Test mode
     if args.test:
-        result = await agent.execute({
-            "action": "predict_travel_time",
-            "origin": (37.7749, -122.4194),  # San Francisco
-            "destination": (37.3382, -121.8863),  # San Jose
-            "departure_time": datetime.now().isoformat()
-        })
+        result = await agent.execute(
+            {
+                "action": "predict_travel_time",
+                "origin": (37.7749, -122.4194),  # San Francisco
+                "destination": (37.3382, -121.8863),  # San Jose
+                "departure_time": datetime.now().isoformat(),
+            }
+        )
         print(f"Test Result: {result}")
         await agent.shutdown()
         return

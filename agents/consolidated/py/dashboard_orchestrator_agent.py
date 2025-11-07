@@ -16,6 +16,7 @@ from collections import defaultdict
 
 import sys
 import os
+
 sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
 from superstandard.agents.base.base_agent import BaseAgent, AgentCapability
@@ -24,6 +25,7 @@ from superstandard.agents.base.base_agent import BaseAgent, AgentCapability
 @dataclass
 class DashboardState:
     """Current dashboard state"""
+
     active_agents: List[Dict]
     recent_activities: List[Dict]
     system_metrics: Dict
@@ -48,13 +50,13 @@ class DashboardOrchestratorAgent(BaseAgent):
     def __init__(
         self,
         agent_id: str = "dashboard_orchestrator_001",
-        workspace_path: str = "./autonomous-ecosystem/workspace"
+        workspace_path: str = "./autonomous-ecosystem/workspace",
     ):
         super().__init__(
             agent_id=agent_id,
             agent_type="dashboard_orchestrator",
             capabilities=[AgentCapability.ORCHESTRATION],
-            workspace_path=workspace_path
+            workspace_path=workspace_path,
         )
 
         # Dashboard state
@@ -85,10 +87,7 @@ class DashboardOrchestratorAgent(BaseAgent):
         elif task_type == "format_activity_feed":
             return await self._format_activity_feed(task)
         else:
-            return {
-                "success": False,
-                "error": f"Unknown task type: {task_type}"
-            }
+            return {"success": False, "error": f"Unknown task type: {task_type}"}
 
     async def analyze(self, input_data: Dict[str, Any]) -> Dict[str, Any]:
         """Analyze dashboard requirements and optimize data flow"""
@@ -96,13 +95,13 @@ class DashboardOrchestratorAgent(BaseAgent):
             "data_flow_optimizations": [
                 "Cache network graph for 5 seconds",
                 "Batch activity updates every 2 seconds",
-                "Pre-compute business impact metrics"
+                "Pre-compute business impact metrics",
             ],
             "recommendations": [
                 "Use WebSocket for real-time activity feed",
                 "Poll agent metrics every 3 seconds",
-                "Lazy-load agent detail modals"
-            ]
+                "Lazy-load agent detail modals",
+            ],
         }
 
     # =====================================================================
@@ -127,7 +126,7 @@ class DashboardOrchestratorAgent(BaseAgent):
                 agent_network=agent_network,
                 business_impact=business_impact,
                 alerts=alerts,
-                last_updated=datetime.now()
+                last_updated=datetime.now(),
             )
 
             self.current_state = state
@@ -141,15 +140,12 @@ class DashboardOrchestratorAgent(BaseAgent):
                     "agent_network": state.agent_network,
                     "business_impact": state.business_impact,
                     "alerts": state.alerts,
-                    "last_updated": state.last_updated.isoformat()
-                }
+                    "last_updated": state.last_updated.isoformat(),
+                },
             }
 
         except Exception as e:
-            return {
-                "success": False,
-                "error": str(e)
-            }
+            return {"success": False, "error": str(e)}
 
     async def _get_active_agents(self) -> List[Dict]:
         """Get list of active agents with summaries"""
@@ -159,13 +155,15 @@ class DashboardOrchestratorAgent(BaseAgent):
         if self.agent_factory:
             factory_agents = self.agent_factory.list_active_agents()
             for agent in factory_agents:
-                active_agents.append({
-                    "agent_id": agent.get("agent_id"),
-                    "agent_type": agent.get("agent_type", "unknown"),
-                    "status": agent.get("status", "idle"),
-                    "category": agent.get("category", "other"),
-                    "name": agent.get("name", "Unknown Agent")
-                })
+                active_agents.append(
+                    {
+                        "agent_id": agent.get("agent_id"),
+                        "agent_type": agent.get("agent_type", "unknown"),
+                        "status": agent.get("status", "idle"),
+                        "category": agent.get("category", "other"),
+                        "name": agent.get("name", "Unknown Agent"),
+                    }
+                )
 
         # Secondary source: Enrich with activity metrics if available
         if self.activity_tracker:
@@ -178,11 +176,13 @@ class DashboardOrchestratorAgent(BaseAgent):
                     agent_id = agent["agent_id"]
                     if agent_id in metrics_by_id:
                         metrics = metrics_by_id[agent_id]
-                        agent.update({
-                            "tasks_completed": metrics.get("tasks_completed", 0),
-                            "success_rate": metrics.get("success_rate", 0),
-                            "last_activity": metrics.get("last_activity")
-                        })
+                        agent.update(
+                            {
+                                "tasks_completed": metrics.get("tasks_completed", 0),
+                                "success_rate": metrics.get("success_rate", 0),
+                                "last_activity": metrics.get("last_activity"),
+                            }
+                        )
 
         return active_agents
 
@@ -228,7 +228,7 @@ class DashboardOrchestratorAgent(BaseAgent):
             "overall_success_rate": 0,
             "total_messages": 0,
             "total_errors": 0,
-            "uptime_seconds": 0
+            "uptime_seconds": 0,
         }
 
     async def _get_agent_network(self) -> Dict:
@@ -252,22 +252,26 @@ class DashboardOrchestratorAgent(BaseAgent):
         nodes = []
         if metrics_result.get("success"):
             for agent_id, metrics in metrics_result.get("metrics", {}).items():
-                nodes.append({
-                    "id": agent_id,
-                    "label": metrics.get("agent_type", "unknown"),
-                    "type": metrics.get("agent_type", "unknown"),
-                    "status": metrics.get("current_state", "idle"),
-                    "category": self._get_agent_category(metrics.get("agent_type", ""))
-                })
+                nodes.append(
+                    {
+                        "id": agent_id,
+                        "label": metrics.get("agent_type", "unknown"),
+                        "type": metrics.get("agent_type", "unknown"),
+                        "status": metrics.get("current_state", "idle"),
+                        "category": self._get_agent_category(metrics.get("agent_type", "")),
+                    }
+                )
 
         # Build edges from collaborations
         edges = []
         for collab in coord_result.get("top_collaborations", [])[:50]:
-            edges.append({
-                "source": collab["from"],
-                "target": collab["to"],
-                "weight": collab["message_count"]
-            })
+            edges.append(
+                {
+                    "source": collab["from"],
+                    "target": collab["to"],
+                    "weight": collab["message_count"],
+                }
+            )
 
         network = {"nodes": nodes, "edges": edges}
 
@@ -284,7 +288,7 @@ class DashboardOrchestratorAgent(BaseAgent):
                 "cost_savings": 0,
                 "time_saved_hours": 0,
                 "efficiency_gain_percent": 0,
-                "co2_reduction_kg": 0
+                "co2_reduction_kg": 0,
             }
 
         metrics = await self._get_system_metrics()
@@ -308,7 +312,7 @@ class DashboardOrchestratorAgent(BaseAgent):
             "efficiency_gain_percent": min(80, efficiency_base + (success_rate * 0.5)),
             "co2_reduction_kg": round(active_agents * co2_per_agent_kg * uptime_hours, 2),
             "tasks_automated": tasks_completed,
-            "human_equivalent_hours": round(tasks_completed * time_per_task_hours, 2)
+            "human_equivalent_hours": round(tasks_completed * time_per_task_hours, 2),
         }
 
     async def _get_alerts(self) -> List[Dict]:
@@ -321,24 +325,28 @@ class DashboardOrchestratorAgent(BaseAgent):
         # Analyze for bottlenecks
         analysis = self.activity_tracker._analyze_bottlenecks()
         for bottleneck in analysis.get("bottlenecks", []):
-            alerts.append({
-                "severity": bottleneck.get("severity", "medium"),
-                "type": "bottleneck",
-                "message": f"Agent {bottleneck['agent_id']}: {bottleneck['issue']}",
-                "details": bottleneck,
-                "timestamp": datetime.now().isoformat()
-            })
+            alerts.append(
+                {
+                    "severity": bottleneck.get("severity", "medium"),
+                    "type": "bottleneck",
+                    "message": f"Agent {bottleneck['agent_id']}: {bottleneck['issue']}",
+                    "details": bottleneck,
+                    "timestamp": datetime.now().isoformat(),
+                }
+            )
 
         # Check for isolated agents
         coord_analysis = self.activity_tracker._analyze_coordination()
         if coord_analysis.get("isolated_agents", 0) > 0:
-            alerts.append({
-                "severity": "low",
-                "type": "coordination",
-                "message": f"{coord_analysis['isolated_agents']} agents are not coordinating",
-                "details": {"isolated_ids": coord_analysis.get("isolated_agent_ids", [])},
-                "timestamp": datetime.now().isoformat()
-            })
+            alerts.append(
+                {
+                    "severity": "low",
+                    "type": "coordination",
+                    "message": f"{coord_analysis['isolated_agents']} agents are not coordinating",
+                    "details": {"isolated_ids": coord_analysis.get("isolated_agent_ids", [])},
+                    "timestamp": datetime.now().isoformat(),
+                }
+            )
 
         return alerts
 
@@ -361,12 +369,13 @@ class DashboardOrchestratorAgent(BaseAgent):
             return {"success": False, "error": f"Agent {agent_id} not found"}
 
         # Get recent activities for this agent
-        activities_result = await self.activity_tracker._get_activity_feed({
-            "agent_id": agent_id,
-            "limit": 20
-        })
+        activities_result = await self.activity_tracker._get_activity_feed(
+            {"agent_id": agent_id, "limit": 20}
+        )
 
-        activities = activities_result.get("activities", []) if activities_result.get("success") else []
+        activities = (
+            activities_result.get("activities", []) if activities_result.get("success") else []
+        )
 
         # Get agent template info if available
         agent_info = {}
@@ -378,11 +387,7 @@ class DashboardOrchestratorAgent(BaseAgent):
 
         return {
             "success": True,
-            "agent": {
-                **summary,
-                "recent_activities": activities,
-                "template_info": agent_info
-            }
+            "agent": {**summary, "recent_activities": activities, "template_info": agent_info},
         }
 
     async def _format_activity_feed(self, task: Dict[str, Any]) -> Dict[str, Any]:
@@ -396,19 +401,19 @@ class DashboardOrchestratorAgent(BaseAgent):
             return {
                 "success": True,
                 "format": "timeline",
-                "activities": self._format_timeline(activities)
+                "activities": self._format_timeline(activities),
             }
         elif view_type == "grouped":
             return {
                 "success": True,
                 "format": "grouped",
-                "groups": self._group_activities(activities)
+                "groups": self._group_activities(activities),
             }
         elif view_type == "agent_centric":
             return {
                 "success": True,
                 "format": "agent_centric",
-                "by_agent": self._group_by_agent(activities)
+                "by_agent": self._group_by_agent(activities),
             }
         else:
             return {"success": False, "error": f"Unknown view type: {view_type}"}
@@ -423,7 +428,7 @@ class DashboardOrchestratorAgent(BaseAgent):
                 "description": act["description"],
                 "icon": self._get_activity_icon(act["activity_type"]),
                 "color": self._get_activity_color(act["activity_type"]),
-                "success": act.get("success")
+                "success": act.get("success"),
             }
             for act in activities
         ]
@@ -462,7 +467,7 @@ class DashboardOrchestratorAgent(BaseAgent):
             "marketing_optimizer": "marketing",
             "analytics_reporter": "analytics",
             "activity_tracker": "meta",
-            "dashboard_orchestrator": "meta"
+            "dashboard_orchestrator": "meta",
         }
         return category_map.get(agent_type, "other")
 
@@ -477,7 +482,7 @@ class DashboardOrchestratorAgent(BaseAgent):
             "communication_sent": "📤",
             "communication_received": "📥",
             "state_changed": "🔄",
-            "error_occurred": "⚠️"
+            "error_occurred": "⚠️",
         }
         return icon_map.get(activity_type, "📌")
 
@@ -492,7 +497,7 @@ class DashboardOrchestratorAgent(BaseAgent):
             "communication_sent": "#06b6d4",
             "communication_received": "#06b6d4",
             "state_changed": "#f59e0b",
-            "error_occurred": "#ef4444"
+            "error_occurred": "#ef4444",
         }
         return color_map.get(activity_type, "#64748b")
 
@@ -514,11 +519,7 @@ class DashboardOrchestratorAgent(BaseAgent):
 
     async def broadcast_update(self, update_type: str, data: Dict):
         """Broadcast update to all connected dashboards"""
-        message = {
-            "type": update_type,
-            "data": data,
-            "timestamp": datetime.now().isoformat()
-        }
+        message = {"type": update_type, "data": data, "timestamp": datetime.now().isoformat()}
 
         # Send to all connected WebSocket clients
         for client in self.websocket_clients:
@@ -539,6 +540,7 @@ class DashboardOrchestratorAgent(BaseAgent):
 
 # Singleton instance
 _dashboard_orchestrator = None
+
 
 def get_dashboard_orchestrator() -> DashboardOrchestratorAgent:
     """Get or create dashboard orchestrator instance"""

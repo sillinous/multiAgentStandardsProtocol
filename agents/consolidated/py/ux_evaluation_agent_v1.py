@@ -31,7 +31,8 @@ from dataclasses import dataclass, asdict
 from enum import Enum
 
 import sys
-sys.path.insert(0, os.path.join(os.path.dirname(__file__), '../..'))
+
+sys.path.insert(0, os.path.join(os.path.dirname(__file__), "../.."))
 
 from superstandard.agents.base.base_agent import BaseAgent
 from library.core.protocols import ProtocolMixin
@@ -51,8 +52,10 @@ DEFAULT_MAX_ISSUES_PER_CATEGORY = 50
 # Domain Models
 # =========================================================================
 
+
 class SeverityLevel(Enum):
     """Issue severity levels"""
+
     CRITICAL = "critical"  # Blocks core functionality
     HIGH = "high"  # Severely impacts usability
     MEDIUM = "medium"  # Noticeable but workaround exists
@@ -62,6 +65,7 @@ class SeverityLevel(Enum):
 @dataclass
 class UXIssue:
     """User experience issue"""
+
     issue_id: str
     severity: SeverityLevel
     category: str  # functionality, usability, accessibility, visual
@@ -87,13 +91,14 @@ class UXIssue:
             "expected_behavior": self.expected_behavior,
             "actual_behavior": self.actual_behavior,
             "suggested_fix": self.suggested_fix,
-            "affected_elements": self.affected_elements
+            "affected_elements": self.affected_elements,
         }
 
 
 # =========================================================================
 # Configuration
 # =========================================================================
+
 
 @dataclass
 class UXEvaluationAgentConfig:
@@ -103,6 +108,7 @@ class UXEvaluationAgentConfig:
     All values can be overridden via environment variables following
     12-factor app methodology.
     """
+
     # Analysis settings
     max_issues_per_category: int = DEFAULT_MAX_ISSUES_PER_CATEGORY
 
@@ -120,22 +126,22 @@ class UXEvaluationAgentConfig:
     def from_environment(cls) -> "UXEvaluationAgentConfig":
         """Create configuration from environment variables"""
         return cls(
-            max_issues_per_category=int(os.getenv(
-                "UX_EVAL_MAX_ISSUES",
-                str(DEFAULT_MAX_ISSUES_PER_CATEGORY)
-            )),
+            max_issues_per_category=int(
+                os.getenv("UX_EVAL_MAX_ISSUES", str(DEFAULT_MAX_ISSUES_PER_CATEGORY))
+            ),
             critical_weight=int(os.getenv("UX_EVAL_CRITICAL_WEIGHT", "30")),
             high_weight=int(os.getenv("UX_EVAL_HIGH_WEIGHT", "15")),
             medium_weight=int(os.getenv("UX_EVAL_MEDIUM_WEIGHT", "5")),
             low_weight=int(os.getenv("UX_EVAL_LOW_WEIGHT", "1")),
             memory_limit_mb=int(os.getenv("UX_EVAL_MEMORY_LIMIT_MB", "512")),
-            cpu_limit_percent=float(os.getenv("UX_EVAL_CPU_LIMIT_PERCENT", "80.0"))
+            cpu_limit_percent=float(os.getenv("UX_EVAL_CPU_LIMIT_PERCENT", "80.0")),
         )
 
 
 # =========================================================================
 # UX Evaluation Agent
 # =========================================================================
+
 
 class UXEvaluationAgent(BaseAgent, ProtocolMixin):
     """
@@ -164,11 +170,7 @@ class UXEvaluationAgent(BaseAgent, ProtocolMixin):
     - Protocol support (A2A, A2P, ACP, ANP, MCP)
     """
 
-    def __init__(
-        self,
-        agent_id: str,
-        config: UXEvaluationAgentConfig
-    ):
+    def __init__(self, agent_id: str, config: UXEvaluationAgentConfig):
         """Initialize UX Evaluation Agent"""
         # Initialize both parent classes
         super(BaseAgent, self).__init__()
@@ -184,10 +186,7 @@ class UXEvaluationAgent(BaseAgent, ProtocolMixin):
         self.issues: List[UXIssue] = []
 
         # State tracking
-        self.state = {
-            "initialized": False,
-            "evaluations_performed": 0
-        }
+        self.state = {"initialized": False, "evaluations_performed": 0}
 
         # Metrics
         self.metrics = {
@@ -196,7 +195,7 @@ class UXEvaluationAgent(BaseAgent, ProtocolMixin):
             "critical_issues": 0,
             "high_issues": 0,
             "medium_issues": 0,
-            "low_issues": 0
+            "low_issues": 0,
         }
 
         # Resource tracking
@@ -219,9 +218,7 @@ class UXEvaluationAgent(BaseAgent, ProtocolMixin):
         return {}
 
     async def _execute_logic(
-        self,
-        input_data: Dict[str, Any],
-        fetched_data: Dict[str, Any]
+        self, input_data: Dict[str, Any], fetched_data: Dict[str, Any]
     ) -> Dict[str, Any]:
         """Core execution logic - delegates to execute() method"""
         return await self.execute(input_data)
@@ -247,14 +244,11 @@ class UXEvaluationAgent(BaseAgent, ProtocolMixin):
                 "agent_id": self.agent_id,
                 "agent_type": self.agent_type,
                 "version": self.version,
-                "initialization_time_ms": round(init_time_ms, 2)
+                "initialization_time_ms": round(init_time_ms, 2),
             }
 
         except Exception as e:
-            return {
-                "success": False,
-                "error": f"Initialization failed: {str(e)}"
-            }
+            return {"success": False, "error": f"Initialization failed: {str(e)}"}
 
     async def execute(self, input_data: Dict[str, Any]) -> Dict[str, Any]:
         """
@@ -267,10 +261,7 @@ class UXEvaluationAgent(BaseAgent, ProtocolMixin):
         - analyze: Comprehensive analysis (combines all checks)
         """
         if not self.state["initialized"]:
-            return {
-                "success": False,
-                "error": "Agent not initialized. Call initialize() first."
-            }
+            return {"success": False, "error": "Agent not initialized. Call initialize() first."}
 
         start_time = time.time()
 
@@ -278,10 +269,7 @@ class UXEvaluationAgent(BaseAgent, ProtocolMixin):
             operation = input_data.get("operation") or input_data.get("type")
 
             if not operation:
-                return {
-                    "success": False,
-                    "error": "No operation specified"
-                }
+                return {"success": False, "error": "No operation specified"}
 
             # Route to appropriate handler
             if operation in ["evaluate_dashboard", "analyze"]:
@@ -291,10 +279,7 @@ class UXEvaluationAgent(BaseAgent, ProtocolMixin):
             elif operation == "check_accessibility":
                 result = await self._check_accessibility(input_data)
             else:
-                result = {
-                    "success": False,
-                    "error": f"Unknown operation: {operation}"
-                }
+                result = {"success": False, "error": f"Unknown operation: {operation}"}
 
             # Track execution time
             execution_time_ms = (time.time() - start_time) * 1000
@@ -312,7 +297,7 @@ class UXEvaluationAgent(BaseAgent, ProtocolMixin):
             return {
                 "success": False,
                 "error": str(e),
-                "execution_time_ms": round(execution_time_ms, 2)
+                "execution_time_ms": round(execution_time_ms, 2),
             }
 
     async def shutdown(self) -> Dict[str, Any]:
@@ -330,14 +315,11 @@ class UXEvaluationAgent(BaseAgent, ProtocolMixin):
                     "total_evaluations": self.metrics["total_evaluations"],
                     "total_issues_found": self.metrics["total_issues_found"],
                     "critical_issues": self.metrics["critical_issues"],
-                    "high_issues": self.metrics["high_issues"]
-                }
+                    "high_issues": self.metrics["high_issues"],
+                },
             }
         except Exception as e:
-            return {
-                "status": "error",
-                "reason": f"Shutdown failed: {str(e)}"
-            }
+            return {"status": "error", "reason": f"Shutdown failed: {str(e)}"}
 
     async def health_check(self) -> Dict[str, Any]:
         """Perform health check"""
@@ -359,19 +341,18 @@ class UXEvaluationAgent(BaseAgent, ProtocolMixin):
                 "resources": {
                     "memory_mb": round(memory_mb, 2),
                     "memory_limit_mb": self.typed_config.memory_limit_mb,
-                    "memory_percent": round((memory_mb / self.typed_config.memory_limit_mb) * 100, 1),
+                    "memory_percent": round(
+                        (memory_mb / self.typed_config.memory_limit_mb) * 100, 1
+                    ),
                     "cpu_percent": round(cpu_percent, 1),
-                    "cpu_limit_percent": self.typed_config.cpu_limit_percent
+                    "cpu_limit_percent": self.typed_config.cpu_limit_percent,
                 },
                 "state": self.state.copy(),
-                "metrics": self.metrics.copy()
+                "metrics": self.metrics.copy(),
             }
 
         except Exception as e:
-            return {
-                "status": "error",
-                "error": str(e)
-            }
+            return {"status": "error", "error": str(e)}
 
     # =====================================================================
     # Evaluation Methods
@@ -385,7 +366,7 @@ class UXEvaluationAgent(BaseAgent, ProtocolMixin):
 
         # Read dashboard file
         try:
-            with open(dashboard_path, 'r', encoding='utf-8') as f:
+            with open(dashboard_path, "r", encoding="utf-8") as f:
                 html_content = f.read()
         except Exception as e:
             return {"success": False, "error": f"Failed to read dashboard: {e}"}
@@ -406,7 +387,7 @@ class UXEvaluationAgent(BaseAgent, ProtocolMixin):
         """Analyze HTML structure for issues"""
 
         # Check for missing critical elements
-        if 'canvas' in html.lower() and 'function' not in html.lower():
+        if "canvas" in html.lower() and "function" not in html.lower():
             self._add_issue(
                 severity=SeverityLevel.CRITICAL,
                 category="functionality",
@@ -417,13 +398,13 @@ class UXEvaluationAgent(BaseAgent, ProtocolMixin):
                 expected="Canvas should show visualization (agents, routes, metrics)",
                 actual="Canvas is blank/empty",
                 fix="Add canvas rendering logic using CanvasRenderingContext2D API",
-                elements=["<canvas>"]
+                elements=["<canvas>"],
             )
 
         # Check for buttons without event handlers
-        if '<button' in html:
-            buttons = re.findall(r'<button[^>]*>(.*?)</button>', html, re.IGNORECASE | re.DOTALL)
-            onclick_count = html.lower().count('onclick=')
+        if "<button" in html:
+            buttons = re.findall(r"<button[^>]*>(.*?)</button>", html, re.IGNORECASE | re.DOTALL)
+            onclick_count = html.lower().count("onclick=")
 
             if len(buttons) > onclick_count + 5:  # Allow some event listeners
                 self._add_issue(
@@ -436,11 +417,11 @@ class UXEvaluationAgent(BaseAgent, ProtocolMixin):
                     expected="Button should trigger action (play, pause, spawn agent)",
                     actual="Button does nothing - no response",
                     fix="Add onclick handlers or addEventListener for each button",
-                    elements=["Play button", "Pause button", "Reset button", "Spawn buttons"]
+                    elements=["Play button", "Pause button", "Reset button", "Spawn buttons"],
                 )
 
         # Check for WebSocket connection code
-        if 'WebSocket' not in html and 'ws://' not in html:
+        if "WebSocket" not in html and "ws://" not in html:
             self._add_issue(
                 severity=SeverityLevel.HIGH,
                 category="functionality",
@@ -451,11 +432,11 @@ class UXEvaluationAgent(BaseAgent, ProtocolMixin):
                 expected="Dashboard updates in real-time with agent activity",
                 actual="Dashboard is frozen - shows initial state only",
                 fix="Add: const ws = new WebSocket('ws://localhost:8001/ws'); ws.onmessage = handler;",
-                elements=["WebSocket initialization"]
+                elements=["WebSocket initialization"],
             )
 
         # Check for API polling/fetching
-        if 'fetch(' not in html and 'XMLHttpRequest' not in html:
+        if "fetch(" not in html and "XMLHttpRequest" not in html:
             self._add_issue(
                 severity=SeverityLevel.HIGH,
                 category="functionality",
@@ -466,14 +447,14 @@ class UXEvaluationAgent(BaseAgent, ProtocolMixin):
                 expected="Dashboard should fetch /api/agents/active, /api/activity/feed etc",
                 actual="No network requests - uses hardcoded/no data",
                 fix="Add fetch() calls to server API endpoints",
-                elements=["API integration"]
+                elements=["API integration"],
             )
 
     async def _analyze_javascript_functionality(self, html: str, path: str):
         """Analyze JavaScript for broken functionality"""
 
         # Check for error handling
-        if 'fetch(' in html and 'catch' not in html:
+        if "fetch(" in html and "catch" not in html:
             self._add_issue(
                 severity=SeverityLevel.MEDIUM,
                 category="functionality",
@@ -484,12 +465,12 @@ class UXEvaluationAgent(BaseAgent, ProtocolMixin):
                 expected="User sees friendly error: 'Unable to connect to server'",
                 actual="Silent failure - looks like it's working but isn't",
                 fix="Add .catch(err => showError(err)) to all fetch calls",
-                elements=["Error handling"]
+                elements=["Error handling"],
             )
 
         # Check for DOMContentLoaded or similar
-        if '<script>' in html:
-            if 'DOMContentLoaded' not in html and 'window.onload' not in html:
+        if "<script>" in html:
+            if "DOMContentLoaded" not in html and "window.onload" not in html:
                 self._add_issue(
                     severity=SeverityLevel.HIGH,
                     category="functionality",
@@ -500,13 +481,13 @@ class UXEvaluationAgent(BaseAgent, ProtocolMixin):
                     expected="Code waits for DOM: document.addEventListener('DOMContentLoaded')",
                     actual="Code runs immediately, elements don't exist yet",
                     fix="Wrap code in: document.addEventListener('DOMContentLoaded', () => { ... })",
-                    elements=["Script execution timing"]
+                    elements=["Script execution timing"],
                 )
 
         # Check for undefined variables
-        if 'function' in html.lower():
+        if "function" in html.lower():
             common_issues = []
-            if 'getElementById(' in html and 'null' not in html.lower():
+            if "getElementById(" in html and "null" not in html.lower():
                 common_issues.append("getElementById calls without null checks")
 
             if common_issues:
@@ -520,14 +501,14 @@ class UXEvaluationAgent(BaseAgent, ProtocolMixin):
                     expected="if (element) { element.doSomething() }",
                     actual="element.doSomething() crashes if element is null",
                     fix="Add null checks before using DOM elements",
-                    elements=["DOM queries"]
+                    elements=["DOM queries"],
                 )
 
     async def _analyze_visual_layout(self, html: str, path: str):
         """Analyze visual layout for UX issues"""
 
         # Check for overlapping elements
-        if 'position: absolute' in html or 'z-index' in html:
+        if "position: absolute" in html or "z-index" in html:
             self._add_issue(
                 severity=SeverityLevel.HIGH,
                 category="visual",
@@ -538,11 +519,11 @@ class UXEvaluationAgent(BaseAgent, ProtocolMixin):
                 expected="All interactive elements should be accessible",
                 actual="Overlays/modals cover essential UI elements",
                 fix="Review z-index stacking, ensure modals have close buttons, proper positioning",
-                elements=["Modals", "Overlays", "Position:absolute elements"]
+                elements=["Modals", "Overlays", "Position:absolute elements"],
             )
 
         # Check for loading states
-        if 'Loading' not in html and 'Spinner' not in html:
+        if "Loading" not in html and "Spinner" not in html:
             self._add_issue(
                 severity=SeverityLevel.MEDIUM,
                 category="usability",
@@ -553,11 +534,11 @@ class UXEvaluationAgent(BaseAgent, ProtocolMixin):
                 expected="Show spinner or 'Loading...' message during data fetch",
                 actual="Blank screen or old data - no feedback that loading is happening",
                 fix="Add loading state: <div class='loading'>Loading...</div>",
-                elements=["Loading states"]
+                elements=["Loading states"],
             )
 
         # Check for mobile responsiveness
-        if 'viewport' not in html.lower():
+        if "viewport" not in html.lower():
             self._add_issue(
                 severity=SeverityLevel.LOW,
                 category="accessibility",
@@ -568,7 +549,7 @@ class UXEvaluationAgent(BaseAgent, ProtocolMixin):
                 expected="<meta name='viewport' content='width=device-width'>",
                 actual="Missing viewport tag - desktop-only layout",
                 fix="Add viewport meta tag in <head>",
-                elements=["<head> section"]
+                elements=["<head> section"],
             )
 
     async def _analyze_user_flows(self, path: str):
@@ -585,12 +566,12 @@ class UXEvaluationAgent(BaseAgent, ProtocolMixin):
                 "1. User opens dashboard to see agents working",
                 "2. Dashboard is static - no activity shown",
                 "3. User clicks Play - nothing happens",
-                "4. User gives up - dashboard is useless"
+                "4. User gives up - dashboard is useless",
             ],
             expected="User sees: agents moving, tasks being completed, real-time metrics updating",
             actual="User sees: static page, broken buttons, placeholder text, blank canvas",
             fix="PRIORITY 1: Fix WebSocket connection, canvas rendering, button handlers",
-            elements=["Entire user experience"]
+            elements=["Entire user experience"],
         )
 
         # User Goal 2: Control simulation
@@ -605,12 +586,12 @@ class UXEvaluationAgent(BaseAgent, ProtocolMixin):
                 "2. Nothing happens",
                 "3. User clicks multiple times",
                 "4. Still nothing",
-                "5. User opens console - sees errors"
+                "5. User opens console - sees errors",
             ],
             expected="Play starts simulation, Pause stops it, Reset clears and restarts",
             actual="Buttons are non-functional decorations",
             fix="Connect buttons to API: onclick=\"fetch('/api/control/play')\"",
-            elements=["Play", "Pause", "Reset", "Speed controls"]
+            elements=["Play", "Pause", "Reset", "Speed controls"],
         )
 
         # User Goal 3: Spawn agents
@@ -623,12 +604,12 @@ class UXEvaluationAgent(BaseAgent, ProtocolMixin):
             steps=[
                 "1. User clicks 'Spawn Agent' button",
                 "2. Nothing happens",
-                "3. Agent library sidebar might open but buttons inside don't work"
+                "3. Agent library sidebar might open but buttons inside don't work",
             ],
             expected="Click button → API call → Agent spawned → Dashboard updates",
             actual="Click button → nothing → user confusion",
             fix="Add: onclick=\"spawnAgent('agent_type')\" + fetch to /api/agents/spawn",
-            elements=["Spawn buttons", "Agent library"]
+            elements=["Spawn buttons", "Agent library"],
         )
 
     async def _test_user_flow(self, task: Dict[str, Any]) -> Dict[str, Any]:
@@ -642,17 +623,14 @@ class UXEvaluationAgent(BaseAgent, ProtocolMixin):
             "success": True,
             "flow_name": flow_name,
             "steps_tested": len(steps),
-            "message": "User flow testing not yet implemented in v1.0"
+            "message": "User flow testing not yet implemented in v1.0",
         }
 
     async def _check_accessibility(self, task: Dict[str, Any]) -> Dict[str, Any]:
         """Check accessibility compliance"""
         # This would check WCAG compliance
         # For now, return a structured response
-        return {
-            "success": True,
-            "message": "Accessibility checking not yet implemented in v1.0"
-        }
+        return {"success": True, "message": "Accessibility checking not yet implemented in v1.0"}
 
     # =====================================================================
     # Issue Management
@@ -669,7 +647,7 @@ class UXEvaluationAgent(BaseAgent, ProtocolMixin):
         expected: str,
         actual: str,
         fix: str,
-        elements: List[str]
+        elements: List[str],
     ):
         """Add issue to list"""
         issue = UXIssue(
@@ -683,7 +661,7 @@ class UXEvaluationAgent(BaseAgent, ProtocolMixin):
             expected_behavior=expected,
             actual_behavior=actual,
             suggested_fix=fix,
-            affected_elements=elements
+            affected_elements=elements,
         )
         self.issues.append(issue)
 
@@ -710,7 +688,7 @@ class UXEvaluationAgent(BaseAgent, ProtocolMixin):
             "critical": [i for i in self.issues if i.severity == SeverityLevel.CRITICAL],
             "high": [i for i in self.issues if i.severity == SeverityLevel.HIGH],
             "medium": [i for i in self.issues if i.severity == SeverityLevel.MEDIUM],
-            "low": [i for i in self.issues if i.severity == SeverityLevel.LOW]
+            "low": [i for i in self.issues if i.severity == SeverityLevel.LOW],
         }
 
         # Calculate scores using config weights
@@ -719,11 +697,13 @@ class UXEvaluationAgent(BaseAgent, ProtocolMixin):
         high_count = len(by_severity["high"])
 
         # UX Score: 0-100 (lower is worse)
-        ux_score = max(0, 100 -
-            (critical_count * self.typed_config.critical_weight) -
-            (high_count * self.typed_config.high_weight) -
-            (len(by_severity["medium"]) * self.typed_config.medium_weight) -
-            (len(by_severity["low"]) * self.typed_config.low_weight)
+        ux_score = max(
+            0,
+            100
+            - (critical_count * self.typed_config.critical_weight)
+            - (high_count * self.typed_config.high_weight)
+            - (len(by_severity["medium"]) * self.typed_config.medium_weight)
+            - (len(by_severity["low"]) * self.typed_config.low_weight),
         )
 
         # Usability rating
@@ -748,19 +728,14 @@ class UXEvaluationAgent(BaseAgent, ProtocolMixin):
                 "critical": critical_count,
                 "high": high_count,
                 "medium": len(by_severity["medium"]),
-                "low": len(by_severity["low"])
+                "low": len(by_severity["low"]),
             },
             "issues": [issue.to_dict() for issue in self.issues],
             "summary": self._generate_executive_summary(ux_score, rating, by_severity),
-            "priority_fixes": self._get_priority_fixes(by_severity)
+            "priority_fixes": self._get_priority_fixes(by_severity),
         }
 
-    def _generate_executive_summary(
-        self,
-        ux_score: int,
-        rating: str,
-        by_severity: Dict
-    ) -> str:
+    def _generate_executive_summary(self, ux_score: int, rating: str, by_severity: Dict) -> str:
         """Generate executive summary"""
         critical = len(by_severity["critical"])
         high = len(by_severity["high"])
@@ -792,7 +767,7 @@ class UXEvaluationAgent(BaseAgent, ProtocolMixin):
                 "priority": idx + 1,
                 "title": issue.title,
                 "fix": issue.suggested_fix,
-                "impact": issue.user_impact
+                "impact": issue.user_impact,
             }
             for idx, issue in enumerate(priority_issues[:5])  # Top 5
         ]
@@ -802,9 +777,9 @@ class UXEvaluationAgent(BaseAgent, ProtocolMixin):
 # Factory Function
 # =========================================================================
 
+
 async def create_ux_evaluation_agent(
-    agent_id: str = "ux_eval_001",
-    config: Optional[UXEvaluationAgentConfig] = None
+    agent_id: str = "ux_eval_001", config: Optional[UXEvaluationAgentConfig] = None
 ) -> UXEvaluationAgent:
     """
     Factory function to create and initialize a UX Evaluation Agent
@@ -819,10 +794,7 @@ async def create_ux_evaluation_agent(
     if config is None:
         config = UXEvaluationAgentConfig.from_environment()
 
-    agent = UXEvaluationAgent(
-        agent_id=agent_id,
-        config=config
-    )
+    agent = UXEvaluationAgent(agent_id=agent_id, config=config)
 
     await agent.initialize()
 
@@ -834,6 +806,7 @@ async def create_ux_evaluation_agent(
 # =========================================================================
 
 if __name__ == "__main__":
+
     async def demo():
         """Demonstrate UX Evaluation Agent capabilities"""
         print("\n" + "=" * 80)
@@ -851,12 +824,11 @@ if __name__ == "__main__":
         dashboard_path = "../../validation/dashboard_unified.html"
 
         if os.path.exists(dashboard_path):
-            result = await agent.execute({
-                "operation": "evaluate_dashboard",
-                "dashboard_path": dashboard_path
-            })
+            result = await agent.execute(
+                {"operation": "evaluate_dashboard", "dashboard_path": dashboard_path}
+            )
 
-            if result.get('success'):
+            if result.get("success"):
                 print(f"    Usability Rating: {result['usability_rating']}")
                 print(f"    UX Score: {result['ux_score']}/100")
                 print(f"    Total Issues: {result['total_issues']}")
@@ -868,7 +840,7 @@ if __name__ == "__main__":
 
                 # Show top 3 priority fixes
                 print("\n    Top 3 Priority Fixes:")
-                for fix in result['priority_fixes'][:3]:
+                for fix in result["priority_fixes"][:3]:
                     print(f"      {fix['priority']}. {fix['title']}")
                     print(f"         Fix: {fix['fix'][:80]}...")
         else:

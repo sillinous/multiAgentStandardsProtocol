@@ -1,7 +1,7 @@
 """
 🌙 Moon Dev's New & Top Coins Agent 🔍
 
-This agent goes through and analyzes all of the new tokens that have been listed in the coin gecko and then also analyzes the top movers of the last 24 hours on coin gecko and then makes recommendations based off that data. 
+This agent goes through and analyzes all of the new tokens that have been listed in the coin gecko and then also analyzes the top movers of the last 24 hours on coin gecko and then makes recommendations based off that data.
 
 =================================
 📚 QUICK START GUIDE
@@ -14,11 +14,11 @@ This agent goes through and analyzes all of the new tokens that have been listed
 2. Choose AI model by setting MODEL_OVERRIDE at top of file:
    ```python
    # Use config.py's AI_MODEL (Default)
-   MODEL_OVERRIDE = "0"  
-   
+   MODEL_OVERRIDE = "0"
+
    # For DeepSeek Chat (Faster, more concise)
-   MODEL_OVERRIDE = "deepseek-chat"  
-   
+   MODEL_OVERRIDE = "deepseek-chat"
+
    # For DeepSeek Reasoner (Better reasoning, more detailed)
    MODEL_OVERRIDE = "deepseek-reasoner"
    ```
@@ -26,7 +26,7 @@ This agent goes through and analyzes all of the new tokens that have been listed
    🔍 Model Comparison:
    - Claude (from config.py): Balanced analysis, good for general use
    - DeepSeek Chat: Faster responses, more concise analysis
-   - DeepSeek Reasoner: Better for complex market analysis, 
+   - DeepSeek Reasoner: Better for complex market analysis,
      provides more detailed reasoning
 
    To switch models:

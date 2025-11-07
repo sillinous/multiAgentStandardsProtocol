@@ -69,10 +69,12 @@ AI_MAX_TOKENS = 4000
 
 # Import model factory with proper path handling
 import sys
-sys.path.append('/Users/md/Dropbox/dev/github/moon-dev-ai-agents-for-trading')
+
+sys.path.append("/Users/md/Dropbox/dev/github/moon-dev-ai-agents-for-trading")
 
 try:
     from src.models import model_factory
+
     print("✅ Successfully imported model_factory")
 except ImportError as e:
     print(f"⚠️ Could not import model_factory: {e}")
@@ -82,17 +84,11 @@ except ImportError as e:
 # 🎯 PARALLEL PROCESSING CONFIGURATION
 # ============================================
 MAX_PARALLEL_THREADS = 18  # How many ideas to process simultaneously
-RATE_LIMIT_DELAY = .5  # Seconds to wait between API calls (per thread)
+RATE_LIMIT_DELAY = 0.5  # Seconds to wait between API calls (per thread)
 RATE_LIMIT_GLOBAL_DELAY = 0.5  # Global delay between any API calls
 
 # Thread color mapping
-THREAD_COLORS = {
-    0: "cyan",
-    1: "magenta",
-    2: "yellow",
-    3: "green",
-    4: "blue"
-}
+THREAD_COLORS = {0: "cyan", 1: "magenta", 2: "yellow", 3: "green", 4: "blue"}
 
 # Global locks
 console_lock = Lock()
@@ -103,34 +99,21 @@ file_lock = Lock()
 rate_limiter = Semaphore(MAX_PARALLEL_THREADS)
 
 # Model Configurations (same as v3)
-RESEARCH_CONFIG = {
-    "type": "xai",
-    "name": "grok-4-fast-reasoning"
-}
+RESEARCH_CONFIG = {"type": "xai", "name": "grok-4-fast-reasoning"}
 
-BACKTEST_CONFIG = {
-    "type": "xai",
-    "name": "grok-4-fast-reasoning"
-}
+BACKTEST_CONFIG = {"type": "xai", "name": "grok-4-fast-reasoning"}
 
-DEBUG_CONFIG = {
-    "type": "xai",
-    "name": "grok-4-fast-reasoning"
-}
+DEBUG_CONFIG = {"type": "xai", "name": "grok-4-fast-reasoning"}
 
-PACKAGE_CONFIG = {
-    "type": "xai",
-    "name": "grok-4-fast-reasoning"
-}
+PACKAGE_CONFIG = {"type": "xai", "name": "grok-4-fast-reasoning"}
 
-OPTIMIZE_CONFIG = {
-    "type": "xai",
-    "name": "grok-4-fast-reasoning"
-}
+OPTIMIZE_CONFIG = {"type": "xai", "name": "grok-4-fast-reasoning"}
 
 # 🎯 PROFIT TARGET CONFIGURATION
 TARGET_RETURN = 50  # Target return in %
-SAVE_IF_OVER_RETURN = 1.0  # Save backtest to CSV and folders if return > this % (Moon Dev's threshold!)
+SAVE_IF_OVER_RETURN = (
+    1.0  # Save backtest to CSV and folders if return > this % (Moon Dev's threshold!)
+)
 CONDA_ENV = "tflow"
 MAX_DEBUG_ITERATIONS = 10
 MAX_OPTIMIZATION_ITERATIONS = 10
@@ -160,13 +143,24 @@ STATS_CSV = DATA_DIR / "backtest_stats.csv"  # Moon Dev's stats tracker!
 IDEAS_FILE = DATA_DIR / "ideas.txt"
 
 # Create main directories if they don't exist
-for dir in [DATA_DIR, TODAY_DIR, RESEARCH_DIR, BACKTEST_DIR, PACKAGE_DIR,
-            WORKING_BACKTEST_DIR, FINAL_BACKTEST_DIR, OPTIMIZATION_DIR, CHARTS_DIR, EXECUTION_DIR]:
+for dir in [
+    DATA_DIR,
+    TODAY_DIR,
+    RESEARCH_DIR,
+    BACKTEST_DIR,
+    PACKAGE_DIR,
+    WORKING_BACKTEST_DIR,
+    FINAL_BACKTEST_DIR,
+    OPTIMIZATION_DIR,
+    CHARTS_DIR,
+    EXECUTION_DIR,
+]:
     dir.mkdir(parents=True, exist_ok=True)
 
 # ============================================
 # 🎨 THREAD-SAFE PRINTING
 # ============================================
+
 
 def thread_print(message, thread_id, color=None, attrs=None):
     """Thread-safe colored print with thread ID prefix"""
@@ -177,15 +171,18 @@ def thread_print(message, thread_id, color=None, attrs=None):
         prefix = f"[T{thread_id:02d}]"
         cprint(f"{prefix} {message}", color, attrs=attrs)
 
+
 def thread_print_status(thread_id, phase, message):
     """Print status update for a specific phase"""
     color = THREAD_COLORS.get(thread_id % 5, "white")
     with console_lock:
         cprint(f"[T{thread_id:02d}] {phase}: {message}", color)
 
+
 # ============================================
 # 🔒 RATE LIMITING
 # ============================================
+
 
 def rate_limited_api_call(func, thread_id, *args, **kwargs):
     """
@@ -204,6 +201,7 @@ def rate_limited_api_call(func, thread_id, *args, **kwargs):
     time.sleep(RATE_LIMIT_DELAY)
 
     return result
+
 
 # ============================================
 # 📝 PROMPTS (Same as v3)
@@ -504,10 +502,11 @@ ONLY SEND BACK CODE, NO OTHER TEXT.
 # 🛠️ HELPER FUNCTIONS (with thread safety)
 # ============================================
 
+
 def parse_return_from_output(stdout: str, thread_id: int) -> float:
     """Extract the Return [%] from backtest output"""
     try:
-        match = re.search(r'Return \[%\]\s+([-\d.]+)', stdout)
+        match = re.search(r"Return \[%\]\s+([-\d.]+)", stdout)
         if match:
             return_pct = float(match.group(1))
             thread_print(f"📊 Extracted return: {return_pct}%", thread_id)
@@ -519,67 +518,77 @@ def parse_return_from_output(stdout: str, thread_id: int) -> float:
         thread_print(f"❌ Error parsing return: {str(e)}", thread_id, "red")
         return None
 
+
 def parse_all_stats_from_output(stdout: str, thread_id: int) -> dict:
     """
     🌙 Moon Dev's Stats Parser - Extract all key stats from backtest output!
     Returns dict with: return_pct, buy_hold_pct, max_drawdown_pct, sharpe, sortino, expectancy, trades
     """
     stats = {
-        'return_pct': None,
-        'buy_hold_pct': None,
-        'max_drawdown_pct': None,
-        'sharpe': None,
-        'sortino': None,
-        'expectancy': None,
-        'trades': None
+        "return_pct": None,
+        "buy_hold_pct": None,
+        "max_drawdown_pct": None,
+        "sharpe": None,
+        "sortino": None,
+        "expectancy": None,
+        "trades": None,
     }
 
     try:
         # Return [%]
-        match = re.search(r'Return \[%\]\s+([-\d.]+)', stdout)
+        match = re.search(r"Return \[%\]\s+([-\d.]+)", stdout)
         if match:
-            stats['return_pct'] = float(match.group(1))
+            stats["return_pct"] = float(match.group(1))
 
         # Buy & Hold Return [%]
-        match = re.search(r'Buy & Hold Return \[%\]\s+([-\d.]+)', stdout)
+        match = re.search(r"Buy & Hold Return \[%\]\s+([-\d.]+)", stdout)
         if match:
-            stats['buy_hold_pct'] = float(match.group(1))
+            stats["buy_hold_pct"] = float(match.group(1))
 
         # Max. Drawdown [%]
-        match = re.search(r'Max\. Drawdown \[%\]\s+([-\d.]+)', stdout)
+        match = re.search(r"Max\. Drawdown \[%\]\s+([-\d.]+)", stdout)
         if match:
-            stats['max_drawdown_pct'] = float(match.group(1))
+            stats["max_drawdown_pct"] = float(match.group(1))
 
         # Sharpe Ratio
-        match = re.search(r'Sharpe Ratio\s+([-\d.]+)', stdout)
+        match = re.search(r"Sharpe Ratio\s+([-\d.]+)", stdout)
         if match:
-            stats['sharpe'] = float(match.group(1))
+            stats["sharpe"] = float(match.group(1))
 
         # Sortino Ratio
-        match = re.search(r'Sortino Ratio\s+([-\d.]+)', stdout)
+        match = re.search(r"Sortino Ratio\s+([-\d.]+)", stdout)
         if match:
-            stats['sortino'] = float(match.group(1))
+            stats["sortino"] = float(match.group(1))
 
         # Expectancy [%] (or Avg. Trade [%])
-        match = re.search(r'Expectancy \[%\]\s+([-\d.]+)', stdout)
+        match = re.search(r"Expectancy \[%\]\s+([-\d.]+)", stdout)
         if not match:
-            match = re.search(r'Avg\. Trade \[%\]\s+([-\d.]+)', stdout)
+            match = re.search(r"Avg\. Trade \[%\]\s+([-\d.]+)", stdout)
         if match:
-            stats['expectancy'] = float(match.group(1))
+            stats["expectancy"] = float(match.group(1))
 
         # # Trades
-        match = re.search(r'# Trades\s+(\d+)', stdout)
+        match = re.search(r"# Trades\s+(\d+)", stdout)
         if match:
-            stats['trades'] = int(match.group(1))
+            stats["trades"] = int(match.group(1))
 
-        thread_print(f"📊 Extracted {sum(1 for v in stats.values() if v is not None)}/7 stats", thread_id)
+        thread_print(
+            f"📊 Extracted {sum(1 for v in stats.values() if v is not None)}/7 stats", thread_id
+        )
         return stats
 
     except Exception as e:
         thread_print(f"❌ Error parsing stats: {str(e)}", thread_id, "red")
         return stats
 
-def log_stats_to_csv(strategy_name: str, thread_id: int, stats: dict, file_path: str, data_source: str = "BTC-USD-15m.csv") -> None:
+
+def log_stats_to_csv(
+    strategy_name: str,
+    thread_id: int,
+    stats: dict,
+    file_path: str,
+    data_source: str = "BTC-USD-15m.csv",
+) -> None:
     """
     🌙 Moon Dev's CSV Logger - Thread-safe stats logging!
     Appends backtest stats to CSV for easy analysis and comparison
@@ -590,51 +599,62 @@ def log_stats_to_csv(strategy_name: str, thread_id: int, stats: dict, file_path:
             # Create CSV with headers if it doesn't exist
             file_exists = STATS_CSV.exists()
 
-            with open(STATS_CSV, 'a', newline='') as f:
+            with open(STATS_CSV, "a", newline="") as f:
                 writer = csv.writer(f)
 
                 # Write header if new file
                 if not file_exists:
-                    writer.writerow([
-                        'Strategy Name',
-                        'Thread ID',
-                        'Return %',
-                        'Buy & Hold %',
-                        'Max Drawdown %',
-                        'Sharpe Ratio',
-                        'Sortino Ratio',
-                        'EV %',  # 🌙 Moon Dev: Changed from Expectancy %
-                        'Trades',  # 🌙 Moon Dev: Added # Trades
-                        'File Path',
-                        'Data',  # 🌙 Moon Dev: Changed from Data Source
-                        'Time'   # 🌙 Moon Dev: Changed from Timestamp
-                    ])
+                    writer.writerow(
+                        [
+                            "Strategy Name",
+                            "Thread ID",
+                            "Return %",
+                            "Buy & Hold %",
+                            "Max Drawdown %",
+                            "Sharpe Ratio",
+                            "Sortino Ratio",
+                            "EV %",  # 🌙 Moon Dev: Changed from Expectancy %
+                            "Trades",  # 🌙 Moon Dev: Added # Trades
+                            "File Path",
+                            "Data",  # 🌙 Moon Dev: Changed from Data Source
+                            "Time",  # 🌙 Moon Dev: Changed from Timestamp
+                        ]
+                    )
                     thread_print("📝 Created new stats CSV with headers", thread_id, "green")
 
                 # Write stats row
                 # 🌙 Moon Dev: Format time as "10/25 06:30"
                 timestamp = datetime.now().strftime("%m/%d %H:%M")
-                writer.writerow([
-                    strategy_name,
-                    f"T{thread_id:02d}",
-                    stats.get('return_pct', 'N/A'),
-                    stats.get('buy_hold_pct', 'N/A'),
-                    stats.get('max_drawdown_pct', 'N/A'),
-                    stats.get('sharpe', 'N/A'),
-                    stats.get('sortino', 'N/A'),
-                    stats.get('expectancy', 'N/A'),
-                    stats.get('trades', 'N/A'),  # 🌙 Moon Dev: Added # Trades
-                    str(file_path),
-                    data_source,
-                    timestamp
-                ])
+                writer.writerow(
+                    [
+                        strategy_name,
+                        f"T{thread_id:02d}",
+                        stats.get("return_pct", "N/A"),
+                        stats.get("buy_hold_pct", "N/A"),
+                        stats.get("max_drawdown_pct", "N/A"),
+                        stats.get("sharpe", "N/A"),
+                        stats.get("sortino", "N/A"),
+                        stats.get("expectancy", "N/A"),
+                        stats.get("trades", "N/A"),  # 🌙 Moon Dev: Added # Trades
+                        str(file_path),
+                        data_source,
+                        timestamp,
+                    ]
+                )
 
-                thread_print(f"✅ Logged stats to CSV (Return: {stats.get('return_pct', 'N/A')}% on {data_source})", thread_id, "green")
+                thread_print(
+                    f"✅ Logged stats to CSV (Return: {stats.get('return_pct', 'N/A')}% on {data_source})",
+                    thread_id,
+                    "green",
+                )
 
     except Exception as e:
         thread_print(f"❌ Error logging to CSV: {str(e)}", thread_id, "red")
 
-def parse_and_log_multi_data_results(strategy_name: str, thread_id: int, backtest_file_path: Path) -> None:
+
+def parse_and_log_multi_data_results(
+    strategy_name: str, thread_id: int, backtest_file_path: Path
+) -> None:
     """
     🌙 Moon Dev's Multi-Data Results Parser!
     Parses the multi-data testing results CSV and logs all results that pass the threshold
@@ -661,43 +681,56 @@ def parse_and_log_multi_data_results(strategy_name: str, thread_id: int, backtes
         thread_print(f"📊 Found {len(df)} multi-data test results", thread_id, "cyan")
 
         # Filter for results that pass the threshold
-        passing_results = df[df['Return_%'] > SAVE_IF_OVER_RETURN]
+        passing_results = df[df["Return_%"] > SAVE_IF_OVER_RETURN]
 
         if len(passing_results) == 0:
-            thread_print(f"⚠️ No multi-data results passed {SAVE_IF_OVER_RETURN}% threshold", thread_id, "yellow")
+            thread_print(
+                f"⚠️ No multi-data results passed {SAVE_IF_OVER_RETURN}% threshold",
+                thread_id,
+                "yellow",
+            )
             return
 
-        thread_print(f"✅ {len(passing_results)} data sources passed threshold!", thread_id, "green", attrs=['bold'])
+        thread_print(
+            f"✅ {len(passing_results)} data sources passed threshold!",
+            thread_id,
+            "green",
+            attrs=["bold"],
+        )
 
         # Log each passing result to the main stats CSV
         for idx, row in passing_results.iterrows():
             stats = {
-                'return_pct': row['Return_%'],
-                'buy_hold_pct': row.get('Buy_Hold_%', None),
-                'max_drawdown_pct': row.get('Max_DD_%', None),
-                'sharpe': row.get('Sharpe', None),
-                'sortino': row.get('Sortino', None),
-                'expectancy': row.get('Expectancy_%', None),
-                'trades': row.get('Trades', None)  # 🌙 Moon Dev: Added # Trades
+                "return_pct": row["Return_%"],
+                "buy_hold_pct": row.get("Buy_Hold_%", None),
+                "max_drawdown_pct": row.get("Max_DD_%", None),
+                "sharpe": row.get("Sharpe", None),
+                "sortino": row.get("Sortino", None),
+                "expectancy": row.get("Expectancy_%", None),
+                "trades": row.get("Trades", None),  # 🌙 Moon Dev: Added # Trades
             }
 
-            data_source = row['Data_Source']
+            data_source = row["Data_Source"]
 
             # Log to CSV with the specific data source
             log_stats_to_csv(
-                strategy_name,
-                thread_id,
-                stats,
-                str(backtest_file_path),
-                data_source=data_source
+                strategy_name, thread_id, stats, str(backtest_file_path), data_source=data_source
             )
 
-        thread_print(f"💾 Logged {len(passing_results)} multi-data results to CSV!", thread_id, "green", attrs=['bold'])
+        thread_print(
+            f"💾 Logged {len(passing_results)} multi-data results to CSV!",
+            thread_id,
+            "green",
+            attrs=["bold"],
+        )
 
     except Exception as e:
         thread_print(f"❌ Error parsing multi-data results: {str(e)}", thread_id, "red")
 
-def save_backtest_if_threshold_met(code: str, stats: dict, strategy_name: str, iteration: int, thread_id: int, phase: str = "debug") -> bool:
+
+def save_backtest_if_threshold_met(
+    code: str, stats: dict, strategy_name: str, iteration: int, thread_id: int, phase: str = "debug"
+) -> bool:
     """
     🌙 Moon Dev's Threshold Checker - Save backtests that pass the return threshold!
 
@@ -712,11 +745,15 @@ def save_backtest_if_threshold_met(code: str, stats: dict, strategy_name: str, i
     Returns:
         True if saved (threshold met), False otherwise
     """
-    return_pct = stats.get('return_pct')
+    return_pct = stats.get("return_pct")
 
     # Check if return meets threshold
     if return_pct is None or return_pct <= SAVE_IF_OVER_RETURN:
-        thread_print(f"⚠️ Return {return_pct}% ≤ {SAVE_IF_OVER_RETURN}% threshold - not saving", thread_id, "yellow")
+        thread_print(
+            f"⚠️ Return {return_pct}% ≤ {SAVE_IF_OVER_RETURN}% threshold - not saving",
+            thread_id,
+            "yellow",
+        )
         return False
 
     try:
@@ -731,16 +768,21 @@ def save_backtest_if_threshold_met(code: str, stats: dict, strategy_name: str, i
         # Save to WORKING folder
         working_file = WORKING_BACKTEST_DIR / filename
         with file_lock:
-            with open(working_file, 'w') as f:
+            with open(working_file, "w") as f:
                 f.write(code)
 
         # Save to FINAL folder (same logic per Moon Dev's request)
         final_file = FINAL_BACKTEST_DIR / filename
         with file_lock:
-            with open(final_file, 'w') as f:
+            with open(final_file, "w") as f:
                 f.write(code)
 
-        thread_print(f"💾 Saved to working & final! Return: {return_pct:.2f}%", thread_id, "green", attrs=['bold'])
+        thread_print(
+            f"💾 Saved to working & final! Return: {return_pct:.2f}%",
+            thread_id,
+            "green",
+            attrs=["bold"],
+        )
 
         # Log to CSV
         log_stats_to_csv(strategy_name, thread_id, stats, str(working_file))
@@ -751,6 +793,7 @@ def save_backtest_if_threshold_met(code: str, stats: dict, strategy_name: str, i
         thread_print(f"❌ Error saving backtest: {str(e)}", thread_id, "red")
         return False
 
+
 def execute_backtest(file_path: str, strategy_name: str, thread_id: int) -> dict:
     """Execute a backtest file in conda environment and capture output"""
     thread_print(f"🚀 Executing: {strategy_name}", thread_id)
@@ -758,19 +801,11 @@ def execute_backtest(file_path: str, strategy_name: str, thread_id: int) -> dict
     if not os.path.exists(file_path):
         raise FileNotFoundError(f"File not found: {file_path}")
 
-    cmd = [
-        "conda", "run", "-n", CONDA_ENV,
-        "python", str(file_path)
-    ]
+    cmd = ["conda", "run", "-n", CONDA_ENV, "python", str(file_path)]
 
     start_time = datetime.now()
 
-    result = subprocess.run(
-        cmd,
-        capture_output=True,
-        text=True,
-        timeout=EXECUTION_TIMEOUT
-    )
+    result = subprocess.run(cmd, capture_output=True, text=True, timeout=EXECUTION_TIMEOUT)
 
     execution_time = (datetime.now() - start_time).total_seconds()
 
@@ -780,31 +815,36 @@ def execute_backtest(file_path: str, strategy_name: str, thread_id: int) -> dict
         "stdout": result.stdout,
         "stderr": result.stderr,
         "execution_time": execution_time,
-        "timestamp": datetime.now().isoformat()
+        "timestamp": datetime.now().isoformat(),
     }
 
     # Save execution results with thread ID
-    result_file = EXECUTION_DIR / f"T{thread_id:02d}_{strategy_name}_{datetime.now().strftime('%H%M%S')}.json"
+    result_file = (
+        EXECUTION_DIR / f"T{thread_id:02d}_{strategy_name}_{datetime.now().strftime('%H%M%S')}.json"
+    )
     with file_lock:
-        with open(result_file, 'w') as f:
+        with open(result_file, "w") as f:
             json.dump(output, f, indent=2)
 
-    if output['success']:
+    if output["success"]:
         thread_print(f"✅ Backtest executed in {execution_time:.2f}s!", thread_id, "green")
     else:
         thread_print(f"❌ Backtest failed: {output['return_code']}", thread_id, "red")
 
     return output
 
+
 def parse_execution_error(execution_result: dict) -> str:
     """Extract meaningful error message for debug agent"""
-    if execution_result.get('stderr'):
-        return execution_result['stderr'].strip()
-    return execution_result.get('error', 'Unknown error')
+    if execution_result.get("stderr"):
+        return execution_result["stderr"].strip()
+    return execution_result.get("error", "Unknown error")
+
 
 def get_idea_hash(idea: str) -> str:
     """Generate a unique hash for an idea to track processing status"""
-    return hashlib.md5(idea.encode('utf-8')).hexdigest()
+    return hashlib.md5(idea.encode("utf-8")).hexdigest()
+
 
 def is_idea_processed(idea: str) -> bool:
     """Check if an idea has already been processed (thread-safe)"""
@@ -814,10 +854,11 @@ def is_idea_processed(idea: str) -> bool:
     idea_hash = get_idea_hash(idea)
 
     with file_lock:
-        with open(PROCESSED_IDEAS_LOG, 'r') as f:
-            processed_hashes = [line.strip().split(',')[0] for line in f if line.strip()]
+        with open(PROCESSED_IDEAS_LOG, "r") as f:
+            processed_hashes = [line.strip().split(",")[0] for line in f if line.strip()]
 
     return idea_hash in processed_hashes
+
 
 def log_processed_idea(idea: str, strategy_name: str, thread_id: int) -> None:
     """Log an idea as processed with timestamp and strategy name (thread-safe)"""
@@ -827,61 +868,65 @@ def log_processed_idea(idea: str, strategy_name: str, thread_id: int) -> None:
     with file_lock:
         if not PROCESSED_IDEAS_LOG.exists():
             PROCESSED_IDEAS_LOG.parent.mkdir(parents=True, exist_ok=True)
-            with open(PROCESSED_IDEAS_LOG, 'w') as f:
+            with open(PROCESSED_IDEAS_LOG, "w") as f:
                 f.write("# Moon Dev's RBI AI - Processed Ideas Log 🌙\n")
                 f.write("# Format: hash,timestamp,thread_id,strategy_name,idea_snippet\n")
 
-        idea_snippet = idea[:50].replace(',', ';') + ('...' if len(idea) > 50 else '')
-        with open(PROCESSED_IDEAS_LOG, 'a') as f:
+        idea_snippet = idea[:50].replace(",", ";") + ("..." if len(idea) > 50 else "")
+        with open(PROCESSED_IDEAS_LOG, "a") as f:
             f.write(f"{idea_hash},{timestamp},T{thread_id:02d},{strategy_name},{idea_snippet}\n")
 
     thread_print(f"📝 Logged processed idea: {strategy_name}", thread_id, "green")
 
+
 def has_nan_results(execution_result: dict) -> bool:
     """Check if backtest results contain NaN values indicating no trades"""
-    if not execution_result.get('success'):
+    if not execution_result.get("success"):
         return False
 
-    stdout = execution_result.get('stdout', '')
+    stdout = execution_result.get("stdout", "")
 
     nan_indicators = [
-        '# Trades                                    0',
-        'Win Rate [%]                              NaN',
-        'Exposure Time [%]                         0.0',
-        'Return [%]                                0.0'
+        "# Trades                                    0",
+        "Win Rate [%]                              NaN",
+        "Exposure Time [%]                         0.0",
+        "Return [%]                                0.0",
     ]
 
     nan_count = sum(1 for indicator in nan_indicators if indicator in stdout)
     return nan_count >= 2
 
+
 def analyze_no_trades_issue(execution_result: dict) -> str:
     """Analyze why strategy shows signals but no trades"""
-    stdout = execution_result.get('stdout', '')
+    stdout = execution_result.get("stdout", "")
 
-    if 'ENTRY SIGNAL' in stdout and '# Trades                                    0' in stdout:
+    if "ENTRY SIGNAL" in stdout and "# Trades                                    0" in stdout:
         return "Strategy is generating entry signals but self.buy() calls are not executing. This usually means: 1) Position sizing issues (size parameter invalid), 2) Insufficient cash/equity, 3) Logic preventing buy execution, or 4) Missing actual self.buy() call in the code. The strategy prints signals but never calls self.buy()."
 
-    elif '# Trades                                    0' in stdout:
+    elif "# Trades                                    0" in stdout:
         return "Strategy executed but took 0 trades, resulting in NaN values. The entry conditions are likely too restrictive or there are logic errors preventing trade execution."
 
     return "Strategy executed but took 0 trades, resulting in NaN values. Please adjust the strategy logic to actually generate trading signals and take trades."
 
+
 def chat_with_model(system_prompt, user_content, model_config, thread_id):
     """Chat with AI model using model factory with rate limiting"""
+
     def _api_call():
         model = model_factory.get_model(model_config["type"], model_config["name"])
         if not model:
-            raise ValueError(f"🚨 Could not initialize {model_config['type']} {model_config['name']} model!")
+            raise ValueError(
+                f"🚨 Could not initialize {model_config['type']} {model_config['name']} model!"
+            )
 
         if model_config["type"] == "ollama":
             response = model.generate_response(
-                system_prompt=system_prompt,
-                user_content=user_content,
-                temperature=AI_TEMPERATURE
+                system_prompt=system_prompt, user_content=user_content, temperature=AI_TEMPERATURE
             )
             if isinstance(response, str):
                 return response
-            if hasattr(response, 'content'):
+            if hasattr(response, "content"):
                 return response.content
             return str(response)
         else:
@@ -889,7 +934,7 @@ def chat_with_model(system_prompt, user_content, model_config, thread_id):
                 system_prompt=system_prompt,
                 user_content=user_content,
                 temperature=AI_TEMPERATURE,
-                max_tokens=AI_MAX_TOKENS
+                max_tokens=AI_MAX_TOKENS,
             )
             if not response:
                 raise ValueError("Model returned None response")
@@ -897,6 +942,7 @@ def chat_with_model(system_prompt, user_content, model_config, thread_id):
 
     # Apply rate limiting
     return rate_limited_api_call(_api_call, thread_id)
+
 
 def clean_model_output(output, content_type="text"):
     """Clean model output by removing thinking tags and extracting code from markdown"""
@@ -906,16 +952,18 @@ def clean_model_output(output, content_type="text"):
         clean_content = output.split("</think>")[-1].strip()
         if not clean_content:
             import re
-            clean_content = re.sub(r'<think>.*?</think>', '', output, flags=re.DOTALL).strip()
+
+            clean_content = re.sub(r"<think>.*?</think>", "", output, flags=re.DOTALL).strip()
         if clean_content:
             cleaned_output = clean_content
 
     if content_type == "code" and "```" in cleaned_output:
         try:
             import re
-            code_blocks = re.findall(r'```python\n(.*?)\n```', cleaned_output, re.DOTALL)
+
+            code_blocks = re.findall(r"```python\n(.*?)\n```", cleaned_output, re.DOTALL)
             if not code_blocks:
-                code_blocks = re.findall(r'```(?:python)?\n(.*?)\n```', cleaned_output, re.DOTALL)
+                code_blocks = re.findall(r"```(?:python)?\n(.*?)\n```", cleaned_output, re.DOTALL)
             if code_blocks:
                 cleaned_output = "\n\n".join(code_blocks)
         except Exception as e:
@@ -923,20 +971,17 @@ def clean_model_output(output, content_type="text"):
 
     return cleaned_output
 
+
 # ============================================
 # 🤖 AI AGENT FUNCTIONS (Thread-safe versions)
 # ============================================
+
 
 def research_strategy(content, thread_id):
     """Research AI: Analyzes and creates trading strategy"""
     thread_print_status(thread_id, "🔍 RESEARCH", "Starting analysis...")
 
-    output = chat_with_model(
-        RESEARCH_PROMPT,
-        content,
-        RESEARCH_CONFIG,
-        thread_id
-    )
+    output = chat_with_model(RESEARCH_PROMPT, content, RESEARCH_CONFIG, thread_id)
 
     if output:
         output = clean_model_output(output, "text")
@@ -950,8 +995,8 @@ def research_strategy(content, thread_id):
                 else:
                     strategy_name = name_section.split("\n")[0].strip()
 
-                strategy_name = re.sub(r'[^\w\s-]', '', strategy_name)
-                strategy_name = re.sub(r'[\s]+', '', strategy_name)
+                strategy_name = re.sub(r"[^\w\s-]", "", strategy_name)
+                strategy_name = re.sub(r"[\s]+", "", strategy_name)
 
                 thread_print(f"✅ Strategy: {strategy_name}", thread_id, "green")
             except Exception as e:
@@ -960,11 +1005,12 @@ def research_strategy(content, thread_id):
         # Add thread ID to filename
         filepath = RESEARCH_DIR / f"T{thread_id:02d}_{strategy_name}_strategy.txt"
         with file_lock:
-            with open(filepath, 'w') as f:
+            with open(filepath, "w") as f:
                 f.write(output)
 
         return output, strategy_name
     return None, None
+
 
 def create_backtest(strategy, strategy_name, thread_id):
     """Backtest AI: Creates backtest implementation"""
@@ -974,7 +1020,7 @@ def create_backtest(strategy, strategy_name, thread_id):
         BACKTEST_PROMPT,
         f"Create a backtest for this strategy:\n\n{strategy}",
         BACKTEST_CONFIG,
-        thread_id
+        thread_id,
     )
 
     if output:
@@ -982,12 +1028,13 @@ def create_backtest(strategy, strategy_name, thread_id):
 
         filepath = BACKTEST_DIR / f"T{thread_id:02d}_{strategy_name}_BT.py"
         with file_lock:
-            with open(filepath, 'w') as f:
+            with open(filepath, "w") as f:
                 f.write(output)
 
         thread_print(f"🔥 Backtest code saved", thread_id, "green")
         return output
     return None
+
 
 def package_check(backtest_code, strategy_name, thread_id):
     """Package AI: Ensures correct indicator packages are used"""
@@ -997,7 +1044,7 @@ def package_check(backtest_code, strategy_name, thread_id):
         PACKAGE_PROMPT,
         f"Check and fix indicator packages in this code:\n\n{backtest_code}",
         PACKAGE_CONFIG,
-        thread_id
+        thread_id,
     )
 
     if output:
@@ -1005,12 +1052,13 @@ def package_check(backtest_code, strategy_name, thread_id):
 
         filepath = PACKAGE_DIR / f"T{thread_id:02d}_{strategy_name}_PKG.py"
         with file_lock:
-            with open(filepath, 'w') as f:
+            with open(filepath, "w") as f:
                 f.write(output)
 
         thread_print(f"📦 Package check complete", thread_id, "green")
         return output
     return None
+
 
 def debug_backtest(backtest_code, error_message, strategy_name, thread_id, iteration=1):
     """Debug AI: Fixes technical issues in backtest code"""
@@ -1022,7 +1070,7 @@ def debug_backtest(backtest_code, error_message, strategy_name, thread_id, itera
         debug_prompt_with_error,
         f"Fix this backtest code:\n\n{backtest_code}",
         DEBUG_CONFIG,
-        thread_id
+        thread_id,
     )
 
     if output:
@@ -1032,27 +1080,31 @@ def debug_backtest(backtest_code, error_message, strategy_name, thread_id, itera
         # Only threshold-passing backtests go to FINAL/WORKING folders!
         filepath = BACKTEST_DIR / f"T{thread_id:02d}_{strategy_name}_DEBUG_v{iteration}.py"
         with file_lock:
-            with open(filepath, 'w') as f:
+            with open(filepath, "w") as f:
                 f.write(output)
 
         thread_print(f"🔧 Debug iteration {iteration} complete", thread_id, "green")
         return output
     return None
 
-def optimize_strategy(backtest_code, current_return, target_return, strategy_name, thread_id, iteration=1):
+
+def optimize_strategy(
+    backtest_code, current_return, target_return, strategy_name, thread_id, iteration=1
+):
     """Optimization AI: Improves strategy to hit target return"""
-    thread_print_status(thread_id, f"🎯 OPTIMIZE #{iteration}", f"{current_return}% → {target_return}%")
+    thread_print_status(
+        thread_id, f"🎯 OPTIMIZE #{iteration}", f"{current_return}% → {target_return}%"
+    )
 
     optimize_prompt_with_stats = OPTIMIZE_PROMPT.format(
-        current_return=current_return,
-        target_return=target_return
+        current_return=current_return, target_return=target_return
     )
 
     output = chat_with_model(
         optimize_prompt_with_stats,
         f"Optimize this backtest code to hit the target:\n\n{backtest_code}",
         OPTIMIZE_CONFIG,
-        thread_id
+        thread_id,
     )
 
     if output:
@@ -1060,16 +1112,18 @@ def optimize_strategy(backtest_code, current_return, target_return, strategy_nam
 
         filepath = OPTIMIZATION_DIR / f"T{thread_id:02d}_{strategy_name}_OPT_v{iteration}.py"
         with file_lock:
-            with open(filepath, 'w') as f:
+            with open(filepath, "w") as f:
                 f.write(output)
 
         thread_print(f"🎯 Optimization {iteration} complete", thread_id, "green")
         return output
     return None
 
+
 # ============================================
 # 🚀 PARALLEL PROCESSING CORE
 # ============================================
+
 
 def process_trading_idea_parallel(idea: str, thread_id: int) -> dict:
     """
@@ -1077,7 +1131,7 @@ def process_trading_idea_parallel(idea: str, thread_id: int) -> dict:
     This is the worker function for each parallel thread
     """
     try:
-        thread_print(f"🚀 Starting processing", thread_id, attrs=['bold'])
+        thread_print(f"🚀 Starting processing", thread_id, attrs=["bold"])
 
         # Phase 1: Research
         strategy, strategy_name = research_strategy(idea, thread_id)
@@ -1111,11 +1165,13 @@ def process_trading_idea_parallel(idea: str, thread_id: int) -> dict:
         error_history = []
 
         while debug_iteration < MAX_DEBUG_ITERATIONS:
-            thread_print_status(thread_id, "🚀 EXECUTE", f"Attempt {debug_iteration + 1}/{MAX_DEBUG_ITERATIONS}")
+            thread_print_status(
+                thread_id, "🚀 EXECUTE", f"Attempt {debug_iteration + 1}/{MAX_DEBUG_ITERATIONS}"
+            )
 
             execution_result = execute_backtest(current_file, strategy_name, thread_id)
 
-            if execution_result['success']:
+            if execution_result["success"]:
                 if has_nan_results(execution_result):
                     thread_print("⚠️ No trades taken", thread_id, "yellow")
 
@@ -1124,37 +1180,47 @@ def process_trading_idea_parallel(idea: str, thread_id: int) -> dict:
 
                     if debug_iteration < MAX_DEBUG_ITERATIONS:
                         debugged_code = debug_backtest(
-                            current_code,
-                            error_message,
-                            strategy_name,
-                            thread_id,
-                            debug_iteration
+                            current_code, error_message, strategy_name, thread_id, debug_iteration
                         )
 
                         if not debugged_code:
                             thread_print("❌ Debug AI failed", thread_id, "red")
-                            return {"success": False, "error": "Debug failed", "thread_id": thread_id}
+                            return {
+                                "success": False,
+                                "error": "Debug failed",
+                                "thread_id": thread_id,
+                            }
 
                         current_code = debugged_code
                         # 🌙 Moon Dev: Update to match new debug file location
-                        current_file = BACKTEST_DIR / f"T{thread_id:02d}_{strategy_name}_DEBUG_v{debug_iteration}.py"
+                        current_file = (
+                            BACKTEST_DIR
+                            / f"T{thread_id:02d}_{strategy_name}_DEBUG_v{debug_iteration}.py"
+                        )
                         continue
                     else:
                         thread_print(f"❌ Max debug iterations reached", thread_id, "red")
-                        return {"success": False, "error": "Max debug iterations", "thread_id": thread_id}
+                        return {
+                            "success": False,
+                            "error": "Max debug iterations",
+                            "thread_id": thread_id,
+                        }
                 else:
                     # SUCCESS! Code executes with trades!
-                    thread_print("🎉 BACKTEST SUCCESSFUL!", thread_id, "green", attrs=['bold'])
+                    thread_print("🎉 BACKTEST SUCCESSFUL!", thread_id, "green", attrs=["bold"])
 
                     # 🌙 Moon Dev: Parse ALL stats, not just return!
-                    all_stats = parse_all_stats_from_output(execution_result['stdout'], thread_id)
-                    current_return = all_stats.get('return_pct')
+                    all_stats = parse_all_stats_from_output(execution_result["stdout"], thread_id)
+                    current_return = all_stats.get("return_pct")
 
                     if current_return is None:
                         thread_print("⚠️ Could not parse return", thread_id, "yellow")
-                        final_file = FINAL_BACKTEST_DIR / f"T{thread_id:02d}_{strategy_name}_BTFinal_WORKING.py"
+                        final_file = (
+                            FINAL_BACKTEST_DIR
+                            / f"T{thread_id:02d}_{strategy_name}_BTFinal_WORKING.py"
+                        )
                         with file_lock:
-                            with open(final_file, 'w') as f:
+                            with open(final_file, "w") as f:
                                 f.write(current_code)
                         break
 
@@ -1165,27 +1231,30 @@ def process_trading_idea_parallel(idea: str, thread_id: int) -> dict:
                         strategy_name,
                         debug_iteration,
                         thread_id,
-                        phase="debug"
+                        phase="debug",
                     )
 
                     # 🌙 Moon Dev: Parse and log multi-data results!
                     thread_print("🔍 Checking for multi-data test results...", thread_id, "cyan")
-                    parse_and_log_multi_data_results(
-                        strategy_name,
-                        thread_id,
-                        current_file
-                    )
+                    parse_and_log_multi_data_results(strategy_name, thread_id, current_file)
 
-                    thread_print(f"📊 Return: {current_return}% | Target: {TARGET_RETURN}%", thread_id)
+                    thread_print(
+                        f"📊 Return: {current_return}% | Target: {TARGET_RETURN}%", thread_id
+                    )
 
                     if current_return >= TARGET_RETURN:
                         # TARGET HIT!
-                        thread_print("🚀🚀🚀 TARGET HIT! 🚀🚀🚀", thread_id, "green", attrs=['bold'])
+                        thread_print(
+                            "🚀🚀🚀 TARGET HIT! 🚀🚀🚀", thread_id, "green", attrs=["bold"]
+                        )
 
                         # 🌙 Moon Dev: Save to OPTIMIZATION_DIR for target hits
-                        final_file = OPTIMIZATION_DIR / f"T{thread_id:02d}_{strategy_name}_TARGET_HIT_{current_return}pct.py"
+                        final_file = (
+                            OPTIMIZATION_DIR
+                            / f"T{thread_id:02d}_{strategy_name}_TARGET_HIT_{current_return}pct.py"
+                        )
                         with file_lock:
-                            with open(final_file, 'w') as f:
+                            with open(final_file, "w") as f:
                                 f.write(current_code)
 
                         return {
@@ -1193,7 +1262,7 @@ def process_trading_idea_parallel(idea: str, thread_id: int) -> dict:
                             "thread_id": thread_id,
                             "strategy_name": strategy_name,
                             "return": current_return,
-                            "target_hit": True
+                            "target_hit": True,
                         }
                     else:
                         # Need to optimize
@@ -1214,29 +1283,39 @@ def process_trading_idea_parallel(idea: str, thread_id: int) -> dict:
                                 TARGET_RETURN,
                                 strategy_name,
                                 thread_id,
-                                optimization_iteration
+                                optimization_iteration,
                             )
 
                             if not optimized_code:
                                 thread_print("❌ Optimization AI failed", thread_id, "red")
                                 break
 
-                            opt_file = OPTIMIZATION_DIR / f"T{thread_id:02d}_{strategy_name}_OPT_v{optimization_iteration}.py"
+                            opt_file = (
+                                OPTIMIZATION_DIR
+                                / f"T{thread_id:02d}_{strategy_name}_OPT_v{optimization_iteration}.py"
+                            )
                             opt_result = execute_backtest(opt_file, strategy_name, thread_id)
 
-                            if not opt_result['success'] or has_nan_results(opt_result):
-                                thread_print(f"⚠️ Optimization {optimization_iteration} failed", thread_id, "yellow")
+                            if not opt_result["success"] or has_nan_results(opt_result):
+                                thread_print(
+                                    f"⚠️ Optimization {optimization_iteration} failed",
+                                    thread_id,
+                                    "yellow",
+                                )
                                 continue
 
                             # 🌙 Moon Dev: Parse ALL stats from optimization!
-                            opt_stats = parse_all_stats_from_output(opt_result['stdout'], thread_id)
-                            new_return = opt_stats.get('return_pct')
+                            opt_stats = parse_all_stats_from_output(opt_result["stdout"], thread_id)
+                            new_return = opt_stats.get("return_pct")
 
                             if new_return is None:
                                 continue
 
                             change = new_return - best_return
-                            thread_print(f"📊 Opt {optimization_iteration}: {new_return}% ({change:+.2f}%)", thread_id)
+                            thread_print(
+                                f"📊 Opt {optimization_iteration}: {new_return}% ({change:+.2f}%)",
+                                thread_id,
+                            )
 
                             if new_return > best_return:
                                 thread_print(f"✅ Improved by {change:.2f}%!", thread_id, "green")
@@ -1251,23 +1330,29 @@ def process_trading_idea_parallel(idea: str, thread_id: int) -> dict:
                                     strategy_name,
                                     optimization_iteration,
                                     thread_id,
-                                    phase="opt"
+                                    phase="opt",
                                 )
 
                                 # 🌙 Moon Dev: Parse and log multi-data results from optimization!
-                                thread_print("🔍 Checking for multi-data test results...", thread_id, "cyan")
-                                parse_and_log_multi_data_results(
-                                    strategy_name,
-                                    thread_id,
-                                    opt_file
+                                thread_print(
+                                    "🔍 Checking for multi-data test results...", thread_id, "cyan"
                                 )
+                                parse_and_log_multi_data_results(strategy_name, thread_id, opt_file)
 
                                 if new_return >= TARGET_RETURN:
-                                    thread_print("🚀🚀🚀 TARGET HIT VIA OPTIMIZATION! 🚀🚀🚀", thread_id, "green", attrs=['bold'])
+                                    thread_print(
+                                        "🚀🚀🚀 TARGET HIT VIA OPTIMIZATION! 🚀🚀🚀",
+                                        thread_id,
+                                        "green",
+                                        attrs=["bold"],
+                                    )
 
-                                    final_file = OPTIMIZATION_DIR / f"T{thread_id:02d}_{strategy_name}_TARGET_HIT_{new_return}pct.py"
+                                    final_file = (
+                                        OPTIMIZATION_DIR
+                                        / f"T{thread_id:02d}_{strategy_name}_TARGET_HIT_{new_return}pct.py"
+                                    )
                                     with file_lock:
-                                        with open(final_file, 'w') as f:
+                                        with open(final_file, "w") as f:
                                             f.write(best_code)
 
                                     return {
@@ -1276,15 +1361,22 @@ def process_trading_idea_parallel(idea: str, thread_id: int) -> dict:
                                         "strategy_name": strategy_name,
                                         "return": new_return,
                                         "target_hit": True,
-                                        "optimizations": optimization_iteration
+                                        "optimizations": optimization_iteration,
                                     }
 
                         # Max optimization iterations reached
-                        thread_print(f"⚠️ Max optimizations reached. Best: {best_return}%", thread_id, "yellow")
+                        thread_print(
+                            f"⚠️ Max optimizations reached. Best: {best_return}%",
+                            thread_id,
+                            "yellow",
+                        )
 
-                        best_file = OPTIMIZATION_DIR / f"T{thread_id:02d}_{strategy_name}_BEST_{best_return}pct.py"
+                        best_file = (
+                            OPTIMIZATION_DIR
+                            / f"T{thread_id:02d}_{strategy_name}_BEST_{best_return}pct.py"
+                        )
                         with file_lock:
-                            with open(best_file, 'w') as f:
+                            with open(best_file, "w") as f:
                                 f.write(best_code)
 
                         return {
@@ -1292,13 +1384,15 @@ def process_trading_idea_parallel(idea: str, thread_id: int) -> dict:
                             "thread_id": thread_id,
                             "strategy_name": strategy_name,
                             "return": best_return,
-                            "target_hit": False
+                            "target_hit": False,
                         }
             else:
                 # Execution failed
                 error_message = parse_execution_error(execution_result)
 
-                error_signature = error_message.split('\n')[-1] if '\n' in error_message else error_message
+                error_signature = (
+                    error_message.split("\n")[-1] if "\n" in error_message else error_message
+                )
                 if error_signature in error_history:
                     thread_print(f"🔄 Repeated error detected - stopping", thread_id, "red")
                     return {"success": False, "error": "Repeated error", "thread_id": thread_id}
@@ -1308,11 +1402,7 @@ def process_trading_idea_parallel(idea: str, thread_id: int) -> dict:
 
                 if debug_iteration < MAX_DEBUG_ITERATIONS:
                     debugged_code = debug_backtest(
-                        current_code,
-                        error_message,
-                        strategy_name,
-                        thread_id,
-                        debug_iteration
+                        current_code, error_message, strategy_name, thread_id, debug_iteration
                     )
 
                     if not debugged_code:
@@ -1321,29 +1411,37 @@ def process_trading_idea_parallel(idea: str, thread_id: int) -> dict:
 
                     current_code = debugged_code
                     # 🌙 Moon Dev: Update to match new debug file location
-                    current_file = BACKTEST_DIR / f"T{thread_id:02d}_{strategy_name}_DEBUG_v{debug_iteration}.py"
+                    current_file = (
+                        BACKTEST_DIR
+                        / f"T{thread_id:02d}_{strategy_name}_DEBUG_v{debug_iteration}.py"
+                    )
                 else:
                     thread_print(f"❌ Max debug iterations reached", thread_id, "red")
-                    return {"success": False, "error": "Max debug iterations", "thread_id": thread_id}
+                    return {
+                        "success": False,
+                        "error": "Max debug iterations",
+                        "thread_id": thread_id,
+                    }
 
         return {"success": True, "thread_id": thread_id}
 
     except Exception as e:
-        thread_print(f"❌ FATAL ERROR: {str(e)}", thread_id, "red", attrs=['bold'])
+        thread_print(f"❌ FATAL ERROR: {str(e)}", thread_id, "red", attrs=["bold"])
         return {"success": False, "error": str(e), "thread_id": thread_id}
+
 
 def idea_monitor_thread(idea_queue: Queue, queued_ideas: set, queued_lock: Lock, stop_flag: dict):
     """🌙 Moon Dev: Producer thread - continuously monitors ideas.txt and queues new ideas"""
     global IDEAS_FILE
 
-    while not stop_flag.get('stop', False):
+    while not stop_flag.get("stop", False):
         try:
             if not IDEAS_FILE.exists():
                 time.sleep(1)
                 continue
 
-            with open(IDEAS_FILE, 'r') as f:
-                ideas = [line.strip() for line in f if line.strip() and not line.startswith('#')]
+            with open(IDEAS_FILE, "r") as f:
+                ideas = [line.strip() for line in f if line.strip() and not line.startswith("#")]
 
             # Find new unprocessed ideas
             for idea in ideas:
@@ -1358,7 +1456,7 @@ def idea_monitor_thread(idea_queue: Queue, queued_ideas: set, queued_lock: Lock,
                     with queued_lock:
                         queued_ideas.add(idea_hash)
                     with console_lock:
-                        cprint(f"🆕 NEW IDEA QUEUED: {idea[:80]}...", "green", attrs=['bold'])
+                        cprint(f"🆕 NEW IDEA QUEUED: {idea[:80]}...", "green", attrs=["bold"])
 
             time.sleep(1)  # Check every 1 second
 
@@ -1368,9 +1466,16 @@ def idea_monitor_thread(idea_queue: Queue, queued_ideas: set, queued_lock: Lock,
             time.sleep(1)
 
 
-def worker_thread(worker_id: int, idea_queue: Queue, queued_ideas: set, queued_lock: Lock, stats: dict, stop_flag: dict):
+def worker_thread(
+    worker_id: int,
+    idea_queue: Queue,
+    queued_ideas: set,
+    queued_lock: Lock,
+    stats: dict,
+    stop_flag: dict,
+):
     """🌙 Moon Dev: Consumer thread - processes ideas from queue"""
-    while not stop_flag.get('stop', False):
+    while not stop_flag.get("stop", False):
         try:
             # Get idea from queue (timeout 1 second to check stop_flag periodically)
             try:
@@ -1379,7 +1484,7 @@ def worker_thread(worker_id: int, idea_queue: Queue, queued_ideas: set, queued_l
                 continue  # Queue empty, check again
 
             with console_lock:
-                stats['active'] += 1
+                stats["active"] += 1
                 cprint(f"\n🚀 Thread {worker_id:02d} starting: {idea[:80]}...", "cyan")
 
             # Process the idea
@@ -1395,20 +1500,28 @@ def worker_thread(worker_id: int, idea_queue: Queue, queued_ideas: set, queued_l
 
             # Update stats
             with console_lock:
-                stats['completed'] += 1
-                stats['active'] -= 1
+                stats["completed"] += 1
+                stats["active"] -= 1
 
                 cprint(f"\n{'='*60}", "green")
-                cprint(f"✅ Thread {worker_id:02d} COMPLETED ({stats['completed']} total) - {total_time:.1f}s", "green", attrs=['bold'])
-                if result.get('success'):
-                    stats['successful'] += 1
-                    if result.get('target_hit'):
-                        stats['targets_hit'] += 1
-                        cprint(f"🎯 TARGET HIT: {result.get('strategy_name')} @ {result.get('return')}%", "green", attrs=['bold'])
+                cprint(
+                    f"✅ Thread {worker_id:02d} COMPLETED ({stats['completed']} total) - {total_time:.1f}s",
+                    "green",
+                    attrs=["bold"],
+                )
+                if result.get("success"):
+                    stats["successful"] += 1
+                    if result.get("target_hit"):
+                        stats["targets_hit"] += 1
+                        cprint(
+                            f"🎯 TARGET HIT: {result.get('strategy_name')} @ {result.get('return')}%",
+                            "green",
+                            attrs=["bold"],
+                        )
                     else:
                         cprint(f"📊 Best return: {result.get('return', 'N/A')}%", "yellow")
                 else:
-                    stats['failed'] += 1
+                    stats["failed"] += 1
                     cprint(f"❌ Failed: {result.get('error', 'Unknown error')}", "red")
                 cprint(f"{'='*60}\n", "green")
 
@@ -1416,7 +1529,7 @@ def worker_thread(worker_id: int, idea_queue: Queue, queued_ideas: set, queued_l
 
         except Exception as e:
             with console_lock:
-                cprint(f"\n❌ Worker thread {worker_id:02d} error: {str(e)}", "red", attrs=['bold'])
+                cprint(f"\n❌ Worker thread {worker_id:02d} error: {str(e)}", "red", attrs=["bold"])
 
 
 def main(ideas_file_path=None, run_name=None):
@@ -1426,18 +1539,18 @@ def main(ideas_file_path=None, run_name=None):
     if ideas_file_path:
         IDEAS_FILE = Path(ideas_file_path)
 
-    cprint(f"\n{'='*60}", "cyan", attrs=['bold'])
-    cprint(f"🌟 Moon Dev's RBI AI v3.0 PARALLEL PROCESSOR + MULTI-DATA 🚀", "cyan", attrs=['bold'])
-    cprint(f"{'='*60}", "cyan", attrs=['bold'])
+    cprint(f"\n{'='*60}", "cyan", attrs=["bold"])
+    cprint(f"🌟 Moon Dev's RBI AI v3.0 PARALLEL PROCESSOR + MULTI-DATA 🚀", "cyan", attrs=["bold"])
+    cprint(f"{'='*60}", "cyan", attrs=["bold"])
 
     cprint(f"\n📅 Date: {TODAY_DATE}", "magenta")
-    cprint(f"🎯 Target Return: {TARGET_RETURN}%", "green", attrs=['bold'])
-    cprint(f"🔀 Max Parallel Threads: {MAX_PARALLEL_THREADS}", "yellow", attrs=['bold'])
+    cprint(f"🎯 Target Return: {TARGET_RETURN}%", "green", attrs=["bold"])
+    cprint(f"🔀 Max Parallel Threads: {MAX_PARALLEL_THREADS}", "yellow", attrs=["bold"])
     cprint(f"🐍 Conda env: {CONDA_ENV}", "cyan")
     cprint(f"📂 Data dir: {DATA_DIR}", "magenta")
     cprint(f"📝 Ideas file: {IDEAS_FILE}", "magenta")
     if run_name:
-        cprint(f"📁 Run Name: {run_name}\n", "green", attrs=['bold'])
+        cprint(f"📁 Run Name: {run_name}\n", "green", attrs=["bold"])
     else:
         cprint("", "white")
 
@@ -1445,16 +1558,18 @@ def main(ideas_file_path=None, run_name=None):
     if not IDEAS_FILE.exists():
         cprint(f"❌ ideas.txt not found! Creating template...", "red")
         IDEAS_FILE.parent.mkdir(parents=True, exist_ok=True)
-        with open(IDEAS_FILE, 'w') as f:
+        with open(IDEAS_FILE, "w") as f:
             f.write("# Add your trading ideas here (one per line)\n")
             f.write("# Can be YouTube URLs, PDF links, or text descriptions\n")
             f.write("# Lines starting with # are ignored\n\n")
-            f.write("Create a simple RSI strategy that buys when RSI < 30 and sells when RSI > 70\n")
+            f.write(
+                "Create a simple RSI strategy that buys when RSI < 30 and sells when RSI > 70\n"
+            )
             f.write("Momentum strategy using 20/50 SMA crossover with volume confirmation\n")
         cprint(f"📝 Created template ideas.txt at: {IDEAS_FILE}", "yellow")
 
     # 🌙 Moon Dev: CONTINUOUS QUEUE MODE
-    cprint(f"\n🔄 CONTINUOUS QUEUE MODE ACTIVATED", "cyan", attrs=['bold'])
+    cprint(f"\n🔄 CONTINUOUS QUEUE MODE ACTIVATED", "cyan", attrs=["bold"])
     cprint(f"⏰ Monitoring ideas.txt every 1 second", "yellow")
     cprint(f"🧵 {MAX_PARALLEL_THREADS} worker threads ready\n", "yellow")
 
@@ -1462,27 +1577,32 @@ def main(ideas_file_path=None, run_name=None):
     idea_queue = Queue()
     queued_ideas = set()  # Track which ideas are currently queued (by hash)
     queued_lock = Lock()  # Protect access to queued_ideas set
-    stats = {
-        'completed': 0,
-        'successful': 0,
-        'failed': 0,
-        'targets_hit': 0,
-        'active': 0
-    }
-    stop_flag = {'stop': False}
+    stats = {"completed": 0, "successful": 0, "failed": 0, "targets_hit": 0, "active": 0}
+    stop_flag = {"stop": False}
 
     # Start monitor thread (producer)
-    monitor = Thread(target=idea_monitor_thread, args=(idea_queue, queued_ideas, queued_lock, stop_flag), daemon=True)
+    monitor = Thread(
+        target=idea_monitor_thread,
+        args=(idea_queue, queued_ideas, queued_lock, stop_flag),
+        daemon=True,
+    )
     monitor.start()
     cprint("✅ Idea monitor thread started", "green")
 
     # Start worker threads (consumers)
     workers = []
     for worker_id in range(MAX_PARALLEL_THREADS):
-        worker = Thread(target=worker_thread, args=(worker_id, idea_queue, queued_ideas, queued_lock, stats, stop_flag), daemon=True)
+        worker = Thread(
+            target=worker_thread,
+            args=(worker_id, idea_queue, queued_ideas, queued_lock, stats, stop_flag),
+            daemon=True,
+        )
         worker.start()
         workers.append(worker)
-    cprint(f"✅ {MAX_PARALLEL_THREADS} worker threads started (IDs 00-{MAX_PARALLEL_THREADS-1:02d})\n", "green")
+    cprint(
+        f"✅ {MAX_PARALLEL_THREADS} worker threads started (IDs 00-{MAX_PARALLEL_THREADS-1:02d})\n",
+        "green",
+    )
 
     # Main thread just monitors stats and waits
     try:
@@ -1490,29 +1610,40 @@ def main(ideas_file_path=None, run_name=None):
             time.sleep(5)  # Status update every 5 seconds
 
             with console_lock:
-                if stats['active'] > 0 or not idea_queue.empty():
-                    cprint(f"📊 Status: {stats['active']} active | {idea_queue.qsize()} queued | {stats['completed']} completed | {stats['targets_hit']} targets hit", "cyan")
+                if stats["active"] > 0 or not idea_queue.empty():
+                    cprint(
+                        f"📊 Status: {stats['active']} active | {idea_queue.qsize()} queued | {stats['completed']} completed | {stats['targets_hit']} targets hit",
+                        "cyan",
+                    )
                 else:
-                    cprint(f"💤 AI swarm waiting... ({stats['completed']} total completed, {stats['targets_hit']} targets hit) - {datetime.now().strftime('%I:%M:%S %p')}", "yellow")
+                    cprint(
+                        f"💤 AI swarm waiting... ({stats['completed']} total completed, {stats['targets_hit']} targets hit) - {datetime.now().strftime('%I:%M:%S %p')}",
+                        "yellow",
+                    )
 
     except KeyboardInterrupt:
-        cprint(f"\n\n🛑 Shutting down gracefully...", "yellow", attrs=['bold'])
-        stop_flag['stop'] = True
+        cprint(f"\n\n🛑 Shutting down gracefully...", "yellow", attrs=["bold"])
+        stop_flag["stop"] = True
 
-        cprint(f"\n{'='*60}", "cyan", attrs=['bold'])
-        cprint(f"📊 FINAL STATS", "cyan", attrs=['bold'])
-        cprint(f"{'='*60}", "cyan", attrs=['bold'])
+        cprint(f"\n{'='*60}", "cyan", attrs=["bold"])
+        cprint(f"📊 FINAL STATS", "cyan", attrs=["bold"])
+        cprint(f"{'='*60}", "cyan", attrs=["bold"])
         cprint(f"✅ Successful: {stats['successful']}", "green")
-        cprint(f"🎯 Targets hit: {stats['targets_hit']}", "green", attrs=['bold'])
+        cprint(f"🎯 Targets hit: {stats['targets_hit']}", "green", attrs=["bold"])
         cprint(f"❌ Failed: {stats['failed']}", "red")
         cprint(f"📊 Total completed: {stats['completed']}", "cyan")
-        cprint(f"{'='*60}\n", "cyan", attrs=['bold'])
+        cprint(f"{'='*60}\n", "cyan", attrs=["bold"])
+
 
 if __name__ == "__main__":
     # 🌙 Moon Dev: Parse command-line arguments for custom ideas file and run name
-    parser = argparse.ArgumentParser(description="Moon Dev's RBI Agent - Parallel Backtest Processor")
-    parser.add_argument('--ideas-file', type=str, help='Custom ideas file path (overrides default ideas.txt)')
-    parser.add_argument('--run-name', type=str, help='Run name for folder organization')
+    parser = argparse.ArgumentParser(
+        description="Moon Dev's RBI Agent - Parallel Backtest Processor"
+    )
+    parser.add_argument(
+        "--ideas-file", type=str, help="Custom ideas file path (overrides default ideas.txt)"
+    )
+    parser.add_argument("--run-name", type=str, help="Run name for folder organization")
     args = parser.parse_args()
 
     # Call main with optional parameters

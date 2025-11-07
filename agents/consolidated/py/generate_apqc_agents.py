@@ -59,7 +59,7 @@ class APQCAgentGenerator:
             # Load specific category
             category_file = self.apqc_dir / category / "agents.json"
             if category_file.exists():
-                with open(category_file, 'r') as f:
+                with open(category_file, "r") as f:
                     blueprints.extend(json.load(f))
         else:
             # Load all categories
@@ -67,7 +67,7 @@ class APQCAgentGenerator:
                 if cat_dir.is_dir():
                     agents_file = cat_dir / "agents.json"
                     if agents_file.exists():
-                        with open(agents_file, 'r') as f:
+                        with open(agents_file, "r") as f:
                             blueprints.extend(json.load(f))
 
         return blueprints
@@ -75,23 +75,23 @@ class APQCAgentGenerator:
     def generate_agent_from_blueprint(self, blueprint: Dict[str, Any]) -> str:
         """Generate fully compliant agent code from APQC blueprint"""
 
-        metadata = blueprint['metadata']
-        agent_id = blueprint['agent_id']
-        category_id = metadata['category_id']
-        category_name = metadata['category_name']
-        process_id = metadata['process_id']
-        process_name = metadata['process_name']
-        agent_type = metadata['agent_type']
-        domain = metadata['domain']
+        metadata = blueprint["metadata"]
+        agent_id = blueprint["agent_id"]
+        category_id = metadata["category_id"]
+        category_name = metadata["category_name"]
+        process_id = metadata["process_id"]
+        process_name = metadata["process_name"]
+        agent_type = metadata["agent_type"]
+        domain = metadata["domain"]
 
-        capabilities = blueprint['capabilities']
-        skills = blueprint['skills']
-        interfaces = blueprint['interfaces']
-        behavior = blueprint['behavior']
-        resources = blueprint['resources']
-        integration = blueprint['integration']
-        quality = blueprint['quality']
-        deployment = blueprint['deployment']
+        capabilities = blueprint["capabilities"]
+        skills = blueprint["skills"]
+        interfaces = blueprint["interfaces"]
+        behavior = blueprint["behavior"]
+        resources = blueprint["resources"]
+        integration = blueprint["integration"]
+        quality = blueprint["quality"]
+        deployment = blueprint["deployment"]
 
         # Generate clean agent name
         agent_name = self._generate_agent_name(process_name, agent_type)
@@ -518,13 +518,14 @@ def create_{self._to_snake_case(agent_name)}(config: Optional[{class_name}Config
 
     def _to_pascal_case(self, snake_str: str) -> str:
         """Convert snake_case to PascalCase"""
-        return ''.join(word.capitalize() for word in snake_str.split('_'))
+        return "".join(word.capitalize() for word in snake_str.split("_"))
 
     def _to_snake_case(self, pascal_str: str) -> str:
         """Convert PascalCase to snake_case"""
         import re
-        s1 = re.sub('(.)([A-Z][a-z]+)', r'\1_\2', pascal_str)
-        return re.sub('([a-z0-9])([A-Z])', r'\1_\2', s1).lower()
+
+        s1 = re.sub("(.)([A-Z][a-z]+)", r"\1_\2", pascal_str)
+        return re.sub("([a-z0-9])([A-Z])", r"\1_\2", s1).lower()
 
     def _format_list_as_bullets(self, items: List[str], indent: int = 0) -> str:
         """Format list as bullet points"""
@@ -541,30 +542,30 @@ def create_{self._to_snake_case(agent_name)}(config: Optional[{class_name}Config
         code = self.generate_agent_from_blueprint(blueprint)
 
         # Generate filename
-        metadata = blueprint['metadata']
-        process_name = metadata['process_name']
-        agent_type = metadata['agent_type']
+        metadata = blueprint["metadata"]
+        process_name = metadata["process_name"]
+        agent_type = metadata["agent_type"]
         agent_name = self._generate_agent_name(process_name, agent_type)
         filename = f"{agent_name}.py"
 
         # Save to category subdirectory
-        category_id = metadata['category_id'].replace('.', '_')
+        category_id = metadata["category_id"].replace(".", "_")
         category_dir = self.output_dir / category_id
         category_dir.mkdir(parents=True, exist_ok=True)
 
         file_path = category_dir / filename
-        with open(file_path, 'w', encoding='utf-8') as f:
+        with open(file_path, "w", encoding="utf-8") as f:
             f.write(code)
 
         return str(file_path)
 
     def register_agent_in_registry(self, blueprint: Dict[str, Any], file_path: str):
         """Register generated agent in agent registry"""
-        metadata = blueprint['metadata']
+        metadata = blueprint["metadata"]
 
-        agent_id = blueprint['agent_id']
-        process_name = metadata['process_name']
-        agent_type = metadata['agent_type']
+        agent_id = blueprint["agent_id"]
+        process_name = metadata["process_name"]
+        agent_type = metadata["agent_type"]
         agent_name = self._generate_agent_name(process_name, agent_type)
         class_name = self._to_pascal_case(agent_name)
 
@@ -578,13 +579,13 @@ def create_{self._to_snake_case(agent_name)}(config: Optional[{class_name}Config
             compliance_status=ComplianceStatus.COMPLIANT,
             law_version="1.0.0",
             protocols_supported=["A2A", "A2P", "ACP", "ANP", "MCP"],
-            capabilities=blueprint['capabilities'],
+            capabilities=blueprint["capabilities"],
             has_protocol_mixin=True,
             has_base_agent=True,
             has_environment_config=True,
             has_health_check=True,
             has_resource_monitoring=True,
-            notes=f"Generated from APQC blueprint {agent_id}. APQC Process: {metadata['process_id']} - {process_name}"
+            notes=f"Generated from APQC blueprint {agent_id}. APQC Process: {metadata['process_id']} - {process_name}",
         )
 
     def generate_all_agents(self, category: Optional[str] = None) -> List[Dict[str, str]]:
@@ -603,8 +604,8 @@ def create_{self._to_snake_case(agent_name)}(config: Optional[{class_name}Config
 
         for i, blueprint in enumerate(blueprints, 1):
             try:
-                metadata = blueprint['metadata']
-                process_name = metadata['process_name']
+                metadata = blueprint["metadata"]
+                process_name = metadata["process_name"]
 
                 print(f"[{i}/{len(blueprints)}] Generating: {process_name}")
 
@@ -615,10 +616,10 @@ def create_{self._to_snake_case(agent_name)}(config: Optional[{class_name}Config
                 self.register_agent_in_registry(blueprint, file_path)
 
                 result = {
-                    'blueprint_id': blueprint['agent_id'],
-                    'process_name': process_name,
-                    'file_path': file_path,
-                    'status': 'success'
+                    "blueprint_id": blueprint["agent_id"],
+                    "process_name": process_name,
+                    "file_path": file_path,
+                    "status": "success",
                 }
                 results.append(result)
 
@@ -626,13 +627,17 @@ def create_{self._to_snake_case(agent_name)}(config: Optional[{class_name}Config
 
             except Exception as e:
                 print(f"  [ERROR] Failed: {str(e)[:100]}")
-                results.append({
-                    'blueprint_id': blueprint.get('agent_id', 'unknown'),
-                    'process_name': blueprint.get('metadata', {}).get('process_name', 'unknown'),
-                    'file_path': None,
-                    'status': 'error',
-                    'error': str(e)
-                })
+                results.append(
+                    {
+                        "blueprint_id": blueprint.get("agent_id", "unknown"),
+                        "process_name": blueprint.get("metadata", {}).get(
+                            "process_name", "unknown"
+                        ),
+                        "file_path": None,
+                        "status": "error",
+                        "error": str(e),
+                    }
+                )
 
         print(f"\n{'='*70}")
         print(f"Generation Complete")
@@ -656,7 +661,9 @@ def main():
     parser = argparse.ArgumentParser(
         description="Generate architecture-compliant agents from APQC blueprints"
     )
-    parser.add_argument("--category", "-c", help="Generate agents for specific APQC category (e.g., '1_0')")
+    parser.add_argument(
+        "--category", "-c", help="Generate agents for specific APQC category (e.g., '1_0')"
+    )
     parser.add_argument("--all", "-a", action="store_true", help="Generate all 62 APQC agents")
     parser.add_argument("--blueprint", "-b", help="Generate single agent from blueprint ID")
 
@@ -673,7 +680,7 @@ def main():
     elif args.blueprint:
         print(f"Generating agent from blueprint {args.blueprint}...")
         blueprints = generator.load_blueprints()
-        blueprint = next((b for b in blueprints if b['agent_id'] == args.blueprint), None)
+        blueprint = next((b for b in blueprints if b["agent_id"] == args.blueprint), None)
         if blueprint:
             file_path = generator.generate_and_save_agent(blueprint)
             generator.register_agent_in_registry(blueprint, file_path)

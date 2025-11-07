@@ -28,9 +28,7 @@ async def test_development_agent():
     # Create DevelopmentAgent instance
     print("[1/4] Creating DevelopmentAgent instance...")
     agent = DevelopmentAgent(
-        agent_id="test_development_agent_001",
-        workspace_path="./workspace",
-        project_root=".."
+        agent_id="test_development_agent_001", workspace_path="./workspace", project_root=".."
     )
     print(f"      [OK] DevelopmentAgent created: {agent.agent_id}")
     print(f"      [OK] Code templates loaded: {len(agent.code_templates)} templates")
@@ -47,11 +45,11 @@ async def test_development_agent():
             {
                 "issue_id": "E2E-BUSINESS-PLAN-NOT-IMPLEMENTED",
                 "requirement": "Business plan generation endpoint not implemented",
-                "recommendation": "Implement /api/v1/ai-analysis/business-plan endpoint"
+                "recommendation": "Implement /api/v1/ai-analysis/business-plan endpoint",
             }
         ],
         "technical_approach": "Create FastAPI endpoint with Pydantic models",
-        "estimated_effort": "medium"
+        "estimated_effort": "medium",
     }
     print("      [OK] Mock design spec created")
     print(f"      Component: {design_spec['component']}")
@@ -66,7 +64,7 @@ async def test_development_agent():
             path="/api/v1/ai-analysis/business-plan",
             method="post",
             description="Generate comprehensive business plan",
-            spec=design_spec
+            spec=design_spec,
         )
         print(f"      [OK] Backend endpoint code generated")
         print(f"      Code length: {len(code)} characters")
@@ -76,7 +74,7 @@ async def test_development_agent():
         print()
         print("      Code preview (first 300 chars):")
         print("      " + "-" * 70)
-        for line in code[:300].split('\n'):
+        for line in code[:300].split("\n"):
             print(f"      {line}")
         print("      " + "-" * 70)
     except Exception as e:
@@ -87,8 +85,7 @@ async def test_development_agent():
     print("[4/4] Testing test file generation...")
     try:
         test_code = await agent._generate_backend_test(
-            endpoint_name="business_plan",
-            spec=design_spec
+            endpoint_name="business_plan", spec=design_spec
         )
         print(f"      [OK] Test file generated")
         print(f"      Test code length: {len(test_code)} characters")

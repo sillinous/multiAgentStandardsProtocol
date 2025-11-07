@@ -11,12 +11,16 @@ import os
 # Add the parent directory to the path
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 
+
 async def test_agent_initialization():
     """Test that agents can be initialized"""
     print("🧪 Testing Agent Initialization...")
 
     try:
-        from app.market_research_agents import initialize_market_research_agents, get_market_research_orchestrator
+        from app.market_research_agents import (
+            initialize_market_research_agents,
+            get_market_research_orchestrator,
+        )
         from app.ai_service import market_ai
         from app.blockchain_agentic_protocol import BlockchainAgenticProtocol
 
@@ -43,6 +47,7 @@ async def test_agent_initialization():
     except Exception as e:
         print(f"  ❌ Agent initialization failed: {e}")
         import traceback
+
         traceback.print_exc()
         return False
 
@@ -65,7 +70,7 @@ async def test_agent_analysis():
             "analysis_type": "basic",
             "keywords": ["smart home"],
             "user_id": "test_user",
-            "timestamp": 1234567890
+            "timestamp": 1234567890,
         }
 
         print("  📊 Running market opportunity analysis...")
@@ -80,6 +85,7 @@ async def test_agent_analysis():
     except Exception as e:
         print(f"  ❌ Agent analysis failed: {e}")
         import traceback
+
         traceback.print_exc()
         return False
 
@@ -92,7 +98,7 @@ async def test_learning_integration():
         from app.agent_learning_integration import (
             enable_agent_learning,
             get_learning_ecosystem_stats,
-            LearningAgentWrapper
+            LearningAgentWrapper,
         )
 
         print("  ✅ Learning framework imports successful")
@@ -106,6 +112,7 @@ async def test_learning_integration():
     except Exception as e:
         print(f"  ❌ Learning framework test failed: {e}")
         import traceback
+
         traceback.print_exc()
         return False
 

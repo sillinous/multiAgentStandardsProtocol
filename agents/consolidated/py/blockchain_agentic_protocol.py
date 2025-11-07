@@ -24,42 +24,50 @@ import secrets
 
 logger = logging.getLogger(__name__)
 
+
 class TokenType(Enum):
     """Types of tokens in the agentic economy"""
-    REPUTATION = "reputation"           # Agent reputation and trust scores
-    CAPABILITY = "capability"           # Certified agent capabilities (NFTs)
-    PERFORMANCE = "performance"         # Performance-based rewards
-    COLLABORATION = "collaboration"     # Rewards for successful teamwork
-    INNOVATION = "innovation"          # Rewards for creative solutions
-    KNOWLEDGE = "knowledge"            # Tradeable knowledge artifacts
-    COMPUTE = "compute"                # Computational resource tokens
-    GOVERNANCE = "governance"          # Voting rights in agent DAOs
-    UTILITY = "utility"                # General purpose ecosystem tokens
+
+    REPUTATION = "reputation"  # Agent reputation and trust scores
+    CAPABILITY = "capability"  # Certified agent capabilities (NFTs)
+    PERFORMANCE = "performance"  # Performance-based rewards
+    COLLABORATION = "collaboration"  # Rewards for successful teamwork
+    INNOVATION = "innovation"  # Rewards for creative solutions
+    KNOWLEDGE = "knowledge"  # Tradeable knowledge artifacts
+    COMPUTE = "compute"  # Computational resource tokens
+    GOVERNANCE = "governance"  # Voting rights in agent DAOs
+    UTILITY = "utility"  # General purpose ecosystem tokens
+
 
 class TransactionType(Enum):
     """Types of blockchain transactions in agent ecosystem"""
-    CAPABILITY_MINT = "capability_mint"           # Mint new capability NFT
-    CAPABILITY_TRANSFER = "capability_transfer"   # Transfer capability between agents
-    REPUTATION_STAKE = "reputation_stake"         # Stake reputation for collaboration
-    PERFORMANCE_REWARD = "performance_reward"     # Reward for task completion
-    COLLABORATION_BOND = "collaboration_bond"     # Create collaboration escrow
-    KNOWLEDGE_SALE = "knowledge_sale"             # Sell knowledge artifact
-    COMPUTE_RENTAL = "compute_rental"             # Rent computational resources
-    GOVERNANCE_VOTE = "governance_vote"           # Cast vote in DAO governance
-    ECONOMIC_EVOLUTION = "economic_evolution"     # Economic parameters evolution
-    CROSS_ECOSYSTEM = "cross_ecosystem"           # Inter-ecosystem transactions
+
+    CAPABILITY_MINT = "capability_mint"  # Mint new capability NFT
+    CAPABILITY_TRANSFER = "capability_transfer"  # Transfer capability between agents
+    REPUTATION_STAKE = "reputation_stake"  # Stake reputation for collaboration
+    PERFORMANCE_REWARD = "performance_reward"  # Reward for task completion
+    COLLABORATION_BOND = "collaboration_bond"  # Create collaboration escrow
+    KNOWLEDGE_SALE = "knowledge_sale"  # Sell knowledge artifact
+    COMPUTE_RENTAL = "compute_rental"  # Rent computational resources
+    GOVERNANCE_VOTE = "governance_vote"  # Cast vote in DAO governance
+    ECONOMIC_EVOLUTION = "economic_evolution"  # Economic parameters evolution
+    CROSS_ECOSYSTEM = "cross_ecosystem"  # Inter-ecosystem transactions
+
 
 class SecurityLevel(Enum):
     """Security levels for blockchain operations"""
-    PUBLIC = "public"                  # Public, transparent transactions
-    CONSORTIUM = "consortium"          # Semi-private consortium blockchain
-    PRIVATE = "private"                # Private enterprise blockchain
+
+    PUBLIC = "public"  # Public, transparent transactions
+    CONSORTIUM = "consortium"  # Semi-private consortium blockchain
+    PRIVATE = "private"  # Private enterprise blockchain
     QUANTUM_SECURE = "quantum_secure"  # Quantum-resistant encryption
     ZERO_KNOWLEDGE = "zero_knowledge"  # Zero-knowledge proof transactions
+
 
 @dataclass
 class AgentWallet:
     """Blockchain wallet for autonomous agents"""
+
     wallet_id: str
     agent_id: str
     public_key: str
@@ -87,9 +95,11 @@ class AgentWallet:
     last_active: str = field(default_factory=lambda: datetime.utcnow().isoformat())
     wallet_version: str = "1.0.0"
 
+
 @dataclass
 class CapabilityNFT:
     """Non-Fungible Token representing agent capabilities"""
+
     nft_id: str
     capability_name: str
     capability_category: str
@@ -108,9 +118,9 @@ class CapabilityNFT:
     validation_score: float = 0.0
 
     # Economic Properties
-    mint_cost: Decimal = Decimal('0')
-    transfer_fee: Decimal = Decimal('0')
-    stake_requirement: Decimal = Decimal('0')
+    mint_cost: Decimal = Decimal("0")
+    transfer_fee: Decimal = Decimal("0")
+    stake_requirement: Decimal = Decimal("0")
 
     # Evolution Tracking
     evolution_history: List[Dict[str, Any]] = field(default_factory=list)
@@ -122,9 +132,11 @@ class CapabilityNFT:
     current_owner: str = ""
     previous_owners: List[str] = field(default_factory=list)
 
+
 @dataclass
 class SmartContract:
     """Smart contract for autonomous agent operations"""
+
     contract_id: str
     contract_type: str
     contract_name: str
@@ -163,9 +175,11 @@ class SmartContract:
     expiration_date: Optional[str] = None
     contract_version: str = "1.0.0"
 
+
 @dataclass
 class Transaction:
     """Blockchain transaction for agent ecosystem"""
+
     transaction_id: str
     transaction_type: TransactionType
     from_agent: str
@@ -174,7 +188,7 @@ class Transaction:
     # Transaction Details
     token_type: TokenType
     amount: Decimal
-    transaction_fee: Decimal = Decimal('0')
+    transaction_fee: Decimal = Decimal("0")
 
     # Transaction Data
     transaction_data: Dict[str, Any] = field(default_factory=dict)
@@ -200,6 +214,7 @@ class Transaction:
     created_at: str = field(default_factory=lambda: datetime.utcnow().isoformat())
     confirmed_at: Optional[str] = None
     finalized_at: Optional[str] = None
+
 
 class BlockchainAgenticProtocol:
     """Main protocol for blockchain-integrated agent ecosystems"""
@@ -238,7 +253,7 @@ class BlockchainAgenticProtocol:
             "active_contracts": 0,
             "minted_nfts": 0,
             "total_agents": 0,
-            "governance_proposals": 0
+            "governance_proposals": 0,
         }
 
     async def initialize(self) -> bool:
@@ -275,7 +290,9 @@ class BlockchainAgenticProtocol:
             logger.error(f"❌ Protocol initialization failed: {e}")
             return False
 
-    async def create_agent_wallet(self, agent_id: str, security_level: SecurityLevel = SecurityLevel.CONSORTIUM) -> AgentWallet:
+    async def create_agent_wallet(
+        self, agent_id: str, security_level: SecurityLevel = SecurityLevel.CONSORTIUM
+    ) -> AgentWallet:
         """Create blockchain wallet for agent"""
         try:
             # Generate cryptographic keys
@@ -286,12 +303,12 @@ class BlockchainAgenticProtocol:
                 agent_id=agent_id,
                 public_key=key_pair["public_key"],
                 private_key_hash=key_pair["private_key_hash"],
-                security_level=security_level
+                security_level=security_level,
             )
 
             # Initialize with basic token allocation
-            wallet.token_balances[TokenType.UTILITY] = Decimal('1000')  # Starting allocation
-            wallet.token_balances[TokenType.REPUTATION] = Decimal('100')
+            wallet.token_balances[TokenType.UTILITY] = Decimal("1000")  # Starting allocation
+            wallet.token_balances[TokenType.REPUTATION] = Decimal("100")
 
             # Store wallet
             await self.wallet_manager.store_wallet(wallet)
@@ -306,7 +323,9 @@ class BlockchainAgenticProtocol:
             logger.error(f"❌ Wallet creation failed: {e}")
             raise
 
-    async def mint_capability_nft(self, agent_id: str, capability_spec: Dict[str, Any]) -> CapabilityNFT:
+    async def mint_capability_nft(
+        self, agent_id: str, capability_spec: Dict[str, Any]
+    ) -> CapabilityNFT:
         """Mint NFT representing agent capability"""
         try:
             # Validate capability specification
@@ -321,7 +340,7 @@ class BlockchainAgenticProtocol:
                 proficiency_level=capability_spec["proficiency_level"],
                 certification_authority=capability_spec.get("authority", "system"),
                 description=capability_spec.get("description", ""),
-                current_owner=agent_id
+                current_owner=agent_id,
             )
 
             # Calculate minting cost based on capability complexity
@@ -329,7 +348,7 @@ class BlockchainAgenticProtocol:
 
             # Validate agent has sufficient tokens
             wallet = await self.wallet_manager.get_wallet(agent_id)
-            if wallet.token_balances.get(TokenType.UTILITY, Decimal('0')) < nft.mint_cost:
+            if wallet.token_balances.get(TokenType.UTILITY, Decimal("0")) < nft.mint_cost:
                 raise ValueError("Insufficient tokens for minting")
 
             # Execute minting transaction
@@ -354,7 +373,9 @@ class BlockchainAgenticProtocol:
             logger.error(f"❌ NFT minting failed: {e}")
             raise
 
-    async def create_collaboration_contract(self, collaboration_spec: Dict[str, Any]) -> SmartContract:
+    async def create_collaboration_contract(
+        self, collaboration_spec: Dict[str, Any]
+    ) -> SmartContract:
         """Create smart contract for agent collaboration"""
         try:
             contract = SmartContract(
@@ -364,7 +385,7 @@ class BlockchainAgenticProtocol:
                 participating_agents=collaboration_spec["agents"],
                 contract_creator=collaboration_spec["creator"],
                 execution_conditions=collaboration_spec.get("conditions", []),
-                success_criteria=collaboration_spec.get("success_criteria", [])
+                success_criteria=collaboration_spec.get("success_criteria", []),
             )
 
             # Generate contract logic
@@ -389,12 +410,14 @@ class BlockchainAgenticProtocol:
             logger.error(f"❌ Contract creation failed: {e}")
             raise
 
-    async def execute_autonomous_transaction(self,
-                                           from_agent: str,
-                                           to_agent: str,
-                                           transaction_type: TransactionType,
-                                           amount: Decimal,
-                                           transaction_data: Dict[str, Any] = None) -> Transaction:
+    async def execute_autonomous_transaction(
+        self,
+        from_agent: str,
+        to_agent: str,
+        transaction_type: TransactionType,
+        amount: Decimal,
+        transaction_data: Dict[str, Any] = None,
+    ) -> Transaction:
         """Execute autonomous blockchain transaction between agents"""
         try:
             transaction = Transaction(
@@ -404,7 +427,7 @@ class BlockchainAgenticProtocol:
                 to_agent=to_agent,
                 token_type=TokenType.UTILITY,  # Default, can be overridden
                 amount=amount,
-                transaction_data=transaction_data or {}
+                transaction_data=transaction_data or {},
             )
 
             # Calculate transaction fee
@@ -439,13 +462,15 @@ class BlockchainAgenticProtocol:
             logger.error(f"❌ Transaction execution failed: {e}")
             raise
 
-    async def stake_reputation_for_collaboration(self, agent_id: str, collaboration_id: str, stake_amount: Decimal) -> bool:
+    async def stake_reputation_for_collaboration(
+        self, agent_id: str, collaboration_id: str, stake_amount: Decimal
+    ) -> bool:
         """Stake reputation tokens for collaboration participation"""
         try:
             wallet = await self.wallet_manager.get_wallet(agent_id)
 
             # Check available reputation
-            available_reputation = wallet.token_balances.get(TokenType.REPUTATION, Decimal('0'))
+            available_reputation = wallet.token_balances.get(TokenType.REPUTATION, Decimal("0"))
             if available_reputation < stake_amount:
                 raise ValueError("Insufficient reputation for staking")
 
@@ -488,7 +513,7 @@ class BlockchainAgenticProtocol:
                     to_agent=agent_id,
                     token_type=token_type,
                     amount=amount,
-                    transaction_data=performance_data
+                    transaction_data=performance_data,
                 )
 
                 await self.transaction_processor.process_transaction(reward_transaction)
@@ -496,7 +521,7 @@ class BlockchainAgenticProtocol:
             # Update agent wallet
             wallet = await self.wallet_manager.get_wallet(agent_id)
             for token_type, amount in reward_tokens.items():
-                current_balance = wallet.token_balances.get(token_type, Decimal('0'))
+                current_balance = wallet.token_balances.get(token_type, Decimal("0"))
                 wallet.token_balances[token_type] = current_balance + amount
 
             await self.wallet_manager.update_wallet(wallet)
@@ -508,7 +533,9 @@ class BlockchainAgenticProtocol:
             logger.error(f"❌ Performance reward failed: {e}")
             return False
 
-    async def create_knowledge_marketplace_listing(self, agent_id: str, knowledge_artifact: Dict[str, Any]) -> str:
+    async def create_knowledge_marketplace_listing(
+        self, agent_id: str, knowledge_artifact: Dict[str, Any]
+    ) -> str:
         """Create marketplace listing for knowledge artifact"""
         try:
             listing_id = str(uuid.uuid4())
@@ -553,8 +580,8 @@ class BlockchainAgenticProtocol:
                 transaction_data={
                     "proposal_id": proposal_id,
                     "vote": vote,
-                    "voting_power": str(voting_power)
-                }
+                    "voting_power": str(voting_power),
+                },
             )
 
             # Process vote
@@ -629,7 +656,7 @@ class BlockchainAgenticProtocol:
             "active_wallets": await self.wallet_manager.get_wallet_count(),
             "total_nfts": await self.nft_manager.get_nft_count(),
             "economic_health": await self.token_economics.get_health_metrics(),
-            "governance_status": await self.dao_governance.get_status()
+            "governance_status": await self.dao_governance.get_status(),
         }
 
     async def get_agent_economic_profile(self, agent_id: str) -> Dict[str, Any]:
@@ -644,15 +671,24 @@ class BlockchainAgenticProtocol:
             "nfts": [asdict(nft) for nft in nfts],
             "reputation_score": reputation,
             "total_wealth": await self._calculate_total_wealth(agent_id),
-            "economic_rank": await self._calculate_economic_rank(agent_id)
+            "economic_rank": await self._calculate_economic_rank(agent_id),
         }
 
     # Placeholder implementations for complex subsystems
-    async def _initialize_database(self): pass
-    async def _initialize_blockchain_client(self): pass
-    async def _deploy_standard_contracts(self): pass
-    async def _validate_capability_spec(self, spec: Dict[str, Any]) -> bool: return True
-    async def _calculate_minting_cost(self, spec: Dict[str, Any]) -> Decimal: return Decimal('10')
+    async def _initialize_database(self):
+        pass
+
+    async def _initialize_blockchain_client(self):
+        pass
+
+    async def _deploy_standard_contracts(self):
+        pass
+
+    async def _validate_capability_spec(self, spec: Dict[str, Any]) -> bool:
+        return True
+
+    async def _calculate_minting_cost(self, spec: Dict[str, Any]) -> Decimal:
+        return Decimal("10")
 
     async def _create_minting_transaction(self, agent_id: str, nft: CapabilityNFT) -> Transaction:
         """Create a transaction for minting a capability NFT"""
@@ -663,34 +699,76 @@ class BlockchainAgenticProtocol:
             to_agent=agent_id,  # Minting to self
             token_type=TokenType.UTILITY,
             amount=nft.mint_cost,
-            transaction_fee=Decimal('0.1'),
+            transaction_fee=Decimal("0.1"),
             transaction_data={
                 "nft_id": nft.nft_id,
                 "capability_name": nft.capability_name,
                 "capability_category": nft.capability_category,
-                "proficiency_level": nft.proficiency_level
+                "proficiency_level": nft.proficiency_level,
             },
             nft_id=nft.nft_id,
-            status="pending"
+            status="pending",
         )
-    async def _generate_collaboration_logic(self, spec: Dict[str, Any]) -> str: return ""
-    async def _calculate_collaboration_allocations(self, spec: Dict[str, Any]) -> Dict[str, Decimal]: return {}
-    async def _calculate_transaction_fee(self, transaction: Transaction) -> Decimal: return Decimal('0.1')
-    async def _validate_transaction(self, transaction: Transaction) -> Dict[str, Any]: return {"valid": True}
-    async def _update_wallets_for_transaction(self, transaction: Transaction): pass
-    async def _record_transaction(self, transaction: Transaction): pass
-    async def _record_wallet_creation(self, wallet: AgentWallet): pass
-    async def _create_staking_transaction(self, agent_id: str, collaboration_id: str, amount: Decimal, token_type: TokenType) -> Transaction: pass
-    async def _calculate_performance_reward(self, performance_data: Dict[str, Any]) -> Decimal: return Decimal('100')
-    async def _determine_reward_tokens(self, performance_data: Dict[str, Any]) -> Dict[TokenType, Decimal]: return {TokenType.PERFORMANCE: Decimal('100')}
-    async def _create_knowledge_nft(self, agent_id: str, artifact: Dict[str, Any]) -> CapabilityNFT: pass
-    async def _create_marketplace_contract(self, listing_id: str, agent_id: str, nft: CapabilityNFT, artifact: Dict[str, Any]) -> SmartContract: pass
-    async def _list_on_marketplace(self, listing_id: str, contract: SmartContract): pass
-    async def _calculate_voting_power(self, agent_id: str) -> Decimal: return Decimal('10')
-    async def _calculate_total_wealth(self, agent_id: str) -> Decimal: return Decimal('1000')
-    async def _calculate_economic_rank(self, agent_id: str) -> int: return 1
+
+    async def _generate_collaboration_logic(self, spec: Dict[str, Any]) -> str:
+        return ""
+
+    async def _calculate_collaboration_allocations(
+        self, spec: Dict[str, Any]
+    ) -> Dict[str, Decimal]:
+        return {}
+
+    async def _calculate_transaction_fee(self, transaction: Transaction) -> Decimal:
+        return Decimal("0.1")
+
+    async def _validate_transaction(self, transaction: Transaction) -> Dict[str, Any]:
+        return {"valid": True}
+
+    async def _update_wallets_for_transaction(self, transaction: Transaction):
+        pass
+
+    async def _record_transaction(self, transaction: Transaction):
+        pass
+
+    async def _record_wallet_creation(self, wallet: AgentWallet):
+        pass
+
+    async def _create_staking_transaction(
+        self, agent_id: str, collaboration_id: str, amount: Decimal, token_type: TokenType
+    ) -> Transaction:
+        pass
+
+    async def _calculate_performance_reward(self, performance_data: Dict[str, Any]) -> Decimal:
+        return Decimal("100")
+
+    async def _determine_reward_tokens(
+        self, performance_data: Dict[str, Any]
+    ) -> Dict[TokenType, Decimal]:
+        return {TokenType.PERFORMANCE: Decimal("100")}
+
+    async def _create_knowledge_nft(self, agent_id: str, artifact: Dict[str, Any]) -> CapabilityNFT:
+        pass
+
+    async def _create_marketplace_contract(
+        self, listing_id: str, agent_id: str, nft: CapabilityNFT, artifact: Dict[str, Any]
+    ) -> SmartContract:
+        pass
+
+    async def _list_on_marketplace(self, listing_id: str, contract: SmartContract):
+        pass
+
+    async def _calculate_voting_power(self, agent_id: str) -> Decimal:
+        return Decimal("10")
+
+    async def _calculate_total_wealth(self, agent_id: str) -> Decimal:
+        return Decimal("1000")
+
+    async def _calculate_economic_rank(self, agent_id: str) -> int:
+        return 1
+
 
 # Supporting Classes (PRODUCTION IMPLEMENTATIONS)
+
 
 class AgentWalletManager:
     """Manages agent blockchain wallets"""
@@ -744,14 +822,18 @@ class CapabilityNFTManager:
     def __init__(self):
         self.nfts: Dict[str, CapabilityNFT] = {}
         self.owner_index: Dict[str, List[str]] = defaultdict(list)  # owner -> nft_ids
-        self.capability_index: Dict[str, List[str]] = defaultdict(list)  # capability_name -> nft_ids
+        self.capability_index: Dict[str, List[str]] = defaultdict(
+            list
+        )  # capability_name -> nft_ids
 
     async def store_nft(self, nft: CapabilityNFT):
         """Store new NFT"""
         self.nfts[nft.nft_id] = nft
         self.owner_index[nft.current_owner].append(nft.nft_id)
         self.capability_index[nft.capability_name].append(nft.nft_id)
-        logger.info(f"NFT stored: {nft.nft_id} ({nft.capability_name}) owned by {nft.current_owner}")
+        logger.info(
+            f"NFT stored: {nft.nft_id} ({nft.capability_name}) owned by {nft.current_owner}"
+        )
 
     async def get_nft(self, nft_id: str) -> Optional[CapabilityNFT]:
         """Get NFT by ID"""
@@ -819,25 +901,29 @@ class SmartContractExecutor:
                 "success": True,
                 "contract_id": contract.contract_id,
                 "contract_address": f"0x{contract.contract_id[:16]}",  # Simulated address
-                "gas_used": 21000  # Simulated gas
+                "gas_used": 21000,  # Simulated gas
             }
 
         except Exception as e:
             logger.error(f"Contract deployment failed: {e}")
             return {"success": False, "error": str(e)}
 
-    async def execute_contract(self, contract_id: str, execution_data: Dict[str, Any]) -> Dict[str, Any]:
+    async def execute_contract(
+        self, contract_id: str, execution_data: Dict[str, Any]
+    ) -> Dict[str, Any]:
         """Execute contract logic"""
         if contract_id not in self.contracts:
             return {"success": False, "error": "Contract not found"}
 
         contract = self.contracts[contract_id]
         contract.contract_state = "executing"
-        contract.execution_history.append({
-            "timestamp": datetime.utcnow().isoformat(),
-            "data": execution_data,
-            "status": "executed"
-        })
+        contract.execution_history.append(
+            {
+                "timestamp": datetime.utcnow().isoformat(),
+                "data": execution_data,
+                "status": "executed",
+            }
+        )
 
         logger.info(f"Contract executed: {contract_id}")
         return {"success": True, "execution_id": str(uuid.uuid4())}
@@ -896,7 +982,9 @@ class TransactionProcessor:
             # Auto-confirm for demo (in production, this would wait for confirmations)
             await self._confirm_transaction(transaction.transaction_id)
 
-            logger.info(f"Transaction processed: {transaction.transaction_id} (block {transaction.block_number})")
+            logger.info(
+                f"Transaction processed: {transaction.transaction_id} (block {transaction.block_number})"
+            )
             return True
 
         except Exception as e:
@@ -935,48 +1023,80 @@ class TransactionProcessor:
     async def get_agent_transactions(self, agent_id: str) -> List[Transaction]:
         """Get all transactions for an agent"""
         return [
-            tx for tx in self.transactions.values()
+            tx
+            for tx in self.transactions.values()
             if tx.from_agent == agent_id or tx.to_agent == agent_id
         ]
+
 
 class AgentEconomicEngine:
     pass
 
+
 class CryptographicManager:
-    async def initialize(self): pass
+    async def initialize(self):
+        pass
+
     async def generate_key_pair(self, security_level: SecurityLevel) -> Dict[str, str]:
         return {"public_key": "pk_123", "private_key_hash": "hash_456"}
-    async def sign_transaction(self, transaction: Transaction, agent_id: str) -> str: return "signature_123"
+
+    async def sign_transaction(self, transaction: Transaction, agent_id: str) -> str:
+        return "signature_123"
+
 
 class OracleNetwork:
-    async def initialize(self): pass
+    async def initialize(self):
+        pass
+
 
 class TokenEconomics:
-    async def initialize(self, config: Dict[str, Any]): pass
-    async def rebalance_economy(self): pass
-    async def get_health_metrics(self) -> Dict[str, Any]: return {"health": "excellent"}
+    async def initialize(self, config: Dict[str, Any]):
+        pass
+
+    async def rebalance_economy(self):
+        pass
+
+    async def get_health_metrics(self) -> Dict[str, Any]:
+        return {"health": "excellent"}
+
 
 class ReputationSystem:
-    async def initialize(self): pass
-    async def update_reputation_scores(self): pass
-    async def get_reputation_score(self, agent_id: str) -> float: return 0.95
+    async def initialize(self):
+        pass
+
+    async def update_reputation_scores(self):
+        pass
+
+    async def get_reputation_score(self, agent_id: str) -> float:
+        return 0.95
+
 
 class IncentiveMechanism:
     pass
 
+
 class DAOGovernance:
     async def check_voting_eligibility(self, agent_id: str, proposal_id: str) -> Dict[str, Any]:
         return {"eligible": True}
-    async def record_vote(self, agent_id: str, proposal_id: str, vote: str, power: Decimal): pass
-    async def get_status(self) -> Dict[str, Any]: return {"active_proposals": 5}
+
+    async def record_vote(self, agent_id: str, proposal_id: str, vote: str, power: Decimal):
+        pass
+
+    async def get_status(self) -> Dict[str, Any]:
+        return {"active_proposals": 5}
+
 
 class ConsensusEngine:
     pass
 
+
 # Global protocol instance
 blockchain_agentic_protocol: Optional[BlockchainAgenticProtocol] = None
 
-async def initialize_blockchain_agentic_protocol(config: Dict[str, Any]) -> BlockchainAgenticProtocol:
+
+async def initialize_blockchain_agentic_protocol(
+    config: Dict[str, Any],
+) -> BlockchainAgenticProtocol:
     """Initialize global blockchain-agentic protocol"""
     global blockchain_agentic_protocol
 
@@ -985,6 +1105,7 @@ async def initialize_blockchain_agentic_protocol(config: Dict[str, Any]) -> Bloc
 
     logger.info("🔗 Blockchain-Agentic Protocol ready for revolutionary economic operations")
     return blockchain_agentic_protocol
+
 
 async def get_blockchain_agentic_protocol() -> Optional[BlockchainAgenticProtocol]:
     """Get global protocol instance"""

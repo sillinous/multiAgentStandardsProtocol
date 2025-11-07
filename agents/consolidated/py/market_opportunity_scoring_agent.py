@@ -19,8 +19,12 @@ import time
 
 from app.a2a_communication.message_routing_agent import routing_agent
 from app.a2a_communication.interfaces import (
-    AgentMessage, AgentResponse, AgentIdentifier,
-    MessageType, Priority, AgentTeam
+    AgentMessage,
+    AgentResponse,
+    AgentIdentifier,
+    MessageType,
+    Priority,
+    AgentTeam,
 )
 
 logger = logging.getLogger(__name__)
@@ -59,9 +63,9 @@ class MarketOpportunityScoringAgent:
                 "viability_assessment",
                 "product_ranking",
                 "recommendation_generation",
-                "insight_extraction"
+                "insight_extraction",
             ],
-            status="active"
+            status="active",
         )
 
         # Register with routing system
@@ -69,12 +73,12 @@ class MarketOpportunityScoringAgent:
 
         # Scoring weights (totals 100%)
         self.weights = {
-            "market_size": 0.25,        # 25% - How big is the market?
-            "demand_level": 0.20,       # 20% - How strong is demand?
-            "competition": 0.20,        # 20% - How intense is competition?
+            "market_size": 0.25,  # 25% - How big is the market?
+            "demand_level": 0.20,  # 20% - How strong is demand?
+            "competition": 0.20,  # 20% - How intense is competition?
             "pricing_potential": 0.15,  # 15% - Profit margin potential?
-            "customer_fit": 0.10,       # 10% - How well does it fit target customers?
-            "data_quality": 0.10        # 10% - How reliable is the data?
+            "customer_fit": 0.10,  # 10% - How well does it fit target customers?
+            "data_quality": 0.10,  # 10% - How reliable is the data?
         }
 
         logger.info(f"📊 {self.identifier.name} initialized")
@@ -107,7 +111,9 @@ class MarketOpportunityScoringAgent:
         """
         start_time = time.time()
 
-        logger.info(f"📊 Calculating opportunity score for: {product_data.get('keyword', 'unknown')}")
+        logger.info(
+            f"📊 Calculating opportunity score for: {product_data.get('keyword', 'unknown')}"
+        )
 
         scoring_report = {
             "keyword": product_data.get("keyword", "unknown"),
@@ -121,39 +127,51 @@ class MarketOpportunityScoringAgent:
             "insights": [],
             "strengths": [],
             "weaknesses": [],
-            "risk_factors": []
+            "risk_factors": [],
         }
 
         try:
             # Dimension 1: Market Size
             market_size_score = await self._score_market_size(product_data)
             scoring_report["dimension_scores"]["market_size"] = market_size_score
-            scoring_report["weighted_scores"]["market_size"] = market_size_score["score"] * self.weights["market_size"]
+            scoring_report["weighted_scores"]["market_size"] = (
+                market_size_score["score"] * self.weights["market_size"]
+            )
 
             # Dimension 2: Demand Level
             demand_score = await self._score_demand_level(product_data)
             scoring_report["dimension_scores"]["demand_level"] = demand_score
-            scoring_report["weighted_scores"]["demand_level"] = demand_score["score"] * self.weights["demand_level"]
+            scoring_report["weighted_scores"]["demand_level"] = (
+                demand_score["score"] * self.weights["demand_level"]
+            )
 
             # Dimension 3: Competition
             competition_score = await self._score_competition(product_data)
             scoring_report["dimension_scores"]["competition"] = competition_score
-            scoring_report["weighted_scores"]["competition"] = competition_score["score"] * self.weights["competition"]
+            scoring_report["weighted_scores"]["competition"] = (
+                competition_score["score"] * self.weights["competition"]
+            )
 
             # Dimension 4: Pricing Potential
             pricing_score = await self._score_pricing_potential(product_data)
             scoring_report["dimension_scores"]["pricing_potential"] = pricing_score
-            scoring_report["weighted_scores"]["pricing_potential"] = pricing_score["score"] * self.weights["pricing_potential"]
+            scoring_report["weighted_scores"]["pricing_potential"] = (
+                pricing_score["score"] * self.weights["pricing_potential"]
+            )
 
             # Dimension 5: Customer Fit
             customer_score = await self._score_customer_fit(product_data)
             scoring_report["dimension_scores"]["customer_fit"] = customer_score
-            scoring_report["weighted_scores"]["customer_fit"] = customer_score["score"] * self.weights["customer_fit"]
+            scoring_report["weighted_scores"]["customer_fit"] = (
+                customer_score["score"] * self.weights["customer_fit"]
+            )
 
             # Dimension 6: Data Quality
             data_quality_score = await self._score_data_quality(product_data)
             scoring_report["dimension_scores"]["data_quality"] = data_quality_score
-            scoring_report["weighted_scores"]["data_quality"] = data_quality_score["score"] * self.weights["data_quality"]
+            scoring_report["weighted_scores"]["data_quality"] = (
+                data_quality_score["score"] * self.weights["data_quality"]
+            )
 
             # Calculate composite score (0-100 scale)
             composite = sum(scoring_report["weighted_scores"].values()) * 100
@@ -161,20 +179,17 @@ class MarketOpportunityScoringAgent:
 
             # Determine confidence level
             scoring_report["confidence_level"] = self._determine_confidence_level(
-                data_quality_score["score"],
-                product_data
+                data_quality_score["score"], product_data
             )
 
             # Generate recommendation
             scoring_report["recommendation"] = self._generate_recommendation(
-                scoring_report["composite_score"],
-                scoring_report["dimension_scores"]
+                scoring_report["composite_score"], scoring_report["dimension_scores"]
             )
 
             # Extract insights
             scoring_report["insights"] = self._extract_insights(
-                scoring_report["dimension_scores"],
-                product_data
+                scoring_report["dimension_scores"], product_data
             )
 
             # Identify strengths
@@ -189,8 +204,7 @@ class MarketOpportunityScoringAgent:
 
             # Assess risk factors
             scoring_report["risk_factors"] = self._assess_risk_factors(
-                scoring_report["dimension_scores"],
-                product_data
+                scoring_report["dimension_scores"], product_data
             )
 
             execution_time = time.time() - start_time
@@ -225,10 +239,10 @@ class MarketOpportunityScoringAgent:
 
         # Stage scoring
         stage_scores = {
-            "emerging": 0.7,    # High potential, higher risk
-            "growing": 0.9,     # Best stage - expanding market
-            "mature": 0.6,      # Stable but limited growth
-            "declining": 0.3    # Avoid declining markets
+            "emerging": 0.7,  # High potential, higher risk
+            "growing": 0.9,  # Best stage - expanding market
+            "mature": 0.6,  # Stable but limited growth
+            "declining": 0.3,  # Avoid declining markets
         }
         score = stage_scores.get(market_stage, 0.5)
 
@@ -249,7 +263,7 @@ class MarketOpportunityScoringAgent:
         return {
             "score": round(score, 2),
             "factors": factors,
-            "assessment": self._score_to_assessment(score)
+            "assessment": self._score_to_assessment(score),
         }
 
     async def _score_demand_level(self, data: Dict) -> Dict[str, Any]:
@@ -261,12 +275,7 @@ class MarketOpportunityScoringAgent:
         demand_drivers = market_intel.get("demand_drivers", [])
 
         # Demand level scoring
-        demand_scores = {
-            "very high": 1.0,
-            "high": 0.85,
-            "medium": 0.6,
-            "low": 0.3
-        }
+        demand_scores = {"very high": 1.0, "high": 0.85, "medium": 0.6, "low": 0.3}
         score = demand_scores.get(demand_level, 0.5)
 
         # Bonus for multiple demand drivers
@@ -277,8 +286,11 @@ class MarketOpportunityScoringAgent:
 
         return {
             "score": round(score, 2),
-            "factors": [f"Demand level: {demand_level}", f"{len(demand_drivers if isinstance(demand_drivers, list) else [])} demand drivers"],
-            "assessment": self._score_to_assessment(score)
+            "factors": [
+                f"Demand level: {demand_level}",
+                f"{len(demand_drivers if isinstance(demand_drivers, list) else [])} demand drivers",
+            ],
+            "assessment": self._score_to_assessment(score),
         }
 
     async def _score_competition(self, data: Dict) -> Dict[str, Any]:
@@ -293,9 +305,9 @@ class MarketOpportunityScoringAgent:
         # Competition scoring (inverse - less is better)
         intensity_scores = {
             "very high": 0.3,  # Too competitive
-            "high": 0.5,       # Challenging
-            "medium": 0.7,     # Manageable
-            "low": 0.9         # Opportunity
+            "high": 0.5,  # Challenging
+            "medium": 0.7,  # Manageable
+            "low": 0.9,  # Opportunity
         }
         score = intensity_scores.get(intensity, 0.5)
 
@@ -311,8 +323,12 @@ class MarketOpportunityScoringAgent:
 
         return {
             "score": round(score, 2),
-            "factors": [f"Intensity: {intensity}", f"Concentration: {concentration}", f"{len(gaps if isinstance(gaps, list) else [])} competitive gaps"],
-            "assessment": self._score_to_assessment(score)
+            "factors": [
+                f"Intensity: {intensity}",
+                f"Concentration: {concentration}",
+                f"{len(gaps if isinstance(gaps, list) else [])} competitive gaps",
+            ],
+            "assessment": self._score_to_assessment(score),
         }
 
     async def _score_pricing_potential(self, data: Dict) -> Dict[str, Any]:
@@ -351,7 +367,7 @@ class MarketOpportunityScoringAgent:
         return {
             "score": round(score, 2),
             "factors": [f"Margin: {margin}%", f"Price: ${price}", f"Strategy: {strategy}"],
-            "assessment": self._score_to_assessment(score)
+            "assessment": self._score_to_assessment(score),
         }
 
     async def _score_customer_fit(self, data: Dict) -> Dict[str, Any]:
@@ -381,8 +397,11 @@ class MarketOpportunityScoringAgent:
 
         return {
             "score": round(score, 2),
-            "factors": [f"Persona defined: {bool(primary_persona)}", f"{len(acquisition_channels if isinstance(acquisition_channels, list) else [])} acquisition channels"],
-            "assessment": self._score_to_assessment(score)
+            "factors": [
+                f"Persona defined: {bool(primary_persona)}",
+                f"{len(acquisition_channels if isinstance(acquisition_channels, list) else [])} acquisition channels",
+            ],
+            "assessment": self._score_to_assessment(score),
         }
 
     async def _score_data_quality(self, data: Dict) -> Dict[str, Any]:
@@ -395,18 +414,23 @@ class MarketOpportunityScoringAgent:
         total_agents = enrichment_metadata.get("total_agents", 1)
 
         # Average confidence
-        avg_confidence = sum(confidence_scores.values()) / len(confidence_scores) if confidence_scores else 0.5
+        avg_confidence = (
+            sum(confidence_scores.values()) / len(confidence_scores) if confidence_scores else 0.5
+        )
 
         # Success rate
         success_rate = successful_agents / total_agents if total_agents > 0 else 0
 
         # Combined score
-        score = (avg_confidence * 0.6 + success_rate * 0.4)
+        score = avg_confidence * 0.6 + success_rate * 0.4
 
         return {
             "score": round(score, 2),
-            "factors": [f"Avg confidence: {avg_confidence:.2f}", f"Success rate: {success_rate:.0%}"],
-            "assessment": self._score_to_assessment(score)
+            "factors": [
+                f"Avg confidence: {avg_confidence:.2f}",
+                f"Success rate: {success_rate:.0%}",
+            ],
+            "assessment": self._score_to_assessment(score),
         }
 
     def _score_to_assessment(self, score: float) -> str:
@@ -486,7 +510,9 @@ class MarketOpportunityScoringAgent:
             score = score_data.get("score", 0)
             if score >= 0.75:
                 assessment = score_data.get("assessment", "")
-                strengths.append(f"{dimension.replace('_', ' ').title()}: {assessment} ({score:.2f})")
+                strengths.append(
+                    f"{dimension.replace('_', ' ').title()}: {assessment} ({score:.2f})"
+                )
 
         return strengths[:3]  # Top 3 strengths
 
@@ -499,7 +525,9 @@ class MarketOpportunityScoringAgent:
             score = score_data.get("score", 0)
             if score < 0.6:
                 assessment = score_data.get("assessment", "")
-                weaknesses.append(f"{dimension.replace('_', ' ').title()}: {assessment} ({score:.2f})")
+                weaknesses.append(
+                    f"{dimension.replace('_', ' ').title()}: {assessment} ({score:.2f})"
+                )
 
         return weaknesses[:3]  # Top 3 weaknesses
 

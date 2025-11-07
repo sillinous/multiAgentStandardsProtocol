@@ -52,27 +52,19 @@ class SentimentAnalysisAgent(BaseAgent):
                 "confidence_scoring",
                 "key_point_extraction",
                 "batch_processing",
-                "hybrid_processing"
-            ]
+                "hybrid_processing",
+            ],
         )
         self.stats = {
             "total_analyses": 0,
             "local_analyses": 0,
             "cloud_analyses": 0,
             "credits_saved": 0.0,
-            "sentiment_distribution": {
-                "positive": 0,
-                "negative": 0,
-                "neutral": 0
-            }
+            "sentiment_distribution": {"positive": 0, "negative": 0, "neutral": 0},
         }
 
     async def execute(
-        self,
-        text: str,
-        quality: str = "auto",
-        force_local: bool = False,
-        force_cloud: bool = False
+        self, text: str, quality: str = "auto", force_local: bool = False, force_cloud: bool = False
     ) -> Dict[str, Any]:
         """
         Analyze sentiment with intelligent routing.
@@ -101,7 +93,7 @@ class SentimentAnalysisAgent(BaseAgent):
                 text_length=len(text),
                 quality=quality,
                 force_local=force_local,
-                force_cloud=force_cloud
+                force_cloud=force_cloud,
             )
 
             # Execute
@@ -121,7 +113,9 @@ class SentimentAnalysisAgent(BaseAgent):
             result["method"] = method
             result["processing_time_ms"] = (datetime.utcnow() - start_time).total_seconds() * 1000
 
-            logger.info(f"✅ Sentiment analysis complete: {sentiment} (confidence: {result.get('confidence', 0):.2f})")
+            logger.info(
+                f"✅ Sentiment analysis complete: {sentiment} (confidence: {result.get('confidence', 0):.2f})"
+            )
 
             return result
 
@@ -134,11 +128,7 @@ class SentimentAnalysisAgent(BaseAgent):
             raise
 
     def _determine_method(
-        self,
-        text_length: int,
-        quality: str,
-        force_local: bool,
-        force_cloud: bool
+        self, text_length: int, quality: str, force_local: bool, force_cloud: bool
     ) -> str:
         """Determine whether to use local or cloud processing"""
 
@@ -169,11 +159,7 @@ class SentimentAnalysisAgent(BaseAgent):
         """Analyze using local LLM - ZERO CREDITS"""
         result = await ollama_service.analyze_sentiment(text)
 
-        return {
-            **result,
-            "credits_used": 0,
-            "cost_saved": "$0.01"
-        }
+        return {**result, "credits_used": 0, "cost_saved": "$0.01"}
 
     async def _analyze_cloud(self, text: str) -> Dict[str, Any]:
         """Analyze using cloud API - USES CREDITS"""
@@ -203,14 +189,10 @@ class SentimentAnalysisAgent(BaseAgent):
             "confidence": confidence,
             "key_points": ["Analysis completed using cloud API"],
             "credits_used": 0.01,
-            "cost_incurred": "$0.01"
+            "cost_incurred": "$0.01",
         }
 
-    async def batch_analyze(
-        self,
-        texts: List[str],
-        quality: str = "fast"
-    ) -> List[Dict[str, Any]]:
+    async def batch_analyze(self, texts: List[str], quality: str = "fast") -> List[Dict[str, Any]]:
         """
         Batch sentiment analysis for multiple texts.
 
@@ -223,19 +205,11 @@ class SentimentAnalysisAgent(BaseAgent):
                 results.append(result)
             except Exception as e:
                 logger.error(f"Batch analysis item failed: {e}")
-                results.append({
-                    "sentiment": "neutral",
-                    "confidence": 0.0,
-                    "error": str(e)
-                })
+                results.append({"sentiment": "neutral", "confidence": 0.0, "error": str(e)})
 
         return results
 
-    async def get_sentiment(
-        self,
-        text: str,
-        quality: str = "fast"
-    ) -> str:
+    async def get_sentiment(self, text: str, quality: str = "fast") -> str:
         """
         Quick sentiment classification (returns just the sentiment label).
 
@@ -256,7 +230,7 @@ class SentimentAnalysisAgent(BaseAgent):
                 sentiment: (count / total * 100) if total > 0 else 0
                 for sentiment, count in self.stats["sentiment_distribution"].items()
             },
-            "ollama_available": ollama_service.available
+            "ollama_available": ollama_service.available,
         }
 
     def get_capabilities_manifest(self) -> Dict[str, Any]:
@@ -270,7 +244,7 @@ class SentimentAnalysisAgent(BaseAgent):
                 "text": "string (required)",
                 "quality": "string (fast/auto/high, default: auto)",
                 "force_local": "boolean (default: false)",
-                "force_cloud": "boolean (default: false)"
+                "force_cloud": "boolean (default: false)",
             },
             "output_schema": {
                 "sentiment": "string (positive/negative/neutral)",
@@ -278,23 +252,20 @@ class SentimentAnalysisAgent(BaseAgent):
                 "key_points": "array[string]",
                 "method": "string (local_llm or cloud_api)",
                 "credits_used": "float",
-                "processing_time_ms": "float"
+                "processing_time_ms": "float",
             },
             "methods": {
                 "execute": "Full sentiment analysis",
                 "get_sentiment": "Quick sentiment label only",
-                "batch_analyze": "Analyze multiple texts"
+                "batch_analyze": "Analyze multiple texts",
             },
-            "cost": {
-                "local": "FREE (0 credits)",
-                "cloud": "~0.01 credits per analysis"
-            },
+            "cost": {"local": "FREE (0 credits)", "cloud": "~0.01 credits per analysis"},
             "performance": {
                 "local_latency": "<1s",
                 "cloud_latency": "2-3s",
                 "quality_local": "85%",
-                "quality_cloud": "95%"
-            }
+                "quality_cloud": "95%",
+            },
         }
 
 

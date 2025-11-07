@@ -47,7 +47,11 @@ class ConditionEvaluatorTaskAgent(BaseAgent):
     and maximum reusability across APQC categories.
     """
 
-    def __init__(self, agent_id: str = "condition_evaluator_task_agent", config: Optional[Dict[str, Any]] = None):
+    def __init__(
+        self,
+        agent_id: str = "condition_evaluator_task_agent",
+        config: Optional[Dict[str, Any]] = None,
+    ):
         """
         Initialize Condition Evaluator Task Agent
 
@@ -58,8 +62,14 @@ class ConditionEvaluatorTaskAgent(BaseAgent):
         super().__init__(
             agent_id=agent_id,
             agent_type="workflow_automation",
-            capabilities=['boolean_logic', 'comparison_operators', 'regex', 'nested_conditions', 'rule_versioning'],
-            config=config or {}
+            capabilities=[
+                "boolean_logic",
+                "comparison_operators",
+                "regex",
+                "nested_conditions",
+                "rule_versioning",
+            ],
+            config=config or {},
         )
 
         # Agent-specific initialization
@@ -69,26 +79,26 @@ class ConditionEvaluatorTaskAgent(BaseAgent):
             "reusable": True,
             "composable": True,
             "stateless": True,
-            "framework": "APQC 7.0.1"
+            "framework": "APQC 7.0.1",
         }
 
         logger.info(f"Initialized Condition Evaluator Task Agent [{self.agent_id}]")
 
     async def execute_task(self, task: Dict[str, Any]) -> Dict[str, Any]:
         """
-        Execute the workflow automation task
+                Execute the workflow automation task
 
-        Args:
-            task: Task parameters containing:
-                - conditions: dict
-- context: dict
-- rules: list
+                Args:
+                    task: Task parameters containing:
+                        - conditions: dict
+        - context: dict
+        - rules: list
 
-        Returns:
-            Result dictionary containing:
-                - result: bool
-- matched_conditions: list
-- evaluation_trace: list
+                Returns:
+                    Result dictionary containing:
+                        - result: bool
+        - matched_conditions: list
+        - evaluation_trace: list
         """
         try:
             logger.info(f"[{self.agent_id}] Executing workflow_automation task")
@@ -108,7 +118,7 @@ class ConditionEvaluatorTaskAgent(BaseAgent):
                 "status": "success",
                 "agent_id": self.agent_id,
                 "timestamp": datetime.utcnow().isoformat(),
-                "result": output
+                "result": output,
             }
 
         except Exception as e:
@@ -117,7 +127,7 @@ class ConditionEvaluatorTaskAgent(BaseAgent):
                 "status": "error",
                 "agent_id": self.agent_id,
                 "timestamp": datetime.utcnow().isoformat(),
-                "error": str(e)
+                "error": str(e),
             }
 
     def _validate_inputs(self, task: Dict[str, Any]) -> None:
@@ -130,7 +140,7 @@ class ConditionEvaluatorTaskAgent(BaseAgent):
         Raises:
             ValueError: If required inputs are missing or invalid
         """
-        required_fields = ['conditions', 'context', 'rules']
+        required_fields = ["conditions", "context", "rules"]
 
         for field in required_fields:
             if field not in task:
@@ -158,7 +168,7 @@ class ConditionEvaluatorTaskAgent(BaseAgent):
         result = {
             "executed": True,
             "task_type": "workflow_automation",
-            "inputs_received": list(task.keys())
+            "inputs_received": list(task.keys()),
         }
 
         # Simulate async work
@@ -183,8 +193,8 @@ class ConditionEvaluatorTaskAgent(BaseAgent):
                 "agent_type": self.agent_type,
                 "level": 5,
                 "category": "workflow_automation",
-                "timestamp": datetime.utcnow().isoformat()
-            }
+                "timestamp": datetime.utcnow().isoformat(),
+            },
         }
 
     async def handle_message(self, message: Dict[str, Any]) -> Dict[str, Any]:
@@ -206,10 +216,7 @@ class ConditionEvaluatorTaskAgent(BaseAgent):
         elif message_type == "capabilities":
             return self.get_capabilities()
         else:
-            return {
-                "status": "error",
-                "error": f"Unknown message type: {message_type}"
-            }
+            return {"status": "error", "error": f"Unknown message type: {message_type}"}
 
     def get_status(self) -> Dict[str, Any]:
         """
@@ -223,7 +230,7 @@ class ConditionEvaluatorTaskAgent(BaseAgent):
             "agent_type": self.agent_type,
             "status": "ready",
             "capabilities": self.capabilities,
-            "metadata": self.metadata
+            "metadata": self.metadata,
         }
 
     def get_capabilities(self) -> Dict[str, Any]:
@@ -236,11 +243,11 @@ class ConditionEvaluatorTaskAgent(BaseAgent):
         return {
             "agent_id": self.agent_id,
             "capabilities": self.capabilities,
-            "inputs": {'conditions': 'dict', 'context': 'dict', 'rules': 'list'},
-            "outputs": {'result': 'bool', 'matched_conditions': 'list', 'evaluation_trace': 'list'},
+            "inputs": {"conditions": "dict", "context": "dict", "rules": "list"},
+            "outputs": {"result": "bool", "matched_conditions": "list", "evaluation_trace": "list"},
             "level": 5,
             "reusable": True,
-            "composable": True
+            "composable": True,
         }
 
 
@@ -254,7 +261,7 @@ async def main():
     # Example task
     task = {
         # Add example inputs here
-                # "conditions": "example_conditions",
+        # "conditions": "example_conditions",
         # "context": "example_context",
         # "rules": "example_rules",
     }

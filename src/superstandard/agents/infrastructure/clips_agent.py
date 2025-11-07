@@ -25,7 +25,7 @@ they essentially get paid to watch my coding videos and make clips of the good p
 because i dont have time to make clips i can only stream as im building my algos
 
 steps to your success as a moon dev clipper:
-1. find good long videos on my channel: https://www.youtube.com/@moondevonyt/videos 
+1. find good long videos on my channel: https://www.youtube.com/@moondevonyt/videos
 2. watch the video and find the parts that are good
 3. make a clip out of it (5 mins-2hours in length)
 4. upload the clip to your youtube channel (youtube only, no youtube shorts)
@@ -34,7 +34,7 @@ steps to your success as a moon dev clipper:
 Standard payout is $69 per 10,000 views but it increases based on your views per month..
 
 10,000 views per month = $69 per 10,000 views
-30,000 views per month = $89 per 10,000 views 
+30,000 views per month = $89 per 10,000 views
 50,000 views per month = $100 per 10,000 views
 100,000 views per month = $149 per 10,000 views
 

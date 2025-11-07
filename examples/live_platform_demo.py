@@ -50,27 +50,26 @@ import json
 
 API_BASE = "http://localhost:8080"
 
+
 def api_call(method: str, endpoint: str, data: Dict[str, Any] = None) -> Dict[str, Any]:
     """Make API call to server."""
     url = f"{API_BASE}{endpoint}"
 
     if data:
-        data_bytes = json.dumps(data).encode('utf-8')
+        data_bytes = json.dumps(data).encode("utf-8")
         req = urllib.request.Request(
-            url,
-            data=data_bytes,
-            headers={'Content-Type': 'application/json'},
-            method=method
+            url, data=data_bytes, headers={"Content-Type": "application/json"}, method=method
         )
     else:
         req = urllib.request.Request(url, method=method)
 
     try:
         with urllib.request.urlopen(req, timeout=10) as response:
-            return json.loads(response.read().decode('utf-8'))
+            return json.loads(response.read().decode("utf-8"))
     except Exception as e:
         print(f"   ❌ API call failed: {e}")
         return {"success": False, "error": str(e)}
+
 
 def wait_for_server(max_attempts: int = 30):
     """Wait for server to be ready."""
@@ -89,9 +88,11 @@ def wait_for_server(max_attempts: int = 30):
     print(" ❌")
     return False
 
+
 # ============================================================================
 # Demo Scenario - Supply Chain Optimization
 # ============================================================================
+
 
 class LivePlatformDemo:
     """
@@ -163,7 +164,9 @@ class LivePlatformDemo:
             print()
         else:
             print("❌ Server not healthy!")
-            print("   Please start server with: uvicorn src.superstandard.api.server:app --port 8080")
+            print(
+                "   Please start server with: uvicorn src.superstandard.api.server:app --port 8080"
+            )
             sys.exit(1)
 
     async def phase_2_register_agents(self):
@@ -178,43 +181,43 @@ class LivePlatformDemo:
                 "agent_type": "analyst",
                 "capabilities": ["data_analysis", "pattern_recognition", "forecasting"],
                 "endpoints": {"http": "http://localhost:8001"},
-                "metadata": {"specialty": "Supply chain analytics", "version": "1.0.0"}
+                "metadata": {"specialty": "Supply chain analytics", "version": "1.0.0"},
             },
             {
                 "agent_id": "logistics_optimizer_001",
                 "agent_type": "processor",
                 "capabilities": ["optimization", "route_planning", "scheduling"],
                 "endpoints": {"http": "http://localhost:8002"},
-                "metadata": {"specialty": "Transportation logistics", "version": "1.0.0"}
+                "metadata": {"specialty": "Transportation logistics", "version": "1.0.0"},
             },
             {
                 "agent_id": "inventory_manager_001",
                 "agent_type": "processor",
                 "capabilities": ["inventory_control", "stock_management", "demand_planning"],
                 "endpoints": {"http": "http://localhost:8003"},
-                "metadata": {"specialty": "Inventory optimization", "version": "1.0.0"}
+                "metadata": {"specialty": "Inventory optimization", "version": "1.0.0"},
             },
             {
                 "agent_id": "cost_analyst_001",
                 "agent_type": "analyst",
                 "capabilities": ["cost_analysis", "financial_modeling", "roi_calculation"],
                 "endpoints": {"http": "http://localhost:8004"},
-                "metadata": {"specialty": "Cost optimization", "version": "1.0.0"}
+                "metadata": {"specialty": "Cost optimization", "version": "1.0.0"},
             },
             {
                 "agent_id": "demand_forecaster_001",
                 "agent_type": "analyst",
                 "capabilities": ["forecasting", "predictive_analytics", "time_series"],
                 "endpoints": {"http": "http://localhost:8005"},
-                "metadata": {"specialty": "Demand prediction", "version": "1.0.0"}
+                "metadata": {"specialty": "Demand prediction", "version": "1.0.0"},
             },
             {
                 "agent_id": "supply_chain_coordinator_001",
                 "agent_type": "coordinator",
                 "capabilities": ["coordination", "orchestration", "decision_making"],
                 "endpoints": {"http": "http://localhost:8006"},
-                "metadata": {"specialty": "Multi-agent coordination", "version": "1.0.0"}
-            }
+                "metadata": {"specialty": "Multi-agent coordination", "version": "1.0.0"},
+            },
         ]
 
         print(f"Registering {len(agents)} specialized agents...")
@@ -246,18 +249,12 @@ class LivePlatformDemo:
         print()
 
         queries = [
-            {
-                "name": "Find all analysts",
-                "request": {"agent_type": "analyst"}
-            },
+            {"name": "Find all analysts", "request": {"agent_type": "analyst"}},
             {
                 "name": "Find optimization capabilities",
-                "request": {"capabilities": ["optimization"]}
+                "request": {"capabilities": ["optimization"]},
             },
-            {
-                "name": "Find forecasting capabilities",
-                "request": {"capabilities": ["forecasting"]}
-            }
+            {"name": "Find forecasting capabilities", "request": {"capabilities": ["forecasting"]}},
         ]
 
         for query in queries:
@@ -288,8 +285,8 @@ class LivePlatformDemo:
             "description": "End-to-end supply chain optimization workflow",
             "metadata": {
                 "priority": "high",
-                "objective": "Reduce costs by 30% while maintaining 95% service level"
-            }
+                "objective": "Reduce costs by 30% while maintaining 95% service level",
+            },
         }
 
         print("Creating coordination session...")
@@ -324,36 +321,36 @@ class LivePlatformDemo:
                 "description": "Analyze historical supply chain performance data",
                 "priority": 10,
                 "input_data": {"data_source": "warehouse_db", "time_period": "last_quarter"},
-                "dependencies": []
+                "dependencies": [],
             },
             {
                 "task_type": "forecasting",
                 "description": "Forecast demand for next quarter",
                 "priority": 9,
                 "input_data": {"model_type": "lstm", "confidence_interval": 0.95},
-                "dependencies": []
+                "dependencies": [],
             },
             {
                 "task_type": "optimization",
                 "description": "Optimize route assignments and delivery schedules",
                 "priority": 8,
                 "input_data": {"constraint_type": "cost_minimization"},
-                "dependencies": []
+                "dependencies": [],
             },
             {
                 "task_type": "inventory_planning",
                 "description": "Calculate optimal inventory levels",
                 "priority": 7,
                 "input_data": {"service_level": 0.95, "holding_cost": 0.15},
-                "dependencies": []
+                "dependencies": [],
             },
             {
                 "task_type": "cost_analysis",
                 "description": "Analyze total cost impact of proposed changes",
                 "priority": 6,
                 "input_data": {"baseline": "current_state"},
-                "dependencies": []
-            }
+                "dependencies": [],
+            },
         ]
 
         print(f"Adding {len(tasks)} tasks to pipeline...")
@@ -393,14 +390,14 @@ class LivePlatformDemo:
                 "thought_type": "observation",
                 "content": "Historical data shows 23% delivery delays in Q3 2023",
                 "confidence": 0.95,
-                "context": {"data_source": "warehouse_logs", "sample_size": 10000}
+                "context": {"data_source": "warehouse_logs", "sample_size": 10000},
             },
             {
                 "agent_id": "logistics_optimizer_001",
                 "thought_type": "inference",
                 "content": "Delays correlate strongly with route consolidation attempts",
                 "confidence": 0.82,
-                "context": {"correlation": 0.76, "p_value": 0.001}
+                "context": {"correlation": 0.76, "p_value": 0.001},
             },
             {
                 "agent_id": "inventory_manager_001",
@@ -408,35 +405,35 @@ class LivePlatformDemo:
                 "content": "Safety stock levels feel misaligned with actual demand variability",
                 "confidence": 0.70,
                 "emotional_valence": -0.3,
-                "context": {"concern_level": "moderate"}
+                "context": {"concern_level": "moderate"},
             },
             {
                 "agent_id": "cost_analyst_001",
                 "thought_type": "insight",
                 "content": "40% cost reduction possible if we accept 5% longer average lead times",
                 "confidence": 0.88,
-                "context": {"trade_off": "cost_vs_speed", "roi": 2.4}
+                "context": {"trade_off": "cost_vs_speed", "roi": 2.4},
             },
             {
                 "agent_id": "demand_forecaster_001",
                 "thought_type": "observation",
                 "content": "Customer tolerance for delays is 7+ days in 78% of orders",
                 "confidence": 0.92,
-                "context": {"survey_data": True, "n": 5000}
+                "context": {"survey_data": True, "n": 5000},
             },
             {
                 "agent_id": "logistics_optimizer_001",
                 "thought_type": "intention",
                 "content": "Should test dynamic routing algorithm on Q3 historical data",
                 "confidence": 0.75,
-                "context": {"experiment_design": "A_B_test"}
+                "context": {"experiment_design": "A_B_test"},
             },
             {
                 "agent_id": "inventory_manager_001",
                 "thought_type": "question",
                 "content": "What if we adjust reorder points based on real-time route reliability metrics?",
                 "confidence": 0.65,
-                "context": {"hypothesis": "adaptive_inventory"}
+                "context": {"hypothesis": "adaptive_inventory"},
             },
             {
                 "agent_id": "supply_chain_analyst_001",
@@ -444,8 +441,8 @@ class LivePlatformDemo:
                 "content": "Route reliability and inventory variance are inversely correlated (r=-0.71)!",
                 "confidence": 0.89,
                 "emotional_valence": 0.5,
-                "context": {"breakthrough": True, "significance": "high"}
-            }
+                "context": {"breakthrough": True, "significance": "high"},
+            },
         ]
 
         print(f"Agents contributing {len(thoughts)} thoughts to collective consciousness...")
@@ -458,8 +455,8 @@ class LivePlatformDemo:
                 print(f"💭 [{thought['agent_id']}] {thought['thought_type'].upper()}")
                 print(f"   {thought['content']}")
                 print(f"   Confidence: {thought['confidence']:.0%}")
-                if thought.get('emotional_valence'):
-                    valence = thought['emotional_valence']
+                if thought.get("emotional_valence"):
+                    valence = thought["emotional_valence"]
                     emoji = "😊" if valence > 0 else "😟"
                     print(f"   Emotion: {emoji} {valence:+.1f}")
                 print()
@@ -482,7 +479,7 @@ class LivePlatformDemo:
         query_request = {
             "query": "How can we optimize the supply chain to reduce costs while maintaining service levels?",
             "min_coherence": 0.6,
-            "max_patterns": 5
+            "max_patterns": 5,
         }
 
         print("Querying collective consciousness...")
@@ -506,7 +503,11 @@ class LivePlatformDemo:
                 print()
                 print(f"   Synthesis:")
                 # Show first 200 chars of synthesis
-                synthesis = pattern['synthesis'][:200] + "..." if len(pattern['synthesis']) > 200 else pattern['synthesis']
+                synthesis = (
+                    pattern["synthesis"][:200] + "..."
+                    if len(pattern["synthesis"]) > 200
+                    else pattern["synthesis"]
+                )
                 print(f"   {synthesis}")
                 print()
 
@@ -570,7 +571,7 @@ class LivePlatformDemo:
             ("Admin Dashboard", f"{API_BASE}/dashboard/admin"),
             ("Network Topology", f"{API_BASE}/dashboard/network"),
             ("Coordination", f"{API_BASE}/dashboard/coordination"),
-            ("Consciousness", f"{API_BASE}/dashboard/consciousness")
+            ("Consciousness", f"{API_BASE}/dashboard/consciousness"),
         ]
 
         print("Opening dashboards in your browser...")

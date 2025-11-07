@@ -1,15 +1,15 @@
 """
-This AI agent will be able to watch TikTok and pull alpha from the comment section. 
+This AI agent will be able to watch TikTok and pull alpha from the comment section.
 
-I was inspired by the dumb money guys and the social arbitrage trading style that they approach. 
+I was inspired by the dumb money guys and the social arbitrage trading style that they approach.
 
-Essentially, social arbitrage is getting information prior to Wall Street. Wall Street is typically very slow at getting information. 
+Essentially, social arbitrage is getting information prior to Wall Street. Wall Street is typically very slow at getting information.
 
-TikTok has all the information, and in the comment section of TikTok, there are some golden opportunities. 
+TikTok has all the information, and in the comment section of TikTok, there are some golden opportunities.
 
-The problem is, if you watch TikTok all day, you're gonna go brain dead. So I don't want to watch TikTok all day, but I do want the alpha. 
+The problem is, if you watch TikTok all day, you're gonna go brain dead. So I don't want to watch TikTok all day, but I do want the alpha.
 
-This agent will be able to see the trends and connect them with different Boomer Tokens (stocks). 
+This agent will be able to see the trends and connect them with different Boomer Tokens (stocks).
 
 ## 🔎 SEARCH TERMS TO IMPROVE TIKTOK ALGORITHM 🔎
 Use these search terms to train your TikTok algorithm to show more relevant content for investment insights:

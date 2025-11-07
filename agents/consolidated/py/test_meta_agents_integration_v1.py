@@ -19,7 +19,8 @@ from typing import Dict, Any
 
 import sys
 import os
-sys.path.insert(0, os.path.join(os.path.dirname(__file__), '../..'))
+
+sys.path.insert(0, os.path.join(os.path.dirname(__file__), "../.."))
 
 from library.agents.activity_tracker_agent_v1 import create_activity_tracker_agent
 from library.agents.task_assignment_agent_v1 import create_task_assignment_agent
@@ -42,29 +43,24 @@ async def test_meta_agent_integration():
     print("\n[Phase 1] Initializing meta-agents...")
 
     # Create activity tracker (monitoring)
-    activity_tracker = await create_activity_tracker_agent(
-        agent_id="activity_tracker_test"
-    )
+    activity_tracker = await create_activity_tracker_agent(agent_id="activity_tracker_test")
     print(f"  [OK] ActivityTrackerAgent initialized")
 
     # Create task assignment (orchestration)
     task_assigner = await create_task_assignment_agent(
-        agent_id="task_assigner_test",
-        activity_tracker=activity_tracker
+        agent_id="task_assigner_test", activity_tracker=activity_tracker
     )
     print(f"  [OK] TaskAssignmentAgent initialized")
 
     # Create dashboard orchestrator (UI coordination)
     dashboard_orch = await create_dashboard_orchestrator_agent(
-        agent_id="dashboard_orch_test",
-        activity_tracker=activity_tracker
+        agent_id="dashboard_orch_test", activity_tracker=activity_tracker
     )
     print(f"  [OK] DashboardOrchestratorAgent initialized")
 
     # Create context preservation (session continuity)
     context_agent = await create_context_preservation_agent(
-        agent_id="context_agent_test",
-        project_name="Meta-Agent Integration Test"
+        agent_id="context_agent_test", project_name="Meta-Agent Integration Test"
     )
     print(f"  [OK] ContextPreservationAgent initialized")
 
@@ -75,28 +71,32 @@ async def test_meta_agent_integration():
     print("\n[Phase 2] Logging project context...")
 
     # Update project identity
-    await context_agent.execute({
-        "operation": "update_project_identity",
-        "identity": {
-            "name": "Autonomous Agent Ecosystem",
-            "mission": "Build architecturally compliant agent systems",
-            "vision": "Every business runs on autonomous agents",
-            "values": ["Quality", "Interoperability", "Scalability"]
+    await context_agent.execute(
+        {
+            "operation": "update_project_identity",
+            "identity": {
+                "name": "Autonomous Agent Ecosystem",
+                "mission": "Build architecturally compliant agent systems",
+                "vision": "Every business runs on autonomous agents",
+                "values": ["Quality", "Interoperability", "Scalability"],
+            },
         }
-    })
+    )
     print("  [OK] Project identity logged")
 
     # Add active thread
-    await context_agent.execute({
-        "operation": "add_active_thread",
-        "thread_id": "meta_agent_integration",
-        "thread": {
-            "title": "Meta-Agent Integration Testing",
-            "description": "Testing coordination between activity tracking, task assignment, and dashboard orchestration",
-            "status": "in_progress",
-            "priority": "high"
+    await context_agent.execute(
+        {
+            "operation": "add_active_thread",
+            "thread_id": "meta_agent_integration",
+            "thread": {
+                "title": "Meta-Agent Integration Testing",
+                "description": "Testing coordination between activity tracking, task assignment, and dashboard orchestration",
+                "status": "in_progress",
+                "priority": "high",
+            },
         }
-    })
+    )
     print("  [OK] Active thread tracked")
 
     # =========================================================================
@@ -108,26 +108,30 @@ async def test_meta_agent_integration():
     worker_agents = [
         {"agent_id": "data_processor_001", "agent_type": "data_processor"},
         {"agent_id": "analyzer_001", "agent_type": "analyzer"},
-        {"agent_id": "reporter_001", "agent_type": "reporter"}
+        {"agent_id": "reporter_001", "agent_type": "reporter"},
     ]
 
     for worker in worker_agents:
-        result = await task_assigner.execute({
-            "operation": "register_agent",
-            "agent_id": worker["agent_id"],
-            "agent_type": worker["agent_type"],
-            "max_concurrent_tasks": 2
-        })
+        result = await task_assigner.execute(
+            {
+                "operation": "register_agent",
+                "agent_id": worker["agent_id"],
+                "agent_type": worker["agent_type"],
+                "max_concurrent_tasks": 2,
+            }
+        )
 
         # Log spawn activity
-        await activity_tracker.execute({
-            "operation": "log_activity",
-            "agent_id": worker["agent_id"],
-            "agent_type": worker["agent_type"],
-            "activity_type": "spawned",
-            "description": f"{worker['agent_type']} spawned",
-            "details": {}
-        })
+        await activity_tracker.execute(
+            {
+                "operation": "log_activity",
+                "agent_id": worker["agent_id"],
+                "agent_type": worker["agent_type"],
+                "activity_type": "spawned",
+                "description": f"{worker['agent_type']} spawned",
+                "details": {},
+            }
+        )
 
         print(f"  [OK] {worker['agent_id']} registered and logged")
 
@@ -142,17 +146,16 @@ async def test_meta_agent_integration():
         {"task_type": "analyzer", "description": "Analyze results beta", "priority": 2},
         {"task_type": "data_processor", "description": "Process dataset gamma", "priority": 3},
         {"task_type": "reporter", "description": "Generate report delta", "priority": 2},
-        {"task_type": "analyzer", "description": "Analyze trends epsilon", "priority": 1}
+        {"task_type": "analyzer", "description": "Analyze trends epsilon", "priority": 1},
     ]
 
     for task_data in tasks_submitted:
-        result = await task_assigner.execute({
-            "operation": "submit_task",
-            **task_data
-        })
+        result = await task_assigner.execute({"operation": "submit_task", **task_data})
 
         if result.get("success"):
-            print(f"  [OK] Task submitted: {task_data['description']} (Priority: {task_data['priority']})")
+            print(
+                f"  [OK] Task submitted: {task_data['description']} (Priority: {task_data['priority']})"
+            )
 
     # =========================================================================
     # Phase 5: Simulate Task Execution
@@ -170,33 +173,39 @@ async def test_meta_agent_integration():
         # Simulate task completion for assigned tasks
         for worker in worker_agents:
             # Log task started
-            await activity_tracker.execute({
-                "operation": "log_activity",
-                "agent_id": worker["agent_id"],
-                "agent_type": worker["agent_type"],
-                "activity_type": "task_started",
-                "description": f"Started processing task",
-                "details": {"task_type": worker["agent_type"]}
-            })
+            await activity_tracker.execute(
+                {
+                    "operation": "log_activity",
+                    "agent_id": worker["agent_id"],
+                    "agent_type": worker["agent_type"],
+                    "activity_type": "task_started",
+                    "description": f"Started processing task",
+                    "details": {"task_type": worker["agent_type"]},
+                }
+            )
 
             # Simulate completion
-            await activity_tracker.execute({
-                "operation": "log_activity",
-                "agent_id": worker["agent_id"],
-                "agent_type": worker["agent_type"],
-                "activity_type": "task_completed",
-                "description": f"Completed task successfully",
-                "details": {"task_type": worker["agent_type"]},
-                "duration_ms": 1250.0,
-                "success": True
-            })
+            await activity_tracker.execute(
+                {
+                    "operation": "log_activity",
+                    "agent_id": worker["agent_id"],
+                    "agent_type": worker["agent_type"],
+                    "activity_type": "task_completed",
+                    "description": f"Completed task successfully",
+                    "details": {"task_type": worker["agent_type"]},
+                    "duration_ms": 1250.0,
+                    "success": True,
+                }
+            )
 
             # Update agent status
-            await task_assigner.execute({
-                "operation": "update_agent_status",
-                "agent_id": worker["agent_id"],
-                "task_completed": True
-            })
+            await task_assigner.execute(
+                {
+                    "operation": "update_agent_status",
+                    "agent_id": worker["agent_id"],
+                    "task_completed": True,
+                }
+            )
 
     print("  [OK] Task execution simulated")
 
@@ -207,9 +216,7 @@ async def test_meta_agent_integration():
     print("\n[Phase 6] Aggregating dashboard data...")
 
     # Get dashboard state
-    dashboard_state = await dashboard_orch.execute({
-        "operation": "get_dashboard_state"
-    })
+    dashboard_state = await dashboard_orch.execute({"operation": "get_dashboard_state"})
 
     if dashboard_state.get("success"):
         state = dashboard_state["state"]
@@ -218,9 +225,7 @@ async def test_meta_agent_integration():
         print(f"  [OK] System metrics collected")
 
         # Get business impact
-        impact_result = await dashboard_orch.execute({
-            "operation": "get_business_impact"
-        })
+        impact_result = await dashboard_orch.execute({"operation": "get_business_impact"})
 
         # Note: impact will be from the execution result, not nested
         print(f"  [OK] Business impact calculated")
@@ -232,24 +237,24 @@ async def test_meta_agent_integration():
     print("\n[Phase 7] Generating context summary...")
 
     # Log conversation
-    await context_agent.execute({
-        "operation": "log_conversation",
-        "conversation": {
-            "participants": ["Integration Test", "Meta-Agents"],
-            "topic": "Meta-agent coordination validation",
-            "key_points": [
-                f"{len(worker_agents)} agents registered",
-                f"{len(tasks_submitted)} tasks submitted",
-                "All agents coordinating successfully"
-            ],
-            "decisions": ["Meta-agent architecture validated"]
+    await context_agent.execute(
+        {
+            "operation": "log_conversation",
+            "conversation": {
+                "participants": ["Integration Test", "Meta-Agents"],
+                "topic": "Meta-agent coordination validation",
+                "key_points": [
+                    f"{len(worker_agents)} agents registered",
+                    f"{len(tasks_submitted)} tasks submitted",
+                    "All agents coordinating successfully",
+                ],
+                "decisions": ["Meta-agent architecture validated"],
+            },
         }
-    })
+    )
 
     # Get context summary
-    context_summary = await context_agent.execute({
-        "operation": "get_context_summary"
-    })
+    context_summary = await context_agent.execute({"operation": "get_context_summary"})
 
     if context_summary.get("success"):
         summary = context_summary["summary"]
@@ -265,9 +270,7 @@ async def test_meta_agent_integration():
     print("\n[Phase 8] Verifying agent coordination...")
 
     # Check system health via activity tracker
-    system_health = await activity_tracker.execute({
-        "operation": "get_system_health"
-    })
+    system_health = await activity_tracker.execute({"operation": "get_system_health"})
 
     if system_health.get("success"):
         health = system_health["health"]
@@ -276,18 +279,15 @@ async def test_meta_agent_integration():
         print(f"  [OK] Overall success rate: {health['overall_success_rate']}%")
 
     # Analyze coordination patterns
-    coord_patterns = await activity_tracker.execute({
-        "operation": "get_coordination_patterns"
-    })
+    coord_patterns = await activity_tracker.execute({"operation": "get_coordination_patterns"})
 
     if coord_patterns.get("success"):
         print(f"  [OK] Total communications: {coord_patterns['total_communications']}")
 
     # Check load balance
-    load_analysis = await task_assigner.execute({
-        "operation": "analyze",
-        "analysis_type": "load_balance"
-    })
+    load_analysis = await task_assigner.execute(
+        {"operation": "analyze", "analysis_type": "load_balance"}
+    )
 
     if load_analysis.get("balanced"):
         print(f"  [OK] Load balanced: {load_analysis['avg_utilization']:.1f}% average utilization")
@@ -302,7 +302,7 @@ async def test_meta_agent_integration():
         ("ActivityTracker", activity_tracker),
         ("TaskAssignment", task_assigner),
         ("DashboardOrchestrator", dashboard_orch),
-        ("ContextPreservation", context_agent)
+        ("ContextPreservation", context_agent),
     ]
 
     all_healthy = True
@@ -362,7 +362,9 @@ async def test_meta_agent_integration():
     print(f"  - Dependency injection")
     print(f"  - Protocol support (A2A, A2P, ACP, ANP, MCP)")
 
-    print(f"\n{'[PASS] INTEGRATION TEST PASSED' if all_healthy else '[WARN] INTEGRATION TEST COMPLETED WITH WARNINGS'}")
+    print(
+        f"\n{'[PASS] INTEGRATION TEST PASSED' if all_healthy else '[WARN] INTEGRATION TEST COMPLETED WITH WARNINGS'}"
+    )
     print("=" * 80 + "\n")
 
 

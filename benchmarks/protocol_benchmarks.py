@@ -21,22 +21,23 @@ from pathlib import Path
 # Add parent directory to path
 sys.path.insert(0, str(Path(__file__).parent.parent))
 
-from crates.agentic_protocols.python.anp_implementation import (
+from src.superstandard.protocols.anp_implementation import (
     AgentNetworkRegistry,
     ANPRegistration,
     DiscoveryQuery,
-    AgentStatus
+    AgentStatus,
 )
-from crates.agentic_protocols.python.acp_implementation import CoordinationManager
+from src.superstandard.protocols.acp_implementation import CoordinationManager
 from agents.consolidated.py.blockchain_agentic_protocol import (
     BlockchainAgenticProtocol,
     AgentWallet,
-    TokenType
+    TokenType,
 )
 
 
 class BenchmarkResult:
     """Container for benchmark results"""
+
     def __init__(self, name: str):
         self.name = name
         self.times: List[float] = []
@@ -95,9 +96,9 @@ class ProtocolBenchmarks:
 
     async def run_all(self):
         """Run all benchmarks"""
-        print("\n" + "="*80)
+        print("\n" + "=" * 80)
         print("SuperStandard v1.0 - Protocol Performance Benchmarks")
-        print("="*80)
+        print("=" * 80)
         print(f"\nRunning {self.iterations} iterations per test...\n")
 
         await self.benchmark_anp()
@@ -121,7 +122,7 @@ class ProtocolBenchmarks:
                     agent_id=f"agent-{i}",
                     agent_type="test",
                     capabilities=["capability1", "capability2"],
-                    endpoints={"api": f"http://localhost:800{i}"}
+                    endpoints={"api": f"http://localhost:800{i}"},
                 )
                 await registry.register_agent(registration)
                 result.add_time(time.perf_counter() - start)
@@ -144,11 +145,7 @@ class ProtocolBenchmarks:
         for i in range(self.iterations):
             try:
                 start = time.perf_counter()
-                await registry.heartbeat(
-                    f"agent-{i % 10}",
-                    AgentStatus.HEALTHY,
-                    0.5
-                )
+                await registry.heartbeat(f"agent-{i % 10}", AgentStatus.HEALTHY, 0.5)
                 result.add_time(time.perf_counter() - start)
             except Exception as e:
                 result.add_error()
@@ -180,9 +177,9 @@ class ProtocolBenchmarks:
                 coord = await manager.create_coordination(
                     coordinator_id=f"coordinator-{i}",
                     coordination_type="pipeline",
-                    goal=f"Test goal {i}"
+                    goal=f"Test goal {i}",
                 )
-                coord_ids.append(coord['coordination_id'])
+                coord_ids.append(coord["coordination_id"])
                 result.add_time(time.perf_counter() - start)
             except Exception as e:
                 result.add_error()
@@ -193,11 +190,7 @@ class ProtocolBenchmarks:
             try:
                 start = time.perf_counter()
                 await manager.join_coordination(
-                    coord_ids[i],
-                    f"agent-{i}",
-                    "worker",
-                    ["capability1"],
-                    "contributor"
+                    coord_ids[i], f"agent-{i}", "worker", ["capability1"], "contributor"
                 )
                 result.add_time(time.perf_counter() - start)
             except Exception as e:
@@ -215,9 +208,9 @@ class ProtocolBenchmarks:
                     description=f"Test task {i}",
                     priority=1,
                     input_data={},
-                    dependencies=[]
+                    dependencies=[],
                 )
-                task_ids.append((coord_ids[i], task['task_id']))
+                task_ids.append((coord_ids[i], task["task_id"]))
                 result.add_time(time.perf_counter() - start)
             except Exception as e:
                 result.add_error()
@@ -240,8 +233,7 @@ class ProtocolBenchmarks:
                 coord_id, task_id = task_ids[i]
                 start = time.perf_counter()
                 await manager.update_task_status(
-                    coord_id, task_id, "completed",
-                    output_data={"result": "success"}
+                    coord_id, task_id, "completed", output_data={"result": "success"}
                 )
                 result.add_time(time.perf_counter() - start)
             except Exception as e:
@@ -278,8 +270,8 @@ class ProtocolBenchmarks:
                     token_balances={
                         TokenType.REPUTATION: Decimal("100.0"),
                         TokenType.UTILITY: Decimal("1000.0"),
-                        TokenType.GOVERNANCE: Decimal("50.0")
-                    }
+                        TokenType.GOVERNANCE: Decimal("50.0"),
+                    },
                 )
                 await bap.wallet_manager.store_wallet(wallet)
                 result.add_time(time.perf_counter() - start)
@@ -308,8 +300,8 @@ class ProtocolBenchmarks:
                         "category": "test",
                         "proficiency_level": 0.90,
                         "description": f"Test capability {i}",
-                        "authority": "Benchmark Suite"
-                    }
+                        "authority": "Benchmark Suite",
+                    },
                 )
                 result.add_time(time.perf_counter() - start)
             except Exception as e:
@@ -331,9 +323,9 @@ class ProtocolBenchmarks:
 
     def print_results(self):
         """Print comprehensive benchmark results"""
-        print("\n" + "="*80)
+        print("\n" + "=" * 80)
         print("BENCHMARK RESULTS")
-        print("="*80)
+        print("=" * 80)
 
         # ANP Results
         print("\n[ANP] Agent Network Protocol Performance:")
@@ -354,9 +346,9 @@ class ProtocolBenchmarks:
                 self.results[key].print_summary()
 
         # Overall Statistics
-        print("\n" + "="*80)
+        print("\n" + "=" * 80)
         print("OVERALL STATISTICS")
-        print("="*80)
+        print("=" * 80)
 
         total_operations = sum(len(r.times) for r in self.results.values())
         total_errors = sum(r.errors for r in self.results.values())
@@ -378,7 +370,7 @@ class ProtocolBenchmarks:
         for name, result in sorted_by_speed[-5:]:
             print(f"  {name}: {result.avg_time*1000:.2f}ms")
 
-        print("\n" + "="*80)
+        print("\n" + "=" * 80)
 
 
 async def main():

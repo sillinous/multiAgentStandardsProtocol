@@ -53,4 +53,3 @@ class AgentRunOut(BaseModel):
     finished_at: Optional[datetime] = None
     status: Literal["queued", "running", "success", "failed"]
     result: Dict[str, Any] = Field(default_factory=dict)
-

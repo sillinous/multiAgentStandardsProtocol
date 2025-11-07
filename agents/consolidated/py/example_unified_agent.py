@@ -24,6 +24,7 @@ load_dotenv()
 from src.exchange_manager import ExchangeManager
 from src.config import EXCHANGE, get_active_tokens, max_usd_order_size, slippage
 
+
 class UnifiedTradingAgent:
     """
     Example agent that works with both Solana and HyperLiquid
@@ -34,7 +35,7 @@ class UnifiedTradingAgent:
         # Create exchange manager (automatically uses config.EXCHANGE)
         self.em = ExchangeManager()
 
-        cprint(f"\n🤖 Unified Trading Agent Initialized", "cyan", attrs=['bold'])
+        cprint(f"\n🤖 Unified Trading Agent Initialized", "cyan", attrs=["bold"])
         cprint(f"📍 Active Exchange: {EXCHANGE.upper()}", "green")
 
         # Get the appropriate token list based on exchange
@@ -43,8 +44,8 @@ class UnifiedTradingAgent:
 
     def display_account_info(self):
         """Display account information"""
-        cprint("\n💰 Account Information", "yellow", attrs=['bold'])
-        cprint("="*50, "yellow")
+        cprint("\n💰 Account Information", "yellow", attrs=["bold"])
+        cprint("=" * 50, "yellow")
 
         try:
             # Get balance (works for both exchanges!)
@@ -60,8 +61,8 @@ class UnifiedTradingAgent:
 
     def check_all_positions(self):
         """Check positions across all monitored tokens"""
-        cprint("\n📊 Position Summary", "cyan", attrs=['bold'])
-        cprint("="*50, "cyan")
+        cprint("\n📊 Position Summary", "cyan", attrs=["bold"])
+        cprint("=" * 50, "cyan")
 
         positions_found = False
 
@@ -70,20 +71,22 @@ class UnifiedTradingAgent:
                 # Get position (unified interface!)
                 position = self.em.get_position(token)
 
-                if position['has_position']:
+                if position["has_position"]:
                     positions_found = True
 
                     # Display position info
-                    if EXCHANGE == 'hyperliquid':
-                        side = "LONG" if position['is_long'] else "SHORT"
-                        cprint(f"\n{token} {side}:", "white", attrs=['bold'])
+                    if EXCHANGE == "hyperliquid":
+                        side = "LONG" if position["is_long"] else "SHORT"
+                        cprint(f"\n{token} {side}:", "white", attrs=["bold"])
                     else:
-                        cprint(f"\n{token[:8]}...:", "white", attrs=['bold'])
+                        cprint(f"\n{token[:8]}...:", "white", attrs=["bold"])
 
                     cprint(f"  Size: {position['size']}", "white")
                     cprint(f"  Entry: ${position['entry_price']:.4f}", "white")
-                    cprint(f"  PnL: {position['pnl_percent']:.2f}%",
-                          "green" if position['pnl_percent'] > 0 else "red")
+                    cprint(
+                        f"  PnL: {position['pnl_percent']:.2f}%",
+                        "green" if position["pnl_percent"] > 0 else "red",
+                    )
 
                     # Calculate USD value
                     usd_value = self.em.get_token_balance_usd(token)
@@ -97,8 +100,8 @@ class UnifiedTradingAgent:
 
     def execute_test_trade(self):
         """Execute a small test trade (DO NOT RUN WITH REAL MONEY)"""
-        cprint("\n⚠️  Test Trade Example (DO NOT RUN ON MAINNET)", "yellow", attrs=['bold'])
-        cprint("="*50, "yellow")
+        cprint("\n⚠️  Test Trade Example (DO NOT RUN ON MAINNET)", "yellow", attrs=["bold"])
+        cprint("=" * 50, "yellow")
 
         # Pick first token from list
         if not self.tokens:
@@ -122,7 +125,7 @@ class UnifiedTradingAgent:
         cprint(f"  em.market_buy('{token}', 10)  # Buy $10 worth", "white")
 
         cprint("\nMarket Sell:", "cyan")
-        if EXCHANGE == 'hyperliquid':
+        if EXCHANGE == "hyperliquid":
             cprint(f"  em.market_sell('{token}', 10)  # Sell $10 worth", "white")
         else:
             cprint(f"  em.market_sell('{token}', 50)  # Sell 50% of position", "white")
@@ -133,16 +136,17 @@ class UnifiedTradingAgent:
         cprint("\nClose Position:", "cyan")
         cprint(f"  em.chunk_kill('{token}')  # Close entire position", "white")
 
-        if EXCHANGE == 'hyperliquid':
+        if EXCHANGE == "hyperliquid":
             cprint("\nSet Leverage (HyperLiquid only):", "cyan")
             cprint(f"  em.set_leverage('{token}', 5)  # Set 5x leverage", "white")
 
     def demonstrate_unified_interface(self):
         """Show how the same code works for both exchanges"""
-        cprint("\n🔄 Unified Interface Demo", "magenta", attrs=['bold'])
-        cprint("="*50, "magenta")
+        cprint("\n🔄 Unified Interface Demo", "magenta", attrs=["bold"])
+        cprint("=" * 50, "magenta")
 
-        cprint("""
+        cprint(
+            """
 The beauty of the Exchange Manager is that the same code
 works for both Solana and HyperLiquid:
 
@@ -153,11 +157,13 @@ em.market_buy(token_or_symbol, 100)
 em.chunk_kill(token_or_symbol)
 
 Current Settings:
-""", "white")
+""",
+            "white",
+        )
 
         cprint(f"  EXCHANGE = '{EXCHANGE}'", "cyan")
 
-        if EXCHANGE == 'hyperliquid':
+        if EXCHANGE == "hyperliquid":
             cprint(f"  Symbols: {self.tokens}", "cyan")
             cprint("  Type: Perpetual Futures with leverage", "white")
         else:
@@ -166,9 +172,12 @@ Current Settings:
 
     def run(self):
         """Main agent execution"""
-        cprint(f"\n🌙 Moon Dev's Unified Agent Running on {EXCHANGE.upper()} 🚀",
-               "cyan", attrs=['bold'])
-        cprint("="*60, "cyan")
+        cprint(
+            f"\n🌙 Moon Dev's Unified Agent Running on {EXCHANGE.upper()} 🚀",
+            "cyan",
+            attrs=["bold"],
+        )
+        cprint("=" * 60, "cyan")
 
         # Display account info
         self.display_account_info()
@@ -182,17 +191,17 @@ Current Settings:
         # Demonstrate unified interface
         self.demonstrate_unified_interface()
 
-        cprint("\n✅ Agent demonstration complete!", "green", attrs=['bold'])
-        cprint("="*60, "green")
+        cprint("\n✅ Agent demonstration complete!", "green", attrs=["bold"])
+        cprint("=" * 60, "green")
 
         # Tips
-        cprint("\n💡 Quick Tips:", "yellow", attrs=['bold'])
+        cprint("\n💡 Quick Tips:", "yellow", attrs=["bold"])
         cprint("1. Change EXCHANGE in config.py to switch exchanges", "white")
         cprint("2. Use get_active_tokens() to get the right token list", "white")
         cprint("3. All main trading functions work the same way!", "white")
         cprint("4. Position data is normalized across both exchanges", "white")
 
-        if EXCHANGE == 'solana':
+        if EXCHANGE == "solana":
             cprint("\n🔄 To try HyperLiquid:", "cyan")
             cprint("  1. Set EXCHANGE = 'hyperliquid' in config.py", "white")
             cprint("  2. Run this agent again!", "white")
@@ -200,6 +209,7 @@ Current Settings:
             cprint("\n🔄 To try Solana:", "cyan")
             cprint("  1. Set EXCHANGE = 'solana' in config.py", "white")
             cprint("  2. Run this agent again!", "white")
+
 
 def main():
     """Run the example agent"""
@@ -212,7 +222,9 @@ def main():
     except Exception as e:
         cprint(f"\n❌ Error: {str(e)}", "red")
         import traceback
+
         traceback.print_exc()
+
 
 if __name__ == "__main__":
     main()

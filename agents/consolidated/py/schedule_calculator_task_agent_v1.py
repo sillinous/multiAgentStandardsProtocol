@@ -48,7 +48,11 @@ class ScheduleCalculatorTaskAgent(BaseAgent):
     and maximum reusability across APQC categories.
     """
 
-    def __init__(self, agent_id: str = "schedule_calculator_task_agent", config: Optional[Dict[str, Any]] = None):
+    def __init__(
+        self,
+        agent_id: str = "schedule_calculator_task_agent",
+        config: Optional[Dict[str, Any]] = None,
+    ):
         """
         Initialize Schedule Calculator Task Agent
 
@@ -59,8 +63,14 @@ class ScheduleCalculatorTaskAgent(BaseAgent):
         super().__init__(
             agent_id=agent_id,
             agent_type="business_logic",
-            capabilities=['business_days', 'holiday_calendars', 'timezone_handling', 'recurring_schedules', 'dependency_chains'],
-            config=config or {}
+            capabilities=[
+                "business_days",
+                "holiday_calendars",
+                "timezone_handling",
+                "recurring_schedules",
+                "dependency_chains",
+            ],
+            config=config or {},
         )
 
         # Agent-specific initialization
@@ -70,27 +80,27 @@ class ScheduleCalculatorTaskAgent(BaseAgent):
             "reusable": True,
             "composable": True,
             "stateless": True,
-            "framework": "APQC 7.0.1"
+            "framework": "APQC 7.0.1",
         }
 
         logger.info(f"Initialized Schedule Calculator Task Agent [{self.agent_id}]")
 
     async def execute_task(self, task: Dict[str, Any]) -> Dict[str, Any]:
         """
-        Execute the business logic task
+                Execute the business logic task
 
-        Args:
-            task: Task parameters containing:
-                - start_date: string
-- duration: int
-- calendar: dict
-- holidays: list
+                Args:
+                    task: Task parameters containing:
+                        - start_date: string
+        - duration: int
+        - calendar: dict
+        - holidays: list
 
-        Returns:
-            Result dictionary containing:
-                - end_date: string
-- working_days: int
-- calendar_events: list
+                Returns:
+                    Result dictionary containing:
+                        - end_date: string
+        - working_days: int
+        - calendar_events: list
         """
         try:
             logger.info(f"[{self.agent_id}] Executing business_logic task")
@@ -110,7 +120,7 @@ class ScheduleCalculatorTaskAgent(BaseAgent):
                 "status": "success",
                 "agent_id": self.agent_id,
                 "timestamp": datetime.utcnow().isoformat(),
-                "result": output
+                "result": output,
             }
 
         except Exception as e:
@@ -119,7 +129,7 @@ class ScheduleCalculatorTaskAgent(BaseAgent):
                 "status": "error",
                 "agent_id": self.agent_id,
                 "timestamp": datetime.utcnow().isoformat(),
-                "error": str(e)
+                "error": str(e),
             }
 
     def _validate_inputs(self, task: Dict[str, Any]) -> None:
@@ -132,7 +142,7 @@ class ScheduleCalculatorTaskAgent(BaseAgent):
         Raises:
             ValueError: If required inputs are missing or invalid
         """
-        required_fields = ['start_date', 'duration', 'calendar', 'holidays']
+        required_fields = ["start_date", "duration", "calendar", "holidays"]
 
         for field in required_fields:
             if field not in task:
@@ -160,7 +170,7 @@ class ScheduleCalculatorTaskAgent(BaseAgent):
         result = {
             "executed": True,
             "task_type": "business_logic",
-            "inputs_received": list(task.keys())
+            "inputs_received": list(task.keys()),
         }
 
         # Simulate async work
@@ -185,8 +195,8 @@ class ScheduleCalculatorTaskAgent(BaseAgent):
                 "agent_type": self.agent_type,
                 "level": 5,
                 "category": "business_logic",
-                "timestamp": datetime.utcnow().isoformat()
-            }
+                "timestamp": datetime.utcnow().isoformat(),
+            },
         }
 
     async def handle_message(self, message: Dict[str, Any]) -> Dict[str, Any]:
@@ -208,10 +218,7 @@ class ScheduleCalculatorTaskAgent(BaseAgent):
         elif message_type == "capabilities":
             return self.get_capabilities()
         else:
-            return {
-                "status": "error",
-                "error": f"Unknown message type: {message_type}"
-            }
+            return {"status": "error", "error": f"Unknown message type: {message_type}"}
 
     def get_status(self) -> Dict[str, Any]:
         """
@@ -225,7 +232,7 @@ class ScheduleCalculatorTaskAgent(BaseAgent):
             "agent_type": self.agent_type,
             "status": "ready",
             "capabilities": self.capabilities,
-            "metadata": self.metadata
+            "metadata": self.metadata,
         }
 
     def get_capabilities(self) -> Dict[str, Any]:
@@ -238,11 +245,16 @@ class ScheduleCalculatorTaskAgent(BaseAgent):
         return {
             "agent_id": self.agent_id,
             "capabilities": self.capabilities,
-            "inputs": {'start_date': 'string', 'duration': 'int', 'calendar': 'dict', 'holidays': 'list'},
-            "outputs": {'end_date': 'string', 'working_days': 'int', 'calendar_events': 'list'},
+            "inputs": {
+                "start_date": "string",
+                "duration": "int",
+                "calendar": "dict",
+                "holidays": "list",
+            },
+            "outputs": {"end_date": "string", "working_days": "int", "calendar_events": "list"},
             "level": 5,
             "reusable": True,
-            "composable": True
+            "composable": True,
         }
 
 
@@ -256,7 +268,7 @@ async def main():
     # Example task
     task = {
         # Add example inputs here
-                # "start_date": "example_start_date",
+        # "start_date": "example_start_date",
         # "duration": "example_duration",
         # "calendar": "example_calendar",
         # "holidays": "example_holidays",

@@ -24,15 +24,19 @@ from pathlib import Path
 sys.path.insert(0, str(Path(__file__).parent.parent))
 
 from library.core.agent_learning_system import (
-    AgentLearningSystem, ExperienceType, LearningStrategy,
-    Experience, KnowledgeNode, LearningGoal
+    AgentLearningSystem,
+    ExperienceType,
+    LearningStrategy,
+    Experience,
+    KnowledgeNode,
+    LearningGoal,
 )
 
 
 @pytest.fixture
 def temp_db():
     """Create temporary database for testing"""
-    fd, path = tempfile.mkstemp(suffix='.db')
+    fd, path = tempfile.mkstemp(suffix=".db")
     yield path
     os.close(fd)
     os.unlink(path)
@@ -59,7 +63,7 @@ class TestExperienceRecording:
             action={"method": "optimize", "param": 0.5},
             outcome={"result": "success", "metric": 0.95},
             reward=0.9,
-            confidence=0.85
+            confidence=0.85,
         )
 
         assert experience_id is not None
@@ -71,9 +75,9 @@ class TestExperienceRecording:
         row = cursor.fetchone()
 
         assert row is not None
-        assert row['agent_id'] == "test_agent_001"
-        assert row['experience_type'] == ExperienceType.SUCCESS.value
-        assert row['reward'] == 0.9
+        assert row["agent_id"] == "test_agent_001"
+        assert row["experience_type"] == ExperienceType.SUCCESS.value
+        assert row["reward"] == 0.9
 
     def test_record_failure_experience(self, learning_system):
         """Test recording a failure experience"""
@@ -85,7 +89,7 @@ class TestExperienceRecording:
             action={"method": "default"},
             outcome={"error": "timeout"},
             reward=-0.5,
-            confidence=0.9
+            confidence=0.9,
         )
 
         assert experience_id is not None
@@ -94,8 +98,8 @@ class TestExperienceRecording:
         cursor.execute("SELECT * FROM experiences WHERE experience_id = ?", (experience_id,))
         row = cursor.fetchone()
 
-        assert row['experience_type'] == ExperienceType.FAILURE.value
-        assert row['reward'] == -0.5
+        assert row["experience_type"] == ExperienceType.FAILURE.value
+        assert row["reward"] == -0.5
 
     def test_record_multiple_experiences(self, learning_system):
         """Test recording multiple experiences"""
@@ -111,14 +115,14 @@ class TestExperienceRecording:
                 action={"step": i},
                 outcome={"score": i * 0.1},
                 reward=i * 0.1,
-                confidence=0.8
+                confidence=0.8,
             )
             experience_ids.append(exp_id)
 
         # Verify count
         cursor = learning_system.conn.cursor()
         cursor.execute("SELECT COUNT(*) as count FROM experiences WHERE agent_id = ?", (agent_id,))
-        count = cursor.fetchone()['count']
+        count = cursor.fetchone()["count"]
 
         assert count == 10
         assert len(set(experience_ids)) == 10  # All unique
@@ -134,7 +138,7 @@ class TestKnowledgeSharing:
             knowledge_type="pattern",
             content={"pattern_name": "rush_hour_optimization", "details": "use_cache"},
             confidence=0.9,
-            tags=["performance", "caching"]
+            tags=["performance", "caching"],
         )
 
         assert node_id is not None
@@ -146,8 +150,8 @@ class TestKnowledgeSharing:
         row = cursor.fetchone()
 
         assert row is not None
-        assert row['knowledge_type'] == "pattern"
-        assert row['confidence'] == 0.9
+        assert row["knowledge_type"] == "pattern"
+        assert row["confidence"] == 0.9
 
     def test_get_shared_knowledge(self, learning_system):
         """Test retrieving shared knowledge"""
@@ -157,7 +161,7 @@ class TestKnowledgeSharing:
             knowledge_type="best_practice",
             content={"practice": "validate_input"},
             confidence=0.95,
-            tags=["validation"]
+            tags=["validation"],
         )
 
         learning_system.share_knowledge(
@@ -165,19 +169,17 @@ class TestKnowledgeSharing:
             knowledge_type="best_practice",
             content={"practice": "error_handling"},
             confidence=0.85,
-            tags=["error_handling"]
+            tags=["error_handling"],
         )
 
         # Retrieve knowledge
         knowledge = learning_system.get_shared_knowledge(
-            agent_id="agent_003",
-            knowledge_type="best_practice",
-            min_confidence=0.8
+            agent_id="agent_003", knowledge_type="best_practice", min_confidence=0.8
         )
 
         assert len(knowledge) == 2
-        assert all(k['knowledge_type'] == 'best_practice' for k in knowledge)
-        assert all(k['confidence'] >= 0.8 for k in knowledge)
+        assert all(k["knowledge_type"] == "best_practice" for k in knowledge)
+        assert all(k["confidence"] >= 0.8 for k in knowledge)
 
     def test_knowledge_filtering_by_confidence(self, learning_system):
         """Test filtering knowledge by confidence threshold"""
@@ -185,24 +187,21 @@ class TestKnowledgeSharing:
             from_agent="agent_001",
             knowledge_type="rule",
             content={"rule": "low_confidence"},
-            confidence=0.5
+            confidence=0.5,
         )
 
         learning_system.share_knowledge(
             from_agent="agent_001",
             knowledge_type="rule",
             content={"rule": "high_confidence"},
-            confidence=0.95
+            confidence=0.95,
         )
 
         # Get only high confidence
-        knowledge = learning_system.get_shared_knowledge(
-            agent_id="agent_002",
-            min_confidence=0.9
-        )
+        knowledge = learning_system.get_shared_knowledge(agent_id="agent_002", min_confidence=0.9)
 
         assert len(knowledge) == 1
-        assert knowledge[0]['content']['rule'] == 'high_confidence'
+        assert knowledge[0]["content"]["rule"] == "high_confidence"
 
 
 class TestRecommendationEngine:
@@ -211,9 +210,7 @@ class TestRecommendationEngine:
     def test_get_recommendations_no_history(self, learning_system):
         """Test getting recommendations with no history"""
         recommendations = learning_system.get_recommendations(
-            agent_id="new_agent",
-            current_context={"time": "morning"},
-            top_k=5
+            agent_id="new_agent", current_context={"time": "morning"}, top_k=5
         )
 
         assert recommendations == []
@@ -232,20 +229,18 @@ class TestRecommendationEngine:
                 action={"strategy": "cache", "param": i},
                 outcome={"success": True},
                 reward=0.9,
-                confidence=0.85
+                confidence=0.85,
             )
 
         # Get recommendations
         recommendations = learning_system.get_recommendations(
-            agent_id=agent_id,
-            current_context={"time": "morning", "load": "high"},
-            top_k=3
+            agent_id=agent_id, current_context={"time": "morning", "load": "high"}, top_k=3
         )
 
         assert len(recommendations) > 0
         assert len(recommendations) <= 3
-        assert all('confidence' in r for r in recommendations)
-        assert all('action' in r for r in recommendations)
+        assert all("confidence" in r for r in recommendations)
+        assert all("action" in r for r in recommendations)
 
     def test_recommendations_sorted_by_confidence(self, learning_system):
         """Test that recommendations are sorted by confidence"""
@@ -261,18 +256,16 @@ class TestRecommendationEngine:
                 action={"option": i},
                 outcome={"score": reward},
                 reward=reward,
-                confidence=0.8
+                confidence=0.8,
             )
 
         recommendations = learning_system.get_recommendations(
-            agent_id=agent_id,
-            current_context={"scenario": "test"},
-            top_k=3
+            agent_id=agent_id, current_context={"scenario": "test"}, top_k=3
         )
 
         # Should be sorted by confidence (descending)
         for i in range(len(recommendations) - 1):
-            assert recommendations[i]['confidence'] >= recommendations[i+1]['confidence']
+            assert recommendations[i]["confidence"] >= recommendations[i + 1]["confidence"]
 
 
 class TestLearningGoals:
@@ -286,7 +279,7 @@ class TestLearningGoals:
             target_metric="response_time",
             current_value=500.0,
             target_value=300.0,
-            strategy=LearningStrategy.REINFORCEMENT.value
+            strategy=LearningStrategy.REINFORCEMENT.value,
         )
 
         assert goal_id is not None
@@ -298,10 +291,10 @@ class TestLearningGoals:
         row = cursor.fetchone()
 
         assert row is not None
-        assert row['target_metric'] == "response_time"
-        assert row['current_value'] == 500.0
-        assert row['target_value'] == 300.0
-        assert row['status'] == 'active'
+        assert row["target_metric"] == "response_time"
+        assert row["current_value"] == 500.0
+        assert row["target_value"] == 300.0
+        assert row["status"] == "active"
 
     def test_update_goal_progress(self, learning_system):
         """Test updating learning goal progress"""
@@ -311,26 +304,20 @@ class TestLearningGoals:
             target_metric="prediction_accuracy",
             current_value=0.7,
             target_value=0.9,
-            strategy=LearningStrategy.SUPERVISED.value
+            strategy=LearningStrategy.SUPERVISED.value,
         )
 
         # Update progress
-        result = learning_system.update_goal_progress(
-            goal_id=goal_id,
-            new_value=0.8
-        )
+        result = learning_system.update_goal_progress(goal_id=goal_id, new_value=0.8)
 
-        assert result['progress'] == pytest.approx(0.5, rel=0.01)  # 50% progress
-        assert result['status'] == 'active'
+        assert result["progress"] == pytest.approx(0.5, rel=0.01)  # 50% progress
+        assert result["status"] == "active"
 
         # Update to achieve goal
-        result = learning_system.update_goal_progress(
-            goal_id=goal_id,
-            new_value=0.9
-        )
+        result = learning_system.update_goal_progress(goal_id=goal_id, new_value=0.9)
 
-        assert result['progress'] == pytest.approx(1.0, rel=0.01)
-        assert result['status'] == 'achieved'
+        assert result["progress"] == pytest.approx(1.0, rel=0.01)
+        assert result["status"] == "achieved"
 
     def test_goal_progress_calculation(self, learning_system):
         """Test goal progress calculation logic"""
@@ -340,12 +327,12 @@ class TestLearningGoals:
             target_metric="cost",
             current_value=100.0,
             target_value=50.0,
-            strategy=LearningStrategy.REINFORCEMENT.value
+            strategy=LearningStrategy.REINFORCEMENT.value,
         )
 
         # 75% progress (100 -> 50, now at 62.5)
         result = learning_system.update_goal_progress(goal_id, 62.5)
-        assert result['progress'] == pytest.approx(0.75, rel=0.01)
+        assert result["progress"] == pytest.approx(0.75, rel=0.01)
 
 
 class TestPatternDiscovery:
@@ -353,10 +340,7 @@ class TestPatternDiscovery:
 
     def test_discover_patterns_insufficient_data(self, learning_system):
         """Test pattern discovery with insufficient data"""
-        patterns = learning_system.discover_patterns(
-            agent_id="agent_pattern_001",
-            min_support=3
-        )
+        patterns = learning_system.discover_patterns(agent_id="agent_pattern_001", min_support=3)
 
         assert patterns == []
 
@@ -374,17 +358,14 @@ class TestPatternDiscovery:
                 action={"strategy": "cache"},
                 outcome={"success": True},
                 reward=0.9,
-                confidence=0.8
+                confidence=0.8,
             )
 
-        patterns = learning_system.discover_patterns(
-            agent_id=agent_id,
-            min_support=3
-        )
+        patterns = learning_system.discover_patterns(agent_id=agent_id, min_support=3)
 
         assert len(patterns) > 0
-        assert all(p['support_count'] >= 3 for p in patterns)
-        assert all(p['average_reward'] > 0.5 for p in patterns)
+        assert all(p["support_count"] >= 3 for p in patterns)
+        assert all(p["average_reward"] > 0.5 for p in patterns)
 
     def test_pattern_confidence_scoring(self, learning_system):
         """Test pattern confidence scoring"""
@@ -400,14 +381,14 @@ class TestPatternDiscovery:
                 action={"method": "A"},
                 outcome={"success": True},
                 reward=0.95,
-                confidence=0.9
+                confidence=0.9,
             )
 
         patterns = learning_system.discover_patterns(agent_id=agent_id, min_support=5)
 
         assert len(patterns) > 0
         # Higher support should lead to higher confidence (capped at 1.0)
-        assert patterns[0]['confidence'] > 0.5
+        assert patterns[0]["confidence"] > 0.5
 
 
 class TestPerformanceTrends:
@@ -416,13 +397,11 @@ class TestPerformanceTrends:
     def test_get_performance_trend_no_data(self, learning_system):
         """Test getting performance trend with no data"""
         trend = learning_system.get_agent_performance_trend(
-            agent_id="agent_perf_001",
-            metric_name="execution_time",
-            days=7
+            agent_id="agent_perf_001", metric_name="execution_time", days=7
         )
 
-        assert trend['trend'] == 'no_data'
-        assert trend['values'] == []
+        assert trend["trend"] == "no_data"
+        assert trend["values"] == []
 
     def test_get_performance_trend_improving(self, learning_system):
         """Test detecting improving performance trend"""
@@ -432,26 +411,27 @@ class TestPerformanceTrends:
         # Insert declining execution times (improving)
         base_time = datetime.now()
         for i in range(20):
-            timestamp = (base_time - timedelta(days=19-i)).isoformat()
+            timestamp = (base_time - timedelta(days=19 - i)).isoformat()
             # Values: 500, 490, 480, ... 310 (improving)
             value = 500 - (i * 10)
 
-            cursor.execute("""
+            cursor.execute(
+                """
                 INSERT INTO agent_performance (agent_id, metric_name, metric_value, timestamp)
                 VALUES (?, ?, ?, ?)
-            """, (agent_id, "execution_time", value, timestamp))
+            """,
+                (agent_id, "execution_time", value, timestamp),
+            )
 
         learning_system.conn.commit()
 
         trend = learning_system.get_agent_performance_trend(
-            agent_id=agent_id,
-            metric_name="execution_time",
-            days=20
+            agent_id=agent_id, metric_name="execution_time", days=20
         )
 
-        assert trend['trend'] == 'improving'
-        assert len(trend['values']) == 20
-        assert trend['recent_average'] < trend['average']  # Recent should be better
+        assert trend["trend"] == "improving"
+        assert len(trend["values"]) == 20
+        assert trend["recent_average"] < trend["average"]  # Recent should be better
 
     def test_get_performance_trend_declining(self, learning_system):
         """Test detecting declining performance trend"""
@@ -460,24 +440,25 @@ class TestPerformanceTrends:
 
         base_time = datetime.now()
         for i in range(20):
-            timestamp = (base_time - timedelta(days=19-i)).isoformat()
+            timestamp = (base_time - timedelta(days=19 - i)).isoformat()
             # Values increasing (declining performance)
             value = 300 + (i * 10)
 
-            cursor.execute("""
+            cursor.execute(
+                """
                 INSERT INTO agent_performance (agent_id, metric_name, metric_value, timestamp)
                 VALUES (?, ?, ?, ?)
-            """, (agent_id, "execution_time", value, timestamp))
+            """,
+                (agent_id, "execution_time", value, timestamp),
+            )
 
         learning_system.conn.commit()
 
         trend = learning_system.get_agent_performance_trend(
-            agent_id=agent_id,
-            metric_name="execution_time",
-            days=20
+            agent_id=agent_id, metric_name="execution_time", days=20
         )
 
-        assert trend['trend'] == 'declining'
+        assert trend["trend"] == "declining"
 
 
 class TestStatistics:
@@ -487,11 +468,11 @@ class TestStatistics:
         """Test getting statistics from empty system"""
         stats = learning_system.get_statistics()
 
-        assert stats['total_experiences'] == 0
-        assert stats['knowledge_nodes'] == 0
-        assert stats['learned_patterns'] == 0
-        assert stats['active_learning_goals'] == 0
-        assert stats['knowledge_transfers'] == 0
+        assert stats["total_experiences"] == 0
+        assert stats["knowledge_nodes"] == 0
+        assert stats["learned_patterns"] == 0
+        assert stats["active_learning_goals"] == 0
+        assert stats["knowledge_transfers"] == 0
 
     def test_get_statistics_with_data(self, learning_system):
         """Test getting statistics with data"""
@@ -504,16 +485,13 @@ class TestStatistics:
                 context={"i": i},
                 action={"a": i},
                 outcome={"o": i},
-                reward=0.5
+                reward=0.5,
             )
 
         # Share some knowledge
         for i in range(5):
             learning_system.share_knowledge(
-                from_agent=f"agent_{i}",
-                knowledge_type="pattern",
-                content={"p": i},
-                confidence=0.8
+                from_agent=f"agent_{i}", knowledge_type="pattern", content={"p": i}, confidence=0.8
             )
 
         # Set some goals
@@ -524,16 +502,16 @@ class TestStatistics:
                 target_metric="metric",
                 current_value=0.5,
                 target_value=0.9,
-                strategy="reinforcement"
+                strategy="reinforcement",
             )
 
         stats = learning_system.get_statistics()
 
-        assert stats['total_experiences'] == 10
-        assert stats['by_type']['success'] == 5
-        assert stats['by_type']['failure'] == 5
-        assert stats['knowledge_nodes'] == 5
-        assert stats['active_learning_goals'] == 3
+        assert stats["total_experiences"] == 10
+        assert stats["by_type"]["success"] == 5
+        assert stats["by_type"]["failure"] == 5
+        assert stats["knowledge_nodes"] == 5
+        assert stats["active_learning_goals"] == 3
 
 
 if __name__ == "__main__":

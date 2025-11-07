@@ -50,11 +50,7 @@ async def discover_in_directory(directory: str) -> Dict[str, Any]:
     """
     try:
         discovered = agent_registry_sync_agent.discover_agents(directory)
-        return {
-            "directory": directory,
-            "agents_found": len(discovered),
-            "agents": discovered
-        }
+        return {"directory": directory, "agents_found": len(discovered), "agents": discovered}
     except Exception as e:
         logger.error(f"Discovery failed for {directory}: {e}")
         raise HTTPException(status_code=500, detail=f"Discovery failed: {str(e)}")

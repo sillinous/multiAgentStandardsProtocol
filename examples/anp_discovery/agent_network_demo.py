@@ -18,18 +18,18 @@ from pathlib import Path
 # Add parent directories to path
 sys.path.insert(0, str(Path(__file__).parent.parent.parent))
 
-from crates.agentic_protocols.python.anp_implementation import (
+from src.superstandard.protocols.anp_implementation import (
     AgentNetworkRegistry,
     ANPRegistration,
     DiscoveryQuery,
-    AgentStatus
+    AgentStatus,
 )
 
 
 async def main():
-    print("\n" + "="*60)
+    print("\n" + "=" * 60)
     print("SuperStandard ANP v1.0 - Agent Network Discovery Demo")
-    print("="*60 + "\n")
+    print("=" * 60 + "\n")
 
     # Create network registry
     registry = AgentNetworkRegistry(heartbeat_timeout=30)
@@ -46,7 +46,7 @@ async def main():
             "agent_type": "collector",
             "capabilities": ["api_fetch", "web_scraping", "data_extraction"],
             "endpoint": "http://localhost:8001",
-            "region": "us-east"
+            "region": "us-east",
         },
         {
             "agent_id": "data-analyzer-1",
@@ -54,7 +54,7 @@ async def main():
             "agent_type": "analyzer",
             "capabilities": ["data_analysis", "reporting", "visualization"],
             "endpoint": "http://localhost:8002",
-            "region": "us-east"
+            "region": "us-east",
         },
         {
             "agent_id": "data-analyzer-2",
@@ -62,7 +62,7 @@ async def main():
             "agent_type": "analyzer",
             "capabilities": ["data_analysis", "machine_learning", "prediction"],
             "endpoint": "http://localhost:8003",
-            "region": "eu-west"
+            "region": "eu-west",
         },
         {
             "agent_id": "report-generator-1",
@@ -70,7 +70,7 @@ async def main():
             "agent_type": "generator",
             "capabilities": ["reporting", "pdf_generation", "email_delivery"],
             "endpoint": "http://localhost:8004",
-            "region": "us-west"
+            "region": "us-west",
         },
         {
             "agent_id": "orchestrator-1",
@@ -78,8 +78,8 @@ async def main():
             "agent_type": "orchestrator",
             "capabilities": ["task_coordination", "workflow_management"],
             "endpoint": "http://localhost:8005",
-            "region": "us-east"
-        }
+            "region": "us-east",
+        },
     ]
 
     for agent_data in agents:
@@ -89,7 +89,7 @@ async def main():
             agent_type=agent_data["agent_type"],
             capabilities=agent_data["capabilities"],
             endpoint=agent_data["endpoint"],
-            region=agent_data.get("region")
+            region=agent_data.get("region"),
         )
         result = await registry.register_agent(registration)
         print(f"[+] Registered: {agent_data['name']}")
@@ -107,7 +107,7 @@ async def main():
     query = DiscoveryQuery(capabilities=["data_analysis"])
     result = await registry.discover_agents(query)
     print(f"[+] Found {len(result['agents'])} agents:")
-    for agent in result['agents']:
+    for agent in result["agents"]:
         print(f"    - {agent['name']} ({agent['agent_id']})")
         print(f"      Endpoint: {agent['endpoint']}")
         print(f"      Region: {agent.get('region', 'N/A')}")
@@ -119,7 +119,7 @@ async def main():
     query = DiscoveryQuery(capabilities=["reporting"])
     result = await registry.discover_agents(query)
     print(f"[+] Found {len(result['agents'])} agents:")
-    for agent in result['agents']:
+    for agent in result["agents"]:
         print(f"    - {agent['name']} ({agent['agent_id']})")
         print(f"      Capabilities: {', '.join(agent['capabilities'])}")
         print()
@@ -132,7 +132,7 @@ async def main():
     query = DiscoveryQuery(agent_type="analyzer")
     result = await registry.discover_agents(query)
     print(f"[+] Found {len(result['agents'])} analyzer agents:")
-    for agent in result['agents']:
+    for agent in result["agents"]:
         print(f"    - {agent['name']} ({agent['agent_id']})")
         print(f"      Region: {agent.get('region', 'N/A')}")
         print()
@@ -145,7 +145,7 @@ async def main():
     query = DiscoveryQuery(region="us-east")
     result = await registry.discover_agents(query)
     print(f"[+] Found {len(result['agents'])} agents in us-east:")
-    for agent in result['agents']:
+    for agent in result["agents"]:
         print(f"    - {agent['name']} ({agent['agent_type']})")
         print(f"      Capabilities: {', '.join(agent['capabilities'])}")
         print()
@@ -156,13 +156,11 @@ async def main():
 
     print("[*] Searching for 'analyzer' type with 'machine_learning' in 'eu-west'...")
     query = DiscoveryQuery(
-        agent_type="analyzer",
-        capabilities=["machine_learning"],
-        region="eu-west"
+        agent_type="analyzer", capabilities=["machine_learning"], region="eu-west"
     )
     result = await registry.discover_agents(query)
     print(f"[+] Found {len(result['agents'])} matching agents:")
-    for agent in result['agents']:
+    for agent in result["agents"]:
         print(f"    - {agent['name']}")
         print(f"      ID: {agent['agent_id']}")
         print(f"      All capabilities: {', '.join(agent['capabilities'])}")
@@ -174,26 +172,18 @@ async def main():
 
     print("[*] Sending heartbeats from agents...")
     # Simulate healthy agent
-    result = await registry.heartbeat(
-        "data-collector-1",
-        AgentStatus.HEALTHY,
-        load_score=0.3
-    )
+    result = await registry.heartbeat("data-collector-1", AgentStatus.HEALTHY, load_score=0.3)
     print(f"[+] data-collector-1: {result['status']} (load: {result['current_load']})")
 
     # Simulate degraded agent
-    result = await registry.heartbeat(
-        "data-analyzer-1",
-        AgentStatus.DEGRADED,
-        load_score=0.85
-    )
+    result = await registry.heartbeat("data-analyzer-1", AgentStatus.DEGRADED, load_score=0.85)
     print(f"[+] data-analyzer-1: {result['status']} (load: {result['current_load']})")
 
     # Check agent status
     print("\n[*] Checking agent status after heartbeats...")
     query = DiscoveryQuery(capabilities=["data_analysis"])
     result = await registry.discover_agents(query)
-    for agent in result['agents']:
+    for agent in result["agents"]:
         print(f"    - {agent['name']}: {agent['status']} (load: {agent['load_score']:.2f})")
 
     # Step 7: Network topology
@@ -219,7 +209,9 @@ async def main():
     print()
 
     print(f"[*] Top Capabilities:")
-    for capability, count in sorted(topology.capabilities.items(), key=lambda x: x[1], reverse=True)[:5]:
+    for capability, count in sorted(
+        topology.capabilities.items(), key=lambda x: x[1], reverse=True
+    )[:5]:
         print(f"    {capability}: {count} agents")
 
     # Step 8: Deregister an agent
@@ -236,9 +228,9 @@ async def main():
     print(f"    Total agents: {topology.total_agents}")
     print(f"    Online agents: {topology.online_agents}")
 
-    print("\n" + "="*60)
+    print("\n" + "=" * 60)
     print("Demo completed successfully!")
-    print("="*60)
+    print("=" * 60)
 
 
 if __name__ == "__main__":

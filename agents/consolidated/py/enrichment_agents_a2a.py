@@ -27,8 +27,12 @@ import requests
 
 from app.a2a_communication.message_routing_agent import routing_agent
 from app.a2a_communication.interfaces import (
-    AgentMessage, AgentResponse, AgentIdentifier,
-    MessageType, Priority, AgentTeam
+    AgentMessage,
+    AgentResponse,
+    AgentIdentifier,
+    MessageType,
+    Priority,
+    AgentTeam,
 )
 
 logger = logging.getLogger(__name__)
@@ -84,7 +88,7 @@ class BaseEnrichmentAgentA2A:
                     source_agent=self.identifier,
                     status="error",
                     error_message=f"Unsupported task_type: {task_type}",
-                    execution_time_ms=int((time.time() - start_time) * 1000)
+                    execution_time_ms=int((time.time() - start_time) * 1000),
                 )
 
             # Perform enrichment
@@ -96,11 +100,8 @@ class BaseEnrichmentAgentA2A:
                 request_id=message.message_id,
                 source_agent=self.identifier,
                 status="success",
-                payload={
-                    "data": result["data"],
-                    "confidence": result["confidence"]
-                },
-                execution_time_ms=execution_time
+                payload={"data": result["data"], "confidence": result["confidence"]},
+                execution_time_ms=execution_time,
             )
 
         except Exception as e:
@@ -111,7 +112,7 @@ class BaseEnrichmentAgentA2A:
                 source_agent=self.identifier,
                 status="error",
                 error_message=str(e),
-                execution_time_ms=int((time.time() - start_time) * 1000)
+                execution_time_ms=int((time.time() - start_time) * 1000),
             )
 
     async def enrich(self, keyword: str, context: Dict) -> Dict[str, Any]:
@@ -133,7 +134,7 @@ class ProductIntelligenceAgentA2A(BaseEnrichmentAgentA2A):
             apqc_domain="3.3 Manage Product Information",
             version="2.0.0",  # v2 = A2A enabled
             capabilities=["product_analysis", "feature_extraction", "product_categorization"],
-            status="active"
+            status="active",
         )
         super().__init__(identifier)
 
@@ -143,10 +144,7 @@ class ProductIntelligenceAgentA2A(BaseEnrichmentAgentA2A):
         logger.info(f"🔍 Analyzing product: {keyword}")
 
         if not self.client:
-            return {
-                "data": self._fallback_intelligence(keyword),
-                "confidence": 0.5
-            }
+            return {"data": self._fallback_intelligence(keyword), "confidence": 0.5}
 
         try:
             prompt = f"""Analyze this product: "{keyword}"
@@ -178,39 +176,36 @@ Be SPECIFIC and DETAILED. Use real market knowledge."""
             response = self.client.chat.completions.create(
                 model="gpt-4o-mini",
                 messages=[
-                    {"role": "system", "content": "You are a product intelligence specialist. Provide detailed, market-accurate product information."},
-                    {"role": "user", "content": prompt}
+                    {
+                        "role": "system",
+                        "content": "You are a product intelligence specialist. Provide detailed, market-accurate product information.",
+                    },
+                    {"role": "user", "content": prompt},
                 ],
                 temperature=0.7,
-                response_format={"type": "json_object"}
+                response_format={"type": "json_object"},
             )
 
             data = json.loads(response.choices[0].message.content)
 
             logger.info(f"✅ Product intelligence analysis complete")
 
-            return {
-                "data": data,
-                "confidence": 0.9
-            }
+            return {"data": data, "confidence": 0.9}
 
         except Exception as e:
             logger.error(f"Product intelligence failed: {e}")
-            return {
-                "data": self._fallback_intelligence(keyword),
-                "confidence": 0.5
-            }
+            return {"data": self._fallback_intelligence(keyword), "confidence": 0.5}
 
     def _fallback_intelligence(self, keyword: str) -> Dict:
         return {
             "title": keyword.title(),
-            "brand": keyword.split()[0].title() if ' ' in keyword else "Generic",
+            "brand": keyword.split()[0].title() if " " in keyword else "Generic",
             "category": "Consumer Products",
             "description": f"High-quality {keyword} designed for optimal performance.",
             "features": [f"Premium {keyword}", "Durable construction", "Easy to use"],
             "specs": {"Type": keyword.title()},
             "price_range_low": 30,
-            "price_range_high": 150
+            "price_range_high": 150,
         }
 
 
@@ -228,7 +223,7 @@ class MarketAnalysisAgentA2A(BaseEnrichmentAgentA2A):
             apqc_domain="3.1 Understand Markets and Customers",
             version="2.0.0",
             capabilities=["market_sizing", "trend_analysis", "demand_assessment"],
-            status="active"
+            status="active",
         )
         super().__init__(identifier)
 
@@ -238,10 +233,7 @@ class MarketAnalysisAgentA2A(BaseEnrichmentAgentA2A):
         logger.info(f"📊 Analyzing market for: {keyword}")
 
         if not self.client:
-            return {
-                "data": self._fallback_analysis(keyword),
-                "confidence": 0.5
-            }
+            return {"data": self._fallback_analysis(keyword), "confidence": 0.5}
 
         try:
             prompt = f"""Analyze the market opportunity for: "{keyword}"
@@ -269,28 +261,25 @@ Provide comprehensive market analysis in JSON:
             response = self.client.chat.completions.create(
                 model="gpt-4o-mini",
                 messages=[
-                    {"role": "system", "content": "You are a market research analyst specializing in e-commerce opportunities."},
-                    {"role": "user", "content": prompt}
+                    {
+                        "role": "system",
+                        "content": "You are a market research analyst specializing in e-commerce opportunities.",
+                    },
+                    {"role": "user", "content": prompt},
                 ],
                 temperature=0.7,
-                response_format={"type": "json_object"}
+                response_format={"type": "json_object"},
             )
 
             data = json.loads(response.choices[0].message.content)
 
             logger.info(f"✅ Market analysis complete")
 
-            return {
-                "data": data,
-                "confidence": 0.85
-            }
+            return {"data": data, "confidence": 0.85}
 
         except Exception as e:
             logger.error(f"Market analysis failed: {e}")
-            return {
-                "data": self._fallback_analysis(keyword),
-                "confidence": 0.5
-            }
+            return {"data": self._fallback_analysis(keyword), "confidence": 0.5}
 
     def _fallback_analysis(self, keyword: str) -> Dict:
         return {
@@ -298,7 +287,7 @@ Provide comprehensive market analysis in JSON:
             "demand_level": "medium",
             "opportunity_score": 0.7,
             "competition_level": "medium",
-            "market_stage": "growing"
+            "market_stage": "growing",
         }
 
 
@@ -316,7 +305,7 @@ class CompetitiveIntelligenceAgentA2A(BaseEnrichmentAgentA2A):
             apqc_domain="3.1 Understand Markets and Customers",
             version="2.0.0",
             capabilities=["competitor_analysis", "market_positioning", "differentiation_strategy"],
-            status="active"
+            status="active",
         )
         super().__init__(identifier)
 
@@ -326,10 +315,7 @@ class CompetitiveIntelligenceAgentA2A(BaseEnrichmentAgentA2A):
         logger.info(f"🎯 Analyzing competition for: {keyword}")
 
         if not self.client:
-            return {
-                "data": self._fallback_analysis(keyword),
-                "confidence": 0.5
-            }
+            return {"data": self._fallback_analysis(keyword), "confidence": 0.5}
 
         try:
             prompt = f"""Analyze the competitive landscape for: "{keyword}"
@@ -361,33 +347,27 @@ Provide competitive intelligence in JSON:
                 model="gpt-4o-mini",
                 messages=[
                     {"role": "system", "content": "You are a competitive intelligence analyst."},
-                    {"role": "user", "content": prompt}
+                    {"role": "user", "content": prompt},
                 ],
                 temperature=0.7,
-                response_format={"type": "json_object"}
+                response_format={"type": "json_object"},
             )
 
             data = json.loads(response.choices[0].message.content)
 
             logger.info(f"✅ Competitive analysis complete")
 
-            return {
-                "data": data,
-                "confidence": 0.8
-            }
+            return {"data": data, "confidence": 0.8}
 
         except Exception as e:
             logger.error(f"Competitive analysis failed: {e}")
-            return {
-                "data": self._fallback_analysis(keyword),
-                "confidence": 0.5
-            }
+            return {"data": self._fallback_analysis(keyword), "confidence": 0.5}
 
     def _fallback_analysis(self, keyword: str) -> Dict:
         return {
             "competitive_intensity": "medium",
             "market_concentration": "fragmented",
-            "differentiation_opportunities": ["Quality focus", "Better service", "Faster shipping"]
+            "differentiation_opportunities": ["Quality focus", "Better service", "Faster shipping"],
         }
 
 
@@ -405,7 +385,7 @@ class PricingStrategyAgentA2A(BaseEnrichmentAgentA2A):
             apqc_domain="3.3 Develop and Manage Pricing",
             version="2.0.0",
             capabilities=["pricing_optimization", "margin_analysis", "competitive_pricing"],
-            status="active"
+            status="active",
         )
         super().__init__(identifier)
 
@@ -415,12 +395,12 @@ class PricingStrategyAgentA2A(BaseEnrichmentAgentA2A):
         logger.info(f"💰 Calculating pricing for: {keyword}")
 
         # Extract context from previous agents
-        product_intel = context.get('product_intelligence', {})
-        market_data = context.get('market_analysis', {})
+        product_intel = context.get("product_intelligence", {})
+        market_data = context.get("market_analysis", {})
 
         # Calculate pricing based on available data
-        price_low = product_intel.get('price_range_low', 30)
-        price_high = product_intel.get('price_range_high', 150)
+        price_low = product_intel.get("price_range_low", 30)
+        price_high = product_intel.get("price_range_high", 150)
         avg_price = (price_low + price_high) / 2
 
         data = {
@@ -433,19 +413,16 @@ class PricingStrategyAgentA2A(BaseEnrichmentAgentA2A):
             "promotional_pricing": {
                 "launch_discount": round(avg_price * 0.85, 2),
                 "bulk_discount_3": round(avg_price * 0.90, 2),
-                "seasonal_sale": round(avg_price * 0.80, 2)
+                "seasonal_sale": round(avg_price * 0.80, 2),
             },
             "price_elasticity": "moderate",
             "psychological_price_point": round(avg_price * 0.99, 2),
-            "competitor_price_range": f"${price_low}-${price_high}"
+            "competitor_price_range": f"${price_low}-${price_high}",
         }
 
         logger.info(f"✅ Pricing strategy complete")
 
-        return {
-            "data": data,
-            "confidence": 0.8
-        }
+        return {"data": data, "confidence": 0.8}
 
 
 class CustomerProfilingAgentA2A(BaseEnrichmentAgentA2A):
@@ -462,7 +439,7 @@ class CustomerProfilingAgentA2A(BaseEnrichmentAgentA2A):
             apqc_domain="3.1 Understand Markets and Customers",
             version="2.0.0",
             capabilities=["persona_creation", "customer_segmentation", "journey_mapping"],
-            status="active"
+            status="active",
         )
         super().__init__(identifier)
 
@@ -472,10 +449,7 @@ class CustomerProfilingAgentA2A(BaseEnrichmentAgentA2A):
         logger.info(f"👥 Profiling customers for: {keyword}")
 
         if not self.client:
-            return {
-                "data": self._fallback_profile(keyword),
-                "confidence": 0.5
-            }
+            return {"data": self._fallback_profile(keyword), "confidence": 0.5}
 
         try:
             prompt = f"""Create detailed customer profiles for: "{keyword}"
@@ -511,27 +485,21 @@ Provide comprehensive customer intelligence in JSON:
                 model="gpt-4o-mini",
                 messages=[
                     {"role": "system", "content": "You are a customer insights specialist."},
-                    {"role": "user", "content": prompt}
+                    {"role": "user", "content": prompt},
                 ],
                 temperature=0.7,
-                response_format={"type": "json_object"}
+                response_format={"type": "json_object"},
             )
 
             data = json.loads(response.choices[0].message.content)
 
             logger.info(f"✅ Customer profiling complete")
 
-            return {
-                "data": data,
-                "confidence": 0.85
-            }
+            return {"data": data, "confidence": 0.85}
 
         except Exception as e:
             logger.error(f"Customer profiling failed: {e}")
-            return {
-                "data": self._fallback_profile(keyword),
-                "confidence": 0.5
-            }
+            return {"data": self._fallback_profile(keyword), "confidence": 0.5}
 
     def _fallback_profile(self, keyword: str) -> Dict:
         return {
@@ -540,7 +508,7 @@ Provide comprehensive customer intelligence in JSON:
                 "age_range": "25-45",
                 "income_level": "Middle income",
                 "pain_points": ["Needs quality at fair price"],
-                "buying_triggers": ["Good reviews", "Fair price", "Fast shipping"]
+                "buying_triggers": ["Good reviews", "Fair price", "Fast shipping"],
             }
         }
 
@@ -559,7 +527,7 @@ class BusinessModelAgentA2A(BaseEnrichmentAgentA2A):
             apqc_domain="1.1 Define Business Concept and Long-term Vision",
             version="2.0.0",
             capabilities=["business_model_design", "revenue_modeling", "channel_strategy"],
-            status="active"
+            status="active",
         )
         super().__init__(identifier)
 
@@ -568,53 +536,50 @@ class BusinessModelAgentA2A(BaseEnrichmentAgentA2A):
 
         logger.info(f"🏢 Designing business models for: {keyword}")
 
-        pricing_data = context.get('pricing_strategy', {})
-        price = pricing_data.get('recommended_retail_price', 75)
+        pricing_data = context.get("pricing_strategy", {})
+        price = pricing_data.get("recommended_retail_price", 75)
 
         models = [
             {
-                'name': 'Amazon FBA',
-                'description': f'Sell {keyword} via Amazon with FBA fulfillment',
-                'startup_cost': price * 50 + 500,
-                'monthly_revenue_potential': price * 60,
-                'profit_margin': 25,
-                'pros': ['Huge audience', 'Fulfillment handled', 'Prime badge'],
-                'cons': ['FBA fees', 'Competition', 'Amazon dependency'],
-                'difficulty': 'Medium',
-                'time_to_profit': '2-3 months'
+                "name": "Amazon FBA",
+                "description": f"Sell {keyword} via Amazon with FBA fulfillment",
+                "startup_cost": price * 50 + 500,
+                "monthly_revenue_potential": price * 60,
+                "profit_margin": 25,
+                "pros": ["Huge audience", "Fulfillment handled", "Prime badge"],
+                "cons": ["FBA fees", "Competition", "Amazon dependency"],
+                "difficulty": "Medium",
+                "time_to_profit": "2-3 months",
             },
             {
-                'name': 'Direct E-commerce (Shopify)',
-                'description': f'Own branded store selling {keyword}',
-                'startup_cost': price * 25 + 300,
-                'monthly_revenue_potential': price * 40,
-                'profit_margin': 40,
-                'pros': ['Brand control', 'Higher margins', 'Customer data'],
-                'cons': ['Marketing costs', 'Customer acquisition', 'Fulfillment'],
-                'difficulty': 'Medium-High',
-                'time_to_profit': '3-6 months'
+                "name": "Direct E-commerce (Shopify)",
+                "description": f"Own branded store selling {keyword}",
+                "startup_cost": price * 25 + 300,
+                "monthly_revenue_potential": price * 40,
+                "profit_margin": 40,
+                "pros": ["Brand control", "Higher margins", "Customer data"],
+                "cons": ["Marketing costs", "Customer acquisition", "Fulfillment"],
+                "difficulty": "Medium-High",
+                "time_to_profit": "3-6 months",
             },
             {
-                'name': 'Dropshipping',
-                'description': f'Sell {keyword} without inventory',
-                'startup_cost': 500,
-                'monthly_revenue_potential': price * 30,
-                'profit_margin': 20,
-                'pros': ['Low startup', 'No inventory risk', 'Easy scaling'],
-                'cons': ['Low margins', 'Shipping times', 'Less control'],
-                'difficulty': 'Low',
-                'time_to_profit': '1-2 months'
-            }
+                "name": "Dropshipping",
+                "description": f"Sell {keyword} without inventory",
+                "startup_cost": 500,
+                "monthly_revenue_potential": price * 30,
+                "profit_margin": 20,
+                "pros": ["Low startup", "No inventory risk", "Easy scaling"],
+                "cons": ["Low margins", "Shipping times", "Less control"],
+                "difficulty": "Low",
+                "time_to_profit": "1-2 months",
+            },
         ]
 
         logger.info(f"✅ Business model design complete")
 
         return {
-            "data": {
-                'business_models': models,
-                'recommended_model': models[0]['name']
-            },
-            "confidence": 0.9
+            "data": {"business_models": models, "recommended_model": models[0]["name"]},
+            "confidence": 0.9,
         }
 
 
@@ -632,7 +597,7 @@ class ImageDiscoveryAgentA2A(BaseEnrichmentAgentA2A):
             apqc_domain="3.3 Manage Product and Service Information",
             version="2.0.0",
             capabilities=["image_search", "visual_content", "media_curation"],
-            status="active"
+            status="active",
         )
         super().__init__(identifier)
         self.unsplash_key = os.getenv("UNSPLASH_API_KEY", "")
@@ -645,11 +610,8 @@ class ImageDiscoveryAgentA2A(BaseEnrichmentAgentA2A):
         images = await self._search_images(keyword, context)
 
         return {
-            "data": {
-                "images": images,
-                "primary_image": images[0] if images else None
-            },
-            "confidence": 0.8 if images else 0.3
+            "data": {"images": images, "primary_image": images[0] if images else None},
+            "confidence": 0.8 if images else 0.3,
         }
 
     async def _search_images(self, keyword: str, context: Dict) -> list:
@@ -667,13 +629,13 @@ class ImageDiscoveryAgentA2A(BaseEnrichmentAgentA2A):
                 response = requests.get(url, headers=headers, params=params, timeout=5)
                 if response.status_code == 200:
                     data = response.json()
-                    images.extend([photo['urls']['regular'] for photo in data.get('results', [])])
+                    images.extend([photo["urls"]["regular"] for photo in data.get("results", [])])
             except Exception as e:
                 logger.warning(f"Unsplash search failed: {e}")
 
         # Fallback placeholder images
         if not images:
-            keyword_slug = keyword.replace(' ', '-').lower()
+            keyword_slug = keyword.replace(" ", "-").lower()
             images = [
                 f"https://source.unsplash.com/400x400/?{keyword_slug},product",
                 f"https://images.unsplash.com/photo-1505740420928-5e560c06d30e?w=400&h=400&fit=crop",

@@ -64,13 +64,15 @@ from dataclasses import dataclass, field
 # Resource monitoring
 try:
     import psutil
+
     PSUTIL_AVAILABLE = True
 except ImportError:
     PSUTIL_AVAILABLE = False
 
 # Import base framework
 import sys
-sys.path.append(os.path.join(os.path.dirname(__file__), '../..'))
+
+sys.path.append(os.path.join(os.path.dirname(__file__), "../.."))
 
 from superstandard.agents.base.base_agent import BaseAgent
 from library.core.protocols import ProtocolMixin
@@ -85,6 +87,7 @@ SUPPORTED_PROTOCOLS = ["A2A", "A2P", "ACP", "ANP", "MCP"]
 # CONFIGURATION
 # ============================================================================
 
+
 @dataclass
 class RouteDiscoveryAgentConfig:
     """
@@ -97,6 +100,7 @@ class RouteDiscoveryAgentConfig:
         export ROUTE_DISCOVERY_AVG_SPEED_KMH=50.0
         export ROUTE_DISCOVERY_MAX_STOPS=15
     """
+
     # Logging
     log_level: str = "INFO"
 
@@ -136,34 +140,29 @@ class RouteDiscoveryAgentConfig:
         return cls(
             # Logging
             log_level=os.getenv("ROUTE_DISCOVERY_LOG_LEVEL", "INFO"),
-
             # Resource limits
             max_memory_mb=int(os.getenv("ROUTE_DISCOVERY_MAX_MEMORY_MB", "512")),
             max_cpu_percent=int(os.getenv("ROUTE_DISCOVERY_MAX_CPU_PERCENT", "80")),
-
             # Protocol flags
             enable_a2a=os.getenv("ROUTE_DISCOVERY_ENABLE_A2A", "true").lower() == "true",
             enable_a2p=os.getenv("ROUTE_DISCOVERY_ENABLE_A2P", "true").lower() == "true",
             enable_acp=os.getenv("ROUTE_DISCOVERY_ENABLE_ACP", "true").lower() == "true",
             enable_anp=os.getenv("ROUTE_DISCOVERY_ENABLE_ANP", "true").lower() == "true",
             enable_mcp=os.getenv("ROUTE_DISCOVERY_ENABLE_MCP", "true").lower() == "true",
-
             # Domain configuration
             avg_speed_kmh=float(os.getenv("ROUTE_DISCOVERY_AVG_SPEED_KMH", "40.0")),
             cost_per_km=float(os.getenv("ROUTE_DISCOVERY_COST_PER_KM", "1.5")),
             max_stops=int(os.getenv("ROUTE_DISCOVERY_MAX_STOPS", "10")),
-
             # Optimization parameters
             enable_2opt=os.getenv("ROUTE_DISCOVERY_ENABLE_2OPT", "true").lower() == "true",
             max_2opt_iterations=int(os.getenv("ROUTE_DISCOVERY_MAX_2OPT_ITERATIONS", "100")),
-
             # Alternative routes
-            default_num_alternatives=int(os.getenv("ROUTE_DISCOVERY_DEFAULT_NUM_ALTERNATIVES", "3")),
-
+            default_num_alternatives=int(
+                os.getenv("ROUTE_DISCOVERY_DEFAULT_NUM_ALTERNATIVES", "3")
+            ),
             # Caching
             enable_cache=os.getenv("ROUTE_DISCOVERY_ENABLE_CACHE", "true").lower() == "true",
             cache_ttl_seconds=int(os.getenv("ROUTE_DISCOVERY_CACHE_TTL_SECONDS", "300")),
-
             # Performance
             enable_metrics=os.getenv("ROUTE_DISCOVERY_ENABLE_METRICS", "true").lower() == "true",
         )
@@ -172,6 +171,7 @@ class RouteDiscoveryAgentConfig:
 @dataclass
 class RouteSegment:
     """A segment of a route"""
+
     from_location: Tuple[float, float]
     to_location: Tuple[float, float]
     distance_km: float
@@ -182,6 +182,7 @@ class RouteSegment:
 # ============================================================================
 # RESOURCE MONITORING
 # ============================================================================
+
 
 class ResourceMonitor:
     """Monitor agent resource usage"""
@@ -203,19 +204,19 @@ class ResourceMonitor:
             if memory_mb > self.max_memory_mb:
                 return {
                     "status": "error",
-                    "reason": f"Memory usage {memory_mb:.1f}MB exceeds limit {self.max_memory_mb}MB"
+                    "reason": f"Memory usage {memory_mb:.1f}MB exceeds limit {self.max_memory_mb}MB",
                 }
 
             if cpu_percent > self.max_cpu_percent:
                 return {
                     "status": "warning",
-                    "reason": f"CPU usage {cpu_percent:.1f}% exceeds limit {self.max_cpu_percent}%"
+                    "reason": f"CPU usage {cpu_percent:.1f}% exceeds limit {self.max_cpu_percent}%",
                 }
 
             return {
                 "status": "ok",
                 "memory_mb": round(memory_mb, 2),
-                "cpu_percent": round(cpu_percent, 2)
+                "cpu_percent": round(cpu_percent, 2),
             }
         except Exception as e:
             return {"status": "error", "reason": f"Monitoring error: {str(e)}"}
@@ -224,6 +225,7 @@ class ResourceMonitor:
 # ============================================================================
 # MAIN AGENT
 # ============================================================================
+
 
 class RouteDiscoveryAgent(BaseAgent, ProtocolMixin):
     """
@@ -267,8 +269,7 @@ class RouteDiscoveryAgent(BaseAgent, ProtocolMixin):
 
         # Resource monitoring
         self._resource_monitor = ResourceMonitor(
-            max_memory_mb=config.max_memory_mb,
-            max_cpu_percent=config.max_cpu_percent
+            max_memory_mb=config.max_memory_mb, max_cpu_percent=config.max_cpu_percent
         )
 
         # State
@@ -278,7 +279,7 @@ class RouteDiscoveryAgent(BaseAgent, ProtocolMixin):
             "alternatives_generated": 0,
             "cache_hits": 0,
             "cache_misses": 0,
-            "total_execution_time_ms": 0.0
+            "total_execution_time_ms": 0.0,
         }
 
         # Cache for route calculations
@@ -304,7 +305,7 @@ class RouteDiscoveryAgent(BaseAgent, ProtocolMixin):
                 return {
                     "status": "error",
                     "reason": resource_check["reason"],
-                    "agent_id": self.agent_id
+                    "agent_id": self.agent_id,
                 }
 
             self._initialized = True
@@ -320,8 +321,8 @@ class RouteDiscoveryAgent(BaseAgent, ProtocolMixin):
                     "avg_speed_kmh": self.typed_config.avg_speed_kmh,
                     "max_stops": self.typed_config.max_stops,
                     "enable_2opt": self.typed_config.enable_2opt,
-                    "enable_cache": self.typed_config.enable_cache
-                }
+                    "enable_cache": self.typed_config.enable_cache,
+                },
             }
 
         except Exception as e:
@@ -329,7 +330,7 @@ class RouteDiscoveryAgent(BaseAgent, ProtocolMixin):
             return {
                 "status": "error",
                 "reason": f"Initialization failed: {str(e)}",
-                "agent_id": self.agent_id
+                "agent_id": self.agent_id,
             }
 
     async def execute(self, input_data: Dict[str, Any]) -> Dict[str, Any]:
@@ -347,20 +348,12 @@ class RouteDiscoveryAgent(BaseAgent, ProtocolMixin):
         start_time = time.time()
 
         if not self._initialized:
-            return {
-                "success": False,
-                "error": "Agent not initialized",
-                "agent_id": self.agent_id
-            }
+            return {"success": False, "error": "Agent not initialized", "agent_id": self.agent_id}
 
         # Check resources
         resource_check = self._resource_monitor.check_resources()
         if resource_check["status"] == "error":
-            return {
-                "success": False,
-                "error": resource_check["reason"],
-                "agent_id": self.agent_id
-            }
+            return {"success": False, "error": resource_check["reason"], "agent_id": self.agent_id}
 
         try:
             action = input_data.get("action")
@@ -372,10 +365,7 @@ class RouteDiscoveryAgent(BaseAgent, ProtocolMixin):
             elif action == "find_alternatives":
                 result = await self._handle_alternative_routes(input_data)
             else:
-                result = {
-                    "success": False,
-                    "error": f"Unknown action: {action}"
-                }
+                result = {"success": False, "error": f"Unknown action: {action}"}
 
             # Update metrics
             if self.typed_config.enable_metrics:
@@ -390,7 +380,7 @@ class RouteDiscoveryAgent(BaseAgent, ProtocolMixin):
             return {
                 "success": False,
                 "error": f"Execution failed: {str(e)}",
-                "agent_id": self.agent_id
+                "agent_id": self.agent_id,
             }
 
     async def shutdown(self) -> Dict[str, Any]:
@@ -410,14 +400,14 @@ class RouteDiscoveryAgent(BaseAgent, ProtocolMixin):
             return {
                 "status": "shutdown",
                 "agent_id": self.agent_id,
-                "final_metrics": self._metrics.copy()
+                "final_metrics": self._metrics.copy(),
             }
 
         except Exception as e:
             return {
                 "status": "error",
                 "reason": f"Shutdown failed: {str(e)}",
-                "agent_id": self.agent_id
+                "agent_id": self.agent_id,
             }
 
     async def health_check(self) -> Dict[str, Any]:
@@ -438,7 +428,7 @@ class RouteDiscoveryAgent(BaseAgent, ProtocolMixin):
             "resources": resource_check,
             "metrics": self._metrics.copy() if self.typed_config.enable_metrics else {},
             "cache_size": len(self._route_cache),
-            "timestamp": datetime.now().isoformat()
+            "timestamp": datetime.now().isoformat(),
         }
 
     # ========================================================================
@@ -458,9 +448,7 @@ class RouteDiscoveryAgent(BaseAgent, ProtocolMixin):
         return {}
 
     async def _execute_logic(
-        self,
-        input_data: Dict[str, Any],
-        fetched_data: Dict[str, Any]
+        self, input_data: Dict[str, Any], fetched_data: Dict[str, Any]
     ) -> Dict[str, Any]:
         """Core execution logic - delegates to execute() method"""
         return await self.execute(input_data)
@@ -470,9 +458,7 @@ class RouteDiscoveryAgent(BaseAgent, ProtocolMixin):
     # ========================================================================
 
     def calculate_optimal_route(
-        self,
-        stops: List[Tuple[float, float]],
-        start_location: Optional[Tuple[float, float]] = None
+        self, stops: List[Tuple[float, float]], start_location: Optional[Tuple[float, float]] = None
     ) -> Dict[str, Any]:
         """
         Calculate optimal route through multiple stops using nearest-neighbor algorithm
@@ -490,7 +476,7 @@ class RouteDiscoveryAgent(BaseAgent, ProtocolMixin):
                 "sequence": [],
                 "total_distance_km": 0.0,
                 "total_time_minutes": 0.0,
-                "algorithm": "none"
+                "algorithm": "none",
             }
 
         # Check cache
@@ -520,10 +506,7 @@ class RouteDiscoveryAgent(BaseAgent, ProtocolMixin):
         # Nearest-neighbor algorithm
         while remaining:
             # Find nearest unvisited stop
-            nearest = min(
-                remaining,
-                key=lambda stop: self._calculate_distance(current, stop)
-            )
+            nearest = min(remaining, key=lambda stop: self._calculate_distance(current, stop))
 
             distance = self._calculate_distance(current, nearest)
             total_distance += distance
@@ -540,8 +523,7 @@ class RouteDiscoveryAgent(BaseAgent, ProtocolMixin):
             algorithm = "nearest_neighbor_2opt"
             # Recalculate distance after optimization
             total_distance = sum(
-                self._calculate_distance(route[i], route[i+1])
-                for i in range(len(route) - 1)
+                self._calculate_distance(route[i], route[i + 1]) for i in range(len(route) - 1)
             )
 
         # Calculate total time
@@ -553,7 +535,7 @@ class RouteDiscoveryAgent(BaseAgent, ProtocolMixin):
             "total_distance_km": round(total_distance, 2),
             "total_time_minutes": round(total_time, 2),
             "stops": len(stops),
-            "algorithm": algorithm
+            "algorithm": algorithm,
         }
 
         # Cache result
@@ -565,9 +547,7 @@ class RouteDiscoveryAgent(BaseAgent, ProtocolMixin):
         return result
 
     def estimate_total_time(
-        self,
-        route: List[Tuple[float, float]],
-        traffic_multiplier: float = 1.0
+        self, route: List[Tuple[float, float]], traffic_multiplier: float = 1.0
     ) -> Dict[str, Any]:
         """
         Estimate total travel time for a route
@@ -580,11 +560,7 @@ class RouteDiscoveryAgent(BaseAgent, ProtocolMixin):
             Time estimation with breakdown
         """
         if len(route) < 2:
-            return {
-                "total_time_minutes": 0.0,
-                "segments": [],
-                "traffic_adjusted": False
-            }
+            return {"total_time_minutes": 0.0, "segments": [], "traffic_adjusted": False}
 
         segments = []
         total_distance = 0.0
@@ -594,13 +570,15 @@ class RouteDiscoveryAgent(BaseAgent, ProtocolMixin):
             base_time = (distance / self.typed_config.avg_speed_kmh) * 60
             adjusted_time = base_time * traffic_multiplier
 
-            segments.append({
-                "from": route[i],
-                "to": route[i + 1],
-                "distance_km": round(distance, 2),
-                "base_time_minutes": round(base_time, 2),
-                "adjusted_time_minutes": round(adjusted_time, 2)
-            })
+            segments.append(
+                {
+                    "from": route[i],
+                    "to": route[i + 1],
+                    "distance_km": round(distance, 2),
+                    "base_time_minutes": round(base_time, 2),
+                    "adjusted_time_minutes": round(adjusted_time, 2),
+                }
+            )
 
             total_distance += distance
 
@@ -613,13 +591,11 @@ class RouteDiscoveryAgent(BaseAgent, ProtocolMixin):
             "total_distance_km": round(total_distance, 2),
             "traffic_multiplier": traffic_multiplier,
             "segments": segments,
-            "traffic_adjusted": traffic_multiplier != 1.0
+            "traffic_adjusted": traffic_multiplier != 1.0,
         }
 
     def get_alternative_routes(
-        self,
-        route: List[Tuple[float, float]],
-        num_alternatives: int = None
+        self, route: List[Tuple[float, float]], num_alternatives: int = None
     ) -> List[Dict[str, Any]]:
         """
         Generate alternative routes by varying the stop order
@@ -645,32 +621,26 @@ class RouteDiscoveryAgent(BaseAgent, ProtocolMixin):
             mid = len(alt_route) // 2
             alt_route[1:mid] = reversed(alt_route[1:mid])
             alt_metrics = self.estimate_total_time(alt_route)
-            alternatives.append({
-                "route": alt_route,
-                "strategy": "segment_reversal",
-                "metrics": alt_metrics
-            })
+            alternatives.append(
+                {"route": alt_route, "strategy": "segment_reversal", "metrics": alt_metrics}
+            )
 
         # Alternative 2: 2-opt improvement (swap edges)
         if len(route) >= 4 and self.typed_config.enable_2opt:
             alt_route = self._two_opt_improvement(route)
             alt_metrics = self.estimate_total_time(alt_route)
-            alternatives.append({
-                "route": alt_route,
-                "strategy": "2opt_optimization",
-                "metrics": alt_metrics
-            })
+            alternatives.append(
+                {"route": alt_route, "strategy": "2opt_optimization", "metrics": alt_metrics}
+            )
 
         # Alternative 3: Different starting point
         if len(route) >= 4:
             start_idx = len(route) // 3
             alt_route = route[start_idx:] + route[:start_idx]
             alt_metrics = self.estimate_total_time(alt_route)
-            alternatives.append({
-                "route": alt_route,
-                "strategy": "alternate_start",
-                "metrics": alt_metrics
-            })
+            alternatives.append(
+                {"route": alt_route, "strategy": "alternate_start", "metrics": alt_metrics}
+            )
 
         self._metrics["alternatives_generated"] += len(alternatives[:num_alternatives])
 
@@ -687,10 +657,7 @@ class RouteDiscoveryAgent(BaseAgent, ProtocolMixin):
 
         route_result = self.calculate_optimal_route(stops, start_location)
 
-        return {
-            "success": True,
-            "route": route_result
-        }
+        return {"success": True, "route": route_result}
 
     async def _handle_time_estimation(self, task: Dict[str, Any]) -> Dict[str, Any]:
         """Handle time estimation task"""
@@ -699,10 +666,7 @@ class RouteDiscoveryAgent(BaseAgent, ProtocolMixin):
 
         estimation = self.estimate_total_time(route, traffic_multiplier)
 
-        return {
-            "success": True,
-            "estimation": estimation
-        }
+        return {"success": True, "estimation": estimation}
 
     async def _handle_alternative_routes(self, task: Dict[str, Any]) -> Dict[str, Any]:
         """Handle alternative route finding task"""
@@ -711,13 +675,11 @@ class RouteDiscoveryAgent(BaseAgent, ProtocolMixin):
 
         alternatives = self.get_alternative_routes(route, num_alternatives)
 
-        return {
-            "success": True,
-            "alternatives": alternatives,
-            "count": len(alternatives)
-        }
+        return {"success": True, "alternatives": alternatives, "count": len(alternatives)}
 
-    def _calculate_distance(self, point1: Tuple[float, float], point2: Tuple[float, float]) -> float:
+    def _calculate_distance(
+        self, point1: Tuple[float, float], point2: Tuple[float, float]
+    ) -> float:
         """
         Calculate distance using Haversine formula
 
@@ -736,9 +698,10 @@ class RouteDiscoveryAgent(BaseAgent, ProtocolMixin):
         dlat = math.radians(lat2 - lat1)
         dlon = math.radians(lon2 - lon1)
 
-        a = (math.sin(dlat / 2) ** 2 +
-             math.cos(math.radians(lat1)) * math.cos(math.radians(lat2)) *
-             math.sin(dlon / 2) ** 2)
+        a = (
+            math.sin(dlat / 2) ** 2
+            + math.cos(math.radians(lat1)) * math.cos(math.radians(lat2)) * math.sin(dlon / 2) ** 2
+        )
 
         c = 2 * math.atan2(math.sqrt(a), math.sqrt(1 - a))
 
@@ -766,20 +729,18 @@ class RouteDiscoveryAgent(BaseAgent, ProtocolMixin):
             for i in range(1, len(improved_route) - 2):
                 for j in range(i + 1, len(improved_route) - 1):
                     # Calculate current distance
-                    current_dist = (
-                        self._calculate_distance(improved_route[i - 1], improved_route[i]) +
-                        self._calculate_distance(improved_route[j], improved_route[j + 1])
-                    )
+                    current_dist = self._calculate_distance(
+                        improved_route[i - 1], improved_route[i]
+                    ) + self._calculate_distance(improved_route[j], improved_route[j + 1])
 
                     # Calculate distance after swap
-                    new_dist = (
-                        self._calculate_distance(improved_route[i - 1], improved_route[j]) +
-                        self._calculate_distance(improved_route[i], improved_route[j + 1])
-                    )
+                    new_dist = self._calculate_distance(
+                        improved_route[i - 1], improved_route[j]
+                    ) + self._calculate_distance(improved_route[i], improved_route[j + 1])
 
                     # If improvement found, apply swap
                     if new_dist < current_dist:
-                        improved_route[i:j + 1] = reversed(improved_route[i:j + 1])
+                        improved_route[i : j + 1] = reversed(improved_route[i : j + 1])
                         improved = True
                         break
 
@@ -788,7 +749,9 @@ class RouteDiscoveryAgent(BaseAgent, ProtocolMixin):
 
         return improved_route
 
-    def _calculate_efficiency_score(self, route: List[Tuple[float, float]], total_distance: float) -> float:
+    def _calculate_efficiency_score(
+        self, route: List[Tuple[float, float]], total_distance: float
+    ) -> float:
         """
         Calculate route efficiency score (0-1, higher is better)
         Based on straightness and number of stops
@@ -826,9 +789,9 @@ class RouteDiscoveryAgent(BaseAgent, ProtocolMixin):
 # FACTORY FUNCTION
 # ============================================================================
 
+
 async def create_route_discovery_agent(
-    agent_id: str = None,
-    config: RouteDiscoveryAgentConfig = None
+    agent_id: str = None, config: RouteDiscoveryAgentConfig = None
 ) -> RouteDiscoveryAgent:
     """
     Factory function to create and initialize Route Discovery Agent
@@ -855,6 +818,7 @@ async def create_route_discovery_agent(
 # ============================================================================
 # CLI INTERFACE
 # ============================================================================
+
 
 async def main():
     """CLI interface for testing and demonstration"""
@@ -888,17 +852,14 @@ async def main():
             (37.7749, -122.4194),  # San Francisco
             (37.3382, -121.8863),  # San Jose
             (37.8044, -122.2712),  # Oakland
-            (37.5485, -121.9886)   # Fremont
+            (37.5485, -121.9886),  # Fremont
         ]
 
-        result = await agent.execute({
-            "action": "calculate_route",
-            "stops": stops
-        })
+        result = await agent.execute({"action": "calculate_route", "stops": stops})
 
         print(f"Success: {result['success']}")
-        if result['success']:
-            route = result['route']
+        if result["success"]:
+            route = result["route"]
             print(f"Algorithm: {route['algorithm']}")
             print(f"Total distance: {route['total_distance_km']} km")
             print(f"Total time: {route['total_time_minutes']} minutes")
@@ -906,19 +867,19 @@ async def main():
 
         # Test 2: Find alternative routes
         print("\n2. Find alternative routes:")
-        result = await agent.execute({
-            "action": "find_alternatives",
-            "route": stops,
-            "num_alternatives": 2
-        })
+        result = await agent.execute(
+            {"action": "find_alternatives", "route": stops, "num_alternatives": 2}
+        )
 
         print(f"Success: {result['success']}")
-        if result['success']:
+        if result["success"]:
             print(f"Alternatives found: {result['count']}")
-            for i, alt in enumerate(result['alternatives'], 1):
-                print(f"  Alternative {i} ({alt['strategy']}): "
-                      f"{alt['metrics']['total_distance_km']} km, "
-                      f"{alt['metrics']['total_time_minutes']} minutes")
+            for i, alt in enumerate(result["alternatives"], 1):
+                print(
+                    f"  Alternative {i} ({alt['strategy']}): "
+                    f"{alt['metrics']['total_distance_km']} km, "
+                    f"{alt['metrics']['total_time_minutes']} minutes"
+                )
 
         # Final health check
         print("\n3. Final health check:")

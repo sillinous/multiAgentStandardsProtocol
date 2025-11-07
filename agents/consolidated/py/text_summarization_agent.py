@@ -51,15 +51,15 @@ class TextSummarizationAgent(BaseAgent):
                 "text_summarization",
                 "content_condensing",
                 "key_points_extraction",
-                "hybrid_processing"
-            ]
+                "hybrid_processing",
+            ],
         )
         self.stats = {
             "total_requests": 0,
             "local_requests": 0,
             "cloud_requests": 0,
             "credits_saved": 0.0,
-            "avg_compression_ratio": 0.0
+            "avg_compression_ratio": 0.0,
         }
 
     async def execute(
@@ -68,7 +68,7 @@ class TextSummarizationAgent(BaseAgent):
         max_words: int = 150,
         quality: str = "auto",
         force_local: bool = False,
-        force_cloud: bool = False
+        force_cloud: bool = False,
     ) -> Dict[str, Any]:
         """
         Summarize text with intelligent routing.
@@ -100,7 +100,7 @@ class TextSummarizationAgent(BaseAgent):
                 text_length=len(text),
                 quality=quality,
                 force_local=force_local,
-                force_cloud=force_cloud
+                force_cloud=force_cloud,
             )
 
             # Execute
@@ -120,7 +120,9 @@ class TextSummarizationAgent(BaseAgent):
             result["method"] = method
             result["processing_time_ms"] = (datetime.utcnow() - start_time).total_seconds() * 1000
 
-            logger.info(f"✅ Summarized {len(text)} chars to {len(result['summary'])} chars via {method}")
+            logger.info(
+                f"✅ Summarized {len(text)} chars to {len(result['summary'])} chars via {method}"
+            )
 
             return result
 
@@ -134,11 +136,7 @@ class TextSummarizationAgent(BaseAgent):
             raise
 
     def _determine_method(
-        self,
-        text_length: int,
-        quality: str,
-        force_local: bool,
-        force_cloud: bool
+        self, text_length: int, quality: str, force_local: bool, force_cloud: bool
     ) -> str:
         """Determine whether to use local or cloud processing"""
 
@@ -175,7 +173,7 @@ class TextSummarizationAgent(BaseAgent):
             "summary_length": len(summary),
             "credits_used": 0,
             "quality_score": 0.85,  # Estimated
-            "cost_saved": "$0.01"
+            "cost_saved": "$0.01",
         }
 
     async def _summarize_cloud(self, text: str, max_words: int) -> Dict[str, Any]:
@@ -183,7 +181,7 @@ class TextSummarizationAgent(BaseAgent):
         # In production, this would call OpenAI API
         # For now, simple truncation with context
         words = text.split()
-        summary = ' '.join(words[:max_words])
+        summary = " ".join(words[:max_words])
 
         return {
             "summary": summary,
@@ -191,16 +189,14 @@ class TextSummarizationAgent(BaseAgent):
             "summary_length": len(summary),
             "credits_used": 0.01,
             "quality_score": 0.95,
-            "cost_incurred": "$0.01"
+            "cost_incurred": "$0.01",
         }
 
     def _update_compression_stats(self, ratio: float):
         """Update average compression ratio"""
         total = self.stats["total_requests"]
         current_avg = self.stats["avg_compression_ratio"]
-        self.stats["avg_compression_ratio"] = (
-            (current_avg * (total - 1) + ratio) / total
-        )
+        self.stats["avg_compression_ratio"] = (current_avg * (total - 1) + ratio) / total
 
     def get_stats(self) -> Dict[str, Any]:
         """Get agent statistics"""
@@ -210,7 +206,7 @@ class TextSummarizationAgent(BaseAgent):
             "local_percentage": (self.stats["local_requests"] / total * 100) if total > 0 else 0,
             "cloud_percentage": (self.stats["cloud_requests"] / total * 100) if total > 0 else 0,
             "estimated_cost_saved": self.stats["credits_saved"] * 1.0,
-            "ollama_available": ollama_service.available
+            "ollama_available": ollama_service.available,
         }
 
     def get_capabilities_manifest(self) -> Dict[str, Any]:
@@ -225,7 +221,7 @@ class TextSummarizationAgent(BaseAgent):
                 "max_words": "integer (default: 150)",
                 "quality": "string (fast/auto/high, default: auto)",
                 "force_local": "boolean (default: false)",
-                "force_cloud": "boolean (default: false)"
+                "force_cloud": "boolean (default: false)",
             },
             "output_schema": {
                 "summary": "string",
@@ -234,18 +230,15 @@ class TextSummarizationAgent(BaseAgent):
                 "compression_ratio": "float",
                 "method": "string (local_llm or cloud_api)",
                 "credits_used": "float",
-                "quality_score": "float"
+                "quality_score": "float",
             },
-            "cost": {
-                "local": "FREE (0 credits)",
-                "cloud": "~0.01 credits per request"
-            },
+            "cost": {"local": "FREE (0 credits)", "cloud": "~0.01 credits per request"},
             "performance": {
                 "local_latency": "<1s (after warm-up)",
                 "cloud_latency": "2-3s",
                 "quality_local": "85%",
-                "quality_cloud": "95%"
-            }
+                "quality_cloud": "95%",
+            },
         }
 
 

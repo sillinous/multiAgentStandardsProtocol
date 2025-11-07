@@ -32,18 +32,24 @@ class ForecastDemandOperationalAgent(BaseAgent, ProtocolMixin):
     APQC_PROCESS_ID = "4.1.3"
 
     def __init__(self, config: ForecastDemandOperationalAgentConfig):
-        super().__init__(agent_id=config.apqc_agent_id, agent_type=config.agent_type, version=config.version)
+        super().__init__(
+            agent_id=config.apqc_agent_id, agent_type=config.agent_type, version=config.version
+        )
         self.config = config
-        self.skills = {'time_series_forecasting': 0.92, 'seasonality_detection': 0.88, 'demand_planning': 0.86}
+        self.skills = {
+            "time_series_forecasting": 0.92,
+            "seasonality_detection": 0.88,
+            "demand_planning": 0.86,
+        }
 
     async def execute(self, input_data: Dict[str, Any]) -> Dict[str, Any]:
         """
         Forecast demand using exponential smoothing and seasonal decomposition
         """
-        historical_demand = np.array(input_data.get('historical_demand', []))
-        seasonality_factors = input_data.get('seasonality_factors', {})
-        external_indicators = input_data.get('external_indicators', {})
-        forecast_periods = input_data.get('forecast_periods', 12)
+        historical_demand = np.array(input_data.get("historical_demand", []))
+        seasonality_factors = input_data.get("seasonality_factors", {})
+        external_indicators = input_data.get("external_indicators", {})
+        forecast_periods = input_data.get("forecast_periods", 12)
 
         # Exponential Smoothing
         forecast = self._exponential_smoothing(historical_demand, forecast_periods)
@@ -55,7 +61,9 @@ class ForecastDemandOperationalAgent(BaseAgent, ProtocolMixin):
         final_forecast = self._apply_seasonality(forecast, seasonal_decomp)
 
         # Calculate confidence intervals
-        confidence_intervals = self._calculate_confidence_intervals(historical_demand, final_forecast)
+        confidence_intervals = self._calculate_confidence_intervals(
+            historical_demand, final_forecast
+        )
 
         return {
             "status": "completed",
@@ -66,17 +74,19 @@ class ForecastDemandOperationalAgent(BaseAgent, ProtocolMixin):
                     "predictions": final_forecast,
                     "confidence_intervals": confidence_intervals,
                     "seasonality_patterns": seasonal_decomp,
-                    "forecast_method": "exponential_smoothing_with_seasonality"
+                    "forecast_method": "exponential_smoothing_with_seasonality",
                 },
                 "metrics": {
-                    "forecast_accuracy_estimate": seasonal_decomp.get('seasonal_strength', 0),
+                    "forecast_accuracy_estimate": seasonal_decomp.get("seasonal_strength", 0),
                     "average_forecasted_demand": round(float(np.mean(final_forecast)), 2),
-                    "forecast_horizon": forecast_periods
-                }
-            }
+                    "forecast_horizon": forecast_periods,
+                },
+            },
         }
 
-    def _exponential_smoothing(self, data: np.ndarray, periods: int, alpha: float = 0.3) -> List[float]:
+    def _exponential_smoothing(
+        self, data: np.ndarray, periods: int, alpha: float = 0.3
+    ) -> List[float]:
         """Exponential smoothing forecast"""
         if len(data) == 0:
             return [0] * periods
@@ -95,9 +105,11 @@ class ForecastDemandOperationalAgent(BaseAgent, ProtocolMixin):
 
         return forecast
 
-    def _seasonal_decomposition(self, data: np.ndarray, seasonality_factors: Dict) -> Dict[str, Any]:
+    def _seasonal_decomposition(
+        self, data: np.ndarray, seasonality_factors: Dict
+    ) -> Dict[str, Any]:
         """Decompose time series into seasonal components"""
-        period = seasonality_factors.get('period', 12)
+        period = seasonality_factors.get("period", 12)
 
         if len(data) < period:
             return {"has_seasonality": False, "seasonal_indices": [], "seasonal_strength": 0}
@@ -109,7 +121,9 @@ class ForecastDemandOperationalAgent(BaseAgent, ProtocolMixin):
                 seasonal_indices.append(float(np.mean(season_values)))
 
         overall_mean = float(np.mean(data))
-        normalized_indices = [idx / overall_mean if overall_mean != 0 else 1.0 for idx in seasonal_indices]
+        normalized_indices = [
+            idx / overall_mean if overall_mean != 0 else 1.0 for idx in seasonal_indices
+        ]
 
         seasonal_strength = float(np.std(normalized_indices)) * 100
 
@@ -117,15 +131,15 @@ class ForecastDemandOperationalAgent(BaseAgent, ProtocolMixin):
             "has_seasonality": seasonal_strength > 10,
             "seasonal_indices": [round(idx, 3) for idx in normalized_indices],
             "seasonal_strength": round(seasonal_strength, 2),
-            "period": period
+            "period": period,
         }
 
     def _apply_seasonality(self, forecast: List[float], seasonal: Dict) -> List[float]:
         """Apply seasonal adjustments to forecast"""
-        if not seasonal.get('has_seasonality'):
+        if not seasonal.get("has_seasonality"):
             return forecast
 
-        indices = seasonal['seasonal_indices']
+        indices = seasonal["seasonal_indices"]
         adjusted = []
 
         for i, value in enumerate(forecast):
@@ -134,7 +148,9 @@ class ForecastDemandOperationalAgent(BaseAgent, ProtocolMixin):
 
         return adjusted
 
-    def _calculate_confidence_intervals(self, historical: np.ndarray, forecast: List[float]) -> Dict[str, Any]:
+    def _calculate_confidence_intervals(
+        self, historical: np.ndarray, forecast: List[float]
+    ) -> Dict[str, Any]:
         """Calculate confidence intervals"""
         if len(historical) < 2:
             return {"lower": forecast, "upper": forecast}
@@ -150,7 +166,9 @@ class ForecastDemandOperationalAgent(BaseAgent, ProtocolMixin):
         print(f"[{datetime.now().isoformat()}] [{level}] {message}")
 
 
-def create_forecast_demand_operational_agent(config: Optional[ForecastDemandOperationalAgentConfig] = None):
+def create_forecast_demand_operational_agent(
+    config: Optional[ForecastDemandOperationalAgentConfig] = None,
+):
     if config is None:
         config = ForecastDemandOperationalAgentConfig()
     return ForecastDemandOperationalAgent(config)

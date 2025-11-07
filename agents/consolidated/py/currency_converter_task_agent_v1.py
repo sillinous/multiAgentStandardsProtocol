@@ -48,7 +48,11 @@ class CurrencyConverterTaskAgent(BaseAgent):
     and maximum reusability across APQC categories.
     """
 
-    def __init__(self, agent_id: str = "currency_converter_task_agent", config: Optional[Dict[str, Any]] = None):
+    def __init__(
+        self,
+        agent_id: str = "currency_converter_task_agent",
+        config: Optional[Dict[str, Any]] = None,
+    ):
         """
         Initialize Currency Converter Task Agent
 
@@ -59,8 +63,14 @@ class CurrencyConverterTaskAgent(BaseAgent):
         super().__init__(
             agent_id=agent_id,
             agent_type="business_logic",
-            capabilities=['real_time_rates', 'historical_rates', 'multiple_sources', 'batch_conversion', 'rate_caching'],
-            config=config or {}
+            capabilities=[
+                "real_time_rates",
+                "historical_rates",
+                "multiple_sources",
+                "batch_conversion",
+                "rate_caching",
+            ],
+            config=config or {},
         )
 
         # Agent-specific initialization
@@ -70,27 +80,27 @@ class CurrencyConverterTaskAgent(BaseAgent):
             "reusable": True,
             "composable": True,
             "stateless": True,
-            "framework": "APQC 7.0.1"
+            "framework": "APQC 7.0.1",
         }
 
         logger.info(f"Initialized Currency Converter Task Agent [{self.agent_id}]")
 
     async def execute_task(self, task: Dict[str, Any]) -> Dict[str, Any]:
         """
-        Execute the business logic task
+                Execute the business logic task
 
-        Args:
-            task: Task parameters containing:
-                - amount: float
-- source_currency: string
-- target_currency: string
-- date: string
+                Args:
+                    task: Task parameters containing:
+                        - amount: float
+        - source_currency: string
+        - target_currency: string
+        - date: string
 
-        Returns:
-            Result dictionary containing:
-                - converted_amount: float
-- exchange_rate: float
-- rate_source: string
+                Returns:
+                    Result dictionary containing:
+                        - converted_amount: float
+        - exchange_rate: float
+        - rate_source: string
         """
         try:
             logger.info(f"[{self.agent_id}] Executing business_logic task")
@@ -110,7 +120,7 @@ class CurrencyConverterTaskAgent(BaseAgent):
                 "status": "success",
                 "agent_id": self.agent_id,
                 "timestamp": datetime.utcnow().isoformat(),
-                "result": output
+                "result": output,
             }
 
         except Exception as e:
@@ -119,7 +129,7 @@ class CurrencyConverterTaskAgent(BaseAgent):
                 "status": "error",
                 "agent_id": self.agent_id,
                 "timestamp": datetime.utcnow().isoformat(),
-                "error": str(e)
+                "error": str(e),
             }
 
     def _validate_inputs(self, task: Dict[str, Any]) -> None:
@@ -132,7 +142,7 @@ class CurrencyConverterTaskAgent(BaseAgent):
         Raises:
             ValueError: If required inputs are missing or invalid
         """
-        required_fields = ['amount', 'source_currency', 'target_currency', 'date']
+        required_fields = ["amount", "source_currency", "target_currency", "date"]
 
         for field in required_fields:
             if field not in task:
@@ -160,7 +170,7 @@ class CurrencyConverterTaskAgent(BaseAgent):
         result = {
             "executed": True,
             "task_type": "business_logic",
-            "inputs_received": list(task.keys())
+            "inputs_received": list(task.keys()),
         }
 
         # Simulate async work
@@ -185,8 +195,8 @@ class CurrencyConverterTaskAgent(BaseAgent):
                 "agent_type": self.agent_type,
                 "level": 5,
                 "category": "business_logic",
-                "timestamp": datetime.utcnow().isoformat()
-            }
+                "timestamp": datetime.utcnow().isoformat(),
+            },
         }
 
     async def handle_message(self, message: Dict[str, Any]) -> Dict[str, Any]:
@@ -208,10 +218,7 @@ class CurrencyConverterTaskAgent(BaseAgent):
         elif message_type == "capabilities":
             return self.get_capabilities()
         else:
-            return {
-                "status": "error",
-                "error": f"Unknown message type: {message_type}"
-            }
+            return {"status": "error", "error": f"Unknown message type: {message_type}"}
 
     def get_status(self) -> Dict[str, Any]:
         """
@@ -225,7 +232,7 @@ class CurrencyConverterTaskAgent(BaseAgent):
             "agent_type": self.agent_type,
             "status": "ready",
             "capabilities": self.capabilities,
-            "metadata": self.metadata
+            "metadata": self.metadata,
         }
 
     def get_capabilities(self) -> Dict[str, Any]:
@@ -238,11 +245,20 @@ class CurrencyConverterTaskAgent(BaseAgent):
         return {
             "agent_id": self.agent_id,
             "capabilities": self.capabilities,
-            "inputs": {'amount': 'float', 'source_currency': 'string', 'target_currency': 'string', 'date': 'string'},
-            "outputs": {'converted_amount': 'float', 'exchange_rate': 'float', 'rate_source': 'string'},
+            "inputs": {
+                "amount": "float",
+                "source_currency": "string",
+                "target_currency": "string",
+                "date": "string",
+            },
+            "outputs": {
+                "converted_amount": "float",
+                "exchange_rate": "float",
+                "rate_source": "string",
+            },
             "level": 5,
             "reusable": True,
-            "composable": True
+            "composable": True,
         }
 
 
@@ -256,7 +272,7 @@ async def main():
     # Example task
     task = {
         # Add example inputs here
-                # "amount": "example_amount",
+        # "amount": "example_amount",
         # "source_currency": "example_source_currency",
         # "target_currency": "example_target_currency",
         # "date": "example_date",

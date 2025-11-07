@@ -91,7 +91,7 @@ class PerformPreventiveMaintenanceAssetManagementAgentConfig:
             agent_id=os.getenv("AGENT_ID", "apqc_9_0_c3f8g4h7"),
             log_level=os.getenv("LOG_LEVEL", "INFO"),
             max_retries=int(os.getenv("MAX_RETRIES", "3")),
-            timeout_seconds=int(os.getenv("TIMEOUT_SECONDS", "300"))
+            timeout_seconds=int(os.getenv("TIMEOUT_SECONDS", "300")),
         )
 
 
@@ -146,20 +146,65 @@ class PerformPreventiveMaintenanceAssetManagementAgent(BaseAgent, ProtocolMixin)
     def __init__(self, config: PerformPreventiveMaintenanceAssetManagementAgentConfig):
         """Initialize agent"""
         super().__init__(
-            agent_id=config.agent_id,
-            agent_type=config.agent_type,
-            version=config.version
+            agent_id=config.agent_id, agent_type=config.agent_type, version=config.version
         )
 
         self.config = config
-        self.capabilities_list = ['planning', 'monitoring', 'prediction', 'scheduling', 'reporting']
-        self.skills = {'maintenance_planning': 0.9, 'predictive_analytics': 0.85, 'asset_monitoring': 0.8, 'scheduling': 0.75}
-        self.interfaces = {'inputs': ['asset_data', 'maintenance_schedules', 'sensor_data', 'historical_data', 'policies'], 'outputs': ['maintenance_plans', 'work_orders', 'predictions', 'reports', 'alerts', 'metrics', 'events'], 'protocols': ['message_passing', 'event_driven', 'api_rest']}
-        self.behavior = {'autonomous_level': 0.89, 'collaboration_mode': 'orchestrated', 'learning_enabled': True, 'self_improvement': True}
-        self.resources = {'compute': 'adaptive', 'memory': 'adaptive', 'api_budget': 'dynamic', 'priority': 'high'}
-        self.integration = {'compatible_agents': ['4.0', '9.1', '13.0'], 'required_services': ['knowledge_graph', 'cmms_system', 'event_bus', 'iot_platform'], 'ontology_level': 'L0_physical'}
-        self.quality = {'testing_required': True, 'qa_threshold': 0.88, 'consensus_weight': 1.0, 'error_handling': 'graceful_degradation'}
-        self.deployment = {'runtime': 'ray_actor', 'scaling': 'horizontal', 'health_checks': True, 'monitoring': True}
+        self.capabilities_list = ["planning", "monitoring", "prediction", "scheduling", "reporting"]
+        self.skills = {
+            "maintenance_planning": 0.9,
+            "predictive_analytics": 0.85,
+            "asset_monitoring": 0.8,
+            "scheduling": 0.75,
+        }
+        self.interfaces = {
+            "inputs": [
+                "asset_data",
+                "maintenance_schedules",
+                "sensor_data",
+                "historical_data",
+                "policies",
+            ],
+            "outputs": [
+                "maintenance_plans",
+                "work_orders",
+                "predictions",
+                "reports",
+                "alerts",
+                "metrics",
+                "events",
+            ],
+            "protocols": ["message_passing", "event_driven", "api_rest"],
+        }
+        self.behavior = {
+            "autonomous_level": 0.89,
+            "collaboration_mode": "orchestrated",
+            "learning_enabled": True,
+            "self_improvement": True,
+        }
+        self.resources = {
+            "compute": "adaptive",
+            "memory": "adaptive",
+            "api_budget": "dynamic",
+            "priority": "high",
+        }
+        self.integration = {
+            "compatible_agents": ["4.0", "9.1", "13.0"],
+            "required_services": ["knowledge_graph", "cmms_system", "event_bus", "iot_platform"],
+            "ontology_level": "L0_physical",
+        }
+        self.quality = {
+            "testing_required": True,
+            "qa_threshold": 0.88,
+            "consensus_weight": 1.0,
+            "error_handling": "graceful_degradation",
+        }
+        self.deployment = {
+            "runtime": "ray_actor",
+            "scaling": "horizontal",
+            "health_checks": True,
+            "monitoring": True,
+        }
 
         # Initialize state
         self.state = {
@@ -167,7 +212,7 @@ class PerformPreventiveMaintenanceAssetManagementAgent(BaseAgent, ProtocolMixin)
             "tasks_processed": 0,
             "last_activity": datetime.now().isoformat(),
             "performance_metrics": {},
-            "learning_data": {} if self.config.learning_enabled else None
+            "learning_data": {} if self.config.learning_enabled else None,
         }
 
         self._initialize_protocols()
@@ -207,7 +252,7 @@ class PerformPreventiveMaintenanceAssetManagementAgent(BaseAgent, ProtocolMixin)
                 return {
                     "status": "error",
                     "message": "Invalid input data",
-                    "error_handling": self.config.error_handling
+                    "error_handling": self.config.error_handling,
                 }
 
             # Process based on agent type and capabilities
@@ -226,11 +271,7 @@ class PerformPreventiveMaintenanceAssetManagementAgent(BaseAgent, ProtocolMixin)
         except Exception as e:
             self.log("error", f"Execution error: {str(e)}")
             if self.config.error_handling == "graceful_degradation":
-                return {
-                    "status": "degraded",
-                    "message": str(e),
-                    "partial_result": {}
-                }
+                return {"status": "degraded", "message": str(e), "partial_result": {}}
             raise
 
     async def _process_preventive_maintenance(self, input_data: Dict[str, Any]) -> Dict[str, Any]:
@@ -259,8 +300,8 @@ class PerformPreventiveMaintenanceAssetManagementAgent(BaseAgent, ProtocolMixin)
                 "reports": [],
                 "alerts": [],
                 "metrics": {},
-                "events": []
-            }
+                "events": [],
+            },
         }
 
         return result
@@ -276,7 +317,7 @@ class PerformPreventiveMaintenanceAssetManagementAgent(BaseAgent, ProtocolMixin)
                 "timestamp": datetime.now().isoformat(),
                 "input_summary": str(input_data)[:100],
                 "result_status": result.get("status"),
-                "performance": {}
+                "performance": {},
             }
 
             if "learning_history" not in self.state["learning_data"]:
@@ -308,7 +349,7 @@ class PerformPreventiveMaintenanceAssetManagementAgent(BaseAgent, ProtocolMixin)
             "apqc_metadata": {
                 "category_id": self.APQC_CATEGORY_ID,
                 "process_id": self.APQC_PROCESS_ID,
-                "framework_version": self.APQC_FRAMEWORK_VERSION
+                "framework_version": self.APQC_FRAMEWORK_VERSION,
             },
             "protocols": self.get_supported_protocols(),
             "capabilities": self.capabilities_list,
@@ -320,23 +361,23 @@ class PerformPreventiveMaintenanceAssetManagementAgent(BaseAgent, ProtocolMixin)
                 "atomic": True,
                 "composable": True,
                 "orchestratable": True,
-                "vendor_agnostic": True
+                "vendor_agnostic": True,
             },
             "performance": {
                 "tasks_processed": self.state["tasks_processed"],
                 "memory_mb": memory_usage,
-                "last_activity": self.state["last_activity"]
+                "last_activity": self.state["last_activity"],
             },
             "behavior": {
                 "autonomous_level": self.config.autonomous_level,
                 "learning_enabled": self.config.learning_enabled,
-                "collaboration_mode": self.config.collaboration_mode
+                "collaboration_mode": self.config.collaboration_mode,
             },
             "deployment": {
                 "runtime": self.config.runtime,
                 "scaling": self.config.scaling,
-                "monitoring": self.config.monitoring
-            }
+                "monitoring": self.config.monitoring,
+            },
         }
 
         return health
@@ -359,12 +400,19 @@ class PerformPreventiveMaintenanceAssetManagementAgent(BaseAgent, ProtocolMixin)
             "apqc_process_id": self.APQC_PROCESS_ID,
             "accepted_inputs": self.interfaces["inputs"],
             "properties": {
-                "task_type": {"type": "string", "description": "Type of maintenance task to execute"},
+                "task_type": {
+                    "type": "string",
+                    "description": "Type of maintenance task to execute",
+                },
                 "data": {"type": "object", "description": "Preventive maintenance data"},
                 "context": {"type": "object", "description": "Execution context"},
-                "priority": {"type": "string", "enum": ["low", "medium", "high"], "default": "high"}
+                "priority": {
+                    "type": "string",
+                    "enum": ["low", "medium", "high"],
+                    "default": "high",
+                },
             },
-            "required": ["task_type", "data"]
+            "required": ["task_type", "data"],
         }
 
     def get_output_schema(self) -> Dict[str, Any]:
@@ -388,11 +436,11 @@ class PerformPreventiveMaintenanceAssetManagementAgent(BaseAgent, ProtocolMixin)
                         "reports": {"type": "array"},
                         "alerts": {"type": "array"},
                         "metrics": {"type": "object"},
-                        "events": {"type": "array"}
-                    }
-                }
+                        "events": {"type": "array"},
+                    },
+                },
             },
-            "required": ["status", "apqc_process_id", "agent_id", "timestamp", "output"]
+            "required": ["status", "apqc_process_id", "agent_id", "timestamp", "output"],
         }
 
     def log(self, level: str, message: str):
@@ -402,7 +450,9 @@ class PerformPreventiveMaintenanceAssetManagementAgent(BaseAgent, ProtocolMixin)
 
 
 # Convenience function for agent creation
-def create_perform_preventive_maintenance_asset_management_agent(config: Optional[PerformPreventiveMaintenanceAssetManagementAgentConfig] = None) -> PerformPreventiveMaintenanceAssetManagementAgent:
+def create_perform_preventive_maintenance_asset_management_agent(
+    config: Optional[PerformPreventiveMaintenanceAssetManagementAgentConfig] = None,
+) -> PerformPreventiveMaintenanceAssetManagementAgent:
     """Create PerformPreventiveMaintenanceAssetManagementAgent instance"""
     if config is None:
         config = PerformPreventiveMaintenanceAssetManagementAgentConfig()

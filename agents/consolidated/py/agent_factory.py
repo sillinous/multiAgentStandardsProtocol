@@ -50,8 +50,12 @@ from pydantic import BaseModel, Field
 sys.path.insert(0, str(Path(__file__).parent.parent.parent.parent / "autonomous-ecosystem"))
 
 from library.core.agent_template_system import (
-    AgentTemplateSystem, AgentSpecification, ComplianceFramework,
-    PerformanceTier, DeploymentFormat, APQCCategory
+    AgentTemplateSystem,
+    AgentSpecification,
+    ComplianceFramework,
+    PerformanceTier,
+    DeploymentFormat,
+    APQCCategory,
 )
 from library.core.agent_code_generator import AgentCodeGenerator
 from library.agents.factory.research_intelligence_agent import ResearchIntelligenceAgent
@@ -70,13 +74,13 @@ router = APIRouter(prefix="/api/v1/factory", tags=["Agent Factory"])
 # Legacy systems (primary for now)
 # Initialize at module level to ensure they're ready when routes are called
 from pathlib import Path as PathlibPath
+
 PathlibPath("data").mkdir(exist_ok=True)
 
 logger.info("Initializing Agent Factory systems at module load...")
 template_system = AgentTemplateSystem(db_path="data/agent_templates.db")
 code_generator = AgentCodeGenerator(
-    db_path="data/agent_generation.db",
-    template_system=template_system
+    db_path="data/agent_generation.db", template_system=template_system
 )
 research_agent = None
 logger.info("Agent Factory systems initialized at module load")
@@ -86,40 +90,55 @@ logger.info("Agent Factory systems initialized at module load")
 # Request/Response Models
 # ============================================================================
 
+
 class AgentCreationRequest(BaseModel):
     """Request to create a new agent"""
+
     agent_name: str = Field(..., description="Name of the agent")
     description: str = Field(..., description="Agent description")
     business_objective: str = Field(..., description="Business objective")
 
     # Template selection
     template_id: Optional[str] = Field(None, description="Specific template ID to use")
-    apqc_process: Optional[str] = Field(None, description="APQC process (e.g., '1.3' for Strategic Initiatives)")
+    apqc_process: Optional[str] = Field(
+        None, description="APQC process (e.g., '1.3' for Strategic Initiatives)"
+    )
 
     # Customization
-    custom_capabilities: List[str] = Field(default_factory=list, description="Additional capabilities")
-    integration_targets: List[str] = Field(default_factory=list, description="Agents to integrate with")
+    custom_capabilities: List[str] = Field(
+        default_factory=list, description="Additional capabilities"
+    )
+    integration_targets: List[str] = Field(
+        default_factory=list, description="Agents to integrate with"
+    )
 
     # Compliance
     compliance_frameworks: List[str] = Field(
-        default_factory=list,
-        description="Compliance frameworks (gdpr, hipaa, soc2, etc.)"
+        default_factory=list, description="Compliance frameworks (gdpr, hipaa, soc2, etc.)"
     )
-    data_residency: Optional[str] = Field(None, description="Data residency requirement (e.g., 'EU', 'US')")
+    data_residency: Optional[str] = Field(
+        None, description="Data residency requirement (e.g., 'EU', 'US')"
+    )
     encryption_required: bool = Field(True, description="Require data encryption")
 
     # Performance
-    performance_tier: str = Field("optimized", description="Performance tier: basic, optimized, enterprise")
+    performance_tier: str = Field(
+        "optimized", description="Performance tier: basic, optimized, enterprise"
+    )
     max_response_time_ms: int = Field(1000, description="Maximum response time in milliseconds")
     concurrent_users: int = Field(100, description="Expected concurrent users")
 
     # Deployment
-    deployment_format: str = Field("docker", description="Deployment format: docker, kubernetes, serverless, standalone")
+    deployment_format: str = Field(
+        "docker", description="Deployment format: docker, kubernetes, serverless, standalone"
+    )
     cloud_provider: Optional[str] = Field(None, description="Cloud provider: aws, azure, gcp")
 
     # Additional
     industry: Optional[str] = Field(None, description="Industry vertical")
-    organization_size: Optional[str] = Field(None, description="Organization size: startup, smb, enterprise")
+    organization_size: Optional[str] = Field(
+        None, description="Organization size: startup, smb, enterprise"
+    )
 
     class Config:
         json_schema_extra = {
@@ -130,13 +149,14 @@ class AgentCreationRequest(BaseModel):
                 "apqc_process": "5.1",
                 "compliance_frameworks": ["gdpr", "soc2"],
                 "performance_tier": "enterprise",
-                "deployment_format": "kubernetes"
+                "deployment_format": "kubernetes",
             }
         }
 
 
 class AgentCreationResponse(BaseModel):
     """Response from agent creation"""
+
     agent_id: str
     agent_name: str
     template_id: str
@@ -163,6 +183,7 @@ class AgentCreationResponse(BaseModel):
 
 class TemplateListItem(BaseModel):
     """Template list item"""
+
     template_id: str
     name: str
     description: str
@@ -176,6 +197,7 @@ class TemplateListItem(BaseModel):
 
 class TemplateRecommendationRequest(BaseModel):
     """Request for template recommendations"""
+
     business_objective: str
     industry: Optional[str] = None
     apqc_process: Optional[str] = None
@@ -183,6 +205,7 @@ class TemplateRecommendationRequest(BaseModel):
 
 class ResearchIntegrationItem(BaseModel):
     """Research integration item"""
+
     paper_id: str
     paper_title: str
     algorithm_name: str
@@ -194,6 +217,7 @@ class ResearchIntegrationItem(BaseModel):
 # ============================================================================
 # Endpoints
 # ============================================================================
+
 
 @router.post("/create-agent", response_model=AgentCreationResponse)
 async def create_agent(request: AgentCreationRequest, background_tasks: BackgroundTasks):
@@ -221,9 +245,11 @@ async def create_agent(request: AgentCreationRequest, background_tasks: Backgrou
             apqc_process=request.apqc_process,
             custom_capabilities=request.custom_capabilities,
             integration_targets=request.integration_targets,
-            compliance_frameworks=[
-                ComplianceFramework(cf) for cf in request.compliance_frameworks
-            ] if request.compliance_frameworks else [],
+            compliance_frameworks=(
+                [ComplianceFramework(cf) for cf in request.compliance_frameworks]
+                if request.compliance_frameworks
+                else []
+            ),
             data_residency=request.data_residency,
             encryption_required=request.encryption_required,
             performance_tier=PerformanceTier(request.performance_tier),
@@ -232,14 +258,14 @@ async def create_agent(request: AgentCreationRequest, background_tasks: Backgrou
             deployment_format=DeploymentFormat(request.deployment_format),
             cloud_provider=request.cloud_provider,
             industry=request.industry,
-            organization_size=request.organization_size
+            organization_size=request.organization_size,
         )
 
         # Generate agent
         generated = code_generator.generate_agent(spec)
 
         # Record usage in template system
-        if hasattr(generated, 'template_id'):
+        if hasattr(generated, "template_id"):
             template_system.record_usage(
                 template_id=generated.template_id,
                 agent_name=generated.agent_name,
@@ -248,8 +274,8 @@ async def create_agent(request: AgentCreationRequest, background_tasks: Backgrou
                 success=True,
                 performance_metrics={
                     "lines_of_code": generated.lines_of_code,
-                    "code_quality_score": generated.code_quality_score
-                }
+                    "code_quality_score": generated.code_quality_score,
+                },
             )
 
         # Determine pricing tier
@@ -277,7 +303,7 @@ async def create_agent(request: AgentCreationRequest, background_tasks: Backgrou
             documentation_url=f"/api/v1/factory/agents/{generated.agent_id}/readme",
             compliance_checks=generated.compliance_checks,
             pricing_tier=pricing_tier,
-            estimated_monthly_cost=estimated_monthly_cost
+            estimated_monthly_cost=estimated_monthly_cost,
         )
 
     except ValueError as e:
@@ -292,7 +318,7 @@ async def create_agent(request: AgentCreationRequest, background_tasks: Backgrou
 async def list_templates(
     apqc_category: Optional[str] = Query(None, description="Filter by APQC category"),
     keyword: Optional[str] = Query(None, description="Search keyword"),
-    min_success_rate: float = Query(0.0, description="Minimum success rate")
+    min_success_rate: float = Query(0.0, description="Minimum success rate"),
 ):
     """
     List all available agent templates.
@@ -308,32 +334,46 @@ async def list_templates(
             try:
                 category_enum = APQCCategory(apqc_category)
             except ValueError:
-                raise HTTPException(status_code=400, detail=f"Invalid APQC category: {apqc_category}")
+                raise HTTPException(
+                    status_code=400, detail=f"Invalid APQC category: {apqc_category}"
+                )
 
         # Search templates
         results = template_system.search_templates(
-            apqc_category=category_enum,
-            keyword=keyword,
-            min_success_rate=min_success_rate
+            apqc_category=category_enum, keyword=keyword, min_success_rate=min_success_rate
         )
 
         # Get full template details for each result
         templates = []
         for result in results:
-            template_data = template_system.get_template(result['template_id'])
+            template_data = template_system.get_template(result["template_id"])
             if template_data:
                 # template_data is an AgentTemplate dataclass, access attributes directly
-                templates.append(TemplateListItem(
-                    template_id=result['template_id'],
-                    name=result['name'],
-                    description=result.get('description', ''),
-                    apqc_process=result.get('apqc_process', ''),
-                    apqc_category=template_data.apqc_category.value if hasattr(template_data, 'apqc_category') else '',
-                    business_value=result.get('business_value', ''),
-                    success_rate=result.get('success_rate', 0.0),
-                    usage_count=template_data.usage_count if hasattr(template_data, 'usage_count') else 0,
-                    estimated_dev_time_hours=template_data.estimated_dev_time_hours if hasattr(template_data, 'estimated_dev_time_hours') else 0
-                ))
+                templates.append(
+                    TemplateListItem(
+                        template_id=result["template_id"],
+                        name=result["name"],
+                        description=result.get("description", ""),
+                        apqc_process=result.get("apqc_process", ""),
+                        apqc_category=(
+                            template_data.apqc_category.value
+                            if hasattr(template_data, "apqc_category")
+                            else ""
+                        ),
+                        business_value=result.get("business_value", ""),
+                        success_rate=result.get("success_rate", 0.0),
+                        usage_count=(
+                            template_data.usage_count
+                            if hasattr(template_data, "usage_count")
+                            else 0
+                        ),
+                        estimated_dev_time_hours=(
+                            template_data.estimated_dev_time_hours
+                            if hasattr(template_data, "estimated_dev_time_hours")
+                            else 0
+                        ),
+                    )
+                )
 
         return templates
 
@@ -389,15 +429,12 @@ async def recommend_templates(request: TemplateRecommendationRequest):
             description="",
             business_objective=request.business_objective,
             apqc_process=request.apqc_process,
-            industry=request.industry
+            industry=request.industry,
         )
 
         recommendations = template_system.recommend_template(spec)
 
-        return {
-            "recommendations": recommendations,
-            "total_count": len(recommendations)
-        }
+        return {"recommendations": recommendations, "total_count": len(recommendations)}
 
     except Exception as e:
         logger.error(f"Error recommending templates: {str(e)}")
@@ -448,14 +485,16 @@ async def download_agent(agent_id: str):
         # Create ZIP file in memory
         zip_buffer = io.BytesIO()
 
-        with zipfile.ZipFile(zip_buffer, 'w', zipfile.ZIP_DEFLATED) as zip_file:
+        with zipfile.ZipFile(zip_buffer, "w", zipfile.ZIP_DEFLATED) as zip_file:
             # Add agent code
             if isinstance(agent, dict):
-                zip_file.writestr(f"{agent_id}/{agent_id}.py", agent.get('agent_code', ''))
-                zip_file.writestr(f"{agent_id}/tests/test_{agent_id}.py", agent.get('test_code', ''))
-                zip_file.writestr(f"{agent_id}/README.md", agent.get('readme_md', ''))
-                zip_file.writestr(f"{agent_id}/requirements.txt", agent.get('requirements_txt', ''))
-                zip_file.writestr(f"{agent_id}/Dockerfile", agent.get('dockerfile', ''))
+                zip_file.writestr(f"{agent_id}/{agent_id}.py", agent.get("agent_code", ""))
+                zip_file.writestr(
+                    f"{agent_id}/tests/test_{agent_id}.py", agent.get("test_code", "")
+                )
+                zip_file.writestr(f"{agent_id}/README.md", agent.get("readme_md", ""))
+                zip_file.writestr(f"{agent_id}/requirements.txt", agent.get("requirements_txt", ""))
+                zip_file.writestr(f"{agent_id}/Dockerfile", agent.get("dockerfile", ""))
             else:
                 zip_file.writestr(f"{agent_id}/{agent_id}.py", agent.agent_code)
                 zip_file.writestr(f"{agent_id}/tests/test_{agent_id}.py", agent.test_code)
@@ -468,9 +507,7 @@ async def download_agent(agent_id: str):
         return StreamingResponse(
             zip_buffer,
             media_type="application/zip",
-            headers={
-                "Content-Disposition": f"attachment; filename={agent_id}.zip"
-            }
+            headers={"Content-Disposition": f"attachment; filename={agent_id}.zip"},
         )
 
     except HTTPException:
@@ -490,14 +527,11 @@ async def get_agent_readme(agent_id: str):
             raise HTTPException(status_code=404, detail=f"Agent not found: {agent_id}")
 
         if isinstance(agent, dict):
-            readme = agent.get('readme_md', '')
+            readme = agent.get("readme_md", "")
         else:
             readme = agent.readme_md
 
-        return {
-            "agent_id": agent_id,
-            "readme": readme
-        }
+        return {"agent_id": agent_id, "readme": readme}
 
     except HTTPException:
         raise
@@ -530,10 +564,9 @@ async def get_factory_statistics():
         global research_agent
         if research_agent:
             try:
-                research_result = await research_agent.execute({
-                    "action": "get_insights",
-                    "time_range_days": 30
-                })
+                research_result = await research_agent.execute(
+                    {"action": "get_insights", "time_range_days": 30}
+                )
                 if research_result.get("status") == "success":
                     research_stats = research_result.get("data", {})
             except Exception as e:
@@ -543,7 +576,7 @@ async def get_factory_statistics():
             "templates": template_stats,
             "generation": generation_stats,
             "research": research_stats,
-            "timestamp": datetime.now().isoformat()
+            "timestamp": datetime.now().isoformat(),
         }
 
     except Exception as e:
@@ -554,7 +587,9 @@ async def get_factory_statistics():
 @router.get("/research/latest", response_model=List[ResearchIntegrationItem])
 async def get_latest_research(
     limit: int = Query(10, description="Number of items to return"),
-    status: Optional[str] = Query(None, description="Filter by status: discovered, integrated, validated")
+    status: Optional[str] = Query(
+        None, description="Filter by status: discovered, integrated, validated"
+    ),
 ):
     """
     Get latest research integrations from Research Intelligence Agent.
@@ -570,10 +605,7 @@ async def get_latest_research(
             research_agent = ResearchIntelligenceAgent()
 
         # Get insights
-        result = await research_agent.execute({
-            "action": "get_insights",
-            "time_range_days": 30
-        })
+        result = await research_agent.execute({"action": "get_insights", "time_range_days": 30})
 
         if result.get("status") != "success":
             return []
@@ -588,14 +620,16 @@ async def get_latest_research(
             if status and integration.get("integration_status") != status:
                 continue
 
-            items.append(ResearchIntegrationItem(
-                paper_id=integration.get("paper_id", ""),
-                paper_title=integration.get("paper_title", ""),
-                algorithm_name=integration.get("algorithm_name", ""),
-                integration_status=integration.get("integration_status", "discovered"),
-                performance_improvement=integration.get("performance_improvement"),
-                integrated_date=integration.get("integrated_date", datetime.now().isoformat())
-            ))
+            items.append(
+                ResearchIntegrationItem(
+                    paper_id=integration.get("paper_id", ""),
+                    paper_title=integration.get("paper_title", ""),
+                    algorithm_name=integration.get("algorithm_name", ""),
+                    integration_status=integration.get("integration_status", "discovered"),
+                    performance_improvement=integration.get("performance_improvement"),
+                    integrated_date=integration.get("integrated_date", datetime.now().isoformat()),
+                )
+            )
 
         return items
 
@@ -617,14 +651,15 @@ async def health_check():
             "self-evolution",
             "performance-tracking",
             "research-integration",
-            "auto-optimization"
-        ]
+            "auto-optimization",
+        ],
     }
 
 
 # ============================================================================
 # NEW V2.0 Endpoints - Self-Evolution & Intelligence
 # ============================================================================
+
 
 @router.post("/agents/{agent_id}/performance")
 async def report_agent_performance(agent_id: str, metrics: Dict[str, Any]):
@@ -652,10 +687,7 @@ async def report_agent_performance(agent_id: str, metrics: Dict[str, Any]):
         global factory
 
         if not factory:
-            raise HTTPException(
-                status_code=503,
-                detail="Factory not initialized"
-            )
+            raise HTTPException(status_code=503, detail="Factory not initialized")
 
         # Report performance to factory
         result = await factory.report_performance(agent_id, metrics)
@@ -667,7 +699,7 @@ async def report_agent_performance(agent_id: str, metrics: Dict[str, Any]):
             "reward_signal": result.get("reward"),
             "insights_count": result.get("insights_count"),
             "message": "Performance data recorded - factory is learning!",
-            "timestamp": datetime.now().isoformat()
+            "timestamp": datetime.now().isoformat(),
         }
 
     except HTTPException:
@@ -698,10 +730,7 @@ async def trigger_evolution(background_tasks: BackgroundTasks):
         global factory
 
         if not factory:
-            raise HTTPException(
-                status_code=503,
-                detail="Factory not initialized"
-            )
+            raise HTTPException(status_code=503, detail="Factory not initialized")
 
         # Trigger evolution in background
         logger.info("Manual evolution cycle triggered")
@@ -715,7 +744,7 @@ async def trigger_evolution(background_tasks: BackgroundTasks):
             "research_integrated": evolution_results["research_integrated"],
             "improvements": evolution_results.get("improvements", []),
             "message": "Factory evolution cycle completed",
-            "timestamp": datetime.now().isoformat()
+            "timestamp": datetime.now().isoformat(),
         }
 
     except HTTPException:
@@ -748,17 +777,13 @@ async def get_factory_status():
             return {
                 "status": "initializing",
                 "message": "Factory is starting up",
-                "timestamp": datetime.now().isoformat()
+                "timestamp": datetime.now().isoformat(),
             }
 
         # Get comprehensive status
         status = await factory.get_factory_status()
 
-        return {
-            **status,
-            "api_version": "2.0.0",
-            "timestamp": datetime.now().isoformat()
-        }
+        return {**status, "api_version": "2.0.0", "timestamp": datetime.now().isoformat()}
 
     except Exception as e:
         logger.error(f"Error getting factory status: {str(e)}")
@@ -767,8 +792,10 @@ async def get_factory_status():
 
 @router.get("/insights")
 async def get_factory_insights(
-    insight_type: Optional[str] = Query(None, description="Filter by type: pattern, best_practice, optimization"),
-    limit: int = Query(50, description="Number of insights to return")
+    insight_type: Optional[str] = Query(
+        None, description="Filter by type: pattern, best_practice, optimization"
+    ),
+    limit: int = Query(50, description="Number of insights to return"),
 ):
     """
     Get factory insights
@@ -792,10 +819,7 @@ async def get_factory_insights(
         global factory
 
         if not factory:
-            raise HTTPException(
-                status_code=503,
-                detail="Factory not initialized"
-            )
+            raise HTTPException(status_code=503, detail="Factory not initialized")
 
         # Get insights
         insights = await factory.get_insights(insight_type=insight_type)
@@ -807,7 +831,7 @@ async def get_factory_insights(
             "status": "success",
             "total_insights": len(insights),
             "insights": insights,
-            "timestamp": datetime.now().isoformat()
+            "timestamp": datetime.now().isoformat(),
         }
 
     except HTTPException:
@@ -835,15 +859,11 @@ async def get_agent_performance(agent_id: str):
         global factory
 
         if not factory:
-            raise HTTPException(
-                status_code=503,
-                detail="Factory not initialized"
-            )
+            raise HTTPException(status_code=503, detail="Factory not initialized")
 
         if agent_id not in factory.performance_data:
             raise HTTPException(
-                status_code=404,
-                detail=f"No performance data for agent: {agent_id}"
+                status_code=404, detail=f"No performance data for agent: {agent_id}"
             )
 
         perf_data = factory.performance_data[agent_id]
@@ -856,29 +876,29 @@ async def get_agent_performance(agent_id: str):
             "deployment": {
                 "success": perf_data.deployment_success,
                 "time_seconds": perf_data.deployment_time_seconds,
-                "issues": perf_data.deployment_issues
+                "issues": perf_data.deployment_issues,
             },
             "runtime": {
                 "total_executions": perf_data.total_executions,
                 "successful_executions": perf_data.successful_executions,
                 "error_rate": perf_data.error_rate,
-                "avg_response_time_ms": perf_data.average_response_time_ms
+                "avg_response_time_ms": perf_data.average_response_time_ms,
             },
             "quality": {
                 "code_quality_score": perf_data.code_quality_score,
                 "test_coverage": perf_data.test_coverage,
-                "security_score": perf_data.security_score
+                "security_score": perf_data.security_score,
             },
             "business": {
                 "user_satisfaction": perf_data.user_satisfaction_score,
                 "business_value": perf_data.business_value_delivered,
-                "cost_efficiency": perf_data.cost_efficiency
+                "cost_efficiency": perf_data.cost_efficiency,
             },
             "feedback": {
                 "user_feedback_count": len(perf_data.user_feedback),
-                "issue_reports_count": len(perf_data.issue_reports)
+                "issue_reports_count": len(perf_data.issue_reports),
             },
-            "timestamp": datetime.now().isoformat()
+            "timestamp": datetime.now().isoformat(),
         }
 
     except HTTPException:
@@ -891,6 +911,7 @@ async def get_agent_performance(agent_id: str):
 # ============================================================================
 # Initialize on startup
 # ============================================================================
+
 
 @router.on_event("startup")
 async def startup_event():
@@ -908,8 +929,7 @@ async def startup_event():
     logger.info("Initializing Agent Factory systems...")
     template_system = AgentTemplateSystem(db_path="data/agent_templates.db")
     code_generator = AgentCodeGenerator(
-        db_path="data/agent_generation.db",
-        template_system=template_system
+        db_path="data/agent_generation.db", template_system=template_system
     )
 
     logger.info("✅ Agent Factory systems initialized")

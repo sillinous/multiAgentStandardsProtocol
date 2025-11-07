@@ -18,7 +18,7 @@ import json
 import re
 
 # Add library path for protocol-compliant BaseAgent
-sys.path.insert(0, os.path.join(os.path.dirname(__file__), '..', 'library'))
+sys.path.insert(0, os.path.join(os.path.dirname(__file__), "..", "library"))
 
 # CRITICAL: Import from protocol-compliant BaseAgent (THE SINGLE SOURCE OF TRUTH)
 from superstandard.agents.base.base_agent import BaseAgent, AgentCapability, MessageType
@@ -38,13 +38,13 @@ class DevelopmentAgent(BaseAgent):
         self,
         agent_id: str = "development_agent_001",
         workspace_path: str = "./autonomous-ecosystem/workspace",
-        project_root: str = "."
+        project_root: str = ".",
     ):
         super().__init__(
             agent_id=agent_id,
             agent_type="development",
             capabilities=[AgentCapability.DEVELOPMENT],
-            workspace_path=workspace_path
+            workspace_path=workspace_path,
         )
         self.project_root = project_root
         self.implementations_completed = []
@@ -97,8 +97,7 @@ async def {function_name}(
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
 ''',
-
-            "react_component": '''import React, {{ useState, useEffect }} from 'react';
+            "react_component": """import React, {{ useState, useEffect }} from 'react';
 import {{ motion }} from 'framer-motion';
 
 interface {component_name}Props {{
@@ -124,8 +123,7 @@ export default function {component_name}({{ {props_destructure} }}: {component_n
     </motion.div>
   );
 }}
-''',
-
+""",
             "python_test": '''"""
 Tests for {module_name}
 """
@@ -165,8 +163,7 @@ class Test{class_name}:
         with pytest.raises({exception_type}):
             {error_act}
 ''',
-
-            "typescript_test": '''import {{ render, screen, fireEvent, waitFor }} from '@testing-library/react';
+            "typescript_test": """import {{ render, screen, fireEvent, waitFor }} from '@testing-library/react';
 import {{ {component_name} }} from './{component_file}';
 
 describe('{component_name}', () => {{
@@ -187,7 +184,7 @@ describe('{component_name}', () => {{
     {error_assertions}
   }});
 }});
-'''
+""",
         }
 
     async def execute_task(self, task: Dict[str, Any]) -> Dict[str, Any]:
@@ -227,7 +224,7 @@ describe('{component_name}', () => {{
             "component": spec.get("component"),
             "changes": [],
             "tests_added": [],
-            "status": "in_progress"
+            "status": "in_progress",
         }
 
         # Determine what needs to be implemented based on component
@@ -260,15 +257,11 @@ describe('{component_name}', () => {{
         self.save_artifact(
             "implementations",
             implementation,
-            f"implementation_report_{datetime.now().strftime('%Y%m%d_%H%M%S')}.json"
+            f"implementation_report_{datetime.now().strftime('%Y%m%d_%H%M%S')}.json",
         )
 
         # Send to orchestrator
-        self.send_message(
-            MessageType.IMPLEMENTATION_REPORT,
-            "orchestrator",
-            implementation
-        )
+        self.send_message(MessageType.IMPLEMENTATION_REPORT, "orchestrator", implementation)
 
         return implementation
 
@@ -280,7 +273,7 @@ describe('{component_name}', () => {{
             "issue_id": issue["id"],
             "component": issue.get("component"),
             "changes": [],
-            "status": "completed"
+            "status": "completed",
         }
 
         # Implement fix based on issue type
@@ -289,17 +282,21 @@ describe('{component_name}', () => {{
         if component == "backend":
             if "not running" in issue.get("description", "").lower():
                 # Configuration or startup issue
-                fix["changes"].append({
-                    "type": "configuration",
-                    "description": "Ensure backend configuration and dependencies are correct"
-                })
+                fix["changes"].append(
+                    {
+                        "type": "configuration",
+                        "description": "Ensure backend configuration and dependencies are correct",
+                    }
+                )
         elif component == "frontend":
             if "not running" in issue.get("description", "").lower():
                 # Configuration or startup issue
-                fix["changes"].append({
-                    "type": "configuration",
-                    "description": "Ensure frontend configuration and dependencies are correct"
-                })
+                fix["changes"].append(
+                    {
+                        "type": "configuration",
+                        "description": "Ensure frontend configuration and dependencies are correct",
+                    }
+                )
 
         return fix
 
@@ -307,11 +304,7 @@ describe('{component_name}', () => {{
         """Implement an enhancement"""
         print(f"[{self.agent_id}] Implementing enhancement: {enhancement.get('id')}")
 
-        implementation = {
-            "enhancement_id": enhancement["id"],
-            "changes": [],
-            "status": "completed"
-        }
+        implementation = {"enhancement_id": enhancement["id"], "changes": [], "status": "completed"}
 
         # Implement based on enhancement description
         if "autonomous deployment" in enhancement.get("description", "").lower():
@@ -327,7 +320,7 @@ describe('{component_name}', () => {{
             "component": spec.get("component"),
             "estimated_time": self._estimate_implementation_time(spec),
             "dependencies": self._identify_dependencies(spec),
-            "implementation_plan": self._create_implementation_plan(spec)
+            "implementation_plan": self._create_implementation_plan(spec),
         }
 
     # Implementation methods
@@ -336,40 +329,45 @@ describe('{component_name}', () => {{
         """Implement end-to-end workflow"""
         print(f"[{self.agent_id}] Implementing E2E workflow...")
 
-        result = {
-            "changes": [],
-            "tests": []
-        }
+        result = {"changes": [], "tests": []}
 
         # Key workflow: Market Research → Business Plan → Deployment
 
         # 1. Ensure backend orchestration exists
-        result["changes"].append({
-            "file": "backend/app/api/endpoints/orchestration.py",
-            "type": "added",
-            "description": "Created orchestration endpoint for end-to-end workflow"
-        })
+        result["changes"].append(
+            {
+                "file": "backend/app/api/endpoints/orchestration.py",
+                "type": "added",
+                "description": "Created orchestration endpoint for end-to-end workflow",
+            }
+        )
 
         # 2. Implement workflow coordinator
-        result["changes"].append({
-            "file": "backend/app/orchestration/workflow_coordinator.py",
-            "type": "added",
-            "description": "Implemented workflow coordinator to manage E2E process"
-        })
+        result["changes"].append(
+            {
+                "file": "backend/app/orchestration/workflow_coordinator.py",
+                "type": "added",
+                "description": "Implemented workflow coordinator to manage E2E process",
+            }
+        )
 
         # 3. Implement one-button deployment
-        result["changes"].append({
-            "file": "backend/app/deployment/autonomous_deployer.py",
-            "type": "added",
-            "description": "Implemented autonomous deployment system"
-        })
+        result["changes"].append(
+            {
+                "file": "backend/app/deployment/autonomous_deployer.py",
+                "type": "added",
+                "description": "Implemented autonomous deployment system",
+            }
+        )
 
         # 4. Update frontend to include workflow UI
-        result["changes"].append({
-            "file": "frontend/components/AutonomousWorkflow.tsx",
-            "type": "added",
-            "description": "Added autonomous workflow UI component"
-        })
+        result["changes"].append(
+            {
+                "file": "frontend/components/AutonomousWorkflow.tsx",
+                "type": "added",
+                "description": "Added autonomous workflow UI component",
+            }
+        )
 
         # 5. Add tests
         result["tests"].append("test_e2e_market_research_to_deployment")
@@ -382,11 +380,7 @@ describe('{component_name}', () => {{
         """Implement backend fixes with real code generation"""
         print(f"[{self.agent_id}] Implementing backend fixes...")
 
-        result = {
-            "changes": [],
-            "tests": [],
-            "code_generated": []
-        }
+        result = {"changes": [], "tests": [], "code_generated": []}
 
         requirements = spec.get("requirements", [])
         component = spec.get("component")
@@ -403,32 +397,27 @@ describe('{component_name}', () => {{
                     path="/api/v1/ai-analysis/business-plan",
                     method="post",
                     description="Generate comprehensive business plan from market research data",
-                    spec=spec
+                    spec=spec,
                 )
 
                 filepath = "backend/app/api/endpoints/ai_analysis.py"
-                result["changes"].append({
-                    "file": filepath,
-                    "type": "code_added",
-                    "description": "Added business plan generation endpoint",
-                    "code_preview": code[:200] + "..." if len(code) > 200 else code
-                })
-                result["code_generated"].append({
-                    "file": filepath,
-                    "content": code
-                })
+                result["changes"].append(
+                    {
+                        "file": filepath,
+                        "type": "code_added",
+                        "description": "Added business plan generation endpoint",
+                        "code_preview": code[:200] + "..." if len(code) > 200 else code,
+                    }
+                )
+                result["code_generated"].append({"file": filepath, "content": code})
 
                 # Generate corresponding test
                 test_code = await self._generate_backend_test(
-                    endpoint_name="business_plan",
-                    spec=spec
+                    endpoint_name="business_plan", spec=spec
                 )
                 test_filepath = "backend/tests/test_ai_analysis.py"
                 result["tests"].append(test_filepath)
-                result["code_generated"].append({
-                    "file": test_filepath,
-                    "content": test_code
-                })
+                result["code_generated"].append({"file": test_filepath, "content": test_code})
 
             elif "deployment" in req_desc:
                 # Generate deployment endpoint
@@ -437,20 +426,19 @@ describe('{component_name}', () => {{
                     path="/api/v1/autonomous/deploy",
                     method="post",
                     description="Autonomous one-button deployment workflow",
-                    spec=spec
+                    spec=spec,
                 )
 
                 filepath = "backend/app/api/endpoints/autonomous.py"
-                result["changes"].append({
-                    "file": filepath,
-                    "type": "code_added",
-                    "description": "Added autonomous deployment endpoint",
-                    "code_preview": code[:200] + "..." if len(code) > 200 else code
-                })
-                result["code_generated"].append({
-                    "file": filepath,
-                    "content": code
-                })
+                result["changes"].append(
+                    {
+                        "file": filepath,
+                        "type": "code_added",
+                        "description": "Added autonomous deployment endpoint",
+                        "code_preview": code[:200] + "..." if len(code) > 200 else code,
+                    }
+                )
+                result["code_generated"].append({"file": filepath, "content": code})
 
         return result
 
@@ -458,20 +446,19 @@ describe('{component_name}', () => {{
         """Implement frontend fixes"""
         print(f"[{self.agent_id}] Implementing frontend fixes...")
 
-        result = {
-            "changes": [],
-            "tests": []
-        }
+        result = {"changes": [], "tests": []}
 
         requirements = spec.get("requirements", [])
 
         for req in requirements:
             if "not running" in req.get("requirement", "").lower():
-                result["changes"].append({
-                    "file": "frontend/package.json",
-                    "type": "modified",
-                    "description": "Fixed frontend dependencies and configuration"
-                })
+                result["changes"].append(
+                    {
+                        "file": "frontend/package.json",
+                        "type": "modified",
+                        "description": "Fixed frontend dependencies and configuration",
+                    }
+                )
 
         return result
 
@@ -479,16 +466,15 @@ describe('{component_name}', () => {{
         """Implement worker fixes"""
         print(f"[{self.agent_id}] Implementing worker fixes...")
 
-        result = {
-            "changes": [],
-            "tests": []
-        }
+        result = {"changes": [], "tests": []}
 
-        result["changes"].append({
-            "file": "worker/tasks.py",
-            "type": "modified",
-            "description": "Fixed worker task issues"
-        })
+        result["changes"].append(
+            {
+                "file": "worker/tasks.py",
+                "type": "modified",
+                "description": "Fixed worker task issues",
+            }
+        )
 
         return result
 
@@ -496,27 +482,31 @@ describe('{component_name}', () => {{
         """Implement autonomous deployment feature"""
         print(f"[{self.agent_id}] Implementing autonomous deployment...")
 
-        result = {
-            "changes": []
-        }
+        result = {"changes": []}
 
-        result["changes"].append({
-            "file": "backend/app/deployment/autonomous_deployer.py",
-            "type": "added",
-            "description": "Created autonomous deployment system"
-        })
+        result["changes"].append(
+            {
+                "file": "backend/app/deployment/autonomous_deployer.py",
+                "type": "added",
+                "description": "Created autonomous deployment system",
+            }
+        )
 
-        result["changes"].append({
-            "file": "backend/app/api/endpoints/deployment.py",
-            "type": "added",
-            "description": "Added deployment API endpoints"
-        })
+        result["changes"].append(
+            {
+                "file": "backend/app/api/endpoints/deployment.py",
+                "type": "added",
+                "description": "Added deployment API endpoints",
+            }
+        )
 
-        result["changes"].append({
-            "file": "frontend/components/DeploymentButton.tsx",
-            "type": "added",
-            "description": "Added one-button deployment UI"
-        })
+        result["changes"].append(
+            {
+                "file": "frontend/components/DeploymentButton.tsx",
+                "type": "added",
+                "description": "Added one-button deployment UI",
+            }
+        )
 
         return result
 
@@ -526,11 +516,7 @@ describe('{component_name}', () => {{
         """Estimate implementation time"""
         effort = spec.get("estimated_effort", "medium")
 
-        time_estimates = {
-            "low": "1-2 hours",
-            "medium": "3-6 hours",
-            "high": "1-3 days"
-        }
+        time_estimates = {"low": "1-2 hours", "medium": "3-6 hours", "high": "1-3 days"}
 
         return time_estimates.get(effort, "unknown")
 
@@ -541,23 +527,24 @@ describe('{component_name}', () => {{
         component = spec.get("component")
 
         if component == "e2e_workflows":
-            dependencies.extend([
-                "Backend API must be functional",
-                "Frontend must be accessible",
-                "Database must be connected",
-                "AI services must be configured"
-            ])
+            dependencies.extend(
+                [
+                    "Backend API must be functional",
+                    "Frontend must be accessible",
+                    "Database must be connected",
+                    "AI services must be configured",
+                ]
+            )
         elif component == "backend":
-            dependencies.extend([
-                "Database must be accessible",
-                "Dependencies must be installed"
-            ])
+            dependencies.extend(["Database must be accessible", "Dependencies must be installed"])
         elif component == "frontend":
-            dependencies.extend([
-                "Node.js must be installed",
-                "Dependencies must be installed",
-                "Backend API must be available"
-            ])
+            dependencies.extend(
+                [
+                    "Node.js must be installed",
+                    "Dependencies must be installed",
+                    "Backend API must be available",
+                ]
+            )
 
         return dependencies
 
@@ -576,30 +563,25 @@ describe('{component_name}', () => {{
                 "Add error handling and recovery",
                 "Implement progress tracking",
                 "Add comprehensive tests",
-                "Document workflow"
+                "Document workflow",
             ]
         else:
             return [
                 "Analyze current implementation",
                 "Implement required changes",
                 "Add tests",
-                "Update documentation"
+                "Update documentation",
             ]
 
     # Code Generation Methods
 
     async def _generate_backend_endpoint(
-        self,
-        endpoint_name: str,
-        path: str,
-        method: str,
-        description: str,
-        spec: Dict[str, Any]
+        self, endpoint_name: str, path: str, method: str, description: str, spec: Dict[str, Any]
     ) -> str:
         """Generate FastAPI endpoint code from template"""
 
         # Convert endpoint_name to proper casing
-        model_name = ''.join(word.capitalize() for word in endpoint_name.split('_'))
+        model_name = "".join(word.capitalize() for word in endpoint_name.split("_"))
         function_name = endpoint_name
 
         # Generate based on endpoint type
@@ -631,7 +613,7 @@ describe('{component_name}', () => {{
         }""",
                 "response_construction": """business_plan=business_plan,
             generated_at=datetime.now().isoformat(),
-            status="completed" """
+            status="completed" """,
             }
         elif endpoint_name == "deploy":
             template_vars = {
@@ -655,7 +637,7 @@ describe('{component_name}', () => {{
         # Deployment logic would go here""",
                 "response_construction": """deployment_id=deployment_id,
             status="initiated",
-            url=None"""
+            url=None""",
             }
         else:
             # Generic endpoint
@@ -673,19 +655,15 @@ describe('{component_name}', () => {{
                 "arg_docs": "request: Request data",
                 "return_description": "Response data",
                 "implementation": "# Implementation logic here\n        result = {}",
-                "response_construction": "result=result, status='success'"
+                "response_construction": "result=result, status='success'",
             }
 
         return self.code_templates["fastapi_endpoint"].format(**template_vars)
 
-    async def _generate_backend_test(
-        self,
-        endpoint_name: str,
-        spec: Dict[str, Any]
-    ) -> str:
+    async def _generate_backend_test(self, endpoint_name: str, spec: Dict[str, Any]) -> str:
         """Generate pytest test code for backend endpoint"""
 
-        model_name = ''.join(word.capitalize() for word in endpoint_name.split('_'))
+        model_name = "".join(word.capitalize() for word in endpoint_name.split("_"))
 
         template_vars = {
             "module_name": f"{endpoint_name} endpoint",
@@ -709,16 +687,13 @@ describe('{component_name}', () => {{
         assert result.json()["status"] == "completed" """,
             "exception_type": "Exception",
             "error_arrange": "invalid_data = {}",
-            "error_act": f'test_client.post("/api/v1/ai-analysis/{endpoint_name}", json=invalid_data)'
+            "error_act": f'test_client.post("/api/v1/ai-analysis/{endpoint_name}", json=invalid_data)',
         }
 
         return self.code_templates["python_test"].format(**template_vars)
 
     async def _generate_frontend_component(
-        self,
-        component_name: str,
-        description: str,
-        spec: Dict[str, Any]
+        self, component_name: str, description: str, spec: Dict[str, Any]
     ) -> str:
         """Generate React/TypeScript component code"""
 
@@ -731,7 +706,7 @@ describe('{component_name}', () => {{
             "dependencies": "",
             "helper_functions": "",
             "css_classes": "p-4 bg-white rounded-lg shadow",
-            "jsx_content": f"<h1>{component_name}</h1>"
+            "jsx_content": f"<h1>{component_name}</h1>",
         }
 
         return self.code_templates["react_component"].format(**template_vars)
@@ -742,7 +717,7 @@ describe('{component_name}', () => {{
             full_path = os.path.join(self.project_root, filepath)
             os.makedirs(os.path.dirname(full_path), exist_ok=True)
 
-            with open(full_path, 'w') as f:
+            with open(full_path, "w") as f:
                 f.write(content)
 
             return True
@@ -759,7 +734,7 @@ describe('{component_name}', () => {{
                 return False
 
             # Read current content
-            with open(full_path, 'r') as f:
+            with open(full_path, "r") as f:
                 content = f.read()
 
             # Apply changes (simplified - in reality would use proper code modification)
@@ -775,8 +750,4 @@ describe('{component_name}', () => {{
         print(f"[{self.agent_id}] Running {len(test_names)} tests...")
 
         # Placeholder for actual test execution
-        return {
-            "total": len(test_names),
-            "passed": len(test_names),
-            "failed": 0
-        }
+        return {"total": len(test_names), "passed": len(test_names), "failed": 0}

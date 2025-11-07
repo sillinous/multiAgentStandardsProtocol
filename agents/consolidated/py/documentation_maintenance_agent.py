@@ -23,36 +23,44 @@ import difflib
 
 logger = logging.getLogger(__name__)
 
+
 class DocumentationType(Enum):
     """Types of documentation following APQC knowledge management classification"""
-    ARCHITECTURAL_DECISION = "architectural_decision"      # 11.2.5.1 - Manage architectural decisions
-    API_DOCUMENTATION = "api_documentation"               # 11.2.5.2 - Maintain API documentation
-    CODE_DOCUMENTATION = "code_documentation"             # 11.2.5.3 - Manage code documentation
-    OPERATIONAL_DOCUMENTATION = "operational_documentation" # 11.2.5.4 - Maintain operational docs
-    SECURITY_DOCUMENTATION = "security_documentation"     # 11.2.5.5 - Document security practices
+
+    ARCHITECTURAL_DECISION = "architectural_decision"  # 11.2.5.1 - Manage architectural decisions
+    API_DOCUMENTATION = "api_documentation"  # 11.2.5.2 - Maintain API documentation
+    CODE_DOCUMENTATION = "code_documentation"  # 11.2.5.3 - Manage code documentation
+    OPERATIONAL_DOCUMENTATION = "operational_documentation"  # 11.2.5.4 - Maintain operational docs
+    SECURITY_DOCUMENTATION = "security_documentation"  # 11.2.5.5 - Document security practices
     DEPLOYMENT_DOCUMENTATION = "deployment_documentation"  # 11.2.5.6 - Maintain deployment guides
-    USER_DOCUMENTATION = "user_documentation"             # 11.2.5.7 - Manage user documentation
+    USER_DOCUMENTATION = "user_documentation"  # 11.2.5.7 - Manage user documentation
     COMPLIANCE_DOCUMENTATION = "compliance_documentation"  # 11.2.5.8 - Maintain compliance docs
-    PROCESS_DOCUMENTATION = "process_documentation"       # 11.2.5.9 - Document processes
+    PROCESS_DOCUMENTATION = "process_documentation"  # 11.2.5.9 - Document processes
+
 
 class DocumentationStatus(Enum):
     """Status of documentation items"""
-    CURRENT = "current"          # Up-to-date and accurate
-    OUTDATED = "outdated"        # Needs updating
-    MISSING = "missing"          # Required but doesn't exist
-    DEPRECATED = "deprecated"    # No longer relevant
-    DRAFT = "draft"             # Work in progress
+
+    CURRENT = "current"  # Up-to-date and accurate
+    OUTDATED = "outdated"  # Needs updating
+    MISSING = "missing"  # Required but doesn't exist
+    DEPRECATED = "deprecated"  # No longer relevant
+    DRAFT = "draft"  # Work in progress
+
 
 class DocumentationPriority(Enum):
     """Priority levels for documentation maintenance"""
-    CRITICAL = "critical"        # Required for compliance/security
-    HIGH = "high"               # Important for operations
-    MEDIUM = "medium"           # Helpful for development
-    LOW = "low"                 # Nice to have
+
+    CRITICAL = "critical"  # Required for compliance/security
+    HIGH = "high"  # Important for operations
+    MEDIUM = "medium"  # Helpful for development
+    LOW = "low"  # Nice to have
+
 
 @dataclass
 class ArchitecturalDecision:
     """Architectural Decision Record (ADR) following industry standards"""
+
     id: str
     title: str
     status: str  # proposed, accepted, deprecated, superseded
@@ -67,9 +75,11 @@ class ArchitecturalDecision:
     tags: List[str] = field(default_factory=list)
     metadata: Dict[str, Any] = field(default_factory=dict)
 
+
 @dataclass
 class DocumentationItem:
     """Individual documentation item with tracking metadata"""
+
     id: str
     title: str
     documentation_type: DocumentationType
@@ -91,9 +101,11 @@ class DocumentationItem:
     tags: List[str] = field(default_factory=list)
     metadata: Dict[str, Any] = field(default_factory=dict)
 
+
 @dataclass
 class DocumentationGap:
     """Identified gap in documentation coverage"""
+
     id: str
     gap_type: str
     title: str
@@ -106,9 +118,11 @@ class DocumentationGap:
     detected_at: datetime
     related_code_changes: List[str] = field(default_factory=list)
 
+
 @dataclass
 class DocumentationReport:
     """Comprehensive documentation health report"""
+
     report_id: str
     generated_at: datetime
     project_root: str
@@ -120,6 +134,7 @@ class DocumentationReport:
     maintenance_recommendations: List[str]
     compliance_status: Dict[str, Any]
     quality_metrics: Dict[str, float]
+
 
 class DocumentationMaintenanceAgent:
     """
@@ -227,7 +242,7 @@ Last Updated: {last_updated}
 
 ## Troubleshooting
 {troubleshooting}
-"""
+""",
         }
 
     def _initialize_compliance_requirements(self) -> Dict[str, List[str]]:
@@ -238,29 +253,29 @@ Last Updated: {last_updated}
                 "Threat model documentation",
                 "Security control documentation",
                 "Incident response procedures",
-                "Security review schedules"
+                "Security review schedules",
             ],
             "api": [
                 "API specification documentation",
                 "Authentication documentation",
                 "Rate limiting documentation",
                 "Error handling documentation",
-                "API versioning strategy"
+                "API versioning strategy",
             ],
             "deployment": [
                 "Deployment procedure documentation",
                 "Environment configuration documentation",
                 "Rollback procedure documentation",
                 "Monitoring and alerting documentation",
-                "Disaster recovery procedures"
+                "Disaster recovery procedures",
             ],
             "architecture": [
                 "System architecture overview",
                 "Component interaction diagrams",
                 "Data flow documentation",
                 "Integration point documentation",
-                "Architectural decision records"
-            ]
+                "Architectural decision records",
+            ],
         }
 
     def _initialize_documentation_rules(self) -> Dict[str, Dict]:
@@ -270,26 +285,26 @@ Last Updated: {last_updated}
                 "min_docstring_coverage": 80.0,
                 "required_for_public_apis": True,
                 "required_for_complex_functions": True,
-                "complexity_threshold": 10
+                "complexity_threshold": 10,
             },
             "api_documentation": {
                 "required_for_all_endpoints": True,
                 "must_include_examples": True,
                 "must_include_error_codes": True,
-                "review_frequency": "monthly"
+                "review_frequency": "monthly",
             },
             "architectural_decisions": {
                 "required_for_major_changes": True,
                 "must_include_alternatives": True,
                 "stakeholder_approval_required": True,
-                "review_frequency": "quarterly"
+                "review_frequency": "quarterly",
             },
             "security_documentation": {
                 "required_for_sensitive_components": True,
                 "must_include_threat_model": True,
                 "review_frequency": "monthly",
-                "compliance_audit_required": True
-            }
+                "compliance_audit_required": True,
+            },
         }
 
     async def analyze_documentation_health(self) -> DocumentationReport:
@@ -326,7 +341,9 @@ Last Updated: {last_updated}
         recommendations = await self._generate_maintenance_recommendations(gaps, quality_metrics)
 
         # Step 8: Calculate overall documentation score
-        overall_score, coverage_percentage = await self._calculate_documentation_score(quality_metrics)
+        overall_score, coverage_percentage = await self._calculate_documentation_score(
+            quality_metrics
+        )
 
         # Compile comprehensive report
         report = DocumentationReport(
@@ -340,11 +357,13 @@ Last Updated: {last_updated}
             identified_gaps=gaps,
             maintenance_recommendations=recommendations,
             compliance_status=compliance_status,
-            quality_metrics=quality_metrics
+            quality_metrics=quality_metrics,
         )
 
         analysis_time = (datetime.now() - start_time).total_seconds()
-        logger.info(f"✅ Documentation analysis completed in {analysis_time:.2f}s - Score: {overall_score:.1f}/100")
+        logger.info(
+            f"✅ Documentation analysis completed in {analysis_time:.2f}s - Score: {overall_score:.1f}/100"
+        )
 
         return report
 
@@ -375,18 +394,18 @@ Last Updated: {last_updated}
     async def _analyze_markdown_file(self, file_path: Path) -> Optional[DocumentationItem]:
         """Analyze a markdown file and create documentation item"""
         try:
-            with open(file_path, 'r', encoding='utf-8', errors='ignore') as f:
+            with open(file_path, "r", encoding="utf-8", errors="ignore") as f:
                 content = f.read()
 
             # Extract title from first heading
-            title_match = re.search(r'^#\s+(.+)$', content, re.MULTILINE)
+            title_match = re.search(r"^#\s+(.+)$", content, re.MULTILINE)
             title = title_match.group(1) if title_match else file_path.stem
 
             # Determine documentation type
             doc_type = self._classify_documentation_type(file_path, content)
 
             # Calculate content hash
-            content_hash = hashlib.md5(content.encode('utf-8')).hexdigest()
+            content_hash = hashlib.md5(content.encode("utf-8")).hexdigest()
 
             # Get file modification time
             last_updated = datetime.fromtimestamp(file_path.stat().st_mtime)
@@ -414,9 +433,9 @@ Last Updated: {last_updated}
                 tags=self._extract_tags(content),
                 metadata={
                     "file_size": file_path.stat().st_size,
-                    "line_count": len(content.split('\n')),
-                    "word_count": len(content.split())
-                }
+                    "line_count": len(content.split("\n")),
+                    "word_count": len(content.split()),
+                },
             )
 
             return doc_item
@@ -430,7 +449,7 @@ Last Updated: {last_updated}
         docs = []
 
         try:
-            with open(file_path, 'r', encoding='utf-8', errors='ignore') as f:
+            with open(file_path, "r", encoding="utf-8", errors="ignore") as f:
                 content = f.read()
 
             tree = ast.parse(content)
@@ -446,13 +465,17 @@ Last Updated: {last_updated}
                     url=None,
                     status=DocumentationStatus.CURRENT,
                     priority=DocumentationPriority.MEDIUM,
-                    description=module_docstring[:200] + "..." if len(module_docstring) > 200 else module_docstring,
+                    description=(
+                        module_docstring[:200] + "..."
+                        if len(module_docstring) > 200
+                        else module_docstring
+                    ),
                     content_hash=hashlib.md5(module_docstring.encode()).hexdigest(),
                     last_updated=datetime.fromtimestamp(file_path.stat().st_mtime),
                     last_verified=None,
                     assigned_maintainer=None,
                     tags=["inline", "module", "docstring"],
-                    metadata={"docstring_length": len(module_docstring)}
+                    metadata={"docstring_length": len(module_docstring)},
                 )
                 docs.append(doc_item)
 
@@ -469,7 +492,9 @@ Last Updated: {last_updated}
                             url=None,
                             status=DocumentationStatus.CURRENT,
                             priority=DocumentationPriority.MEDIUM,
-                            description=docstring[:200] + "..." if len(docstring) > 200 else docstring,
+                            description=(
+                                docstring[:200] + "..." if len(docstring) > 200 else docstring
+                            ),
                             content_hash=hashlib.md5(docstring.encode()).hexdigest(),
                             last_updated=datetime.fromtimestamp(file_path.stat().st_mtime),
                             last_verified=None,
@@ -478,8 +503,8 @@ Last Updated: {last_updated}
                             metadata={
                                 "component_name": node.name,
                                 "line_number": node.lineno,
-                                "docstring_length": len(docstring)
-                            }
+                                "docstring_length": len(docstring),
+                            },
                         )
                         docs.append(doc_item)
 
@@ -491,10 +516,12 @@ Last Updated: {last_updated}
     async def _discover_api_documentation(self):
         """Discover API documentation"""
         # Look for OpenAPI/Swagger specifications
-        api_spec_files = list(self.project_root.rglob("*.yaml")) + \
-                        list(self.project_root.rglob("*.yml")) + \
-                        list(self.project_root.rglob("openapi.json")) + \
-                        list(self.project_root.rglob("swagger.json"))
+        api_spec_files = (
+            list(self.project_root.rglob("*.yaml"))
+            + list(self.project_root.rglob("*.yml"))
+            + list(self.project_root.rglob("openapi.json"))
+            + list(self.project_root.rglob("swagger.json"))
+        )
 
         for spec_file in api_spec_files:
             if "api" in str(spec_file).lower() or "swagger" in str(spec_file).lower():
@@ -512,7 +539,7 @@ Last Updated: {last_updated}
                     last_verified=None,
                     assigned_maintainer=None,
                     tags=["api", "specification", "openapi"],
-                    metadata={"spec_format": spec_file.suffix}
+                    metadata={"spec_format": spec_file.suffix},
                 )
                 self.documentation_registry[doc_item.id] = doc_item
 
@@ -522,8 +549,9 @@ Last Updated: {last_updated}
         adr_patterns = ["adr", "decision", "architectural"]
 
         for pattern in adr_patterns:
-            adr_files = list(self.project_root.rglob(f"*{pattern}*/*.md")) + \
-                       list(self.project_root.rglob(f"*{pattern}*.md"))
+            adr_files = list(self.project_root.rglob(f"*{pattern}*/*.md")) + list(
+                self.project_root.rglob(f"*{pattern}*.md")
+            )
 
             for adr_file in adr_files:
                 if self._is_adr_file(adr_file):
@@ -536,13 +564,20 @@ Last Updated: {last_updated}
         deployment_patterns = ["deploy", "docker", "k8s", "kubernetes", "ci", "cd"]
 
         for pattern in deployment_patterns:
-            deployment_files = list(self.project_root.rglob(f"*{pattern}*")) + \
-                             list(self.project_root.rglob("Dockerfile*")) + \
-                             list(self.project_root.rglob("docker-compose*")) + \
-                             list(self.project_root.rglob("*.dockerfile"))
+            deployment_files = (
+                list(self.project_root.rglob(f"*{pattern}*"))
+                + list(self.project_root.rglob("Dockerfile*"))
+                + list(self.project_root.rglob("docker-compose*"))
+                + list(self.project_root.rglob("*.dockerfile"))
+            )
 
             for deploy_file in deployment_files:
-                if deploy_file.is_file() and deploy_file.suffix in ['.md', '.yml', '.yaml', '.json']:
+                if deploy_file.is_file() and deploy_file.suffix in [
+                    ".md",
+                    ".yml",
+                    ".yaml",
+                    ".json",
+                ]:
                     doc_item = DocumentationItem(
                         id=f"deploy_doc_{hashlib.md5(str(deploy_file).encode()).hexdigest()[:8]}",
                         title=f"Deployment Documentation: {deploy_file.name}",
@@ -557,7 +592,7 @@ Last Updated: {last_updated}
                         last_verified=None,
                         assigned_maintainer=None,
                         tags=["deployment", "operations", pattern],
-                        metadata={"file_type": deploy_file.suffix}
+                        metadata={"file_type": deploy_file.suffix},
                     )
                     self.documentation_registry[doc_item.id] = doc_item
 
@@ -585,7 +620,9 @@ Last Updated: {last_updated}
         else:
             return DocumentationType.OPERATIONAL_DOCUMENTATION
 
-    def _determine_documentation_priority(self, file_path: Path, content: str) -> DocumentationPriority:
+    def _determine_documentation_priority(
+        self, file_path: Path, content: str
+    ) -> DocumentationPriority:
         """Determine priority based on file location and content"""
         file_path_str = str(file_path).lower()
         content_lower = content.lower()
@@ -593,7 +630,10 @@ Last Updated: {last_updated}
         # Critical priority indicators
         if any(term in file_path_str for term in ["security", "compliance", "emergency"]):
             return DocumentationPriority.CRITICAL
-        if any(term in content_lower for term in ["critical", "security", "vulnerability", "compliance"]):
+        if any(
+            term in content_lower
+            for term in ["critical", "security", "vulnerability", "compliance"]
+        ):
             return DocumentationPriority.CRITICAL
 
         # High priority indicators
@@ -608,7 +648,9 @@ Last Updated: {last_updated}
 
         return DocumentationPriority.LOW
 
-    async def _assess_documentation_status(self, file_path: Path, content: str) -> DocumentationStatus:
+    async def _assess_documentation_status(
+        self, file_path: Path, content: str
+    ) -> DocumentationStatus:
         """Assess the current status of documentation"""
         # Check last modification time
         last_modified = datetime.fromtimestamp(file_path.stat().st_mtime)
@@ -629,35 +671,35 @@ Last Updated: {last_updated}
     def _extract_description(self, content: str) -> str:
         """Extract description from documentation content"""
         # Look for description after title
-        lines = content.split('\n')
+        lines = content.split("\n")
         description_lines = []
 
         in_description = False
         for line in lines:
             line = line.strip()
-            if line.startswith('# '):
+            if line.startswith("# "):
                 in_description = True
                 continue
-            elif line.startswith('#') and in_description:
+            elif line.startswith("#") and in_description:
                 break
             elif in_description and line:
                 description_lines.append(line)
-                if len(' '.join(description_lines)) > 200:
+                if len(" ".join(description_lines)) > 200:
                     break
 
-        description = ' '.join(description_lines)
+        description = " ".join(description_lines)
         return description[:200] + "..." if len(description) > 200 else description
 
     def _find_related_code_files(self, content: str) -> List[str]:
         """Find code files referenced in documentation"""
         # Look for file references in content
         file_patterns = [
-            r'`([^`]+\.py)`',
-            r'`([^`]+\.js)`',
-            r'`([^`]+\.ts)`',
-            r'\[.*\]\(([^)]+\.py)\)',
-            r'\[.*\]\(([^)]+\.js)\)',
-            r'(app/[^\\s\\)]+\\.py)',
+            r"`([^`]+\.py)`",
+            r"`([^`]+\.js)`",
+            r"`([^`]+\.ts)`",
+            r"\[.*\]\(([^)]+\.py)\)",
+            r"\[.*\]\(([^)]+\.js)\)",
+            r"(app/[^\\s\\)]+\\.py)",
         ]
 
         related_files = []
@@ -673,34 +715,41 @@ Last Updated: {last_updated}
 
         # Look for explicit tags
         tag_patterns = [
-            r'(?i)tags?:\s*([^\n]+)',
-            r'(?i)keywords?:\s*([^\n]+)',
-            r'#(\w+)',  # Hashtags
+            r"(?i)tags?:\s*([^\n]+)",
+            r"(?i)keywords?:\s*([^\n]+)",
+            r"#(\w+)",  # Hashtags
         ]
 
         for pattern in tag_patterns:
             matches = re.findall(pattern, content)
             for match in matches:
                 if isinstance(match, str):
-                    tags.extend([tag.strip() for tag in match.split(',')])
+                    tags.extend([tag.strip() for tag in match.split(",")])
 
         # Infer tags from content
         content_lower = content.lower()
-        if 'api' in content_lower:
-            tags.append('api')
-        if 'security' in content_lower:
-            tags.append('security')
-        if 'deployment' in content_lower:
-            tags.append('deployment')
+        if "api" in content_lower:
+            tags.append("api")
+        if "security" in content_lower:
+            tags.append("security")
+        if "deployment" in content_lower:
+            tags.append("deployment")
 
         return list(set(tags))
 
     def _should_include_file(self, file_path: str) -> bool:
         """Check if file should be included in documentation analysis"""
         exclude_patterns = [
-            '.git/', '.venv/', 'venv/', 'node_modules/',
-            '__pycache__/', '.pytest_cache/', '.idea/',
-            'target/', 'build/', 'dist/'
+            ".git/",
+            ".venv/",
+            "venv/",
+            "node_modules/",
+            "__pycache__/",
+            ".pytest_cache/",
+            ".idea/",
+            "target/",
+            "build/",
+            "dist/",
         ]
 
         for pattern in exclude_patterns:
@@ -712,24 +761,29 @@ Last Updated: {last_updated}
     def _is_adr_file(self, file_path: Path) -> bool:
         """Check if file is an Architectural Decision Record"""
         file_name = file_path.name.lower()
-        return (any(term in file_name for term in ['adr', 'decision']) or
-                file_path.parent.name.lower() in ['adr', 'adrs', 'decisions'])
+        return any(
+            term in file_name for term in ["adr", "decision"]
+        ) or file_path.parent.name.lower() in ["adr", "adrs", "decisions"]
 
     async def _parse_adr_file(self, file_path: Path) -> Optional[ArchitecturalDecision]:
         """Parse an ADR file and extract structured information"""
         try:
-            with open(file_path, 'r', encoding='utf-8', errors='ignore') as f:
+            with open(file_path, "r", encoding="utf-8", errors="ignore") as f:
                 content = f.read()
 
             # Extract ADR components using patterns
-            title_match = re.search(r'^#\s+ADR[-\s]*(\d+):\s*(.+)$', content, re.MULTILINE | re.IGNORECASE)
+            title_match = re.search(
+                r"^#\s+ADR[-\s]*(\d+):\s*(.+)$", content, re.MULTILINE | re.IGNORECASE
+            )
             if not title_match:
-                title_match = re.search(r'^#\s+(.+)$', content, re.MULTILINE)
+                title_match = re.search(r"^#\s+(.+)$", content, re.MULTILINE)
 
             if not title_match:
                 return None
 
-            adr_id = title_match.group(1) if title_match.group(1).isdigit() else str(hash(file_path))
+            adr_id = (
+                title_match.group(1) if title_match.group(1).isdigit() else str(hash(file_path))
+            )
             title = title_match.group(2) if title_match.group(1).isdigit() else title_match.group(1)
 
             # Extract sections
@@ -740,11 +794,19 @@ Last Updated: {last_updated}
 
             # Extract alternatives
             alternatives_section = self._extract_adr_section(content, "alternatives")
-            alternatives = [alt.strip() for alt in alternatives_section.split('\n') if alt.strip()] if alternatives_section else []
+            alternatives = (
+                [alt.strip() for alt in alternatives_section.split("\n") if alt.strip()]
+                if alternatives_section
+                else []
+            )
 
             # Extract stakeholders
             stakeholders_section = self._extract_adr_section(content, "stakeholders")
-            stakeholders = [sh.strip() for sh in stakeholders_section.split(',') if sh.strip()] if stakeholders_section else []
+            stakeholders = (
+                [sh.strip() for sh in stakeholders_section.split(",") if sh.strip()]
+                if stakeholders_section
+                else []
+            )
 
             adr = ArchitecturalDecision(
                 id=f"adr_{adr_id}",
@@ -759,8 +821,8 @@ Last Updated: {last_updated}
                 tags=["adr", "architecture", "decision"],
                 metadata={
                     "file_path": str(file_path.relative_to(self.project_root)),
-                    "word_count": len(content.split())
-                }
+                    "word_count": len(content.split()),
+                },
             )
 
             return adr
@@ -793,7 +855,7 @@ Last Updated: {last_updated}
 
         for py_file in python_files:
             try:
-                with open(py_file, 'r', encoding='utf-8', errors='ignore') as f:
+                with open(py_file, "r", encoding="utf-8", errors="ignore") as f:
                     content = f.read()
 
                 tree = ast.parse(content)
@@ -824,11 +886,17 @@ Last Updated: {last_updated}
                 logger.error(f"Error analyzing code documentation for {py_file}: {e}")
 
         # Calculate coverage percentages
-        function_coverage = (documented_functions / total_functions * 100) if total_functions > 0 else 0
+        function_coverage = (
+            (documented_functions / total_functions * 100) if total_functions > 0 else 0
+        )
         class_coverage = (documented_classes / total_classes * 100) if total_classes > 0 else 0
         module_coverage = (documented_modules / total_modules * 100) if total_modules > 0 else 0
 
-        avg_quality_score = sum(documentation_quality_scores) / len(documentation_quality_scores) if documentation_quality_scores else 0
+        avg_quality_score = (
+            sum(documentation_quality_scores) / len(documentation_quality_scores)
+            if documentation_quality_scores
+            else 0
+        )
 
         return {
             "function_coverage": function_coverage,
@@ -840,7 +908,7 @@ Last Updated: {last_updated}
             "total_modules": total_modules,
             "documented_functions": documented_functions,
             "documented_classes": documented_classes,
-            "documented_modules": documented_modules
+            "documented_modules": documented_modules,
         }
 
     def _assess_docstring_quality(self, docstring: str) -> float:
@@ -856,15 +924,15 @@ Last Updated: {last_updated}
             score += 20
 
         # Contains parameter documentation (20 points)
-        if any(keyword in docstring.lower() for keyword in ['param', 'arg', 'parameter']):
+        if any(keyword in docstring.lower() for keyword in ["param", "arg", "parameter"]):
             score += 20
 
         # Contains return documentation (20 points)
-        if any(keyword in docstring.lower() for keyword in ['return', 'returns']):
+        if any(keyword in docstring.lower() for keyword in ["return", "returns"]):
             score += 20
 
         # Contains examples (20 points)
-        if any(keyword in docstring.lower() for keyword in ['example', 'usage', '>>>']):
+        if any(keyword in docstring.lower() for keyword in ["example", "usage", ">>>"]):
             score += 20
 
         return score
@@ -906,22 +974,24 @@ Last Updated: {last_updated}
         for py_file in python_files:
             if "api" in str(py_file) or "endpoint" in str(py_file):
                 try:
-                    with open(py_file, 'r', encoding='utf-8', errors='ignore') as f:
+                    with open(py_file, "r", encoding="utf-8", errors="ignore") as f:
                         content = f.read()
 
                     # Look for FastAPI/Flask route decorators
                     route_patterns = [
                         r'@\w*\.(?:get|post|put|delete|patch)\s*\(\s*["\']([^"\']+)["\']',
-                        r'@app\.route\s*\(\s*["\']([^"\']+)["\']'
+                        r'@app\.route\s*\(\s*["\']([^"\']+)["\']',
                     ]
 
                     for pattern in route_patterns:
                         matches = re.findall(pattern, content)
                         for match in matches:
-                            api_endpoints.append({
-                                "endpoint": match,
-                                "file": str(py_file.relative_to(self.project_root))
-                            })
+                            api_endpoints.append(
+                                {
+                                    "endpoint": match,
+                                    "file": str(py_file.relative_to(self.project_root)),
+                                }
+                            )
 
                 except Exception as e:
                     logger.error(f"Error analyzing API endpoints in {py_file}: {e}")
@@ -933,9 +1003,14 @@ Last Updated: {last_updated}
                 # Extract endpoints from documentation
                 if doc_item.file_path:
                     try:
-                        with open(self.project_root / doc_item.file_path, 'r', encoding='utf-8', errors='ignore') as f:
+                        with open(
+                            self.project_root / doc_item.file_path,
+                            "r",
+                            encoding="utf-8",
+                            errors="ignore",
+                        ) as f:
                             doc_content = f.read()
-                        endpoint_matches = re.findall(r'/api/[^\s\)]+', doc_content)
+                        endpoint_matches = re.findall(r"/api/[^\s\)]+", doc_content)
                         documented_endpoints.update(endpoint_matches)
                     except Exception:
                         pass
@@ -943,7 +1018,9 @@ Last Updated: {last_updated}
         # Identify undocumented endpoints
         for endpoint_info in api_endpoints:
             endpoint = endpoint_info["endpoint"]
-            if not any(documented_endpoint in endpoint for documented_endpoint in documented_endpoints):
+            if not any(
+                documented_endpoint in endpoint for documented_endpoint in documented_endpoints
+            ):
                 gap = DocumentationGap(
                     id=f"api_gap_{hashlib.md5(endpoint.encode()).hexdigest()[:8]}",
                     gap_type="missing_api_documentation",
@@ -954,7 +1031,7 @@ Last Updated: {last_updated}
                     priority=DocumentationPriority.HIGH,
                     effort_estimate="2-4 hours",
                     business_impact="Developers may struggle to use API correctly",
-                    detected_at=datetime.now()
+                    detected_at=datetime.now(),
                 )
                 gaps.append(gap)
 
@@ -966,8 +1043,13 @@ Last Updated: {last_updated}
 
         # Check for major architectural components without documentation
         major_components = [
-            "database.py", "models.py", "config.py", "main.py",
-            "security.py", "auth.py", "middleware.py"
+            "database.py",
+            "models.py",
+            "config.py",
+            "main.py",
+            "security.py",
+            "auth.py",
+            "middleware.py",
         ]
 
         for component in major_components:
@@ -975,8 +1057,8 @@ Last Updated: {last_updated}
             for comp_file in component_files:
                 # Check if component has architectural documentation
                 has_arch_doc = any(
-                    doc.documentation_type == DocumentationType.ARCHITECTURAL_DECISION and
-                    str(comp_file.relative_to(self.project_root)) in doc.related_code_files
+                    doc.documentation_type == DocumentationType.ARCHITECTURAL_DECISION
+                    and str(comp_file.relative_to(self.project_root)) in doc.related_code_files
                     for doc in self.documentation_registry.values()
                 )
 
@@ -991,7 +1073,7 @@ Last Updated: {last_updated}
                         priority=DocumentationPriority.HIGH,
                         effort_estimate="4-8 hours",
                         business_impact="Architectural decisions may not be tracked or understood",
-                        detected_at=datetime.now()
+                        detected_at=datetime.now(),
                     )
                     gaps.append(gap)
 
@@ -1003,8 +1085,16 @@ Last Updated: {last_updated}
 
         # Look for security-related code without documentation
         security_patterns = [
-            "auth", "security", "encrypt", "decrypt", "hash", "token",
-            "jwt", "oauth", "password", "credential"
+            "auth",
+            "security",
+            "encrypt",
+            "decrypt",
+            "hash",
+            "token",
+            "jwt",
+            "oauth",
+            "password",
+            "credential",
         ]
 
         python_files = list(self.project_root.rglob("*.py"))
@@ -1017,8 +1107,8 @@ Last Updated: {last_updated}
         # Check if security files have security documentation
         for sec_file in security_files:
             has_security_doc = any(
-                doc.documentation_type == DocumentationType.SECURITY_DOCUMENTATION and
-                str(sec_file.relative_to(self.project_root)) in doc.related_code_files
+                doc.documentation_type == DocumentationType.SECURITY_DOCUMENTATION
+                and str(sec_file.relative_to(self.project_root)) in doc.related_code_files
                 for doc in self.documentation_registry.values()
             )
 
@@ -1033,7 +1123,7 @@ Last Updated: {last_updated}
                     priority=DocumentationPriority.CRITICAL,
                     effort_estimate="2-6 hours",
                     business_impact="Security vulnerabilities may not be properly documented",
-                    detected_at=datetime.now()
+                    detected_at=datetime.now(),
                 )
                 gaps.append(gap)
 
@@ -1044,18 +1134,23 @@ Last Updated: {last_updated}
         gaps = []
 
         # Check for deployment files without documentation
-        deployment_files = list(self.project_root.rglob("Dockerfile*")) + \
-                          list(self.project_root.rglob("docker-compose*")) + \
-                          list(self.project_root.rglob("*.yml")) + \
-                          list(self.project_root.rglob("*.yaml"))
+        deployment_files = (
+            list(self.project_root.rglob("Dockerfile*"))
+            + list(self.project_root.rglob("docker-compose*"))
+            + list(self.project_root.rglob("*.yml"))
+            + list(self.project_root.rglob("*.yaml"))
+        )
 
-        deployment_files = [f for f in deployment_files if
-                          any(term in str(f).lower() for term in ["deploy", "docker", "k8s", "ci", "cd"])]
+        deployment_files = [
+            f
+            for f in deployment_files
+            if any(term in str(f).lower() for term in ["deploy", "docker", "k8s", "ci", "cd"])
+        ]
 
         for deploy_file in deployment_files:
             has_deploy_doc = any(
-                doc.documentation_type == DocumentationType.DEPLOYMENT_DOCUMENTATION and
-                str(deploy_file.relative_to(self.project_root)) in doc.related_code_files
+                doc.documentation_type == DocumentationType.DEPLOYMENT_DOCUMENTATION
+                and str(deploy_file.relative_to(self.project_root)) in doc.related_code_files
                 for doc in self.documentation_registry.values()
             )
 
@@ -1070,7 +1165,7 @@ Last Updated: {last_updated}
                     priority=DocumentationPriority.HIGH,
                     effort_estimate="1-3 hours",
                     business_impact="Deployment process may be unclear or error-prone",
-                    detected_at=datetime.now()
+                    detected_at=datetime.now(),
                 )
                 gaps.append(gap)
 
@@ -1086,7 +1181,7 @@ Last Updated: {last_updated}
 
         for py_file in python_files:
             try:
-                with open(py_file, 'r', encoding='utf-8', errors='ignore') as f:
+                with open(py_file, "r", encoding="utf-8", errors="ignore") as f:
                     content = f.read()
 
                 tree = ast.parse(content)
@@ -1108,7 +1203,7 @@ Last Updated: {last_updated}
                                 priority=DocumentationPriority.MEDIUM,
                                 effort_estimate="30-60 minutes",
                                 business_impact="Function behavior may be unclear to developers",
-                                detected_at=datetime.now()
+                                detected_at=datetime.now(),
                             )
                             gaps.append(gap)
 
@@ -1153,15 +1248,18 @@ Last Updated: {last_updated}
         avg_quality = sum(quality_scores) / len(quality_scores) if quality_scores else 0
 
         # Check for recent ADRs
-        recent_adrs = [adr for adr in self.architectural_decisions.values()
-                      if (datetime.now() - adr.date).days <= 90]
+        recent_adrs = [
+            adr
+            for adr in self.architectural_decisions.values()
+            if (datetime.now() - adr.date).days <= 90
+        ]
 
         return {
             "total_adrs": total_adrs,
             "status_distribution": status_distribution,
             "average_quality_score": avg_quality,
             "recent_adrs": len(recent_adrs),
-            "quality_scores": quality_scores
+            "quality_scores": quality_scores,
         }
 
     async def _assess_compliance_status(self) -> Dict[str, Any]:
@@ -1173,14 +1271,14 @@ Last Updated: {last_updated}
                 "total_requirements": len(requirements),
                 "met_requirements": 0,
                 "missing_requirements": [],
-                "compliance_percentage": 0
+                "compliance_percentage": 0,
             }
 
             for requirement in requirements:
                 # Check if requirement is met by existing documentation
                 requirement_met = any(
-                    requirement.lower() in doc.title.lower() or
-                    requirement.lower() in doc.description.lower()
+                    requirement.lower() in doc.title.lower()
+                    or requirement.lower() in doc.description.lower()
                     for doc in self.documentation_registry.values()
                 )
 
@@ -1190,8 +1288,9 @@ Last Updated: {last_updated}
                     category_compliance["missing_requirements"].append(requirement)
 
             category_compliance["compliance_percentage"] = (
-                category_compliance["met_requirements"] /
-                category_compliance["total_requirements"] * 100
+                category_compliance["met_requirements"]
+                / category_compliance["total_requirements"]
+                * 100
             )
 
             compliance_status[category] = category_compliance
@@ -1203,7 +1302,9 @@ Last Updated: {last_updated}
         compliance_status["overall"] = {
             "total_requirements": total_requirements,
             "met_requirements": total_met,
-            "compliance_percentage": (total_met / total_requirements * 100) if total_requirements > 0 else 0
+            "compliance_percentage": (
+                (total_met / total_requirements * 100) if total_requirements > 0 else 0
+            ),
         }
 
         return compliance_status
@@ -1225,7 +1326,9 @@ Last Updated: {last_updated}
         # Type distribution
         type_counts = {}
         for doc in self.documentation_registry.values():
-            type_counts[doc.documentation_type.value] = type_counts.get(doc.documentation_type.value, 0) + 1
+            type_counts[doc.documentation_type.value] = (
+                type_counts.get(doc.documentation_type.value, 0) + 1
+            )
 
         # Calculate freshness score
         current_docs = status_counts.get("current", 0)
@@ -1238,10 +1341,10 @@ Last Updated: {last_updated}
         # Calculate quality score based on code documentation analysis
         code_analysis = await self._analyze_code_documentation()
         quality_score = (
-            code_analysis["function_coverage"] * 0.3 +
-            code_analysis["class_coverage"] * 0.3 +
-            code_analysis["module_coverage"] * 0.2 +
-            code_analysis["average_quality_score"] * 0.2
+            code_analysis["function_coverage"] * 0.3
+            + code_analysis["class_coverage"] * 0.3
+            + code_analysis["module_coverage"] * 0.2
+            + code_analysis["average_quality_score"] * 0.2
         )
 
         return {
@@ -1256,33 +1359,34 @@ Last Updated: {last_updated}
             "high_priority_docs": priority_counts.get("high", 0),
             "code_documentation_coverage": code_analysis["function_coverage"],
             "api_documentation_items": type_counts.get("api_documentation", 0),
-            "architectural_decisions": len(self.architectural_decisions)
+            "architectural_decisions": len(self.architectural_decisions),
         }
 
-    async def _calculate_documentation_score(self, metrics: Dict[str, float]) -> Tuple[float, float]:
+    async def _calculate_documentation_score(
+        self, metrics: Dict[str, float]
+    ) -> Tuple[float, float]:
         """Calculate overall documentation score and coverage percentage"""
         # Weight different aspects of documentation quality
         weights = {
             "freshness_score": 0.25,
             "completeness_score": 0.35,
             "quality_score": 0.25,
-            "code_documentation_coverage": 0.15
+            "code_documentation_coverage": 0.15,
         }
 
-        overall_score = sum(
-            metrics.get(metric, 0) * weight
-            for metric, weight in weights.items()
-        )
+        overall_score = sum(metrics.get(metric, 0) * weight for metric, weight in weights.items())
 
         # Coverage percentage is based on completeness and code coverage
         coverage_percentage = (
-            metrics.get("completeness_score", 0) * 0.7 +
-            metrics.get("code_documentation_coverage", 0) * 0.3
+            metrics.get("completeness_score", 0) * 0.7
+            + metrics.get("code_documentation_coverage", 0) * 0.3
         )
 
         return overall_score, coverage_percentage
 
-    async def _generate_maintenance_recommendations(self, gaps: List[DocumentationGap], metrics: Dict[str, float]) -> List[str]:
+    async def _generate_maintenance_recommendations(
+        self, gaps: List[DocumentationGap], metrics: Dict[str, float]
+    ) -> List[str]:
         """Generate actionable maintenance recommendations"""
         recommendations = []
 
@@ -1303,9 +1407,7 @@ Last Updated: {last_updated}
         # API documentation
         api_gaps = [gap for gap in gaps if "api" in gap.gap_type]
         if api_gaps:
-            recommendations.append(
-                f"📡 API: Document {len(api_gaps)} undocumented API endpoints"
-            )
+            recommendations.append(f"📡 API: Document {len(api_gaps)} undocumented API endpoints")
 
         # Code documentation coverage
         code_coverage = metrics.get("code_documentation_coverage", 0)
@@ -1344,7 +1446,9 @@ Last Updated: {last_updated}
 
         return recommendations
 
-    async def create_documentation_template(self, doc_type: DocumentationType, context: Dict[str, Any]) -> str:
+    async def create_documentation_template(
+        self, doc_type: DocumentationType, context: Dict[str, Any]
+    ) -> str:
         """Create documentation template based on type and context"""
         template_key = doc_type.value
         if template_key in self.documentation_templates:
@@ -1360,7 +1464,9 @@ Last Updated: {last_updated}
 
         return f"# {doc_type.value.replace('_', ' ').title()}\n\nTODO: Add documentation content"
 
-    async def export_documentation_report(self, report: DocumentationReport, output_path: str) -> str:
+    async def export_documentation_report(
+        self, report: DocumentationReport, output_path: str
+    ) -> str:
         """Export documentation report to file"""
         report_data = asdict(report)
 
@@ -1372,11 +1478,12 @@ Last Updated: {last_updated}
                 return obj.value
             return str(obj)
 
-        with open(output_path, 'w') as f:
+        with open(output_path, "w") as f:
             json.dump(report_data, f, indent=2, default=json_serializer)
 
         logger.info(f"📚 Documentation report exported to {output_path}")
         return output_path
+
 
 # Initialize the documentation maintenance agent
 documentation_maintainer = DocumentationMaintenanceAgent(

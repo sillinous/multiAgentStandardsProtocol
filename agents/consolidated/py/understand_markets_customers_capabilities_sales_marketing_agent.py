@@ -1,5 +1,5 @@
 """
-UnderstandMarkets,Customers,CapabilitiesSalesMarketingAgent - APQC 3.0 Agent
+UnderstandMarketsCustomersCapabilitiesSalesMarketingAgent - APQC 3.0 Agent
 
 3.1 Understand markets, customers, and capabilities
 
@@ -33,13 +33,13 @@ from dataclasses import dataclass, field
 from typing import Dict, Any, List, Optional
 from datetime import datetime
 
-from library.core.base_agent import BaseAgent
+from src.superstandard.agents.base.base_agent import BaseAgent
 from library.core.protocols import ProtocolMixin
 
 
 @dataclass
-class UnderstandMarkets,Customers,CapabilitiesSalesMarketingAgentConfig:
-    """Configuration for UnderstandMarkets,Customers,CapabilitiesSalesMarketingAgent"""
+class UnderstandMarketsCustomersCapabilitiesSalesMarketingAgentConfig:
+    """Configuration for UnderstandMarketsCustomersCapabilitiesSalesMarketingAgent"""
 
     # APQC Metadata
     apqc_agent_id: str = "apqc_3_0_14a864bd"
@@ -85,19 +85,19 @@ class UnderstandMarkets,Customers,CapabilitiesSalesMarketingAgentConfig:
     timeout_seconds: int = field(default_factory=lambda: int(os.getenv("TIMEOUT_SECONDS", "300")))
 
     @classmethod
-    def from_environment(cls) -> "UnderstandMarkets,Customers,CapabilitiesSalesMarketingAgentConfig":
+    def from_environment(cls) -> "UnderstandMarketsCustomersCapabilitiesSalesMarketingAgentConfig":
         """Create configuration from environment variables (Redeployable)"""
         return cls(
             agent_id=os.getenv("AGENT_ID", "apqc_3_0_14a864bd"),
             log_level=os.getenv("LOG_LEVEL", "INFO"),
             max_retries=int(os.getenv("MAX_RETRIES", "3")),
-            timeout_seconds=int(os.getenv("TIMEOUT_SECONDS", "300"))
+            timeout_seconds=int(os.getenv("TIMEOUT_SECONDS", "300")),
         )
 
 
-class UnderstandMarkets,Customers,CapabilitiesSalesMarketingAgent(BaseAgent, ProtocolMixin):
+class UnderstandMarketsCustomersCapabilitiesSalesMarketingAgent(BaseAgent, ProtocolMixin):
     """
-    UnderstandMarkets,Customers,CapabilitiesSalesMarketingAgent - APQC 3.0 Agent
+    UnderstandMarketsCustomersCapabilitiesSalesMarketingAgent - APQC 3.0 Agent
 
     3.1 Understand markets, customers, and capabilities
 
@@ -149,23 +149,73 @@ class UnderstandMarkets,Customers,CapabilitiesSalesMarketingAgent(BaseAgent, Pro
     APQC_PROCESS_ID = "3.0.1"
     APQC_FRAMEWORK_VERSION = "7.0.1"
 
-    def __init__(self, config: UnderstandMarkets,Customers,CapabilitiesSalesMarketingAgentConfig):
+    def __init__(self, config: UnderstandMarketsCustomersCapabilitiesSalesMarketingAgentConfig):
         """Initialize agent"""
         super().__init__(
-            agent_id=config.agent_id,
-            agent_type=config.agent_type,
-            version=config.version
+            agent_id=config.agent_id, agent_type=config.agent_type, version=config.version
         )
 
         self.config = config
-        self.capabilities_list = ['analysis', 'decision_making', 'communication', 'collaboration', 'learning', 'market_analysis', 'campaign_management', 'lead_generation']
-        self.skills = {'data_analysis': 0.8, 'pattern_recognition': 0.85, 'optimization': 0.75, 'communication': 0.7, 'collaboration': 0.8, 'persuasion': 0.85, 'empathy': 0.9}
-        self.interfaces = {'inputs': ['data_structured', 'data_unstructured', 'messages', 'events', 'metrics'], 'outputs': ['analysis_reports', 'recommendations', 'decisions', 'artifacts', 'metrics', 'events'], 'protocols': ['message_passing', 'event_driven', 'api_rest']}
-        self.behavior = {'autonomous_level': 0.9, 'collaboration_mode': 'swarm', 'learning_enabled': True, 'self_improvement': True}
-        self.resources = {'compute': 'adaptive', 'memory': 'adaptive', 'api_budget': 'dynamic', 'priority': 'medium'}
-        self.integration = {'compatible_agents': ['1.0', '2.0', '6.0'], 'required_services': ['knowledge_graph', 'vector_db', 'event_bus', 'nlp_service'], 'ontology_level': 'L2_process'}
-        self.quality = {'testing_required': True, 'qa_threshold': 0.85, 'consensus_weight': 1.0, 'error_handling': 'graceful_degradation'}
-        self.deployment = {'runtime': 'ray_actor', 'scaling': 'horizontal', 'health_checks': True, 'monitoring': True}
+        self.capabilities_list = [
+            "analysis",
+            "decision_making",
+            "communication",
+            "collaboration",
+            "learning",
+            "market_analysis",
+            "campaign_management",
+            "lead_generation",
+        ]
+        self.skills = {
+            "data_analysis": 0.8,
+            "pattern_recognition": 0.85,
+            "optimization": 0.75,
+            "communication": 0.7,
+            "collaboration": 0.8,
+            "persuasion": 0.85,
+            "empathy": 0.9,
+        }
+        self.interfaces = {
+            "inputs": ["data_structured", "data_unstructured", "messages", "events", "metrics"],
+            "outputs": [
+                "analysis_reports",
+                "recommendations",
+                "decisions",
+                "artifacts",
+                "metrics",
+                "events",
+            ],
+            "protocols": ["message_passing", "event_driven", "api_rest"],
+        }
+        self.behavior = {
+            "autonomous_level": 0.9,
+            "collaboration_mode": "swarm",
+            "learning_enabled": True,
+            "self_improvement": True,
+        }
+        self.resources = {
+            "compute": "adaptive",
+            "memory": "adaptive",
+            "api_budget": "dynamic",
+            "priority": "medium",
+        }
+        self.integration = {
+            "compatible_agents": ["1.0", "2.0", "6.0"],
+            "required_services": ["knowledge_graph", "vector_db", "event_bus", "nlp_service"],
+            "ontology_level": "L2_process",
+        }
+        self.quality = {
+            "testing_required": True,
+            "qa_threshold": 0.85,
+            "consensus_weight": 1.0,
+            "error_handling": "graceful_degradation",
+        }
+        self.deployment = {
+            "runtime": "ray_actor",
+            "scaling": "horizontal",
+            "health_checks": True,
+            "monitoring": True,
+        }
 
         # Initialize state
         self.state = {
@@ -173,16 +223,16 @@ class UnderstandMarkets,Customers,CapabilitiesSalesMarketingAgent(BaseAgent, Pro
             "tasks_processed": 0,
             "last_activity": datetime.now().isoformat(),
             "performance_metrics": {},
-            "learning_data": {} if self.config.learning_enabled else None
+            "learning_data": {} if self.config.learning_enabled else None,
         }
 
         self._initialize_protocols()
         self._initialize_monitoring()
 
     @classmethod
-    def from_environment(cls) -> "UnderstandMarkets,Customers,CapabilitiesSalesMarketingAgent":
+    def from_environment(cls) -> "UnderstandMarketsCustomersCapabilitiesSalesMarketingAgent":
         """Create agent from environment variables (Redeployable)"""
-        config = UnderstandMarkets,Customers,CapabilitiesSalesMarketingAgentConfig.from_environment()
+        config = UnderstandMarketsCustomersCapabilitiesSalesMarketingAgentConfig.from_environment()
         return cls(config)
 
     def _initialize_protocols(self):
@@ -213,7 +263,7 @@ class UnderstandMarkets,Customers,CapabilitiesSalesMarketingAgent(BaseAgent, Pro
                 return {
                     "status": "error",
                     "message": "Invalid input data",
-                    "error_handling": self.config.error_handling
+                    "error_handling": self.config.error_handling,
                 }
 
             # Process based on agent type and capabilities
@@ -232,11 +282,7 @@ class UnderstandMarkets,Customers,CapabilitiesSalesMarketingAgent(BaseAgent, Pro
         except Exception as e:
             self.log("error", f"Execution error: {str(e)}")
             if self.config.error_handling == "graceful_degradation":
-                return {
-                    "status": "degraded",
-                    "message": str(e),
-                    "partial_result": {}
-                }
+                return {"status": "degraded", "message": str(e), "partial_result": {}}
             raise
 
     async def _process_sales_marketing(self, input_data: Dict[str, Any]) -> Dict[str, Any]:
@@ -264,8 +310,8 @@ class UnderstandMarkets,Customers,CapabilitiesSalesMarketingAgent(BaseAgent, Pro
                 "decisions": [],
                 "artifacts": [],
                 "metrics": {},
-                "events": []
-            }
+                "events": [],
+            },
         }
 
         return result
@@ -281,7 +327,7 @@ class UnderstandMarkets,Customers,CapabilitiesSalesMarketingAgent(BaseAgent, Pro
                 "timestamp": datetime.now().isoformat(),
                 "input_summary": str(input_data)[:100],
                 "result_status": result.get("status"),
-                "performance": {}
+                "performance": {},
             }
 
             if "learning_history" not in self.state["learning_data"]:
@@ -313,7 +359,7 @@ class UnderstandMarkets,Customers,CapabilitiesSalesMarketingAgent(BaseAgent, Pro
             "apqc_metadata": {
                 "category_id": self.APQC_CATEGORY_ID,
                 "process_id": self.APQC_PROCESS_ID,
-                "framework_version": self.APQC_FRAMEWORK_VERSION
+                "framework_version": self.APQC_FRAMEWORK_VERSION,
             },
             "protocols": self.get_supported_protocols(),
             "capabilities": self.capabilities_list,
@@ -325,23 +371,23 @@ class UnderstandMarkets,Customers,CapabilitiesSalesMarketingAgent(BaseAgent, Pro
                 "atomic": True,
                 "composable": True,
                 "orchestratable": True,
-                "vendor_agnostic": True
+                "vendor_agnostic": True,
             },
             "performance": {
                 "tasks_processed": self.state["tasks_processed"],
                 "memory_mb": memory_usage,
-                "last_activity": self.state["last_activity"]
+                "last_activity": self.state["last_activity"],
             },
             "behavior": {
                 "autonomous_level": self.config.autonomous_level,
                 "learning_enabled": self.config.learning_enabled,
-                "collaboration_mode": self.config.collaboration_mode
+                "collaboration_mode": self.config.collaboration_mode,
             },
             "deployment": {
                 "runtime": self.config.runtime,
                 "scaling": self.config.scaling,
-                "monitoring": self.config.monitoring
-            }
+                "monitoring": self.config.monitoring,
+            },
         }
 
         return health
@@ -367,9 +413,13 @@ class UnderstandMarkets,Customers,CapabilitiesSalesMarketingAgent(BaseAgent, Pro
                 "task_type": {"type": "string", "description": "Type of task to execute"},
                 "data": {"type": "object", "description": "Task data"},
                 "context": {"type": "object", "description": "Execution context"},
-                "priority": {"type": "string", "enum": ["low", "medium", "high"], "default": "medium"}
+                "priority": {
+                    "type": "string",
+                    "enum": ["low", "medium", "high"],
+                    "default": "medium",
+                },
             },
-            "required": ["task_type", "data"]
+            "required": ["task_type", "data"],
         }
 
     def get_output_schema(self) -> Dict[str, Any]:
@@ -392,11 +442,11 @@ class UnderstandMarkets,Customers,CapabilitiesSalesMarketingAgent(BaseAgent, Pro
                         "decisions": {"type": "array"},
                         "artifacts": {"type": "array"},
                         "metrics": {"type": "object"},
-                        "events": {"type": "array"}
-                    }
-                }
+                        "events": {"type": "array"},
+                    },
+                },
             },
-            "required": ["status", "apqc_process_id", "agent_id", "timestamp", "output"]
+            "required": ["status", "apqc_process_id", "agent_id", "timestamp", "output"],
         }
 
     def log(self, level: str, message: str):
@@ -406,8 +456,10 @@ class UnderstandMarkets,Customers,CapabilitiesSalesMarketingAgent(BaseAgent, Pro
 
 
 # Convenience function for agent creation
-def create_understand_markets,_customers,_capabilities_sales_marketing_agent(config: Optional[UnderstandMarkets,Customers,CapabilitiesSalesMarketingAgentConfig] = None) -> UnderstandMarkets,Customers,CapabilitiesSalesMarketingAgent:
-    """Create UnderstandMarkets,Customers,CapabilitiesSalesMarketingAgent instance"""
+def create_understand_markets_customers_capabilities_sales_marketing_agent(
+    config: Optional[UnderstandMarketsCustomersCapabilitiesSalesMarketingAgentConfig] = None,
+) -> UnderstandMarketsCustomersCapabilitiesSalesMarketingAgent:
+    """Create UnderstandMarketsCustomersCapabilitiesSalesMarketingAgent instance"""
     if config is None:
-        config = UnderstandMarkets,Customers,CapabilitiesSalesMarketingAgentConfig()
-    return UnderstandMarkets,Customers,CapabilitiesSalesMarketingAgent(config)
+        config = UnderstandMarketsCustomersCapabilitiesSalesMarketingAgentConfig()
+    return UnderstandMarketsCustomersCapabilitiesSalesMarketingAgent(config)

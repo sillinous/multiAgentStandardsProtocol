@@ -19,7 +19,7 @@ Key Features:
      • Studies volume trends
      • Identifies support/resistance levels
      • Evaluates OHLCV patterns
-   
+
    - Fundamental Analysis Agent (Default: Claude Sonnet)
      • Evaluates project quality
      • Assesses team and development

@@ -48,7 +48,11 @@ class InventoryTrackerTaskAgent(BaseAgent):
     and maximum reusability across APQC categories.
     """
 
-    def __init__(self, agent_id: str = "inventory_tracker_task_agent", config: Optional[Dict[str, Any]] = None):
+    def __init__(
+        self,
+        agent_id: str = "inventory_tracker_task_agent",
+        config: Optional[Dict[str, Any]] = None,
+    ):
         """
         Initialize Inventory Tracker Task Agent
 
@@ -59,8 +63,14 @@ class InventoryTrackerTaskAgent(BaseAgent):
         super().__init__(
             agent_id=agent_id,
             agent_type="business_logic",
-            capabilities=['real_time_updates', 'multi_location', 'reorder_alerts', 'stock_reservation', 'fifo_lifo'],
-            config=config or {}
+            capabilities=[
+                "real_time_updates",
+                "multi_location",
+                "reorder_alerts",
+                "stock_reservation",
+                "fifo_lifo",
+            ],
+            config=config or {},
         )
 
         # Agent-specific initialization
@@ -70,27 +80,27 @@ class InventoryTrackerTaskAgent(BaseAgent):
             "reusable": True,
             "composable": True,
             "stateless": True,
-            "framework": "APQC 7.0.1"
+            "framework": "APQC 7.0.1",
         }
 
         logger.info(f"Initialized Inventory Tracker Task Agent [{self.agent_id}]")
 
     async def execute_task(self, task: Dict[str, Any]) -> Dict[str, Any]:
         """
-        Execute the business logic task
+                Execute the business logic task
 
-        Args:
-            task: Task parameters containing:
-                - item_id: string
-- quantity_change: int
-- location: string
-- transaction_type: string
+                Args:
+                    task: Task parameters containing:
+                        - item_id: string
+        - quantity_change: int
+        - location: string
+        - transaction_type: string
 
-        Returns:
-            Result dictionary containing:
-                - updated_inventory: dict
-- stock_level: int
-- reorder_alert: bool
+                Returns:
+                    Result dictionary containing:
+                        - updated_inventory: dict
+        - stock_level: int
+        - reorder_alert: bool
         """
         try:
             logger.info(f"[{self.agent_id}] Executing business_logic task")
@@ -110,7 +120,7 @@ class InventoryTrackerTaskAgent(BaseAgent):
                 "status": "success",
                 "agent_id": self.agent_id,
                 "timestamp": datetime.utcnow().isoformat(),
-                "result": output
+                "result": output,
             }
 
         except Exception as e:
@@ -119,7 +129,7 @@ class InventoryTrackerTaskAgent(BaseAgent):
                 "status": "error",
                 "agent_id": self.agent_id,
                 "timestamp": datetime.utcnow().isoformat(),
-                "error": str(e)
+                "error": str(e),
             }
 
     def _validate_inputs(self, task: Dict[str, Any]) -> None:
@@ -132,7 +142,7 @@ class InventoryTrackerTaskAgent(BaseAgent):
         Raises:
             ValueError: If required inputs are missing or invalid
         """
-        required_fields = ['item_id', 'quantity_change', 'location', 'transaction_type']
+        required_fields = ["item_id", "quantity_change", "location", "transaction_type"]
 
         for field in required_fields:
             if field not in task:
@@ -160,7 +170,7 @@ class InventoryTrackerTaskAgent(BaseAgent):
         result = {
             "executed": True,
             "task_type": "business_logic",
-            "inputs_received": list(task.keys())
+            "inputs_received": list(task.keys()),
         }
 
         # Simulate async work
@@ -185,8 +195,8 @@ class InventoryTrackerTaskAgent(BaseAgent):
                 "agent_type": self.agent_type,
                 "level": 5,
                 "category": "business_logic",
-                "timestamp": datetime.utcnow().isoformat()
-            }
+                "timestamp": datetime.utcnow().isoformat(),
+            },
         }
 
     async def handle_message(self, message: Dict[str, Any]) -> Dict[str, Any]:
@@ -208,10 +218,7 @@ class InventoryTrackerTaskAgent(BaseAgent):
         elif message_type == "capabilities":
             return self.get_capabilities()
         else:
-            return {
-                "status": "error",
-                "error": f"Unknown message type: {message_type}"
-            }
+            return {"status": "error", "error": f"Unknown message type: {message_type}"}
 
     def get_status(self) -> Dict[str, Any]:
         """
@@ -225,7 +232,7 @@ class InventoryTrackerTaskAgent(BaseAgent):
             "agent_type": self.agent_type,
             "status": "ready",
             "capabilities": self.capabilities,
-            "metadata": self.metadata
+            "metadata": self.metadata,
         }
 
     def get_capabilities(self) -> Dict[str, Any]:
@@ -238,11 +245,16 @@ class InventoryTrackerTaskAgent(BaseAgent):
         return {
             "agent_id": self.agent_id,
             "capabilities": self.capabilities,
-            "inputs": {'item_id': 'string', 'quantity_change': 'int', 'location': 'string', 'transaction_type': 'string'},
-            "outputs": {'updated_inventory': 'dict', 'stock_level': 'int', 'reorder_alert': 'bool'},
+            "inputs": {
+                "item_id": "string",
+                "quantity_change": "int",
+                "location": "string",
+                "transaction_type": "string",
+            },
+            "outputs": {"updated_inventory": "dict", "stock_level": "int", "reorder_alert": "bool"},
             "level": 5,
             "reusable": True,
-            "composable": True
+            "composable": True,
         }
 
 
@@ -256,7 +268,7 @@ async def main():
     # Example task
     task = {
         # Add example inputs here
-                # "item_id": "example_item_id",
+        # "item_id": "example_item_id",
         # "quantity_change": "example_quantity_change",
         # "location": "example_location",
         # "transaction_type": "example_transaction_type",

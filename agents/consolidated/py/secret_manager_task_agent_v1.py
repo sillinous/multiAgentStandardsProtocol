@@ -48,7 +48,9 @@ class SecretManagerTaskAgent(BaseAgent):
     and maximum reusability across APQC categories.
     """
 
-    def __init__(self, agent_id: str = "secret_manager_task_agent", config: Optional[Dict[str, Any]] = None):
+    def __init__(
+        self, agent_id: str = "secret_manager_task_agent", config: Optional[Dict[str, Any]] = None
+    ):
         """
         Initialize Secret Manager Task Agent
 
@@ -59,8 +61,15 @@ class SecretManagerTaskAgent(BaseAgent):
         super().__init__(
             agent_id=agent_id,
             agent_type="security_compliance",
-            capabilities=['vault', 'aws_secrets', 'azure_keyvault', 'secret_rotation', 'version_control', 'audit_trails'],
-            config=config or {}
+            capabilities=[
+                "vault",
+                "aws_secrets",
+                "azure_keyvault",
+                "secret_rotation",
+                "version_control",
+                "audit_trails",
+            ],
+            config=config or {},
         )
 
         # Agent-specific initialization
@@ -70,26 +79,26 @@ class SecretManagerTaskAgent(BaseAgent):
             "reusable": True,
             "composable": True,
             "stateless": True,
-            "framework": "APQC 7.0.1"
+            "framework": "APQC 7.0.1",
         }
 
         logger.info(f"Initialized Secret Manager Task Agent [{self.agent_id}]")
 
     async def execute_task(self, task: Dict[str, Any]) -> Dict[str, Any]:
         """
-        Execute the security compliance task
+                Execute the security compliance task
 
-        Args:
-            task: Task parameters containing:
-                - secret_name: string
-- secret_value: string
-- access_policy: dict
+                Args:
+                    task: Task parameters containing:
+                        - secret_name: string
+        - secret_value: string
+        - access_policy: dict
 
-        Returns:
-            Result dictionary containing:
-                - secret_value: string
-- version: string
-- audit_trail: list
+                Returns:
+                    Result dictionary containing:
+                        - secret_value: string
+        - version: string
+        - audit_trail: list
         """
         try:
             logger.info(f"[{self.agent_id}] Executing security_compliance task")
@@ -109,7 +118,7 @@ class SecretManagerTaskAgent(BaseAgent):
                 "status": "success",
                 "agent_id": self.agent_id,
                 "timestamp": datetime.utcnow().isoformat(),
-                "result": output
+                "result": output,
             }
 
         except Exception as e:
@@ -118,7 +127,7 @@ class SecretManagerTaskAgent(BaseAgent):
                 "status": "error",
                 "agent_id": self.agent_id,
                 "timestamp": datetime.utcnow().isoformat(),
-                "error": str(e)
+                "error": str(e),
             }
 
     def _validate_inputs(self, task: Dict[str, Any]) -> None:
@@ -131,7 +140,7 @@ class SecretManagerTaskAgent(BaseAgent):
         Raises:
             ValueError: If required inputs are missing or invalid
         """
-        required_fields = ['secret_name', 'secret_value', 'access_policy']
+        required_fields = ["secret_name", "secret_value", "access_policy"]
 
         for field in required_fields:
             if field not in task:
@@ -159,7 +168,7 @@ class SecretManagerTaskAgent(BaseAgent):
         result = {
             "executed": True,
             "task_type": "security_compliance",
-            "inputs_received": list(task.keys())
+            "inputs_received": list(task.keys()),
         }
 
         # Simulate async work
@@ -184,8 +193,8 @@ class SecretManagerTaskAgent(BaseAgent):
                 "agent_type": self.agent_type,
                 "level": 5,
                 "category": "security_compliance",
-                "timestamp": datetime.utcnow().isoformat()
-            }
+                "timestamp": datetime.utcnow().isoformat(),
+            },
         }
 
     async def handle_message(self, message: Dict[str, Any]) -> Dict[str, Any]:
@@ -207,10 +216,7 @@ class SecretManagerTaskAgent(BaseAgent):
         elif message_type == "capabilities":
             return self.get_capabilities()
         else:
-            return {
-                "status": "error",
-                "error": f"Unknown message type: {message_type}"
-            }
+            return {"status": "error", "error": f"Unknown message type: {message_type}"}
 
     def get_status(self) -> Dict[str, Any]:
         """
@@ -224,7 +230,7 @@ class SecretManagerTaskAgent(BaseAgent):
             "agent_type": self.agent_type,
             "status": "ready",
             "capabilities": self.capabilities,
-            "metadata": self.metadata
+            "metadata": self.metadata,
         }
 
     def get_capabilities(self) -> Dict[str, Any]:
@@ -237,11 +243,11 @@ class SecretManagerTaskAgent(BaseAgent):
         return {
             "agent_id": self.agent_id,
             "capabilities": self.capabilities,
-            "inputs": {'secret_name': 'string', 'secret_value': 'string', 'access_policy': 'dict'},
-            "outputs": {'secret_value': 'string', 'version': 'string', 'audit_trail': 'list'},
+            "inputs": {"secret_name": "string", "secret_value": "string", "access_policy": "dict"},
+            "outputs": {"secret_value": "string", "version": "string", "audit_trail": "list"},
             "level": 5,
             "reusable": True,
-            "composable": True
+            "composable": True,
         }
 
 
@@ -255,7 +261,7 @@ async def main():
     # Example task
     task = {
         # Add example inputs here
-                # "secret_name": "example_secret_name",
+        # "secret_name": "example_secret_name",
         # "secret_value": "example_secret_value",
         # "access_policy": "example_access_policy",
     }

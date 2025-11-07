@@ -32,21 +32,29 @@ class AssessRisksRiskComplianceAgent(BaseAgent, ProtocolMixin):
     APQC_PROCESS_ID = "10.2.1"
 
     def __init__(self, config: AssessRisksRiskComplianceAgentConfig):
-        super().__init__(agent_id=config.apqc_agent_id, agent_type=config.agent_type, version=config.version)
+        super().__init__(
+            agent_id=config.apqc_agent_id, agent_type=config.agent_type, version=config.version
+        )
         self.config = config
-        self.skills = {'risk_scoring': 0.92, 'probability_analysis': 0.88, 'impact_assessment': 0.87}
+        self.skills = {
+            "risk_scoring": 0.92,
+            "probability_analysis": 0.88,
+            "impact_assessment": 0.87,
+        }
 
     async def execute(self, input_data: Dict[str, Any]) -> Dict[str, Any]:
         """
         Assess risks using probability × impact matrix and prioritization
         """
-        risk_events = input_data.get('risk_events', [])
-        probability_estimates = input_data.get('probability_estimates', {})
-        impact_estimates = input_data.get('impact_estimates', {})
-        risk_tolerance = input_data.get('risk_tolerance', 'medium')
+        risk_events = input_data.get("risk_events", [])
+        probability_estimates = input_data.get("probability_estimates", {})
+        impact_estimates = input_data.get("impact_estimates", {})
+        risk_tolerance = input_data.get("risk_tolerance", "medium")
 
         # Risk Matrix Calculation
-        risk_matrix = self._calculate_risk_matrix(risk_events, probability_estimates, impact_estimates)
+        risk_matrix = self._calculate_risk_matrix(
+            risk_events, probability_estimates, impact_estimates
+        )
 
         # Risk Scoring
         risk_scores = self._calculate_risk_scores(risk_matrix)
@@ -69,27 +77,33 @@ class AssessRisksRiskComplianceAgent(BaseAgent, ProtocolMixin):
                     "risk_scores": risk_scores,
                     "heat_map": heat_map,
                     "priorities": priorities,
-                    "mitigation_recommendations": mitigation_recs
+                    "mitigation_recommendations": mitigation_recs,
                 },
                 "metrics": {
                     "total_risks_identified": len(risk_events),
-                    "critical_risks": len([r for r in risk_scores['risks'] if r['risk_level'] == 'critical']),
-                    "high_risks": len([r for r in risk_scores['risks'] if r['risk_level'] == 'high']),
-                    "average_risk_score": risk_scores['average_risk_score']
-                }
-            }
+                    "critical_risks": len(
+                        [r for r in risk_scores["risks"] if r["risk_level"] == "critical"]
+                    ),
+                    "high_risks": len(
+                        [r for r in risk_scores["risks"] if r["risk_level"] == "high"]
+                    ),
+                    "average_risk_score": risk_scores["average_risk_score"],
+                },
+            },
         }
 
-    def _calculate_risk_matrix(self, risk_events: List[Dict], probabilities: Dict, impacts: Dict) -> List[Dict]:
+    def _calculate_risk_matrix(
+        self, risk_events: List[Dict], probabilities: Dict, impacts: Dict
+    ) -> List[Dict]:
         """
         Calculate risk matrix with probability and impact
         """
         risk_matrix = []
 
         for risk in risk_events:
-            risk_id = risk.get('risk_id')
-            risk_name = risk.get('name', 'Unknown Risk')
-            risk_category = risk.get('category', 'General')
+            risk_id = risk.get("risk_id")
+            risk_name = risk.get("name", "Unknown Risk")
+            risk_category = risk.get("category", "General")
 
             # Get probability (scale 1-5)
             probability = probabilities.get(risk_id, 3)  # Default to medium
@@ -97,15 +111,17 @@ class AssessRisksRiskComplianceAgent(BaseAgent, ProtocolMixin):
             # Get impact (scale 1-5)
             impact = impacts.get(risk_id, 3)  # Default to medium
 
-            risk_matrix.append({
-                "risk_id": risk_id,
-                "name": risk_name,
-                "category": risk_category,
-                "probability": probability,
-                "impact": impact,
-                "probability_label": self._get_probability_label(probability),
-                "impact_label": self._get_impact_label(impact)
-            })
+            risk_matrix.append(
+                {
+                    "risk_id": risk_id,
+                    "name": risk_name,
+                    "category": risk_category,
+                    "probability": probability,
+                    "impact": impact,
+                    "probability_label": self._get_probability_label(probability),
+                    "impact_label": self._get_impact_label(impact),
+                }
+            )
 
         return risk_matrix
 
@@ -127,7 +143,7 @@ class AssessRisksRiskComplianceAgent(BaseAgent, ProtocolMixin):
 
         for risk in risk_matrix:
             # Risk Score = Probability × Impact
-            risk_score = risk['probability'] * risk['impact']
+            risk_score = risk["probability"] * risk["impact"]
 
             # Determine risk level based on score
             if risk_score >= 20:  # 4×5 or 5×4 or 5×5
@@ -139,21 +155,17 @@ class AssessRisksRiskComplianceAgent(BaseAgent, ProtocolMixin):
             else:
                 risk_level = "low"
 
-            scored_risks.append({
-                **risk,
-                "risk_score": risk_score,
-                "risk_level": risk_level
-            })
+            scored_risks.append({**risk, "risk_score": risk_score, "risk_level": risk_level})
 
         # Sort by risk score
-        scored_risks.sort(key=lambda x: x['risk_score'], reverse=True)
+        scored_risks.sort(key=lambda x: x["risk_score"], reverse=True)
 
-        average_risk_score = np.mean([r['risk_score'] for r in scored_risks]) if scored_risks else 0
+        average_risk_score = np.mean([r["risk_score"] for r in scored_risks]) if scored_risks else 0
 
         return {
             "risks": scored_risks,
             "average_risk_score": round(average_risk_score, 2),
-            "total_risk_exposure": sum(r['risk_score'] for r in scored_risks)
+            "total_risk_exposure": sum(r["risk_score"] for r in scored_risks),
         }
 
     def _generate_risk_heat_map(self, risk_scores: Dict) -> Dict[str, Any]:
@@ -163,25 +175,23 @@ class AssessRisksRiskComplianceAgent(BaseAgent, ProtocolMixin):
         # Create 5x5 matrix
         heat_map_matrix = [[[] for _ in range(5)] for _ in range(5)]
 
-        for risk in risk_scores['risks']:
-            prob_idx = risk['probability'] - 1  # 0-indexed
-            impact_idx = risk['impact'] - 1
-            heat_map_matrix[prob_idx][impact_idx].append({
-                "risk_id": risk['risk_id'],
-                "name": risk['name'],
-                "risk_score": risk['risk_score']
-            })
+        for risk in risk_scores["risks"]:
+            prob_idx = risk["probability"] - 1  # 0-indexed
+            impact_idx = risk["impact"] - 1
+            heat_map_matrix[prob_idx][impact_idx].append(
+                {"risk_id": risk["risk_id"], "name": risk["name"], "risk_score": risk["risk_score"]}
+            )
 
         # Count risks in each quadrant
         quadrants = {
             "critical": 0,  # High probability, high impact
             "high": 0,  # Either high probability or high impact
             "medium": 0,  # Moderate on both
-            "low": 0  # Low on both
+            "low": 0,  # Low on both
         }
 
-        for risk in risk_scores['risks']:
-            quadrants[risk['risk_level']] += 1
+        for risk in risk_scores["risks"]:
+            quadrants[risk["risk_level"]] += 1
 
         return {
             "matrix": heat_map_matrix,
@@ -193,9 +203,9 @@ class AssessRisksRiskComplianceAgent(BaseAgent, ProtocolMixin):
                     "green": "Low risk (1-5)",
                     "yellow": "Medium risk (6-11)",
                     "orange": "High risk (12-19)",
-                    "red": "Critical risk (20-25)"
-                }
-            }
+                    "red": "Critical risk (20-25)",
+                },
+            },
         }
 
     def _prioritize_risks(self, risk_scores: Dict, risk_tolerance: str) -> Dict[str, Any]:
@@ -207,14 +217,14 @@ class AssessRisksRiskComplianceAgent(BaseAgent, ProtocolMixin):
         medium_priority = []
         low_priority = []
 
-        for risk in risk_scores['risks']:
-            risk_level = risk['risk_level']
+        for risk in risk_scores["risks"]:
+            risk_level = risk["risk_level"]
 
-            if risk_level == 'critical':
+            if risk_level == "critical":
                 critical_risks.append(risk)
-            elif risk_level == 'high':
+            elif risk_level == "high":
                 high_priority.append(risk)
-            elif risk_level == 'medium':
+            elif risk_level == "medium":
                 medium_priority.append(risk)
             else:
                 low_priority.append(risk)
@@ -223,7 +233,7 @@ class AssessRisksRiskComplianceAgent(BaseAgent, ProtocolMixin):
         tolerance_thresholds = {
             "low": {"critical": 15, "high": 10, "medium": 5},
             "medium": {"critical": 20, "high": 12, "medium": 6},
-            "high": {"critical": 25, "high": 15, "medium": 8}
+            "high": {"critical": 25, "high": 15, "medium": 8},
         }
 
         thresholds = tolerance_thresholds.get(risk_tolerance, tolerance_thresholds["medium"])
@@ -240,8 +250,8 @@ class AssessRisksRiskComplianceAgent(BaseAgent, ProtocolMixin):
                 "critical": len(critical_risks),
                 "high": len(high_priority),
                 "medium": len(medium_priority),
-                "low": len(low_priority)
-            }
+                "low": len(low_priority),
+            },
         }
 
     def _generate_mitigation_recommendations(self, priorities: Dict) -> List[Dict]:
@@ -251,74 +261,75 @@ class AssessRisksRiskComplianceAgent(BaseAgent, ProtocolMixin):
         recommendations = []
 
         # Critical risks - immediate action
-        for risk in priorities['critical_risks']:
-            recommendations.append({
-                "risk_id": risk['risk_id'],
-                "risk_name": risk['name'],
-                "priority": "critical",
-                "strategy": "mitigate",
-                "actions": [
-                    "Develop immediate response plan",
-                    "Assign dedicated risk owner",
-                    "Implement preventive controls",
-                    "Establish monitoring mechanisms",
-                    "Escalate to senior management"
-                ],
-                "timeline": "immediate (0-7 days)",
-                "estimated_cost": "high",
-                "expected_reduction": "50-75%"
-            })
+        for risk in priorities["critical_risks"]:
+            recommendations.append(
+                {
+                    "risk_id": risk["risk_id"],
+                    "risk_name": risk["name"],
+                    "priority": "critical",
+                    "strategy": "mitigate",
+                    "actions": [
+                        "Develop immediate response plan",
+                        "Assign dedicated risk owner",
+                        "Implement preventive controls",
+                        "Establish monitoring mechanisms",
+                        "Escalate to senior management",
+                    ],
+                    "timeline": "immediate (0-7 days)",
+                    "estimated_cost": "high",
+                    "expected_reduction": "50-75%",
+                }
+            )
 
         # High priority risks
-        for risk in priorities['high_priority_risks'][:5]:  # Top 5
-            recommendations.append({
-                "risk_id": risk['risk_id'],
-                "risk_name": risk['name'],
-                "priority": "high",
-                "strategy": "mitigate",
-                "actions": [
-                    "Develop mitigation plan",
-                    "Implement risk controls",
-                    "Regular monitoring",
-                    "Contingency planning"
-                ],
-                "timeline": "short-term (1-4 weeks)",
-                "estimated_cost": "medium",
-                "expected_reduction": "30-50%"
-            })
+        for risk in priorities["high_priority_risks"][:5]:  # Top 5
+            recommendations.append(
+                {
+                    "risk_id": risk["risk_id"],
+                    "risk_name": risk["name"],
+                    "priority": "high",
+                    "strategy": "mitigate",
+                    "actions": [
+                        "Develop mitigation plan",
+                        "Implement risk controls",
+                        "Regular monitoring",
+                        "Contingency planning",
+                    ],
+                    "timeline": "short-term (1-4 weeks)",
+                    "estimated_cost": "medium",
+                    "expected_reduction": "30-50%",
+                }
+            )
 
         # Medium priority risks - accept or mitigate
-        for risk in priorities['medium_priority_risks'][:3]:  # Top 3
-            recommendations.append({
-                "risk_id": risk['risk_id'],
-                "risk_name": risk['name'],
-                "priority": "medium",
-                "strategy": "monitor_and_review",
-                "actions": [
-                    "Regular monitoring",
-                    "Periodic review",
-                    "Basic controls"
-                ],
-                "timeline": "medium-term (1-3 months)",
-                "estimated_cost": "low",
-                "expected_reduction": "10-30%"
-            })
+        for risk in priorities["medium_priority_risks"][:3]:  # Top 3
+            recommendations.append(
+                {
+                    "risk_id": risk["risk_id"],
+                    "risk_name": risk["name"],
+                    "priority": "medium",
+                    "strategy": "monitor_and_review",
+                    "actions": ["Regular monitoring", "Periodic review", "Basic controls"],
+                    "timeline": "medium-term (1-3 months)",
+                    "estimated_cost": "low",
+                    "expected_reduction": "10-30%",
+                }
+            )
 
         # Low priority risks - accept
-        if priorities['low_priority_risks']:
-            recommendations.append({
-                "risk_id": "low_priority_group",
-                "risk_name": f"Group of {len(priorities['low_priority_risks'])} low priority risks",
-                "priority": "low",
-                "strategy": "accept",
-                "actions": [
-                    "Routine monitoring",
-                    "Annual review"
-                ],
-                "timeline": "long-term (ongoing)",
-                "estimated_cost": "minimal",
-                "expected_reduction": "0-10%"
-            })
+        if priorities["low_priority_risks"]:
+            recommendations.append(
+                {
+                    "risk_id": "low_priority_group",
+                    "risk_name": f"Group of {len(priorities['low_priority_risks'])} low priority risks",
+                    "priority": "low",
+                    "strategy": "accept",
+                    "actions": ["Routine monitoring", "Annual review"],
+                    "timeline": "long-term (ongoing)",
+                    "estimated_cost": "minimal",
+                    "expected_reduction": "0-10%",
+                }
+            )
 
         return recommendations
 
@@ -326,7 +337,9 @@ class AssessRisksRiskComplianceAgent(BaseAgent, ProtocolMixin):
         print(f"[{datetime.now().isoformat()}] [{level}] {message}")
 
 
-def create_assess_risks_risk_compliance_agent(config: Optional[AssessRisksRiskComplianceAgentConfig] = None):
+def create_assess_risks_risk_compliance_agent(
+    config: Optional[AssessRisksRiskComplianceAgentConfig] = None,
+):
     if config is None:
         config = AssessRisksRiskComplianceAgentConfig()
     return AssessRisksRiskComplianceAgent(config)

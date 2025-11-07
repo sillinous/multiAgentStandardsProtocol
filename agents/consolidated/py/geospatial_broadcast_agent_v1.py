@@ -53,7 +53,8 @@ import psutil
 
 import sys
 import os
-sys.path.insert(0, os.path.join(os.path.dirname(__file__), '../..'))
+
+sys.path.insert(0, os.path.join(os.path.dirname(__file__), "../.."))
 
 import logging
 
@@ -65,9 +66,11 @@ from superstandard.agents.base.base_agent import BaseAgent, ProtocolMixin
 # Domain Models
 # =========================================================================
 
+
 @dataclass
 class GeographicZone:
     """Geographic zone for broadcast sharding"""
+
     zone_id: str
     center_lat: float
     center_lon: float
@@ -77,6 +80,7 @@ class GeographicZone:
         """Check if point is within zone"""
         # Simplified Haversine
         import math
+
         R = 6371
 
         lat1, lon1 = math.radians(self.center_lat), math.radians(self.center_lon)
@@ -85,7 +89,7 @@ class GeographicZone:
         dlat = lat2 - lat1
         dlon = lon2 - lon1
 
-        a = math.sin(dlat/2)**2 + math.cos(lat1) * math.cos(lat2) * math.sin(dlon/2)**2
+        a = math.sin(dlat / 2) ** 2 + math.cos(lat1) * math.cos(lat2) * math.sin(dlon / 2) ** 2
         c = 2 * math.asin(math.sqrt(a))
         distance = R * c
 
@@ -95,6 +99,7 @@ class GeographicZone:
 @dataclass
 class JourneyBroadcast:
     """Broadcast message for available journey"""
+
     broadcast_id: str
     driver_id: str
     origin: Dict[str, Any]  # {lat, lon, name}
@@ -119,13 +124,14 @@ class JourneyBroadcast:
             "fare_estimate": self.fare_estimate,
             "driver_rating": self.driver_rating,
             "amenities": self.amenities,
-            "created_at": self.created_at.isoformat()
+            "created_at": self.created_at.isoformat(),
         }
 
 
 @dataclass
 class RiderSubscription:
     """Rider's subscription to journey broadcasts"""
+
     rider_id: str
     desired_origin: Dict[str, Any]  # {lat, lon}
     desired_destination: Dict[str, Any]
@@ -151,16 +157,10 @@ class RiderSubscription:
 
         # Check geographic proximity (simplified)
         # In production, check actual route compatibility
-        origin_close = self._is_close(
-            self.desired_origin,
-            broadcast.origin,
-            threshold_km=2.0
-        )
+        origin_close = self._is_close(self.desired_origin, broadcast.origin, threshold_km=2.0)
 
         dest_close = self._is_close(
-            self.desired_destination,
-            broadcast.destination,
-            threshold_km=5.0
+            self.desired_destination, broadcast.destination, threshold_km=5.0
         )
 
         return origin_close and dest_close
@@ -168,6 +168,7 @@ class RiderSubscription:
     def _is_close(self, point1: Dict, point2: Dict, threshold_km: float) -> bool:
         """Check if two points are close"""
         import math
+
         R = 6371
 
         lat1, lon1 = math.radians(point1["lat"]), math.radians(point1["lon"])
@@ -176,7 +177,7 @@ class RiderSubscription:
         dlat = lat2 - lat1
         dlon = lon2 - lon1
 
-        a = math.sin(dlat/2)**2 + math.cos(lat1) * math.cos(lat2) * math.sin(dlon/2)**2
+        a = math.sin(dlat / 2) ** 2 + math.cos(lat1) * math.cos(lat2) * math.sin(dlon / 2) ** 2
         c = 2 * math.asin(math.sqrt(a))
         distance = R * c
 
@@ -186,6 +187,7 @@ class RiderSubscription:
 # =========================================================================
 # Configuration
 # =========================================================================
+
 
 @dataclass
 class GeospatialBroadcastAgentConfig:
@@ -211,12 +213,13 @@ class GeospatialBroadcastAgentConfig:
     max_pending_notifications: int = 1000
 
     @classmethod
-    def from_environment(cls) -> 'GeospatialBroadcastAgentConfig':
+    def from_environment(cls) -> "GeospatialBroadcastAgentConfig":
         """Create config from environment"""
         import os
+
         return cls(
-            agent_id=os.getenv('GEOSPATIAL_AGENT_ID', 'geospatial_broadcast_001'),
-            zone_radius_km=float(os.getenv('ZONE_RADIUS_KM', '10.0'))
+            agent_id=os.getenv("GEOSPATIAL_AGENT_ID", "geospatial_broadcast_001"),
+            zone_radius_km=float(os.getenv("ZONE_RADIUS_KM", "10.0")),
         )
 
 
@@ -271,7 +274,7 @@ class GeospatialBroadcastAgent(BaseAgent, ProtocolMixin):
             "total_matches_notified": 0,
             "active_zones": 0,
             "average_broadcasts_per_zone": 0.0,
-            "average_match_latency_ms": 0.0
+            "average_match_latency_ms": 0.0,
         }
 
         # Performance
@@ -302,8 +305,8 @@ class GeospatialBroadcastAgent(BaseAgent, ProtocolMixin):
             "version": AGENT_VERSION,
             "config": {
                 "zone_radius_km": self.typed_config.zone_radius_km,
-                "max_zones": self.typed_config.max_zones
-            }
+                "max_zones": self.typed_config.max_zones,
+            },
         }
 
     async def shutdown(self) -> Dict[str, Any]:
@@ -322,10 +325,7 @@ class GeospatialBroadcastAgent(BaseAgent, ProtocolMixin):
         self.all_broadcasts.clear()
         self.all_subscriptions.clear()
 
-        return {
-            "status": "shutdown",
-            "final_stats": self.stats
-        }
+        return {"status": "shutdown", "final_stats": self.stats}
 
     async def health_check(self) -> Dict[str, Any]:
         """Health check"""
@@ -337,10 +337,8 @@ class GeospatialBroadcastAgent(BaseAgent, ProtocolMixin):
             "active_zones": len(self.zones),
             "total_broadcasts": len(self.all_broadcasts),
             "total_subscriptions": len(self.all_subscriptions),
-            "resources": {
-                "memory_mb": round(memory_mb, 2)
-            },
-            "stats": self.stats
+            "resources": {"memory_mb": round(memory_mb, 2)},
+            "stats": self.stats,
         }
 
     # =====================================================================
@@ -386,14 +384,11 @@ class GeospatialBroadcastAgent(BaseAgent, ProtocolMixin):
                 vehicle_type=params.get("vehicle_type", "sedan"),
                 fare_estimate=params.get("fare_estimate", 15.0),
                 driver_rating=params.get("driver_rating", 5.0),
-                amenities=params.get("amenities", [])
+                amenities=params.get("amenities", []),
             )
 
             # Determine relevant zones
-            zones = self._get_zones_for_route(
-                broadcast.origin,
-                broadcast.destination
-            )
+            zones = self._get_zones_for_route(broadcast.origin, broadcast.destination)
 
             # Add to zones
             for zone_id in zones:
@@ -411,7 +406,7 @@ class GeospatialBroadcastAgent(BaseAgent, ProtocolMixin):
                 "broadcast_id": broadcast.broadcast_id,
                 "zones_covered": len(zones),
                 "riders_notified": len(matches),
-                "message": f"Journey broadcast: {broadcast.origin['name']} → {broadcast.destination['name']}"
+                "message": f"Journey broadcast: {broadcast.origin['name']} → {broadcast.destination['name']}",
             }
 
         except Exception as e:
@@ -450,13 +445,12 @@ class GeospatialBroadcastAgent(BaseAgent, ProtocolMixin):
                 time_window_start=datetime.fromisoformat(params["time_window_start"]),
                 time_window_end=datetime.fromisoformat(params["time_window_end"]),
                 max_fare=params.get("max_fare", 50.0),
-                min_driver_rating=params.get("min_driver_rating", 4.0)
+                min_driver_rating=params.get("min_driver_rating", 4.0),
             )
 
             # Determine relevant zones
             zones = self._get_zones_for_route(
-                subscription.desired_origin,
-                subscription.desired_destination
+                subscription.desired_origin, subscription.desired_destination
             )
 
             # Add to zones
@@ -475,7 +469,7 @@ class GeospatialBroadcastAgent(BaseAgent, ProtocolMixin):
                 "subscription_id": subscription.rider_id,
                 "zones_watching": len(zones),
                 "immediate_matches": len(matches),
-                "matches": [m.to_dict() for m in matches[:5]]
+                "matches": [m.to_dict() for m in matches[:5]],
             }
 
         except Exception as e:
@@ -504,7 +498,9 @@ class GeospatialBroadcastAgent(BaseAgent, ProtocolMixin):
     # Matching & Notification
     # =====================================================================
 
-    async def _notify_matching_riders(self, broadcast: JourneyBroadcast, zones: List[str]) -> List[str]:
+    async def _notify_matching_riders(
+        self, broadcast: JourneyBroadcast, zones: List[str]
+    ) -> List[str]:
         """Notify riders who match the broadcast"""
         matched_riders = []
 
@@ -520,7 +516,9 @@ class GeospatialBroadcastAgent(BaseAgent, ProtocolMixin):
 
         return matched_riders
 
-    async def _find_matching_broadcasts(self, subscription: RiderSubscription, zones: List[str]) -> List[JourneyBroadcast]:
+    async def _find_matching_broadcasts(
+        self, subscription: RiderSubscription, zones: List[str]
+    ) -> List[JourneyBroadcast]:
         """Find broadcasts matching subscription"""
         matches = []
 
@@ -562,7 +560,7 @@ class GeospatialBroadcastAgent(BaseAgent, ProtocolMixin):
                 zone_id=zone_id,
                 center_lat=zone_lat * self.typed_config.zone_radius_km,
                 center_lon=zone_lon * self.typed_config.zone_radius_km,
-                radius_km=self.typed_config.zone_radius_km
+                radius_km=self.typed_config.zone_radius_km,
             )
             self.stats["active_zones"] = len(self.zones)
 
@@ -585,7 +583,7 @@ class GeospatialBroadcastAgent(BaseAgent, ProtocolMixin):
             "success": True,
             "zone_id": zone_id,
             "broadcast_count": len(broadcasts),
-            "broadcasts": [b.to_dict() for b in broadcasts]
+            "broadcasts": [b.to_dict() for b in broadcasts],
         }
 
     # =====================================================================
@@ -622,9 +620,9 @@ class GeospatialBroadcastAgent(BaseAgent, ProtocolMixin):
 # Factory
 # =========================================================================
 
+
 def create_geospatial_broadcast_agent(
-    agent_id: str,
-    config: Optional[GeospatialBroadcastAgentConfig] = None
+    agent_id: str, config: Optional[GeospatialBroadcastAgentConfig] = None
 ) -> GeospatialBroadcastAgent:
     """Create geospatial broadcast agent"""
     if config is None:
@@ -634,8 +632,7 @@ def create_geospatial_broadcast_agent(
 
 
 async def create_geospatial_broadcast_agent_async(
-    agent_id: str,
-    config: Optional[GeospatialBroadcastAgentConfig] = None
+    agent_id: str, config: Optional[GeospatialBroadcastAgentConfig] = None
 ) -> GeospatialBroadcastAgent:
     """Create and initialize agent"""
     agent = create_geospatial_broadcast_agent(agent_id, config)

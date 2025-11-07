@@ -42,22 +42,19 @@ class AgentFactory(BaseAgent):
         workspace_path: str = "./autonomous-ecosystem/workspace",
         library_path: str = "./autonomous-ecosystem/library",
         apqc_registry_path: str = "./autonomous-ecosystem/library/apqc_agents/registry.json",
-        claude_api_key: Optional[str] = None
+        claude_api_key: Optional[str] = None,
     ):
         super().__init__(
             agent_id=agent_id,
             agent_type="agent_factory",
             capabilities=[AgentCapability.DEVELOPMENT],
-            workspace_path=workspace_path
+            workspace_path=workspace_path,
         )
 
         self.library_path = library_path
         self.apqc_registry_path = apqc_registry_path
         self.code_generator = ClaudeCodeGenerator(claude_api_key)
-        self.file_ops = SafeFileOperations(
-            ".",
-            os.path.join(workspace_path, "backups")
-        )
+        self.file_ops = SafeFileOperations(".", os.path.join(workspace_path, "backups"))
 
         self.agents_generated = []
         self.generation_queue = []
@@ -65,7 +62,9 @@ class AgentFactory(BaseAgent):
         print(f"[{self.agent_id}] 🏭 Agent Factory initialized")
         print(f"  Library Path: {library_path}")
         print(f"  APQC Registry: {apqc_registry_path}")
-        print(f"  Code Generation: {'Claude API ✅' if not self.code_generator.mock_mode else 'Mock Mode ⚠️'}")
+        print(
+            f"  Code Generation: {'Claude API ✅' if not self.code_generator.mock_mode else 'Mock Mode ⚠️'}"
+        )
 
     async def execute_task(self, task: Dict[str, Any]) -> Dict[str, Any]:
         """Execute agent generation task"""
@@ -99,7 +98,7 @@ class AgentFactory(BaseAgent):
             "category": agent_spec.get("metadata", {}).get("category_name"),
             "complexity": self._estimate_complexity(agent_spec),
             "estimated_time_seconds": self._estimate_generation_time(agent_spec),
-            "dependencies": agent_spec.get("integration", {}).get("required_services", [])
+            "dependencies": agent_spec.get("integration", {}).get("required_services", []),
         }
 
     async def generate_agent(self, agent_spec: Dict[str, Any]) -> Dict[str, Any]:
@@ -125,7 +124,7 @@ class AgentFactory(BaseAgent):
             "timestamp": datetime.now().isoformat(),
             "status": "in_progress",
             "files_created": [],
-            "errors": []
+            "errors": [],
         }
 
         try:
@@ -160,15 +159,11 @@ class AgentFactory(BaseAgent):
         self.save_artifact(
             "agent_generations",
             result,
-            f"{agent_id}_generation_{datetime.now().strftime('%Y%m%d_%H%M%S')}.json"
+            f"{agent_id}_generation_{datetime.now().strftime('%Y%m%d_%H%M%S')}.json",
         )
 
         # Send to orchestrator
-        self.send_message(
-            MessageType.IMPLEMENTATION_REPORT,
-            "orchestrator",
-            result
-        )
+        self.send_message(MessageType.IMPLEMENTATION_REPORT, "orchestrator", result)
 
         self.agents_generated.append(result)
 
@@ -193,7 +188,7 @@ class AgentFactory(BaseAgent):
             "started": 0,
             "completed": 0,
             "failed": 0,
-            "results": []
+            "results": [],
         }
 
         # Load APQC registry
@@ -208,11 +203,13 @@ class AgentFactory(BaseAgent):
                 batch_result["started"] += 1
             else:
                 print(f"[{self.agent_id}]   ⚠️  Agent not found: {agent_id}")
-                batch_result["results"].append({
-                    "agent_id": agent_id,
-                    "status": "not_found",
-                    "error": "Agent specification not found in registry"
-                })
+                batch_result["results"].append(
+                    {
+                        "agent_id": agent_id,
+                        "status": "not_found",
+                        "error": "Agent specification not found in registry",
+                    }
+                )
 
         # Execute all generations in parallel
         print(f"[{self.agent_id}]   🚀 Launching {len(tasks)} parallel generations...")
@@ -222,10 +219,7 @@ class AgentFactory(BaseAgent):
         for result in results:
             if isinstance(result, Exception):
                 batch_result["failed"] += 1
-                batch_result["results"].append({
-                    "status": "error",
-                    "error": str(result)
-                })
+                batch_result["results"].append({"status": "error", "error": str(result)})
             else:
                 if result.get("status") == "completed":
                     batch_result["completed"] += 1
@@ -236,7 +230,9 @@ class AgentFactory(BaseAgent):
         print(f"\n[{self.agent_id}] ✅ BATCH COMPLETE:")
         print(f"  ✅ Completed: {batch_result['completed']}")
         print(f"  ❌ Failed: {batch_result['failed']}")
-        print(f"  📊 Success Rate: {(batch_result['completed']/batch_result['total_agents']*100):.1f}%")
+        print(
+            f"  📊 Success Rate: {(batch_result['completed']/batch_result['total_agents']*100):.1f}%"
+        )
 
         return batch_result
 
@@ -258,16 +254,14 @@ class AgentFactory(BaseAgent):
             "customer_insights_agent",
             "trend_forecasting_agent",
             "product_opportunity_agent",
-
             # Tier 2: Analytics & Optimization (Category 8.0)
             "roi_calculator_agent",
             "cost_optimization_agent",
             "content_strategy_agent",
-
             # Tier 3: Enterprise (Category 12.0)
             "process_optimization_agent",
             "knowledge_management_agent",
-            "data_quality_agent"
+            "data_quality_agent",
         ]
 
         # Take only requested count
@@ -360,8 +354,8 @@ The agent should be production-ready and follow Python best practices.
         context = {
             "project": "autonomous-ecosystem",
             "base_class": "BaseAgent",
-            "agent_type": metadata.get('agent_type'),
-            "framework": "APQC 7.0.1"
+            "agent_type": metadata.get("agent_type"),
+            "framework": "APQC 7.0.1",
         }
 
         code = await self.code_generator.generate_code(prompt, context)
@@ -391,10 +385,7 @@ Generate tests that cover:
 Use pytest and async test patterns.
 """
 
-        context = {
-            "framework": "pytest",
-            "type": "agent_tests"
-        }
+        context = {"framework": "pytest", "type": "agent_tests"}
 
         return await self.code_generator.generate_code(prompt, context)
 
@@ -478,28 +469,26 @@ from superstandard.agents.base.base_agent import BaseAgent, AgentCapability, Mes
 
         # Load existing registry
         if os.path.exists(registry_path):
-            with open(registry_path, 'r') as f:
+            with open(registry_path, "r") as f:
                 registry = json.load(f)
         else:
-            registry = {
-                "generated_at": datetime.now().isoformat(),
-                "total_agents": 0,
-                "agents": []
-            }
+            registry = {"generated_at": datetime.now().isoformat(), "total_agents": 0, "agents": []}
 
         # Add new agent
-        registry["agents"].append({
-            "agent_id": agent_spec.get("agent_id"),
-            "category": agent_spec.get("metadata", {}).get("category_id"),
-            "generated_at": datetime.now().isoformat(),
-            "version": agent_spec.get("version")
-        })
+        registry["agents"].append(
+            {
+                "agent_id": agent_spec.get("agent_id"),
+                "category": agent_spec.get("metadata", {}).get("category_id"),
+                "generated_at": datetime.now().isoformat(),
+                "version": agent_spec.get("version"),
+            }
+        )
 
         registry["total_agents"] = len(registry["agents"])
         registry["last_updated"] = datetime.now().isoformat()
 
         # Save registry
-        with open(registry_path, 'w') as f:
+        with open(registry_path, "w") as f:
             json.dump(registry, f, indent=2)
 
     async def _load_apqc_registry(self) -> Dict[str, Any]:
@@ -508,7 +497,7 @@ from superstandard.agents.base.base_agent import BaseAgent, AgentCapability, Mes
         if not os.path.exists(self.apqc_registry_path):
             raise FileNotFoundError(f"APQC registry not found: {self.apqc_registry_path}")
 
-        with open(self.apqc_registry_path, 'r') as f:
+        with open(self.apqc_registry_path, "r") as f:
             return json.load(f)
 
     def _find_agent_spec(self, registry: Dict[str, Any], agent_id: str) -> Optional[Dict[str, Any]]:
@@ -538,11 +527,7 @@ from superstandard.agents.base.base_agent import BaseAgent, AgentCapability, Mes
 
         complexity = self._estimate_complexity(agent_spec)
 
-        time_map = {
-            "low": 30,
-            "medium": 60,
-            "high": 120
-        }
+        time_map = {"low": 30, "medium": 60, "high": 120}
 
         return time_map.get(complexity, 60)
 

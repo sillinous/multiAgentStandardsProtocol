@@ -84,7 +84,7 @@ class ManageProductPortfolioSalesMarketingAgentConfig:
             agent_id=os.getenv("AGENT_ID", "apqc_3_0_b3c4d5e6"),
             log_level=os.getenv("LOG_LEVEL", "INFO"),
             max_retries=int(os.getenv("MAX_RETRIES", "3")),
-            timeout_seconds=int(os.getenv("TIMEOUT_SECONDS", "300"))
+            timeout_seconds=int(os.getenv("TIMEOUT_SECONDS", "300")),
         )
 
 
@@ -120,18 +120,26 @@ class ManageProductPortfolioSalesMarketingAgent(BaseAgent, ProtocolMixin):
     def __init__(self, config: ManageProductPortfolioSalesMarketingAgentConfig):
         """Initialize agent"""
         super().__init__(
-            agent_id=config.agent_id,
-            agent_type=config.agent_type,
-            version=config.version
+            agent_id=config.agent_id, agent_type=config.agent_type, version=config.version
         )
 
         self.config = config
-        self.capabilities_list = ['portfolio_optimization', 'profitability_analysis', 'bcg_matrix_analysis', 'lifecycle_management', 'strategic_planning']
-        self.skills = {'portfolio_optimization': 0.9, 'profitability_analysis': 0.87, 'bcg_matrix': 0.85}
+        self.capabilities_list = [
+            "portfolio_optimization",
+            "profitability_analysis",
+            "bcg_matrix_analysis",
+            "lifecycle_management",
+            "strategic_planning",
+        ]
+        self.skills = {
+            "portfolio_optimization": 0.9,
+            "profitability_analysis": 0.87,
+            "bcg_matrix": 0.85,
+        }
         self.interfaces = {
-            'inputs': ['product_data', 'financial_data', 'market_data', 'strategic_goals'],
-            'outputs': ['portfolio_analysis', 'recommendations', 'action_plan', 'metrics'],
-            'protocols': ['message_passing', 'event_driven', 'api_rest']
+            "inputs": ["product_data", "financial_data", "market_data", "strategic_goals"],
+            "outputs": ["portfolio_analysis", "recommendations", "action_plan", "metrics"],
+            "protocols": ["message_passing", "event_driven", "api_rest"],
         }
 
         self.state = {
@@ -139,7 +147,7 @@ class ManageProductPortfolioSalesMarketingAgent(BaseAgent, ProtocolMixin):
             "tasks_processed": 0,
             "last_activity": datetime.now().isoformat(),
             "performance_metrics": {},
-            "learning_data": {} if self.config.learning_enabled else None
+            "learning_data": {} if self.config.learning_enabled else None,
         }
 
         self._initialize_protocols()
@@ -169,7 +177,7 @@ class ManageProductPortfolioSalesMarketingAgent(BaseAgent, ProtocolMixin):
                 return {
                     "status": "error",
                     "message": "Invalid input data",
-                    "error_handling": self.config.error_handling
+                    "error_handling": self.config.error_handling,
                 }
 
             result = await self._process_portfolio_management(input_data)
@@ -185,11 +193,7 @@ class ManageProductPortfolioSalesMarketingAgent(BaseAgent, ProtocolMixin):
         except Exception as e:
             self.log("error", f"Execution error: {str(e)}")
             if self.config.error_handling == "graceful_degradation":
-                return {
-                    "status": "degraded",
-                    "message": str(e),
-                    "partial_result": {}
-                }
+                return {"status": "degraded", "message": str(e), "partial_result": {}}
             raise
 
     async def _process_portfolio_management(self, input_data: Dict[str, Any]) -> Dict[str, Any]:
@@ -204,9 +208,9 @@ class ManageProductPortfolioSalesMarketingAgent(BaseAgent, ProtocolMixin):
         """
         self.log("info", "Processing product portfolio management")
 
-        product_data = input_data.get('product_data', [])
-        market_data = input_data.get('market_data', {})
-        strategic_goals = input_data.get('strategic_goals', {})
+        product_data = input_data.get("product_data", [])
+        market_data = input_data.get("market_data", {})
+        strategic_goals = input_data.get("strategic_goals", {})
 
         # BCG Matrix Analysis
         bcg_analysis = self._perform_bcg_analysis(product_data, market_data)
@@ -218,7 +222,9 @@ class ManageProductPortfolioSalesMarketingAgent(BaseAgent, ProtocolMixin):
         balance = self._assess_portfolio_balance(bcg_analysis, profitability)
 
         # Strategic Recommendations
-        recommendations = self._generate_strategic_recommendations(bcg_analysis, balance, strategic_goals)
+        recommendations = self._generate_strategic_recommendations(
+            bcg_analysis, balance, strategic_goals
+        )
 
         # Risk Assessment
         risk_analysis = self._assess_portfolio_risk(product_data, bcg_analysis)
@@ -233,23 +239,25 @@ class ManageProductPortfolioSalesMarketingAgent(BaseAgent, ProtocolMixin):
                     "total_products": len(product_data),
                     "bcg_matrix": bcg_analysis,
                     "profitability": profitability,
-                    "balance_score": balance['overall_score'],
-                    "risk_level": risk_analysis['overall_risk']
+                    "balance_score": balance["overall_score"],
+                    "risk_level": risk_analysis["overall_risk"],
                 },
                 "recommendations": recommendations,
                 "action_plan": self._create_action_plan(recommendations),
                 "metrics": {
-                    "portfolio_value": profitability['total_revenue'],
-                    "average_margin": profitability['average_margin'],
-                    "diversification_index": balance['diversification_index'],
-                    "risk_score": risk_analysis['risk_score']
-                }
-            }
+                    "portfolio_value": profitability["total_revenue"],
+                    "average_margin": profitability["average_margin"],
+                    "diversification_index": balance["diversification_index"],
+                    "risk_score": risk_analysis["risk_score"],
+                },
+            },
         }
 
         return result
 
-    def _perform_bcg_analysis(self, product_data: List[Dict[str, Any]], market_data: Dict[str, Any]) -> Dict[str, Any]:
+    def _perform_bcg_analysis(
+        self, product_data: List[Dict[str, Any]], market_data: Dict[str, Any]
+    ) -> Dict[str, Any]:
         """
         Perform BCG Matrix analysis classifying products into:
         - Stars: High growth, high market share
@@ -261,8 +269,8 @@ class ManageProductPortfolioSalesMarketingAgent(BaseAgent, ProtocolMixin):
             return {"stars": [], "cash_cows": [], "question_marks": [], "dogs": []}
 
         # Calculate median values for classification thresholds
-        growth_rates = [p.get('growth_rate', 0) for p in product_data]
-        market_shares = [p.get('market_share', 0) for p in product_data]
+        growth_rates = [p.get("growth_rate", 0) for p in product_data]
+        market_shares = [p.get("market_share", 0) for p in product_data]
 
         median_growth = np.median(growth_rates) if growth_rates else 10
         median_share = np.median(market_shares) if market_shares else 20
@@ -274,12 +282,12 @@ class ManageProductPortfolioSalesMarketingAgent(BaseAgent, ProtocolMixin):
         dogs = []
 
         for product in product_data:
-            product_id = product.get('product_id', 'unknown')
-            product_name = product.get('name', 'Unknown Product')
-            growth = product.get('growth_rate', 0)
-            share = product.get('market_share', 0)
-            revenue = product.get('revenue', 0)
-            margin = product.get('profit_margin', 0)
+            product_id = product.get("product_id", "unknown")
+            product_name = product.get("name", "Unknown Product")
+            growth = product.get("growth_rate", 0)
+            share = product.get("market_share", 0)
+            revenue = product.get("revenue", 0)
+            margin = product.get("profit_margin", 0)
 
             product_info = {
                 "product_id": product_id,
@@ -287,7 +295,7 @@ class ManageProductPortfolioSalesMarketingAgent(BaseAgent, ProtocolMixin):
                 "growth_rate": growth,
                 "market_share": share,
                 "revenue": revenue,
-                "profit_margin": margin
+                "profit_margin": margin,
             }
 
             # Classification logic
@@ -307,14 +315,14 @@ class ManageProductPortfolioSalesMarketingAgent(BaseAgent, ProtocolMixin):
             "dogs": dogs,
             "classification_thresholds": {
                 "growth_threshold": round(median_growth, 2),
-                "share_threshold": round(median_share, 2)
+                "share_threshold": round(median_share, 2),
             },
             "distribution": {
                 "stars_count": len(stars),
                 "cash_cows_count": len(cash_cows),
                 "question_marks_count": len(question_marks),
-                "dogs_count": len(dogs)
-            }
+                "dogs_count": len(dogs),
+            },
         }
 
     def _analyze_profitability(self, product_data: List[Dict[str, Any]]) -> Dict[str, Any]:
@@ -327,34 +335,38 @@ class ManageProductPortfolioSalesMarketingAgent(BaseAgent, ProtocolMixin):
                 "total_profit": 0,
                 "average_margin": 0,
                 "top_performers": [],
-                "underperformers": []
+                "underperformers": [],
             }
 
-        total_revenue = sum(p.get('revenue', 0) for p in product_data)
+        total_revenue = sum(p.get("revenue", 0) for p in product_data)
         profits = []
         margins = []
 
         product_profitability = []
 
         for product in product_data:
-            revenue = product.get('revenue', 0)
-            margin = product.get('profit_margin', 0)
+            revenue = product.get("revenue", 0)
+            margin = product.get("profit_margin", 0)
             profit = revenue * (margin / 100)
 
             profits.append(profit)
             margins.append(margin)
 
-            product_profitability.append({
-                "product_id": product.get('product_id'),
-                "name": product.get('name'),
-                "revenue": revenue,
-                "profit": round(profit, 2),
-                "margin": margin,
-                "revenue_contribution": round((revenue / total_revenue * 100), 2) if total_revenue > 0 else 0
-            })
+            product_profitability.append(
+                {
+                    "product_id": product.get("product_id"),
+                    "name": product.get("name"),
+                    "revenue": revenue,
+                    "profit": round(profit, 2),
+                    "margin": margin,
+                    "revenue_contribution": (
+                        round((revenue / total_revenue * 100), 2) if total_revenue > 0 else 0
+                    ),
+                }
+            )
 
         # Sort by profit
-        product_profitability.sort(key=lambda x: x['profit'], reverse=True)
+        product_profitability.sort(key=lambda x: x["profit"], reverse=True)
 
         total_profit = sum(profits)
         average_margin = np.mean(margins) if margins else 0
@@ -373,40 +385,42 @@ class ManageProductPortfolioSalesMarketingAgent(BaseAgent, ProtocolMixin):
             "profitability_distribution": {
                 "high_margin_products": len([m for m in margins if m > 30]),
                 "medium_margin_products": len([m for m in margins if 15 <= m <= 30]),
-                "low_margin_products": len([m for m in margins if m < 15])
-            }
+                "low_margin_products": len([m for m in margins if m < 15]),
+            },
         }
 
-    def _assess_portfolio_balance(self, bcg: Dict[str, Any], profitability: Dict[str, Any]) -> Dict[str, Any]:
+    def _assess_portfolio_balance(
+        self, bcg: Dict[str, Any], profitability: Dict[str, Any]
+    ) -> Dict[str, Any]:
         """
         Assess portfolio balance and diversification
         """
-        distribution = bcg['distribution']
+        distribution = bcg["distribution"]
         total_products = sum(distribution.values())
 
         if total_products == 0:
             return {"overall_score": 0, "diversification_index": 0, "balance_status": "empty"}
 
         # Calculate balance scores
-        stars_ratio = distribution['stars_count'] / total_products
-        cash_cows_ratio = distribution['cash_cows_count'] / total_products
-        question_marks_ratio = distribution['question_marks_count'] / total_products
-        dogs_ratio = distribution['dogs_count'] / total_products
+        stars_ratio = distribution["stars_count"] / total_products
+        cash_cows_ratio = distribution["cash_cows_count"] / total_products
+        question_marks_ratio = distribution["question_marks_count"] / total_products
+        dogs_ratio = distribution["dogs_count"] / total_products
 
         # Ideal ratios: Stars 25%, Cash Cows 35%, Question Marks 25%, Dogs 15%
-        ideal = {'stars': 0.25, 'cash_cows': 0.35, 'question_marks': 0.25, 'dogs': 0.15}
+        ideal = {"stars": 0.25, "cash_cows": 0.35, "question_marks": 0.25, "dogs": 0.15}
         actual = {
-            'stars': stars_ratio,
-            'cash_cows': cash_cows_ratio,
-            'question_marks': question_marks_ratio,
-            'dogs': dogs_ratio
+            "stars": stars_ratio,
+            "cash_cows": cash_cows_ratio,
+            "question_marks": question_marks_ratio,
+            "dogs": dogs_ratio,
         }
 
         # Calculate deviation from ideal
         balance_score = 100
         for category in ideal:
             deviation = abs(ideal[category] - actual[category])
-            balance_score -= (deviation * 100)
+            balance_score -= deviation * 100
 
         balance_score = max(0, balance_score)
 
@@ -439,19 +453,21 @@ class ManageProductPortfolioSalesMarketingAgent(BaseAgent, ProtocolMixin):
                 "stars": round(stars_ratio * 100, 2),
                 "cash_cows": round(cash_cows_ratio * 100, 2),
                 "question_marks": round(question_marks_ratio * 100, 2),
-                "dogs": round(dogs_ratio * 100, 2)
+                "dogs": round(dogs_ratio * 100, 2),
             },
             "ideal_vs_actual": {
                 category: {
                     "ideal": round(ideal[category] * 100, 2),
                     "actual": round(actual[category] * 100, 2),
-                    "deviation": round(abs(ideal[category] - actual[category]) * 100, 2)
+                    "deviation": round(abs(ideal[category] - actual[category]) * 100, 2),
                 }
                 for category in ideal
-            }
+            },
         }
 
-    def _assess_portfolio_risk(self, product_data: List[Dict[str, Any]], bcg: Dict[str, Any]) -> Dict[str, Any]:
+    def _assess_portfolio_risk(
+        self, product_data: List[Dict[str, Any]], bcg: Dict[str, Any]
+    ) -> Dict[str, Any]:
         """
         Assess portfolio risk factors
         """
@@ -462,10 +478,10 @@ class ManageProductPortfolioSalesMarketingAgent(BaseAgent, ProtocolMixin):
         risk_score = 0
 
         # Check for over-reliance on few products
-        total_revenue = sum(p.get('revenue', 0) for p in product_data)
+        total_revenue = sum(p.get("revenue", 0) for p in product_data)
         if total_revenue > 0:
-            sorted_products = sorted(product_data, key=lambda x: x.get('revenue', 0), reverse=True)
-            top_3_revenue = sum(p.get('revenue', 0) for p in sorted_products[:3])
+            sorted_products = sorted(product_data, key=lambda x: x.get("revenue", 0), reverse=True)
+            top_3_revenue = sum(p.get("revenue", 0) for p in sorted_products[:3])
             concentration = (top_3_revenue / total_revenue) * 100
 
             if concentration > 70:
@@ -473,20 +489,32 @@ class ManageProductPortfolioSalesMarketingAgent(BaseAgent, ProtocolMixin):
                 risk_score += 25
 
         # Check for too many Dogs
-        dogs_ratio = bcg['distribution']['dogs_count'] / len(product_data) if len(product_data) > 0 else 0
+        dogs_ratio = (
+            bcg["distribution"]["dogs_count"] / len(product_data) if len(product_data) > 0 else 0
+        )
         if dogs_ratio > 0.3:
             risk_factors.append("High proportion of underperforming products (Dogs)")
             risk_score += 20
 
         # Check for lack of Stars
-        stars_ratio = bcg['distribution']['stars_count'] / len(product_data) if len(product_data) > 0 else 0
+        stars_ratio = (
+            bcg["distribution"]["stars_count"] / len(product_data) if len(product_data) > 0 else 0
+        )
         if stars_ratio < 0.15:
             risk_factors.append("Insufficient high-growth, high-share products (Stars)")
             risk_score += 15
 
         # Check for aging portfolio (too many Cash Cows, not enough Question Marks)
-        cash_cows_ratio = bcg['distribution']['cash_cows_count'] / len(product_data) if len(product_data) > 0 else 0
-        qm_ratio = bcg['distribution']['question_marks_count'] / len(product_data) if len(product_data) > 0 else 0
+        cash_cows_ratio = (
+            bcg["distribution"]["cash_cows_count"] / len(product_data)
+            if len(product_data) > 0
+            else 0
+        )
+        qm_ratio = (
+            bcg["distribution"]["question_marks_count"] / len(product_data)
+            if len(product_data) > 0
+            else 0
+        )
 
         if cash_cows_ratio > 0.5 and qm_ratio < 0.15:
             risk_factors.append("Portfolio aging - need more growth opportunities")
@@ -506,69 +534,82 @@ class ManageProductPortfolioSalesMarketingAgent(BaseAgent, ProtocolMixin):
             "overall_risk": overall_risk,
             "risk_score": risk_score,
             "risk_factors": risk_factors,
-            "mitigation_priority": "immediate" if risk_score >= 50 else "planned" if risk_score >= 30 else "routine"
+            "mitigation_priority": (
+                "immediate" if risk_score >= 50 else "planned" if risk_score >= 30 else "routine"
+            ),
         }
 
-    def _generate_strategic_recommendations(self, bcg: Dict[str, Any], balance: Dict[str, Any],
-                                           strategic_goals: Dict[str, Any]) -> List[Dict[str, Any]]:
+    def _generate_strategic_recommendations(
+        self, bcg: Dict[str, Any], balance: Dict[str, Any], strategic_goals: Dict[str, Any]
+    ) -> List[Dict[str, Any]]:
         """
         Generate strategic recommendations based on portfolio analysis
         """
         recommendations = []
 
         # Stars recommendations
-        if bcg['stars']:
-            recommendations.append({
-                "priority": "high",
-                "category": "stars",
-                "action": "Invest in Stars for market dominance",
-                "description": f"Invest heavily in {len(bcg['stars'])} Star products to maintain growth and market share",
-                "products": [s['name'] for s in bcg['stars'][:3]],
-                "expected_outcome": "Market leadership and sustained growth"
-            })
+        if bcg["stars"]:
+            recommendations.append(
+                {
+                    "priority": "high",
+                    "category": "stars",
+                    "action": "Invest in Stars for market dominance",
+                    "description": f"Invest heavily in {len(bcg['stars'])} Star products to maintain growth and market share",
+                    "products": [s["name"] for s in bcg["stars"][:3]],
+                    "expected_outcome": "Market leadership and sustained growth",
+                }
+            )
 
         # Cash Cows recommendations
-        if bcg['cash_cows']:
-            recommendations.append({
-                "priority": "medium",
-                "category": "cash_cows",
-                "action": "Harvest Cash Cows efficiently",
-                "description": f"Optimize {len(bcg['cash_cows'])} Cash Cow products for maximum profit generation",
-                "products": [c['name'] for c in bcg['cash_cows'][:3]],
-                "expected_outcome": "Stable cash flow for reinvestment"
-            })
+        if bcg["cash_cows"]:
+            recommendations.append(
+                {
+                    "priority": "medium",
+                    "category": "cash_cows",
+                    "action": "Harvest Cash Cows efficiently",
+                    "description": f"Optimize {len(bcg['cash_cows'])} Cash Cow products for maximum profit generation",
+                    "products": [c["name"] for c in bcg["cash_cows"][:3]],
+                    "expected_outcome": "Stable cash flow for reinvestment",
+                }
+            )
 
         # Question Marks recommendations
-        if bcg['question_marks']:
-            recommendations.append({
-                "priority": "high",
-                "category": "question_marks",
-                "action": "Decide on Question Marks",
-                "description": f"Evaluate {len(bcg['question_marks'])} Question Mark products - invest or divest",
-                "products": [q['name'] for q in bcg['question_marks'][:3]],
-                "expected_outcome": "Convert to Stars or divest to free resources"
-            })
+        if bcg["question_marks"]:
+            recommendations.append(
+                {
+                    "priority": "high",
+                    "category": "question_marks",
+                    "action": "Decide on Question Marks",
+                    "description": f"Evaluate {len(bcg['question_marks'])} Question Mark products - invest or divest",
+                    "products": [q["name"] for q in bcg["question_marks"][:3]],
+                    "expected_outcome": "Convert to Stars or divest to free resources",
+                }
+            )
 
         # Dogs recommendations
-        if bcg['dogs']:
-            recommendations.append({
-                "priority": "medium",
-                "category": "dogs",
-                "action": "Phase out or reposition Dogs",
-                "description": f"Consider divesting or repositioning {len(bcg['dogs'])} underperforming products",
-                "products": [d['name'] for d in bcg['dogs'][:3]],
-                "expected_outcome": "Resource reallocation to higher-value products"
-            })
+        if bcg["dogs"]:
+            recommendations.append(
+                {
+                    "priority": "medium",
+                    "category": "dogs",
+                    "action": "Phase out or reposition Dogs",
+                    "description": f"Consider divesting or repositioning {len(bcg['dogs'])} underperforming products",
+                    "products": [d["name"] for d in bcg["dogs"][:3]],
+                    "expected_outcome": "Resource reallocation to higher-value products",
+                }
+            )
 
         # Balance recommendations
-        if balance['balance_status'] in ['poor', 'fair']:
-            recommendations.append({
-                "priority": "high",
-                "category": "portfolio_balance",
-                "action": "Rebalance product portfolio",
-                "description": f"Portfolio balance score is {balance['overall_score']:.1f} - rebalancing needed",
-                "expected_outcome": "Improved portfolio resilience and growth potential"
-            })
+        if balance["balance_status"] in ["poor", "fair"]:
+            recommendations.append(
+                {
+                    "priority": "high",
+                    "category": "portfolio_balance",
+                    "action": "Rebalance product portfolio",
+                    "description": f"Portfolio balance score is {balance['overall_score']:.1f} - rebalancing needed",
+                    "expected_outcome": "Improved portfolio resilience and growth potential",
+                }
+            )
 
         return recommendations
 
@@ -578,34 +619,26 @@ class ManageProductPortfolioSalesMarketingAgent(BaseAgent, ProtocolMixin):
         """
         # Sort by priority
         priority_order = {"high": 0, "medium": 1, "low": 2}
-        sorted_recs = sorted(recommendations, key=lambda x: priority_order.get(x['priority'], 3))
+        sorted_recs = sorted(recommendations, key=lambda x: priority_order.get(x["priority"], 3))
 
-        immediate_actions = [r for r in sorted_recs if r['priority'] == 'high']
-        planned_actions = [r for r in sorted_recs if r['priority'] == 'medium']
+        immediate_actions = [r for r in sorted_recs if r["priority"] == "high"]
+        planned_actions = [r for r in sorted_recs if r["priority"] == "medium"]
 
         return {
             "immediate_actions": [
-                {
-                    "action": r['action'],
-                    "timeline": "0-3 months",
-                    "category": r['category']
-                }
+                {"action": r["action"], "timeline": "0-3 months", "category": r["category"]}
                 for r in immediate_actions
             ],
             "planned_actions": [
-                {
-                    "action": r['action'],
-                    "timeline": "3-12 months",
-                    "category": r['category']
-                }
+                {"action": r["action"], "timeline": "3-12 months", "category": r["category"]}
                 for r in planned_actions
             ],
             "total_actions": len(recommendations),
             "priority_distribution": {
-                "high": len([r for r in recommendations if r['priority'] == 'high']),
-                "medium": len([r for r in recommendations if r['priority'] == 'medium']),
-                "low": len([r for r in recommendations if r['priority'] == 'low'])
-            }
+                "high": len([r for r in recommendations if r["priority"] == "high"]),
+                "medium": len([r for r in recommendations if r["priority"] == "medium"]),
+                "low": len([r for r in recommendations if r["priority"] == "low"]),
+            },
         }
 
     async def _learn_from_execution(self, input_data: Dict[str, Any], result: Dict[str, Any]):
@@ -619,8 +652,10 @@ class ManageProductPortfolioSalesMarketingAgent(BaseAgent, ProtocolMixin):
                 "input_summary": str(input_data)[:100],
                 "result_status": result.get("status"),
                 "performance": {
-                    "balance_score": result.get("output", {}).get("portfolio_analysis", {}).get("balance_score", 0)
-                }
+                    "balance_score": result.get("output", {})
+                    .get("portfolio_analysis", {})
+                    .get("balance_score", 0)
+                },
             }
 
             if "learning_history" not in self.state["learning_data"]:
@@ -632,7 +667,7 @@ class ManageProductPortfolioSalesMarketingAgent(BaseAgent, ProtocolMixin):
         """Validate input data"""
         if not isinstance(input_data, dict):
             return False
-        if 'product_data' not in input_data:
+        if "product_data" not in input_data:
             return False
         return True
 
@@ -647,8 +682,8 @@ class ManageProductPortfolioSalesMarketingAgent(BaseAgent, ProtocolMixin):
             "apqc_metadata": {
                 "category_id": self.APQC_CATEGORY_ID,
                 "process_id": self.APQC_PROCESS_ID,
-                "framework_version": self.APQC_FRAMEWORK_VERSION
-            }
+                "framework_version": self.APQC_FRAMEWORK_VERSION,
+            },
         }
 
     def _get_memory_usage(self) -> float:
@@ -669,9 +704,9 @@ class ManageProductPortfolioSalesMarketingAgent(BaseAgent, ProtocolMixin):
             "properties": {
                 "product_data": {"type": "array", "description": "Product performance data"},
                 "market_data": {"type": "object", "description": "Market context data"},
-                "strategic_goals": {"type": "object", "description": "Strategic objectives"}
+                "strategic_goals": {"type": "object", "description": "Strategic objectives"},
             },
-            "required": ["product_data"]
+            "required": ["product_data"],
         }
 
     def get_output_schema(self) -> Dict[str, Any]:
@@ -680,10 +715,7 @@ class ManageProductPortfolioSalesMarketingAgent(BaseAgent, ProtocolMixin):
             "type": "object",
             "description": f"Output schema for {self.config.apqc_process_name}",
             "apqc_process_id": self.APQC_PROCESS_ID,
-            "properties": {
-                "status": {"type": "string"},
-                "output": {"type": "object"}
-            }
+            "properties": {"status": {"type": "string"}, "output": {"type": "object"}},
         }
 
     def log(self, level: str, message: str):
@@ -693,7 +725,7 @@ class ManageProductPortfolioSalesMarketingAgent(BaseAgent, ProtocolMixin):
 
 
 def create_manage_product_portfolio_sales_marketing_agent(
-    config: Optional[ManageProductPortfolioSalesMarketingAgentConfig] = None
+    config: Optional[ManageProductPortfolioSalesMarketingAgentConfig] = None,
 ) -> ManageProductPortfolioSalesMarketingAgent:
     """Create ManageProductPortfolioSalesMarketingAgent instance"""
     if config is None:

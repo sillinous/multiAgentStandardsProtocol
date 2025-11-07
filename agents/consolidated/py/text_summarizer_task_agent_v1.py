@@ -47,7 +47,9 @@ class TextSummarizerTaskAgent(BaseAgent):
     and maximum reusability across APQC categories.
     """
 
-    def __init__(self, agent_id: str = "text_summarizer_task_agent", config: Optional[Dict[str, Any]] = None):
+    def __init__(
+        self, agent_id: str = "text_summarizer_task_agent", config: Optional[Dict[str, Any]] = None
+    ):
         """
         Initialize Text Summarizer Task Agent
 
@@ -58,8 +60,14 @@ class TextSummarizerTaskAgent(BaseAgent):
         super().__init__(
             agent_id=agent_id,
             agent_type="content_processing",
-            capabilities=['extractive', 'abstractive', 'length_control', 'key_points', 'multi_document'],
-            config=config or {}
+            capabilities=[
+                "extractive",
+                "abstractive",
+                "length_control",
+                "key_points",
+                "multi_document",
+            ],
+            config=config or {},
         )
 
         # Agent-specific initialization
@@ -69,26 +77,26 @@ class TextSummarizerTaskAgent(BaseAgent):
             "reusable": True,
             "composable": True,
             "stateless": True,
-            "framework": "APQC 7.0.1"
+            "framework": "APQC 7.0.1",
         }
 
         logger.info(f"Initialized Text Summarizer Task Agent [{self.agent_id}]")
 
     async def execute_task(self, task: Dict[str, Any]) -> Dict[str, Any]:
         """
-        Execute the content processing task
+                Execute the content processing task
 
-        Args:
-            task: Task parameters containing:
-                - text: string
-- summary_length: int
-- summary_type: string
+                Args:
+                    task: Task parameters containing:
+                        - text: string
+        - summary_length: int
+        - summary_type: string
 
-        Returns:
-            Result dictionary containing:
-                - summary: string
-- key_points: list
-- relevance_scores: dict
+                Returns:
+                    Result dictionary containing:
+                        - summary: string
+        - key_points: list
+        - relevance_scores: dict
         """
         try:
             logger.info(f"[{self.agent_id}] Executing content_processing task")
@@ -108,7 +116,7 @@ class TextSummarizerTaskAgent(BaseAgent):
                 "status": "success",
                 "agent_id": self.agent_id,
                 "timestamp": datetime.utcnow().isoformat(),
-                "result": output
+                "result": output,
             }
 
         except Exception as e:
@@ -117,7 +125,7 @@ class TextSummarizerTaskAgent(BaseAgent):
                 "status": "error",
                 "agent_id": self.agent_id,
                 "timestamp": datetime.utcnow().isoformat(),
-                "error": str(e)
+                "error": str(e),
             }
 
     def _validate_inputs(self, task: Dict[str, Any]) -> None:
@@ -130,7 +138,7 @@ class TextSummarizerTaskAgent(BaseAgent):
         Raises:
             ValueError: If required inputs are missing or invalid
         """
-        required_fields = ['text', 'summary_length', 'summary_type']
+        required_fields = ["text", "summary_length", "summary_type"]
 
         for field in required_fields:
             if field not in task:
@@ -158,7 +166,7 @@ class TextSummarizerTaskAgent(BaseAgent):
         result = {
             "executed": True,
             "task_type": "content_processing",
-            "inputs_received": list(task.keys())
+            "inputs_received": list(task.keys()),
         }
 
         # Simulate async work
@@ -183,8 +191,8 @@ class TextSummarizerTaskAgent(BaseAgent):
                 "agent_type": self.agent_type,
                 "level": 5,
                 "category": "content_processing",
-                "timestamp": datetime.utcnow().isoformat()
-            }
+                "timestamp": datetime.utcnow().isoformat(),
+            },
         }
 
     async def handle_message(self, message: Dict[str, Any]) -> Dict[str, Any]:
@@ -206,10 +214,7 @@ class TextSummarizerTaskAgent(BaseAgent):
         elif message_type == "capabilities":
             return self.get_capabilities()
         else:
-            return {
-                "status": "error",
-                "error": f"Unknown message type: {message_type}"
-            }
+            return {"status": "error", "error": f"Unknown message type: {message_type}"}
 
     def get_status(self) -> Dict[str, Any]:
         """
@@ -223,7 +228,7 @@ class TextSummarizerTaskAgent(BaseAgent):
             "agent_type": self.agent_type,
             "status": "ready",
             "capabilities": self.capabilities,
-            "metadata": self.metadata
+            "metadata": self.metadata,
         }
 
     def get_capabilities(self) -> Dict[str, Any]:
@@ -236,11 +241,11 @@ class TextSummarizerTaskAgent(BaseAgent):
         return {
             "agent_id": self.agent_id,
             "capabilities": self.capabilities,
-            "inputs": {'text': 'string', 'summary_length': 'int', 'summary_type': 'string'},
-            "outputs": {'summary': 'string', 'key_points': 'list', 'relevance_scores': 'dict'},
+            "inputs": {"text": "string", "summary_length": "int", "summary_type": "string"},
+            "outputs": {"summary": "string", "key_points": "list", "relevance_scores": "dict"},
             "level": 5,
             "reusable": True,
-            "composable": True
+            "composable": True,
         }
 
 
@@ -254,7 +259,7 @@ async def main():
     # Example task
     task = {
         # Add example inputs here
-                # "text": "example_text",
+        # "text": "example_text",
         # "summary_length": "example_summary_length",
         # "summary_type": "example_summary_type",
     }

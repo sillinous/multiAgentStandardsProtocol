@@ -19,28 +19,34 @@ from pathlib import Path
 
 logger = logging.getLogger(__name__)
 
+
 class TechnicalDebtSeverity(Enum):
     """Technical debt severity levels aligned with APQC risk classification"""
+
     CRITICAL = "critical"  # Security vulnerabilities, production blockers
-    HIGH = "high"         # Performance impacts, maintainability issues
-    MEDIUM = "medium"     # Code quality, documentation gaps
-    LOW = "low"          # Minor improvements, optimizations
+    HIGH = "high"  # Performance impacts, maintainability issues
+    MEDIUM = "medium"  # Code quality, documentation gaps
+    LOW = "low"  # Minor improvements, optimizations
+
 
 class TechnicalDebtCategory(Enum):
     """Categories following APQC IT service management classification"""
-    ARCHITECTURE = "architecture"      # 11.2.1 - Develop IT architecture
-    SECURITY = "security"              # 11.2.4 - Manage IT security
-    PERFORMANCE = "performance"        # 11.2.3 - Monitor IT performance
-    CODE_QUALITY = "code_quality"      # 11.1.2 - Manage software development
-    DOCUMENTATION = "documentation"    # 11.2.5 - Manage IT knowledge
-    CONFIGURATION = "configuration"    # 11.2.2 - Implement IT infrastructure
-    DEPENDENCIES = "dependencies"      # 11.1.3 - Manage software dependencies
-    TESTING = "testing"                # 11.1.4 - Manage quality assurance
-    COMPLIANCE = "compliance"          # 11.2.6 - Ensure regulatory compliance
+
+    ARCHITECTURE = "architecture"  # 11.2.1 - Develop IT architecture
+    SECURITY = "security"  # 11.2.4 - Manage IT security
+    PERFORMANCE = "performance"  # 11.2.3 - Monitor IT performance
+    CODE_QUALITY = "code_quality"  # 11.1.2 - Manage software development
+    DOCUMENTATION = "documentation"  # 11.2.5 - Manage IT knowledge
+    CONFIGURATION = "configuration"  # 11.2.2 - Implement IT infrastructure
+    DEPENDENCIES = "dependencies"  # 11.1.3 - Manage software dependencies
+    TESTING = "testing"  # 11.1.4 - Manage quality assurance
+    COMPLIANCE = "compliance"  # 11.2.6 - Ensure regulatory compliance
+
 
 @dataclass
 class TechnicalDebtItem:
     """Individual technical debt item with comprehensive tracking"""
+
     id: str
     title: str
     description: str
@@ -67,6 +73,7 @@ class TechnicalDebtItem:
     technical_context: Dict[str, Any]
     apqc_process_reference: str
 
+
 class TechnicalDebtTrackingAgent:
     """
     Enterprise-grade technical debt tracking agent
@@ -89,56 +96,56 @@ class TechnicalDebtTrackingAgent:
                 "pattern": r"(TODO|FIXME|HACK|XXX|BUG|DEPRECATED)(?:\s*:)?\s*(.+)",
                 "severity": TechnicalDebtSeverity.MEDIUM,
                 "category": TechnicalDebtCategory.CODE_QUALITY,
-                "apqc_process": "11.1.2"
+                "apqc_process": "11.1.2",
             },
             "hardcoded_values": {
                 "pattern": r"(?:allow_origins=\[.*localhost.*\]|origins.*localhost|http://localhost:\d+)",
                 "severity": TechnicalDebtSeverity.HIGH,
                 "category": TechnicalDebtCategory.CONFIGURATION,
-                "apqc_process": "11.2.2"
+                "apqc_process": "11.2.2",
             },
             "security_issues": {
                 "pattern": r"(?:allow_credentials=True.*\*|DEBUG=True|SECRET.*=.*['\"].*['\"]|password.*=.*['\"])",
                 "severity": TechnicalDebtSeverity.CRITICAL,
                 "category": TechnicalDebtCategory.SECURITY,
-                "apqc_process": "11.2.4"
+                "apqc_process": "11.2.4",
             },
             "performance_issues": {
                 "pattern": r"(?:SELECT \*|\.all\(\)|sleep\(|time\.sleep|asyncio\.sleep\(\d+\))",
                 "severity": TechnicalDebtSeverity.HIGH,
                 "category": TechnicalDebtCategory.PERFORMANCE,
-                "apqc_process": "11.2.3"
+                "apqc_process": "11.2.3",
             },
             "configuration_debt": {
                 "pattern": r"(?:localhost|127\.0\.0\.1|demo-key|change-me|testing-secret)",
                 "severity": TechnicalDebtSeverity.HIGH,
                 "category": TechnicalDebtCategory.CONFIGURATION,
-                "apqc_process": "11.2.2"
+                "apqc_process": "11.2.2",
             },
             "documentation_gaps": {
                 "pattern": r"(?:def\s+\w+\([^)]*\):\s*$|class\s+\w+.*:\s*$)",
                 "severity": TechnicalDebtSeverity.MEDIUM,
                 "category": TechnicalDebtCategory.DOCUMENTATION,
-                "apqc_process": "11.2.5"
+                "apqc_process": "11.2.5",
             },
             "deprecated_patterns": {
                 "pattern": r"(?:\.format\(|%\s*%|\bstring\b.*interpolation)",
                 "severity": TechnicalDebtSeverity.LOW,
                 "category": TechnicalDebtCategory.CODE_QUALITY,
-                "apqc_process": "11.1.2"
+                "apqc_process": "11.1.2",
             },
             "architecture_violations": {
                 "pattern": r"(?:from\s+.*\.models\s+import\s+\*|import\s+\*|circular.*import)",
                 "severity": TechnicalDebtSeverity.HIGH,
                 "category": TechnicalDebtCategory.ARCHITECTURE,
-                "apqc_process": "11.2.1"
+                "apqc_process": "11.2.1",
             },
             "testing_gaps": {
                 "pattern": r"(?:def\s+test_.*:\s*pass|class\s+Test.*:\s*pass|# TODO.*test)",
                 "severity": TechnicalDebtSeverity.MEDIUM,
                 "category": TechnicalDebtCategory.TESTING,
-                "apqc_process": "11.1.4"
-            }
+                "apqc_process": "11.1.4",
+            },
         }
 
     def _initialize_exclusion_patterns(self) -> List[str]:
@@ -154,7 +161,7 @@ class TechnicalDebtTrackingAgent:
             r".*\.pytest_cache/.*",
             r".*migrations/.*",
             r".*\.log$",
-            r".*\.pyc$"
+            r".*\.pyc$",
         ]
 
     def _initialize_priority_matrix(self) -> Dict[str, int]:
@@ -164,7 +171,7 @@ class TechnicalDebtTrackingAgent:
                 TechnicalDebtSeverity.CRITICAL: 100,
                 TechnicalDebtSeverity.HIGH: 75,
                 TechnicalDebtSeverity.MEDIUM: 50,
-                TechnicalDebtSeverity.LOW: 25
+                TechnicalDebtSeverity.LOW: 25,
             },
             "category_multipliers": {
                 TechnicalDebtCategory.SECURITY: 1.5,
@@ -175,8 +182,8 @@ class TechnicalDebtTrackingAgent:
                 TechnicalDebtCategory.TESTING: 0.9,
                 TechnicalDebtCategory.DOCUMENTATION: 0.8,
                 TechnicalDebtCategory.DEPENDENCIES: 0.7,
-                TechnicalDebtCategory.COMPLIANCE: 1.4
-            }
+                TechnicalDebtCategory.COMPLIANCE: 1.4,
+            },
         }
 
     async def scan_codebase(self) -> Dict[str, List[TechnicalDebtItem]]:
@@ -200,10 +207,12 @@ class TechnicalDebtTrackingAgent:
                 scan_results[item.category.value].append(item)
 
         # Scan configuration files
-        config_files = list(self.project_root.rglob("*.json")) + \
-                      list(self.project_root.rglob("*.yml")) + \
-                      list(self.project_root.rglob("*.yaml")) + \
-                      list(self.project_root.rglob("*.env*"))
+        config_files = (
+            list(self.project_root.rglob("*.json"))
+            + list(self.project_root.rglob("*.yml"))
+            + list(self.project_root.rglob("*.yaml"))
+            + list(self.project_root.rglob("*.env*"))
+        )
 
         for file_path in config_files:
             if not self._should_exclude_file(str(file_path)):
@@ -234,16 +243,18 @@ class TechnicalDebtTrackingAgent:
         debt_items = []
 
         try:
-            with open(file_path, 'r', encoding='utf-8', errors='ignore') as f:
+            with open(file_path, "r", encoding="utf-8", errors="ignore") as f:
                 content = f.read()
-                lines = content.split('\n')
+                lines = content.split("\n")
 
             # Apply all scan patterns
             for pattern_name, pattern_config in self.scan_patterns.items():
-                matches = re.finditer(pattern_config["pattern"], content, re.MULTILINE | re.IGNORECASE)
+                matches = re.finditer(
+                    pattern_config["pattern"], content, re.MULTILINE | re.IGNORECASE
+                )
 
                 for match in matches:
-                    line_number = content[:match.start()].count('\n') + 1
+                    line_number = content[: match.start()].count("\n") + 1
 
                     debt_item = self._create_debt_item(
                         pattern_name=pattern_name,
@@ -251,7 +262,7 @@ class TechnicalDebtTrackingAgent:
                         file_path=str(file_path.relative_to(self.project_root)),
                         line_number=line_number,
                         match_text=match.group(0),
-                        context_lines=lines[max(0, line_number-3):line_number+2]
+                        context_lines=lines[max(0, line_number - 3) : line_number + 2],
                     )
 
                     debt_items.append(debt_item)
@@ -269,12 +280,12 @@ class TechnicalDebtTrackingAgent:
         debt_items = []
 
         try:
-            with open(file_path, 'r', encoding='utf-8', errors='ignore') as f:
+            with open(file_path, "r", encoding="utf-8", errors="ignore") as f:
                 content = f.read()
 
             # Check for development configurations in production files
-            if any(term in str(file_path).lower() for term in ['prod', 'production']):
-                if re.search(r'localhost|127\.0\.0\.1|debug.*true', content, re.IGNORECASE):
+            if any(term in str(file_path).lower() for term in ["prod", "production"]):
+                if re.search(r"localhost|127\.0\.0\.1|debug.*true", content, re.IGNORECASE):
                     debt_item = TechnicalDebtItem(
                         id=f"config_debt_{hash(str(file_path))}",
                         title="Development configuration in production file",
@@ -299,8 +310,11 @@ class TechnicalDebtTrackingAgent:
                         last_updated=datetime.now(),
                         status="open",
                         tags=["configuration", "security", "production"],
-                        technical_context={"file_type": "configuration", "environment": "production"},
-                        apqc_process_reference="11.2.2"
+                        technical_context={
+                            "file_type": "configuration",
+                            "environment": "production",
+                        },
+                        apqc_process_reference="11.2.2",
                     )
                     debt_items.append(debt_item)
 
@@ -309,20 +323,30 @@ class TechnicalDebtTrackingAgent:
 
         return debt_items
 
-    def _create_debt_item(self, pattern_name: str, pattern_config: Dict,
-                         file_path: str, line_number: int, match_text: str,
-                         context_lines: List[str]) -> TechnicalDebtItem:
+    def _create_debt_item(
+        self,
+        pattern_name: str,
+        pattern_config: Dict,
+        file_path: str,
+        line_number: int,
+        match_text: str,
+        context_lines: List[str],
+    ) -> TechnicalDebtItem:
         """Create a technical debt item from scan results"""
 
         # Extract meaningful description from match
         description = match_text.strip()
         if pattern_name == "todo_comments":
-            todo_match = re.search(r"(TODO|FIXME|HACK|XXX|BUG|DEPRECATED)(?:\s*:)?\s*(.+)", match_text)
+            todo_match = re.search(
+                r"(TODO|FIXME|HACK|XXX|BUG|DEPRECATED)(?:\s*:)?\s*(.+)", match_text
+            )
             if todo_match:
                 description = f"{todo_match.group(1)}: {todo_match.group(2).strip()}"
 
         # Generate impact assessments based on pattern type
-        impact_assessments = self._generate_impact_assessment(pattern_name, pattern_config, match_text)
+        impact_assessments = self._generate_impact_assessment(
+            pattern_name, pattern_config, match_text
+        )
 
         debt_item = TechnicalDebtItem(
             id=f"{pattern_name}_{hash(file_path + str(line_number) + match_text)}",
@@ -332,7 +356,7 @@ class TechnicalDebtTrackingAgent:
             category=pattern_config["category"],
             file_path=file_path,
             line_number=line_number,
-            code_snippet='\n'.join(context_lines),
+            code_snippet="\n".join(context_lines),
             impact_assessment=impact_assessments["impact"],
             remediation_effort=impact_assessments["effort"],
             business_impact=impact_assessments["business"],
@@ -351,14 +375,16 @@ class TechnicalDebtTrackingAgent:
             technical_context={
                 "pattern_type": pattern_name,
                 "match_text": match_text,
-                "file_extension": Path(file_path).suffix
+                "file_extension": Path(file_path).suffix,
             },
-            apqc_process_reference=pattern_config["apqc_process"]
+            apqc_process_reference=pattern_config["apqc_process"],
         )
 
         return debt_item
 
-    def _generate_impact_assessment(self, pattern_name: str, pattern_config: Dict, match_text: str) -> Dict[str, str]:
+    def _generate_impact_assessment(
+        self, pattern_name: str, pattern_config: Dict, match_text: str
+    ) -> Dict[str, str]:
         """Generate comprehensive impact assessment for debt item"""
 
         impact_templates = {
@@ -369,7 +395,7 @@ class TechnicalDebtTrackingAgent:
                 "security": "Unknown - requires investigation",
                 "performance": "Unknown - may have performance implications",
                 "maintainability": "Reduces code clarity and maintainability",
-                "solution": "Investigate TODO item and either complete or remove"
+                "solution": "Investigate TODO item and either complete or remove",
             },
             "hardcoded_values": {
                 "impact": "Configuration is not environment-aware, breaks in different environments",
@@ -378,7 +404,7 @@ class TechnicalDebtTrackingAgent:
                 "security": "May expose development endpoints in production",
                 "performance": "May cause performance degradation",
                 "maintainability": "Makes environment management difficult",
-                "solution": "Move hardcoded values to environment variables or configuration files"
+                "solution": "Move hardcoded values to environment variables or configuration files",
             },
             "security_issues": {
                 "impact": "Critical security vulnerability that must be addressed immediately",
@@ -387,7 +413,7 @@ class TechnicalDebtTrackingAgent:
                 "security": "Critical security vulnerability",
                 "performance": "May impact performance depending on implementation",
                 "maintainability": "Increases security maintenance burden",
-                "solution": "Implement proper security measures and remove vulnerabilities"
+                "solution": "Implement proper security measures and remove vulnerabilities",
             },
             "performance_issues": {
                 "impact": "Code patterns that may cause performance degradation",
@@ -396,19 +422,22 @@ class TechnicalDebtTrackingAgent:
                 "security": "May enable DoS attacks",
                 "performance": "Significant performance impact",
                 "maintainability": "May require ongoing optimization",
-                "solution": "Optimize database queries and remove performance bottlenecks"
-            }
+                "solution": "Optimize database queries and remove performance bottlenecks",
+            },
         }
 
-        return impact_templates.get(pattern_name, {
-            "impact": "General technical debt requiring attention",
-            "effort": "2-4 hours",
-            "business": "May impact maintainability and development velocity",
-            "security": "Minimal security impact",
-            "performance": "Minimal performance impact",
-            "maintainability": "Reduces code maintainability",
-            "solution": "Address according to category-specific best practices"
-        })
+        return impact_templates.get(
+            pattern_name,
+            {
+                "impact": "General technical debt requiring attention",
+                "effort": "2-4 hours",
+                "business": "May impact maintainability and development velocity",
+                "security": "Minimal security impact",
+                "performance": "Minimal performance impact",
+                "maintainability": "Reduces code maintainability",
+                "solution": "Address according to category-specific best practices",
+            },
+        )
 
     def _calculate_target_date(self, severity: TechnicalDebtSeverity) -> datetime:
         """Calculate target resolution date based on severity"""
@@ -416,12 +445,14 @@ class TechnicalDebtTrackingAgent:
             TechnicalDebtSeverity.CRITICAL: 1,
             TechnicalDebtSeverity.HIGH: 7,
             TechnicalDebtSeverity.MEDIUM: 30,
-            TechnicalDebtSeverity.LOW: 90
+            TechnicalDebtSeverity.LOW: 90,
         }
 
         return datetime.now() + timedelta(days=target_days[severity])
 
-    async def _check_architectural_patterns(self, file_path: Path, content: str) -> List[TechnicalDebtItem]:
+    async def _check_architectural_patterns(
+        self, file_path: Path, content: str
+    ) -> List[TechnicalDebtItem]:
         """Check for architectural anti-patterns and violations"""
         debt_items = []
 
@@ -452,7 +483,7 @@ class TechnicalDebtTrackingAgent:
                 status="open",
                 tags=["architecture", "complexity"],
                 technical_context={"import_count": len(re.findall(r"from\s+\w+", content))},
-                apqc_process_reference="11.2.1"
+                apqc_process_reference="11.2.1",
             )
             debt_items.append(debt_item)
 
@@ -481,7 +512,7 @@ class TechnicalDebtTrackingAgent:
             "by_status": {},
             "priority_items": [],
             "metrics": {},
-            "recommendations": []
+            "recommendations": [],
         }
 
         # Calculate distributions
@@ -500,9 +531,7 @@ class TechnicalDebtTrackingAgent:
 
         # Get top priority items
         sorted_items = sorted(
-            self.debt_database.values(),
-            key=self.calculate_priority_score,
-            reverse=True
+            self.debt_database.values(), key=self.calculate_priority_score, reverse=True
         )
         summary["priority_items"] = [
             {
@@ -511,7 +540,7 @@ class TechnicalDebtTrackingAgent:
                 "severity": item.severity.value,
                 "category": item.category.value,
                 "priority_score": self.calculate_priority_score(item),
-                "file_path": item.file_path
+                "file_path": item.file_path,
             }
             for item in sorted_items[:10]
         ]
@@ -522,8 +551,15 @@ class TechnicalDebtTrackingAgent:
 
         summary["metrics"] = {
             "technical_debt_ratio": len(self.debt_database) / 100,  # Simplified metric
-            "critical_high_ratio": (critical_count + high_count) / len(self.debt_database) if self.debt_database else 0,
-            "avg_priority_score": sum(self.calculate_priority_score(item) for item in self.debt_database.values()) / len(self.debt_database) if self.debt_database else 0
+            "critical_high_ratio": (
+                (critical_count + high_count) / len(self.debt_database) if self.debt_database else 0
+            ),
+            "avg_priority_score": (
+                sum(self.calculate_priority_score(item) for item in self.debt_database.values())
+                / len(self.debt_database)
+                if self.debt_database
+                else 0
+            ),
         }
 
         # Generate recommendations
@@ -539,7 +575,9 @@ class TechnicalDebtTrackingAgent:
             recommendations.append("⚠️  Address all CRITICAL security vulnerabilities immediately")
 
         if summary["by_severity"].get("high", 0) > 5:
-            recommendations.append("📈 Create sprint backlog items for HIGH priority technical debt")
+            recommendations.append(
+                "📈 Create sprint backlog items for HIGH priority technical debt"
+            )
 
         if summary["by_category"].get("configuration", 0) > 3:
             recommendations.append("⚙️  Implement comprehensive configuration management strategy")
@@ -548,7 +586,9 @@ class TechnicalDebtTrackingAgent:
             recommendations.append("📚 Launch documentation improvement initiative")
 
         if summary["metrics"]["critical_high_ratio"] > 0.3:
-            recommendations.append("🚨 Technical debt levels are high - consider dedicated cleanup sprint")
+            recommendations.append(
+                "🚨 Technical debt levels are high - consider dedicated cleanup sprint"
+            )
 
         return recommendations
 
@@ -561,8 +601,8 @@ class TechnicalDebtTrackingAgent:
             "all_items": [asdict(item) for item in self.debt_database.values()],
             "scan_configuration": {
                 "patterns": self.scan_patterns,
-                "exclusions": self.exclusion_patterns
-            }
+                "exclusions": self.exclusion_patterns,
+            },
         }
 
         # Convert datetime objects to strings for JSON serialization
@@ -573,11 +613,12 @@ class TechnicalDebtTrackingAgent:
                 return obj.value
             return str(obj)
 
-        with open(output_path, 'w') as f:
+        with open(output_path, "w") as f:
             json.dump(report_data, f, indent=2, default=json_serializer)
 
         logger.info(f"📊 Technical debt report exported to {output_path}")
         return output_path
+
 
 # Initialize the technical debt tracking agent
 technical_debt_tracker = TechnicalDebtTrackingAgent(

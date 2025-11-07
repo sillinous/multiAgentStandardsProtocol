@@ -40,8 +40,12 @@ sys.path.insert(0, str(project_root))
 # Try to import agent manager
 try:
     from src.orchestration.agent_manager import (
-        memory_manager, learning_manager, output_manager, AgentStatus
+        memory_manager,
+        learning_manager,
+        output_manager,
+        AgentStatus,
     )
+
     HAS_AGENT_MANAGER = True
 except ImportError:
     HAS_AGENT_MANAGER = False
@@ -49,12 +53,15 @@ except ImportError:
 # Import BaseAgent optionally
 try:
     from superstandard.agents.base.base_agent import BaseAgent
+
     HAS_BASE_AGENT = True
 except ImportError:
     HAS_BASE_AGENT = False
+
     class BaseAgent:
         def __init__(self):
             self.name = "health_predictor_agent"
+
 
 logger = logging.getLogger(__name__)
 
@@ -62,6 +69,7 @@ logger = logging.getLogger(__name__)
 @dataclass
 class HealthMetric:
     """Single health measurement"""
+
     agent_name: str
     timestamp: datetime
     metric_type: str  # 'memory', 'cpu', 'error_rate', 'response_time', 'success_rate'
@@ -72,19 +80,24 @@ class HealthMetric:
 
     def to_dict(self) -> Dict[str, Any]:
         return {
-            'agent_name': self.agent_name,
-            'timestamp': self.timestamp.isoformat() if isinstance(self.timestamp, datetime) else self.timestamp,
-            'metric_type': self.metric_type,
-            'value': self.value,
-            'threshold': self.threshold,
-            'is_healthy': self.is_healthy,
-            'trend': self.trend
+            "agent_name": self.agent_name,
+            "timestamp": (
+                self.timestamp.isoformat()
+                if isinstance(self.timestamp, datetime)
+                else self.timestamp
+            ),
+            "metric_type": self.metric_type,
+            "value": self.value,
+            "threshold": self.threshold,
+            "is_healthy": self.is_healthy,
+            "trend": self.trend,
         }
 
 
 @dataclass
 class FailurePrediction:
     """Predicted failure for an agent"""
+
     agent_name: str
     probability: float  # 0-1, confidence in failure prediction
     predicted_failure_time: str  # 'in 1 hour', 'in 30 minutes'
@@ -98,22 +111,27 @@ class FailurePrediction:
 
     def to_dict(self) -> Dict[str, Any]:
         return {
-            'agent_name': self.agent_name,
-            'probability': self.probability,
-            'predicted_failure_time': self.predicted_failure_time,
-            'severity': self.severity,
-            'failure_type': self.failure_type,
-            'precursors': self.precursors,
-            'cascade_agents': self.cascade_agents,
-            'cascade_severity': self.cascade_severity,
-            'recommended_actions': self.recommended_actions,
-            'created_at': self.created_at.isoformat() if isinstance(self.created_at, datetime) else self.created_at
+            "agent_name": self.agent_name,
+            "probability": self.probability,
+            "predicted_failure_time": self.predicted_failure_time,
+            "severity": self.severity,
+            "failure_type": self.failure_type,
+            "precursors": self.precursors,
+            "cascade_agents": self.cascade_agents,
+            "cascade_severity": self.cascade_severity,
+            "recommended_actions": self.recommended_actions,
+            "created_at": (
+                self.created_at.isoformat()
+                if isinstance(self.created_at, datetime)
+                else self.created_at
+            ),
         }
 
 
 @dataclass
 class CascadeAnalysis:
     """Analysis of what breaks if an agent fails"""
+
     failed_agent: str
     direct_dependents: List[str]  # Agents directly depending on failed agent
     indirect_dependents: List[str]  # Agents that depend on dependents
@@ -126,15 +144,19 @@ class CascadeAnalysis:
 
     def to_dict(self) -> Dict[str, Any]:
         return {
-            'failed_agent': self.failed_agent,
-            'direct_dependents': self.direct_dependents,
-            'indirect_dependents': self.indirect_dependents,
-            'cascade_depth': self.cascade_depth,
-            'total_affected_agents': self.total_affected_agents,
-            'estimated_impact': self.estimated_impact,
-            'mitigation_strategies': self.mitigation_strategies,
-            'has_fallback': self.has_fallback,
-            'created_at': self.created_at.isoformat() if isinstance(self.created_at, datetime) else self.created_at
+            "failed_agent": self.failed_agent,
+            "direct_dependents": self.direct_dependents,
+            "indirect_dependents": self.indirect_dependents,
+            "cascade_depth": self.cascade_depth,
+            "total_affected_agents": self.total_affected_agents,
+            "estimated_impact": self.estimated_impact,
+            "mitigation_strategies": self.mitigation_strategies,
+            "has_fallback": self.has_fallback,
+            "created_at": (
+                self.created_at.isoformat()
+                if isinstance(self.created_at, datetime)
+                else self.created_at
+            ),
         }
 
 
@@ -161,7 +183,7 @@ class HealthMetricsCollector:
             # Analyze each agent's recent outputs
             agent_files = {}
             for output_file in outputs_dir.glob("*.json"):
-                agent_name = output_file.stem.split('_')[0]
+                agent_name = output_file.stem.split("_")[0]
                 if agent_name not in agent_files:
                     agent_files[agent_name] = []
                 agent_files[agent_name].append(output_file)
@@ -173,7 +195,7 @@ class HealthMetricsCollector:
                 metrics = []
                 for output_file in latest_files:
                     try:
-                        with open(output_file, 'r') as f:
+                        with open(output_file, "r") as f:
                             data = json.load(f)
 
                         # Extract metrics
@@ -199,72 +221,79 @@ class HealthMetricsCollector:
         metrics = []
 
         # Success rate metric
-        if 'status' in data:
-            status = data['status']
-            is_healthy = status in ['SUCCESS', 'RUNNING', 'IDLE']
-            metrics.append(HealthMetric(
-                agent_name=agent_name,
-                timestamp=datetime.now(),
-                metric_type='success_rate',
-                value=1.0 if is_healthy else 0.0,
-                threshold=0.95,
-                is_healthy=is_healthy,
-                trend=self._calculate_trend(agent_name, 'success_rate')
-            ))
+        if "status" in data:
+            status = data["status"]
+            is_healthy = status in ["SUCCESS", "RUNNING", "IDLE"]
+            metrics.append(
+                HealthMetric(
+                    agent_name=agent_name,
+                    timestamp=datetime.now(),
+                    metric_type="success_rate",
+                    value=1.0 if is_healthy else 0.0,
+                    threshold=0.95,
+                    is_healthy=is_healthy,
+                    trend=self._calculate_trend(agent_name, "success_rate"),
+                )
+            )
 
         # Error metric
-        if 'errors' in data and data['errors']:
-            error_count = len(data['errors']) if isinstance(data['errors'], list) else 1
-            metrics.append(HealthMetric(
-                agent_name=agent_name,
-                timestamp=datetime.now(),
-                metric_type='error_rate',
-                value=error_count,
-                threshold=0,
-                is_healthy=error_count == 0,
-                trend=self._calculate_trend(agent_name, 'error_rate')
-            ))
+        if "errors" in data and data["errors"]:
+            error_count = len(data["errors"]) if isinstance(data["errors"], list) else 1
+            metrics.append(
+                HealthMetric(
+                    agent_name=agent_name,
+                    timestamp=datetime.now(),
+                    metric_type="error_rate",
+                    value=error_count,
+                    threshold=0,
+                    is_healthy=error_count == 0,
+                    trend=self._calculate_trend(agent_name, "error_rate"),
+                )
+            )
 
         # Response time metric
-        if 'duration' in data:
-            duration = data['duration']
+        if "duration" in data:
+            duration = data["duration"]
             is_healthy = duration < 30  # seconds
-            metrics.append(HealthMetric(
-                agent_name=agent_name,
-                timestamp=datetime.now(),
-                metric_type='response_time',
-                value=duration,
-                threshold=30,
-                is_healthy=is_healthy,
-                trend=self._calculate_trend(agent_name, 'response_time')
-            ))
+            metrics.append(
+                HealthMetric(
+                    agent_name=agent_name,
+                    timestamp=datetime.now(),
+                    metric_type="response_time",
+                    value=duration,
+                    threshold=30,
+                    is_healthy=is_healthy,
+                    trend=self._calculate_trend(agent_name, "response_time"),
+                )
+            )
 
         return metrics
 
     def _calculate_trend(self, agent_name: str, metric_type: str) -> str:
         """Calculate trend from recent metrics"""
         if agent_name not in self.metrics_history:
-            return 'stable'
+            return "stable"
 
         # Get last 5 values for this metric type
         recent = [
-            m.value for m in list(self.metrics_history[agent_name])[-5:]
+            m.value
+            for m in list(self.metrics_history[agent_name])[-5:]
             if m.metric_type == metric_type
         ]
 
         if len(recent) < 2:
-            return 'stable'
+            return "stable"
 
         # Simple trend analysis
-        avg_first_half = statistics.mean(recent[:len(recent)//2])
-        avg_second_half = statistics.mean(recent[len(recent)//2:])
+        avg_first_half = statistics.mean(recent[: len(recent) // 2])
+        avg_second_half = statistics.mean(recent[len(recent) // 2 :])
 
         if avg_second_half > avg_first_half * 1.1:
-            return 'degrading'
+            return "degrading"
         elif avg_second_half < avg_first_half * 0.9:
-            return 'improving'
+            return "improving"
         else:
-            return 'stable'
+            return "stable"
 
 
 class FailurePredictor:
@@ -273,7 +302,9 @@ class FailurePredictor:
     def __init__(self):
         self.logger = logging.getLogger(self.__class__.__name__)
 
-    def predict_failures(self, metrics_by_agent: Dict[str, List[HealthMetric]]) -> List[FailurePrediction]:
+    def predict_failures(
+        self, metrics_by_agent: Dict[str, List[HealthMetric]]
+    ) -> List[FailurePrediction]:
         """Predict which agents will fail soon"""
         predictions = []
 
@@ -284,13 +315,15 @@ class FailurePredictor:
 
         return predictions
 
-    def _predict_agent_failure(self, agent_name: str, metrics: List[HealthMetric]) -> Optional[FailurePrediction]:
+    def _predict_agent_failure(
+        self, agent_name: str, metrics: List[HealthMetric]
+    ) -> Optional[FailurePrediction]:
         """Predict failure for a specific agent"""
         try:
             # Analyze current metrics
-            errors = [m for m in metrics if m.metric_type == 'error_rate']
-            response_times = [m for m in metrics if m.metric_type == 'response_time']
-            success_rates = [m for m in metrics if m.metric_type == 'success_rate']
+            errors = [m for m in metrics if m.metric_type == "error_rate"]
+            response_times = [m for m in metrics if m.metric_type == "response_time"]
+            success_rates = [m for m in metrics if m.metric_type == "success_rate"]
 
             precursors = []
             probability = 0.0
@@ -298,22 +331,22 @@ class FailurePredictor:
             # Check error trend
             if errors:
                 error_trend = errors[-1].trend
-                if error_trend == 'degrading':
-                    precursors.append('Error rate increasing')
+                if error_trend == "degrading":
+                    precursors.append("Error rate increasing")
                     probability += 0.3
 
             # Check response time trend
             if response_times:
                 rt_trend = response_times[-1].trend
-                if rt_trend == 'degrading':
-                    precursors.append('Response time slowing')
+                if rt_trend == "degrading":
+                    precursors.append("Response time slowing")
                     probability += 0.25
 
             # Check success rate
             if success_rates:
                 avg_success = statistics.mean([m.value for m in success_rates[-3:]])
                 if avg_success < 0.7:
-                    precursors.append('Success rate below 70%')
+                    precursors.append("Success rate below 70%")
                     probability += 0.25
 
             # Check for combined failure signals
@@ -340,7 +373,7 @@ class FailurePredictor:
                 precursors=precursors,
                 cascade_agents=cascade.direct_dependents,
                 cascade_severity=cascade.estimated_impact,
-                recommended_actions=self._generate_recommendations(agent_name, failure_type)
+                recommended_actions=self._generate_recommendations(agent_name, failure_type),
             )
 
         except Exception as e:
@@ -349,39 +382,39 @@ class FailurePredictor:
 
     def _determine_failure_type(self, precursors: List[str]) -> str:
         """Determine type of failure based on precursors"""
-        if 'Error rate increasing' in precursors:
-            return 'crash'
-        elif 'Response time slowing' in precursors:
-            return 'hang'
-        elif 'Success rate below 70%' in precursors:
-            return 'degradation'
+        if "Error rate increasing" in precursors:
+            return "crash"
+        elif "Response time slowing" in precursors:
+            return "hang"
+        elif "Success rate below 70%" in precursors:
+            return "degradation"
         else:
-            return 'unknown'
+            return "unknown"
 
     def _determine_severity(self, probability: float, failure_type: str) -> str:
         """Determine severity level"""
-        if probability > 0.9 or failure_type == 'crash':
-            return 'critical'
+        if probability > 0.9 or failure_type == "crash":
+            return "critical"
         elif probability > 0.75:
-            return 'high'
+            return "high"
         elif probability > 0.6:
-            return 'medium'
+            return "medium"
         else:
-            return 'low'
+            return "low"
 
     def _estimate_failure_time(self, metrics: List[HealthMetric]) -> str:
         """Estimate when failure might occur"""
         # Simplified: look at degradation rate
         if not metrics:
-            return 'unknown'
+            return "unknown"
 
-        degrading = [m for m in metrics if m.trend == 'degrading']
+        degrading = [m for m in metrics if m.trend == "degrading"]
         if len(degrading) >= 2:
-            return 'in 30 minutes'
+            return "in 30 minutes"
         elif len(degrading) == 1:
-            return 'in 1 hour'
+            return "in 1 hour"
         else:
-            return 'in 2-4 hours'
+            return "in 2-4 hours"
 
     def _analyze_cascade(self, failed_agent: str) -> CascadeAnalysis:
         """Analyze what breaks if this agent fails"""
@@ -394,15 +427,17 @@ class FailurePredictor:
 
         try:
             if registry_file.exists():
-                with open(registry_file, 'r') as f:
-                    registry = json.load(f)['agents']
+                with open(registry_file, "r") as f:
+                    registry = json.load(f)["agents"]
 
                 # Find agents that depend on failed_agent
                 for agent_name, metadata in registry.items():
-                    if 'dependencies' in metadata:
-                        deps = metadata.get('dependencies', [])
+                    if "dependencies" in metadata:
+                        deps = metadata.get("dependencies", [])
                         # Check if failed_agent is in dependencies
-                        if failed_agent in deps or failed_agent.replace('_agent', '') in [d.replace('_agent', '') for d in deps]:
+                        if failed_agent in deps or failed_agent.replace("_agent", "") in [
+                            d.replace("_agent", "") for d in deps
+                        ]:
                             direct_dependents.append(agent_name)
 
         except Exception as e:
@@ -412,13 +447,13 @@ class FailurePredictor:
 
         # Determine impact
         if total_affected > 10:
-            impact = 'critical'
+            impact = "critical"
         elif total_affected > 5:
-            impact = 'high'
+            impact = "high"
         elif total_affected > 2:
-            impact = 'medium'
+            impact = "medium"
         else:
-            impact = 'low'
+            impact = "low"
 
         return CascadeAnalysis(
             failed_agent=failed_agent,
@@ -428,46 +463,43 @@ class FailurePredictor:
             total_affected_agents=total_affected,
             estimated_impact=impact,
             mitigation_strategies=self._generate_mitigation(failed_agent, direct_dependents),
-            has_fallback=len(direct_dependents) == 0  # No fallback needed if no dependents
+            has_fallback=len(direct_dependents) == 0,  # No fallback needed if no dependents
         )
 
     def _generate_recommendations(self, agent_name: str, failure_type: str) -> List[str]:
         """Generate remediation recommendations"""
         recommendations = [
-            f'Monitor {agent_name} closely',
-            f'Prepare to reduce {agent_name} load',
+            f"Monitor {agent_name} closely",
+            f"Prepare to reduce {agent_name} load",
         ]
 
-        if failure_type == 'crash':
-            recommendations.extend([
-                f'Have backup logic ready for {agent_name}',
-                'Prepare circuit breaker activation'
-            ])
-        elif failure_type == 'hang':
-            recommendations.extend([
-                f'Reduce timeout threshold for {agent_name}',
-                f'Prepare to restart {agent_name}'
-            ])
-        elif failure_type == 'degradation':
-            recommendations.extend([
-                f'Reduce {agent_name} workload',
-                f'Run diagnostic on {agent_name}'
-            ])
+        if failure_type == "crash":
+            recommendations.extend(
+                [f"Have backup logic ready for {agent_name}", "Prepare circuit breaker activation"]
+            )
+        elif failure_type == "hang":
+            recommendations.extend(
+                [f"Reduce timeout threshold for {agent_name}", f"Prepare to restart {agent_name}"]
+            )
+        elif failure_type == "degradation":
+            recommendations.extend(
+                [f"Reduce {agent_name} workload", f"Run diagnostic on {agent_name}"]
+            )
 
-        recommendations.append('Record prediction accuracy when outcome known')
+        recommendations.append("Record prediction accuracy when outcome known")
 
         return recommendations
 
     def _generate_mitigation(self, agent_name: str, dependents: List[str]) -> List[str]:
         """Generate mitigation strategies for cascade"""
         if not dependents:
-            return ['No cascade impact', 'Failure is isolated']
+            return ["No cascade impact", "Failure is isolated"]
 
         return [
             f'Reduce workload for: {", ".join(dependents[:3])}',
-            'Activate fallback strategies',
-            'Alert dependent agents',
-            'Prepare graceful degradation'
+            "Activate fallback strategies",
+            "Alert dependent agents",
+            "Prepare graceful degradation",
         ]
 
 
@@ -504,30 +536,34 @@ class PredictiveHealthMonitor:
 
         except Exception as e:
             self.logger.error(f"Error analyzing health: {e}")
-            return {'error': str(e), 'status': 'failed'}
+            return {"error": str(e), "status": "failed"}
 
     def _save_predictions(self, predictions: List[FailurePrediction]):
         """Save predictions to file"""
         try:
-            prediction_file = self.predictions_dir / f"predictions_{datetime.now().isoformat()}.json"
-            with open(prediction_file, 'w') as f:
+            prediction_file = (
+                self.predictions_dir / f"predictions_{datetime.now().isoformat()}.json"
+            )
+            with open(prediction_file, "w") as f:
                 data = [p.to_dict() for p in predictions]
                 json.dump(data, f, indent=2)
             self.logger.info(f"Saved predictions to {prediction_file}")
         except Exception as e:
             self.logger.error(f"Error saving predictions: {e}")
 
-    def _generate_report(self, metrics: Dict, predictions: List[FailurePrediction]) -> Dict[str, Any]:
+    def _generate_report(
+        self, metrics: Dict, predictions: List[FailurePrediction]
+    ) -> Dict[str, Any]:
         """Generate health analysis report"""
         return {
-            'timestamp': datetime.now().isoformat(),
-            'metrics_collected': len(metrics),
-            'agents_analyzed': len(metrics),
-            'predictions_generated': len(predictions),
-            'critical_predictions': len([p for p in predictions if p.severity == 'critical']),
-            'high_severity': len([p for p in predictions if p.severity == 'high']),
-            'predictions': [p.to_dict() for p in predictions],
-            'status': 'complete'
+            "timestamp": datetime.now().isoformat(),
+            "metrics_collected": len(metrics),
+            "agents_analyzed": len(metrics),
+            "predictions_generated": len(predictions),
+            "critical_predictions": len([p for p in predictions if p.severity == "critical"]),
+            "high_severity": len([p for p in predictions if p.severity == "high"]),
+            "predictions": [p.to_dict() for p in predictions],
+            "status": "complete",
         }
 
 
@@ -574,31 +610,31 @@ class PredictiveHealthAgent(BaseAgent):
 
         try:
             # Record critical predictions as warnings
-            for pred in report.get('predictions', []):
-                if pred['severity'] in ['critical', 'high']:
+            for pred in report.get("predictions", []):
+                if pred["severity"] in ["critical", "high"]:
                     learning_manager.record_learning(
-                        agent_name='health_predictor_agent',
-                        category='failure_prediction',
+                        agent_name="health_predictor_agent",
+                        category="failure_prediction",
                         content={
-                            'agent': pred['agent_name'],
-                            'failure_type': pred['failure_type'],
-                            'probability': pred['probability'],
-                            'precursors': pred['precursors']
+                            "agent": pred["agent_name"],
+                            "failure_type": pred["failure_type"],
+                            "probability": pred["probability"],
+                            "precursors": pred["precursors"],
                         },
-                        confidence=pred['probability'],
-                        applicable_to=[pred['agent_name'], 'strategy_agent', 'risk_agent']
+                        confidence=pred["probability"],
+                        applicable_to=[pred["agent_name"], "strategy_agent", "risk_agent"],
                     )
 
                     # Store as warning in shared memory
                     memory_manager.store_memory(
-                        agent_name='health_predictor_agent',
-                        category='warning',
+                        agent_name="health_predictor_agent",
+                        category="warning",
                         content={
-                            'agent': pred['agent_name'],
-                            'message': f"Predicted {pred['failure_type']} with {pred['probability']:.0%} confidence",
-                            'actions': pred['recommended_actions']
+                            "agent": pred["agent_name"],
+                            "message": f"Predicted {pred['failure_type']} with {pred['probability']:.0%} confidence",
+                            "actions": pred["recommended_actions"],
                         },
-                        accessible_by=['all']
+                        accessible_by=["all"],
                     )
         except Exception as e:
             self.logger.error(f"Error recording predictions: {e}")
@@ -610,15 +646,15 @@ class PredictiveHealthAgent(BaseAgent):
 
         try:
             memory_manager.store_memory(
-                agent_name='health_predictor_agent',
-                category='insight',
+                agent_name="health_predictor_agent",
+                category="insight",
                 content={
-                    'total_agents_analyzed': report['agents_analyzed'],
-                    'critical_alerts': report['critical_predictions'],
-                    'high_alerts': report['high_severity'],
-                    'timestamp': report['timestamp']
+                    "total_agents_analyzed": report["agents_analyzed"],
+                    "critical_alerts": report["critical_predictions"],
+                    "high_alerts": report["high_severity"],
+                    "timestamp": report["timestamp"],
                 },
-                accessible_by=['all']
+                accessible_by=["all"],
             )
         except Exception as e:
             self.logger.error(f"Error sharing insights: {e}")
@@ -630,19 +666,16 @@ class PredictiveHealthAgent(BaseAgent):
 
         try:
             output_manager.store_output(
-                agent_name='health_predictor_agent',
-                status=AgentStatus.FAILED,
-                errors=[error]
+                agent_name="health_predictor_agent", status=AgentStatus.FAILED, errors=[error]
             )
         except Exception as e:
             self.logger.error(f"Error recording error: {e}")
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     # Configure logging
     logging.basicConfig(
-        level=logging.INFO,
-        format='%(asctime)s - %(name)s - %(levelname)s - %(message)s'
+        level=logging.INFO, format="%(asctime)s - %(name)s - %(levelname)s - %(message)s"
     )
 
     # Run health predictor agent

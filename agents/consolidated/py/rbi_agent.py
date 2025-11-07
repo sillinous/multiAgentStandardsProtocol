@@ -34,54 +34,40 @@ This helps keep your strategy research organized by day!
 Remember: Past performance doesn't guarantee future results!
 """
 
-
 ## Previous presets (kept for easy switching) 👇
 # RESEARCH_CONFIG = {
 #     "type": "deepseek",
 #     "name": "deepseek-chat"  # Using DeepSeek Chat for research
 # }
-# 
+#
 # BACKTEST_CONFIG = {
-#     "type": "deepseek", 
+#     "type": "deepseek",
 #     "name": "deepseek-reasoner"  # Using DeepSeek Reasoner for backtesting
 # }
-# 
+#
 # DEBUG_CONFIG = {
 #     "type": "deepseek",
 #     "name": "deepseek-chat"  # Using DeepSeek Chat for debugging
 # }
-# 
+#
 # # DEBUG_CONFIG = {
 # #     "type": "ollama",
 # #     "name": "deepseek-r1"  # Using Ollama's DeepSeek-R1 for debugging
 # # }
-# 
+#
 # PACKAGE_CONFIG = {
 #     "type": "deepseek",
 #     "name": "deepseek-chat"  # Using DeepSeek Chat for package optimization
 # }
 
 # New OpenAI presets using GPT-5 for all agents 🌙🚀
-RESEARCH_CONFIG = {
-    "type": "openai",
-    "name": "gpt-5"
-}
+RESEARCH_CONFIG = {"type": "openai", "name": "gpt-5"}
 
-BACKTEST_CONFIG = {
-    "type": "openai",
-    "name": "gpt-5"
-}
+BACKTEST_CONFIG = {"type": "openai", "name": "gpt-5"}
 
-DEBUG_CONFIG = {
-    "type": "openai",
-    "name": "gpt-5"
-}
+DEBUG_CONFIG = {"type": "openai", "name": "gpt-5"}
 
-PACKAGE_CONFIG = {
-    "type": "openai",
-    "name": "gpt-5"
-}
-
+PACKAGE_CONFIG = {"type": "openai", "name": "gpt-5"}
 
 
 ################
@@ -99,7 +85,7 @@ PACKAGE_CONFIG = {
 # }
 
 # BACKTEST_CONFIG = {
-#     "type": "openai", 
+#     "type": "openai",
 #     "name": "o3"  # Using O3-mini for backtesting
 # }
 
@@ -321,9 +307,11 @@ Return the complete fixed code with proper Moon Dev themed debug prints! 🌙 �
 ONLY SEND BACK CODE, NO OTHER TEXT.
 """
 
+
 def get_model_id(model):
     """Get DR/DC identifier based on model"""
     return "DR" if model == "deepseek-reasoner" else "DC"
+
 
 import os
 import time
@@ -333,11 +321,15 @@ import requests
 from io import BytesIO
 import openai
 from termcolor import cprint
+
 try:
     from anthropic import Anthropic
 except ImportError:
     Anthropic = None
-    cprint("⚠️ Anthropic SDK not installed. Claude models will be unavailable. (Moon Dev note)", "yellow")
+    cprint(
+        "⚠️ Anthropic SDK not installed. Claude models will be unavailable. (Moon Dev note)",
+        "yellow",
+    )
 from pathlib import Path
 import threading
 import itertools
@@ -364,7 +356,15 @@ CHARTS_DIR = TODAY_DIR / "charts"  # New directory for HTML charts
 PROCESSED_IDEAS_LOG = DATA_DIR / "processed_ideas.log"  # New file to track processed ideas
 
 # Create main directories if they don't exist
-for directory in [DATA_DIR, TODAY_DIR, RESEARCH_DIR, BACKTEST_DIR, PACKAGE_DIR, FINAL_BACKTEST_DIR, CHARTS_DIR]:
+for directory in [
+    DATA_DIR,
+    TODAY_DIR,
+    RESEARCH_DIR,
+    BACKTEST_DIR,
+    PACKAGE_DIR,
+    FINAL_BACKTEST_DIR,
+    CHARTS_DIR,
+]:
     directory.mkdir(parents=True, exist_ok=True)
 
 cprint(f"📂 Using RBI data directory: {DATA_DIR}")
@@ -375,6 +375,7 @@ cprint(f"📂 Package directory: {PACKAGE_DIR}")
 cprint(f"📂 Final backtest directory: {FINAL_BACKTEST_DIR}")
 cprint(f"📈 Charts directory: {CHARTS_DIR}")
 
+
 def init_deepseek_client():
     """Initialize DeepSeek client with proper error handling"""
     try:
@@ -382,15 +383,12 @@ def init_deepseek_client():
         if not deepseek_key:
             cprint("⚠️ DEEPSEEK_KEY not found - DeepSeek models will not be available", "yellow")
             return None
-            
+
         print("🔑 Initializing DeepSeek client...")
         print("🌟 Moon Dev's RBI AI is connecting to DeepSeek...")
-        
-        client = openai.OpenAI(
-            api_key=deepseek_key,
-            base_url=DEEPSEEK_BASE_URL
-        )
-        
+
+        client = openai.OpenAI(api_key=deepseek_key, base_url=DEEPSEEK_BASE_URL)
+
         print("✅ DeepSeek client initialized successfully!")
         print("🚀 Moon Dev's RBI AI ready to roll!")
         return client
@@ -398,6 +396,7 @@ def init_deepseek_client():
         print(f"❌ Error initializing DeepSeek client: {str(e)}")
         print("💡 Will fall back to Claude model from config.py")
         return None
+
 
 def init_anthropic_client():
     """Initialize Anthropic client for Claude models"""
@@ -414,36 +413,37 @@ def init_anthropic_client():
         print(f"❌ Error initializing Anthropic client: {str(e)}")
         return None
 
+
 def chat_with_model(system_prompt, user_content, model_config):
     """Chat with AI model using model factory"""
     try:
         # Initialize model using factory with specific config
         model = model_factory.get_model(model_config["type"], model_config["name"])
         if not model:
-            raise ValueError(f"🚨 Could not initialize {model_config['type']} {model_config['name']} model!")
+            raise ValueError(
+                f"🚨 Could not initialize {model_config['type']} {model_config['name']} model!"
+            )
 
         cprint(f"🤖 Using {model_config['type']} model: {model_config['name']}", "cyan")
         cprint("🌟 Moon Dev's RBI AI is thinking...", "yellow")
-        
+
         # Debug prints for prompt lengths
         cprint(f"📝 System prompt length: {len(system_prompt)} chars", "cyan")
         cprint(f"📝 User content length: {len(user_content)} chars", "cyan")
         # If model returned a wrapper, normalize early
-        if hasattr(model, 'model_name') and model.model_type == 'openai':
+        if hasattr(model, "model_name") and model.model_type == "openai":
             cprint(f"🧪 OpenAI model in use: {model.model_name}", "cyan")
 
         # For Ollama models, handle response differently
         if model_config["type"] == "ollama":
             response = model.generate_response(
-                system_prompt=system_prompt,
-                user_content=user_content,
-                temperature=AI_TEMPERATURE
+                system_prompt=system_prompt, user_content=user_content, temperature=AI_TEMPERATURE
             )
             # Handle string response from Ollama
             if isinstance(response, str):
                 return response
             # Handle object response
-            if hasattr(response, 'content'):
+            if hasattr(response, "content"):
                 return response.content
             return str(response)
         else:
@@ -452,7 +452,7 @@ def chat_with_model(system_prompt, user_content, model_config):
                 system_prompt=system_prompt,
                 user_content=user_content,
                 temperature=AI_TEMPERATURE,
-                max_tokens=AI_MAX_TOKENS
+                max_tokens=AI_MAX_TOKENS,
             )
             if response is None:
                 cprint("❌ Model returned None response", "red")
@@ -462,6 +462,7 @@ def chat_with_model(system_prompt, user_content, model_config):
             content = None
             try:
                 from src.models.base_model import ModelResponse
+
                 if isinstance(response, ModelResponse):
                     content = response.content
             except Exception:
@@ -470,10 +471,13 @@ def chat_with_model(system_prompt, user_content, model_config):
             if content is None:
                 if isinstance(response, str):
                     content = response
-                elif hasattr(response, 'content'):
+                elif hasattr(response, "content"):
                     content = response.content
                 else:
-                    cprint(f"❌ Response missing content attribute. Response type: {type(response)}", "red")
+                    cprint(
+                        f"❌ Response missing content attribute. Response type: {type(response)}",
+                        "red",
+                    )
                     try:
                         cprint(f"Response attributes: {dir(response)}", "yellow")
                     except Exception:
@@ -491,14 +495,15 @@ def chat_with_model(system_prompt, user_content, model_config):
     except Exception as e:
         cprint(f"❌ Error in AI chat: {str(e)}", "red")
         cprint(f"🔍 Error type: {type(e).__name__}", "yellow")
-        if hasattr(e, 'response'):
+        if hasattr(e, "response"):
             cprint(f"🔍 Response error: {getattr(e, 'response', 'No response details')}", "yellow")
-        if hasattr(e, '__dict__'):
+        if hasattr(e, "__dict__"):
             cprint("🔍 Error attributes:", "yellow")
             for attr in dir(e):
-                if not attr.startswith('_'):
+                if not attr.startswith("_"):
                     cprint(f"  ├─ {attr}: {getattr(e, attr)}", "yellow")
         return None
+
 
 def get_youtube_transcript(video_id):
     """Get transcript from YouTube video"""
@@ -506,25 +511,29 @@ def get_youtube_transcript(video_id):
         try:
             from youtube_transcript_api import YouTubeTranscriptApi
         except ImportError:
-            cprint("⚠️ youtube-transcript-api not installed. Skipping YouTube transcript fetch.", "yellow")
+            cprint(
+                "⚠️ youtube-transcript-api not installed. Skipping YouTube transcript fetch.",
+                "yellow",
+            )
             return None
         transcript_list = YouTubeTranscriptApi.list_transcripts(video_id)
-        transcript = transcript_list.find_generated_transcript(['en'])
-        
+        transcript = transcript_list.find_generated_transcript(["en"])
+
         # Get the full transcript text
-        transcript_text = ' '.join([t['text'] for t in transcript.fetch()])
-        
+        transcript_text = " ".join([t["text"] for t in transcript.fetch()])
+
         # Print the transcript with nice formatting
         cprint("\n📝 YouTube Transcript:", "cyan")
         cprint("=" * 80, "yellow")
         print(transcript_text)
         cprint("=" * 80, "yellow")
         cprint(f"📊 Transcript length: {len(transcript_text)} characters", "cyan")
-        
+
         return transcript_text
     except Exception as e:
         cprint(f"❌ Error fetching transcript: {e}", "red")
         return None
+
 
 def get_pdf_text(url):
     """Extract text from PDF URL"""
@@ -536,20 +545,21 @@ def get_pdf_text(url):
             return None
         response = requests.get(url, stream=True)
         response.raise_for_status()
-        
+
         reader = PyPDF2.PdfReader(BytesIO(response.content))
-        text = ''
+        text = ""
         for page in reader.pages:
-            text += page.extract_text() + '\n'
+            text += page.extract_text() + "\n"
         cprint("📚 Successfully extracted PDF text!", "green")
         return text
     except Exception as e:
         cprint(f"❌ Error reading PDF: {e}", "red")
         return None
 
+
 def animate_progress(agent_name, stop_event):
     """Fun animation while AI is thinking"""
-    spinners = ['🌑', '🌒', '🌓', '🌔', '🌕', '🌖', '🌗', '🌘']
+    spinners = ["🌑", "🌒", "🌓", "🌔", "🌕", "🌖", "🌗", "🌘"]
     messages = [
         "brewing coffee ☕️",
         "studying charts 📊",
@@ -560,24 +570,25 @@ def animate_progress(agent_name, stop_event):
         "making magic ✨",
         "trading secrets 🤫",
         "Moon Dev approved 🌙",
-        "to the moon! 🚀"
+        "to the moon! 🚀",
     ]
-    
+
     spinner = itertools.cycle(spinners)
     message = itertools.cycle(messages)
-    
+
     while not stop_event.is_set():
-        sys.stdout.write(f'\r{next(spinner)} {agent_name} is {next(message)}...')
+        sys.stdout.write(f"\r{next(spinner)} {agent_name} is {next(message)}...")
         sys.stdout.flush()
         time.sleep(0.5)
-    sys.stdout.write('\r' + ' ' * 50 + '\r')
+    sys.stdout.write("\r" + " " * 50 + "\r")
     sys.stdout.flush()
+
 
 def run_with_animation(func, agent_name, *args, **kwargs):
     """Run a function with a fun loading animation"""
     stop_animation = threading.Event()
     animation_thread = threading.Thread(target=animate_progress, args=(agent_name, stop_animation))
-    
+
     try:
         animation_thread.start()
         result = func(*args, **kwargs)
@@ -586,47 +597,50 @@ def run_with_animation(func, agent_name, *args, **kwargs):
         stop_animation.set()
         animation_thread.join()
 
+
 def clean_model_output(output, content_type="text"):
     """Clean model output by removing thinking tags and extracting code from markdown
-    
+
     Args:
         output (str): Raw model output
         content_type (str): Type of content to extract ('text', 'code')
-        
+
     Returns:
         str: Cleaned output
     """
     cleaned_output = output
-    
+
     # Step 1: Remove thinking tags if present
     if "<think>" in output and "</think>" in output:
         cprint(f"🧠 Detected DeepSeek-R1 thinking tags, cleaning...", "yellow")
-        
+
         # First try: Get everything after the last </think> tag
         clean_content = output.split("</think>")[-1].strip()
-        
+
         # If that doesn't work, try removing all <think>...</think> blocks
         if not clean_content:
             import re
-            clean_content = re.sub(r'<think>.*?</think>', '', output, flags=re.DOTALL).strip()
-            
+
+            clean_content = re.sub(r"<think>.*?</think>", "", output, flags=re.DOTALL).strip()
+
         if clean_content:
             cleaned_output = clean_content
             cprint("✅ Successfully removed thinking tags", "green")
-    
+
     # Step 2: If code content, extract from markdown code blocks
     if content_type == "code" and "```" in cleaned_output:
         cprint("🔍 Extracting code from markdown blocks...", "yellow")
-        
+
         try:
             import re
+
             # First look for python blocks
-            code_blocks = re.findall(r'```python\n(.*?)\n```', cleaned_output, re.DOTALL)
-            
+            code_blocks = re.findall(r"```python\n(.*?)\n```", cleaned_output, re.DOTALL)
+
             # If no python blocks, try any code blocks
             if not code_blocks:
-                code_blocks = re.findall(r'```(?:python)?\n(.*?)\n```', cleaned_output, re.DOTALL)
-                
+                code_blocks = re.findall(r"```(?:python)?\n(.*?)\n```", cleaned_output, re.DOTALL)
+
             if code_blocks:
                 # Join multiple code blocks with newlines between them
                 cleaned_output = "\n\n".join(code_blocks)
@@ -635,37 +649,39 @@ def clean_model_output(output, content_type="text"):
                 cprint("⚠️ No code blocks found in markdown", "yellow")
         except Exception as e:
             cprint(f"❌ Error extracting code: {str(e)}", "red")
-    
+
     return cleaned_output
+
 
 def research_strategy(content):
     """Research AI: Analyzes and creates trading strategy"""
     cprint("\n🔍 Starting Research AI...", "cyan")
     cprint("🤖 Time to discover some alpha!", "yellow")
-    
+
     output = run_with_animation(
         chat_with_model,
         "Research AI",
-        RESEARCH_PROMPT, 
+        RESEARCH_PROMPT,
         content,
-        RESEARCH_CONFIG  # Pass research-specific model config
+        RESEARCH_CONFIG,  # Pass research-specific model config
     )
-    
+
     if output:
         # Clean the output to remove thinking tags
         output = clean_model_output(output, "text")
-        
+
         # Guard against non-string responses from model wrappers
         if not isinstance(output, str):
             try:
                 from src.models.base_model import ModelResponse
+
                 if isinstance(output, ModelResponse):
                     output = output.content or ""
                 else:
                     output = str(output)
             except Exception:
                 output = str(output)
-        
+
         # Extract strategy name from output
         strategy_name = "UnknownStrategy"  # Default name
         if "STRATEGY_NAME:" in output:
@@ -677,141 +693,167 @@ def research_strategy(content):
                     strategy_name = name_section.split("\n\n")[0].strip()
                 else:
                     strategy_name = name_section.split("\n")[0].strip()
-                    
+
                 # Clean up strategy name to be file-system friendly
-                strategy_name = re.sub(r'[^\w\s-]', '', strategy_name)
-                strategy_name = re.sub(r'[\s]+', '', strategy_name)
-                
+                strategy_name = re.sub(r"[^\w\s-]", "", strategy_name)
+                strategy_name = re.sub(r"[\s]+", "", strategy_name)
+
                 cprint(f"✅ Successfully extracted strategy name: {strategy_name}", "green")
             except Exception as e:
                 cprint(f"⚠️ Error extracting strategy name: {str(e)}", "yellow")
                 cprint(f"🔄 Using default name: {strategy_name}", "yellow")
         else:
             cprint("⚠️ No STRATEGY_NAME found in output, using default", "yellow")
-            
+
             # Try to generate a name based on key terms in the output
             import random
-            adjectives = ["Adaptive", "Dynamic", "Quantum", "Neural", "Fractal", "Momentum", "Harmonic", "Volatility"]
-            nouns = ["Breakout", "Oscillator", "Reversal", "Momentum", "Divergence", "Scalper", "Crossover", "Arbitrage"]
+
+            adjectives = [
+                "Adaptive",
+                "Dynamic",
+                "Quantum",
+                "Neural",
+                "Fractal",
+                "Momentum",
+                "Harmonic",
+                "Volatility",
+            ]
+            nouns = [
+                "Breakout",
+                "Oscillator",
+                "Reversal",
+                "Momentum",
+                "Divergence",
+                "Scalper",
+                "Crossover",
+                "Arbitrage",
+            ]
             strategy_name = f"{random.choice(adjectives)}{random.choice(nouns)}"
             cprint(f"🎲 Generated random strategy name: {strategy_name}", "yellow")
-        
+
         # Save research output
         filepath = RESEARCH_DIR / f"{strategy_name}_strategy.txt"
-        with open(filepath, 'w') as f:
+        with open(filepath, "w") as f:
             f.write(output)
         cprint(f"📝 Research AI found something spicy! Saved to {filepath} 🌶️", "green")
         cprint(f"🏷️ Generated strategy name: {strategy_name}", "yellow")
         return output, strategy_name
     return None, None
 
+
 def create_backtest(strategy, strategy_name="UnknownStrategy"):
     """Backtest AI: Creates backtest implementation"""
     cprint("\n📊 Starting Backtest AI...", "cyan")
     cprint("💰 Let's turn that strategy into profits!", "yellow")
-    
+
     output = run_with_animation(
         chat_with_model,
         "Backtest AI",
         BACKTEST_PROMPT,
         f"Create a backtest for this strategy:\n\n{strategy}",
-        BACKTEST_CONFIG  # Pass backtest-specific model config
+        BACKTEST_CONFIG,  # Pass backtest-specific model config
     )
-    
+
     if output:
         # Clean the output and extract code from markdown
         output = clean_model_output(output, "code")
         if not isinstance(output, str):
             try:
                 from src.models.base_model import ModelResponse
+
                 if isinstance(output, ModelResponse):
                     output = output.content or ""
                 else:
                     output = str(output)
             except Exception:
                 output = str(output)
-        
+
         filepath = BACKTEST_DIR / f"{strategy_name}_BT.py"
-        with open(filepath, 'w') as f:
+        with open(filepath, "w") as f:
             f.write(output)
         cprint(f"🔥 Backtest AI cooked up some heat! Saved to {filepath} 🚀", "green")
         return output
     return None
 
+
 def debug_backtest(backtest_code, strategy=None, strategy_name="UnknownStrategy"):
     """Debug AI: Fixes technical issues in backtest code"""
     cprint("\n🔧 Starting Debug AI...", "cyan")
     cprint("🔍 Time to squash some bugs!", "yellow")
-    
+
     context = f"Here's the backtest code to debug:\n\n{backtest_code}"
     if strategy:
         context += f"\n\nOriginal strategy for reference:\n{strategy}"
-    
+
     output = run_with_animation(
         chat_with_model,
         "Debug AI",
         DEBUG_PROMPT,
         context,
-        DEBUG_CONFIG  # Pass debug-specific model config
+        DEBUG_CONFIG,  # Pass debug-specific model config
     )
-    
+
     if output:
         # Clean the output and extract code from markdown
         output = clean_model_output(output, "code")
         if not isinstance(output, str):
             try:
                 from src.models.base_model import ModelResponse
+
                 if isinstance(output, ModelResponse):
                     output = output.content or ""
                 else:
                     output = str(output)
             except Exception:
                 output = str(output)
-            
+
         filepath = FINAL_BACKTEST_DIR / f"{strategy_name}_BTFinal.py"
-        with open(filepath, 'w') as f:
+        with open(filepath, "w") as f:
             f.write(output)
         cprint(f"🔧 Debug AI fixed the code! Saved to {filepath} ✨", "green")
         return output
     return None
 
+
 def package_check(backtest_code, strategy_name="UnknownStrategy"):
     """Package AI: Ensures correct indicator packages are used"""
     cprint("\n📦 Starting Package AI...", "cyan")
     cprint("🔍 Checking for proper indicator imports!", "yellow")
-    
+
     output = run_with_animation(
         chat_with_model,
         "Package AI",
         PACKAGE_PROMPT,
         f"Check and fix indicator packages in this code:\n\n{backtest_code}",
-        PACKAGE_CONFIG  # Pass package-specific model config
+        PACKAGE_CONFIG,  # Pass package-specific model config
     )
-    
+
     if output:
         # Clean the output and extract code from markdown
         output = clean_model_output(output, "code")
         if not isinstance(output, str):
             try:
                 from src.models.base_model import ModelResponse
+
                 if isinstance(output, ModelResponse):
                     output = output.content or ""
                 else:
                     output = str(output)
             except Exception:
                 output = str(output)
-            
+
         filepath = PACKAGE_DIR / f"{strategy_name}_PKG.py"
-        with open(filepath, 'w') as f:
+        with open(filepath, "w") as f:
             f.write(output)
         cprint(f"📦 Package AI optimized the imports! Saved to {filepath} ✨", "green")
         return output
     return None
 
+
 def get_idea_content(idea_url: str) -> str:
     """Extract content from a trading idea URL or text"""
     print("\n📥 Extracting content from idea...")
-    
+
     try:
         if "youtube.com" in idea_url or "youtu.be" in idea_url:
             # Extract video ID from URL
@@ -819,7 +861,7 @@ def get_idea_content(idea_url: str) -> str:
                 video_id = idea_url.split("v=")[1].split("&")[0]
             else:
                 video_id = idea_url.split("/")[-1].split("?")[0]
-            
+
             print("🎥 Detected YouTube video, fetching transcript...")
             transcript = get_youtube_transcript(video_id)
             if transcript:
@@ -827,7 +869,7 @@ def get_idea_content(idea_url: str) -> str:
                 return f"YouTube Strategy Content:\n\n{transcript}"
             else:
                 raise ValueError("Failed to extract YouTube transcript")
-                
+
         elif idea_url.endswith(".pdf"):
             print("📚 Detected PDF file, extracting text...")
             pdf_text = get_pdf_text(idea_url)
@@ -836,51 +878,55 @@ def get_idea_content(idea_url: str) -> str:
                 return f"PDF Strategy Content:\n\n{pdf_text}"
             else:
                 raise ValueError("Failed to extract PDF text")
-                
+
         else:
             print("📝 Using raw text input...")
             return f"Text Strategy Content:\n\n{idea_url}"
-            
+
     except Exception as e:
         print(f"❌ Error extracting content: {str(e)}")
         raise
 
+
 def get_idea_hash(idea: str) -> str:
     """Generate a unique hash for an idea to track processing status"""
     # Create a hash of the idea to use as a unique identifier
-    return hashlib.md5(idea.encode('utf-8')).hexdigest()
+    return hashlib.md5(idea.encode("utf-8")).hexdigest()
+
 
 def is_idea_processed(idea: str) -> bool:
     """Check if an idea has already been processed"""
     if not PROCESSED_IDEAS_LOG.exists():
         return False
-        
+
     idea_hash = get_idea_hash(idea)
-    
-    with open(PROCESSED_IDEAS_LOG, 'r') as f:
-        processed_hashes = [line.strip().split(',')[0] for line in f if line.strip()]
-        
+
+    with open(PROCESSED_IDEAS_LOG, "r") as f:
+        processed_hashes = [line.strip().split(",")[0] for line in f if line.strip()]
+
     return idea_hash in processed_hashes
+
 
 def log_processed_idea(idea: str, strategy_name: str = "Unknown") -> None:
     """Log an idea as processed with timestamp and strategy name"""
     idea_hash = get_idea_hash(idea)
     timestamp = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
-    
+
     # Create the log file if it doesn't exist
     if not PROCESSED_IDEAS_LOG.exists():
         PROCESSED_IDEAS_LOG.parent.mkdir(parents=True, exist_ok=True)
-        with open(PROCESSED_IDEAS_LOG, 'w') as f:
+        with open(PROCESSED_IDEAS_LOG, "w") as f:
             f.write("# Moon Dev's RBI AI - Processed Ideas Log 🌙\n")
             f.write("# Format: hash,timestamp,strategy_name,idea_snippet\n")
-    
+
     # Append the processed idea to the log
-    with open(PROCESSED_IDEAS_LOG, 'a') as f:
+    with open(PROCESSED_IDEAS_LOG, "a") as f:
         # Truncate idea if too long for the log
-        idea_snippet = idea[:100] + ('...' if len(idea) > 100 else '')
+        idea_snippet = idea[:100] + ("..." if len(idea) > 100 else "")
         f.write(f"{idea_hash},{timestamp},{strategy_name},{idea_snippet}\n")
-    
+
     cprint(f"📝 Idea logged as processed: {idea_hash}", "green")
+
 
 def process_trading_idea(idea: str) -> None:
     """Process a single trading idea completely independently"""
@@ -888,106 +934,107 @@ def process_trading_idea(idea: str) -> None:
     print("🌟 Let's find some alpha in the chaos!")
     print(f"📝 Processing idea: {idea[:100]}...")
     print(f"📅 Saving results to today's folder: {TODAY_DATE}")
-    
+
     try:
         # Step 1: Extract content from the idea
         idea_content = get_idea_content(idea)
         if not idea_content:
             print("❌ Failed to extract content from idea!")
             return
-            
+
         print(f"📄 Extracted content length: {len(idea_content)} characters")
-        
+
         # Phase 1: Research with isolated content
         print("\n🧪 Phase 1: Research")
         strategy, strategy_name = research_strategy(idea_content)
-        
+
         if not strategy:
             print("❌ Research phase failed!")
             return
-            
+
         print(f"🏷️ Strategy Name: {strategy_name}")
-        
+
         # Log the idea as processed once we have a strategy name
         log_processed_idea(idea, strategy_name)
-        
+
         # Save research output
         research_file = RESEARCH_DIR / f"{strategy_name}_strategy.txt"
-        with open(research_file, 'w') as f:
+        with open(research_file, "w") as f:
             f.write(strategy)
-            
+
         # Phase 2: Backtest using only the research output
         print("\n📈 Phase 2: Backtest")
         backtest = create_backtest(strategy, strategy_name)
-        
+
         if not backtest:
             print("❌ Backtest phase failed!")
             return
-            
+
         # Save backtest output
         backtest_file = BACKTEST_DIR / f"{strategy_name}_BT.py"
-        with open(backtest_file, 'w') as f:
+        with open(backtest_file, "w") as f:
             f.write(backtest)
-            
+
         # Phase 3: Package Check using only the backtest code
         print("\n📦 Phase 3: Package Check")
         package_checked = package_check(backtest, strategy_name)
-        
+
         if not package_checked:
             print("❌ Package check failed!")
             return
-            
+
         # Save package check output
         package_file = PACKAGE_DIR / f"{strategy_name}_PKG.py"
-        with open(package_file, 'w') as f:
+        with open(package_file, "w") as f:
             f.write(package_checked)
-            
+
         # Phase 4: Debug using only the package-checked code
         print("\n🔧 Phase 4: Debug")
         final_backtest = debug_backtest(package_checked, strategy, strategy_name)
-        
+
         if not final_backtest:
             print("❌ Debug phase failed!")
             return
-            
+
         # Save final backtest
         final_file = FINAL_BACKTEST_DIR / f"{strategy_name}_BTFinal.py"
-        with open(final_file, 'w') as f:
+        with open(final_file, "w") as f:
             f.write(final_backtest)
-            
+
         print("\n🎉 Mission Accomplished!")
         print(f"🚀 Strategy '{strategy_name}' is ready to make it rain! 💸")
         print(f"✨ Final backtest saved at: {final_file}")
-        
+
     except Exception as e:
         print(f"\n❌ Error processing idea: {str(e)}")
         raise
+
 
 def main():
     """Main function to process ideas from file"""
     # We keep ideas.txt in the main RBI directory, not in the date folder
     ideas_file = DATA_DIR / "ideas.txt"
-    
+
     if not ideas_file.exists():
         cprint("❌ ideas.txt not found! Creating template...", "red")
         ideas_file.parent.mkdir(parents=True, exist_ok=True)
-        with open(ideas_file, 'w') as f:
+        with open(ideas_file, "w") as f:
             f.write("# Add your trading ideas here (one per line)\n")
             f.write("# Can be YouTube URLs, PDF links, or text descriptions\n")
         return
-        
-    with open(ideas_file, 'r') as f:
-        ideas = [line.strip() for line in f if line.strip() and not line.startswith('#')]
-        
+
+    with open(ideas_file, "r") as f:
+        ideas = [line.strip() for line in f if line.strip() and not line.startswith("#")]
+
     total_ideas = len(ideas)
     cprint(f"\n🎯 Found {total_ideas} trading ideas to process", "cyan")
-    
+
     # Count how many ideas have already been processed
     already_processed = sum(1 for idea in ideas if is_idea_processed(idea))
     new_ideas = total_ideas - already_processed
-    
+
     cprint(f"🔍 Status: {already_processed} already processed, {new_ideas} new ideas", "cyan")
-    
+
     # Optional: limit number of ideas via env var (for quick debugging)
     max_ideas_env = os.getenv("RBI_MAX_IDEAS")
     max_ideas = int(max_ideas_env) if max_ideas_env and max_ideas_env.isdigit() else None
@@ -997,26 +1044,28 @@ def main():
         # Check if this idea has already been processed
         if is_idea_processed(idea):
             cprint(f"\n{'='*50}", "red")
-            cprint(f"⏭️  SKIPPING idea {i}/{total_ideas} - ALREADY PROCESSED", "red", attrs=['reverse'])
-            idea_snippet = idea[:100] + ('...' if len(idea) > 100 else '')
+            cprint(
+                f"⏭️  SKIPPING idea {i}/{total_ideas} - ALREADY PROCESSED", "red", attrs=["reverse"]
+            )
+            idea_snippet = idea[:100] + ("..." if len(idea) > 100 else "")
             cprint(f"📝 Idea: {idea_snippet}", "red")
             cprint(f"{'='*50}\n", "red")
             continue
-            
+
         cprint(f"\n{'='*50}", "yellow")
         cprint(f"🌙 Processing idea {i}/{total_ideas}", "cyan")
         cprint(f"📝 Idea content: {idea[:100]}{'...' if len(idea) > 100 else ''}", "yellow")
         cprint(f"{'='*50}\n", "yellow")
-        
+
         try:
             # Process each idea in complete isolation
             process_trading_idea(idea)
-            
+
             # Clear separator between ideas
             cprint(f"\n{'='*50}", "green")
             cprint(f"✅ Completed idea {i}/{total_ideas}", "green")
             cprint(f"{'='*50}\n", "green")
-            
+
             # Break between ideas
             if i < total_ideas:
                 cprint("😴 Taking a break before next idea...", "yellow")
@@ -1025,17 +1074,22 @@ def main():
             if max_ideas and processed_count >= max_ideas:
                 cprint("🛑 Reached RBI_MAX_IDEAS limit, exiting after quick debug run.", "yellow")
                 break
-                
+
         except Exception as e:
             cprint(f"\n❌ Error processing idea {i}: {str(e)}", "red")
             cprint("🔄 Continuing with next idea...\n", "yellow")
             continue
 
+
 if __name__ == "__main__":
     try:
         cprint(f"\n🌟 Moon Dev's RBI AI Starting Up!", "green")
-        cprint(f"📅 Today's Date: {TODAY_DATE} - All outputs will be saved in this folder", "magenta")
-        cprint(f"🧠 DeepSeek-R1 thinking tags will be automatically removed from outputs", "magenta")
+        cprint(
+            f"📅 Today's Date: {TODAY_DATE} - All outputs will be saved in this folder", "magenta"
+        )
+        cprint(
+            f"🧠 DeepSeek-R1 thinking tags will be automatically removed from outputs", "magenta"
+        )
         cprint(f"📋 Processed ideas log: {PROCESSED_IDEAS_LOG}", "magenta")
         cprint("\n🤖 Model Configurations:", "cyan")
         cprint(f"📚 Research: {RESEARCH_CONFIG['type']} - {RESEARCH_CONFIG['name']}", "cyan")

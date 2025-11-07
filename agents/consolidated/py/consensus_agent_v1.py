@@ -56,13 +56,15 @@ from enum import Enum
 # Resource monitoring
 try:
     import psutil
+
     PSUTIL_AVAILABLE = True
 except ImportError:
     PSUTIL_AVAILABLE = False
 
 # Import base framework
 import sys
-sys.path.append(os.path.join(os.path.dirname(__file__), '../..'))
+
+sys.path.append(os.path.join(os.path.dirname(__file__), "../.."))
 
 from superstandard.agents.base.base_agent import BaseAgent
 from library.core.protocols import ProtocolMixin
@@ -77,6 +79,7 @@ SUPPORTED_PROTOCOLS = ["A2A", "A2P", "ACP", "ANP", "MCP"]
 # CONFIGURATION
 # ============================================================================
 
+
 @dataclass
 class ConsensusAgentConfig:
     """
@@ -89,6 +92,7 @@ class ConsensusAgentConfig:
         export CONSENSUS_MIN_CONFIDENCE_THRESHOLD=0.7
         export CONSENSUS_QUORUM_PERCENTAGE=0.6
     """
+
     # Logging
     log_level: str = "INFO"
 
@@ -125,29 +129,24 @@ class ConsensusAgentConfig:
         return cls(
             # Logging
             log_level=os.getenv("CONSENSUS_LOG_LEVEL", "INFO"),
-
             # Resource limits
             max_memory_mb=int(os.getenv("CONSENSUS_MAX_MEMORY_MB", "512")),
             max_cpu_percent=int(os.getenv("CONSENSUS_MAX_CPU_PERCENT", "80")),
-
             # Protocol flags
             enable_a2a=os.getenv("CONSENSUS_ENABLE_A2A", "true").lower() == "true",
             enable_a2p=os.getenv("CONSENSUS_ENABLE_A2P", "true").lower() == "true",
             enable_acp=os.getenv("CONSENSUS_ENABLE_ACP", "true").lower() == "true",
             enable_anp=os.getenv("CONSENSUS_ENABLE_ANP", "true").lower() == "true",
             enable_mcp=os.getenv("CONSENSUS_ENABLE_MCP", "true").lower() == "true",
-
             # Consensus parameters
             min_confidence_threshold=float(os.getenv("CONSENSUS_MIN_CONFIDENCE_THRESHOLD", "0.6")),
             quorum_percentage=float(os.getenv("CONSENSUS_QUORUM_PERCENTAGE", "0.5")),
             min_proposals_for_quorum=int(os.getenv("CONSENSUS_MIN_PROPOSALS_FOR_QUORUM", "2")),
-
             # Conflict resolution weights
             weight_confidence=float(os.getenv("CONSENSUS_WEIGHT_CONFIDENCE", "0.4")),
             weight_priority=float(os.getenv("CONSENSUS_WEIGHT_PRIORITY", "0.3")),
             weight_timestamp=float(os.getenv("CONSENSUS_WEIGHT_TIMESTAMP", "0.2")),
             weight_agent_reputation=float(os.getenv("CONSENSUS_WEIGHT_AGENT_REPUTATION", "0.1")),
-
             # Performance
             enable_cache=os.getenv("CONSENSUS_ENABLE_CACHE", "true").lower() == "true",
             cache_ttl_seconds=int(os.getenv("CONSENSUS_CACHE_TTL_SECONDS", "300")),
@@ -157,6 +156,7 @@ class ConsensusAgentConfig:
 
 class ConflictType(Enum):
     """Types of conflicts between proposals"""
+
     VEHICLE_ASSIGNMENT = "vehicle_assignment"
     TIMING_CONFLICT = "timing_conflict"
     ROUTE_OVERLAP = "route_overlap"
@@ -167,6 +167,7 @@ class ConflictType(Enum):
 @dataclass
 class Proposal:
     """A proposal from an agent"""
+
     agent_id: str
     proposal_type: str
     data: Dict[str, Any]
@@ -178,6 +179,7 @@ class Proposal:
 @dataclass
 class ConsensusResult:
     """Result of consensus calculation"""
+
     decision: str
     chosen_proposal: Optional[Proposal]
     vote_counts: Dict[str, float]
@@ -189,6 +191,7 @@ class ConsensusResult:
 # ============================================================================
 # RESOURCE MONITORING
 # ============================================================================
+
 
 class ResourceMonitor:
     """Monitor agent resource usage"""
@@ -210,19 +213,19 @@ class ResourceMonitor:
             if memory_mb > self.max_memory_mb:
                 return {
                     "status": "error",
-                    "reason": f"Memory usage {memory_mb:.1f}MB exceeds limit {self.max_memory_mb}MB"
+                    "reason": f"Memory usage {memory_mb:.1f}MB exceeds limit {self.max_memory_mb}MB",
                 }
 
             if cpu_percent > self.max_cpu_percent:
                 return {
                     "status": "warning",
-                    "reason": f"CPU usage {cpu_percent:.1f}% exceeds limit {self.max_cpu_percent}%"
+                    "reason": f"CPU usage {cpu_percent:.1f}% exceeds limit {self.max_cpu_percent}%",
                 }
 
             return {
                 "status": "ok",
                 "memory_mb": round(memory_mb, 2),
-                "cpu_percent": round(cpu_percent, 2)
+                "cpu_percent": round(cpu_percent, 2),
             }
         except Exception as e:
             return {"status": "error", "reason": f"Monitoring error: {str(e)}"}
@@ -231,6 +234,7 @@ class ResourceMonitor:
 # ============================================================================
 # MAIN AGENT
 # ============================================================================
+
 
 class ConsensusAgent(BaseAgent, ProtocolMixin):
     """
@@ -274,8 +278,7 @@ class ConsensusAgent(BaseAgent, ProtocolMixin):
 
         # Resource monitoring
         self._resource_monitor = ResourceMonitor(
-            max_memory_mb=config.max_memory_mb,
-            max_cpu_percent=config.max_cpu_percent
+            max_memory_mb=config.max_memory_mb, max_cpu_percent=config.max_cpu_percent
         )
 
         # State
@@ -285,7 +288,7 @@ class ConsensusAgent(BaseAgent, ProtocolMixin):
             "proposals_processed": 0,
             "conflicts_resolved": 0,
             "unanimous_decisions": 0,
-            "total_execution_time_ms": 0.0
+            "total_execution_time_ms": 0.0,
         }
 
         # Cache for consensus results
@@ -311,7 +314,7 @@ class ConsensusAgent(BaseAgent, ProtocolMixin):
                 return {
                     "status": "error",
                     "reason": resource_check["reason"],
-                    "agent_id": self.agent_id
+                    "agent_id": self.agent_id,
                 }
 
             self._initialized = True
@@ -326,8 +329,8 @@ class ConsensusAgent(BaseAgent, ProtocolMixin):
                 "config": {
                     "min_confidence_threshold": self.typed_config.min_confidence_threshold,
                     "quorum_percentage": self.typed_config.quorum_percentage,
-                    "min_proposals_for_quorum": self.typed_config.min_proposals_for_quorum
-                }
+                    "min_proposals_for_quorum": self.typed_config.min_proposals_for_quorum,
+                },
             }
 
         except Exception as e:
@@ -335,7 +338,7 @@ class ConsensusAgent(BaseAgent, ProtocolMixin):
             return {
                 "status": "error",
                 "reason": f"Initialization failed: {str(e)}",
-                "agent_id": self.agent_id
+                "agent_id": self.agent_id,
             }
 
     async def execute(self, input_data: Dict[str, Any]) -> Dict[str, Any]:
@@ -353,20 +356,12 @@ class ConsensusAgent(BaseAgent, ProtocolMixin):
         start_time = time.time()
 
         if not self._initialized:
-            return {
-                "success": False,
-                "error": "Agent not initialized",
-                "agent_id": self.agent_id
-            }
+            return {"success": False, "error": "Agent not initialized", "agent_id": self.agent_id}
 
         # Check resources
         resource_check = self._resource_monitor.check_resources()
         if resource_check["status"] == "error":
-            return {
-                "success": False,
-                "error": resource_check["reason"],
-                "agent_id": self.agent_id
-            }
+            return {"success": False, "error": resource_check["reason"], "agent_id": self.agent_id}
 
         try:
             action = input_data.get("action")
@@ -378,10 +373,7 @@ class ConsensusAgent(BaseAgent, ProtocolMixin):
             elif action == "resolve_conflicts":
                 result = await self._handle_conflict_resolution(input_data)
             else:
-                result = {
-                    "success": False,
-                    "error": f"Unknown action: {action}"
-                }
+                result = {"success": False, "error": f"Unknown action: {action}"}
 
             # Update metrics
             if self.typed_config.enable_metrics:
@@ -396,7 +388,7 @@ class ConsensusAgent(BaseAgent, ProtocolMixin):
             return {
                 "success": False,
                 "error": f"Execution failed: {str(e)}",
-                "agent_id": self.agent_id
+                "agent_id": self.agent_id,
             }
 
     async def shutdown(self) -> Dict[str, Any]:
@@ -416,14 +408,14 @@ class ConsensusAgent(BaseAgent, ProtocolMixin):
             return {
                 "status": "shutdown",
                 "agent_id": self.agent_id,
-                "final_metrics": self._metrics.copy()
+                "final_metrics": self._metrics.copy(),
             }
 
         except Exception as e:
             return {
                 "status": "error",
                 "reason": f"Shutdown failed: {str(e)}",
-                "agent_id": self.agent_id
+                "agent_id": self.agent_id,
             }
 
     async def health_check(self) -> Dict[str, Any]:
@@ -444,7 +436,7 @@ class ConsensusAgent(BaseAgent, ProtocolMixin):
             "resources": resource_check,
             "metrics": self._metrics.copy() if self.typed_config.enable_metrics else {},
             "cache_size": len(self._consensus_cache),
-            "timestamp": datetime.now().isoformat()
+            "timestamp": datetime.now().isoformat(),
         }
 
     # ========================================================================
@@ -464,9 +456,7 @@ class ConsensusAgent(BaseAgent, ProtocolMixin):
         return {}
 
     async def _execute_logic(
-        self,
-        input_data: Dict[str, Any],
-        fetched_data: Dict[str, Any]
+        self, input_data: Dict[str, Any], fetched_data: Dict[str, Any]
     ) -> Dict[str, Any]:
         """Core execution logic - delegates to execute() method"""
         return await self.execute(input_data)
@@ -476,9 +466,7 @@ class ConsensusAgent(BaseAgent, ProtocolMixin):
     # ========================================================================
 
     def gather_proposals(
-        self,
-        agents: List[Dict[str, Any]],
-        decision_context: Dict[str, Any]
+        self, agents: List[Dict[str, Any]], decision_context: Dict[str, Any]
     ) -> List[Proposal]:
         """
         Gather proposals from multiple agents
@@ -504,7 +492,7 @@ class ConsensusAgent(BaseAgent, ProtocolMixin):
                 data=proposal_data,
                 confidence=confidence,
                 timestamp=datetime.now(),
-                priority=priority
+                priority=priority,
             )
 
             proposals.append(proposal)
@@ -514,9 +502,7 @@ class ConsensusAgent(BaseAgent, ProtocolMixin):
         return proposals
 
     def calculate_consensus(
-        self,
-        proposals: List[Dict[str, Any]],
-        weights: Optional[Dict[str, float]] = None
+        self, proposals: List[Dict[str, Any]], weights: Optional[Dict[str, float]] = None
     ) -> ConsensusResult:
         """
         Calculate consensus from multiple proposals using weighted voting
@@ -535,7 +521,7 @@ class ConsensusAgent(BaseAgent, ProtocolMixin):
                 vote_counts={},
                 confidence=0.0,
                 participating_agents=[],
-                conflicts_resolved=0
+                conflicts_resolved=0,
             )
 
         # Convert dicts to Proposal objects
@@ -549,7 +535,7 @@ class ConsensusAgent(BaseAgent, ProtocolMixin):
                 vote_counts={},
                 confidence=0.0,
                 participating_agents=[p.agent_id for p in proposal_objects],
-                conflicts_resolved=0
+                conflicts_resolved=0,
             )
 
         # Group proposals by decision option
@@ -582,7 +568,7 @@ class ConsensusAgent(BaseAgent, ProtocolMixin):
                 vote_counts={},
                 confidence=0.0,
                 participating_agents=[p.agent_id for p in proposal_objects],
-                conflicts_resolved=0
+                conflicts_resolved=0,
             )
 
         winning_option = max(vote_counts, key=vote_counts.get)
@@ -591,7 +577,9 @@ class ConsensusAgent(BaseAgent, ProtocolMixin):
         # Calculate consensus confidence
         total_votes = sum(vote_counts.values())
         winning_percentage = vote_counts[winning_option] / total_votes if total_votes > 0 else 0
-        avg_proposal_confidence = sum(p.confidence for p in winning_proposals) / len(winning_proposals)
+        avg_proposal_confidence = sum(p.confidence for p in winning_proposals) / len(
+            winning_proposals
+        )
 
         consensus_confidence = (winning_percentage + avg_proposal_confidence) / 2
 
@@ -612,13 +600,11 @@ class ConsensusAgent(BaseAgent, ProtocolMixin):
             vote_counts=vote_counts,
             confidence=consensus_confidence,
             participating_agents=[p.agent_id for p in proposal_objects],
-            conflicts_resolved=len(proposal_groups) - 1
+            conflicts_resolved=len(proposal_groups) - 1,
         )
 
     def resolve_conflicts(
-        self,
-        conflicting_proposals: List[Dict[str, Any]],
-        conflict_type: str
+        self, conflicting_proposals: List[Dict[str, Any]], conflict_type: str
     ) -> Dict[str, Any]:
         """
         Resolve conflicts between proposals
@@ -631,10 +617,7 @@ class ConsensusAgent(BaseAgent, ProtocolMixin):
             Resolution with chosen proposal
         """
         if not conflicting_proposals:
-            return {
-                "resolved": False,
-                "reason": "No proposals provided"
-            }
+            return {"resolved": False, "reason": "No proposals provided"}
 
         # Convert to Proposal objects
         proposals = [self._dict_to_proposal(p) for p in conflicting_proposals]
@@ -675,7 +658,7 @@ class ConsensusAgent(BaseAgent, ProtocolMixin):
             "chosen_proposal": self._proposal_to_dict(winner[0]),
             "resolution_score": round(winner[1], 3),
             "rejected_proposals": [self._proposal_to_dict(p[0]) for p in scored_proposals[1:]],
-            "resolution_method": "weighted_scoring"
+            "resolution_method": "weighted_scoring",
         }
 
     # ========================================================================
@@ -692,7 +675,7 @@ class ConsensusAgent(BaseAgent, ProtocolMixin):
         return {
             "success": True,
             "proposals": [self._proposal_to_dict(p) for p in proposals],
-            "count": len(proposals)
+            "count": len(proposals),
         }
 
     async def _handle_consensus_calculation(self, task: Dict[str, Any]) -> Dict[str, Any]:
@@ -702,10 +685,7 @@ class ConsensusAgent(BaseAgent, ProtocolMixin):
 
         result = self.calculate_consensus(proposals, weights)
 
-        return {
-            "success": True,
-            "consensus": self._consensus_result_to_dict(result)
-        }
+        return {"success": True, "consensus": self._consensus_result_to_dict(result)}
 
     async def _handle_conflict_resolution(self, task: Dict[str, Any]) -> Dict[str, Any]:
         """Handle conflict resolution task"""
@@ -714,10 +694,7 @@ class ConsensusAgent(BaseAgent, ProtocolMixin):
 
         resolution = self.resolve_conflicts(conflicting_proposals, conflict_type)
 
-        return {
-            "success": True,
-            "resolution": resolution
-        }
+        return {"success": True, "resolution": resolution}
 
     def _has_quorum(self, proposals: List[Proposal]) -> bool:
         """Check if we have enough proposals for quorum"""
@@ -750,7 +727,7 @@ class ConsensusAgent(BaseAgent, ProtocolMixin):
             data=d.get("data", {}),
             confidence=d.get("confidence", 0.5),
             timestamp=timestamp,
-            priority=d.get("priority", 5)
+            priority=d.get("priority", 5),
         )
 
     def _proposal_to_dict(self, proposal: Proposal) -> Dict[str, Any]:
@@ -761,19 +738,21 @@ class ConsensusAgent(BaseAgent, ProtocolMixin):
             "data": proposal.data,
             "confidence": proposal.confidence,
             "timestamp": proposal.timestamp.isoformat(),
-            "priority": proposal.priority
+            "priority": proposal.priority,
         }
 
     def _consensus_result_to_dict(self, result: ConsensusResult) -> Dict[str, Any]:
         """Convert ConsensusResult to dictionary"""
         return {
             "decision": result.decision,
-            "chosen_proposal": self._proposal_to_dict(result.chosen_proposal) if result.chosen_proposal else None,
+            "chosen_proposal": (
+                self._proposal_to_dict(result.chosen_proposal) if result.chosen_proposal else None
+            ),
             "vote_counts": result.vote_counts,
             "confidence": round(result.confidence, 3),
             "participating_agents": result.participating_agents,
             "conflicts_resolved": result.conflicts_resolved,
-            "unanimous": len(result.vote_counts) == 1 if result.vote_counts else False
+            "unanimous": len(result.vote_counts) == 1 if result.vote_counts else False,
         }
 
 
@@ -781,9 +760,9 @@ class ConsensusAgent(BaseAgent, ProtocolMixin):
 # FACTORY FUNCTION
 # ============================================================================
 
+
 async def create_consensus_agent(
-    agent_id: str = None,
-    config: ConsensusAgentConfig = None
+    agent_id: str = None, config: ConsensusAgentConfig = None
 ) -> ConsensusAgent:
     """
     Factory function to create and initialize Consensus Agent
@@ -810,6 +789,7 @@ async def create_consensus_agent(
 # ============================================================================
 # CLI INTERFACE
 # ============================================================================
+
 
 async def main():
     """CLI interface for testing and demonstration"""
@@ -845,32 +825,29 @@ async def main():
                 "proposal_type": "route_choice",
                 "data": {"option": "route_a", "distance": 100},
                 "confidence": 0.9,
-                "priority": 8
+                "priority": 8,
             },
             {
                 "agent_id": "agent_2",
                 "proposal_type": "route_choice",
                 "data": {"option": "route_a", "distance": 100},
                 "confidence": 0.85,
-                "priority": 7
+                "priority": 7,
             },
             {
                 "agent_id": "agent_3",
                 "proposal_type": "route_choice",
                 "data": {"option": "route_b", "distance": 95},
                 "confidence": 0.7,
-                "priority": 6
-            }
+                "priority": 6,
+            },
         ]
 
-        result = await agent.execute({
-            "action": "calculate_consensus",
-            "proposals": proposals
-        })
+        result = await agent.execute({"action": "calculate_consensus", "proposals": proposals})
 
         print(f"Success: {result['success']}")
-        if result['success']:
-            consensus = result['consensus']
+        if result["success"]:
+            consensus = result["consensus"]
             print(f"Decision: {consensus['decision']}")
             print(f"Confidence: {consensus['confidence']:.3f}")
             print(f"Unanimous: {consensus['unanimous']}")
@@ -885,26 +862,28 @@ async def main():
                 "proposal_type": "vehicle_assignment",
                 "data": {"vehicle": "v1", "route": "r1"},
                 "confidence": 0.8,
-                "priority": 7
+                "priority": 7,
             },
             {
                 "agent_id": "agent_2",
                 "proposal_type": "vehicle_assignment",
                 "data": {"vehicle": "v1", "route": "r2"},
                 "confidence": 0.75,
-                "priority": 6
-            }
+                "priority": 6,
+            },
         ]
 
-        result = await agent.execute({
-            "action": "resolve_conflicts",
-            "conflicting_proposals": conflicting_proposals,
-            "conflict_type": "vehicle_assignment"
-        })
+        result = await agent.execute(
+            {
+                "action": "resolve_conflicts",
+                "conflicting_proposals": conflicting_proposals,
+                "conflict_type": "vehicle_assignment",
+            }
+        )
 
         print(f"Success: {result['success']}")
-        if result['success']:
-            resolution = result['resolution']
+        if result["success"]:
+            resolution = result["resolution"]
             print(f"Resolved: {resolution['resolved']}")
             print(f"Resolution score: {resolution.get('resolution_score', 'N/A')}")
             print(f"Chosen proposal: agent_{resolution['chosen_proposal']['agent_id']}")

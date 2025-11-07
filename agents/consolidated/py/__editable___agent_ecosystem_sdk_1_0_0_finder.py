@@ -6,9 +6,11 @@ from importlib.util import spec_from_file_location
 from itertools import chain
 from pathlib import Path
 
-MAPPING: dict[str, str] = {'agent_ecosystem_sdk': '/mnt/c/GitHub/GitHubRoot/sillinous/market-research-ai-webapp/agent_ecosystem_sdk'}
+MAPPING: dict[str, str] = {
+    "agent_ecosystem_sdk": "/mnt/c/GitHub/GitHubRoot/sillinous/market-research-ai-webapp/agent_ecosystem_sdk"
+}
 NAMESPACES: dict[str, list[str]] = {}
-PATH_PLACEHOLDER = '__editable__.agent_ecosystem_sdk-1.0.0.finder' + ".__path_hook__"
+PATH_PLACEHOLDER = "__editable__.agent_ecosystem_sdk-1.0.0.finder" + ".__path_hook__"
 
 
 class _EditableFinder:  # MetaPathFinder

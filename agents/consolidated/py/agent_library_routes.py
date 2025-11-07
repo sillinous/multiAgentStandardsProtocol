@@ -43,20 +43,18 @@ router = APIRouter(
 # Request/Response Models
 # ============================================================================
 
+
 class AgentDiscoveryRequest(BaseModel):
     """Request for agent discovery"""
+
     apqc_process: Optional[str] = Field(
         None, description="Filter by APQC process (e.g., '3.0', '4.0')"
     )
     apqc_level: Optional[str] = Field(
         None, description="Filter by APQC level (e.g., 'strategy', 'process')"
     )
-    capability: Optional[str] = Field(
-        None, description="Filter by capability name"
-    )
-    keyword: Optional[str] = Field(
-        None, description="Search by keyword in agent name/description"
-    )
+    capability: Optional[str] = Field(None, description="Filter by capability name")
+    keyword: Optional[str] = Field(None, description="Search by keyword in agent name/description")
     status: Optional[str] = Field(
         None, description="Filter by agent status (draft, staging, production, deprecated)"
     )
@@ -69,6 +67,7 @@ class AgentDiscoveryRequest(BaseModel):
 
 class AgentDiscoveryResponse(BaseModel):
     """Response from agent discovery"""
+
     total: int = Field(..., description="Total number of matching agents")
     skip: int = Field(..., description="Number of items skipped")
     limit: int = Field(..., description="Requested limit")
@@ -77,15 +76,19 @@ class AgentDiscoveryResponse(BaseModel):
 
 class AgentExecutionRequestModel(BaseModel):
     """Request to execute an agent"""
+
     agent_id: str = Field(..., description="Unique identifier of the agent")
     input_data: Dict[str, Any] = Field(..., description="Input data for the agent")
-    timeout_ms: int = Field(30000, ge=1000, le=300000, description="Execution timeout in milliseconds")
+    timeout_ms: int = Field(
+        30000, ge=1000, le=300000, description="Execution timeout in milliseconds"
+    )
     priority: int = Field(5, ge=1, le=10, description="Execution priority (1=low, 10=high)")
     metadata: Dict[str, Any] = Field(default_factory=dict, description="Additional metadata")
 
 
 class AgentExecutionResponseModel(BaseModel):
     """Response from agent execution"""
+
     execution_id: str = Field(..., description="Unique execution identifier")
     agent_id: str = Field(..., description="Agent that was executed")
     status: str = Field(..., description="Execution status")
@@ -97,6 +100,7 @@ class AgentExecutionResponseModel(BaseModel):
 
 class AgentHealthModel(BaseModel):
     """Health status of an agent"""
+
     agent_id: str = Field(..., description="Agent identifier")
     status: str = Field(..., description="Health status (healthy, degraded, unhealthy)")
     last_execution: Optional[datetime] = Field(None, description="Last execution time")
@@ -107,6 +111,7 @@ class AgentHealthModel(BaseModel):
 
 class SystemHealthModel(BaseModel):
     """Overall system health status"""
+
     status: str = Field(..., description="Overall status (healthy, degraded, unhealthy)")
     total_agents: int = Field(..., description="Total number of agents")
     healthy_agents: int = Field(..., description="Number of healthy agents")
@@ -119,6 +124,7 @@ class SystemHealthModel(BaseModel):
 
 class AgentRegistryStatsModel(BaseModel):
     """Statistics about the agent registry"""
+
     total_agents: int = Field(..., description="Total number of agents in registry")
     agents_by_status: Dict[str, int] = Field(..., description="Count by status")
     agents_by_apqc_process: Dict[str, int] = Field(..., description="Count by APQC process")
@@ -128,6 +134,7 @@ class AgentRegistryStatsModel(BaseModel):
 
 class ExecutionHistoryItemModel(BaseModel):
     """Single execution history item"""
+
     execution_id: str
     agent_id: str
     status: str
@@ -138,6 +145,7 @@ class ExecutionHistoryItemModel(BaseModel):
 
 class ExecutionHistoryModel(BaseModel):
     """Execution history response"""
+
     agent_id: str
     total: int
     items: List[ExecutionHistoryItemModel]
@@ -147,15 +155,16 @@ class ExecutionHistoryModel(BaseModel):
 # Discovery Endpoints
 # ============================================================================
 
+
 @router.post(
     "/discover",
     response_model=AgentDiscoveryResponse,
     summary="Discover agents with filtering",
-    description="Search for agents using various filters (APQC, capability, keyword, status)"
+    description="Search for agents using various filters (APQC, capability, keyword, status)",
 )
 async def discover_agents(
     request: AgentDiscoveryRequest,
-    service: AgentLibraryService = Depends(get_agent_library_service)
+    service: AgentLibraryService = Depends(get_agent_library_service),
 ):
     """
     Discover agents using flexible filtering criteria.
@@ -199,17 +208,14 @@ async def discover_agents(
         )
     except Exception as e:
         logger.error(f"Error discovering agents: {e}")
-        raise HTTPException(
-            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-            detail=str(e)
-        )
+        raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail=str(e))
 
 
 @router.get(
     "/search",
     response_model=AgentDiscoveryResponse,
     summary="Quick search for agents",
-    description="Quick search by keyword, APQC process, or capability"
+    description="Quick search by keyword, APQC process, or capability",
 )
 async def search_agents(
     q: Optional[str] = Query(None, min_length=1, description="Search query"),
@@ -217,7 +223,7 @@ async def search_agents(
     capability: Optional[str] = Query(None, description="Capability filter"),
     skip: int = Query(0, ge=0),
     limit: int = Query(10, ge=1, le=100),
-    service: AgentLibraryService = Depends(get_agent_library_service)
+    service: AgentLibraryService = Depends(get_agent_library_service),
 ):
     """Quick search endpoint for agents."""
     try:
@@ -245,21 +251,17 @@ async def search_agents(
         )
     except Exception as e:
         logger.error(f"Error searching agents: {e}")
-        raise HTTPException(
-            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-            detail=str(e)
-        )
+        raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail=str(e))
 
 
 @router.get(
     "/{agent_id}",
     response_model=AgentMetadataModel,
     summary="Get agent details",
-    description="Retrieve detailed metadata for a specific agent"
+    description="Retrieve detailed metadata for a specific agent",
 )
 async def get_agent(
-    agent_id: str,
-    service: AgentLibraryService = Depends(get_agent_library_service)
+    agent_id: str, service: AgentLibraryService = Depends(get_agent_library_service)
 ):
     """Get detailed information about a specific agent."""
     try:
@@ -268,34 +270,31 @@ async def get_agent(
         agent = await service.discovery.get_agent_by_id(agent_id)
         if not agent:
             raise HTTPException(
-                status_code=status.HTTP_404_NOT_FOUND,
-                detail=f"Agent {agent_id} not found"
+                status_code=status.HTTP_404_NOT_FOUND, detail=f"Agent {agent_id} not found"
             )
         return agent
     except HTTPException:
         raise
     except Exception as e:
         logger.error(f"Error fetching agent {agent_id}: {e}")
-        raise HTTPException(
-            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-            detail=str(e)
-        )
+        raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail=str(e))
 
 
 # ============================================================================
 # Execution Endpoints
 # ============================================================================
 
+
 @router.post(
     "/execute",
     response_model=AgentExecutionResponseModel,
     summary="Execute an agent",
-    description="Execute an agent with provided input data"
+    description="Execute an agent with provided input data",
 )
 async def execute_agent(
     request: AgentExecutionRequestModel,
     background_tasks: BackgroundTasks,
-    service: AgentLibraryService = Depends(get_agent_library_service)
+    service: AgentLibraryService = Depends(get_agent_library_service),
 ):
     """
     Execute an agent with the provided input data.
@@ -333,21 +332,17 @@ async def execute_agent(
         raise
     except Exception as e:
         logger.error(f"Error executing agent {request.agent_id}: {e}")
-        raise HTTPException(
-            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-            detail=str(e)
-        )
+        raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail=str(e))
 
 
 @router.get(
     "/executions/{execution_id}",
     response_model=AgentExecutionResponseModel,
     summary="Get execution status",
-    description="Check the status of an agent execution"
+    description="Check the status of an agent execution",
 )
 async def get_execution_status(
-    execution_id: str,
-    service: AgentLibraryService = Depends(get_agent_library_service)
+    execution_id: str, service: AgentLibraryService = Depends(get_agent_library_service)
 ):
     """Get status of a specific agent execution."""
     try:
@@ -356,8 +351,7 @@ async def get_execution_status(
         response = await service.execution.get_execution_status(execution_id)
         if not response:
             raise HTTPException(
-                status_code=status.HTTP_404_NOT_FOUND,
-                detail=f"Execution {execution_id} not found"
+                status_code=status.HTTP_404_NOT_FOUND, detail=f"Execution {execution_id} not found"
             )
 
         return AgentExecutionResponseModel(
@@ -373,20 +367,16 @@ async def get_execution_status(
         raise
     except Exception as e:
         logger.error(f"Error fetching execution status {execution_id}: {e}")
-        raise HTTPException(
-            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-            detail=str(e)
-        )
+        raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail=str(e))
 
 
 @router.delete(
     "/executions/{execution_id}",
     summary="Cancel agent execution",
-    description="Cancel a running agent execution"
+    description="Cancel a running agent execution",
 )
 async def cancel_execution(
-    execution_id: str,
-    service: AgentLibraryService = Depends(get_agent_library_service)
+    execution_id: str, service: AgentLibraryService = Depends(get_agent_library_service)
 ):
     """Cancel a running agent execution."""
     try:
@@ -396,7 +386,7 @@ async def cancel_execution(
         if not success:
             raise HTTPException(
                 status_code=status.HTTP_404_NOT_FOUND,
-                detail=f"Execution {execution_id} not found or already completed"
+                detail=f"Execution {execution_id} not found or already completed",
             )
 
         return {"status": "cancelled", "execution_id": execution_id}
@@ -404,22 +394,19 @@ async def cancel_execution(
         raise
     except Exception as e:
         logger.error(f"Error cancelling execution {execution_id}: {e}")
-        raise HTTPException(
-            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-            detail=str(e)
-        )
+        raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail=str(e))
 
 
 @router.get(
     "/{agent_id}/history",
     response_model=ExecutionHistoryModel,
     summary="Get agent execution history",
-    description="Retrieve execution history for a specific agent"
+    description="Retrieve execution history for a specific agent",
 )
 async def get_agent_execution_history(
     agent_id: str,
     limit: int = Query(20, ge=1, le=100),
-    service: AgentLibraryService = Depends(get_agent_library_service)
+    service: AgentLibraryService = Depends(get_agent_library_service),
 ):
     """Get execution history for a specific agent."""
     try:
@@ -444,25 +431,21 @@ async def get_agent_execution_history(
         )
     except Exception as e:
         logger.error(f"Error fetching execution history for {agent_id}: {e}")
-        raise HTTPException(
-            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-            detail=str(e)
-        )
+        raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail=str(e))
 
 
 # ============================================================================
 # Health & Monitoring Endpoints
 # ============================================================================
 
+
 @router.get(
     "/health/system",
     response_model=SystemHealthModel,
     summary="Get system health status",
-    description="Get overall health status of the agent library system"
+    description="Get overall health status of the agent library system",
 )
-async def get_system_health(
-    service: AgentLibraryService = Depends(get_agent_library_service)
-):
+async def get_system_health(service: AgentLibraryService = Depends(get_agent_library_service)):
     """Get overall system health status."""
     try:
         logger.info("Checking system health")
@@ -481,21 +464,17 @@ async def get_system_health(
         )
     except Exception as e:
         logger.error(f"Error checking system health: {e}")
-        raise HTTPException(
-            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-            detail=str(e)
-        )
+        raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail=str(e))
 
 
 @router.get(
     "/{agent_id}/health",
     response_model=AgentHealthModel,
     summary="Get agent health status",
-    description="Get health and performance metrics for a specific agent"
+    description="Get health and performance metrics for a specific agent",
 )
 async def get_agent_health(
-    agent_id: str,
-    service: AgentLibraryService = Depends(get_agent_library_service)
+    agent_id: str, service: AgentLibraryService = Depends(get_agent_library_service)
 ):
     """Get health status of a specific agent."""
     try:
@@ -504,8 +483,7 @@ async def get_agent_health(
         health = await service.health.get_agent_health(agent_id)
         if not health:
             raise HTTPException(
-                status_code=status.HTTP_404_NOT_FOUND,
-                detail=f"Agent {agent_id} not found"
+                status_code=status.HTTP_404_NOT_FOUND, detail=f"Agent {agent_id} not found"
             )
 
         return AgentHealthModel(
@@ -520,25 +498,22 @@ async def get_agent_health(
         raise
     except Exception as e:
         logger.error(f"Error checking health for {agent_id}: {e}")
-        raise HTTPException(
-            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-            detail=str(e)
-        )
+        raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail=str(e))
 
 
 # ============================================================================
 # Registry Management Endpoints
 # ============================================================================
 
+
 @router.post(
     "/registry/register",
     response_model=AgentMetadataModel,
     summary="Register a new agent",
-    description="Register a new agent in the library"
+    description="Register a new agent in the library",
 )
 async def register_agent(
-    metadata: AgentMetadataModel,
-    service: AgentLibraryService = Depends(get_agent_library_service)
+    metadata: AgentMetadataModel, service: AgentLibraryService = Depends(get_agent_library_service)
 ):
     """Register a new agent in the library."""
     try:
@@ -550,20 +525,16 @@ async def register_agent(
         return result
     except Exception as e:
         logger.error(f"Error registering agent: {e}")
-        raise HTTPException(
-            status_code=status.HTTP_400_BAD_REQUEST,
-            detail=str(e)
-        )
+        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=str(e))
 
 
 @router.delete(
     "/{agent_id}/registry",
     summary="Unregister an agent",
-    description="Remove an agent from the registry"
+    description="Remove an agent from the registry",
 )
 async def unregister_agent(
-    agent_id: str,
-    service: AgentLibraryService = Depends(get_agent_library_service)
+    agent_id: str, service: AgentLibraryService = Depends(get_agent_library_service)
 ):
     """Unregister an agent from the library."""
     try:
@@ -572,8 +543,7 @@ async def unregister_agent(
         success = await service.registry.unregister_agent(agent_id)
         if not success:
             raise HTTPException(
-                status_code=status.HTTP_404_NOT_FOUND,
-                detail=f"Agent {agent_id} not found"
+                status_code=status.HTTP_404_NOT_FOUND, detail=f"Agent {agent_id} not found"
             )
 
         return {"status": "unregistered", "agent_id": agent_id}
@@ -581,21 +551,16 @@ async def unregister_agent(
         raise
     except Exception as e:
         logger.error(f"Error unregistering agent {agent_id}: {e}")
-        raise HTTPException(
-            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-            detail=str(e)
-        )
+        raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail=str(e))
 
 
 @router.get(
     "/registry/stats",
     response_model=AgentRegistryStatsModel,
     summary="Get registry statistics",
-    description="Get statistics and insights about the agent registry"
+    description="Get statistics and insights about the agent registry",
 )
-async def get_registry_stats(
-    service: AgentLibraryService = Depends(get_agent_library_service)
-):
+async def get_registry_stats(service: AgentLibraryService = Depends(get_agent_library_service)):
     """Get registry statistics."""
     try:
         logger.info("Fetching registry statistics")
@@ -611,24 +576,20 @@ async def get_registry_stats(
         )
     except Exception as e:
         logger.error(f"Error fetching registry stats: {e}")
-        raise HTTPException(
-            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-            detail=str(e)
-        )
+        raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail=str(e))
 
 
 # ============================================================================
 # Health Check Endpoint
 # ============================================================================
 
+
 @router.get(
     "/health",
     summary="Agent library service health check",
-    description="Check if the agent library service is running"
+    description="Check if the agent library service is running",
 )
-async def health_check(
-    service: AgentLibraryService = Depends(get_agent_library_service)
-):
+async def health_check(service: AgentLibraryService = Depends(get_agent_library_service)):
     """Health check endpoint for the agent library service."""
     return {
         "status": "ok",

@@ -5,7 +5,7 @@ This is THE SINGLE SOURCE OF TRUTH for all agents in the ecosystem.
 All agents MUST inherit from this class to ensure protocol compliance.
 
 ⚠️ IMPORTANT: Do NOT create new BaseAgent classes!
-   Import from this file: from agents.consolidated.py.base_agent_v1 import BaseAgent
+   Import from this file: from src.superstandard.agents.base.base_agent import BaseAgent
 
 Protocols Supported:
 - A2A (Agent-to-Agent): Direct agent communication
@@ -32,12 +32,13 @@ from .protocols import (
     A2AMessage,
     ANPRegistration,
     AgentStatus,
-    MessageType as ProtocolMessageType
+    MessageType as ProtocolMessageType,
 )
 
 
 class AgentCapability(Enum):
     """Agent capabilities"""
+
     TESTING = "testing"
     DESIGN = "design"
     DEVELOPMENT = "development"
@@ -47,6 +48,7 @@ class AgentCapability(Enum):
 
 class MessageType(Enum):
     """Message types for inter-agent communication"""
+
     TEST_REPORT = "test_report"
     DESIGN_SPEC = "design_spec"
     IMPLEMENTATION_REPORT = "implementation_report"
@@ -80,7 +82,7 @@ class BaseAgent(ABC, ProtocolMixin):
         agent_id: str,
         agent_type: str,
         capabilities: List[AgentCapability],
-        workspace_path: str = "./autonomous-ecosystem/workspace"
+        workspace_path: str = "./autonomous-ecosystem/workspace",
     ):
         # Initialize ProtocolMixin FIRST for protocol support
         super().__init__()
@@ -134,7 +136,7 @@ class BaseAgent(ABC, ProtocolMixin):
         message_type: MessageType,
         recipient: str,
         content: Dict[str, Any],
-        iteration: Optional[int] = None
+        iteration: Optional[int] = None,
     ) -> Dict[str, Any]:
         """
         Send a message to another agent or the orchestrator
@@ -155,7 +157,7 @@ class BaseAgent(ABC, ProtocolMixin):
             "recipient": recipient,
             "timestamp": datetime.now().isoformat(),
             "iteration": iteration or self.current_iteration,
-            "content": content
+            "content": content,
         }
 
         # Save message to workspace
@@ -176,17 +178,13 @@ class BaseAgent(ABC, ProtocolMixin):
     def _save_message(self, message: Dict[str, Any]) -> None:
         """Save message to workspace"""
         iteration_path = os.path.join(
-            self.workspace_path,
-            f"iterations/iteration_{str(self.current_iteration).zfill(3)}"
+            self.workspace_path, f"iterations/iteration_{str(self.current_iteration).zfill(3)}"
         )
         os.makedirs(iteration_path, exist_ok=True)
 
-        message_file = os.path.join(
-            iteration_path,
-            f"{message['type']}_{message['id']}.json"
-        )
+        message_file = os.path.join(iteration_path, f"{message['type']}_{message['id']}.json")
 
-        with open(message_file, 'w') as f:
+        with open(message_file, "w") as f:
             json.dump(message, f, indent=2)
 
     def load_knowledge_base(self) -> Dict[str, Any]:
@@ -196,19 +194,15 @@ class BaseAgent(ABC, ProtocolMixin):
 
         if os.path.exists(kb_path):
             for filename in os.listdir(kb_path):
-                if filename.endswith('.md') or filename.endswith('.json'):
+                if filename.endswith(".md") or filename.endswith(".json"):
                     filepath = os.path.join(kb_path, filename)
-                    with open(filepath, 'r') as f:
+                    with open(filepath, "r") as f:
                         knowledge[filename] = f.read()
 
         return knowledge
 
     def save_artifact(
-        self,
-        artifact_type: str,
-        content: Any,
-        filename: str,
-        iteration: Optional[int] = None
+        self, artifact_type: str, content: Any, filename: str, iteration: Optional[int] = None
     ) -> str:
         """
         Save an artifact to the workspace
@@ -224,28 +218,23 @@ class BaseAgent(ABC, ProtocolMixin):
         """
         iter_num = iteration or self.current_iteration
         artifact_path = os.path.join(
-            self.workspace_path,
-            f"iterations/iteration_{str(iter_num).zfill(3)}",
-            artifact_type
+            self.workspace_path, f"iterations/iteration_{str(iter_num).zfill(3)}", artifact_type
         )
         os.makedirs(artifact_path, exist_ok=True)
 
         filepath = os.path.join(artifact_path, filename)
 
         if isinstance(content, (dict, list)):
-            with open(filepath, 'w') as f:
+            with open(filepath, "w") as f:
                 json.dump(content, f, indent=2)
         else:
-            with open(filepath, 'w') as f:
+            with open(filepath, "w") as f:
                 f.write(str(content))
 
         return filepath
 
     def load_artifact(
-        self,
-        artifact_type: str,
-        filename: str,
-        iteration: Optional[int] = None
+        self, artifact_type: str, filename: str, iteration: Optional[int] = None
     ) -> Any:
         """
         Load an artifact from the workspace
@@ -263,14 +252,14 @@ class BaseAgent(ABC, ProtocolMixin):
             self.workspace_path,
             f"iterations/iteration_{str(iter_num).zfill(3)}",
             artifact_type,
-            filename
+            filename,
         )
 
         if not os.path.exists(filepath):
             return None
 
-        with open(filepath, 'r') as f:
-            if filename.endswith('.json'):
+        with open(filepath, "r") as f:
+            if filename.endswith(".json"):
                 return json.load(f)
             else:
                 return f.read()
@@ -284,7 +273,7 @@ class BaseAgent(ABC, ProtocolMixin):
             "current_iteration": self.current_iteration,
             "messages_sent": len(self.messages_sent),
             "messages_received": len(self.messages_received),
-            "timestamp": datetime.now().isoformat()
+            "timestamp": datetime.now().isoformat(),
         }
 
     # ========================================================================
@@ -297,7 +286,7 @@ class BaseAgent(ABC, ProtocolMixin):
         target_agent_id: str,
         message_type: str,
         payload: Dict[str, Any],
-        correlation_id: Optional[str] = None
+        correlation_id: Optional[str] = None,
     ) -> A2AMessage:
         """
         Send A2A-compliant message (overrides ProtocolMixin)
@@ -316,10 +305,7 @@ class BaseAgent(ABC, ProtocolMixin):
         """
         # Use parent's A2A protocol
         message = await super().send_a2a_message(
-            target_agent_id,
-            message_type,
-            payload,
-            correlation_id
+            target_agent_id, message_type, payload, correlation_id
         )
 
         # Persist to workspace

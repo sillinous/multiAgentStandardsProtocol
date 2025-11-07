@@ -19,8 +19,12 @@ import time
 
 from app.a2a_communication.message_routing_agent import routing_agent
 from app.a2a_communication.interfaces import (
-    AgentMessage, AgentResponse, AgentIdentifier,
-    MessageType, Priority, AgentTeam
+    AgentMessage,
+    AgentResponse,
+    AgentIdentifier,
+    MessageType,
+    Priority,
+    AgentTeam,
 )
 
 logger = logging.getLogger(__name__)
@@ -59,9 +63,9 @@ class ProductDataValidationAgent:
                 "accuracy_verification",
                 "consistency_check",
                 "quality_scoring",
-                "issue_reporting"
+                "issue_reporting",
             ],
-            status="active"
+            status="active",
         )
 
         # Register with routing system
@@ -69,19 +73,33 @@ class ProductDataValidationAgent:
 
         # Validation rules
         self.required_fields = [
-            "keyword", "title", "category", "description",
-            "price", "composite_score"
+            "keyword",
+            "title",
+            "category",
+            "description",
+            "price",
+            "composite_score",
         ]
 
         self.recommended_fields = [
-            "brand", "features", "main_image_url",
-            "market_intelligence", "competitive_landscape",
-            "customer_profiles", "business_models", "pricing_strategy"
+            "brand",
+            "features",
+            "main_image_url",
+            "market_intelligence",
+            "competitive_landscape",
+            "customer_profiles",
+            "business_models",
+            "pricing_strategy",
         ]
 
         self.numeric_fields = [
-            "price", "composite_score", "opportunity_score",
-            "profit_margin", "rating", "reviews", "sales_per_month"
+            "price",
+            "composite_score",
+            "opportunity_score",
+            "profit_margin",
+            "rating",
+            "reviews",
+            "sales_per_month",
         ]
 
         logger.info(f"🎯 {self.identifier.name} initialized")
@@ -123,14 +141,16 @@ class ProductDataValidationAgent:
             "warnings": [],
             "quality_metrics": {},
             "overall_quality_score": 0.0,
-            "validation_passed": False
+            "validation_passed": False,
         }
 
         try:
             # Check 1: Completeness
             completeness_result = await self._check_completeness(product_data)
             validation_report["checks_performed"].append("completeness")
-            validation_report["quality_metrics"]["completeness_score"] = completeness_result["score"]
+            validation_report["quality_metrics"]["completeness_score"] = completeness_result[
+                "score"
+            ]
             validation_report["issues_found"].extend(completeness_result["issues"])
             validation_report["warnings"].extend(completeness_result["warnings"])
 
@@ -154,10 +174,10 @@ class ProductDataValidationAgent:
 
             # Calculate overall quality score
             overall_score = (
-                completeness_result["score"] * 0.4 +  # Completeness most important
-                accuracy_result["score"] * 0.3 +
-                consistency_result["score"] * 0.2 +
-                enrichment_result["score"] * 0.1
+                completeness_result["score"] * 0.4  # Completeness most important
+                + accuracy_result["score"] * 0.3
+                + consistency_result["score"] * 0.2
+                + enrichment_result["score"] * 0.1
             )
 
             validation_report["overall_quality_score"] = round(overall_score, 2)
@@ -166,7 +186,11 @@ class ProductDataValidationAgent:
             validation_report["validation_passed"] = overall_score >= 70.0
 
             # Categorize severity
-            critical_issues = [issue for issue in validation_report["issues_found"] if issue.get("severity") == "critical"]
+            critical_issues = [
+                issue
+                for issue in validation_report["issues_found"]
+                if issue.get("severity") == "critical"
+            ]
             validation_report["critical_issues_count"] = len(critical_issues)
             validation_report["total_issues_count"] = len(validation_report["issues_found"])
             validation_report["warnings_count"] = len(validation_report["warnings"])
@@ -201,28 +225,33 @@ class ProductDataValidationAgent:
             if field in data and data[field] is not None and data[field] != "":
                 present_required += 1
             else:
-                issues.append({
-                    "field": field,
-                    "severity": "critical",
-                    "type": "missing_required_field",
-                    "message": f"Required field '{field}' is missing or empty"
-                })
+                issues.append(
+                    {
+                        "field": field,
+                        "severity": "critical",
+                        "type": "missing_required_field",
+                        "message": f"Required field '{field}' is missing or empty",
+                    }
+                )
 
         # Check recommended fields
         for field in self.recommended_fields:
             if field not in data or data[field] is None or data[field] == "":
-                warnings.append({
-                    "field": field,
-                    "type": "missing_recommended_field",
-                    "message": f"Recommended field '{field}' is missing or empty"
-                })
+                warnings.append(
+                    {
+                        "field": field,
+                        "type": "missing_recommended_field",
+                        "message": f"Recommended field '{field}' is missing or empty",
+                    }
+                )
             else:
                 present_recommended += 1
 
         completeness_score = (
-            (present_required / len(self.required_fields)) * 80 +  # Required fields worth 80%
-            (present_recommended / len(self.recommended_fields)) * 20  # Recommended worth 20%
-        )
+            present_required / len(self.required_fields)
+        ) * 80 + (  # Required fields worth 80%
+            present_recommended / len(self.recommended_fields)
+        ) * 20  # Recommended worth 20%
 
         return {
             "score": round(completeness_score, 2),
@@ -230,8 +259,8 @@ class ProductDataValidationAgent:
             "warnings": warnings,
             "fields_present": {
                 "required": f"{present_required}/{len(self.required_fields)}",
-                "recommended": f"{present_recommended}/{len(self.recommended_fields)}"
-            }
+                "recommended": f"{present_recommended}/{len(self.recommended_fields)}",
+            },
         }
 
     async def _check_accuracy(self, data: Dict) -> Dict[str, Any]:
@@ -249,50 +278,62 @@ class ProductDataValidationAgent:
 
                 # Type check
                 if not isinstance(value, (int, float)):
-                    issues.append({
-                        "field": field,
-                        "severity": "high",
-                        "type": "invalid_type",
-                        "message": f"Field '{field}' should be numeric, got {type(value).__name__}"
-                    })
+                    issues.append(
+                        {
+                            "field": field,
+                            "severity": "high",
+                            "type": "invalid_type",
+                            "message": f"Field '{field}' should be numeric, got {type(value).__name__}",
+                        }
+                    )
                     continue
 
                 # Range checks
                 if field == "price" and (value <= 0 or value > 100000):
-                    issues.append({
-                        "field": field,
-                        "severity": "medium",
-                        "type": "out_of_range",
-                        "message": f"Price {value} seems unrealistic (expected: $0.01 - $100,000)"
-                    })
+                    issues.append(
+                        {
+                            "field": field,
+                            "severity": "medium",
+                            "type": "out_of_range",
+                            "message": f"Price {value} seems unrealistic (expected: $0.01 - $100,000)",
+                        }
+                    )
                 elif field == "composite_score" and (value < 0 or value > 1):
-                    issues.append({
-                        "field": field,
-                        "severity": "high",
-                        "type": "out_of_range",
-                        "message": f"Composite score {value} out of range (expected: 0-1)"
-                    })
+                    issues.append(
+                        {
+                            "field": field,
+                            "severity": "high",
+                            "type": "out_of_range",
+                            "message": f"Composite score {value} out of range (expected: 0-1)",
+                        }
+                    )
                 elif field == "opportunity_score" and (value < 0 or value > 1):
-                    issues.append({
-                        "field": field,
-                        "severity": "high",
-                        "type": "out_of_range",
-                        "message": f"Opportunity score {value} out of range (expected: 0-1)"
-                    })
+                    issues.append(
+                        {
+                            "field": field,
+                            "severity": "high",
+                            "type": "out_of_range",
+                            "message": f"Opportunity score {value} out of range (expected: 0-1)",
+                        }
+                    )
                 elif field == "profit_margin" and (value < 0 or value > 100):
-                    issues.append({
-                        "field": field,
-                        "severity": "medium",
-                        "type": "out_of_range",
-                        "message": f"Profit margin {value}% out of range (expected: 0-100%)"
-                    })
+                    issues.append(
+                        {
+                            "field": field,
+                            "severity": "medium",
+                            "type": "out_of_range",
+                            "message": f"Profit margin {value}% out of range (expected: 0-100%)",
+                        }
+                    )
                 elif field == "rating" and (value < 0 or value > 5):
-                    issues.append({
-                        "field": field,
-                        "severity": "medium",
-                        "type": "out_of_range",
-                        "message": f"Rating {value} out of range (expected: 0-5)"
-                    })
+                    issues.append(
+                        {
+                            "field": field,
+                            "severity": "medium",
+                            "type": "out_of_range",
+                            "message": f"Rating {value} out of range (expected: 0-5)",
+                        }
+                    )
                 else:
                     passed_checks += 1
 
@@ -301,12 +342,14 @@ class ProductDataValidationAgent:
             accuracy_checks += 1
             desc = data["description"]
             if isinstance(desc, str) and len(desc) < 20:
-                issues.append({
-                    "field": "description",
-                    "severity": "medium",
-                    "type": "insufficient_content",
-                    "message": f"Description too short ({len(desc)} chars, expected: 20+)"
-                })
+                issues.append(
+                    {
+                        "field": "description",
+                        "severity": "medium",
+                        "type": "insufficient_content",
+                        "message": f"Description too short ({len(desc)} chars, expected: 20+)",
+                    }
+                )
             else:
                 passed_checks += 1
 
@@ -315,12 +358,14 @@ class ProductDataValidationAgent:
             accuracy_checks += 1
             features = data["features"]
             if isinstance(features, list) and len(features) < 3:
-                issues.append({
-                    "field": "features",
-                    "severity": "low",
-                    "type": "insufficient_content",
-                    "message": f"Only {len(features)} features listed (recommended: 3+)"
-                })
+                issues.append(
+                    {
+                        "field": "features",
+                        "severity": "low",
+                        "type": "insufficient_content",
+                        "message": f"Only {len(features)} features listed (recommended: 3+)",
+                    }
+                )
             else:
                 passed_checks += 1
 
@@ -330,7 +375,7 @@ class ProductDataValidationAgent:
             "score": round(accuracy_score, 2),
             "issues": issues,
             "checks_performed": accuracy_checks,
-            "checks_passed": passed_checks
+            "checks_passed": passed_checks,
         }
 
     async def _check_consistency(self, data: Dict) -> Dict[str, Any]:
@@ -348,12 +393,14 @@ class ProductDataValidationAgent:
 
             # Very high scores should correlate with reasonable pricing
             if score > 0.8 and price < 10:
-                issues.append({
-                    "fields": ["price", "composite_score"],
-                    "severity": "medium",
-                    "type": "inconsistent_values",
-                    "message": f"High opportunity score ({score}) inconsistent with very low price (${price})"
-                })
+                issues.append(
+                    {
+                        "fields": ["price", "composite_score"],
+                        "severity": "medium",
+                        "type": "inconsistent_values",
+                        "message": f"High opportunity score ({score}) inconsistent with very low price (${price})",
+                    }
+                )
             else:
                 passed_checks += 1
 
@@ -366,12 +413,14 @@ class ProductDataValidationAgent:
             successful_agents = metadata.get("successful_agents", 0)
 
             if len(agents_used) != successful_agents:
-                issues.append({
-                    "fields": ["enrichment_metadata"],
-                    "severity": "low",
-                    "type": "inconsistent_metadata",
-                    "message": f"Agents used ({len(agents_used)}) doesn't match successful agents ({successful_agents})"
-                })
+                issues.append(
+                    {
+                        "fields": ["enrichment_metadata"],
+                        "severity": "low",
+                        "type": "inconsistent_metadata",
+                        "message": f"Agents used ({len(agents_used)}) doesn't match successful agents ({successful_agents})",
+                    }
+                )
             else:
                 passed_checks += 1
 
@@ -384,12 +433,14 @@ class ProductDataValidationAgent:
             agents_requested = metadata.get("agents_requested", 0)
 
             if agents_executed > agents_requested:
-                issues.append({
-                    "fields": ["workflow_metadata"],
-                    "severity": "high",
-                    "type": "inconsistent_metadata",
-                    "message": f"More agents executed ({agents_executed}) than requested ({agents_requested})"
-                })
+                issues.append(
+                    {
+                        "fields": ["workflow_metadata"],
+                        "severity": "high",
+                        "type": "inconsistent_metadata",
+                        "message": f"More agents executed ({agents_executed}) than requested ({agents_requested})",
+                    }
+                )
             else:
                 passed_checks += 1
 
@@ -399,7 +450,7 @@ class ProductDataValidationAgent:
             "score": round(consistency_score, 2),
             "issues": issues,
             "checks_performed": consistency_checks,
-            "checks_passed": passed_checks
+            "checks_passed": passed_checks,
         }
 
     async def _check_enrichment_quality(self, data: Dict) -> Dict[str, Any]:
@@ -410,10 +461,12 @@ class ProductDataValidationAgent:
 
         # Check if enrichment metadata exists
         if "enrichment_metadata" not in data:
-            warnings.append({
-                "type": "missing_metadata",
-                "message": "No enrichment metadata found - cannot assess enrichment quality"
-            })
+            warnings.append(
+                {
+                    "type": "missing_metadata",
+                    "message": "No enrichment metadata found - cannot assess enrichment quality",
+                }
+            )
             return {"score": 50.0, "warnings": warnings}
 
         metadata = data["enrichment_metadata"]
@@ -424,10 +477,12 @@ class ProductDataValidationAgent:
             avg_confidence = sum(confidence_scores.values()) / len(confidence_scores)
 
             if avg_confidence < 0.7:
-                warnings.append({
-                    "type": "low_confidence",
-                    "message": f"Average enrichment confidence is low: {avg_confidence:.2f}"
-                })
+                warnings.append(
+                    {
+                        "type": "low_confidence",
+                        "message": f"Average enrichment confidence is low: {avg_confidence:.2f}",
+                    }
+                )
                 quality_score -= 20
 
         # Check agent success rate
@@ -436,31 +491,29 @@ class ProductDataValidationAgent:
         success_rate = (successful_agents / total_agents) * 100
 
         if success_rate < 80:
-            warnings.append({
-                "type": "low_success_rate",
-                "message": f"Only {success_rate:.0f}% of agents succeeded ({successful_agents}/{total_agents})"
-            })
+            warnings.append(
+                {
+                    "type": "low_success_rate",
+                    "message": f"Only {success_rate:.0f}% of agents succeeded ({successful_agents}/{total_agents})",
+                }
+            )
             quality_score -= 30
 
         # Check execution times
         execution_times = metadata.get("execution_times", {})
         if execution_times:
-            slow_agents = [
-                agent for agent, time_sec in execution_times.items()
-                if time_sec > 10
-            ]
+            slow_agents = [agent for agent, time_sec in execution_times.items() if time_sec > 10]
 
             if slow_agents:
-                warnings.append({
-                    "type": "slow_execution",
-                    "message": f"{len(slow_agents)} agent(s) took >10 seconds: {', '.join(slow_agents)}"
-                })
+                warnings.append(
+                    {
+                        "type": "slow_execution",
+                        "message": f"{len(slow_agents)} agent(s) took >10 seconds: {', '.join(slow_agents)}",
+                    }
+                )
                 quality_score -= 10
 
-        return {
-            "score": max(quality_score, 0.0),
-            "warnings": warnings
-        }
+        return {"score": max(quality_score, 0.0), "warnings": warnings}
 
 
 # Global validation agent instance

@@ -34,17 +34,17 @@ class AgentAnalyzer:
             "markdown_specs": 0,
             "rust_agents": 0,
             "protocols_found": set(),
-            "base_classes": defaultdict(int)
+            "base_classes": defaultdict(int),
         }
 
     def analyze_python_agent(self, file_path: Path) -> Dict:
         """Extract metadata from Python agent file"""
         try:
-            with open(file_path, 'r', encoding='utf-8') as f:
+            with open(file_path, "r", encoding="utf-8") as f:
                 content = f.read()
 
             # Extract class name
-            class_match = re.search(r'class\s+(\w+Agent\w*)', content)
+            class_match = re.search(r"class\s+(\w+Agent\w*)", content)
             class_name = class_match.group(1) if class_match else file_path.stem
 
             # Extract docstring
@@ -54,22 +54,22 @@ class AgentAnalyzer:
             # Extract base classes/protocols
             base_classes = []
             if class_match:
-                full_class = re.search(r'class\s+\w+\(([^)]+)\)', content)
+                full_class = re.search(r"class\s+\w+\(([^)]+)\)", content)
                 if full_class:
-                    base_classes = [b.strip() for b in full_class.group(1).split(',')]
+                    base_classes = [b.strip() for b in full_class.group(1).split(",")]
 
             # Extract capabilities/methods
-            methods = re.findall(r'def\s+(\w+)\(', content)
-            capabilities = [m for m in methods if not m.startswith('_')]
+            methods = re.findall(r"def\s+(\w+)\(", content)
+            capabilities = [m for m in methods if not m.startswith("_")]
 
             # Detect protocol usage
             protocols = []
-            if 'ANP' in content or 'AgentNetworkProtocol' in content:
-                protocols.append('ANP')
-            if 'ACP' in content or 'CoordinationProtocol' in content:
-                protocols.append('ACP')
-            if 'BAP' in content or 'BlockchainProtocol' in content:
-                protocols.append('BAP')
+            if "ANP" in content or "AgentNetworkProtocol" in content:
+                protocols.append("ANP")
+            if "ACP" in content or "CoordinationProtocol" in content:
+                protocols.append("ACP")
+            if "BAP" in content or "BlockchainProtocol" in content:
+                protocols.append("BAP")
 
             # Categorize by file name patterns
             category = self._categorize_agent(file_path.stem)
@@ -83,7 +83,7 @@ class AgentAnalyzer:
                 "base_classes": base_classes,
                 "capabilities": capabilities[:10],
                 "protocols": protocols,
-                "line_count": len(content.split('\n'))
+                "line_count": len(content.split("\n")),
             }
 
         except Exception as e:
@@ -93,21 +93,21 @@ class AgentAnalyzer:
                 "type": "python",
                 "category": "unknown",
                 "description": f"Error analyzing: {str(e)}",
-                "error": True
+                "error": True,
             }
 
     def analyze_markdown_spec(self, file_path: Path) -> Dict:
         """Extract metadata from Markdown specification"""
         try:
-            with open(file_path, 'r', encoding='utf-8') as f:
+            with open(file_path, "r", encoding="utf-8") as f:
                 content = f.read()
 
             # Extract title (first # heading)
-            title_match = re.search(r'^#\s+(.+)$', content, re.MULTILINE)
+            title_match = re.search(r"^#\s+(.+)$", content, re.MULTILINE)
             title = title_match.group(1) if title_match else file_path.stem
 
             # Extract description (first paragraph after title)
-            desc_match = re.search(r'^#.+?\n\n(.+?)(?:\n\n|\Z)', content, re.DOTALL | re.MULTILINE)
+            desc_match = re.search(r"^#.+?\n\n(.+?)(?:\n\n|\Z)", content, re.DOTALL | re.MULTILINE)
             description = desc_match.group(1).strip() if desc_match else "No description"
 
             category = self._categorize_agent(file_path.stem)
@@ -118,7 +118,7 @@ class AgentAnalyzer:
                 "type": "markdown",
                 "category": category,
                 "description": description[:200],
-                "line_count": len(content.split('\n'))
+                "line_count": len(content.split("\n")),
             }
 
         except Exception as e:
@@ -128,7 +128,7 @@ class AgentAnalyzer:
                 "type": "markdown",
                 "category": "unknown",
                 "description": f"Error analyzing: {str(e)}",
-                "error": True
+                "error": True,
             }
 
     def _categorize_agent(self, name: str) -> str:
@@ -136,27 +136,164 @@ class AgentAnalyzer:
         name_lower = name.lower()
 
         categories_map = {
-            "infrastructure": ["base_agent", "baseagent", "registry", "factory", "template", "generator", "core", "foundation"],
-            "data": ["data", "collector", "scraper", "extractor", "parser", "ingestion", "etl", "pipeline"],
-            "analysis": ["analyst", "analyzer", "analysis", "insight", "metric", "analytics", "anomaly", "detection", "statistics", "sentiment"],
-            "coordination": ["coordinator", "orchestrator", "manager", "scheduler", "workflow", "task", "job"],
-            "communication": ["messenger", "notifier", "reporter", "publisher", "notification", "alert", "email"],
-            "monitoring": ["monitor", "tracker", "observer", "watcher", "apm", "aiops", "observability", "telemetry", "logging"],
-            "testing": ["test", "validator", "verifier", "qa", "quality", "validation", "verification"],
-            "security": ["security", "auth", "compliance", "audit", "encryption", "permission", "access"],
-            "blockchain": ["blockchain", "wallet", "nft", "token", "contract", "crypto", "defi", "trading", "arbitrage"],
-            "finance": ["financial", "finance", "revenue", "profit", "cost", "budget", "invoice", "payment", "transaction"],
-            "trading": ["trading", "trader", "trade", "market", "price", "portfolio", "risk", "strategy", "autonomous_trading", "autonomous_risk", "autonomous_strategy"],
+            "infrastructure": [
+                "base_agent",
+                "baseagent",
+                "registry",
+                "factory",
+                "template",
+                "generator",
+                "core",
+                "foundation",
+            ],
+            "data": [
+                "data",
+                "collector",
+                "scraper",
+                "extractor",
+                "parser",
+                "ingestion",
+                "etl",
+                "pipeline",
+            ],
+            "analysis": [
+                "analyst",
+                "analyzer",
+                "analysis",
+                "insight",
+                "metric",
+                "analytics",
+                "anomaly",
+                "detection",
+                "statistics",
+                "sentiment",
+            ],
+            "coordination": [
+                "coordinator",
+                "orchestrator",
+                "manager",
+                "scheduler",
+                "workflow",
+                "task",
+                "job",
+            ],
+            "communication": [
+                "messenger",
+                "notifier",
+                "reporter",
+                "publisher",
+                "notification",
+                "alert",
+                "email",
+            ],
+            "monitoring": [
+                "monitor",
+                "tracker",
+                "observer",
+                "watcher",
+                "apm",
+                "aiops",
+                "observability",
+                "telemetry",
+                "logging",
+            ],
+            "testing": [
+                "test",
+                "validator",
+                "verifier",
+                "qa",
+                "quality",
+                "validation",
+                "verification",
+            ],
+            "security": [
+                "security",
+                "auth",
+                "compliance",
+                "audit",
+                "encryption",
+                "permission",
+                "access",
+            ],
+            "blockchain": [
+                "blockchain",
+                "wallet",
+                "nft",
+                "token",
+                "contract",
+                "crypto",
+                "defi",
+                "trading",
+                "arbitrage",
+            ],
+            "finance": [
+                "financial",
+                "finance",
+                "revenue",
+                "profit",
+                "cost",
+                "budget",
+                "invoice",
+                "payment",
+                "transaction",
+            ],
+            "trading": [
+                "trading",
+                "trader",
+                "trade",
+                "market",
+                "price",
+                "portfolio",
+                "risk",
+                "strategy",
+                "autonomous_trading",
+                "autonomous_risk",
+                "autonomous_strategy",
+            ],
             "api": ["api", "endpoint", "service", "client", "rest", "graphql", "http"],
             "ui": ["ui", "ux", "frontend", "interface", "design", "accessibility", "usability"],
             "backend": ["backend", "server", "database", "storage", "db"],
-            "devops": ["deploy", "deployment", "ci", "cd", "build", "docker", "kubernetes", "infrastructure", "automation"],
-            "business": ["business", "sales", "marketing", "customer", "crm", "relationship", "lead"],
-            "research": ["research", "investigation", "discovery", "exploration", "competitive", "market_research"],
+            "devops": [
+                "deploy",
+                "deployment",
+                "ci",
+                "cd",
+                "build",
+                "docker",
+                "kubernetes",
+                "infrastructure",
+                "automation",
+            ],
+            "business": [
+                "business",
+                "sales",
+                "marketing",
+                "customer",
+                "crm",
+                "relationship",
+                "lead",
+            ],
+            "research": [
+                "research",
+                "investigation",
+                "discovery",
+                "exploration",
+                "competitive",
+                "market_research",
+            ],
             "operations": ["operation", "ops", "process", "execution", "runner", "executor"],
-            "ml_ai": ["ml", "machine_learning", "ai", "model", "training", "prediction", "neural", "deep_learning"],
+            "ml_ai": [
+                "ml",
+                "machine_learning",
+                "ai",
+                "model",
+                "training",
+                "prediction",
+                "neural",
+                "deep_learning",
+            ],
             "reporting": ["report", "dashboard", "visualization", "chart", "graph", "presentation"],
-            "integration": ["integration", "connector", "adapter", "bridge", "sync", "webhook"]
+            "integration": ["integration", "connector", "adapter", "bridge", "sync", "webhook"],
         }
 
         for category, keywords in categories_map.items():
@@ -208,7 +345,7 @@ class AgentAnalyzer:
         names = [a["name"] for a in self.agents]
 
         for i, name1 in enumerate(names):
-            for j, name2 in enumerate(names[i+1:], i+1):
+            for j, name2 in enumerate(names[i + 1 :], i + 1):
                 similarity = SequenceMatcher(None, name1.lower(), name2.lower()).ratio()
                 if similarity > 0.85:  # 85% similar
                     self.duplicates[name1].append(name2)
@@ -223,13 +360,13 @@ class AgentAnalyzer:
                 "statistics": {
                     **self.stats,
                     "protocols_found": list(self.stats["protocols_found"]),
-                    "base_classes": dict(self.stats["base_classes"])
-                }
+                    "base_classes": dict(self.stats["base_classes"]),
+                },
             },
-            "agents": sorted(self.agents, key=lambda x: x["name"])
+            "agents": sorted(self.agents, key=lambda x: x["name"]),
         }
 
-        with open(output_path, 'w') as f:
+        with open(output_path, "w") as f:
             json.dump(catalog, f, indent=2)
 
         print(f"\nJSON catalog saved to: {output_path}")
@@ -244,7 +381,7 @@ class AgentAnalyzer:
             f"**Markdown Specifications:** {self.stats['markdown_specs']}",
             "",
             "## Categories",
-            ""
+            "",
         ]
 
         # Category breakdown
@@ -282,21 +419,23 @@ class AgentAnalyzer:
         if self.stats["base_classes"]:
             lines.append("### Base Classes")
             lines.append("")
-            for base_class, count in sorted(self.stats["base_classes"].items(), key=lambda x: -x[1]):
+            for base_class, count in sorted(
+                self.stats["base_classes"].items(), key=lambda x: -x[1]
+            ):
                 lines.append(f"- **{base_class}:** {count} agents")
             lines.append("")
 
-        with open(output_path, 'w', encoding='utf-8') as f:
-            f.write('\n'.join(lines))
+        with open(output_path, "w", encoding="utf-8") as f:
+            f.write("\n".join(lines))
 
         print(f"Markdown catalog saved to: {output_path}")
 
 
 def main():
     """Main execution"""
-    print("\n" + "="*70)
+    print("\n" + "=" * 70)
     print("SuperStandard Agent Analysis & Registry Generator")
-    print("="*70 + "\n")
+    print("=" * 70 + "\n")
 
     base_path = Path(__file__).parent.parent
     analyzer = AgentAnalyzer(base_path)
@@ -315,9 +454,9 @@ def main():
     analyzer.generate_json_catalog(base_path / "AGENT_CATALOG.json")
     analyzer.generate_markdown_catalog(base_path / "AGENT_CATALOG.md")
 
-    print("\n" + "="*70)
+    print("\n" + "=" * 70)
     print("Analysis complete!")
-    print("="*70)
+    print("=" * 70)
     print(f"\nCatalog files created:")
     print("  - AGENT_CATALOG.json (machine-readable)")
     print("  - AGENT_CATALOG.md (human-readable)")

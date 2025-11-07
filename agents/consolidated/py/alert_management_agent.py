@@ -165,7 +165,9 @@ async def main():
     if alerts:
         print(f"\nRecent Alerts (showing first 5):")
         for alert in alerts[:5]:
-            print(f"  [{alert.get('alert_type').upper()}] {alert.get('agent_name')}: {alert.get('message')}")
+            print(
+                f"  [{alert.get('alert_type').upper()}] {alert.get('agent_name')}: {alert.get('message')}"
+            )
 
     print("\n" + "=" * 60)
 

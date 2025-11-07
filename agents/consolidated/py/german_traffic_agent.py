@@ -33,15 +33,15 @@ from datetime import datetime
 import logging
 
 # Add parent directory to path for imports
-sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), '../../..')))
+sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), "../../..")))
 
-from library.core.base_agent import TrafficIntelligenceAgent, register_agent
+from src.superstandard.agents.base.base_agent import TrafficIntelligenceAgent, register_agent
 from library.core.api_budget_manager import APIBudgetManager
 from library.data_sources.traffic_sources import (
     HERETrafficAPI,
     TomTomAPI,
     GoogleMapsAPI,
-    OpenStreetMapAPI
+    OpenStreetMapAPI,
 )
 
 logger = logging.getLogger(__name__)
@@ -74,10 +74,10 @@ class GermanTrafficIntelligenceAgent(TrafficIntelligenceAgent):
         super().__init__(agent_id, config)
         self.region = "Germany"
         self.coverage_area = {
-            'west': 5.866944,   # German western border
-            'east': 15.041667,  # German eastern border
-            'north': 55.0581,   # German northern border (Baltic Sea)
-            'south': 47.2701    # German southern border (Alps)
+            "west": 5.866944,  # German western border
+            "east": 15.041667,  # German eastern border
+            "north": 55.0581,  # German northern border (Baltic Sea)
+            "south": 47.2701,  # German southern border (Alps)
         }
 
         # Data sources (initialized in _configure_data_sources)
@@ -110,7 +110,7 @@ class GermanTrafficIntelligenceAgent(TrafficIntelligenceAgent):
         try:
             # Primary: HERE Maps (best for Germany)
             self.here_api = HERETrafficAPI(priority=1)
-            self.data_sources['here'] = self.here_api
+            self.data_sources["here"] = self.here_api
             logger.info("HERE Maps API configured (primary)")
         except Exception as e:
             logger.warning(f"HERE API configuration failed: {e}")
@@ -118,7 +118,7 @@ class GermanTrafficIntelligenceAgent(TrafficIntelligenceAgent):
         try:
             # Fallback 1: TomTom (strong Europe coverage)
             self.tomtom_api = TomTomAPI(priority=2)
-            self.data_sources['tomtom'] = self.tomtom_api
+            self.data_sources["tomtom"] = self.tomtom_api
             logger.info("TomTom API configured (fallback 1)")
         except Exception as e:
             logger.warning(f"TomTom API configuration failed: {e}")
@@ -126,26 +126,26 @@ class GermanTrafficIntelligenceAgent(TrafficIntelligenceAgent):
         try:
             # Fallback 2: Google Maps (global coverage)
             self.google_api = GoogleMapsAPI(priority=3)
-            self.data_sources['google'] = self.google_api
+            self.data_sources["google"] = self.google_api
             logger.info("Google Maps API configured (fallback 2)")
         except Exception as e:
             logger.warning(f"Google Maps API configuration failed: {e}")
 
         # Fallback 3: OSRM (always available, no API key)
         self.osrm_api = OpenStreetMapAPI(priority=4)
-        self.data_sources['osrm'] = self.osrm_api
+        self.data_sources["osrm"] = self.osrm_api
         logger.info("OpenStreetMap/OSRM configured (fallback 3)")
 
         # Configure automatic fallback chain
         if len(self.data_sources) > 1:
-            sources = sorted(self.data_sources.keys(),
-                           key=lambda x: self.data_sources[x].priority)
+            sources = sorted(self.data_sources.keys(), key=lambda x: self.data_sources[x].priority)
             for i in range(len(sources) - 1):
                 self.fallback_chain[sources[i]] = sources[i + 1]
                 logger.info(f"Fallback configured: {sources[i]} -> {sources[i + 1]}")
 
-    async def get_real_time_traffic(self, area_bounds: Dict[str, float],
-                                    force_budget_override: bool = False) -> Dict[str, Any]:
+    async def get_real_time_traffic(
+        self, area_bounds: Dict[str, float], force_budget_override: bool = False
+    ) -> Dict[str, Any]:
         """
         Get real-time traffic data for specified area
 
@@ -182,8 +182,9 @@ class GermanTrafficIntelligenceAgent(TrafficIntelligenceAgent):
         errors = []
         budget_override_used = False
 
-        for source_name in sorted(self.data_sources.keys(),
-                                 key=lambda x: self.data_sources[x].priority):
+        for source_name in sorted(
+            self.data_sources.keys(), key=lambda x: self.data_sources[x].priority
+        ):
             # BUDGET CHECK: Skip if budget exceeded (unless emergency override)
             if not force_budget_override and not self.budget_manager.can_afford(source_name):
                 logger.warning(f"Budget exceeded for {source_name}, trying next source")
@@ -197,27 +198,27 @@ class GermanTrafficIntelligenceAgent(TrafficIntelligenceAgent):
                 source = self.data_sources[source_name]
                 logger.info(f"Fetching traffic from {source_name} (priority {source.priority})")
 
-                if source_name in ['here', 'tomtom']:
+                if source_name in ["here", "tomtom"]:
                     # These support traffic flow
                     flow_data = await source.get_traffic_flow(bbox)
 
                     # Try to get incidents if HERE
                     incidents = []
-                    if source_name == 'here' and hasattr(source, 'get_traffic_incidents'):
+                    if source_name == "here" and hasattr(source, "get_traffic_incidents"):
                         try:
                             incidents_data = await source.get_traffic_incidents(bbox)
-                            incidents = incidents_data.get('incidents', {}).get('results', [])
+                            incidents = incidents_data.get("incidents", {}).get("results", [])
                         except:
                             pass
 
                     result = {
-                        'source': source_name,
-                        'timestamp': datetime.now().isoformat(),
-                        'flow_data': flow_data,
-                        'incidents': incidents,
-                        'bbox': bbox,
-                        'coverage': 'real-time' if source_name in ['here', 'tomtom'] else 'static',
-                        'budget_override_used': budget_override_used
+                        "source": source_name,
+                        "timestamp": datetime.now().isoformat(),
+                        "flow_data": flow_data,
+                        "incidents": incidents,
+                        "bbox": bbox,
+                        "coverage": "real-time" if source_name in ["here", "tomtom"] else "static",
+                        "budget_override_used": budget_override_used,
                     }
 
                     # TRACK COST: Record successful API call
@@ -226,14 +227,14 @@ class GermanTrafficIntelligenceAgent(TrafficIntelligenceAgent):
                 else:
                     # OSRM or Google - no flow data, note this
                     result = {
-                        'source': source_name,
-                        'timestamp': datetime.now().isoformat(),
-                        'flow_data': None,
-                        'incidents': [],
-                        'bbox': bbox,
-                        'coverage': 'static',
-                        'note': 'No real-time traffic data available from this source',
-                        'budget_override_used': budget_override_used
+                        "source": source_name,
+                        "timestamp": datetime.now().isoformat(),
+                        "flow_data": None,
+                        "incidents": [],
+                        "bbox": bbox,
+                        "coverage": "static",
+                        "note": "No real-time traffic data available from this source",
+                        "budget_override_used": budget_override_used,
                     }
 
                     # TRACK COST: Record successful API call
@@ -251,18 +252,21 @@ class GermanTrafficIntelligenceAgent(TrafficIntelligenceAgent):
         # Log decision for provability
         execution_time = (datetime.now() - start_time).total_seconds() * 1000
         await self._log_decision(
-            input_data={'action': 'get_traffic', 'bbox': bbox},
+            input_data={"action": "get_traffic", "bbox": bbox},
             output_data=result,
             reasoning=f"Used {result['source']} (priority {self.data_sources[result['source']].priority})",
-            execution_time_ms=execution_time
+            execution_time_ms=execution_time,
         )
 
         return result
 
-    async def get_optimal_route(self, origin: Dict[str, float],
-                               destination: Dict[str, float],
-                               options: Optional[Dict[str, Any]] = None,
-                               force_budget_override: bool = False) -> Dict[str, Any]:
+    async def get_optimal_route(
+        self,
+        origin: Dict[str, float],
+        destination: Dict[str, float],
+        options: Optional[Dict[str, Any]] = None,
+        force_budget_override: bool = False,
+    ) -> Dict[str, Any]:
         """
         Calculate optimal route with real-time traffic
 
@@ -293,16 +297,17 @@ class GermanTrafficIntelligenceAgent(TrafficIntelligenceAgent):
         options = options or {}
 
         # Default to real-time traffic
-        if 'departure_time' not in options:
-            options['departure_time'] = 'now'
+        if "departure_time" not in options:
+            options["departure_time"] = "now"
 
         result = None
         errors = []
         budget_override_used = False
 
         # Try data sources in priority order
-        for source_name in sorted(self.data_sources.keys(),
-                                 key=lambda x: self.data_sources[x].priority):
+        for source_name in sorted(
+            self.data_sources.keys(), key=lambda x: self.data_sources[x].priority
+        ):
             # BUDGET CHECK: Skip if budget exceeded (unless emergency override)
             if not force_budget_override and not self.budget_manager.can_afford(source_name):
                 logger.warning(f"Budget exceeded for {source_name}, trying next source")
@@ -321,27 +326,31 @@ class GermanTrafficIntelligenceAgent(TrafficIntelligenceAgent):
                 # Get cost information from budget manager
                 budget = self.budget_manager.budgets.get(source_name)
                 used_free_tier = budget and budget.free_tier_remaining > 0
-                actual_cost = 0.0 if used_free_tier else (budget.cost_per_request if budget else 0.0)
+                actual_cost = (
+                    0.0 if used_free_tier else (budget.cost_per_request if budget else 0.0)
+                )
 
                 result = {
-                    'source': source_name,
-                    'timestamp': datetime.now().isoformat(),
-                    'routes': route_data.get('routes', []),
-                    'origin': origin,
-                    'destination': destination,
-                    'optimization_factors': {
-                        'traffic': 'real-time' if source_name in ['here', 'tomtom', 'google'] else 'static',
-                        'transport_mode': options.get('transport_mode', 'car'),
-                        'departure_time': options.get('departure_time', 'now')
+                    "source": source_name,
+                    "timestamp": datetime.now().isoformat(),
+                    "routes": route_data.get("routes", []),
+                    "origin": origin,
+                    "destination": destination,
+                    "optimization_factors": {
+                        "traffic": (
+                            "real-time" if source_name in ["here", "tomtom", "google"] else "static"
+                        ),
+                        "transport_mode": options.get("transport_mode", "car"),
+                        "departure_time": options.get("departure_time", "now"),
                     },
-                    'cost': {
-                        'amount': actual_cost,
-                        'currency': 'USD',
-                        'source': source_name,
-                        'used_free_tier': used_free_tier,
-                        'free_tier_remaining': budget.free_tier_remaining if budget else 0
+                    "cost": {
+                        "amount": actual_cost,
+                        "currency": "USD",
+                        "source": source_name,
+                        "used_free_tier": used_free_tier,
+                        "free_tier_remaining": budget.free_tier_remaining if budget else 0,
                     },
-                    'budget_override_used': budget_override_used
+                    "budget_override_used": budget_override_used,
                 }
 
                 # TRACK COST: Record successful API call
@@ -358,36 +367,39 @@ class GermanTrafficIntelligenceAgent(TrafficIntelligenceAgent):
 
         # Extract primary route summary for logging
         route_summary = "No routes found"
-        if result['routes']:
-            primary = result['routes'][0]
+        if result["routes"]:
+            primary = result["routes"][0]
             # Handle different API response formats
-            if 'sections' in primary:  # HERE format
-                section = primary['sections'][0]['summary']
+            if "sections" in primary:  # HERE format
+                section = primary["sections"][0]["summary"]
                 route_summary = f"{section['length']}m, {section['duration']}s"
-            elif 'legs' in primary:  # Google format
-                leg = primary['legs'][0]
+            elif "legs" in primary:  # Google format
+                leg = primary["legs"][0]
                 route_summary = f"{leg['distance']['value']}m, {leg['duration']['value']}s"
-            elif 'distance' in primary:  # OSRM format
+            elif "distance" in primary:  # OSRM format
                 route_summary = f"{primary['distance']}m, {primary['duration']}s"
 
         # Log decision for provability
         execution_time = (datetime.now() - start_time).total_seconds() * 1000
         await self._log_decision(
-            input_data={'action': 'route', 'origin': origin, 'destination': destination},
-            output_data={'summary': route_summary, 'source': result['source']},
+            input_data={"action": "route", "origin": origin, "destination": destination},
+            output_data={"summary": route_summary, "source": result["source"]},
             reasoning=f"Optimal route via {result['source']} with real-time traffic",
-            execution_time_ms=execution_time
+            execution_time_ms=execution_time,
         )
 
         return result
 
-    async def get_cost_aware_route(self, origin: Dict[str, float],
-                                   destination: Dict[str, float],
-                                   optimization_preset: str = 'balanced',
-                                   custom_weights: Optional[Dict[str, float]] = None,
-                                   vehicle_type: str = 'car',
-                                   fuel_type: str = 'diesel',
-                                   options: Optional[Dict[str, Any]] = None) -> Dict[str, Any]:
+    async def get_cost_aware_route(
+        self,
+        origin: Dict[str, float],
+        destination: Dict[str, float],
+        optimization_preset: str = "balanced",
+        custom_weights: Optional[Dict[str, float]] = None,
+        vehicle_type: str = "car",
+        fuel_type: str = "diesel",
+        options: Optional[Dict[str, Any]] = None,
+    ) -> Dict[str, Any]:
         """
         Get optimal route using multi-objective optimization (time + cost + CO2)
 
@@ -427,31 +439,32 @@ class GermanTrafficIntelligenceAgent(TrafficIntelligenceAgent):
         start_time = datetime.now()
 
         # Initialize route optimizer
-        optimizer = RouteOptimizer(
-            default_vehicle_type=vehicle_type,
-            default_fuel_type=fuel_type
-        )
+        optimizer = RouteOptimizer(default_vehicle_type=vehicle_type, default_fuel_type=fuel_type)
 
         # Request multiple alternative routes
         options = options or {}
-        options['alternatives'] = options.get('alternatives', 3)  # Request up to 3 alternatives
+        options["alternatives"] = options.get("alternatives", 3)  # Request up to 3 alternatives
 
-        logger.info(f"Requesting alternative routes for cost-aware optimization "
-                   f"(preset: {optimization_preset}, vehicle: {vehicle_type}, fuel: {fuel_type})")
+        logger.info(
+            f"Requesting alternative routes for cost-aware optimization "
+            f"(preset: {optimization_preset}, vehicle: {vehicle_type}, fuel: {fuel_type})"
+        )
 
         # Get routes from traffic API
         route_response = await self.get_optimal_route(origin, destination, options)
 
         # Extract routes and API cost
-        routes = route_response.get('routes', [])
-        api_cost = route_response['cost']['amount']
-        source = route_response['source']
+        routes = route_response.get("routes", [])
+        api_cost = route_response["cost"]["amount"]
+        source = route_response["source"]
 
         if not routes:
             raise Exception("No routes returned from traffic API")
 
-        logger.info(f"Received {len(routes)} route(s) from {source}, "
-                   f"performing multi-objective optimization")
+        logger.info(
+            f"Received {len(routes)} route(s) from {source}, "
+            f"performing multi-objective optimization"
+        )
 
         # API cost is same for all routes (single API call)
         api_costs = [api_cost] * len(routes)
@@ -459,14 +472,20 @@ class GermanTrafficIntelligenceAgent(TrafficIntelligenceAgent):
         # Select optimal route using multi-objective optimization
         if custom_weights:
             best_route, best_metrics, all_metrics = optimizer.select_optimal_route(
-                routes, preferences=custom_weights, api_costs=api_costs,
-                vehicle_type=vehicle_type, fuel_type=fuel_type
+                routes,
+                preferences=custom_weights,
+                api_costs=api_costs,
+                vehicle_type=vehicle_type,
+                fuel_type=fuel_type,
             )
             weights_used = custom_weights
         else:
             best_route, best_metrics, all_metrics = optimizer.select_optimal_route(
-                routes, preset=optimization_preset, api_costs=api_costs,
-                vehicle_type=vehicle_type, fuel_type=fuel_type
+                routes,
+                preset=optimization_preset,
+                api_costs=api_costs,
+                vehicle_type=vehicle_type,
+                fuel_type=fuel_type,
             )
             weights_used = optimizer.PRESETS[optimization_preset]
 
@@ -478,63 +497,62 @@ class GermanTrafficIntelligenceAgent(TrafficIntelligenceAgent):
 
         # Build result
         result = {
-            'selected_route': best_route,
-            'all_routes': routes,
-            'optimization': {
-                'preset': optimization_preset if not custom_weights else 'custom',
-                'weights': weights_used,
-                'metrics': {
-                    'time_minutes': best_metrics.time_minutes,
-                    'distance_km': best_metrics.distance_km,
-                    'total_cost_usd': best_metrics.total_cost_usd,
-                    'fuel_cost_usd': best_metrics.fuel_cost_usd,
-                    'api_cost_usd': best_metrics.api_cost_usd,
-                    'co2_kg': best_metrics.co2_kg,
-                    'combined_score': best_metrics.combined_score
+            "selected_route": best_route,
+            "all_routes": routes,
+            "optimization": {
+                "preset": optimization_preset if not custom_weights else "custom",
+                "weights": weights_used,
+                "metrics": {
+                    "time_minutes": best_metrics.time_minutes,
+                    "distance_km": best_metrics.distance_km,
+                    "total_cost_usd": best_metrics.total_cost_usd,
+                    "fuel_cost_usd": best_metrics.fuel_cost_usd,
+                    "api_cost_usd": best_metrics.api_cost_usd,
+                    "co2_kg": best_metrics.co2_kg,
+                    "combined_score": best_metrics.combined_score,
                 },
-                'explanation': explanation,
-                'comparison': comparison
+                "explanation": explanation,
+                "comparison": comparison,
             },
-            'source': source,
-            'timestamp': datetime.now().isoformat(),
-            'cost': route_response['cost'],
-            'origin': origin,
-            'destination': destination,
-            'vehicle_config': {
-                'type': vehicle_type,
-                'fuel': fuel_type
-            }
+            "source": source,
+            "timestamp": datetime.now().isoformat(),
+            "cost": route_response["cost"],
+            "origin": origin,
+            "destination": destination,
+            "vehicle_config": {"type": vehicle_type, "fuel": fuel_type},
         }
 
         # Log decision for provability
         execution_time = (datetime.now() - start_time).total_seconds() * 1000
         await self._log_decision(
             input_data={
-                'action': 'cost_aware_route',
-                'origin': origin,
-                'destination': destination,
-                'preset': optimization_preset,
-                'vehicle': vehicle_type
+                "action": "cost_aware_route",
+                "origin": origin,
+                "destination": destination,
+                "preset": optimization_preset,
+                "vehicle": vehicle_type,
             },
             output_data={
-                'time_minutes': best_metrics.time_minutes,
-                'total_cost_usd': best_metrics.total_cost_usd,
-                'co2_kg': best_metrics.co2_kg,
-                'source': source
+                "time_minutes": best_metrics.time_minutes,
+                "total_cost_usd": best_metrics.total_cost_usd,
+                "co2_kg": best_metrics.co2_kg,
+                "source": source,
             },
             reasoning=f"Multi-objective optimization ({optimization_preset}): "
-                     f"{explanation['reasoning']}",
-            execution_time_ms=execution_time
+            f"{explanation['reasoning']}",
+            execution_time_ms=execution_time,
         )
 
-        logger.info(f"Cost-aware route selected: {best_metrics.time_minutes:.1f}min, "
-                   f"${best_metrics.total_cost_usd:.2f}, {best_metrics.co2_kg:.2f}kg CO2")
+        logger.info(
+            f"Cost-aware route selected: {best_metrics.time_minutes:.1f}min, "
+            f"${best_metrics.total_cost_usd:.2f}, {best_metrics.co2_kg:.2f}kg CO2"
+        )
 
         return result
 
-    async def predict_travel_time(self, origin: Dict[str, float],
-                                 destination: Dict[str, float],
-                                 departure_time: datetime) -> Dict[str, Any]:
+    async def predict_travel_time(
+        self, origin: Dict[str, float], destination: Dict[str, float], departure_time: datetime
+    ) -> Dict[str, Any]:
         """
         Predict travel time for future departure (uses historical patterns)
 
@@ -557,44 +575,45 @@ class GermanTrafficIntelligenceAgent(TrafficIntelligenceAgent):
         """
         # For now, use routing API with specified departure time
         route = await self.get_optimal_route(
-            origin, destination,
-            options={'departure_time': departure_time.isoformat()}
+            origin, destination, options={"departure_time": departure_time.isoformat()}
         )
 
-        if route['routes']:
-            primary = route['routes'][0]
+        if route["routes"]:
+            primary = route["routes"][0]
             # Extract duration based on API format
             duration = 0
             distance = 0
 
-            if 'sections' in primary:  # HERE
-                summary = primary['sections'][0]['summary']
-                duration = summary['duration']
-                distance = summary['length']
-            elif 'legs' in primary:  # Google
-                leg = primary['legs'][0]
-                duration = leg['duration']['value']
-                distance = leg['distance']['value']
-            elif 'duration' in primary:  # OSRM
-                duration = primary['duration']
-                distance = primary['distance']
+            if "sections" in primary:  # HERE
+                summary = primary["sections"][0]["summary"]
+                duration = summary["duration"]
+                distance = summary["length"]
+            elif "legs" in primary:  # Google
+                leg = primary["legs"][0]
+                duration = leg["duration"]["value"]
+                distance = leg["distance"]["value"]
+            elif "duration" in primary:  # OSRM
+                duration = primary["duration"]
+                distance = primary["distance"]
 
             return {
-                'predicted_duration_seconds': duration,
-                'predicted_distance_meters': distance,
-                'confidence': 0.85,  # Moderate confidence (using API, not ML)
-                'factors': ['current_traffic_patterns', 'historical_averages'],
-                'note': 'Future enhancement: ML-based prediction with German traffic patterns'
+                "predicted_duration_seconds": duration,
+                "predicted_distance_meters": distance,
+                "confidence": 0.85,  # Moderate confidence (using API, not ML)
+                "factors": ["current_traffic_patterns", "historical_averages"],
+                "note": "Future enhancement: ML-based prediction with German traffic patterns",
             }
         else:
             raise Exception("No route found for travel time prediction")
 
     def _is_within_coverage(self, bounds: Dict[str, float]) -> bool:
         """Check if bounds are within German coverage area"""
-        return (bounds['west'] >= self.coverage_area['west'] - 0.5 and
-                bounds['east'] <= self.coverage_area['east'] + 0.5 and
-                bounds['south'] >= self.coverage_area['south'] - 0.5 and
-                bounds['north'] <= self.coverage_area['north'] + 0.5)
+        return (
+            bounds["west"] >= self.coverage_area["west"] - 0.5
+            and bounds["east"] <= self.coverage_area["east"] + 0.5
+            and bounds["south"] >= self.coverage_area["south"] - 0.5
+            and bounds["north"] <= self.coverage_area["north"] + 0.5
+        )
 
     # ========================================================================
     # BASE AGENT ABSTRACT METHOD IMPLEMENTATIONS
@@ -607,7 +626,9 @@ class GermanTrafficIntelligenceAgent(TrafficIntelligenceAgent):
         Called by base class initialize() template method.
         Can be used for loading German road network data, traffic patterns, etc.
         """
-        logger.info(f"German Traffic Agent {self.agent_id} performing region-specific initialization")
+        logger.info(
+            f"German Traffic Agent {self.agent_id} performing region-specific initialization"
+        )
 
         # Future enhancements:
         # - Load German road network topology
@@ -616,10 +637,10 @@ class GermanTrafficIntelligenceAgent(TrafficIntelligenceAgent):
         # - Connect to German traffic management centers
 
         self.status = "initialized"
-        self.metrics['total_executions'] = 0
-        self.metrics['successful_executions'] = 0
-        self.metrics['failed_executions'] = 0
-        self.metrics['avg_execution_time_ms'] = 0.0
+        self.metrics["total_executions"] = 0
+        self.metrics["successful_executions"] = 0
+        self.metrics["failed_executions"] = 0
+        self.metrics["avg_execution_time_ms"] = 0.0
 
     async def _fetch_required_data(self, input_data: Dict[str, Any]) -> Dict[str, Any]:
         """
@@ -632,28 +653,25 @@ class GermanTrafficIntelligenceAgent(TrafficIntelligenceAgent):
         # This method satisfies the base class abstract requirement
         return {}
 
-    async def _execute_logic(self, input_data: Dict[str, Any],
-                            fetched_data: Dict[str, Any]) -> Dict[str, Any]:
+    async def _execute_logic(
+        self, input_data: Dict[str, Any], fetched_data: Dict[str, Any]
+    ) -> Dict[str, Any]:
         """
         Core execution logic (called by base class template method)
 
         Routes to appropriate method based on input_data['action']
         """
-        action = input_data.get('action')
+        action = input_data.get("action")
 
-        if action == 'get_traffic':
-            return await self.get_real_time_traffic(input_data['area_bounds'])
-        elif action == 'route':
+        if action == "get_traffic":
+            return await self.get_real_time_traffic(input_data["area_bounds"])
+        elif action == "route":
             return await self.get_optimal_route(
-                input_data['origin'],
-                input_data['destination'],
-                input_data.get('options')
+                input_data["origin"], input_data["destination"], input_data.get("options")
             )
-        elif action == 'predict':
+        elif action == "predict":
             return await self.predict_travel_time(
-                input_data['origin'],
-                input_data['destination'],
-                input_data['departure_time']
+                input_data["origin"], input_data["destination"], input_data["departure_time"]
             )
         else:
             raise ValueError(f"Unknown action: {action}")
@@ -665,29 +683,32 @@ class GermanTrafficIntelligenceAgent(TrafficIntelligenceAgent):
         Called by base class execute() template method.
         """
         # Basic validation - ensure result has required fields
-        if 'source' not in result:
+        if "source" not in result:
             raise ValueError("Result missing 'source' field")
-        if 'timestamp' not in result:
+        if "timestamp" not in result:
             raise ValueError("Result missing 'timestamp' field")
 
         return result
 
-    async def _log_decision(self, input_data: Dict[str, Any],
-                           output_data: Dict[str, Any],
-                           reasoning: str = "",
-                           execution_time_ms: float = 0.0):
+    async def _log_decision(
+        self,
+        input_data: Dict[str, Any],
+        output_data: Dict[str, Any],
+        reasoning: str = "",
+        execution_time_ms: float = 0.0,
+    ):
         """
         Log decision for provability and audit trail
 
         Called after successful execution. Stores decision with reasoning for auditability.
         """
         decision = {
-            'timestamp': datetime.now().isoformat(),
-            'agent_id': self.agent_id,
-            'input': input_data,
-            'output': output_data,
-            'reasoning': reasoning,
-            'execution_time_ms': execution_time_ms
+            "timestamp": datetime.now().isoformat(),
+            "agent_id": self.agent_id,
+            "input": input_data,
+            "output": output_data,
+            "reasoning": reasoning,
+            "execution_time_ms": execution_time_ms,
         }
 
         self.decision_log.append(decision)
@@ -698,18 +719,20 @@ class GermanTrafficIntelligenceAgent(TrafficIntelligenceAgent):
 
     def _update_metrics(self, status: str, execution_time_ms: float):
         """Update agent metrics"""
-        self.metrics['total_executions'] += 1
+        self.metrics["total_executions"] += 1
 
-        if status == 'success':
-            self.metrics['successful_executions'] += 1
-        elif status == 'error':
-            self.metrics['failed_executions'] += 1
+        if status == "success":
+            self.metrics["successful_executions"] += 1
+        elif status == "error":
+            self.metrics["failed_executions"] += 1
 
         # Update rolling average execution time
         if execution_time_ms > 0:
-            total = self.metrics['total_executions']
-            current_avg = self.metrics['avg_execution_time_ms']
-            self.metrics['avg_execution_time_ms'] = ((current_avg * (total - 1)) + execution_time_ms) / total
+            total = self.metrics["total_executions"]
+            current_avg = self.metrics["avg_execution_time_ms"]
+            self.metrics["avg_execution_time_ms"] = (
+                (current_avg * (total - 1)) + execution_time_ms
+            ) / total
 
     def get_budget_status(self) -> Dict[str, Any]:
         """
@@ -740,8 +763,7 @@ if __name__ == "__main__":
 
         # Create agent
         agent = GermanTrafficIntelligenceAgent(
-            agent_id="test_german_traffic_1",
-            config={'log_decisions': True}
+            agent_id="test_german_traffic_1", config={"log_decisions": True}
         )
 
         # Initialize
@@ -754,17 +776,12 @@ if __name__ == "__main__":
         # Test 1: Get traffic for Hamburg
         print("\n2. Testing real-time traffic for Hamburg...")
         try:
-            hamburg_bounds = {
-                'west': 9.7,
-                'south': 53.4,
-                'east': 10.3,
-                'north': 53.7
-            }
+            hamburg_bounds = {"west": 9.7, "south": 53.4, "east": 10.3, "north": 53.7}
             traffic = await agent.get_real_time_traffic(hamburg_bounds)
             print(f"   [OK] Traffic data fetched from: {traffic['source']}")
             print(f"   [OK] Coverage: {traffic['coverage']}")
             print(f"   [OK] Timestamp: {traffic['timestamp']}")
-            if traffic['incidents']:
+            if traffic["incidents"]:
                 print(f"   [OK] Incidents found: {len(traffic['incidents'])}")
         except Exception as e:
             print(f"   [ERR] Error: {e}")
@@ -773,12 +790,12 @@ if __name__ == "__main__":
         print("\n3. Testing route calculation (Hamburg -> Berlin)...")
         try:
             route = await agent.get_optimal_route(
-                origin={'lat': 53.5511, 'lon': 9.9937},  # Hamburg
-                destination={'lat': 52.5200, 'lon': 13.4050}  # Berlin
+                origin={"lat": 53.5511, "lon": 9.9937},  # Hamburg
+                destination={"lat": 52.5200, "lon": 13.4050},  # Berlin
             )
             print(f"   [OK] Route calculated via: {route['source']}")
             print(f"   [OK] Routes found: {len(route['routes'])}")
-            if route['routes']:
+            if route["routes"]:
                 print(f"   [OK] Traffic consideration: {route['optimization_factors']['traffic']}")
         except Exception as e:
             print(f"   [ERR] Error: {e}")
@@ -787,11 +804,12 @@ if __name__ == "__main__":
         print("\n4. Testing travel time prediction...")
         try:
             from datetime import timedelta
+
             future_time = datetime.now() + timedelta(hours=2)
             prediction = await agent.predict_travel_time(
-                origin={'lat': 53.5511, 'lon': 9.9937},
-                destination={'lat': 52.5200, 'lon': 13.4050},
-                departure_time=future_time
+                origin={"lat": 53.5511, "lon": 9.9937},
+                destination={"lat": 52.5200, "lon": 13.4050},
+                departure_time=future_time,
             )
             print(f"   [OK] Predicted duration: {prediction['predicted_duration_seconds']} seconds")
             print(f"   [OK] Predicted distance: {prediction['predicted_distance_meters']} meters")
@@ -804,7 +822,7 @@ if __name__ == "__main__":
         print(f"   Total executions: {agent.metrics['total_executions']}")
         print(f"   Successful: {agent.metrics['successful_executions']}")
         print(f"   Failed: {agent.metrics['failed_executions']}")
-        if agent.metrics['total_executions'] > 0:
+        if agent.metrics["total_executions"] > 0:
             print(f"   Avg execution time: {agent.metrics['avg_execution_time_ms']:.2f}ms")
 
         # Show budget status

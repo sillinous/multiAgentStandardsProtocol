@@ -43,7 +43,9 @@ class DataEnrichmentTaskAgent(BaseAgent):
     and maximum reusability across APQC categories.
     """
 
-    def __init__(self, agent_id: str = "data_enrichment_task_agent", config: Optional[Dict[str, Any]] = None):
+    def __init__(
+        self, agent_id: str = "data_enrichment_task_agent", config: Optional[Dict[str, Any]] = None
+    ):
         """
         Initialize Data Enrichment Task Agent
 
@@ -54,8 +56,8 @@ class DataEnrichmentTaskAgent(BaseAgent):
         super().__init__(
             agent_id=agent_id,
             agent_type="data_transformation",
-            capabilities=['company_enrichment', 'contact_enrichment', 'geographic_enrichment'],
-            config=config or {}
+            capabilities=["company_enrichment", "contact_enrichment", "geographic_enrichment"],
+            config=config or {},
         )
 
         # Agent-specific initialization
@@ -65,24 +67,24 @@ class DataEnrichmentTaskAgent(BaseAgent):
             "reusable": True,
             "composable": True,
             "stateless": True,
-            "framework": "APQC 7.0.1"
+            "framework": "APQC 7.0.1",
         }
 
         logger.info(f"Initialized Data Enrichment Task Agent [{self.agent_id}]")
 
     async def execute_task(self, task: Dict[str, Any]) -> Dict[str, Any]:
         """
-        Execute the data transformation task
+                Execute the data transformation task
 
-        Args:
-            task: Task parameters containing:
-                - records: list
-- enrichment_rules: dict
+                Args:
+                    task: Task parameters containing:
+                        - records: list
+        - enrichment_rules: dict
 
-        Returns:
-            Result dictionary containing:
-                - enriched_records: list
-- enrichment_stats: dict
+                Returns:
+                    Result dictionary containing:
+                        - enriched_records: list
+        - enrichment_stats: dict
         """
         try:
             logger.info(f"[{self.agent_id}] Executing data_transformation task")
@@ -102,7 +104,7 @@ class DataEnrichmentTaskAgent(BaseAgent):
                 "status": "success",
                 "agent_id": self.agent_id,
                 "timestamp": datetime.utcnow().isoformat(),
-                "result": output
+                "result": output,
             }
 
         except Exception as e:
@@ -111,7 +113,7 @@ class DataEnrichmentTaskAgent(BaseAgent):
                 "status": "error",
                 "agent_id": self.agent_id,
                 "timestamp": datetime.utcnow().isoformat(),
-                "error": str(e)
+                "error": str(e),
             }
 
     def _validate_inputs(self, task: Dict[str, Any]) -> None:
@@ -124,7 +126,7 @@ class DataEnrichmentTaskAgent(BaseAgent):
         Raises:
             ValueError: If required inputs are missing or invalid
         """
-        required_fields = ['records', 'enrichment_rules']
+        required_fields = ["records", "enrichment_rules"]
 
         for field in required_fields:
             if field not in task:
@@ -152,7 +154,7 @@ class DataEnrichmentTaskAgent(BaseAgent):
         result = {
             "executed": True,
             "task_type": "data_transformation",
-            "inputs_received": list(task.keys())
+            "inputs_received": list(task.keys()),
         }
 
         # Simulate async work
@@ -177,8 +179,8 @@ class DataEnrichmentTaskAgent(BaseAgent):
                 "agent_type": self.agent_type,
                 "level": 5,
                 "category": "data_transformation",
-                "timestamp": datetime.utcnow().isoformat()
-            }
+                "timestamp": datetime.utcnow().isoformat(),
+            },
         }
 
     async def handle_message(self, message: Dict[str, Any]) -> Dict[str, Any]:
@@ -200,10 +202,7 @@ class DataEnrichmentTaskAgent(BaseAgent):
         elif message_type == "capabilities":
             return self.get_capabilities()
         else:
-            return {
-                "status": "error",
-                "error": f"Unknown message type: {message_type}"
-            }
+            return {"status": "error", "error": f"Unknown message type: {message_type}"}
 
     def get_status(self) -> Dict[str, Any]:
         """
@@ -217,7 +216,7 @@ class DataEnrichmentTaskAgent(BaseAgent):
             "agent_type": self.agent_type,
             "status": "ready",
             "capabilities": self.capabilities,
-            "metadata": self.metadata
+            "metadata": self.metadata,
         }
 
     def get_capabilities(self) -> Dict[str, Any]:
@@ -230,11 +229,11 @@ class DataEnrichmentTaskAgent(BaseAgent):
         return {
             "agent_id": self.agent_id,
             "capabilities": self.capabilities,
-            "inputs": {'records': 'list', 'enrichment_rules': 'dict'},
-            "outputs": {'enriched_records': 'list', 'enrichment_stats': 'dict'},
+            "inputs": {"records": "list", "enrichment_rules": "dict"},
+            "outputs": {"enriched_records": "list", "enrichment_stats": "dict"},
             "level": 5,
             "reusable": True,
-            "composable": True
+            "composable": True,
         }
 
 
@@ -248,7 +247,7 @@ async def main():
     # Example task
     task = {
         # Add example inputs here
-                # "records": "example_records",
+        # "records": "example_records",
         # "enrichment_rules": "example_enrichment_rules",
     }
 

@@ -48,7 +48,9 @@ class WebhookTriggerTaskAgent(BaseAgent):
     and maximum reusability across APQC categories.
     """
 
-    def __init__(self, agent_id: str = "webhook_trigger_task_agent", config: Optional[Dict[str, Any]] = None):
+    def __init__(
+        self, agent_id: str = "webhook_trigger_task_agent", config: Optional[Dict[str, Any]] = None
+    ):
         """
         Initialize Webhook Trigger Task Agent
 
@@ -59,8 +61,14 @@ class WebhookTriggerTaskAgent(BaseAgent):
         super().__init__(
             agent_id=agent_id,
             agent_type="communication_integration",
-            capabilities=['http_methods', 'custom_headers', 'payload_templating', 'retry_logic', 'signature_generation'],
-            config=config or {}
+            capabilities=[
+                "http_methods",
+                "custom_headers",
+                "payload_templating",
+                "retry_logic",
+                "signature_generation",
+            ],
+            config=config or {},
         )
 
         # Agent-specific initialization
@@ -70,27 +78,27 @@ class WebhookTriggerTaskAgent(BaseAgent):
             "reusable": True,
             "composable": True,
             "stateless": True,
-            "framework": "APQC 7.0.1"
+            "framework": "APQC 7.0.1",
         }
 
         logger.info(f"Initialized Webhook Trigger Task Agent [{self.agent_id}]")
 
     async def execute_task(self, task: Dict[str, Any]) -> Dict[str, Any]:
         """
-        Execute the communication integration task
+                Execute the communication integration task
 
-        Args:
-            task: Task parameters containing:
-                - webhook_url: string
-- payload: dict
-- headers: dict
-- retry_config: dict
+                Args:
+                    task: Task parameters containing:
+                        - webhook_url: string
+        - payload: dict
+        - headers: dict
+        - retry_config: dict
 
-        Returns:
-            Result dictionary containing:
-                - response_status: int
-- response_body: dict
-- delivery_confirmation: bool
+                Returns:
+                    Result dictionary containing:
+                        - response_status: int
+        - response_body: dict
+        - delivery_confirmation: bool
         """
         try:
             logger.info(f"[{self.agent_id}] Executing communication_integration task")
@@ -110,7 +118,7 @@ class WebhookTriggerTaskAgent(BaseAgent):
                 "status": "success",
                 "agent_id": self.agent_id,
                 "timestamp": datetime.utcnow().isoformat(),
-                "result": output
+                "result": output,
             }
 
         except Exception as e:
@@ -119,7 +127,7 @@ class WebhookTriggerTaskAgent(BaseAgent):
                 "status": "error",
                 "agent_id": self.agent_id,
                 "timestamp": datetime.utcnow().isoformat(),
-                "error": str(e)
+                "error": str(e),
             }
 
     def _validate_inputs(self, task: Dict[str, Any]) -> None:
@@ -132,7 +140,7 @@ class WebhookTriggerTaskAgent(BaseAgent):
         Raises:
             ValueError: If required inputs are missing or invalid
         """
-        required_fields = ['webhook_url', 'payload', 'headers', 'retry_config']
+        required_fields = ["webhook_url", "payload", "headers", "retry_config"]
 
         for field in required_fields:
             if field not in task:
@@ -160,7 +168,7 @@ class WebhookTriggerTaskAgent(BaseAgent):
         result = {
             "executed": True,
             "task_type": "communication_integration",
-            "inputs_received": list(task.keys())
+            "inputs_received": list(task.keys()),
         }
 
         # Simulate async work
@@ -185,8 +193,8 @@ class WebhookTriggerTaskAgent(BaseAgent):
                 "agent_type": self.agent_type,
                 "level": 5,
                 "category": "communication_integration",
-                "timestamp": datetime.utcnow().isoformat()
-            }
+                "timestamp": datetime.utcnow().isoformat(),
+            },
         }
 
     async def handle_message(self, message: Dict[str, Any]) -> Dict[str, Any]:
@@ -208,10 +216,7 @@ class WebhookTriggerTaskAgent(BaseAgent):
         elif message_type == "capabilities":
             return self.get_capabilities()
         else:
-            return {
-                "status": "error",
-                "error": f"Unknown message type: {message_type}"
-            }
+            return {"status": "error", "error": f"Unknown message type: {message_type}"}
 
     def get_status(self) -> Dict[str, Any]:
         """
@@ -225,7 +230,7 @@ class WebhookTriggerTaskAgent(BaseAgent):
             "agent_type": self.agent_type,
             "status": "ready",
             "capabilities": self.capabilities,
-            "metadata": self.metadata
+            "metadata": self.metadata,
         }
 
     def get_capabilities(self) -> Dict[str, Any]:
@@ -238,11 +243,20 @@ class WebhookTriggerTaskAgent(BaseAgent):
         return {
             "agent_id": self.agent_id,
             "capabilities": self.capabilities,
-            "inputs": {'webhook_url': 'string', 'payload': 'dict', 'headers': 'dict', 'retry_config': 'dict'},
-            "outputs": {'response_status': 'int', 'response_body': 'dict', 'delivery_confirmation': 'bool'},
+            "inputs": {
+                "webhook_url": "string",
+                "payload": "dict",
+                "headers": "dict",
+                "retry_config": "dict",
+            },
+            "outputs": {
+                "response_status": "int",
+                "response_body": "dict",
+                "delivery_confirmation": "bool",
+            },
             "level": 5,
             "reusable": True,
-            "composable": True
+            "composable": True,
         }
 
 
@@ -256,7 +270,7 @@ async def main():
     # Example task
     task = {
         # Add example inputs here
-                # "webhook_url": "example_webhook_url",
+        # "webhook_url": "example_webhook_url",
         # "payload": "example_payload",
         # "headers": "example_headers",
         # "retry_config": "example_retry_config",

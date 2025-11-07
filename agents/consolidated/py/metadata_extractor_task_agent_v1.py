@@ -46,7 +46,11 @@ class MetadataExtractorTaskAgent(BaseAgent):
     and maximum reusability across APQC categories.
     """
 
-    def __init__(self, agent_id: str = "metadata_extractor_task_agent", config: Optional[Dict[str, Any]] = None):
+    def __init__(
+        self,
+        agent_id: str = "metadata_extractor_task_agent",
+        config: Optional[Dict[str, Any]] = None,
+    ):
         """
         Initialize Metadata Extractor Task Agent
 
@@ -57,8 +61,14 @@ class MetadataExtractorTaskAgent(BaseAgent):
         super().__init__(
             agent_id=agent_id,
             agent_type="content_processing",
-            capabilities=['multiple_formats', 'exif_extraction', 'document_properties', 'custom_schemas', 'bulk_processing'],
-            config=config or {}
+            capabilities=[
+                "multiple_formats",
+                "exif_extraction",
+                "document_properties",
+                "custom_schemas",
+                "bulk_processing",
+            ],
+            config=config or {},
         )
 
         # Agent-specific initialization
@@ -68,25 +78,25 @@ class MetadataExtractorTaskAgent(BaseAgent):
             "reusable": True,
             "composable": True,
             "stateless": True,
-            "framework": "APQC 7.0.1"
+            "framework": "APQC 7.0.1",
         }
 
         logger.info(f"Initialized Metadata Extractor Task Agent [{self.agent_id}]")
 
     async def execute_task(self, task: Dict[str, Any]) -> Dict[str, Any]:
         """
-        Execute the content processing task
+                Execute the content processing task
 
-        Args:
-            task: Task parameters containing:
-                - file_path: string
-- extraction_rules: dict
+                Args:
+                    task: Task parameters containing:
+                        - file_path: string
+        - extraction_rules: dict
 
-        Returns:
-            Result dictionary containing:
-                - metadata: dict
-- file_properties: dict
-- embedded_data: dict
+                Returns:
+                    Result dictionary containing:
+                        - metadata: dict
+        - file_properties: dict
+        - embedded_data: dict
         """
         try:
             logger.info(f"[{self.agent_id}] Executing content_processing task")
@@ -106,7 +116,7 @@ class MetadataExtractorTaskAgent(BaseAgent):
                 "status": "success",
                 "agent_id": self.agent_id,
                 "timestamp": datetime.utcnow().isoformat(),
-                "result": output
+                "result": output,
             }
 
         except Exception as e:
@@ -115,7 +125,7 @@ class MetadataExtractorTaskAgent(BaseAgent):
                 "status": "error",
                 "agent_id": self.agent_id,
                 "timestamp": datetime.utcnow().isoformat(),
-                "error": str(e)
+                "error": str(e),
             }
 
     def _validate_inputs(self, task: Dict[str, Any]) -> None:
@@ -128,7 +138,7 @@ class MetadataExtractorTaskAgent(BaseAgent):
         Raises:
             ValueError: If required inputs are missing or invalid
         """
-        required_fields = ['file_path', 'extraction_rules']
+        required_fields = ["file_path", "extraction_rules"]
 
         for field in required_fields:
             if field not in task:
@@ -156,7 +166,7 @@ class MetadataExtractorTaskAgent(BaseAgent):
         result = {
             "executed": True,
             "task_type": "content_processing",
-            "inputs_received": list(task.keys())
+            "inputs_received": list(task.keys()),
         }
 
         # Simulate async work
@@ -181,8 +191,8 @@ class MetadataExtractorTaskAgent(BaseAgent):
                 "agent_type": self.agent_type,
                 "level": 5,
                 "category": "content_processing",
-                "timestamp": datetime.utcnow().isoformat()
-            }
+                "timestamp": datetime.utcnow().isoformat(),
+            },
         }
 
     async def handle_message(self, message: Dict[str, Any]) -> Dict[str, Any]:
@@ -204,10 +214,7 @@ class MetadataExtractorTaskAgent(BaseAgent):
         elif message_type == "capabilities":
             return self.get_capabilities()
         else:
-            return {
-                "status": "error",
-                "error": f"Unknown message type: {message_type}"
-            }
+            return {"status": "error", "error": f"Unknown message type: {message_type}"}
 
     def get_status(self) -> Dict[str, Any]:
         """
@@ -221,7 +228,7 @@ class MetadataExtractorTaskAgent(BaseAgent):
             "agent_type": self.agent_type,
             "status": "ready",
             "capabilities": self.capabilities,
-            "metadata": self.metadata
+            "metadata": self.metadata,
         }
 
     def get_capabilities(self) -> Dict[str, Any]:
@@ -234,11 +241,11 @@ class MetadataExtractorTaskAgent(BaseAgent):
         return {
             "agent_id": self.agent_id,
             "capabilities": self.capabilities,
-            "inputs": {'file_path': 'string', 'extraction_rules': 'dict'},
-            "outputs": {'metadata': 'dict', 'file_properties': 'dict', 'embedded_data': 'dict'},
+            "inputs": {"file_path": "string", "extraction_rules": "dict"},
+            "outputs": {"metadata": "dict", "file_properties": "dict", "embedded_data": "dict"},
             "level": 5,
             "reusable": True,
-            "composable": True
+            "composable": True,
         }
 
 
@@ -252,7 +259,7 @@ async def main():
     # Example task
     task = {
         # Add example inputs here
-                # "file_path": "example_file_path",
+        # "file_path": "example_file_path",
         # "extraction_rules": "example_extraction_rules",
     }
 

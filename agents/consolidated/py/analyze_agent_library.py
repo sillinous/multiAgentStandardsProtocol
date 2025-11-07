@@ -25,6 +25,7 @@ import json
 @dataclass
 class AgentAnalysis:
     """Analysis result for a single agent"""
+
     file_path: str
     agent_name: str
     agent_class: Optional[str]
@@ -76,7 +77,9 @@ class AgentLibraryAnalyzer:
 
         # Find all Python files
         agent_files = list(self.library_path.rglob("*.py"))
-        agent_files = [f for f in agent_files if not f.name.startswith("__") and "test" not in f.name.lower()]
+        agent_files = [
+            f for f in agent_files if not f.name.startswith("__") and "test" not in f.name.lower()
+        ]
 
         print(f"Found {len(agent_files)} agent files\n")
 
@@ -95,9 +98,9 @@ class AgentLibraryAnalyzer:
     def _analyze_agent_file(self, file_path: Path) -> Optional[AgentAnalysis]:
         """Analyze a single agent file"""
         try:
-            with open(file_path, 'r', encoding='utf-8') as f:
+            with open(file_path, "r", encoding="utf-8") as f:
                 content = f.read()
-                lines = content.split('\n')
+                lines = content.split("\n")
         except:
             return None
 
@@ -124,8 +127,8 @@ class AgentLibraryAnalyzer:
 
         # Check for key components
         has_config_dataclass = "@dataclass" in content and "Config" in content
-        has_execute_method = bool(re.search(r'async def execute\(', content))
-        has_health_check = bool(re.search(r'async def health_check\(', content))
+        has_execute_method = bool(re.search(r"async def execute\(", content))
+        has_health_check = bool(re.search(r"async def health_check\(", content))
         has_input_schema = "get_input_schema" in content
         has_output_schema = "get_output_schema" in content
         has_from_environment = "from_environment" in content
@@ -146,7 +149,7 @@ class AgentLibraryAnalyzer:
 
         # Code quality
         line_count = len(lines)
-        has_todo_comments = len(re.findall(r'# TODO', content, re.IGNORECASE))
+        has_todo_comments = len(re.findall(r"# TODO", content, re.IGNORECASE))
         has_placeholder_impl = "# Placeholder" in content or "pass  # TODO" in content
 
         # Calculate compliance score
@@ -158,7 +161,7 @@ class AgentLibraryAnalyzer:
             has_health_check,
             has_input_schema,
             has_output_schema,
-            has_from_environment
+            has_from_environment,
         ]
         compliance_score = sum(compliance_checks) / len(compliance_checks)
 
@@ -169,7 +172,7 @@ class AgentLibraryAnalyzer:
             line_count > 100,
             has_todo_comments == 0,
             not has_placeholder_impl,
-            agent_class is not None
+            agent_class is not None,
         ]
         completeness_score = sum(completeness_checks) / len(completeness_checks)
 
@@ -203,10 +206,10 @@ class AgentLibraryAnalyzer:
 
         # Production readiness
         is_production_ready = (
-            compliance_score >= 0.9 and
-            completeness_score >= 0.8 and
-            not has_placeholder_impl and
-            has_todo_comments == 0
+            compliance_score >= 0.9
+            and completeness_score >= 0.8
+            and not has_placeholder_impl
+            and has_todo_comments == 0
         )
 
         return AgentAnalysis(
@@ -234,7 +237,7 @@ class AgentLibraryAnalyzer:
             completeness_score=completeness_score,
             is_production_ready=is_production_ready,
             issues=issues,
-            recommendations=recommendations
+            recommendations=recommendations,
         )
 
     def _get_category_from_path(self, file_path: Path) -> str:
@@ -255,10 +258,7 @@ class AgentLibraryAnalyzer:
         total_agents = len(self.agents)
 
         if total_agents == 0:
-            return {
-                "error": "No agents found",
-                "total_agents": 0
-            }
+            return {"error": "No agents found", "total_agents": 0}
 
         # Overall statistics
         production_ready = sum(1 for a in self.agents if a.is_production_ready)
@@ -279,7 +279,7 @@ class AgentLibraryAnalyzer:
                     "total": 0,
                     "production_ready": 0,
                     "avg_compliance": 0,
-                    "agents": []
+                    "agents": [],
                 }
             categories[cat]["total"] += 1
             categories[cat]["production_ready"] += 1 if agent.is_production_ready else 0
@@ -308,9 +308,11 @@ class AgentLibraryAnalyzer:
                 "category": a.category,
                 "compliance": f"{a.compliance_score:.1%}",
                 "completeness": f"{a.completeness_score:.1%}",
-                "issues": len(a.issues)
+                "issues": len(a.issues),
             }
-            for a in sorted(self.agents, key=lambda x: (x.compliance_score, x.completeness_score))[:20]
+            for a in sorted(self.agents, key=lambda x: (x.compliance_score, x.completeness_score))[
+                :20
+            ]
         ]
 
         report = {
@@ -325,13 +327,13 @@ class AgentLibraryAnalyzer:
                 "compliance_breakdown": {
                     "full_compliance (>=90%)": compliance_full,
                     "partial_compliance (50-90%)": compliance_partial,
-                    "low_compliance (<50%)": compliance_none
-                }
+                    "low_compliance (<50%)": compliance_none,
+                },
             },
             "by_category": categories,
             "top_issues": [{"issue": issue, "count": count} for issue, count in top_issues],
             "agents_needing_work": needs_work,
-            "agents_details": [asdict(a) for a in self.agents]
+            "agents_details": [asdict(a) for a in self.agents],
         }
 
         return report
@@ -344,7 +346,9 @@ class AgentLibraryAnalyzer:
 
         summary = report["summary"]
         print(f"\n{summary['total_agents']} total agents found")
-        print(f"Production Ready: {summary['production_ready']} ({summary['production_ready_rate']})")
+        print(
+            f"Production Ready: {summary['production_ready']} ({summary['production_ready_rate']})"
+        )
         print(f"Average Compliance: {summary['avg_compliance_score']}")
         print(f"Average Completeness: {summary['avg_completeness_score']}")
 
@@ -357,18 +361,26 @@ class AgentLibraryAnalyzer:
             print(f"  {item['count']:3d}x - {item['issue']}")
 
         print(f"\nAgents by Category ({len(report['by_category'])} categories):")
-        for cat, data in sorted(report["by_category"].items(), key=lambda x: x[1]["total"], reverse=True)[:10]:
-            print(f"  {cat:30s} - {data['total']:3d} agents ({data['production_ready']:3d} ready, {data['avg_compliance']:.0%} avg compliance)")
+        for cat, data in sorted(
+            report["by_category"].items(), key=lambda x: x[1]["total"], reverse=True
+        )[:10]:
+            print(
+                f"  {cat:30s} - {data['total']:3d} agents ({data['production_ready']:3d} ready, {data['avg_compliance']:.0%} avg compliance)"
+            )
 
         print(f"\nTop 10 Agents Needing Work:")
         for i, agent in enumerate(report["agents_needing_work"][:10], 1):
-            print(f"  {i:2d}. {agent['name']:40s} - C:{agent['compliance']:5s} Comp:{agent['completeness']:5s} ({agent['issues']} issues)")
+            print(
+                f"  {i:2d}. {agent['name']:40s} - C:{agent['compliance']:5s} Comp:{agent['completeness']:5s} ({agent['issues']} issues)"
+            )
 
         print("\n" + "=" * 80)
 
-    def export_to_json(self, report: Dict[str, Any], output_path: str = "agent_library_analysis.json"):
+    def export_to_json(
+        self, report: Dict[str, Any], output_path: str = "agent_library_analysis.json"
+    ):
         """Export report to JSON"""
-        with open(output_path, 'w') as f:
+        with open(output_path, "w") as f:
             json.dump(report, f, indent=2)
         print(f"\nFull report exported to: {output_path}")
 
@@ -413,7 +425,9 @@ def main():
 
     if report["top_issues"]:
         top_issue = report["top_issues"][0]
-        print(f"\n[PRIORITY: HIGH] Most common issue: {top_issue['issue']} ({top_issue['count']} agents)")
+        print(
+            f"\n[PRIORITY: HIGH] Most common issue: {top_issue['issue']} ({top_issue['count']} agents)"
+        )
         print("  Action: Create batch retrofit script to fix this issue across all agents")
 
     low_compliance = summary["compliance_breakdown"].get("low_compliance (<50%)", 0)

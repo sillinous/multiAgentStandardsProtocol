@@ -21,29 +21,40 @@ from sklearn.cluster import DBSCAN
 from sklearn.metrics.pairwise import cosine_similarity
 import pickle
 
-from .apqc_process_framework import APQCProcessFramework, AgentSpecializationLevel, AgentEvolutionStage
+from .apqc_process_framework import (
+    APQCProcessFramework,
+    AgentSpecializationLevel,
+    AgentEvolutionStage,
+)
 from .beyond_enterprise_protocol_engine import (
-    UniversalMessage, ProtocolType, MessagePriority, SecurityLevel,
-    BeyondEnterpriseProtocolEngine
+    UniversalMessage,
+    ProtocolType,
+    MessagePriority,
+    SecurityLevel,
+    BeyondEnterpriseProtocolEngine,
 )
 
 logger = logging.getLogger(__name__)
 
+
 class AgentCapabilityType(Enum):
     """Categories of agent capabilities"""
-    COGNITIVE = "cognitive"           # Reasoning, analysis, decision-making
-    TECHNICAL = "technical"           # Programming, system administration
-    CREATIVE = "creative"             # Content creation, design, innovation
-    ANALYTICAL = "analytical"         # Data analysis, pattern recognition
-    COMMUNICATIVE = "communicative"   # Language, translation, interaction
-    OPERATIONAL = "operational"       # Task execution, process management
-    STRATEGIC = "strategic"           # Planning, strategy, leadership
-    COLLABORATIVE = "collaborative"   # Team coordination, facilitation
-    ADAPTIVE = "adaptive"             # Learning, evolution, optimization
-    EMERGENT = "emergent"             # Capabilities that emerge from collaboration
+
+    COGNITIVE = "cognitive"  # Reasoning, analysis, decision-making
+    TECHNICAL = "technical"  # Programming, system administration
+    CREATIVE = "creative"  # Content creation, design, innovation
+    ANALYTICAL = "analytical"  # Data analysis, pattern recognition
+    COMMUNICATIVE = "communicative"  # Language, translation, interaction
+    OPERATIONAL = "operational"  # Task execution, process management
+    STRATEGIC = "strategic"  # Planning, strategy, leadership
+    COLLABORATIVE = "collaborative"  # Team coordination, facilitation
+    ADAPTIVE = "adaptive"  # Learning, evolution, optimization
+    EMERGENT = "emergent"  # Capabilities that emerge from collaboration
+
 
 class AgentState(Enum):
     """Agent operational states"""
+
     INITIALIZING = "initializing"
     ACTIVE = "active"
     BUSY = "busy"
@@ -56,25 +67,29 @@ class AgentState(Enum):
     TERMINATING = "terminating"
     TRANSCENDENT = "transcendent"
 
+
 class CollaborationPattern(Enum):
     """Patterns of agent collaboration"""
-    HIERARCHICAL = "hierarchical"         # Top-down management
-    PEER_TO_PEER = "peer_to_peer"        # Equal collaboration
-    SWARM = "swarm"                       # Collective intelligence
-    PIPELINE = "pipeline"                 # Sequential processing
-    NETWORK = "network"                   # Interconnected web
-    MESH = "mesh"                         # Fully connected
-    FRACTAL = "fractal"                   # Self-similar structures
-    EMERGENT = "emergent"                 # Self-organizing patterns
+
+    HIERARCHICAL = "hierarchical"  # Top-down management
+    PEER_TO_PEER = "peer_to_peer"  # Equal collaboration
+    SWARM = "swarm"  # Collective intelligence
+    PIPELINE = "pipeline"  # Sequential processing
+    NETWORK = "network"  # Interconnected web
+    MESH = "mesh"  # Fully connected
+    FRACTAL = "fractal"  # Self-similar structures
+    EMERGENT = "emergent"  # Self-organizing patterns
+
 
 @dataclass
 class AgentCapability:
     """Detailed specification of an agent capability"""
+
     capability_id: str
     capability_name: str
     capability_type: AgentCapabilityType
     proficiency_level: float  # 0.0 - 1.0
-    confidence_score: float   # 0.0 - 1.0
+    confidence_score: float  # 0.0 - 1.0
     last_used: str = field(default_factory=lambda: datetime.utcnow().isoformat())
     usage_count: int = 0
     success_rate: float = 1.0
@@ -83,9 +98,11 @@ class AgentCapability:
     enables: List[str] = field(default_factory=list)  # What this capability unlocks
     metadata: Dict[str, Any] = field(default_factory=dict)
 
+
 @dataclass
 class AgentProfile:
     """Comprehensive agent profile for ecosystem management"""
+
     agent_id: str
     agent_name: str
     agent_type: str
@@ -115,7 +132,7 @@ class AgentProfile:
 
     # Evolution and Learning
     parent_agents: List[str] = field(default_factory=list)  # Agents that created this one
-    child_agents: List[str] = field(default_factory=list)   # Agents spawned by this one
+    child_agents: List[str] = field(default_factory=list)  # Agents spawned by this one
     mentor_agents: List[str] = field(default_factory=list)
     mentee_agents: List[str] = field(default_factory=list)
     evolutionary_history: List[Dict[str, Any]] = field(default_factory=list)
@@ -138,7 +155,7 @@ class AgentProfile:
     successful_operations: int = 0
     version: str = "1.0.0"
 
-    def calculate_similarity(self, other: 'AgentProfile') -> float:
+    def calculate_similarity(self, other: "AgentProfile") -> float:
         """Calculate similarity score with another agent"""
         if not self.capability_vector or not other.capability_vector:
             return 0.0
@@ -147,14 +164,14 @@ class AgentProfile:
         similarity = cosine_similarity([self.capability_vector], [other.capability_vector])[0][0]
         return float(similarity)
 
-    def can_collaborate_with(self, other: 'AgentProfile') -> bool:
+    def can_collaborate_with(self, other: "AgentProfile") -> bool:
         """Check if this agent can collaborate with another"""
         # Check trust levels, complementary capabilities, etc.
         return (
-            self.trust_level >= 0.5 and
-            other.trust_level >= 0.5 and
-            self.collaboration_score >= 0.5 and
-            other.collaboration_score >= 0.5
+            self.trust_level >= 0.5
+            and other.trust_level >= 0.5
+            and self.collaboration_score >= 0.5
+            and other.collaboration_score >= 0.5
         )
 
     def estimate_task_fitness(self, task_requirements: List[str]) -> float:
@@ -176,9 +193,11 @@ class AgentProfile:
 
         return (sum(capability_scores) / len(capability_scores)) * workload_factor
 
+
 @dataclass
 class CollaborationSession:
     """Active collaboration between agents"""
+
     session_id: str
     session_name: str
     collaboration_pattern: CollaborationPattern
@@ -211,9 +230,11 @@ class CollaborationSession:
     best_practices_discovered: List[str] = field(default_factory=list)
     process_improvements: List[str] = field(default_factory=list)
 
+
 @dataclass
 class AgentSpawningRequest:
     """Request for spawning new agents"""
+
     request_id: str
     requester_id: str
     spawn_reason: str
@@ -238,6 +259,7 @@ class AgentSpawningRequest:
     # Success Criteria
     success_metrics: List[str] = field(default_factory=list)
     minimum_performance_threshold: float = 0.8
+
 
 class AutonomousAgentOrchestrator:
     """Central orchestrator for autonomous agent ecosystem"""
@@ -278,7 +300,7 @@ class AutonomousAgentOrchestrator:
             "collaborations_formed": 0,
             "tasks_completed": 0,
             "evolution_events": 0,
-            "optimization_cycles": 0
+            "optimization_cycles": 0,
         }
 
     async def initialize(self, protocol_engine: BeyondEnterpriseProtocolEngine) -> bool:
@@ -361,12 +383,15 @@ class AutonomousAgentOrchestrator:
             await self.discovery_engine.index_agent(agent_profile)
 
             # Send registration event
-            await self._send_ecosystem_event("agent_registered", {
-                "agent_id": agent_id,
-                "agent_name": agent_profile.agent_name,
-                "capabilities": list(agent_profile.capabilities.keys()),
-                "specialization_level": agent_profile.specialization_level.value
-            })
+            await self._send_ecosystem_event(
+                "agent_registered",
+                {
+                    "agent_id": agent_id,
+                    "agent_name": agent_profile.agent_name,
+                    "capabilities": list(agent_profile.capabilities.keys()),
+                    "specialization_level": agent_profile.specialization_level.value,
+                },
+            )
 
             logger.info(f"✅ Agent registered: {agent_profile.agent_name} ({agent_id})")
             return True
@@ -393,7 +418,9 @@ class AutonomousAgentOrchestrator:
             logger.error(f"❌ Agent discovery failed: {e}")
             return []
 
-    async def form_collaboration(self, collaboration_request: Dict[str, Any]) -> Optional[CollaborationSession]:
+    async def form_collaboration(
+        self, collaboration_request: Dict[str, Any]
+    ) -> Optional[CollaborationSession]:
         """Form a new collaboration between agents"""
         try:
             # Analyze collaboration requirements
@@ -404,11 +431,13 @@ class AutonomousAgentOrchestrator:
             )
 
             # Discover suitable agents
-            suitable_agents = await self.discover_agents({
-                "capabilities": required_capabilities,
-                "min_collaboration_score": 0.7,
-                "max_workload": 0.8
-            })
+            suitable_agents = await self.discover_agents(
+                {
+                    "capabilities": required_capabilities,
+                    "min_collaboration_score": 0.7,
+                    "max_workload": 0.8,
+                }
+            )
 
             if len(suitable_agents) < 2:
                 logger.warning("⚠️ Insufficient agents for collaboration")
@@ -426,11 +455,13 @@ class AutonomousAgentOrchestrator:
                 collaboration_pattern=collaboration_pattern,
                 participating_agents=[agent.agent_id for agent in selected_agents],
                 primary_objective=collaboration_request.get("objective", ""),
-                success_criteria=requirements.get("success_criteria", [])
+                success_criteria=requirements.get("success_criteria", []),
             )
 
             # Initialize collaboration
-            success = await self.coordination_engine.initialize_collaboration(session, selected_agents)
+            success = await self.coordination_engine.initialize_collaboration(
+                session, selected_agents
+            )
 
             if success:
                 self.active_collaborations[session.session_id] = session
@@ -439,7 +470,7 @@ class AutonomousAgentOrchestrator:
                 # Update collaboration network
                 agent_ids = [agent.agent_id for agent in selected_agents]
                 for i, agent1_id in enumerate(agent_ids):
-                    for agent2_id in agent_ids[i+1:]:
+                    for agent2_id in agent_ids[i + 1 :]:
                         self.collaboration_network.add_edge(agent1_id, agent2_id)
 
                 logger.info(f"🤝 Collaboration formed: {session.session_name}")
@@ -499,9 +530,7 @@ class AutonomousAgentOrchestrator:
         """Trigger comprehensive ecosystem optimization"""
         try:
             optimization_result = await self.ecosystem_optimizer.optimize_ecosystem(
-                self.active_agents,
-                self.active_collaborations,
-                self.apqc_framework
+                self.active_agents, self.active_collaborations, self.apqc_framework
             )
 
             self.orchestration_statistics["optimization_cycles"] += 1
@@ -621,9 +650,16 @@ class AutonomousAgentOrchestrator:
 
         # Standard capability dimensions (can be expanded)
         standard_capabilities = [
-            "strategic_planning", "data_analysis", "content_creation",
-            "technical_implementation", "communication", "project_management",
-            "problem_solving", "innovation", "collaboration", "learning"
+            "strategic_planning",
+            "data_analysis",
+            "content_creation",
+            "technical_implementation",
+            "communication",
+            "project_management",
+            "problem_solving",
+            "innovation",
+            "collaboration",
+            "learning",
         ]
 
         for capability_name in standard_capabilities:
@@ -640,10 +676,10 @@ class AutonomousAgentOrchestrator:
         """Validate agent profile for registration"""
         # Comprehensive validation logic
         return (
-            agent.agent_id and
-            agent.agent_name and
-            agent.capabilities and
-            0.0 <= agent.performance_score <= 1.0
+            agent.agent_id
+            and agent.agent_name
+            and agent.capabilities
+            and 0.0 <= agent.performance_score <= 1.0
         )
 
     async def _send_ecosystem_event(self, event_type: str, event_data: Dict[str, Any]):
@@ -653,7 +689,7 @@ class AutonomousAgentOrchestrator:
                 message_type=f"ecosystem_event.{event_type}",
                 protocol=ProtocolType.A2A,
                 priority=MessagePriority.NORMAL,
-                payload=event_data
+                payload=event_data,
             )
             await self.protocol_engine.send_message(message)
 
@@ -665,7 +701,7 @@ class AutonomousAgentOrchestrator:
             "active_collaborations": len(self.active_collaborations),
             "statistics": self.orchestration_statistics,
             "performance_metrics": await self.performance_analyzer.get_current_metrics(),
-            "ecosystem_health": await self._calculate_ecosystem_health()
+            "ecosystem_health": await self._calculate_ecosystem_health(),
         }
 
     async def _calculate_ecosystem_health(self) -> Dict[str, float]:
@@ -674,8 +710,12 @@ class AutonomousAgentOrchestrator:
             return {"overall_health": 0.0}
 
         # Calculate various health indicators
-        avg_performance = sum(agent.performance_score for agent in self.active_agents.values()) / len(self.active_agents)
-        avg_trust = sum(agent.trust_level for agent in self.active_agents.values()) / len(self.active_agents)
+        avg_performance = sum(
+            agent.performance_score for agent in self.active_agents.values()
+        ) / len(self.active_agents)
+        avg_trust = sum(agent.trust_level for agent in self.active_agents.values()) / len(
+            self.active_agents
+        )
         collaboration_ratio = len(self.active_collaborations) / max(1, len(self.active_agents))
 
         overall_health = (avg_performance + avg_trust + min(1.0, collaboration_ratio)) / 3
@@ -684,10 +724,12 @@ class AutonomousAgentOrchestrator:
             "overall_health": overall_health,
             "average_performance": avg_performance,
             "average_trust": avg_trust,
-            "collaboration_ratio": collaboration_ratio
+            "collaboration_ratio": collaboration_ratio,
         }
 
+
 # Specialized Engine Classes
+
 
 class AgentDiscoveryEngine:
     """Advanced agent discovery and matching engine"""
@@ -699,7 +741,9 @@ class AgentDiscoveryEngine:
     async def initialize(self, redis_client):
         self.redis_client = redis_client
 
-    async def find_matching_agents(self, requirements: Dict[str, Any], available_agents: List[AgentProfile]) -> List[AgentProfile]:
+    async def find_matching_agents(
+        self, requirements: Dict[str, Any], available_agents: List[AgentProfile]
+    ) -> List[AgentProfile]:
         """Find agents matching specific requirements"""
         matching_agents = []
 
@@ -713,8 +757,8 @@ class AgentDiscoveryEngine:
 
             # Check performance and workload constraints
             meets_constraints = (
-                agent.performance_score >= min_performance and
-                agent.current_workload <= max_workload
+                agent.performance_score >= min_performance
+                and agent.current_workload <= max_workload
             )
 
             if capability_match > 0.5 and meets_constraints:
@@ -722,7 +766,9 @@ class AgentDiscoveryEngine:
 
         return matching_agents
 
-    def _calculate_capability_match(self, agent: AgentProfile, required_capabilities: List[str]) -> float:
+    def _calculate_capability_match(
+        self, agent: AgentProfile, required_capabilities: List[str]
+    ) -> float:
         """Calculate how well agent capabilities match requirements"""
         if not required_capabilities:
             return 1.0
@@ -736,22 +782,28 @@ class AgentDiscoveryEngine:
 
         return matches / len(required_capabilities)
 
+
 class CollaborationCoordinator:
     """Manages formation and coordination of agent collaborations"""
 
     async def initialize(self, protocol_engine):
         self.protocol_engine = protocol_engine
 
-    async def select_optimal_team(self, candidates: List[AgentProfile], requirements: Dict[str, Any]) -> List[AgentProfile]:
+    async def select_optimal_team(
+        self, candidates: List[AgentProfile], requirements: Dict[str, Any]
+    ) -> List[AgentProfile]:
         """Select optimal team composition from candidates"""
         # Implement team optimization algorithm
         # For now, return top performers
         return sorted(candidates, key=lambda x: x.performance_score, reverse=True)[:5]
 
-    async def initialize_collaboration(self, session: CollaborationSession, agents: List[AgentProfile]) -> bool:
+    async def initialize_collaboration(
+        self, session: CollaborationSession, agents: List[AgentProfile]
+    ) -> bool:
         """Initialize collaboration session"""
         # Set up communication channels, assign roles, etc.
         return True
+
 
 class AgentSpawningEngine:
     """Manages autonomous agent spawning and creation"""
@@ -759,12 +811,18 @@ class AgentSpawningEngine:
     async def initialize(self, config):
         self.config = config
 
-    async def process_spawning_request(self, request: AgentSpawningRequest, existing_agents: Dict[str, AgentProfile], apqc_framework: APQCProcessFramework) -> Optional[str]:
+    async def process_spawning_request(
+        self,
+        request: AgentSpawningRequest,
+        existing_agents: Dict[str, AgentProfile],
+        apqc_framework: APQCProcessFramework,
+    ) -> Optional[str]:
         """Process agent spawning request"""
         # Implement sophisticated agent spawning logic
         new_agent_id = str(uuid.uuid4())
         logger.info(f"🐣 Spawning new agent: {new_agent_id}")
         return new_agent_id
+
 
 class AgentEvolutionEngine:
     """Manages agent evolution and capability enhancement"""
@@ -772,11 +830,14 @@ class AgentEvolutionEngine:
     async def initialize(self, config):
         self.config = config
 
-    async def evolve_agent(self, agent: AgentProfile, trigger: str, ecosystem_context: Dict[str, AgentProfile]) -> bool:
+    async def evolve_agent(
+        self, agent: AgentProfile, trigger: str, ecosystem_context: Dict[str, AgentProfile]
+    ) -> bool:
         """Evolve agent capabilities based on triggers"""
         # Implement evolution algorithms
         logger.info(f"🧬 Evolving agent: {agent.agent_name} (trigger: {trigger})")
         return True
+
 
 class PerformanceAnalyzer:
     """Analyzes agent and collaboration performance"""
@@ -785,13 +846,16 @@ class PerformanceAnalyzer:
         """Analyze individual agent performance"""
         pass
 
-    async def analyze_collaboration_performance(self, collaborations: Dict[str, CollaborationSession]):
+    async def analyze_collaboration_performance(
+        self, collaborations: Dict[str, CollaborationSession]
+    ):
         """Analyze collaboration effectiveness"""
         pass
 
     async def get_current_metrics(self) -> Dict[str, Any]:
         """Get current performance metrics"""
         return {"placeholder": "metrics"}
+
 
 class CapabilityPredictor:
     """Predicts future capability needs and agent requirements"""
@@ -800,20 +864,30 @@ class CapabilityPredictor:
         """Update capability predictions based on current state"""
         pass
 
+
 class EcosystemOptimizer:
     """Optimizes entire ecosystem for maximum effectiveness"""
 
     async def initialize(self, orchestrator):
         self.orchestrator = orchestrator
 
-    async def optimize_ecosystem(self, agents: Dict[str, AgentProfile], collaborations: Dict[str, CollaborationSession], apqc_framework: APQCProcessFramework) -> Dict[str, Any]:
+    async def optimize_ecosystem(
+        self,
+        agents: Dict[str, AgentProfile],
+        collaborations: Dict[str, CollaborationSession],
+        apqc_framework: APQCProcessFramework,
+    ) -> Dict[str, Any]:
         """Perform comprehensive ecosystem optimization"""
         return {"optimization_score": 0.95}
+
 
 # Global orchestrator instance
 autonomous_orchestrator: Optional[AutonomousAgentOrchestrator] = None
 
-async def initialize_autonomous_orchestrator(config: Dict[str, Any], protocol_engine: BeyondEnterpriseProtocolEngine) -> AutonomousAgentOrchestrator:
+
+async def initialize_autonomous_orchestrator(
+    config: Dict[str, Any], protocol_engine: BeyondEnterpriseProtocolEngine
+) -> AutonomousAgentOrchestrator:
     """Initialize global autonomous orchestrator"""
     global autonomous_orchestrator
 
@@ -822,6 +896,7 @@ async def initialize_autonomous_orchestrator(config: Dict[str, Any], protocol_en
 
     logger.info("🧠 Autonomous Agent Orchestrator ready for Beyond-Enterprise operations")
     return autonomous_orchestrator
+
 
 async def get_autonomous_orchestrator() -> Optional[AutonomousAgentOrchestrator]:
     """Get global orchestrator instance"""

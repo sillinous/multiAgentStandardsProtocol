@@ -28,33 +28,23 @@ class OrchestratorAgent(BaseAgent):
         self,
         agent_id: str = "orchestrator_001",
         workspace_path: str = "./autonomous-ecosystem/workspace",
-        project_root: str = "."
+        project_root: str = ".",
     ):
         super().__init__(
             agent_id=agent_id,
             agent_type="orchestrator",
             capabilities=[AgentCapability.ORCHESTRATION],
-            workspace_path=workspace_path
+            workspace_path=workspace_path,
         )
         self.project_root = project_root
 
         # Initialize agent teams
-        self.testing_team = TestingAgent(
-            workspace_path=workspace_path,
-            project_root=project_root
-        )
-        self.design_team = DesignAgent(
-            workspace_path=workspace_path,
-            project_root=project_root
-        )
+        self.testing_team = TestingAgent(workspace_path=workspace_path, project_root=project_root)
+        self.design_team = DesignAgent(workspace_path=workspace_path, project_root=project_root)
         self.development_team = DevelopmentAgent(
-            workspace_path=workspace_path,
-            project_root=project_root
+            workspace_path=workspace_path, project_root=project_root
         )
-        self.qa_team = QAAgent(
-            workspace_path=workspace_path,
-            project_root=project_root
-        )
+        self.qa_team = QAAgent(workspace_path=workspace_path, project_root=project_root)
 
         # Loop state
         self.loop_running = False
@@ -91,14 +81,14 @@ class OrchestratorAgent(BaseAgent):
         loop_result = {
             "started_at": datetime.now().isoformat(),
             "iterations": [],
-            "final_status": "unknown"
+            "final_status": "unknown",
         }
 
         # Run improvement iterations
         while (
-            self.current_iteration <= self.max_iterations and
-            not self.consensus_reached and
-            self.loop_running
+            self.current_iteration <= self.max_iterations
+            and not self.consensus_reached
+            and self.loop_running
         ):
             print(f"\n{'='*80}")
             print(f"ITERATION {self.current_iteration}")
@@ -136,7 +126,7 @@ class OrchestratorAgent(BaseAgent):
         self.save_artifact(
             ".",
             loop_result,
-            f"improvement_loop_result_{datetime.now().strftime('%Y%m%d_%H%M%S')}.json"
+            f"improvement_loop_result_{datetime.now().strftime('%Y%m%d_%H%M%S')}.json",
         )
 
         return loop_result
@@ -146,7 +136,7 @@ class OrchestratorAgent(BaseAgent):
         iteration_result = {
             "iteration": self.current_iteration,
             "started_at": datetime.now().isoformat(),
-            "phases": {}
+            "phases": {},
         }
 
         # Phase 1: Testing
@@ -252,9 +242,7 @@ class OrchestratorAgent(BaseAgent):
         return implementations
 
     async def _phase_qa(
-        self,
-        implementations: List[Dict[str, Any]],
-        design_specs: Dict[str, Any]
+        self, implementations: List[Dict[str, Any]], design_specs: Dict[str, Any]
     ) -> List[Dict[str, Any]]:
         """Phase 4: QA Review"""
 
@@ -293,7 +281,7 @@ class OrchestratorAgent(BaseAgent):
             "reviews_evaluated": len(qa_reviews),
             "approved": 0,
             "rejected": 0,
-            "needs_rework": []
+            "needs_rework": [],
         }
 
         for review in qa_reviews:
@@ -321,7 +309,7 @@ class OrchestratorAgent(BaseAgent):
             "iteration": self.current_iteration,
             "team_votes": {},
             "consensus_reached": False,
-            "readiness_criteria": {}
+            "readiness_criteria": {},
         }
 
         # Get votes from each team
@@ -343,19 +331,12 @@ class OrchestratorAgent(BaseAgent):
         consensus["readiness_criteria"] = qa_assessment["readiness_criteria"]
 
         # Check overall consensus
-        all_ready = all(
-            vote == "ready"
-            for vote in consensus["team_votes"].values()
-        )
+        all_ready = all(vote == "ready" for vote in consensus["team_votes"].values())
 
         consensus["consensus_reached"] = all_ready
 
         # Save consensus check
-        self.save_artifact(
-            ".",
-            consensus,
-            f"consensus_check_iter_{self.current_iteration}.json"
-        )
+        self.save_artifact(".", consensus, f"consensus_check_iter_{self.current_iteration}.json")
 
         print(f"\n  Team Votes:")
         for team, vote in consensus["team_votes"].items():
@@ -394,8 +375,8 @@ class OrchestratorAgent(BaseAgent):
                 "testing": self.testing_team.get_status(),
                 "design": self.design_team.get_status(),
                 "development": self.development_team.get_status(),
-                "qa": self.qa_team.get_status()
-            }
+                "qa": self.qa_team.get_status(),
+            },
         }
 
     async def analyze_progress(self) -> Dict[str, Any]:
@@ -407,7 +388,7 @@ class OrchestratorAgent(BaseAgent):
             "total_iterations": len(self.iteration_history),
             "issues_found": [],
             "issues_resolved": [],
-            "trend": "unknown"
+            "trend": "unknown",
         }
 
         # Analyze issue trends

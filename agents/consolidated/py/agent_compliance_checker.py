@@ -30,6 +30,7 @@ from enum import Enum
 
 class ComplianceLevel(Enum):
     """Compliance levels"""
+
     FULL = "full"  # 100% compliant
     HIGH = "high"  # 80-99% compliant
     PARTIAL = "partial"  # 50-79% compliant
@@ -40,6 +41,7 @@ class ComplianceLevel(Enum):
 @dataclass
 class ComplianceCheck:
     """Single compliance check result"""
+
     principle: str
     requirement: str
     passed: bool
@@ -50,6 +52,7 @@ class ComplianceCheck:
 @dataclass
 class ComplianceReport:
     """Complete compliance report for an agent"""
+
     agent_file: str
     agent_name: str
     compliance_level: ComplianceLevel
@@ -77,161 +80,161 @@ class AgentComplianceChecker:
                 {
                     "requirement": "Inherits from BaseAgent",
                     "check": "base_agent_inheritance",
-                    "severity": "required"
+                    "severity": "required",
                 },
                 {
                     "requirement": "Has standard lifecycle methods (initialize, execute, shutdown)",
                     "check": "lifecycle_methods",
-                    "severity": "required"
+                    "severity": "required",
                 },
                 {
                     "requirement": "Uses structured logging",
                     "check": "structured_logging",
-                    "severity": "required"
+                    "severity": "required",
                 },
                 {
                     "requirement": "Follows naming conventions",
                     "check": "naming_conventions",
-                    "severity": "recommended"
+                    "severity": "recommended",
                 },
                 {
                     "requirement": "Has version constants",
                     "check": "version_constants",
-                    "severity": "required"
+                    "severity": "required",
                 },
             ],
             "interoperable": [
                 {
                     "requirement": "Includes ProtocolMixin",
                     "check": "protocol_mixin",
-                    "severity": "required"
+                    "severity": "required",
                 },
                 {
                     "requirement": "Supports A2A protocol",
                     "check": "a2a_protocol",
-                    "severity": "required"
+                    "severity": "required",
                 },
                 {
                     "requirement": "Supports ANP protocol (network registration)",
                     "check": "anp_protocol",
-                    "severity": "required"
+                    "severity": "required",
                 },
                 {
                     "requirement": "Standard message formats",
                     "check": "message_formats",
-                    "severity": "recommended"
+                    "severity": "recommended",
                 },
             ],
             "redeployable": [
                 {
                     "requirement": "Environment-based configuration",
                     "check": "env_config",
-                    "severity": "required"
+                    "severity": "required",
                 },
                 {
                     "requirement": "No hardcoded URLs or paths",
                     "check": "no_hardcoded_values",
-                    "severity": "required"
+                    "severity": "required",
                 },
                 {
                     "requirement": "Has health check method",
                     "check": "health_check",
-                    "severity": "required"
+                    "severity": "required",
                 },
                 {
                     "requirement": "Config validation",
                     "check": "config_validation",
-                    "severity": "required"
+                    "severity": "required",
                 },
             ],
             "reusable": [
                 {
                     "requirement": "No project-specific logic",
                     "check": "no_project_specific",
-                    "severity": "required"
+                    "severity": "required",
                 },
                 {
                     "requirement": "Configuration-driven behavior",
                     "check": "config_driven",
-                    "severity": "required"
+                    "severity": "required",
                 },
                 {
                     "requirement": "Has semantic versioning",
                     "check": "semantic_versioning",
-                    "severity": "required"
+                    "severity": "required",
                 },
                 {
                     "requirement": "Comprehensive documentation",
                     "check": "documentation",
-                    "severity": "recommended"
+                    "severity": "recommended",
                 },
             ],
             "atomic": [
                 {
                     "requirement": "Single responsibility",
                     "check": "single_responsibility",
-                    "severity": "required"
+                    "severity": "required",
                 },
                 {
                     "requirement": "Maximum 5-7 capabilities",
                     "check": "capability_count",
-                    "severity": "recommended"
+                    "severity": "recommended",
                 },
                 {
                     "requirement": "Clear, focused purpose",
                     "check": "focused_purpose",
-                    "severity": "required"
+                    "severity": "required",
                 },
             ],
             "composable": [
                 {
                     "requirement": "Compatible input/output interfaces",
                     "check": "io_interfaces",
-                    "severity": "required"
+                    "severity": "required",
                 },
                 {
                     "requirement": "Supports event-driven architecture",
                     "check": "event_driven",
-                    "severity": "recommended"
+                    "severity": "recommended",
                 },
                 {
                     "requirement": "State sharing mechanisms",
                     "check": "state_sharing",
-                    "severity": "recommended"
+                    "severity": "recommended",
                 },
             ],
             "orchestratable": [
                 {
                     "requirement": "Supports ACP protocol",
                     "check": "acp_protocol",
-                    "severity": "required"
+                    "severity": "required",
                 },
                 {
                     "requirement": "State reporting",
                     "check": "state_reporting",
-                    "severity": "required"
+                    "severity": "required",
                 },
                 {
                     "requirement": "Task execution framework",
                     "check": "task_execution",
-                    "severity": "required"
+                    "severity": "required",
                 },
             ],
             "vendor_agnostic": [
                 {
                     "requirement": "No vendor SDK dependencies in core",
                     "check": "no_vendor_sdks",
-                    "severity": "required"
+                    "severity": "required",
                 },
                 {
                     "requirement": "Abstraction layers for external services",
                     "check": "abstraction_layers",
-                    "severity": "required"
+                    "severity": "required",
                 },
                 {
                     "requirement": "Pluggable adapters",
                     "check": "pluggable_adapters",
-                    "severity": "recommended"
+                    "severity": "recommended",
                 },
             ],
         }
@@ -250,7 +253,7 @@ class AgentComplianceChecker:
 
         # Read and parse file
         try:
-            with open(file_path, 'r', encoding='utf-8') as f:
+            with open(file_path, "r", encoding="utf-8") as f:
                 content = f.read()
                 tree = ast.parse(content)
         except Exception as e:
@@ -267,18 +270,13 @@ class AgentComplianceChecker:
         for principle, checks in self.required_checks.items():
             principle_checks = []
             for check_spec in checks:
-                result = self._run_check(
-                    check_spec["check"],
-                    agent_info,
-                    tree,
-                    content
-                )
+                result = self._run_check(check_spec["check"], agent_info, tree, content)
                 check_result = ComplianceCheck(
                     principle=principle,
                     requirement=check_spec["requirement"],
                     passed=result["passed"],
                     details=result["details"],
-                    severity=check_spec["severity"]
+                    severity=check_spec["severity"],
                 )
                 principle_checks.append(check_result)
                 all_checks.append(check_result)
@@ -297,10 +295,10 @@ class AgentComplianceChecker:
                         "requirement": c.requirement,
                         "passed": c.passed,
                         "details": c.details,
-                        "severity": c.severity
+                        "severity": c.severity,
                     }
                     for c in principle_checks
-                ]
+                ],
             }
 
         # Calculate overall score
@@ -323,7 +321,7 @@ class AgentComplianceChecker:
             checks_failed=total - passed,
             checks_total=total,
             principles=principles_results,
-            recommendations=recommendations
+            recommendations=recommendations,
         )
 
         return report
@@ -384,11 +382,7 @@ class AgentComplianceChecker:
         return info
 
     def _run_check(
-        self,
-        check_name: str,
-        agent_info: Dict[str, Any],
-        tree: ast.AST,
-        content: str
+        self, check_name: str, agent_info: Dict[str, Any], tree: ast.AST, content: str
     ) -> Dict[str, Any]:
         """Run a specific compliance check"""
 
@@ -501,8 +495,8 @@ class AgentComplianceChecker:
         """Check for hardcoded values"""
         # Look for common hardcoded patterns
         hardcoded_patterns = [
-            r'https?://(?!localhost)[a-zA-Z0-9.-]+',  # URLs (except localhost)
-            r'/[a-z]+/[a-z]+/[a-z]+',  # Absolute paths
+            r"https?://(?!localhost)[a-zA-Z0-9.-]+",  # URLs (except localhost)
+            r"/[a-z]+/[a-z]+/[a-z]+",  # Absolute paths
         ]
 
         found_hardcoded = []
@@ -547,7 +541,7 @@ class AgentComplianceChecker:
 
     def _check_semantic_versioning(self, info: Dict, tree: ast.AST, content: str) -> Dict:
         """Check for semantic versioning"""
-        version_pattern = r'\d+\.\d+\.\d+'
+        version_pattern = r"\d+\.\d+\.\d+"
         if re.search(version_pattern, content):
             return {"passed": True, "details": "Uses semantic versioning"}
         return {"passed": False, "details": "Missing semantic version"}
@@ -649,9 +643,7 @@ class AgentComplianceChecker:
             return ComplianceLevel.NON_COMPLIANT
 
     def _generate_recommendations(
-        self,
-        checks: List[ComplianceCheck],
-        agent_info: Dict
+        self, checks: List[ComplianceCheck], agent_info: Dict
     ) -> List[str]:
         """Generate recommendations based on failed checks"""
         recommendations = []
@@ -695,7 +687,7 @@ class AgentComplianceChecker:
             checks_failed=0,
             checks_total=0,
             principles={},
-            recommendations=[f"❌ Error: {error}"]
+            recommendations=[f"❌ Error: {error}"],
         )
 
     def print_report(self, report: ComplianceReport):
@@ -710,7 +702,7 @@ class AgentComplianceChecker:
             ComplianceLevel.HIGH: "🟡",
             ComplianceLevel.PARTIAL: "🟠",
             ComplianceLevel.LOW: "🔴",
-            ComplianceLevel.NON_COMPLIANT: "⛔"
+            ComplianceLevel.NON_COMPLIANT: "⛔",
         }
 
         color = level_colors.get(report.compliance_level, "⚪")
@@ -731,7 +723,9 @@ class AgentComplianceChecker:
             print(f"   ({results['passed']}/{results['total']} required checks passed)")
 
             # Show failed checks
-            failed = [c for c in results["checks"] if not c["passed"] and c["severity"] == "required"]
+            failed = [
+                c for c in results["checks"] if not c["passed"] and c["severity"] == "required"
+            ]
             if failed:
                 for check in failed:
                     print(f"   ❌ {check['requirement']}")
@@ -759,10 +753,10 @@ class AgentComplianceChecker:
             "checks_total": report.checks_total,
             "principles": report.principles,
             "recommendations": report.recommendations,
-            "timestamp": report.timestamp
+            "timestamp": report.timestamp,
         }
 
-        with open(output_file, 'w', encoding='utf-8') as f:
+        with open(output_file, "w", encoding="utf-8") as f:
             json.dump(report_dict, f, indent=2)
 
         print(f"\n💾 Report saved to: {output_file}")
@@ -819,8 +813,10 @@ def main():
             checker.print_report(report)
 
         if args.output:
-            output_file = args.output if len(files_to_check) == 1 else args.output.replace(
-                ".json", f"_{report.agent_name}.json"
+            output_file = (
+                args.output
+                if len(files_to_check) == 1
+                else args.output.replace(".json", f"_{report.agent_name}.json")
             )
             checker.save_report(report, output_file)
 

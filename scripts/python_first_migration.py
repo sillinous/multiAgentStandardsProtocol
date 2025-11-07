@@ -21,6 +21,7 @@ from typing import Dict, List
 import re
 import sys
 
+
 class PythonFirstMigration:
     def __init__(self, base_path: Path, dry_run: bool = True):
         self.base_path = base_path
@@ -122,27 +123,27 @@ class PythonFirstMigration:
         catalog = self.load_catalog()
         moved_count = 0
 
-        for agent in catalog['agents']:
-            if agent['type'] != 'python':
+        for agent in catalog["agents"]:
+            if agent["type"] != "python":
                 continue
 
-            source_path = self.base_path / agent['file']
+            source_path = self.base_path / agent["file"]
             if not source_path.exists():
                 continue
 
             # Determine target category
-            category = agent.get('category', 'general')
-            if category == 'general':
-                category = 'infrastructure'  # Default for uncategorized
+            category = agent.get("category", "general")
+            if category == "general":
+                category = "infrastructure"  # Default for uncategorized
             elif category not in self.categories:
                 self.log(f"Unknown category '{category}' for {agent['name']}", "WARNING")
-                category = 'infrastructure'
+                category = "infrastructure"
 
             # Special case: base_agent_v1.py -> base/base_agent.py
             filename = source_path.name
-            if filename == 'base_agent_v1.py':
-                category = 'base'
-                filename = 'base_agent.py'  # Rename to canonical name
+            if filename == "base_agent_v1.py":
+                category = "base"
+                filename = "base_agent.py"  # Rename to canonical name
 
             target_path = self.src_path / "agents" / category / filename
 
@@ -183,7 +184,7 @@ class PythonFirstMigration:
         init_file = path / "__init__.py"
 
         if not self.dry_run:
-            with open(init_file, 'w') as f:
+            with open(init_file, "w") as f:
                 f.write(f'"""{docstring}"""\n')
 
         self.log(f"Created: {init_file.relative_to(self.base_path)}")
@@ -198,17 +199,19 @@ class PythonFirstMigration:
         category_agents = {}
 
         # Group agents by category
-        for agent in catalog['agents']:
-            if agent['type'] != 'python':
+        for agent in catalog["agents"]:
+            if agent["type"] != "python":
                 continue
-            category = agent.get('category', 'infrastructure')
+            category = agent.get("category", "infrastructure")
             if category not in category_agents:
                 category_agents[category] = []
-            category_agents[category].append({
-                'name': agent['name'],
-                'file': agent['file'],
-                'description': agent.get('description', ''),
-            })
+            category_agents[category].append(
+                {
+                    "name": agent["name"],
+                    "file": agent["file"],
+                    "description": agent.get("description", ""),
+                }
+            )
 
         # Create manifest for each category
         for category, agents in category_agents.items():
@@ -218,13 +221,13 @@ class PythonFirstMigration:
             manifest_path = self.src_path / "agents" / category / "MANIFEST.md"
 
             if not self.dry_run:
-                with open(manifest_path, 'w', encoding='utf-8') as f:
+                with open(manifest_path, "w", encoding="utf-8") as f:
                     f.write(f"# {category.title()} Agents\n\n")
                     f.write(f"{self.categories[category]}\n\n")
                     f.write(f"**Total Agents**: {len(agents)}\n\n")
                     f.write("## Agents in this Category\n\n")
-                    for agent in sorted(agents, key=lambda x: x['name']):
-                        desc = agent.get('description', 'No description available')
+                    for agent in sorted(agents, key=lambda x: x["name"]):
+                        desc = agent.get("description", "No description available")
                         desc_preview = desc[:100] if len(desc) > 100 else desc
                         f.write(f"- **{agent['name']}**: {desc_preview}...\n")
 
@@ -264,9 +267,14 @@ class PythonFirstMigration:
 
 def main():
     import argparse
+
     parser = argparse.ArgumentParser(description="Python-First Migration Tool")
-    parser.add_argument('--execute', action='store_true', help="Execute migration (default is dry-run)")
-    parser.add_argument('--dry-run', action='store_true', help="Preview changes without modifying files")
+    parser.add_argument(
+        "--execute", action="store_true", help="Execute migration (default is dry-run)"
+    )
+    parser.add_argument(
+        "--dry-run", action="store_true", help="Preview changes without modifying files"
+    )
     args = parser.parse_args()
 
     # Default to dry-run unless --execute specified

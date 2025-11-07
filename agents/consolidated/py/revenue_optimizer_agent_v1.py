@@ -22,13 +22,10 @@ class RevenueOptimizerAgent:
     def __init__(self, agent_id: str = "revenue_opt_001"):
         self.agent_id = agent_id
         self.agent_type = "revenue_generation"
-        "specialty = "revenue_optimization"
+        self.specialty = "revenue_optimization"
 
     async def identify_revenue_opportunities(
-        self,
-        project_type: str,
-        current_skills: List[str],
-        available_time_hours: int = 10
+        self, project_type: str, current_skills: List[str], available_time_hours: int = 10
     ) -> List[Dict[str, Any]]:
         """
         Identify ALL possible revenue opportunities
@@ -80,7 +77,7 @@ class RevenueOptimizerAgent:
                 "expected_value": 15000,  # $100k * 15%
                 "timeline": "2-4 weeks",
                 "action": "Write research proposal on autonomous agent safety",
-                "roi": 3750  # $15k / 4 hours
+                "roi": 3750,  # $15k / 4 hours
             },
             {
                 "type": "grant",
@@ -91,7 +88,7 @@ class RevenueOptimizerAgent:
                 "expected_value": 2000,  # Worth in credits
                 "timeline": "1 week",
                 "action": "Apply for researcher access program",
-                "roi": 1000
+                "roi": 1000,
             },
             {
                 "type": "cloud_credits",
@@ -102,7 +99,7 @@ class RevenueOptimizerAgent:
                 "expected_value": 50000,
                 "timeline": "2-3 weeks",
                 "action": "Apply with pitch deck",
-                "roi": 16666
+                "roi": 16666,
             },
             {
                 "type": "cloud_credits",
@@ -113,8 +110,8 @@ class RevenueOptimizerAgent:
                 "expected_value": 15000,
                 "timeline": "1-2 weeks",
                 "action": "Apply through AWS Activate program",
-                "roi": 7500
-            }
+                "roi": 7500,
+            },
         ]
 
     def _find_api_opportunities(self, project_type: str) -> List[Dict]:
@@ -129,7 +126,7 @@ class RevenueOptimizerAgent:
                 "expected_monthly": 500,
                 "timeline": "2 weeks",
                 "action": "Expose agents via REST API, add usage metering",
-                "roi": 25  # $500 / 20 hours
+                "roi": 25,  # $500 / 20 hours
             },
             {
                 "type": "api_service",
@@ -139,8 +136,8 @@ class RevenueOptimizerAgent:
                 "expected_monthly": 490,  # 10 customers
                 "timeline": "1 week",
                 "action": "Create API to access your 62 APQC agents",
-                "roi": 49
-            }
+                "roi": 49,
+            },
         ]
 
     def _find_content_opportunities(self) -> List[Dict]:
@@ -155,7 +152,7 @@ class RevenueOptimizerAgent:
                 "expected_monthly": 500,  # 50 subscribers
                 "timeline": "Immediate",
                 "action": "Start weekly newsletter on autonomous agents",
-                "roi": 125  # $500 / 4 hours/week
+                "roi": 125,  # $500 / 4 hours/week
             },
             {
                 "type": "course",
@@ -164,8 +161,8 @@ class RevenueOptimizerAgent:
                 "effort_hours": 40,
                 "expected_monthly": 1000,  # 5 sales/month
                 "timeline": "2 weeks",
-                "action": "Create \"Build Autonomous Agents\" video course",
-                "roi": 25
+                "action": 'Create "Build Autonomous Agents" video course',
+                "roi": 25,
             },
             {
                 "type": "sponsorship",
@@ -175,8 +172,8 @@ class RevenueOptimizerAgent:
                 "expected_monthly": 300,
                 "timeline": "Immediate",
                 "action": "Write 2 high-quality articles per week",
-                "roi": 50
-            }
+                "roi": 50,
+            },
         ]
 
     def _find_partnership_opportunities(self) -> List[Dict]:
@@ -191,7 +188,7 @@ class RevenueOptimizerAgent:
                 "expected_monthly": 200,
                 "timeline": "1 week",
                 "action": "Join affiliate programs, recommend in tutorials",
-                "roi": 40
+                "roi": 40,
             },
             {
                 "type": "integration_partnership",
@@ -201,8 +198,8 @@ class RevenueOptimizerAgent:
                 "expected_monthly": 300,
                 "timeline": "2 weeks",
                 "action": "Build integrations, co-market",
-                "roi": 20
-            }
+                "roi": 20,
+            },
         ]
 
     def _find_product_opportunities(self, project_type: str) -> List[Dict]:
@@ -217,7 +214,7 @@ class RevenueOptimizerAgent:
                 "expected_monthly": 300,  # 10 sales
                 "timeline": "3 days",
                 "action": "Package your 62 agents as templates",
-                "roi": 37.5
+                "roi": 37.5,
             },
             {
                 "type": "boilerplate",
@@ -227,7 +224,7 @@ class RevenueOptimizerAgent:
                 "expected_monthly": 490,  # 10 sales
                 "timeline": "1 week",
                 "action": "Create starter kit with docs + examples",
-                "roi": 40.8
+                "roi": 40.8,
             },
             {
                 "type": "plugin",
@@ -237,8 +234,8 @@ class RevenueOptimizerAgent:
                 "expected_monthly": 200,
                 "timeline": "2 weeks",
                 "action": "Build VS Code extension for agent development",
-                "roi": 6.6
-            }
+                "roi": 6.6,
+            },
         ]
 
     def _find_service_opportunities(self, skills: List[str]) -> List[Dict]:
@@ -253,7 +250,7 @@ class RevenueOptimizerAgent:
                 "expected_monthly": 800,  # 4 clients
                 "timeline": "Immediate",
                 "action": "Offer on LinkedIn/Twitter",
-                "roi": 133
+                "roi": 133,
             },
             {
                 "type": "implementation",
@@ -263,8 +260,8 @@ class RevenueOptimizerAgent:
                 "expected_monthly": 3000,  # 1 project every 2 months
                 "timeline": "1 week to first client",
                 "action": "Package as service offering",
-                "roi": 150
-            }
+                "roi": 150,
+            },
         ]
 
     def _find_early_access_opportunities(self) -> List[Dict]:
@@ -279,7 +276,7 @@ class RevenueOptimizerAgent:
                 "expected_monthly": 490,  # 10 beta users
                 "timeline": "3 days",
                 "action": "Create beta program with exclusive features",
-                "roi": 49
+                "roi": 49,
             },
             {
                 "type": "lifetime_deal",
@@ -289,8 +286,8 @@ class RevenueOptimizerAgent:
                 "expected_monthly": 1500,  # 5 purchases
                 "timeline": "2 days",
                 "action": "Offer on Product Hunt",
-                "roi": 300
-            }
+                "roi": 300,
+            },
         ]
 
     def _find_sponsorship_opportunities(self) -> List[Dict]:
@@ -305,7 +302,7 @@ class RevenueOptimizerAgent:
                 "expected_monthly": 100,  # Early sponsors
                 "timeline": "Immediate",
                 "action": "Enable GitHub Sponsors",
-                "roi": 50
+                "roi": 50,
             },
             {
                 "type": "open_collective",
@@ -315,15 +312,11 @@ class RevenueOptimizerAgent:
                 "expected_monthly": 200,
                 "timeline": "1 week",
                 "action": "Set up Open Collective for project",
-                "roi": 66
-            }
+                "roi": 66,
+            },
         ]
 
-    def _rank_by_roi(
-        self,
-        opportunities: List[Dict],
-        available_hours: int
-    ) -> List[Dict]:
+    def _rank_by_roi(self, opportunities: List[Dict], available_hours: int) -> List[Dict]:
         """
         Rank opportunities by ROI and filter by available time
 
@@ -346,10 +339,7 @@ class RevenueOptimizerAgent:
         return filtered
 
     async def optimize_pricing(
-        self,
-        product: str,
-        target_customer: str,
-        competitor_prices: List[float] = None
+        self, product: str, target_customer: str, competitor_prices: List[float] = None
     ) -> Dict[str, Any]:
         """
         Optimize pricing strategy
@@ -370,67 +360,57 @@ class RevenueOptimizerAgent:
                     "name": "Free",
                     "price": 0,
                     "features": ["Core agents", "Community support"],
-                    "goal": "Acquire users, build awareness"
+                    "goal": "Acquire users, build awareness",
                 },
                 {
                     "name": "Pro",
                     "price": 49,  # Just under $50 psychological barrier
                     "features": ["All agents", "Priority support", "API access"],
-                    "goal": "Primary revenue driver"
+                    "goal": "Primary revenue driver",
                 },
                 {
                     "name": "Team",
                     "price": 149,
                     "features": ["Pro + Multi-user", "Advanced analytics", "Custom agents"],
-                    "goal": "Higher ACV"
+                    "goal": "Higher ACV",
                 },
                 {
                     "name": "Enterprise",
                     "price": "Custom",
                     "features": ["Everything + On-premise", "Dedicated support", "SLA"],
-                    "goal": "Large contracts"
-                }
+                    "goal": "Large contracts",
+                },
             ],
-
             "psychological_tactics": [
                 "Use $49 instead of $50 (charm pricing)",
                 "Anchor with high tier first",
                 "Show savings on annual plans",
-                "Add 'Most Popular' badge to preferred tier"
+                "Add 'Most Popular' badge to preferred tier",
             ],
-
             "optimization_tests": [
                 {"test": "Price points", "variants": [39, 49, 59]},
                 {"test": "Trial length", "variants": ["7 days", "14 days", "30 days"]},
-                {"test": "Annual discount", "variants": ["20%", "30%", "40%"]}
+                {"test": "Annual discount", "variants": ["20%", "30%", "40%"]},
             ],
-
             "revenue_projection": {
                 "free_to_pro_conversion": 0.05,  # 5%
                 "pro_to_team_conversion": 0.1,  # 10%
                 "annual_vs_monthly": 0.3,  # 30% choose annual
                 "estimated_arpu": 49 * 0.9,  # Average revenue per user
-                "estimated_ltv": 49 * 12 * 2  # 2 year customer lifetime
-            }
+                "estimated_ltv": 49 * 12 * 2,  # 2 year customer lifetime
+            },
         }
 
         return pricing
 
-    async def track_roi(
-        self,
-        activities: List[Dict[str, Any]]
-    ) -> Dict[str, Any]:
+    async def track_roi(self, activities: List[Dict[str, Any]]) -> Dict[str, Any]:
         """
         Track ROI across all activities
 
         Helps decide what to double down on and what to stop
         """
 
-        roi_analysis = {
-            "by_activity": {},
-            "by_channel": {},
-            "recommendations": []
-        }
+        roi_analysis = {"by_activity": {}, "by_channel": {}, "recommendations": []}
 
         for activity in activities:
             activity_name = activity.get("name")
@@ -443,7 +423,7 @@ class RevenueOptimizerAgent:
                 "time_spent": time_spent,
                 "revenue": revenue_generated,
                 "roi": roi,
-                "rating": self._rate_roi(roi)
+                "rating": self._rate_roi(roi),
             }
 
         # Generate recommendations
@@ -464,10 +444,7 @@ class RevenueOptimizerAgent:
         else:
             return "poor"
 
-    def _generate_optimization_recommendations(
-        self,
-        activity_data: Dict
-    ) -> List[str]:
+    def _generate_optimization_recommendations(self, activity_data: Dict) -> List[str]:
         """Generate recommendations based on ROI data"""
 
         recommendations = []
@@ -484,10 +461,7 @@ class RevenueOptimizerAgent:
 
         return recommendations
 
-    async def find_quick_wins(
-        self,
-        available_hours: int = 4
-    ) -> List[Dict[str, Any]]:
+    async def find_quick_wins(self, available_hours: int = 4) -> List[Dict[str, Any]]:
         """
         Find revenue opportunities achievable in < 4 hours
 
@@ -502,8 +476,8 @@ class RevenueOptimizerAgent:
                 "steps": [
                     "Go to github.com/sponsors",
                     "Fill out profile",
-                    "Add sponsor button to repos"
-                ]
+                    "Add sponsor button to repos",
+                ],
             },
             {
                 "action": "Write Medium article",
@@ -512,18 +486,14 @@ class RevenueOptimizerAgent:
                 "steps": [
                     "Write about building autonomous agents",
                     "Publish on Medium",
-                    "Share on Twitter, LinkedIn, Reddit"
-                ]
+                    "Share on Twitter, LinkedIn, Reddit",
+                ],
             },
             {
                 "action": "Apply for OpenAI credits",
                 "hours": 0.5,
                 "potential_value": 2000,
-                "steps": [
-                    "Go to openai.com/research",
-                    "Fill out researcher access form",
-                    "Submit"
-                ]
+                "steps": ["Go to openai.com/research", "Fill out researcher access form", "Submit"],
             },
             {
                 "action": "Create Gumroad product",
@@ -533,9 +503,9 @@ class RevenueOptimizerAgent:
                     "Package 62 agents as downloadable templates",
                     "Create Gumroad listing",
                     "Price at $29",
-                    "Share link on social media"
-                ]
-            }
+                    "Share link on social media",
+                ],
+            },
         ]
 
         # Filter to fit in available hours
@@ -562,9 +532,9 @@ REVENUE_OPTIMIZER_BLUEPRINT = {
         "pricing_optimization",
         "roi_tracking",
         "grant_finding",
-        "partnership_discovery"
+        "partnership_discovery",
     ],
     "revenue_contribution": "critical",
     "autonomy_level": 0.95,
-    "description": "Finds and maximizes all revenue opportunities"
+    "description": "Finds and maximizes all revenue opportunities",
 }

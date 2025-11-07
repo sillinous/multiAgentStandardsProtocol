@@ -21,29 +21,35 @@ from collections import defaultdict, Counter
 
 logger = logging.getLogger(__name__)
 
+
 class ArchitecturalViolationType(Enum):
     """Types of architectural violations following APQC IT architecture standards"""
-    LAYERING_VIOLATION = "layering_violation"           # 11.2.1.1 - Define architecture layers
-    CIRCULAR_DEPENDENCY = "circular_dependency"         # 11.2.1.2 - Manage dependencies
-    TIGHT_COUPLING = "tight_coupling"                   # 11.2.1.3 - Ensure loose coupling
-    SINGLE_RESPONSIBILITY = "single_responsibility"     # 11.2.1.4 - Design cohesive components
-    INTERFACE_SEGREGATION = "interface_segregation"     # 11.2.1.5 - Define clean interfaces
-    DEPENDENCY_INVERSION = "dependency_inversion"       # 11.2.1.6 - Manage abstractions
-    OPEN_CLOSED = "open_closed"                        # 11.2.1.7 - Design extensible systems
-    SECURITY_ARCHITECTURE = "security_architecture"    # 11.2.4.1 - Integrate security by design
-    PERFORMANCE_ARCHITECTURE = "performance_architecture" # 11.2.3.1 - Design for performance
-    SCALABILITY_PATTERN = "scalability_pattern"        # 11.2.3.2 - Design for scale
+
+    LAYERING_VIOLATION = "layering_violation"  # 11.2.1.1 - Define architecture layers
+    CIRCULAR_DEPENDENCY = "circular_dependency"  # 11.2.1.2 - Manage dependencies
+    TIGHT_COUPLING = "tight_coupling"  # 11.2.1.3 - Ensure loose coupling
+    SINGLE_RESPONSIBILITY = "single_responsibility"  # 11.2.1.4 - Design cohesive components
+    INTERFACE_SEGREGATION = "interface_segregation"  # 11.2.1.5 - Define clean interfaces
+    DEPENDENCY_INVERSION = "dependency_inversion"  # 11.2.1.6 - Manage abstractions
+    OPEN_CLOSED = "open_closed"  # 11.2.1.7 - Design extensible systems
+    SECURITY_ARCHITECTURE = "security_architecture"  # 11.2.4.1 - Integrate security by design
+    PERFORMANCE_ARCHITECTURE = "performance_architecture"  # 11.2.3.1 - Design for performance
+    SCALABILITY_PATTERN = "scalability_pattern"  # 11.2.3.2 - Design for scale
+
 
 class ArchitecturalPatternCompliance(Enum):
     """Compliance levels for architectural patterns"""
+
     COMPLIANT = "compliant"
     MINOR_DEVIATION = "minor_deviation"
     SIGNIFICANT_VIOLATION = "significant_violation"
     CRITICAL_VIOLATION = "critical_violation"
 
+
 @dataclass
 class ArchitecturalComponent:
     """Representation of an architectural component"""
+
     name: str
     type: str  # module, class, function, service
     file_path: str
@@ -55,9 +61,11 @@ class ArchitecturalComponent:
     security_implications: List[str]
     performance_characteristics: Dict[str, Any]
 
+
 @dataclass
 class ArchitecturalViolation:
     """Individual architectural violation with detailed analysis"""
+
     id: str
     violation_type: ArchitecturalViolationType
     severity: str  # critical, high, medium, low
@@ -74,9 +82,11 @@ class ArchitecturalViolation:
     detected_at: datetime
     apqc_process_reference: str
 
+
 @dataclass
 class ArchitecturalMetrics:
     """Comprehensive architectural quality metrics"""
+
     total_components: int
     dependency_count: int
     cyclic_dependencies: int
@@ -87,6 +97,7 @@ class ArchitecturalMetrics:
     modularity_score: float
     maintainability_index: float
     architectural_debt_ratio: float
+
 
 class ArchitectureReviewAgent:
     """
@@ -110,23 +121,23 @@ class ArchitectureReviewAgent:
             "presentation": {
                 "patterns": ["api", "endpoints", "routes", "controllers"],
                 "allowed_dependencies": ["business", "data"],
-                "description": "User interface and API layer"
+                "description": "User interface and API layer",
             },
             "business": {
                 "patterns": ["services", "domain", "core", "logic"],
                 "allowed_dependencies": ["data", "infrastructure"],
-                "description": "Business logic and domain models"
+                "description": "Business logic and domain models",
             },
             "data": {
                 "patterns": ["models", "repositories", "database", "crud"],
                 "allowed_dependencies": ["infrastructure"],
-                "description": "Data access and persistence layer"
+                "description": "Data access and persistence layer",
             },
             "infrastructure": {
                 "patterns": ["config", "logging", "monitoring", "external"],
                 "allowed_dependencies": [],
-                "description": "Cross-cutting concerns and external integrations"
-            }
+                "description": "Cross-cutting concerns and external integrations",
+            },
         }
 
     def _initialize_architectural_patterns(self) -> Dict[str, Dict]:
@@ -135,23 +146,23 @@ class ArchitectureReviewAgent:
             "mvc_pattern": {
                 "description": "Model-View-Controller architectural pattern",
                 "required_separation": ["models", "views", "controllers"],
-                "violation_indicators": ["mixed_concerns", "tight_coupling"]
+                "violation_indicators": ["mixed_concerns", "tight_coupling"],
             },
             "clean_architecture": {
                 "description": "Clean Architecture principles",
                 "dependency_rules": ["inward_dependencies_only"],
-                "violation_indicators": ["outward_dependencies", "framework_coupling"]
+                "violation_indicators": ["outward_dependencies", "framework_coupling"],
             },
             "microservices": {
                 "description": "Microservices architectural patterns",
                 "required_patterns": ["service_independence", "api_contracts"],
-                "violation_indicators": ["shared_databases", "synchronous_coupling"]
+                "violation_indicators": ["shared_databases", "synchronous_coupling"],
             },
             "event_driven": {
                 "description": "Event-driven architecture patterns",
                 "required_patterns": ["event_producers", "event_consumers", "message_bus"],
-                "violation_indicators": ["direct_service_calls", "tight_temporal_coupling"]
-            }
+                "violation_indicators": ["direct_service_calls", "tight_temporal_coupling"],
+            },
         }
 
     async def analyze_architecture(self) -> Dict[str, Any]:
@@ -189,7 +200,7 @@ class ArchitectureReviewAgent:
             "layer_compliance": await self._analyze_layer_compliance(),
             "pattern_compliance": await self._analyze_pattern_compliance(),
             "recommendations": recommendations,
-            "architectural_debt_assessment": await self._assess_architectural_debt()
+            "architectural_debt_assessment": await self._assess_architectural_debt(),
         }
 
         logger.info(f"✅ Architectural analysis completed: {len(self.violations)} violations found")
@@ -214,7 +225,7 @@ class ArchitectureReviewAgent:
         components = []
 
         try:
-            with open(file_path, 'r', encoding='utf-8', errors='ignore') as f:
+            with open(file_path, "r", encoding="utf-8", errors="ignore") as f:
                 content = f.read()
                 tree = ast.parse(content)
 
@@ -225,8 +236,9 @@ class ArchitectureReviewAgent:
                     components.append(component)
 
                 elif isinstance(node, ast.FunctionDef) and not any(
-                    isinstance(parent, ast.ClassDef) for parent in ast.walk(tree)
-                    if hasattr(parent, 'body') and node in getattr(parent, 'body', [])
+                    isinstance(parent, ast.ClassDef)
+                    for parent in ast.walk(tree)
+                    if hasattr(parent, "body") and node in getattr(parent, "body", [])
                 ):
                     component = await self._analyze_function_component(node, file_path, content)
                     components.append(component)
@@ -241,7 +253,9 @@ class ArchitectureReviewAgent:
 
         return components
 
-    async def _analyze_class_component(self, node: ast.ClassDef, file_path: Path, content: str) -> ArchitecturalComponent:
+    async def _analyze_class_component(
+        self, node: ast.ClassDef, file_path: Path, content: str
+    ) -> ArchitecturalComponent:
         """Analyze class as architectural component"""
         # Extract dependencies from imports and usage
         dependencies = self._extract_dependencies(content)
@@ -268,10 +282,12 @@ class ArchitectureReviewAgent:
             responsibility=self._determine_responsibility(node, content),
             complexity_metrics=complexity_metrics,
             security_implications=security_implications,
-            performance_characteristics=performance_characteristics
+            performance_characteristics=performance_characteristics,
         )
 
-    async def _analyze_function_component(self, node: ast.FunctionDef, file_path: Path, content: str) -> ArchitecturalComponent:
+    async def _analyze_function_component(
+        self, node: ast.FunctionDef, file_path: Path, content: str
+    ) -> ArchitecturalComponent:
         """Analyze function as architectural component"""
         dependencies = self._extract_dependencies(content)
         layer = self._determine_component_layer(str(file_path), node.name)
@@ -287,10 +303,12 @@ class ArchitectureReviewAgent:
             responsibility=self._determine_responsibility(node, content),
             complexity_metrics=complexity_metrics,
             security_implications=self._assess_security_implications(node, content),
-            performance_characteristics=self._analyze_performance_characteristics(node, content)
+            performance_characteristics=self._analyze_performance_characteristics(node, content),
         )
 
-    async def _analyze_module_component(self, file_path: Path, content: str) -> ArchitecturalComponent:
+    async def _analyze_module_component(
+        self, file_path: Path, content: str
+    ) -> ArchitecturalComponent:
         """Analyze module as architectural component"""
         dependencies = self._extract_dependencies(content)
         layer = self._determine_component_layer(str(file_path), file_path.stem)
@@ -305,7 +323,7 @@ class ArchitectureReviewAgent:
             responsibility=self._determine_module_responsibility(file_path, content),
             complexity_metrics=self._calculate_module_complexity(content),
             security_implications=self._assess_module_security_implications(content),
-            performance_characteristics=self._analyze_module_performance_characteristics(content)
+            performance_characteristics=self._analyze_module_performance_characteristics(content),
         )
 
     def _extract_dependencies(self, content: str) -> List[str]:
@@ -315,7 +333,7 @@ class ArchitectureReviewAgent:
         # Extract import statements
         import_patterns = [
             r"from\s+([a-zA-Z_][a-zA-Z0-9_.]*)\s+import",
-            r"import\s+([a-zA-Z_][a-zA-Z0-9_.]*)"
+            r"import\s+([a-zA-Z_][a-zA-Z0-9_.]*)",
         ]
 
         for pattern in import_patterns:
@@ -325,7 +343,7 @@ class ArchitectureReviewAgent:
         # Filter out standard library and external dependencies
         filtered_dependencies = []
         for dep in dependencies:
-            if dep.startswith('app.') or not '.' in dep:
+            if dep.startswith("app.") or not "." in dep:
                 filtered_dependencies.append(dep)
 
         return list(set(filtered_dependencies))
@@ -346,16 +364,21 @@ class ArchitectureReviewAgent:
         """Calculate complexity metrics for a component"""
         metrics = {
             "cyclomatic_complexity": self._calculate_cyclomatic_complexity(node),
-            "lines_of_code": len([line for line in content.split('\n') if line.strip()]),
+            "lines_of_code": len([line for line in content.split("\n") if line.strip()]),
             "method_count": len([n for n in ast.walk(node) if isinstance(n, ast.FunctionDef)]),
-            "dependency_count": len(self._extract_dependencies(content))
+            "dependency_count": len(self._extract_dependencies(content)),
         }
 
         # Calculate maintainability index (simplified)
-        metrics["maintainability_index"] = max(0, (171 - 5.2 *
-                                                   (metrics["lines_of_code"] / 100) -
-                                                   0.23 * metrics["cyclomatic_complexity"] -
-                                                   16.2 * (metrics["dependency_count"] / 10)))
+        metrics["maintainability_index"] = max(
+            0,
+            (
+                171
+                - 5.2 * (metrics["lines_of_code"] / 100)
+                - 0.23 * metrics["cyclomatic_complexity"]
+                - 16.2 * (metrics["dependency_count"] / 10)
+            ),
+        )
 
         return metrics
 
@@ -380,7 +403,7 @@ class ArchitectureReviewAgent:
             "sql_injection": r"execute\s*\(\s*['\"].*%.*['\"]",
             "unsafe_eval": r"eval\s*\(",
             "shell_injection": r"os\.system\s*\(",
-            "unsafe_pickle": r"pickle\.loads\s*\("
+            "unsafe_pickle": r"pickle\.loads\s*\(",
         }
 
         for issue_type, pattern in security_patterns.items():
@@ -395,15 +418,15 @@ class ArchitectureReviewAgent:
             "async_operations": len(re.findall(r"async\s+def", content)),
             "database_operations": len(re.findall(r"\.query\(|\.filter\(|\.all\(\)", content)),
             "loops": len([n for n in ast.walk(node) if isinstance(n, (ast.For, ast.While))]),
-            "network_calls": len(re.findall(r"requests\.|http\.|aiohttp\.", content))
+            "network_calls": len(re.findall(r"requests\.|http\.|aiohttp\.", content)),
         }
 
         # Assess performance risk
         risk_score = (
-            characteristics["database_operations"] * 0.3 +
-            characteristics["loops"] * 0.2 +
-            characteristics["network_calls"] * 0.4 +
-            characteristics["async_operations"] * -0.1  # Async is good for performance
+            characteristics["database_operations"] * 0.3
+            + characteristics["loops"] * 0.2
+            + characteristics["network_calls"] * 0.4
+            + characteristics["async_operations"] * -0.1  # Async is good for performance
         )
 
         characteristics["performance_risk_score"] = max(0, risk_score)
@@ -421,7 +444,7 @@ class ArchitectureReviewAgent:
             "utility": ["util", "helper", "tool", "common", "shared"],
             "authentication": ["auth", "login", "security", "permission"],
             "validation": ["validate", "check", "verify", "sanitize"],
-            "integration": ["connector", "client", "adapter", "wrapper"]
+            "integration": ["connector", "client", "adapter", "wrapper"],
         }
 
         content_lower = content.lower()
@@ -448,14 +471,14 @@ class ArchitectureReviewAgent:
 
     def _calculate_module_complexity(self, content: str) -> Dict[str, float]:
         """Calculate complexity metrics for a module"""
-        lines = content.split('\n')
+        lines = content.split("\n")
         non_empty_lines = [line for line in lines if line.strip()]
 
         return {
             "lines_of_code": len(non_empty_lines),
             "import_count": len(re.findall(r"^(import|from)", content, re.MULTILINE)),
             "function_count": len(re.findall(r"^def\s+", content, re.MULTILINE)),
-            "class_count": len(re.findall(r"^class\s+", content, re.MULTILINE))
+            "class_count": len(re.findall(r"^class\s+", content, re.MULTILINE)),
         }
 
     def _assess_module_security_implications(self, content: str) -> List[str]:
@@ -469,9 +492,15 @@ class ArchitectureReviewAgent:
     def _should_exclude_file(self, file_path: str) -> bool:
         """Check if file should be excluded from analysis"""
         exclusion_patterns = [
-            r".*\.venv/.*", r".*venv/.*", r".*__pycache__/.*",
-            r".*\.git/.*", r".*node_modules/.*", r".*\.dist/.*",
-            r".*\.build/.*", r".*\.pytest_cache/.*", r".*migrations/.*"
+            r".*\.venv/.*",
+            r".*venv/.*",
+            r".*__pycache__/.*",
+            r".*\.git/.*",
+            r".*node_modules/.*",
+            r".*\.dist/.*",
+            r".*\.build/.*",
+            r".*\.pytest_cache/.*",
+            r".*migrations/.*",
         ]
 
         for pattern in exclusion_patterns:
@@ -539,7 +568,9 @@ class ArchitectureReviewAgent:
                         title=f"Circular dependency detected involving {component}",
                         description="Circular dependencies make code difficult to test, understand, and maintain",
                         affected_components=[component],
-                        violation_details={"dependency_cycle": list(self.dependency_graph.get(component, []))},
+                        violation_details={
+                            "dependency_cycle": list(self.dependency_graph.get(component, []))
+                        },
                         impact_assessment="High impact on maintainability and testability",
                         architectural_principle="Dependency Acyclic Principle (DAP)",
                         recommended_refactoring="Break circular dependency through interface introduction or dependency inversion",
@@ -547,7 +578,7 @@ class ArchitectureReviewAgent:
                         business_justification="Improves code maintainability and reduces development time",
                         compliance_level=ArchitecturalPatternCompliance.SIGNIFICANT_VIOLATION,
                         detected_at=datetime.now(),
-                        apqc_process_reference="11.2.1.2"
+                        apqc_process_reference="11.2.1.2",
                     )
                     self.violations.append(violation)
 
@@ -561,8 +592,9 @@ class ArchitectureReviewAgent:
             allowed_dependencies = layer_config.get("allowed_dependencies", [])
 
             for dependency in component.dependencies:
-                dep_component = next((c for c in self.components.values()
-                                   if dependency in c.name), None)
+                dep_component = next(
+                    (c for c in self.components.values() if dependency in c.name), None
+                )
 
                 if dep_component and dep_component.layer:
                     if dep_component.layer not in allowed_dependencies:
@@ -576,7 +608,7 @@ class ArchitectureReviewAgent:
                             violation_details={
                                 "violating_layer": component.layer,
                                 "target_layer": dep_component.layer,
-                                "allowed_dependencies": allowed_dependencies
+                                "allowed_dependencies": allowed_dependencies,
                             },
                             impact_assessment="Violates architectural layering principles",
                             architectural_principle="Layered Architecture Pattern",
@@ -585,7 +617,7 @@ class ArchitectureReviewAgent:
                             business_justification="Maintains architectural integrity and system comprehensibility",
                             compliance_level=ArchitecturalPatternCompliance.MINOR_DEVIATION,
                             detected_at=datetime.now(),
-                            apqc_process_reference="11.2.1.1"
+                            apqc_process_reference="11.2.1.1",
                         )
                         self.violations.append(violation)
 
@@ -607,7 +639,7 @@ class ArchitectureReviewAgent:
                     violation_details={
                         "dependency_count": dependency_count,
                         "dependent_count": dependent_count,
-                        "coupling_score": dependency_count + dependent_count
+                        "coupling_score": dependency_count + dependent_count,
                     },
                     impact_assessment="High coupling reduces maintainability and increases change impact",
                     architectural_principle="Loose Coupling Principle",
@@ -616,7 +648,7 @@ class ArchitectureReviewAgent:
                     business_justification="Improves system maintainability and reduces defect propagation",
                     compliance_level=ArchitecturalPatternCompliance.MINOR_DEVIATION,
                     detected_at=datetime.now(),
-                    apqc_process_reference="11.2.1.3"
+                    apqc_process_reference="11.2.1.3",
                 )
                 self.violations.append(violation)
 
@@ -638,7 +670,7 @@ class ArchitectureReviewAgent:
                     violation_details={
                         "cyclomatic_complexity": complexity,
                         "method_count": method_count,
-                        "responsibility": component.responsibility
+                        "responsibility": component.responsibility,
                     },
                     impact_assessment="Violates SRP, making component difficult to maintain and test",
                     architectural_principle="Single Responsibility Principle (SRP)",
@@ -647,7 +679,7 @@ class ArchitectureReviewAgent:
                     business_justification="Improves code maintainability and testability",
                     compliance_level=ArchitecturalPatternCompliance.SIGNIFICANT_VIOLATION,
                     detected_at=datetime.now(),
-                    apqc_process_reference="11.2.1.4"
+                    apqc_process_reference="11.2.1.4",
                 )
                 self.violations.append(violation)
 
@@ -655,8 +687,14 @@ class ArchitectureReviewAgent:
         """Check for security architecture violations"""
         for component_name, component in self.components.items():
             if component.security_implications:
-                severity = "critical" if any(issue in ["hardcoded_secrets", "sql_injection"]
-                                           for issue in component.security_implications) else "high"
+                severity = (
+                    "critical"
+                    if any(
+                        issue in ["hardcoded_secrets", "sql_injection"]
+                        for issue in component.security_implications
+                    )
+                    else "high"
+                )
 
                 violation = ArchitecturalViolation(
                     id=f"security_violation_{hash(component_name)}",
@@ -673,7 +711,7 @@ class ArchitectureReviewAgent:
                     business_justification="Prevents security breaches and maintains regulatory compliance",
                     compliance_level=ArchitecturalPatternCompliance.CRITICAL_VIOLATION,
                     detected_at=datetime.now(),
-                    apqc_process_reference="11.2.4.1"
+                    apqc_process_reference="11.2.4.1",
                 )
                 self.violations.append(violation)
 
@@ -698,7 +736,7 @@ class ArchitectureReviewAgent:
                     business_justification="Improves user experience and reduces infrastructure costs",
                     compliance_level=ArchitecturalPatternCompliance.MINOR_DEVIATION,
                     detected_at=datetime.now(),
-                    apqc_process_reference="11.2.3.1"
+                    apqc_process_reference="11.2.3.1",
                 )
                 self.violations.append(violation)
 
@@ -708,26 +746,40 @@ class ArchitectureReviewAgent:
         dependency_count = sum(len(comp.dependencies) for comp in self.components.values())
 
         # Count cyclic dependencies
-        cyclic_dependencies = len([v for v in self.violations
-                                 if v.violation_type == ArchitecturalViolationType.CIRCULAR_DEPENDENCY])
+        cyclic_dependencies = len(
+            [
+                v
+                for v in self.violations
+                if v.violation_type == ArchitecturalViolationType.CIRCULAR_DEPENDENCY
+            ]
+        )
 
         # Calculate average coupling
-        coupling_values = [len(comp.dependencies) + len(comp.dependents)
-                          for comp in self.components.values()]
+        coupling_values = [
+            len(comp.dependencies) + len(comp.dependents) for comp in self.components.values()
+        ]
         average_coupling = sum(coupling_values) / len(coupling_values) if coupling_values else 0
 
         # Calculate average cohesion (simplified metric)
-        cohesion_values = [comp.complexity_metrics.get("maintainability_index", 50)
-                          for comp in self.components.values()]
+        cohesion_values = [
+            comp.complexity_metrics.get("maintainability_index", 50)
+            for comp in self.components.values()
+        ]
         average_cohesion = sum(cohesion_values) / len(cohesion_values) if cohesion_values else 50
 
         # Count layer violations
-        layer_violations = len([v for v in self.violations
-                              if v.violation_type == ArchitecturalViolationType.LAYERING_VIOLATION])
+        layer_violations = len(
+            [
+                v
+                for v in self.violations
+                if v.violation_type == ArchitecturalViolationType.LAYERING_VIOLATION
+            ]
+        )
 
         # Calculate abstraction level
-        abstract_components = len([comp for comp in self.components.values()
-                                 if comp.type in ["interface", "abstract"]])
+        abstract_components = len(
+            [comp for comp in self.components.values() if comp.type in ["interface", "abstract"]]
+        )
         abstraction_level = abstract_components / total_components if total_components > 0 else 0
 
         # Calculate modularity score
@@ -747,7 +799,7 @@ class ArchitectureReviewAgent:
             abstraction_level=abstraction_level,
             modularity_score=modularity_score,
             maintainability_index=average_cohesion,
-            architectural_debt_ratio=architectural_debt_ratio
+            architectural_debt_ratio=architectural_debt_ratio,
         )
 
     async def _analyze_dependencies(self) -> Dict[str, Any]:
@@ -756,10 +808,11 @@ class ArchitectureReviewAgent:
             "total_dependencies": len(self.dependency_graph),
             "most_coupled_components": sorted(
                 [(name, len(deps)) for name, deps in self.dependency_graph.items()],
-                key=lambda x: x[1], reverse=True
+                key=lambda x: x[1],
+                reverse=True,
             )[:10],
             "dependency_depth": await self._calculate_dependency_depth(),
-            "fan_in_fan_out": await self._calculate_fan_metrics()
+            "fan_in_fan_out": await self._calculate_fan_metrics(),
         }
 
     async def _calculate_dependency_depth(self) -> Dict[str, int]:
@@ -794,27 +847,30 @@ class ArchitectureReviewAgent:
 
     async def _calculate_fan_metrics(self) -> Dict[str, Dict[str, int]]:
         """Calculate fan-in and fan-out metrics"""
-        fan_out = {comp: len(self.dependency_graph.get(comp, set()))
-                  for comp in self.components.keys()}
+        fan_out = {
+            comp: len(self.dependency_graph.get(comp, set())) for comp in self.components.keys()
+        }
 
-        fan_in = {comp: len(self.components[comp].dependents)
-                 for comp in self.components.keys()}
+        fan_in = {comp: len(self.components[comp].dependents) for comp in self.components.keys()}
 
         return {"fan_in": fan_in, "fan_out": fan_out}
 
     async def _analyze_layer_compliance(self) -> Dict[str, Any]:
         """Analyze compliance with architectural layers"""
-        layer_distribution = Counter(comp.layer for comp in self.components.values()
-                                   if comp.layer)
+        layer_distribution = Counter(comp.layer for comp in self.components.values() if comp.layer)
 
-        layer_violations = [v for v in self.violations
-                          if v.violation_type == ArchitecturalViolationType.LAYERING_VIOLATION]
+        layer_violations = [
+            v
+            for v in self.violations
+            if v.violation_type == ArchitecturalViolationType.LAYERING_VIOLATION
+        ]
 
         return {
             "layer_distribution": dict(layer_distribution),
             "layer_violations": len(layer_violations),
-            "compliance_percentage": (1 - len(layer_violations) / len(self.components)) * 100
-                                   if self.components else 100
+            "compliance_percentage": (
+                (1 - len(layer_violations) / len(self.components)) * 100 if self.components else 100
+            ),
         }
 
     async def _analyze_pattern_compliance(self) -> Dict[str, Any]:
@@ -826,9 +882,19 @@ class ArchitectureReviewAgent:
 
         return {
             "pattern_violations": dict(pattern_violations),
-            "overall_compliance": len([v for v in self.violations
-                                     if v.compliance_level == ArchitecturalPatternCompliance.COMPLIANT]) /
-                                len(self.violations) * 100 if self.violations else 100
+            "overall_compliance": (
+                len(
+                    [
+                        v
+                        for v in self.violations
+                        if v.compliance_level == ArchitecturalPatternCompliance.COMPLIANT
+                    ]
+                )
+                / len(self.violations)
+                * 100
+                if self.violations
+                else 100
+            ),
         }
 
     async def _assess_architectural_debt(self) -> Dict[str, Any]:
@@ -837,13 +903,20 @@ class ArchitectureReviewAgent:
         high_violations = len([v for v in self.violations if v.severity == "high"])
 
         total_effort_hours = sum(
-            int(re.search(r"(\d+)", v.effort_estimation).group(1))
-            if re.search(r"(\d+)", v.effort_estimation) else 4
+            (
+                int(re.search(r"(\d+)", v.effort_estimation).group(1))
+                if re.search(r"(\d+)", v.effort_estimation)
+                else 4
+            )
             for v in self.violations
         )
 
-        debt_score = (critical_violations * 10 + high_violations * 5 +
-                     len(self.violations)) / len(self.components) if self.components else 0
+        debt_score = (
+            (critical_violations * 10 + high_violations * 5 + len(self.violations))
+            / len(self.components)
+            if self.components
+            else 0
+        )
 
         return {
             "total_violations": len(self.violations),
@@ -852,11 +925,10 @@ class ArchitectureReviewAgent:
             "estimated_remediation_hours": total_effort_hours,
             "architectural_debt_score": debt_score,
             "debt_classification": (
-                "Critical" if debt_score > 3 else
-                "High" if debt_score > 2 else
-                "Medium" if debt_score > 1 else
-                "Low"
-            )
+                "Critical"
+                if debt_score > 3
+                else "High" if debt_score > 2 else "Medium" if debt_score > 1 else "Low"
+            ),
         }
 
     async def _generate_recommendations(self) -> List[str]:
@@ -871,32 +943,44 @@ class ArchitectureReviewAgent:
             )
 
         # Circular dependencies
-        circular_deps = [v for v in self.violations
-                        if v.violation_type == ArchitecturalViolationType.CIRCULAR_DEPENDENCY]
+        circular_deps = [
+            v
+            for v in self.violations
+            if v.violation_type == ArchitecturalViolationType.CIRCULAR_DEPENDENCY
+        ]
         if circular_deps:
             recommendations.append(
                 f"🔄 Break {len(circular_deps)} circular dependencies to improve testability"
             )
 
         # Layer violations
-        layer_violations = [v for v in self.violations
-                          if v.violation_type == ArchitecturalViolationType.LAYERING_VIOLATION]
+        layer_violations = [
+            v
+            for v in self.violations
+            if v.violation_type == ArchitecturalViolationType.LAYERING_VIOLATION
+        ]
         if layer_violations:
             recommendations.append(
                 f"🏗️  Fix {len(layer_violations)} layer violations to maintain architectural integrity"
             )
 
         # High coupling
-        coupling_violations = [v for v in self.violations
-                             if v.violation_type == ArchitecturalViolationType.TIGHT_COUPLING]
+        coupling_violations = [
+            v
+            for v in self.violations
+            if v.violation_type == ArchitecturalViolationType.TIGHT_COUPLING
+        ]
         if coupling_violations:
             recommendations.append(
                 f"🔗 Reduce coupling in {len(coupling_violations)} components through dependency injection"
             )
 
         # Security issues
-        security_violations = [v for v in self.violations
-                             if v.violation_type == ArchitecturalViolationType.SECURITY_ARCHITECTURE]
+        security_violations = [
+            v
+            for v in self.violations
+            if v.violation_type == ArchitecturalViolationType.SECURITY_ARCHITECTURE
+        ]
         if security_violations:
             recommendations.append(
                 f"🔒 Implement security by design principles in {len(security_violations)} components"
@@ -910,6 +994,7 @@ class ArchitectureReviewAgent:
             )
 
         return recommendations
+
 
 # Initialize the architecture review agent
 architecture_reviewer = ArchitectureReviewAgent(

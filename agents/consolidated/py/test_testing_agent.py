@@ -31,9 +31,7 @@ async def test_testing_agent():
     # Create TestingAgent instance
     print("[1/5] Creating TestingAgent instance...")
     agent = TestingAgent(
-        agent_id="test_testing_agent_001",
-        workspace_path="./workspace",
-        project_root=".."
+        agent_id="test_testing_agent_001", workspace_path="./workspace", project_root=".."
     )
     print(f"      [OK] TestingAgent created: {agent.agent_id}")
     print()
@@ -58,7 +56,7 @@ async def test_testing_agent():
         print(f"      Passed: {api_results['passed']}")
         print(f"      Failed: {api_results['failed']}")
         print(f"      Issues found: {len(api_results['issues'])}")
-        if api_results['issues']:
+        if api_results["issues"]:
             print(f"      First issue: {api_results['issues'][0]['id']}")
     except Exception as e:
         print(f"      [ERROR] API test failed: {e}")
@@ -72,7 +70,7 @@ async def test_testing_agent():
         print(f"      Passed: {db_results['passed']}")
         print(f"      Failed: {db_results['failed']}")
         print(f"      Issues found: {len(db_results['issues'])}")
-        if db_results['passed'] > 0:
+        if db_results["passed"] > 0:
             print(f"      [OK] Database connectivity working!")
     except Exception as e:
         print(f"      [ERROR] Database test failed: {e}")

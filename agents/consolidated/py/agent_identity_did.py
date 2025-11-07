@@ -31,13 +31,15 @@ import uuid
 
 class DIDMethod(Enum):
     """DID method identifiers"""
+
     AGENT = "agent"  # did:agent:
-    ETH = "eth"      # did:eth: (Ethereum-based)
-    KEY = "key"      # did:key: (Key-based)
+    ETH = "eth"  # did:eth: (Ethereum-based)
+    KEY = "key"  # did:key: (Key-based)
 
 
 class CredentialType(Enum):
     """Types of verifiable credentials"""
+
     CAPABILITY = "AgentCapability"
     REPUTATION = "AgentReputation"
     CERTIFICATION = "AgentCertification"
@@ -47,6 +49,7 @@ class CredentialType(Enum):
 
 class VerificationStatus(Enum):
     """Credential verification status"""
+
     VALID = "valid"
     EXPIRED = "expired"
     REVOKED = "revoked"
@@ -61,11 +64,11 @@ class DIDDocument:
     Represents the complete identity information for an agent,
     stored on-chain or in a decentralized registry.
     """
+
     id: str  # DID identifier (e.g., did:agent:abc123)
-    context: List[str] = field(default_factory=lambda: [
-        "https://www.w3.org/ns/did/v1",
-        "https://w3id.org/security/v1"
-    ])
+    context: List[str] = field(
+        default_factory=lambda: ["https://www.w3.org/ns/did/v1", "https://w3id.org/security/v1"]
+    )
 
     # Controller (who manages this DID)
     controller: Optional[str] = None
@@ -97,9 +100,8 @@ class VerifiableCredential:
     A tamper-evident credential that can be cryptographically verified,
     issued to agents to prove capabilities, reputation, or certifications.
     """
-    context: List[str] = field(default_factory=lambda: [
-        "https://www.w3.org/2018/credentials/v1"
-    ])
+
+    context: List[str] = field(default_factory=lambda: ["https://www.w3.org/2018/credentials/v1"])
     id: str = field(default_factory=lambda: f"urn:uuid:{uuid.uuid4()}")
     type: List[str] = field(default_factory=lambda: ["VerifiableCredential"])
 
@@ -130,6 +132,7 @@ class AgentIdentity:
     Combines DID, credentials, and reputation into a portable identity
     that agents can use across platforms and networks.
     """
+
     did: str
     did_document: DIDDocument
     credentials: List[VerifiableCredential] = field(default_factory=list)
@@ -183,7 +186,7 @@ class AgentIdentitySystem:
         agent_id: str,
         agent_type: str,
         agent_version: str = "1.0.0",
-        capabilities: Optional[List[str]] = None
+        capabilities: Optional[List[str]] = None,
     ) -> AgentIdentity:
         """
         Create a new DID for an agent
@@ -206,7 +209,7 @@ class AgentIdentitySystem:
             "id": verification_method_id,
             "type": "Ed25519VerificationKey2020",
             "controller": did,
-            "publicKeyMultibase": public_key
+            "publicKeyMultibase": public_key,
         }
 
         # Create service endpoints
@@ -214,7 +217,7 @@ class AgentIdentitySystem:
             {
                 "id": f"{did}#agent-endpoint",
                 "type": "AgentService",
-                "serviceEndpoint": f"https://agents.example.com/api/{agent_id}"
+                "serviceEndpoint": f"https://agents.example.com/api/{agent_id}",
             }
         ]
 
@@ -227,14 +230,11 @@ class AgentIdentitySystem:
             service=service,
             agent_type=agent_type,
             agent_version=agent_version,
-            capabilities=capabilities or []
+            capabilities=capabilities or [],
         )
 
         # Create identity
-        identity = AgentIdentity(
-            did=did,
-            did_document=did_document
-        )
+        identity = AgentIdentity(did=did, did_document=did_document)
 
         # Register
         self.identities[agent_id] = identity
@@ -271,7 +271,7 @@ class AgentIdentitySystem:
         credential_type: CredentialType,
         claims: Dict[str, Any],
         issuer_did: str = "did:agent:system",
-        valid_days: int = 365
+        valid_days: int = 365,
     ) -> VerifiableCredential:
         """
         Issue a verifiable credential to an agent
@@ -295,11 +295,7 @@ class AgentIdentitySystem:
             type=["VerifiableCredential", credential_type.value],
             issuer=issuer_did,
             expiration_date=expiration.isoformat(),
-            credential_subject={
-                "id": identity.did,
-                "type": credential_type.value,
-                **claims
-            }
+            credential_subject={"id": identity.did, "type": credential_type.value, **claims},
         )
 
         # Generate proof (cryptographic signature)
@@ -308,7 +304,7 @@ class AgentIdentitySystem:
         # Add revocation status
         credential.credential_status = {
             "id": f"https://agents.example.com/credentials/{credential_id}/status",
-            "type": "CredentialStatusList2021"
+            "type": "CredentialStatusList2021",
         }
 
         # Register
@@ -318,10 +314,7 @@ class AgentIdentitySystem:
 
         return credential
 
-    def verify_credential(
-        self,
-        credential: VerifiableCredential
-    ) -> VerificationStatus:
+    def verify_credential(self, credential: VerifiableCredential) -> VerificationStatus:
         """
         Verify a credential's authenticity and validity
 
@@ -358,10 +351,7 @@ class AgentIdentitySystem:
     # =================================================================
 
     def update_reputation(
-        self,
-        agent_id: str,
-        successful: bool,
-        endorser_did: Optional[str] = None
+        self, agent_id: str, successful: bool, endorser_did: Optional[str] = None
     ):
         """
         Update agent's reputation based on interaction
@@ -382,8 +372,9 @@ class AgentIdentitySystem:
             success_rate = identity.successful_interactions / identity.total_interactions
             # Weighted by total interactions (more data = more confidence)
             confidence_factor = min(identity.total_interactions / 100, 1.0)
-            identity.reputation_score = success_rate * 100 * confidence_factor + \
-                                       (1 - confidence_factor) * 100
+            identity.reputation_score = (
+                success_rate * 100 * confidence_factor + (1 - confidence_factor) * 100
+            )
 
         # Add endorsement
         if endorser_did and endorser_did not in identity.endorsements:
@@ -405,16 +396,17 @@ class AgentIdentitySystem:
             "successfulInteractions": identity.successful_interactions,
             "successRate": (
                 identity.successful_interactions / identity.total_interactions
-                if identity.total_interactions > 0 else 0.0
+                if identity.total_interactions > 0
+                else 0.0
             ),
-            "endorsementCount": len(identity.endorsements)
+            "endorsementCount": len(identity.endorsements),
         }
 
         return self.issue_credential(
             agent_id=agent_id,
             credential_type=CredentialType.REPUTATION,
             claims=claims,
-            valid_days=30  # Reputation credentials expire monthly
+            valid_days=30,  # Reputation credentials expire monthly
         )
 
     # =================================================================
@@ -445,11 +437,11 @@ class AgentIdentitySystem:
                 "score": identity.reputation_score,
                 "total_interactions": identity.total_interactions,
                 "successful_interactions": identity.successful_interactions,
-                "endorsements": identity.endorsements
+                "endorsements": identity.endorsements,
             },
             "platforms": identity.registered_platforms,
             "created_at": identity.created_at,
-            "exported_at": datetime.now().isoformat()
+            "exported_at": datetime.now().isoformat(),
         }
 
     # =================================================================
@@ -464,7 +456,7 @@ class AgentIdentitySystem:
             "total_revoked": len(self.revoked_credentials),
             "trusted_issuers": len(self.trusted_issuers),
             "identities_created": self.total_identities_created,
-            "credentials_issued": self.total_credentials_issued
+            "credentials_issued": self.total_credentials_issued,
         }
 
     # =================================================================
@@ -485,21 +477,20 @@ class AgentIdentitySystem:
         hash_result = hashlib.sha256(hash_input).hexdigest()
         return f"z{hash_result}"  # z prefix for multibase
 
-    def _generate_proof(
-        self,
-        credential: VerifiableCredential,
-        issuer_did: str
-    ) -> Dict[str, Any]:
+    def _generate_proof(self, credential: VerifiableCredential, issuer_did: str) -> Dict[str, Any]:
         """Generate cryptographic proof for credential"""
         # In production, use real cryptographic signature
 
         # Create proof hash
-        proof_input = json.dumps({
-            "credential_id": credential.id,
-            "issuer": issuer_did,
-            "subject": credential.credential_subject,
-            "issued": credential.issuance_date
-        }, sort_keys=True).encode()
+        proof_input = json.dumps(
+            {
+                "credential_id": credential.id,
+                "issuer": issuer_did,
+                "subject": credential.credential_subject,
+                "issued": credential.issuance_date,
+            },
+            sort_keys=True,
+        ).encode()
 
         signature = hashlib.sha256(proof_input).hexdigest()
 
@@ -508,7 +499,7 @@ class AgentIdentitySystem:
             "created": datetime.now().isoformat(),
             "verificationMethod": f"{issuer_did}#keys-1",
             "proofPurpose": "assertionMethod",
-            "proofValue": f"z{signature}"
+            "proofValue": f"z{signature}",
         }
 
 

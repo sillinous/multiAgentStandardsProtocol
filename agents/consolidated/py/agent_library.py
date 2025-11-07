@@ -21,8 +21,10 @@ router = APIRouter()
 # ENUMS AND MODELS
 # ============================================================================
 
+
 class AgentStatus(str, Enum):
     """Agent development status"""
+
     PRODUCTION = "production"
     BETA = "beta"
     DEVELOPMENT = "development"
@@ -33,6 +35,7 @@ class AgentStatus(str, Enum):
 
 class AgentCategory(str, Enum):
     """Agent categories"""
+
     APQC_FRAMEWORK = "apqc_framework"
     INDUSTRY_SWARM = "industry_swarm"
     CORE_UTILITY = "core_utility"
@@ -51,6 +54,7 @@ class AgentCategory(str, Enum):
 
 class Industry(str, Enum):
     """Supported industries for swarms"""
+
     HEALTHCARE = "healthcare"
     FINANCIAL_SERVICES = "financial_services"
     LOGISTICS = "logistics"
@@ -62,6 +66,7 @@ class Industry(str, Enum):
 
 class Agent(BaseModel):
     """Agent model"""
+
     id: str
     name: str
     version: str = "1.0.0"
@@ -84,6 +89,7 @@ class Agent(BaseModel):
 
 class AgentSwarm(BaseModel):
     """Agent swarm model"""
+
     id: str
     name: str
     description: str
@@ -99,6 +105,7 @@ class AgentSwarm(BaseModel):
 
 class RoadmapItem(BaseModel):
     """Development roadmap item"""
+
     id: str
     title: str
     description: str
@@ -113,6 +120,7 @@ class RoadmapItem(BaseModel):
 
 class LibraryStats(BaseModel):
     """Library statistics"""
+
     total_agents: int
     total_swarms: int
     by_status: Dict[str, int]
@@ -127,6 +135,7 @@ class LibraryStats(BaseModel):
 # ============================================================================
 # DATA AGGREGATION FUNCTIONS
 # ============================================================================
+
 
 def get_all_agents() -> List[Agent]:
     """
@@ -161,7 +170,7 @@ def get_all_agents() -> List[Agent]:
             "define_business_concept_long-term_vision_strategic_agent",
             "develop_business_strategy_strategic_agent",
             "develop_manage_innovation_strategic_agent",
-            "manage_strategic_initiatives_strategic_agent"
+            "manage_strategic_initiatives_strategic_agent",
         ],
         "2_0": [
             "govern_manage_product_service_development_creative_agent",
@@ -169,7 +178,7 @@ def get_all_agents() -> List[Agent]:
             "design_prototype_products_creative_agent",
             "test_market_for_new_products_services_creative_agent",
             "prepare_for_production_creative_agent",
-            "manage_product_service_lifecycle_creative_agent"
+            "manage_product_service_lifecycle_creative_agent",
         ],
         "3_0": [
             "understand_markets,_customers,_capabilities_sales_marketing_agent",
@@ -180,7 +189,7 @@ def get_all_agents() -> List[Agent]:
             "conduct_customer_research_sales_marketing_agent",
             "analyze_market_trends_sales_marketing_agent",
             "manage_product_portfolio_sales_marketing_agent",
-            "manage_pricing_sales_marketing_agent"
+            "manage_pricing_sales_marketing_agent",
         ],
         "4_0": [
             "plan_for_align_supply_chain_resources_operational_agent",
@@ -191,20 +200,20 @@ def get_all_agents() -> List[Agent]:
             "schedule_production_operational_agent",
             "forecast_demand_operational_agent",
             "manage_supplier_relationships_operational_agent",
-            "optimize_inventory_operational_agent"
+            "optimize_inventory_operational_agent",
         ],
         "5_0": [
             "plan_for_align_service_delivery_resources_service_delivery_agent",
             "develop_manage_service_delivery_service_delivery_agent",
             "deliver_service_to_customer_service_delivery_agent",
-            "design_service_delivery_process_service_agent"
+            "design_service_delivery_process_service_agent",
         ],
         "6_0": [
             "develop_customer_care_customer_service_strategy_customer_service_agent",
             "plan_manage_customer_service_operations_customer_service_agent",
             "measure_evaluate_customer_service_operations_customer_service_agent",
             "manage_customer_inquiries_customer_service_agent",
-            "resolve_customer_issues_customer_service_agent"
+            "resolve_customer_issues_customer_service_agent",
         ],
         "7_0": [
             "develop_manage_hr_planning,_policies,_strategies_human_capital_agent",
@@ -215,7 +224,7 @@ def get_all_agents() -> List[Agent]:
             "manage_employee_information_human_capital_agent",
             "source_candidates_human_capital_agent",
             "develop_employee_competencies_human_capital_agent",
-            "manage_performance_human_capital_agent"
+            "manage_performance_human_capital_agent",
         ],
         "8_0": [
             "perform_planning_management_accounting_financial_agent",
@@ -226,14 +235,14 @@ def get_all_agents() -> List[Agent]:
             "manage_treasury_operations_financial_agent",
             "process_accounts_payable_financial_agent",
             "perform_cost_accounting_financial_agent",
-            "process_accounts_receivable_financial_agent"
+            "process_accounts_receivable_financial_agent",
         ],
         "9_0": [
             "design_construct_acquire_productive_assets_asset_management_agent",
             "maintain_productive_assets_asset_management_agent",
             "dispose_of_productive_assets_asset_management_agent",
             "perform_preventive_maintenance_asset_management_agent",
-            "optimize_asset_utilization_asset_management_agent"
+            "optimize_asset_utilization_asset_management_agent",
         ],
         "10_0": [
             "manage_enterprise_risk_risk_compliance_agent",
@@ -242,14 +251,14 @@ def get_all_agents() -> List[Agent]:
             "manage_regulatory_legal_compliance_risk_compliance_agent",
             "manage_environmental_health_safety_risk_compliance_agent",
             "develop_enterprise_risk_strategy_risk_agent",
-            "assess_risks_risk_compliance_agent"
+            "assess_risks_risk_compliance_agent",
         ],
         "11_0": [
             "manage_government_industry_relationships_relationship_management_agent",
             "build_investor_relationships_relationship_management_agent",
             "manage_relations_with_board_of_directors_relationship_management_agent",
             "manage_legal_ethical_issues_relationship_management_agent",
-            "manage_public_relations_relationship_management_agent"
+            "manage_public_relations_relationship_management_agent",
         ],
         "12_0": [
             "manage_business_processes_capability_development_agent",
@@ -258,7 +267,7 @@ def get_all_agents() -> List[Agent]:
             "manage_change_capability_development_agent",
             "develop_manage_enterprise-wide_knowledge_management_capability_development_agent",
             "initiate_projects_capability_development_agent",
-            "execute_projects_capability_development_agent"
+            "execute_projects_capability_development_agent",
         ],
         "13_0": [
             "manage_business_of_it_technology_agent",
@@ -268,94 +277,236 @@ def get_all_agents() -> List[Agent]:
             "manage_it_services_operations_technology_agent",
             "manage_it_security_privacy_technology_agent",
             "design_it_solutions_technology_agent",
-            "deploy_it_solutions_technology_agent"
+            "deploy_it_solutions_technology_agent",
         ],
     }
 
     for cat_id, cat_name in apqc_categories:
         if cat_id in apqc_agent_mapping:
             for agent_name in apqc_agent_mapping[cat_id]:
-                agents.append(Agent(
-                    id=f"apqc_{cat_id}_{agent_name}",
-                    name=agent_name.replace("_", " ").title(),
-                    category=AgentCategory.APQC_FRAMEWORK,
-                    status=AgentStatus.PRODUCTION,
-                    description=f"APQC {cat_name} process agent",
-                    capabilities=[f"APQC {cat_name}"],
-                    apqc_category=f"{cat_id} - {cat_name}",
-                    file_path=f"/autonomous-ecosystem/library/agents/apqc/{cat_id}/{agent_name}.py",
-                    tags=["apqc", cat_id, "enterprise"]
-                ))
+                agents.append(
+                    Agent(
+                        id=f"apqc_{cat_id}_{agent_name}",
+                        name=agent_name.replace("_", " ").title(),
+                        category=AgentCategory.APQC_FRAMEWORK,
+                        status=AgentStatus.PRODUCTION,
+                        description=f"APQC {cat_name} process agent",
+                        capabilities=[f"APQC {cat_name}"],
+                        apqc_category=f"{cat_id} - {cat_name}",
+                        file_path=f"/autonomous-ecosystem/library/agents/apqc/{cat_id}/{agent_name}.py",
+                        tags=["apqc", cat_id, "enterprise"],
+                    )
+                )
 
     # Core Library Agents
     core_agents = [
         ("base_agent_v1", "Base Agent", "Foundation agent class", AgentStatus.PRODUCTION),
-        ("message_routing_agent", "Message Routing Agent", "Enterprise A2A communication hub with priority routing, load balancing, and health monitoring", AgentStatus.PRODUCTION),
+        (
+            "message_routing_agent",
+            "Message Routing Agent",
+            "Enterprise A2A communication hub with priority routing, load balancing, and health monitoring",
+            AgentStatus.PRODUCTION,
+        ),
         ("design_agent_v1", "Design Agent", "UI/UX design automation", AgentStatus.PRODUCTION),
-        ("development_agent_v1", "Development Agent", "Code generation and development", AgentStatus.PRODUCTION),
-        ("development_agent_v2", "Enhanced Development Agent", "Advanced code generation", AgentStatus.PRODUCTION),
+        (
+            "development_agent_v1",
+            "Development Agent",
+            "Code generation and development",
+            AgentStatus.PRODUCTION,
+        ),
+        (
+            "development_agent_v2",
+            "Enhanced Development Agent",
+            "Advanced code generation",
+            AgentStatus.PRODUCTION,
+        ),
         ("testing_agent_v1", "Testing Agent", "Automated testing", AgentStatus.PRODUCTION),
         ("qa_agent_v1", "QA Agent", "Quality assurance", AgentStatus.PRODUCTION),
-        ("orchestrator_agent_v1", "Orchestrator Agent", "Multi-agent orchestration", AgentStatus.PRODUCTION),
+        (
+            "orchestrator_agent_v1",
+            "Orchestrator Agent",
+            "Multi-agent orchestration",
+            AgentStatus.PRODUCTION,
+        ),
     ]
 
     for agent_id, name, desc, status in core_agents:
-        agents.append(Agent(
-            id=agent_id,
-            name=name,
-            category=AgentCategory.CORE_UTILITY,
-            status=status,
-            description=desc,
-            file_path=f"/autonomous-ecosystem/library/{agent_id}.py",
-            tags=["core", "library"]
-        ))
+        agents.append(
+            Agent(
+                id=agent_id,
+                name=name,
+                category=AgentCategory.CORE_UTILITY,
+                status=status,
+                description=desc,
+                file_path=f"/autonomous-ecosystem/library/{agent_id}.py",
+                tags=["core", "library"],
+            )
+        )
 
     # Hybrid AI Agents (5 agents) - ZERO credits when using local LLM
     hybrid_ai_agents = [
-        ("product_analysis_agent_v1", "Product Analysis Agent", "Hybrid AI agent for product categorization and analysis with automatic local/cloud routing (ZERO credits in local mode)", AgentStatus.PRODUCTION, "80%+ cost savings", ["product_categorization", "feature_extraction", "target_audience_analysis", "hybrid_processing"]),
-        ("text_summarization_agent_v1", "Text Summarization Agent", "Hybrid AI agent for text summarization with automatic local/cloud routing (ZERO credits in local mode)", AgentStatus.PRODUCTION, "80%+ cost savings", ["text_summarization", "content_condensing", "key_points_extraction", "hybrid_processing"]),
-        ("sentiment_analysis_agent_v1", "Sentiment Analysis Agent", "Hybrid AI agent for sentiment classification with automatic local/cloud routing (ZERO credits in local mode)", AgentStatus.PRODUCTION, "80%+ cost savings", ["sentiment_classification", "confidence_scoring", "key_point_extraction", "hybrid_processing"]),
-        ("feature_extraction_agent_v1", "Feature Extraction Agent", "Hybrid AI agent for feature and specification extraction with automatic local/cloud routing (ZERO credits in local mode)", AgentStatus.PRODUCTION, "80%+ cost savings", ["feature_identification", "specification_extraction", "benefit_analysis", "hybrid_processing"]),
-        ("classification_agent_v1", "Classification Agent", "Hybrid AI agent for multi-class classification with automatic local/cloud routing (ZERO credits in local mode)", AgentStatus.PRODUCTION, "80%+ cost savings", ["product_classification", "multi_class_classification", "custom_taxonomy", "hybrid_processing"]),
+        (
+            "product_analysis_agent_v1",
+            "Product Analysis Agent",
+            "Hybrid AI agent for product categorization and analysis with automatic local/cloud routing (ZERO credits in local mode)",
+            AgentStatus.PRODUCTION,
+            "80%+ cost savings",
+            [
+                "product_categorization",
+                "feature_extraction",
+                "target_audience_analysis",
+                "hybrid_processing",
+            ],
+        ),
+        (
+            "text_summarization_agent_v1",
+            "Text Summarization Agent",
+            "Hybrid AI agent for text summarization with automatic local/cloud routing (ZERO credits in local mode)",
+            AgentStatus.PRODUCTION,
+            "80%+ cost savings",
+            [
+                "text_summarization",
+                "content_condensing",
+                "key_points_extraction",
+                "hybrid_processing",
+            ],
+        ),
+        (
+            "sentiment_analysis_agent_v1",
+            "Sentiment Analysis Agent",
+            "Hybrid AI agent for sentiment classification with automatic local/cloud routing (ZERO credits in local mode)",
+            AgentStatus.PRODUCTION,
+            "80%+ cost savings",
+            [
+                "sentiment_classification",
+                "confidence_scoring",
+                "key_point_extraction",
+                "hybrid_processing",
+            ],
+        ),
+        (
+            "feature_extraction_agent_v1",
+            "Feature Extraction Agent",
+            "Hybrid AI agent for feature and specification extraction with automatic local/cloud routing (ZERO credits in local mode)",
+            AgentStatus.PRODUCTION,
+            "80%+ cost savings",
+            [
+                "feature_identification",
+                "specification_extraction",
+                "benefit_analysis",
+                "hybrid_processing",
+            ],
+        ),
+        (
+            "classification_agent_v1",
+            "Classification Agent",
+            "Hybrid AI agent for multi-class classification with automatic local/cloud routing (ZERO credits in local mode)",
+            AgentStatus.PRODUCTION,
+            "80%+ cost savings",
+            [
+                "product_classification",
+                "multi_class_classification",
+                "custom_taxonomy",
+                "hybrid_processing",
+            ],
+        ),
     ]
 
     for agent_id, name, desc, status, roi, caps in hybrid_ai_agents:
-        agents.append(Agent(
-            id=agent_id,
-            name=name,
-            category=AgentCategory.CORE_UTILITY,
-            status=status,
-            description=desc,
-            capabilities=caps,
-            roi_impact=roi,
-            file_path=f"/backend/app/agents/hybrid_ai/{agent_id.replace('_v1', '')}.py",
-            tags=["hybrid-ai", "cost-optimization", "local-llm", "zero-credits", "ollama"]
-        ))
+        agents.append(
+            Agent(
+                id=agent_id,
+                name=name,
+                category=AgentCategory.CORE_UTILITY,
+                status=status,
+                description=desc,
+                capabilities=caps,
+                roi_impact=roi,
+                file_path=f"/backend/app/agents/hybrid_ai/{agent_id.replace('_v1', '')}.py",
+                tags=["hybrid-ai", "cost-optimization", "local-llm", "zero-credits", "ollama"],
+            )
+        )
 
     # Mobility Agents (12 agents)
     mobility_agents = [
-        ("traffic_prediction_agent_v1", "Traffic Prediction", "Predicts traffic patterns", AgentStatus.PRODUCTION, "22% faster trip times"),
-        ("route_discovery_agent_v1", "Route Discovery", "Optimal route discovery", AgentStatus.PRODUCTION, "35% distance savings"),
-        ("matching_optimization_agent_v1", "Matching Optimization", "Driver-rider matching", AgentStatus.PRODUCTION, "18% higher satisfaction"),
-        ("handoff_coordination_agent_v1", "Handoff Coordination", "Multi-driver coordination", AgentStatus.PRODUCTION, "28% higher utilization"),
-        ("consensus_agent_v1", "Consensus Agent", "Distributed decision making", AgentStatus.PRODUCTION, "40% reduction in conflicts"),
-        ("spatiotemporal_routing_agent_v1", "Spatiotemporal Routing", "Time-aware routing", AgentStatus.BETA, "30% better ETA accuracy"),
-        ("geospatial_broadcast_agent_v1", "Geospatial Broadcast", "Location-based messaging", AgentStatus.BETA, None),
-        ("ride_matching_agent_v1", "Ride Matching", "Intelligent ride matching", AgentStatus.BETA, None),
-        ("german_traffic_agent", "German Traffic Agent", "Germany-specific traffic", AgentStatus.DEVELOPMENT, None),
+        (
+            "traffic_prediction_agent_v1",
+            "Traffic Prediction",
+            "Predicts traffic patterns",
+            AgentStatus.PRODUCTION,
+            "22% faster trip times",
+        ),
+        (
+            "route_discovery_agent_v1",
+            "Route Discovery",
+            "Optimal route discovery",
+            AgentStatus.PRODUCTION,
+            "35% distance savings",
+        ),
+        (
+            "matching_optimization_agent_v1",
+            "Matching Optimization",
+            "Driver-rider matching",
+            AgentStatus.PRODUCTION,
+            "18% higher satisfaction",
+        ),
+        (
+            "handoff_coordination_agent_v1",
+            "Handoff Coordination",
+            "Multi-driver coordination",
+            AgentStatus.PRODUCTION,
+            "28% higher utilization",
+        ),
+        (
+            "consensus_agent_v1",
+            "Consensus Agent",
+            "Distributed decision making",
+            AgentStatus.PRODUCTION,
+            "40% reduction in conflicts",
+        ),
+        (
+            "spatiotemporal_routing_agent_v1",
+            "Spatiotemporal Routing",
+            "Time-aware routing",
+            AgentStatus.BETA,
+            "30% better ETA accuracy",
+        ),
+        (
+            "geospatial_broadcast_agent_v1",
+            "Geospatial Broadcast",
+            "Location-based messaging",
+            AgentStatus.BETA,
+            None,
+        ),
+        (
+            "ride_matching_agent_v1",
+            "Ride Matching",
+            "Intelligent ride matching",
+            AgentStatus.BETA,
+            None,
+        ),
+        (
+            "german_traffic_agent",
+            "German Traffic Agent",
+            "Germany-specific traffic",
+            AgentStatus.DEVELOPMENT,
+            None,
+        ),
     ]
 
     for agent_id, name, desc, status, roi in mobility_agents:
-        agents.append(Agent(
-            id=agent_id,
-            name=name,
-            category=AgentCategory.MOBILITY,
-            status=status,
-            description=desc,
-            roi_impact=roi,
-            file_path=f"/autonomous-ecosystem/library/agents/{agent_id}.py",
-            tags=["mobility", "routing", "optimization"]
-        ))
+        agents.append(
+            Agent(
+                id=agent_id,
+                name=name,
+                category=AgentCategory.MOBILITY,
+                status=status,
+                description=desc,
+                roi_impact=roi,
+                file_path=f"/autonomous-ecosystem/library/agents/{agent_id}.py",
+                tags=["mobility", "routing", "optimization"],
+            )
+        )
 
     # Technical Debt Management Agents (6 agents)
     tech_debt_agents = [
@@ -368,75 +519,143 @@ def get_all_agents() -> List[Agent]:
     ]
 
     for agent_id, name, desc in tech_debt_agents:
-        agents.append(Agent(
-            id=agent_id,
-            name=name,
-            category=AgentCategory.DEVELOPMENT,
-            status=AgentStatus.PRODUCTION,
-            description=desc,
-            file_path=f"/backend/app/technical_debt_management/{agent_id}.py",
-            tags=["technical-debt", "development", "maintenance"]
-        ))
+        agents.append(
+            Agent(
+                id=agent_id,
+                name=name,
+                category=AgentCategory.DEVELOPMENT,
+                status=AgentStatus.PRODUCTION,
+                description=desc,
+                file_path=f"/backend/app/technical_debt_management/{agent_id}.py",
+                tags=["technical-debt", "development", "maintenance"],
+            )
+        )
 
     # Product Enrichment Agents (7 agents)
     product_enrichment_agents = [
-        ("product_intelligence_agent", "Product Intelligence Agent", "Extracts comprehensive product information using AI", ["product_intelligence", "data_extraction", "ai_analysis"]),
-        ("image_discovery_agent", "Image Discovery Agent", "Finds high-quality product images", ["image_search", "visual_content", "quality_assessment"]),
-        ("market_analysis_agent", "Market Analysis Agent", "Analyzes market opportunity and trends", ["market_research", "trend_analysis", "opportunity_scoring"]),
-        ("competitive_intelligence_agent", "Competitive Intelligence Agent", "Analyzes competitive landscape", ["competitor_analysis", "market_positioning", "intelligence_gathering"]),
-        ("pricing_strategy_agent", "Pricing Strategy Agent", "Determines optimal pricing strategies", ["pricing_optimization", "competitive_pricing", "value_based_pricing"]),
-        ("customer_profiling_agent", "Customer Profiling Agent", "Creates detailed customer personas", ["customer_segmentation", "persona_development", "target_audience"]),
-        ("business_model_agent", "Business Model Agent", "Creates business model recommendations", ["business_planning", "revenue_models", "value_proposition"]),
+        (
+            "product_intelligence_agent",
+            "Product Intelligence Agent",
+            "Extracts comprehensive product information using AI",
+            ["product_intelligence", "data_extraction", "ai_analysis"],
+        ),
+        (
+            "image_discovery_agent",
+            "Image Discovery Agent",
+            "Finds high-quality product images",
+            ["image_search", "visual_content", "quality_assessment"],
+        ),
+        (
+            "market_analysis_agent",
+            "Market Analysis Agent",
+            "Analyzes market opportunity and trends",
+            ["market_research", "trend_analysis", "opportunity_scoring"],
+        ),
+        (
+            "competitive_intelligence_agent",
+            "Competitive Intelligence Agent",
+            "Analyzes competitive landscape",
+            ["competitor_analysis", "market_positioning", "intelligence_gathering"],
+        ),
+        (
+            "pricing_strategy_agent",
+            "Pricing Strategy Agent",
+            "Determines optimal pricing strategies",
+            ["pricing_optimization", "competitive_pricing", "value_based_pricing"],
+        ),
+        (
+            "customer_profiling_agent",
+            "Customer Profiling Agent",
+            "Creates detailed customer personas",
+            ["customer_segmentation", "persona_development", "target_audience"],
+        ),
+        (
+            "business_model_agent",
+            "Business Model Agent",
+            "Creates business model recommendations",
+            ["business_planning", "revenue_models", "value_proposition"],
+        ),
     ]
 
     for agent_id, name, desc, caps in product_enrichment_agents:
-        agents.append(Agent(
-            id=agent_id,
-            name=name,
-            category=AgentCategory.ANALYTICS,
-            status=AgentStatus.PRODUCTION,
-            description=desc,
-            capabilities=caps,
-            file_path=f"/backend/app/agents/product_enrichment_agents.py",
-            tags=["product-enrichment", "ai-analysis", "market-research"]
-        ))
+        agents.append(
+            Agent(
+                id=agent_id,
+                name=name,
+                category=AgentCategory.ANALYTICS,
+                status=AgentStatus.PRODUCTION,
+                description=desc,
+                capabilities=caps,
+                file_path=f"/backend/app/agents/product_enrichment_agents.py",
+                tags=["product-enrichment", "ai-analysis", "market-research"],
+            )
+        )
 
     # Workflow Coordination Agents (3 agents)
     workflow_agents = [
-        ("enrichment_workflow_coordinator", "Enrichment Workflow Coordinator", "Coordinates multi-agent enrichment workflows (APQC 13.2.1.5)", ["workflow_orchestration", "task_management", "agent_coordination"]),
-        ("market_opportunity_scoring_agent", "Market Opportunity Scoring Agent", "Calculates market opportunity scores (APQC 3.1.2.5)", ["opportunity_scoring", "market_analysis", "data_aggregation"]),
-        ("product_data_validation_agent", "Product Data Validation Agent", "Validates product data quality (APQC 3.3.3.5)", ["data_validation", "quality_assurance", "completeness_check"]),
+        (
+            "enrichment_workflow_coordinator",
+            "Enrichment Workflow Coordinator",
+            "Coordinates multi-agent enrichment workflows (APQC 13.2.1.5)",
+            ["workflow_orchestration", "task_management", "agent_coordination"],
+        ),
+        (
+            "market_opportunity_scoring_agent",
+            "Market Opportunity Scoring Agent",
+            "Calculates market opportunity scores (APQC 3.1.2.5)",
+            ["opportunity_scoring", "market_analysis", "data_aggregation"],
+        ),
+        (
+            "product_data_validation_agent",
+            "Product Data Validation Agent",
+            "Validates product data quality (APQC 3.3.3.5)",
+            ["data_validation", "quality_assurance", "completeness_check"],
+        ),
     ]
 
     for agent_id, name, desc, caps in workflow_agents:
-        agents.append(Agent(
-            id=agent_id,
-            name=name,
-            category=AgentCategory.TASK_LEVEL,
-            status=AgentStatus.PRODUCTION,
-            description=desc,
-            capabilities=caps,
-            file_path=f"/backend/app/agents/{agent_id}.py",
-            tags=["workflow", "coordination", "apqc-level-5"]
-        ))
+        agents.append(
+            Agent(
+                id=agent_id,
+                name=name,
+                category=AgentCategory.TASK_LEVEL,
+                status=AgentStatus.PRODUCTION,
+                description=desc,
+                capabilities=caps,
+                file_path=f"/backend/app/agents/{agent_id}.py",
+                tags=["workflow", "coordination", "apqc-level-5"],
+            )
+        )
 
     # Meta Agents (2 agents)
     meta_agents = [
-        ("agent_registry_sync_agent", "Agent Registry Sync Agent", "Automatically discovers and registers agents using AST parsing", ["agent_discovery", "registry_management", "metadata_extraction"]),
-        ("agent_registry_updater", "Agent Registry Updater", "Updates agent registry across APQC levels", ["registry_updates", "apqc_mapping", "metadata_management"]),
+        (
+            "agent_registry_sync_agent",
+            "Agent Registry Sync Agent",
+            "Automatically discovers and registers agents using AST parsing",
+            ["agent_discovery", "registry_management", "metadata_extraction"],
+        ),
+        (
+            "agent_registry_updater",
+            "Agent Registry Updater",
+            "Updates agent registry across APQC levels",
+            ["registry_updates", "apqc_mapping", "metadata_management"],
+        ),
     ]
 
     for agent_id, name, desc, caps in meta_agents:
-        agents.append(Agent(
-            id=agent_id,
-            name=name,
-            category=AgentCategory.META,
-            status=AgentStatus.PRODUCTION,
-            description=desc,
-            capabilities=caps,
-            file_path=f"/backend/app/agents/meta/{agent_id}.py",
-            tags=["meta-agent", "self-improvement", "automation"]
-        ))
+        agents.append(
+            Agent(
+                id=agent_id,
+                name=name,
+                category=AgentCategory.META,
+                status=AgentStatus.PRODUCTION,
+                description=desc,
+                capabilities=caps,
+                file_path=f"/backend/app/agents/meta/{agent_id}.py",
+                tags=["meta-agent", "self-improvement", "automation"],
+            )
+        )
 
     return agents
 
@@ -447,49 +666,93 @@ def get_all_swarms() -> List[AgentSwarm]:
 
     # Industry Swarms
     industry_swarms = [
-        ("healthcare_swarm_001", "Healthcare Operations Swarm", Industry.HEALTHCARE,
-         17, "hierarchical_with_feedback", "$500K - $2M annually"),
-        ("finserv_swarm_001", "Financial Services Operations Swarm", Industry.FINANCIAL_SERVICES,
-         20, "event_driven_with_escalation", "$2M - $10M annually"),
-        ("logistics_swarm_001", "Supply Chain & Logistics Swarm", Industry.LOGISTICS,
-         20, "distributed_consensus", "$1M - $5M annually"),
-        ("manufacturing_swarm_001", "Smart Manufacturing Swarm", Industry.MANUFACTURING,
-         20, "real_time_orchestration", "$3M - $15M annually"),
-        ("retail_swarm_001", "Retail Operations Swarm", Industry.RETAIL,
-         20, "customer_centric_orchestration", "$500K - $3M annually"),
-        ("technology_swarm_001", "SaaS & Technology Operations Swarm", Industry.TECHNOLOGY,
-         20, "continuous_deployment_pipeline", "$1M - $5M annually"),
+        (
+            "healthcare_swarm_001",
+            "Healthcare Operations Swarm",
+            Industry.HEALTHCARE,
+            17,
+            "hierarchical_with_feedback",
+            "$500K - $2M annually",
+        ),
+        (
+            "finserv_swarm_001",
+            "Financial Services Operations Swarm",
+            Industry.FINANCIAL_SERVICES,
+            20,
+            "event_driven_with_escalation",
+            "$2M - $10M annually",
+        ),
+        (
+            "logistics_swarm_001",
+            "Supply Chain & Logistics Swarm",
+            Industry.LOGISTICS,
+            20,
+            "distributed_consensus",
+            "$1M - $5M annually",
+        ),
+        (
+            "manufacturing_swarm_001",
+            "Smart Manufacturing Swarm",
+            Industry.MANUFACTURING,
+            20,
+            "real_time_orchestration",
+            "$3M - $15M annually",
+        ),
+        (
+            "retail_swarm_001",
+            "Retail Operations Swarm",
+            Industry.RETAIL,
+            20,
+            "customer_centric_orchestration",
+            "$500K - $3M annually",
+        ),
+        (
+            "technology_swarm_001",
+            "SaaS & Technology Operations Swarm",
+            Industry.TECHNOLOGY,
+            20,
+            "continuous_deployment_pipeline",
+            "$1M - $5M annually",
+        ),
     ]
 
     for swarm_id, name, industry, agent_count, pattern, roi in industry_swarms:
-        swarms.append(AgentSwarm(
-            id=swarm_id,
-            name=name,
-            description=f"Complete {industry.value} operations agent team",
-            category=AgentCategory.INDUSTRY_SWARM,
-            industry=industry,
-            agents=[f"{industry.value}_agent_{i}" for i in range(agent_count)],
-            coordination_pattern=pattern,
-            use_cases=[f"{industry.value} use case {i}" for i in range(3)],
-            estimated_roi=roi,
-            status=AgentStatus.PRODUCTION
-        ))
+        swarms.append(
+            AgentSwarm(
+                id=swarm_id,
+                name=name,
+                description=f"Complete {industry.value} operations agent team",
+                category=AgentCategory.INDUSTRY_SWARM,
+                industry=industry,
+                agents=[f"{industry.value}_agent_{i}" for i in range(agent_count)],
+                coordination_pattern=pattern,
+                use_cases=[f"{industry.value} use case {i}" for i in range(3)],
+                estimated_roi=roi,
+                status=AgentStatus.PRODUCTION,
+            )
+        )
 
     # Functional Swarms
-    swarms.append(AgentSwarm(
-        id="mobility_routing_swarm",
-        name="Mobility Routing Swarm",
-        description="Production-ready mobility and routing optimization",
-        category=AgentCategory.MOBILITY,
-        agents=["traffic_prediction_agent_v1", "route_discovery_agent_v1",
-                "matching_optimization_agent_v1", "handoff_coordination_agent_v1",
-                "consensus_agent_v1"],
-        coordination_pattern="distributed_consensus",
-        use_cases=["Ride-sharing optimization", "Fleet management", "Traffic prediction"],
-        estimated_roi="$60M+ annually",
-        status=AgentStatus.PRODUCTION,
-        deployment_count=1
-    ))
+    swarms.append(
+        AgentSwarm(
+            id="mobility_routing_swarm",
+            name="Mobility Routing Swarm",
+            description="Production-ready mobility and routing optimization",
+            category=AgentCategory.MOBILITY,
+            agents=[
+                "traffic_prediction_agent_v1",
+                "route_discovery_agent_v1",
+                "matching_optimization_agent_v1",
+                "handoff_coordination_agent_v1",
+                "consensus_agent_v1",
+            ],
+            coordination_pattern="distributed_consensus",
+            use_cases=["Ride-sharing optimization", "Fleet management", "Traffic prediction"],
+            estimated_roi="$60M+ annually",
+            status=AgentStatus.PRODUCTION,
+            deployment_count=1,
+        )
+    )
 
     return swarms
 
@@ -520,13 +783,14 @@ def get_library_stats() -> LibraryStats:
         in_development=by_status.get(AgentStatus.DEVELOPMENT.value, 0),
         templates_available=by_status.get(AgentStatus.TEMPLATE.value, 0),
         apqc_coverage=100.0,  # Full APQC coverage
-        recent_additions=agents[:5]
+        recent_additions=agents[:5],
     )
 
 
 # ============================================================================
 # API ENDPOINTS
 # ============================================================================
+
 
 @router.get("/agents", response_model=List[Agent])
 async def list_agents(
@@ -536,7 +800,7 @@ async def list_agents(
     search: Optional[str] = None,
     tags: Optional[List[str]] = Query(None),
     limit: int = 100,
-    offset: int = 0
+    offset: int = 0,
 ):
     """
     List all agents with optional filtering
@@ -555,15 +819,17 @@ async def list_agents(
 
     if search:
         search_lower = search.lower()
-        agents = [a for a in agents if
-                 search_lower in a.name.lower() or
-                 search_lower in a.description.lower()]
+        agents = [
+            a
+            for a in agents
+            if search_lower in a.name.lower() or search_lower in a.description.lower()
+        ]
 
     if tags:
         agents = [a for a in agents if any(tag in a.tags for tag in tags)]
 
     # Pagination
-    return agents[offset:offset + limit]
+    return agents[offset : offset + limit]
 
 
 @router.get("/agents/{agent_id}", response_model=Agent)
@@ -582,7 +848,7 @@ async def get_agent(agent_id: str):
 async def list_swarms(
     category: Optional[AgentCategory] = None,
     industry: Optional[Industry] = None,
-    status: Optional[AgentStatus] = None
+    status: Optional[AgentStatus] = None,
 ):
     """List all agent swarms with optional filtering"""
     swarms = get_all_swarms()
@@ -623,7 +889,7 @@ async def list_categories():
     return {
         "categories": [cat.value for cat in AgentCategory],
         "industries": [ind.value for ind in Industry],
-        "statuses": [status.value for status in AgentStatus]
+        "statuses": [status.value for status in AgentStatus],
     }
 
 
@@ -640,7 +906,7 @@ async def get_roadmap():
             status="completed",
             agents_included=["traffic_prediction_agent_v1", "route_discovery_agent_v1"],
             progress_percentage=100,
-            estimated_completion="2025-10-01"
+            estimated_completion="2025-10-01",
         ),
         RoadmapItem(
             id="phase_2",
@@ -651,7 +917,7 @@ async def get_roadmap():
             status="in_progress",
             agents_included=["healthcare_swarm_001", "finserv_swarm_001"],
             progress_percentage=60,
-            estimated_completion="2025-11-15"
+            estimated_completion="2025-11-15",
         ),
         RoadmapItem(
             id="phase_3",
@@ -662,7 +928,7 @@ async def get_roadmap():
             status="planned",
             agents_included=[],
             progress_percentage=0,
-            estimated_completion="2025-12-31"
+            estimated_completion="2025-12-31",
         ),
     ]
 
@@ -692,7 +958,7 @@ async def get_apqc_coverage():
             {"id": "11.0", "name": "External Relations", "agents": 5, "coverage": 100},
             {"id": "12.0", "name": "Capability Development", "agents": 7, "coverage": 100},
             {"id": "13.0", "name": "Information Technology", "agents": 8, "coverage": 100},
-        ]
+        ],
     }
 
 

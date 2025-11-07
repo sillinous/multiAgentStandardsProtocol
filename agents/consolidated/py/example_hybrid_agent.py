@@ -22,10 +22,11 @@ load_dotenv()
 import nice_funcs as solana  # Solana spot trading
 import nice_funcs_hyperliquid as hl  # HyperLiquid perps
 
+
 def trade_on_solana():
     """Example: Trade spot tokens on Solana"""
-    cprint("\n🌊 SOLANA SPOT TRADING", "cyan", attrs=['bold'])
-    cprint("="*50, "cyan")
+    cprint("\n🌊 SOLANA SPOT TRADING", "cyan", attrs=["bold"])
+    cprint("=" * 50, "cyan")
 
     try:
         # Example token address (replace with real one)
@@ -51,18 +52,19 @@ def trade_on_solana():
     except Exception as e:
         cprint(f"❌ Solana error: {str(e)}", "red")
 
+
 def trade_on_hyperliquid():
     """Example: Trade perpetuals on HyperLiquid"""
-    cprint("\n⚡ HYPERLIQUID PERPS TRADING", "magenta", attrs=['bold'])
-    cprint("="*50, "magenta")
+    cprint("\n⚡ HYPERLIQUID PERPS TRADING", "magenta", attrs=["bold"])
+    cprint("=" * 50, "magenta")
 
     try:
         # Initialize HyperLiquid account
-        account = eth_account.Account.from_key(os.getenv('HYPER_LIQUID_KEY'))
+        account = eth_account.Account.from_key(os.getenv("HYPER_LIQUID_KEY"))
 
         # Get BTC price
         cprint("Getting BTC perp price...", "yellow")
-        btc_price = hl.get_current_price('BTC')
+        btc_price = hl.get_current_price("BTC")
         cprint(f"BTC perp price: ${btc_price:,.2f}", "green")
 
         # Check account value
@@ -70,7 +72,7 @@ def trade_on_hyperliquid():
         cprint(f"Account value: ${account_value:,.2f}", "green")
 
         # Check position
-        positions, im_in_pos, size, sym, entry, pnl, is_long = hl.get_position('BTC', account)
+        positions, im_in_pos, size, sym, entry, pnl, is_long = hl.get_position("BTC", account)
         if im_in_pos:
             side = "LONG" if is_long else "SHORT"
             cprint(f"Current position: {side} {size} BTC @ ${entry:.2f} (PnL: {pnl:.2f}%)", "green")
@@ -86,12 +88,14 @@ def trade_on_hyperliquid():
     except Exception as e:
         cprint(f"❌ HyperLiquid error: {str(e)}", "red")
 
+
 def hybrid_strategy_example():
     """Example: Use both exchanges in one strategy"""
-    cprint("\n🔀 HYBRID STRATEGY EXAMPLE", "yellow", attrs=['bold'])
-    cprint("="*50, "yellow")
+    cprint("\n🔀 HYBRID STRATEGY EXAMPLE", "yellow", attrs=["bold"])
+    cprint("=" * 50, "yellow")
 
-    cprint("""
+    cprint(
+        """
 Strategy Idea:
 1. Monitor BTC perps on HyperLiquid for direction
 2. When BTC pumps on perps, buy SOL memecoins on Solana
@@ -100,15 +104,17 @@ Strategy Idea:
 This leverages:
 - HyperLiquid: Better for BTC/ETH with leverage
 - Solana: Better for memecoins and new tokens
-    """, "white")
+    """,
+        "white",
+    )
 
     # Example implementation skeleton:
     try:
         # Get HyperLiquid account
-        hl_account = eth_account.Account.from_key(os.getenv('HYPER_LIQUID_KEY'))
+        hl_account = eth_account.Account.from_key(os.getenv("HYPER_LIQUID_KEY"))
 
         # Check BTC trend on HyperLiquid
-        btc_price_now = hl.get_current_price('BTC')
+        btc_price_now = hl.get_current_price("BTC")
         cprint(f"BTC on HyperLiquid: ${btc_price_now:,.2f}", "cyan")
 
         # Make decision
@@ -119,20 +125,21 @@ This leverages:
             cprint("📉 BTC looks bearish, would sell memecoins on Solana", "red")
             # solana.market_sell(memecoin_address, 100)
 
-        cprint("\n✅ Hybrid strategy logic works!", "green", attrs=['bold'])
+        cprint("\n✅ Hybrid strategy logic works!", "green", attrs=["bold"])
 
     except Exception as e:
         cprint(f"❌ Hybrid strategy error: {str(e)}", "red")
 
+
 def main():
     """Run examples"""
-    cprint("\n" + "="*60, "cyan")
-    cprint("🌙 MOON DEV'S HYBRID TRADING EXAMPLE", "cyan", attrs=['bold'])
-    cprint("="*60, "cyan")
+    cprint("\n" + "=" * 60, "cyan")
+    cprint("🌙 MOON DEV'S HYBRID TRADING EXAMPLE", "cyan", attrs=["bold"])
+    cprint("=" * 60, "cyan")
 
     # Check environment
-    has_solana = os.getenv('SOLANA_PRIVATE_KEY') is not None
-    has_hyperliquid = os.getenv('HYPER_LIQUID_KEY') is not None
+    has_solana = os.getenv("SOLANA_PRIVATE_KEY") is not None
+    has_hyperliquid = os.getenv("HYPER_LIQUID_KEY") is not None
 
     cprint("\n🔑 Environment Check:", "yellow")
     cprint(f"  Solana: {'✅' if has_solana else '❌'} SOLANA_PRIVATE_KEY", "white")
@@ -154,11 +161,12 @@ def main():
     else:
         cprint("\n⚠️  Skipping hybrid strategy (need both keys)", "yellow")
 
-    cprint("\n" + "="*60, "cyan")
-    cprint("📚 SUMMARY", "cyan", attrs=['bold'])
-    cprint("="*60, "cyan")
+    cprint("\n" + "=" * 60, "cyan")
+    cprint("📚 SUMMARY", "cyan", attrs=["bold"])
+    cprint("=" * 60, "cyan")
 
-    cprint("""
+    cprint(
+        """
 How to use in your agents:
 
 1. For Solana only:
@@ -176,9 +184,12 @@ How to use in your agents:
 Choose based on your needs:
 - Solana: Spot tokens, memecoins, new launches
 - HyperLiquid: BTC/ETH/SOL perps with leverage
-    """, "white")
+    """,
+        "white",
+    )
 
     cprint("\n🌕 Thanks for using Moon Dev Trading Bots! 🤖", "magenta")
+
 
 if __name__ == "__main__":
     main()

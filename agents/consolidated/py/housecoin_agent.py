@@ -98,13 +98,15 @@ SLIPPAGE = 499  # 5% slippage
 PRIORITY_FEE = 20000  # Priority fee for transactions
 
 # AI Model Configuration
-AI_MODEL_TYPE = 'xai'  # Using xAI's Grok for fast reasoning
-AI_MODEL_NAME = 'grok-4-fast-reasoning'  # Grok-4 fast - best value with 2M context!
+AI_MODEL_TYPE = "xai"  # Using xAI's Grok for fast reasoning
+AI_MODEL_NAME = "grok-4-fast-reasoning"  # Grok-4 fast - best value with 2M context!
 AI_TEMPERATURE = 0.3  # Lower temperature for more consistent decisions
 AI_MAX_TOKENS = 150  # Short responses for buy/don't buy decisions
 
 # State file for tracking buys
-STATE_FILE = os.path.join(project_root, "src", "data", "housecoin_agent", "housecoin_agent_state.json")
+STATE_FILE = os.path.join(
+    project_root, "src", "data", "housecoin_agent", "housecoin_agent_state.json"
+)
 
 # ============== HOUSECOIN THESIS ==============
 THESIS_STATEMENTS = [
@@ -117,10 +119,15 @@ THESIS_STATEMENTS = [
     "Real estate is a $300+ trillion market. Housecoin captures this digitally",
 ]
 
+
 class HousecoinAgent:
     def __init__(self):
         """Initialize the Housecoin DCA Agent"""
-        cprint("\n🏠 Initializing Housecoin DCA Agent with AI Decision Layer 🏠", "cyan", attrs=['bold'])
+        cprint(
+            "\n🏠 Initializing Housecoin DCA Agent with AI Decision Layer 🏠",
+            "cyan",
+            attrs=["bold"],
+        )
 
         # Initialize AI model
         cprint(f"🤖 Loading {AI_MODEL_TYPE} model: {AI_MODEL_NAME}", "yellow")
@@ -134,53 +141,57 @@ class HousecoinAgent:
 
         # Load state
         self.state = self.load_state()
-        self.last_buy_time = datetime.fromisoformat(self.state['last_buy_time']) if self.state['last_buy_time'] else None
+        self.last_buy_time = (
+            datetime.fromisoformat(self.state["last_buy_time"])
+            if self.state["last_buy_time"]
+            else None
+        )
 
         # API keys
-        self.birdeye_api_key = os.getenv('birdeye_api_key') or os.getenv('BIRDEYE_API_KEY')
+        self.birdeye_api_key = os.getenv("birdeye_api_key") or os.getenv("BIRDEYE_API_KEY")
 
         if not self.birdeye_api_key:
             cprint("⚠️ Warning: BIRDEYE_API_KEY not found", "yellow")
 
         cprint("✅ Housecoin Agent initialized!", "green")
-        cprint("⚠️ NOT FINANCIAL ADVICE - Trade at your own risk!", "yellow", attrs=['bold'])
+        cprint("⚠️ NOT FINANCIAL ADVICE - Trade at your own risk!", "yellow", attrs=["bold"])
 
     def load_state(self):
         """Load agent state from file"""
         if os.path.exists(STATE_FILE):
-            with open(STATE_FILE, 'r') as f:
+            with open(STATE_FILE, "r") as f:
                 return json.load(f)
         return {
-            'daily_spent': 0,
-            'last_reset_date': str(datetime.now().date()),
-            'last_buy_time': None,
-            'buy_history': [],
-            'total_bought': 0,
-            'ai_decisions': []
+            "daily_spent": 0,
+            "last_reset_date": str(datetime.now().date()),
+            "last_buy_time": None,
+            "buy_history": [],
+            "total_bought": 0,
+            "ai_decisions": [],
         }
 
     def save_state(self):
         """Save agent state to file"""
-        with open(STATE_FILE, 'w') as f:
+        with open(STATE_FILE, "w") as f:
             json.dump(self.state, f, indent=2)
 
     def get_current_price_and_sma(self):
         """Fetch current price and calculate 20-day SMA"""
         try:
             # Get 20 days of daily data for SMA
-            df = n.get_data(HOUSECOIN_ADDRESS, 20, '1D')
+            df = n.get_data(HOUSECOIN_ADDRESS, 20, "1D")
 
             if df is not None and not df.empty:
                 # Check which columns are available - try different column names
                 close_col = None
-                if 'close' in df.columns:
-                    close_col = 'close'
-                elif 'Close' in df.columns:
-                    close_col = 'Close'
-                elif 'c' in df.columns:
-                    close_col = 'c'
-                elif 'value' in df.columns:
-                    close_col = 'value'
+                if "close" in df.columns:
+                    close_col = "close"
+                elif "Close" in df.columns:
+                    close_col = "Close"
+                elif "c" in df.columns:
+                    close_col = "c"
+                elif "value" in df.columns:
+                    close_col = "value"
 
                 if close_col:
                     # Calculate 20-day SMA
@@ -189,9 +200,11 @@ class HousecoinAgent:
                     cprint(f"✅ Price: ${current_price:.8f}, SMA: ${sma_20:.8f}", "green")
                     return current_price, sma_20
                 else:
-                    cprint(f"❌ No close column found. Available columns: {df.columns.tolist()}", "red")
+                    cprint(
+                        f"❌ No close column found. Available columns: {df.columns.tolist()}", "red"
+                    )
                     # Try to use the last numeric column as price
-                    numeric_cols = df.select_dtypes(include=['float64', 'int64']).columns
+                    numeric_cols = df.select_dtypes(include=["float64", "int64"]).columns
                     if len(numeric_cols) > 0:
                         cprint(f"Using numeric column: {numeric_cols[-1]}", "yellow")
                         sma_20 = df[numeric_cols[-1]].mean()
@@ -201,6 +214,7 @@ class HousecoinAgent:
         except Exception as e:
             cprint(f"Error fetching price data: {e}", "red")
             import traceback
+
             traceback.print_exc()
 
         return None, None
@@ -209,7 +223,7 @@ class HousecoinAgent:
         """Fetch 5-minute candles for AI analysis"""
         try:
             # Get 55 bars of 5-minute data (about 4.5 hours)
-            df = n.get_data(HOUSECOIN_ADDRESS, 0.25, '5m')  # 0.25 days = ~6 hours
+            df = n.get_data(HOUSECOIN_ADDRESS, 0.25, "5m")  # 0.25 days = ~6 hours
 
             if df is not None and not df.empty:
                 # Get last 55 bars
@@ -217,14 +231,14 @@ class HousecoinAgent:
 
                 # Check which columns are available
                 close_col = None
-                if 'close' in df.columns:
-                    close_col = 'close'
-                elif 'Close' in df.columns:
-                    close_col = 'Close'
-                elif 'c' in df.columns:
-                    close_col = 'c'
-                elif 'value' in df.columns:
-                    close_col = 'value'
+                if "close" in df.columns:
+                    close_col = "close"
+                elif "Close" in df.columns:
+                    close_col = "Close"
+                elif "c" in df.columns:
+                    close_col = "c"
+                elif "value" in df.columns:
+                    close_col = "value"
 
                 if close_col and len(df) >= 20:
                     # Calculate 20-period SMA on 5-minute chart
@@ -233,7 +247,7 @@ class HousecoinAgent:
                     return df, current_price, sma_5min_20
                 elif not close_col:
                     # Try to use the last numeric column
-                    numeric_cols = df.select_dtypes(include=['float64', 'int64']).columns
+                    numeric_cols = df.select_dtypes(include=["float64", "int64"]).columns
                     if len(numeric_cols) > 0 and len(df) >= 20:
                         close_col = numeric_cols[-1]
                         sma_5min_20 = df.tail(20)[close_col].mean()
@@ -249,7 +263,7 @@ class HousecoinAgent:
         """Get today's low price"""
         try:
             # Get today's hourly data
-            df = n.get_data(HOUSECOIN_ADDRESS, 1, '1H')  # 1 day of hourly data
+            df = n.get_data(HOUSECOIN_ADDRESS, 1, "1H")  # 1 day of hourly data
 
             if df is not None and not df.empty:
                 # Filter for today only
@@ -257,27 +271,27 @@ class HousecoinAgent:
 
                 # Check for datetime column variations
                 date_col = None
-                if 'datetime' in df.columns:
-                    date_col = 'datetime'
-                elif 'date' in df.columns:
-                    date_col = 'date'
-                elif 'time' in df.columns:
-                    date_col = 'time'
-                elif 'timestamp' in df.columns:
-                    date_col = 'timestamp'
+                if "datetime" in df.columns:
+                    date_col = "datetime"
+                elif "date" in df.columns:
+                    date_col = "date"
+                elif "time" in df.columns:
+                    date_col = "time"
+                elif "timestamp" in df.columns:
+                    date_col = "timestamp"
 
                 if date_col:
-                    df['date'] = pd.to_datetime(df[date_col]).dt.date
-                    today_df = df[df['date'] == today]
+                    df["date"] = pd.to_datetime(df[date_col]).dt.date
+                    today_df = df[df["date"] == today]
 
                     # Check for low column variations
                     low_col = None
-                    if 'low' in df.columns:
-                        low_col = 'low'
-                    elif 'Low' in df.columns:
-                        low_col = 'Low'
-                    elif 'l' in df.columns:
-                        low_col = 'l'
+                    if "low" in df.columns:
+                        low_col = "low"
+                    elif "Low" in df.columns:
+                        low_col = "Low"
+                    elif "l" in df.columns:
+                        low_col = "l"
 
                     if low_col and not today_df.empty:
                         return today_df[low_col].min()
@@ -313,7 +327,18 @@ class HousecoinAgent:
             if df_5min is not None:
                 # Get available columns for display
                 cols_to_show = []
-                for col in ['datetime', 'date', 'time', 'timestamp', 'open', 'high', 'low', 'close', 'volume', 'value']:
+                for col in [
+                    "datetime",
+                    "date",
+                    "time",
+                    "timestamp",
+                    "open",
+                    "high",
+                    "low",
+                    "close",
+                    "volume",
+                    "value",
+                ]:
                     if col in df_5min.columns:
                         cols_to_show.append(col)
 
@@ -326,7 +351,7 @@ class HousecoinAgent:
 
                 # Find the close column for technical analysis
                 close_col = None
-                for col in ['close', 'Close', 'c', 'value']:
+                for col in ["close", "Close", "c", "value"]:
                     if col in df_5min.columns:
                         close_col = col
                         break
@@ -344,20 +369,24 @@ class HousecoinAgent:
                         rs = gain / loss
                         rsi = 100 - (100 / (1 + rs)).iloc[-1]
 
-                    technical_analysis = f"- 5-min SMA (20): ${df_5min.tail(20)[close_col].mean():.8f}\n"
+                    technical_analysis = (
+                        f"- 5-min SMA (20): ${df_5min.tail(20)[close_col].mean():.8f}\n"
+                    )
 
                     # Add volume if available
-                    if 'volume' in df_5min.columns:
-                        technical_analysis += f"- Volume (last 5 bars): {df_5min.tail(5)['volume'].mean():.0f}\n"
+                    if "volume" in df_5min.columns:
+                        technical_analysis += (
+                            f"- Volume (last 5 bars): {df_5min.tail(5)['volume'].mean():.0f}\n"
+                        )
 
                     # Add price range if we have high/low columns
                     low_col = None
                     high_col = None
-                    for col in ['low', 'Low', 'l']:
+                    for col in ["low", "Low", "l"]:
                         if col in df_5min.columns:
                             low_col = col
                             break
-                    for col in ['high', 'High', 'h']:
+                    for col in ["high", "High", "h"]:
                         if col in df_5min.columns:
                             high_col = col
                             break
@@ -376,7 +405,7 @@ class HousecoinAgent:
                 market_conditions=market_conditions,
                 price_data=price_data,
                 technical_analysis=technical_analysis,
-                buy_reason=buy_reason
+                buy_reason=buy_reason,
             )
 
             # Get AI decision
@@ -385,7 +414,7 @@ class HousecoinAgent:
                 system_prompt="You are a trading assistant that must respond with either 'BUY' or 'DONT BUY' followed by a brief explanation.",
                 user_content=prompt,
                 temperature=AI_TEMPERATURE,
-                max_tokens=AI_MAX_TOKENS
+                max_tokens=AI_MAX_TOKENS,
             )
 
             # Parse response
@@ -393,11 +422,15 @@ class HousecoinAgent:
                 response_text = str(response).strip().upper()
 
                 # Check for BUY or DONT BUY
-                if "BUY" in response_text and "DONT" not in response_text and "DON'T" not in response_text:
-                    cprint("✅ AI APPROVED: BUY", "green", attrs=['bold'])
+                if (
+                    "BUY" in response_text
+                    and "DONT" not in response_text
+                    and "DON'T" not in response_text
+                ):
+                    cprint("✅ AI APPROVED: BUY", "green", attrs=["bold"])
                     return True, response
                 else:
-                    cprint("❌ AI REJECTED: DON'T BUY", "red", attrs=['bold'])
+                    cprint("❌ AI REJECTED: DON'T BUY", "red", attrs=["bold"])
                     return False, response
             else:
                 cprint("⚠️ AI did not respond, defaulting to NO BUY", "yellow")
@@ -410,7 +443,7 @@ class HousecoinAgent:
     def execute_buy(self, amount, reason):
         """Execute a market buy after AI confirmation"""
         try:
-            cprint(f"\n💰 Executing buy for ${amount} worth of Housecoin", "green", attrs=['bold'])
+            cprint(f"\n💰 Executing buy for ${amount} worth of Housecoin", "green", attrs=["bold"])
 
             # Execute buy using nice_funcs with slippage
             tx_id = n.market_buy(HOUSECOIN_ADDRESS, amount, SLIPPAGE)
@@ -419,15 +452,17 @@ class HousecoinAgent:
                 cprint(f"✅ Buy successful! TX: {tx_id}", "green")
 
                 # Update state
-                self.state['daily_spent'] += amount
-                self.state['last_buy_time'] = datetime.now().isoformat()
-                self.state['total_bought'] += amount
-                self.state['buy_history'].append({
-                    'time': datetime.now().isoformat(),
-                    'amount': amount,
-                    'reason': reason,
-                    'tx_id': tx_id
-                })
+                self.state["daily_spent"] += amount
+                self.state["last_buy_time"] = datetime.now().isoformat()
+                self.state["total_bought"] += amount
+                self.state["buy_history"].append(
+                    {
+                        "time": datetime.now().isoformat(),
+                        "amount": amount,
+                        "reason": reason,
+                        "tx_id": tx_id,
+                    }
+                )
                 self.save_state()
                 self.last_buy_time = datetime.now()
 
@@ -442,23 +477,23 @@ class HousecoinAgent:
 
     def run(self):
         """Main agent loop"""
-        print("\n" + "="*60)
-        cprint("🏠 Housecoin DCA Agent with AI Decisions 🏠", "cyan", attrs=['bold'])
-        print("="*60)
-        cprint("⚠️ NOT FINANCIAL ADVICE - This may go to zero!", "yellow", attrs=['bold'])
+        print("\n" + "=" * 60)
+        cprint("🏠 Housecoin DCA Agent with AI Decisions 🏠", "cyan", attrs=["bold"])
+        print("=" * 60)
+        cprint("⚠️ NOT FINANCIAL ADVICE - This may go to zero!", "yellow", attrs=["bold"])
         cprint(f"Thesis: 1 House = 1 Housecoin", "magenta")
         cprint(f"Exit Target: ${EXIT_PRICE}", "yellow")
         cprint(f"Trading Hours: {TRADING_START_HOUR}AM-{TRADING_END_HOUR-12}PM ET", "cyan")
         cprint(f"AI Model: {AI_MODEL_TYPE} - {AI_MODEL_NAME}", "green")
-        print("="*60)
+        print("=" * 60)
 
         while True:
             try:
                 # Reset daily spending at midnight
                 current_date = str(datetime.now().date())
-                if current_date != self.state['last_reset_date']:
-                    self.state['daily_spent'] = 0
-                    self.state['last_reset_date'] = current_date
+                if current_date != self.state["last_reset_date"]:
+                    self.state["daily_spent"] = 0
+                    self.state["last_reset_date"] = current_date
                     self.save_state()
                     cprint(f"\n📅 New day! Daily spending reset.", "cyan")
 
@@ -471,14 +506,21 @@ class HousecoinAgent:
 
                 # Check exit criteria
                 if current_price >= EXIT_PRICE:
-                    cprint(f"\n🚀 EXIT PRICE REACHED! Current: ${current_price:.8f} Target: ${EXIT_PRICE}", "yellow", attrs=['bold', 'blink'])
+                    cprint(
+                        f"\n🚀 EXIT PRICE REACHED! Current: ${current_price:.8f} Target: ${EXIT_PRICE}",
+                        "yellow",
+                        attrs=["bold", "blink"],
+                    )
                     cprint("Manual intervention required to sell position", "red")
                     cprint(f"Total invested: ${self.state['total_bought']}", "green")
                     break
 
                 # Check trading hours
                 if not self.is_trading_hours():
-                    cprint(f"\n🌙 Outside trading hours ({TRADING_START_HOUR}:00 AM - {TRADING_END_HOUR-12}:00 PM ET)", "blue")
+                    cprint(
+                        f"\n🌙 Outside trading hours ({TRADING_START_HOUR}:00 AM - {TRADING_END_HOUR-12}:00 PM ET)",
+                        "blue",
+                    )
                     print(f"  Current price: ${current_price:.8f}")
                     print(f"  20-Day SMA: ${sma_20:.8f}")
                     time.sleep(300)  # Check every 5 minutes when outside hours
@@ -492,13 +534,15 @@ class HousecoinAgent:
 
                 # Display status
                 print(f"\n[{datetime.now().strftime('%H:%M:%S')}]", end=" ")
-                cprint(f"${current_price:.8f}", "yellow", attrs=['bold'])
+                cprint(f"${current_price:.8f}", "yellow", attrs=["bold"])
 
                 # SMA status
                 sma_status = "BELOW" if below_sma else "ABOVE"
                 sma_color = "red" if below_sma else "green"
                 print(f"20D-SMA: ", end="")
-                cprint(f"{sma_status} {((current_price/sma_20 - 1) * 100):+.1f}%", sma_color, end=" ")
+                cprint(
+                    f"{sma_status} {((current_price/sma_20 - 1) * 100):+.1f}%", sma_color, end=" "
+                )
 
                 # 5-min SMA
                 if sma_5min:
@@ -516,18 +560,30 @@ class HousecoinAgent:
 
                 if below_sma:
                     # Aggressive accumulation mode
-                    if self.state['daily_spent'] >= BELOW_SMA_DAILY_CAP:
+                    if self.state["daily_spent"] >= BELOW_SMA_DAILY_CAP:
                         cprint(f"⚠️ Daily cap reached (${BELOW_SMA_DAILY_CAP})", "yellow")
-                    elif self.last_buy_time and (datetime.now() - self.last_buy_time).seconds < BELOW_SMA_BUY_MINUTES * 60:
-                        seconds_until_next = BELOW_SMA_BUY_MINUTES * 60 - (datetime.now() - self.last_buy_time).seconds
-                        cprint(f"⏳ Next buy check in {seconds_until_next//60}m {seconds_until_next%60}s", "yellow")
+                    elif (
+                        self.last_buy_time
+                        and (datetime.now() - self.last_buy_time).seconds
+                        < BELOW_SMA_BUY_MINUTES * 60
+                    ):
+                        seconds_until_next = (
+                            BELOW_SMA_BUY_MINUTES * 60
+                            - (datetime.now() - self.last_buy_time).seconds
+                        )
+                        cprint(
+                            f"⏳ Next buy check in {seconds_until_next//60}m {seconds_until_next%60}s",
+                            "yellow",
+                        )
                     elif not below_5min_sma:
                         cprint(f"⏸️ Waiting for 5-min SMA confirmation", "yellow")
                     else:
                         should_check_buy = True
                         buy_amount = BELOW_SMA_BUY_AMOUNT
-                        buy_reason = "Price below both 20-day and 5-min SMAs - DCA accumulation signal"
-                        cprint("📊 Strategy: ACCUMULATION MODE", "red", attrs=['bold'])
+                        buy_reason = (
+                            "Price below both 20-day and 5-min SMAs - DCA accumulation signal"
+                        )
+                        cprint("📊 Strategy: ACCUMULATION MODE", "red", attrs=["bold"])
                 else:
                     # Smart entry mode
                     daily_low = self.get_daily_low()
@@ -535,19 +591,24 @@ class HousecoinAgent:
                         percent_from_low = ((current_price - daily_low) / daily_low) * 100
 
                         if percent_from_low <= DAILY_LOW_THRESHOLD * 100:
-                            if self.state['daily_spent'] >= ABOVE_SMA_DAILY_CAP:
+                            if self.state["daily_spent"] >= ABOVE_SMA_DAILY_CAP:
                                 cprint(f"⚠️ Daily cap reached (${ABOVE_SMA_DAILY_CAP})", "yellow")
                             else:
                                 should_check_buy = True
                                 buy_amount = ABOVE_SMA_BUY_AMOUNT
-                                buy_reason = f"Price near daily low ({percent_from_low:.1f}% from low)"
-                                cprint("📊 Strategy: NEAR DAILY LOW", "green", attrs=['bold'])
+                                buy_reason = (
+                                    f"Price near daily low ({percent_from_low:.1f}% from low)"
+                                )
+                                cprint("📊 Strategy: NEAR DAILY LOW", "green", attrs=["bold"])
                         else:
-                            cprint(f"⏸️ Waiting ({percent_from_low:.1f}% from low, need < {DAILY_LOW_THRESHOLD*100}%)", "yellow")
+                            cprint(
+                                f"⏸️ Waiting ({percent_from_low:.1f}% from low, need < {DAILY_LOW_THRESHOLD*100}%)",
+                                "yellow",
+                            )
 
                 # Check with AI if strategy triggered
                 if should_check_buy:
-                    cprint(f"\n🎯 Strategy triggered! Checking with AI...", "cyan", attrs=['bold'])
+                    cprint(f"\n🎯 Strategy triggered! Checking with AI...", "cyan", attrs=["bold"])
 
                     # Get AI confirmation
                     ai_approved, ai_response = self.get_ai_confirmation(
@@ -555,27 +616,36 @@ class HousecoinAgent:
                     )
 
                     # Log AI decision
-                    self.state['ai_decisions'].append({
-                        'time': datetime.now().isoformat(),
-                        'price': current_price,
-                        'approved': ai_approved,
-                        'response': str(ai_response)[:200]  # Limit response length
-                    })
+                    self.state["ai_decisions"].append(
+                        {
+                            "time": datetime.now().isoformat(),
+                            "price": current_price,
+                            "approved": ai_approved,
+                            "response": str(ai_response)[:200],  # Limit response length
+                        }
+                    )
                     self.save_state()
 
                     if ai_approved:
                         # Execute the buy
                         estimated_housecoin = int(buy_amount / current_price)
-                        cprint(f"\n🚀 Buying ~{estimated_housecoin:,} Housecoin for ${buy_amount}", "green", attrs=['bold'])
+                        cprint(
+                            f"\n🚀 Buying ~{estimated_housecoin:,} Housecoin for ${buy_amount}",
+                            "green",
+                            attrs=["bold"],
+                        )
 
                         if self.execute_buy(buy_amount, buy_reason):
                             # Show a random thesis after successful buy
                             thesis = random.choice(THESIS_STATEMENTS)
                             print()
-                            cprint("🏠 HOUSECOIN THESIS:", "cyan", attrs=['bold'])
+                            cprint("🏠 HOUSECOIN THESIS:", "cyan", attrs=["bold"])
                             cprint(thesis, "white", "on_blue")
                     else:
-                        cprint("\n🤖 AI rejected the buy signal. Waiting for better conditions...", "yellow")
+                        cprint(
+                            "\n🤖 AI rejected the buy signal. Waiting for better conditions...",
+                            "yellow",
+                        )
                         print(f"AI reasoning: {str(ai_response)[:150]}")
 
                 # Sleep based on mode
@@ -594,11 +664,12 @@ class HousecoinAgent:
                 cprint(f"\n❌ Error in main loop: {e}", "red")
                 time.sleep(60)
 
+
 def main():
     """Run the Housecoin DCA Agent"""
     try:
         # Check if we're on Solana
-        if EXCHANGE != 'solana':
+        if EXCHANGE != "solana":
             cprint("⚠️ Warning: Housecoin is currently only on Solana", "yellow")
             cprint(f"Current exchange: {EXCHANGE}", "yellow")
             cprint("Switching to Solana mode for Housecoin...", "cyan")
@@ -610,7 +681,9 @@ def main():
     except Exception as e:
         cprint(f"❌ Fatal error: {e}", "red")
         import traceback
+
         traceback.print_exc()
+
 
 if __name__ == "__main__":
     main()

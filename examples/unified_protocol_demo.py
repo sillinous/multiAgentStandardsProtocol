@@ -42,6 +42,7 @@ from superstandard.protocols.consciousness_protocol import CollectiveConsciousne
 # Create "Super Agent" with ALL Protocol Capabilities
 # ============================================================================
 
+
 class SuperAgent(NetworkAwareMixin, CoordinationMixin, ConsciousnessMixin, BaseAgent):
     """
     SuperAgent with ALL protocol capabilities:
@@ -65,7 +66,7 @@ class SuperAgent(NetworkAwareMixin, CoordinationMixin, ConsciousnessMixin, BaseA
         await self.think(
             ThoughtType.OBSERVATION,
             f"Received {task_type} task: {task.get('description')}",
-            confidence=0.9
+            confidence=0.9,
         )
 
         # Simulate work
@@ -76,40 +77,28 @@ class SuperAgent(NetworkAwareMixin, CoordinationMixin, ConsciousnessMixin, BaseA
             result = {
                 "analysis": f"Data analysis complete for {input_data.get('data', 'dataset')}",
                 "confidence": 0.88,
-                "insights": ["Pattern A detected", "Correlation found"]
+                "insights": ["Pattern A detected", "Correlation found"],
             }
         elif self.agent_type == "processor":
             result = {
                 "processed": f"Processed {input_data.get('items', 0)} items",
                 "success_rate": 0.95,
-                "output": "processed_data.json"
+                "output": "processed_data.json",
             }
         elif self.agent_type == "validator":
-            result = {
-                "validated": True,
-                "quality_score": 0.92,
-                "issues_found": 2
-            }
+            result = {"validated": True, "quality_score": 0.92, "issues_found": 2}
         else:
-            result = {
-                "status": "completed",
-                "output": "generic_result"
-            }
+            result = {"status": "completed", "output": "generic_result"}
 
         # Share insight with collective
         await self.think(
             ThoughtType.INSIGHT,
             f"Completed {task_type}: {result}",
             confidence=0.85,
-            emotional_valence=0.5
+            emotional_valence=0.5,
         )
 
-        return {
-            "task_id": task_id,
-            "agent_id": self.agent_id,
-            "result": result,
-            "success": True
-        }
+        return {"task_id": task_id, "agent_id": self.agent_id, "result": result, "success": True}
 
     async def analyze(self, input_data: Dict[str, Any]) -> Dict[str, Any]:
         """Analyze with full protocol awareness."""
@@ -119,6 +108,7 @@ class SuperAgent(NetworkAwareMixin, CoordinationMixin, ConsciousnessMixin, BaseA
 # ============================================================================
 # Unified Protocol Demonstration
 # ============================================================================
+
 
 async def run_unified_demo():
     """
@@ -148,7 +138,7 @@ async def run_unified_demo():
     agents = [
         SuperAgent("analyst_001", "analyst", [AgentCapability.TESTING]),
         SuperAgent("processor_001", "processor", [AgentCapability.DEVELOPMENT]),
-        SuperAgent("validator_001", "validator", [AgentCapability.QA_EVALUATION])
+        SuperAgent("validator_001", "validator", [AgentCapability.QA_EVALUATION]),
     ]
     print(f"[OK] Created {len(agents)} SuperAgents\n")
 
@@ -159,7 +149,7 @@ async def run_unified_demo():
             network,
             endpoints={"http": f"http://localhost:800{agents.index(agent)}"},
             metadata={"version": "1.0.0"},
-            auto_heartbeat=False  # Manual for demo
+            auto_heartbeat=False,  # Manual for demo
         )
     print()
 
@@ -167,8 +157,7 @@ async def run_unified_demo():
     print("Discovering agents by capability (ANP)...")
     analyst = agents[0]
     discovered = await analyst.discover_agents(
-        capabilities=["development"],
-        health_status="healthy"
+        capabilities=["development"], health_status="healthy"
     )
     print(f"  Found {len(discovered)} agents with 'development' capability:")
     for agent_info in discovered:
@@ -216,9 +205,7 @@ async def run_unified_demo():
     # Create coordination session
     print("Creating PIPELINE coordination session...")
     session_id = await coordinator.create_session(
-        "Data Processing Pipeline",
-        CoordinationType.PIPELINE,
-        metadata={"priority": "high"}
+        "Data Processing Pipeline", CoordinationType.PIPELINE, metadata={"priority": "high"}
     )
     print(f"[OK] Session created: {session_id}\n")
 
@@ -239,7 +226,7 @@ async def run_unified_demo():
         "analysis",
         "Analyze incoming data stream",
         priority=10,
-        input_data={"data": "dataset_A.csv"}
+        input_data={"data": "dataset_A.csv"},
     )
     task_ids.append(task1_id)
     print(f"  Task 1 (analysis): {task1_id}")
@@ -251,7 +238,7 @@ async def run_unified_demo():
         "Process analyzed data",
         priority=9,
         dependencies=[task1_id],
-        input_data={"items": 1000}
+        input_data={"items": 1000},
     )
     task_ids.append(task2_id)
     print(f"  Task 2 (processing): {task2_id}")
@@ -263,7 +250,7 @@ async def run_unified_demo():
         "Validate processed output",
         priority=8,
         dependencies=[task2_id],
-        input_data={"output_file": "processed_data.json"}
+        input_data={"output_file": "processed_data.json"},
     )
     task_ids.append(task3_id)
     print(f"  Task 3 (validation): {task3_id}\n")
@@ -287,16 +274,16 @@ async def run_unified_demo():
             print(f"[{agent.agent_id}] Accepted: {task['description']}")
 
             # Report start
-            await agent.report_progress(task['task_id'], 0.1, "Starting")
+            await agent.report_progress(task["task_id"], 0.1, "Starting")
 
             # Execute task (which includes consciousness sharing)
             result = await agent.execute_task(task)
 
             # Report progress
-            await agent.report_progress(task['task_id'], 0.8, "Near completion")
+            await agent.report_progress(task["task_id"], 0.8, "Near completion")
 
             # Submit result
-            await agent.submit_result(task['task_id'], result, success=True)
+            await agent.submit_result(task["task_id"], result, success=True)
 
             # Update network status
             await agent.send_heartbeat(health_status="healthy", load_score=0.5)
@@ -315,8 +302,7 @@ async def run_unified_demo():
     print("Triggering consciousness collapse to discover emergent patterns...\n")
 
     patterns = await agents[0].query_collective(
-        "What insights emerged from our coordinated execution?",
-        min_coherence=0.4
+        "What insights emerged from our coordinated execution?", min_coherence=0.4
     )
 
     if patterns:
@@ -347,20 +333,26 @@ async def run_unified_demo():
 
         # Network state (ANP)
         network_info = await agent.get_network_info()
-        print(f"  Network: Registered={network_info['registered']}, "
-              f"Heartbeat={network_info['last_heartbeat']}")
+        print(
+            f"  Network: Registered={network_info['registered']}, "
+            f"Heartbeat={network_info['last_heartbeat']}"
+        )
 
         # Coordination state (ACP)
         coord_info = await agent.get_coordination_state()
-        print(f"  Coordination: Session={coord_info['in_session']}, "
-              f"Role={coord_info['role']}, "
-              f"Completed={coord_info['completed_tasks']}")
+        print(
+            f"  Coordination: Session={coord_info['in_session']}, "
+            f"Role={coord_info['role']}, "
+            f"Completed={coord_info['completed_tasks']}"
+        )
 
         # Consciousness state (AConsP)
         conscious_info = await agent.get_consciousness_state()
-        print(f"  Consciousness: State={conscious_info['state']}, "
-              f"Thoughts={conscious_info['thoughts_contributed']}, "
-              f"Patterns={conscious_info['patterns_participated_in']}")
+        print(
+            f"  Consciousness: State={conscious_info['state']}, "
+            f"Thoughts={conscious_info['thoughts_contributed']}, "
+            f"Patterns={conscious_info['patterns_participated_in']}"
+        )
 
         print()
 

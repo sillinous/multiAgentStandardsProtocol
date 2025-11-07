@@ -25,9 +25,7 @@ class ComponentBuilderAgent(BaseAgent):
     """
 
     def __init__(
-        self,
-        agent_id: str = "component_builder_001",
-        workspace_path: str = "./workspace"
+        self, agent_id: str = "component_builder_001", workspace_path: str = "./workspace"
     ):
         super().__init__(
             agent_id=agent_id,
@@ -35,16 +33,16 @@ class ComponentBuilderAgent(BaseAgent):
             capabilities=[
                 AgentCapability.DEVELOPMENT,
                 AgentCapability.DESIGN,
-                AgentCapability.DOCUMENTATION
+                AgentCapability.DOCUMENTATION,
             ],
-            workspace_path=workspace_path
+            workspace_path=workspace_path,
         )
 
         self.component_templates = {
             "card": self._card_template,
             "form": self._form_template,
             "modal": self._modal_template,
-            "dashboard": self._dashboard_template
+            "dashboard": self._dashboard_template,
         }
 
     async def execute_task(self, task: Dict[str, Any]) -> Dict[str, Any]:
@@ -54,7 +52,9 @@ class ComponentBuilderAgent(BaseAgent):
         if task_type == "build_component":
             return await self.build_component(task.get("spec"))
         elif task_type == "refactor_component":
-            return await self.refactor_component(task.get("component_path"), task.get("improvements"))
+            return await self.refactor_component(
+                task.get("component_path"), task.get("improvements")
+            )
         elif task_type == "add_feature":
             return await self.add_feature(task.get("component_path"), task.get("feature_spec"))
         else:
@@ -101,13 +101,10 @@ class ComponentBuilderAgent(BaseAgent):
             "props_interface": props_interface,
             "file_suggested": f"{component_name}.tsx",
             "dependencies": self._get_dependencies(spec),
-            "usage_example": self._generate_usage_example(component_name, spec.get("props", {}))
+            "usage_example": self._generate_usage_example(component_name, spec.get("props", {})),
         }
 
-        self._log_message(
-            MessageType.STATUS,
-            f"Component {component_name} built successfully"
-        )
+        self._log_message(MessageType.STATUS, f"Component {component_name} built successfully")
 
         return result
 

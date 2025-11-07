@@ -49,7 +49,9 @@ class EncryptionTaskAgent(BaseAgent):
     and maximum reusability across APQC categories.
     """
 
-    def __init__(self, agent_id: str = "encryption_task_agent", config: Optional[Dict[str, Any]] = None):
+    def __init__(
+        self, agent_id: str = "encryption_task_agent", config: Optional[Dict[str, Any]] = None
+    ):
         """
         Initialize Encryption/Decryption Task Agent
 
@@ -60,8 +62,15 @@ class EncryptionTaskAgent(BaseAgent):
         super().__init__(
             agent_id=agent_id,
             agent_type="security_compliance",
-            capabilities=['aes', 'rsa', 'chacha20', 'key_management', 'streaming_encryption', 'key_rotation'],
-            config=config or {}
+            capabilities=[
+                "aes",
+                "rsa",
+                "chacha20",
+                "key_management",
+                "streaming_encryption",
+                "key_rotation",
+            ],
+            config=config or {},
         )
 
         # Agent-specific initialization
@@ -71,27 +80,27 @@ class EncryptionTaskAgent(BaseAgent):
             "reusable": True,
             "composable": True,
             "stateless": True,
-            "framework": "APQC 7.0.1"
+            "framework": "APQC 7.0.1",
         }
 
         logger.info(f"Initialized Encryption/Decryption Task Agent [{self.agent_id}]")
 
     async def execute_task(self, task: Dict[str, Any]) -> Dict[str, Any]:
         """
-        Execute the security compliance task
+                Execute the security compliance task
 
-        Args:
-            task: Task parameters containing:
-                - data: any
-- key: string
-- algorithm: string
-- mode: string
+                Args:
+                    task: Task parameters containing:
+                        - data: any
+        - key: string
+        - algorithm: string
+        - mode: string
 
-        Returns:
-            Result dictionary containing:
-                - result: any
-- iv: string
-- metadata: dict
+                Returns:
+                    Result dictionary containing:
+                        - result: any
+        - iv: string
+        - metadata: dict
         """
         try:
             logger.info(f"[{self.agent_id}] Executing security_compliance task")
@@ -111,7 +120,7 @@ class EncryptionTaskAgent(BaseAgent):
                 "status": "success",
                 "agent_id": self.agent_id,
                 "timestamp": datetime.utcnow().isoformat(),
-                "result": output
+                "result": output,
             }
 
         except Exception as e:
@@ -120,7 +129,7 @@ class EncryptionTaskAgent(BaseAgent):
                 "status": "error",
                 "agent_id": self.agent_id,
                 "timestamp": datetime.utcnow().isoformat(),
-                "error": str(e)
+                "error": str(e),
             }
 
     def _validate_inputs(self, task: Dict[str, Any]) -> None:
@@ -133,7 +142,7 @@ class EncryptionTaskAgent(BaseAgent):
         Raises:
             ValueError: If required inputs are missing or invalid
         """
-        required_fields = ['data', 'key', 'algorithm', 'mode']
+        required_fields = ["data", "key", "algorithm", "mode"]
 
         for field in required_fields:
             if field not in task:
@@ -161,7 +170,7 @@ class EncryptionTaskAgent(BaseAgent):
         result = {
             "executed": True,
             "task_type": "security_compliance",
-            "inputs_received": list(task.keys())
+            "inputs_received": list(task.keys()),
         }
 
         # Simulate async work
@@ -186,8 +195,8 @@ class EncryptionTaskAgent(BaseAgent):
                 "agent_type": self.agent_type,
                 "level": 5,
                 "category": "security_compliance",
-                "timestamp": datetime.utcnow().isoformat()
-            }
+                "timestamp": datetime.utcnow().isoformat(),
+            },
         }
 
     async def handle_message(self, message: Dict[str, Any]) -> Dict[str, Any]:
@@ -209,10 +218,7 @@ class EncryptionTaskAgent(BaseAgent):
         elif message_type == "capabilities":
             return self.get_capabilities()
         else:
-            return {
-                "status": "error",
-                "error": f"Unknown message type: {message_type}"
-            }
+            return {"status": "error", "error": f"Unknown message type: {message_type}"}
 
     def get_status(self) -> Dict[str, Any]:
         """
@@ -226,7 +232,7 @@ class EncryptionTaskAgent(BaseAgent):
             "agent_type": self.agent_type,
             "status": "ready",
             "capabilities": self.capabilities,
-            "metadata": self.metadata
+            "metadata": self.metadata,
         }
 
     def get_capabilities(self) -> Dict[str, Any]:
@@ -239,11 +245,11 @@ class EncryptionTaskAgent(BaseAgent):
         return {
             "agent_id": self.agent_id,
             "capabilities": self.capabilities,
-            "inputs": {'data': 'any', 'key': 'string', 'algorithm': 'string', 'mode': 'string'},
-            "outputs": {'result': 'any', 'iv': 'string', 'metadata': 'dict'},
+            "inputs": {"data": "any", "key": "string", "algorithm": "string", "mode": "string"},
+            "outputs": {"result": "any", "iv": "string", "metadata": "dict"},
             "level": 5,
             "reusable": True,
-            "composable": True
+            "composable": True,
         }
 
 
@@ -257,7 +263,7 @@ async def main():
     # Example task
     task = {
         # Add example inputs here
-                # "data": "example_data",
+        # "data": "example_data",
         # "key": "example_key",
         # "algorithm": "example_algorithm",
         # "mode": "example_mode",

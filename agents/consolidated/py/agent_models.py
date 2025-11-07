@@ -45,4 +45,3 @@ class AgentLog(Base):
     level = Column(String, nullable=False, default="info")
     message = Column(String, nullable=False, default="")
     meta = Column(JSON, nullable=False, default=dict)
-

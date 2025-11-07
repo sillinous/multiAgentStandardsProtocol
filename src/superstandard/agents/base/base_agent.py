@@ -5,7 +5,7 @@ This is THE SINGLE SOURCE OF TRUTH for all agents in the ecosystem.
 All agents MUST inherit from this class to ensure protocol compliance.
 
 ⚠️ IMPORTANT: Do NOT create new BaseAgent classes!
-   Import from this file: from agents.consolidated.py.base_agent_v1 import BaseAgent
+   Import from this file: from src.superstandard.agents.base.base_agent import BaseAgent
 
 Protocols Supported:
 - A2A (Agent-to-Agent): Direct agent communication

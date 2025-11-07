@@ -32,7 +32,8 @@ from collections import deque
 from enum import Enum
 
 import sys
-sys.path.insert(0, os.path.join(os.path.dirname(__file__), '../..'))
+
+sys.path.insert(0, os.path.join(os.path.dirname(__file__), "../.."))
 
 from superstandard.agents.base.base_agent import BaseAgent
 from library.core.protocols import ProtocolMixin
@@ -54,8 +55,10 @@ DEFAULT_ACTIVE_THRESHOLD_SECONDS = 60
 # Domain Models
 # =========================================================================
 
+
 class ActivityType(Enum):
     """Types of agent activities"""
+
     SPAWNED = "spawned"
     TASK_ASSIGNED = "task_assigned"
     TASK_STARTED = "task_started"
@@ -72,6 +75,7 @@ class ActivityType(Enum):
 @dataclass
 class AgentActivity:
     """Record of a single agent activity"""
+
     activity_id: str
     timestamp: datetime
     agent_id: str
@@ -93,13 +97,14 @@ class AgentActivity:
             "description": self.description,
             "details": self.details,
             "duration_ms": self.duration_ms,
-            "success": self.success
+            "success": self.success,
         }
 
 
 @dataclass
 class AgentMetrics:
     """Performance metrics for an agent"""
+
     agent_id: str
     agent_type: str
     tasks_completed: int = 0
@@ -131,13 +136,14 @@ class AgentMetrics:
             "errors_count": self.errors_count,
             "uptime_seconds": self.uptime_seconds,
             "current_state": self.current_state,
-            "last_activity": self.last_activity.isoformat() if self.last_activity else None
+            "last_activity": self.last_activity.isoformat() if self.last_activity else None,
         }
 
 
 # =========================================================================
 # Configuration
 # =========================================================================
+
 
 @dataclass
 class ActivityTrackerAgentConfig:
@@ -147,6 +153,7 @@ class ActivityTrackerAgentConfig:
     All values can be overridden via environment variables following
     12-factor app methodology.
     """
+
     # Storage limits
     max_activities: int = DEFAULT_MAX_ACTIVITIES
     feed_size: int = DEFAULT_FEED_SIZE
@@ -165,38 +172,29 @@ class ActivityTrackerAgentConfig:
     def from_environment(cls) -> "ActivityTrackerAgentConfig":
         """Create configuration from environment variables"""
         return cls(
-            max_activities=int(os.getenv(
-                "ACTIVITY_TRACKER_MAX_ACTIVITIES",
-                str(DEFAULT_MAX_ACTIVITIES)
-            )),
-            feed_size=int(os.getenv(
-                "ACTIVITY_TRACKER_FEED_SIZE",
-                str(DEFAULT_FEED_SIZE)
-            )),
-            active_threshold_seconds=int(os.getenv(
-                "ACTIVITY_TRACKER_ACTIVE_THRESHOLD",
-                str(DEFAULT_ACTIVE_THRESHOLD_SECONDS)
-            )),
-            slow_execution_threshold_ms=float(os.getenv(
-                "ACTIVITY_TRACKER_SLOW_THRESHOLD",
-                "5000.0"
-            )),
-            high_failure_threshold=float(os.getenv(
-                "ACTIVITY_TRACKER_FAILURE_THRESHOLD",
-                "0.8"
-            )),
-            high_error_threshold=int(os.getenv(
-                "ACTIVITY_TRACKER_ERROR_THRESHOLD",
-                "10"
-            )),
+            max_activities=int(
+                os.getenv("ACTIVITY_TRACKER_MAX_ACTIVITIES", str(DEFAULT_MAX_ACTIVITIES))
+            ),
+            feed_size=int(os.getenv("ACTIVITY_TRACKER_FEED_SIZE", str(DEFAULT_FEED_SIZE))),
+            active_threshold_seconds=int(
+                os.getenv(
+                    "ACTIVITY_TRACKER_ACTIVE_THRESHOLD", str(DEFAULT_ACTIVE_THRESHOLD_SECONDS)
+                )
+            ),
+            slow_execution_threshold_ms=float(
+                os.getenv("ACTIVITY_TRACKER_SLOW_THRESHOLD", "5000.0")
+            ),
+            high_failure_threshold=float(os.getenv("ACTIVITY_TRACKER_FAILURE_THRESHOLD", "0.8")),
+            high_error_threshold=int(os.getenv("ACTIVITY_TRACKER_ERROR_THRESHOLD", "10")),
             memory_limit_mb=int(os.getenv("ACTIVITY_TRACKER_MEMORY_LIMIT_MB", "512")),
-            cpu_limit_percent=float(os.getenv("ACTIVITY_TRACKER_CPU_LIMIT_PERCENT", "80.0"))
+            cpu_limit_percent=float(os.getenv("ACTIVITY_TRACKER_CPU_LIMIT_PERCENT", "80.0")),
         )
 
 
 # =========================================================================
 # Activity Tracker Agent
 # =========================================================================
+
 
 class ActivityTrackerAgent(BaseAgent, ProtocolMixin):
     """
@@ -218,11 +216,7 @@ class ActivityTrackerAgent(BaseAgent, ProtocolMixin):
     - Protocol support (A2A, A2P, ACP, ANP, MCP)
     """
 
-    def __init__(
-        self,
-        agent_id: str,
-        config: ActivityTrackerAgentConfig
-    ):
+    def __init__(self, agent_id: str, config: ActivityTrackerAgentConfig):
         """Initialize Activity Tracker Agent"""
         # Initialize both parent classes
         super(BaseAgent, self).__init__()
@@ -246,18 +240,10 @@ class ActivityTrackerAgent(BaseAgent, ProtocolMixin):
         self.activities_by_type: Dict[ActivityType, List[AgentActivity]] = {}
 
         # State tracking
-        self.state = {
-            "initialized": False,
-            "monitoring_active": True,
-            "total_activities_logged": 0
-        }
+        self.state = {"initialized": False, "monitoring_active": True, "total_activities_logged": 0}
 
         # Monitoring metrics
-        self.tracker_metrics = {
-            "activities_logged": 0,
-            "agents_tracked": 0,
-            "queries_processed": 0
-        }
+        self.tracker_metrics = {"activities_logged": 0, "agents_tracked": 0, "queries_processed": 0}
 
         # Resource tracking
         self.process = psutil.Process()
@@ -280,9 +266,7 @@ class ActivityTrackerAgent(BaseAgent, ProtocolMixin):
         return {}
 
     async def _execute_logic(
-        self,
-        input_data: Dict[str, Any],
-        fetched_data: Dict[str, Any]
+        self, input_data: Dict[str, Any], fetched_data: Dict[str, Any]
     ) -> Dict[str, Any]:
         """Core execution logic - delegates to execute() method"""
         return await self.execute(input_data)
@@ -309,14 +293,11 @@ class ActivityTrackerAgent(BaseAgent, ProtocolMixin):
                 "agent_id": self.agent_id,
                 "agent_type": self.agent_type,
                 "version": self.version,
-                "initialization_time_ms": round(init_time_ms, 2)
+                "initialization_time_ms": round(init_time_ms, 2),
             }
 
         except Exception as e:
-            return {
-                "success": False,
-                "error": f"Initialization failed: {str(e)}"
-            }
+            return {"success": False, "error": f"Initialization failed: {str(e)}"}
 
     async def execute(self, input_data: Dict[str, Any]) -> Dict[str, Any]:
         """
@@ -331,10 +312,7 @@ class ActivityTrackerAgent(BaseAgent, ProtocolMixin):
         - analyze: Perform various analyses
         """
         if not self.state["initialized"]:
-            return {
-                "success": False,
-                "error": "Agent not initialized. Call initialize() first."
-            }
+            return {"success": False, "error": "Agent not initialized. Call initialize() first."}
 
         start_time = time.time()
 
@@ -342,10 +320,7 @@ class ActivityTrackerAgent(BaseAgent, ProtocolMixin):
             operation = input_data.get("operation") or input_data.get("type")
 
             if not operation:
-                return {
-                    "success": False,
-                    "error": "No operation specified"
-                }
+                return {"success": False, "error": "No operation specified"}
 
             # Route to appropriate handler
             if operation == "log_activity":
@@ -361,10 +336,7 @@ class ActivityTrackerAgent(BaseAgent, ProtocolMixin):
             elif operation == "analyze":
                 result = await self.analyze(input_data)
             else:
-                result = {
-                    "success": False,
-                    "error": f"Unknown operation: {operation}"
-                }
+                result = {"success": False, "error": f"Unknown operation: {operation}"}
 
             # Track execution time
             execution_time_ms = (time.time() - start_time) * 1000
@@ -380,7 +352,7 @@ class ActivityTrackerAgent(BaseAgent, ProtocolMixin):
             return {
                 "success": False,
                 "error": str(e),
-                "execution_time_ms": round(execution_time_ms, 2)
+                "execution_time_ms": round(execution_time_ms, 2),
             }
 
     async def shutdown(self) -> Dict[str, Any]:
@@ -402,14 +374,11 @@ class ActivityTrackerAgent(BaseAgent, ProtocolMixin):
                 "final_metrics": {
                     "activities_logged": self.tracker_metrics["activities_logged"],
                     "agents_tracked": self.tracker_metrics["agents_tracked"],
-                    "queries_processed": self.tracker_metrics["queries_processed"]
-                }
+                    "queries_processed": self.tracker_metrics["queries_processed"],
+                },
             }
         except Exception as e:
-            return {
-                "status": "error",
-                "reason": f"Shutdown failed: {str(e)}"
-            }
+            return {"status": "error", "reason": f"Shutdown failed: {str(e)}"}
 
     async def health_check(self) -> Dict[str, Any]:
         """Perform health check"""
@@ -435,25 +404,26 @@ class ActivityTrackerAgent(BaseAgent, ProtocolMixin):
                 "resources": {
                     "memory_mb": round(memory_mb, 2),
                     "memory_limit_mb": self.typed_config.memory_limit_mb,
-                    "memory_percent": round((memory_mb / self.typed_config.memory_limit_mb) * 100, 1),
+                    "memory_percent": round(
+                        (memory_mb / self.typed_config.memory_limit_mb) * 100, 1
+                    ),
                     "cpu_percent": round(cpu_percent, 1),
-                    "cpu_limit_percent": self.typed_config.cpu_limit_percent
+                    "cpu_limit_percent": self.typed_config.cpu_limit_percent,
                 },
                 "storage": {
                     "activities_stored": len(self.activities),
                     "max_activities": self.typed_config.max_activities,
-                    "utilization_percent": round((len(self.activities) / self.typed_config.max_activities) * 100, 1),
-                    "healthy": storage_ok
+                    "utilization_percent": round(
+                        (len(self.activities) / self.typed_config.max_activities) * 100, 1
+                    ),
+                    "healthy": storage_ok,
                 },
                 "state": self.state.copy(),
-                "metrics": self.tracker_metrics.copy()
+                "metrics": self.tracker_metrics.copy(),
             }
 
         except Exception as e:
-            return {
-                "status": "error",
-                "error": str(e)
-            }
+            return {"status": "error", "error": str(e)}
 
     # =====================================================================
     # Activity Logging
@@ -478,7 +448,7 @@ class ActivityTrackerAgent(BaseAgent, ProtocolMixin):
                 description=task["description"],
                 details=task.get("details", {}),
                 duration_ms=task.get("duration_ms"),
-                success=task.get("success")
+                success=task.get("success"),
             )
 
             # Store activity
@@ -506,14 +476,11 @@ class ActivityTrackerAgent(BaseAgent, ProtocolMixin):
             return {
                 "success": True,
                 "activity_id": activity.activity_id,
-                "timestamp": activity.timestamp.isoformat()
+                "timestamp": activity.timestamp.isoformat(),
             }
 
         except Exception as e:
-            return {
-                "success": False,
-                "error": str(e)
-            }
+            return {"success": False, "error": str(e)}
 
     def _update_metrics(self, activity: AgentActivity):
         """Update agent metrics based on activity"""
@@ -521,10 +488,7 @@ class ActivityTrackerAgent(BaseAgent, ProtocolMixin):
 
         # Initialize metrics if needed
         if agent_id not in self.metrics:
-            self.metrics[agent_id] = AgentMetrics(
-                agent_id=agent_id,
-                agent_type=activity.agent_type
-            )
+            self.metrics[agent_id] = AgentMetrics(agent_id=agent_id, agent_type=activity.agent_type)
 
         metrics = self.metrics[agent_id]
         metrics.last_activity = activity.timestamp
@@ -575,27 +539,16 @@ class ActivityTrackerAgent(BaseAgent, ProtocolMixin):
         if agent_id:
             metrics = self.metrics.get(agent_id)
             if metrics:
-                return {
-                    "success": True,
-                    "metrics": metrics.to_dict()
-                }
+                return {"success": True, "metrics": metrics.to_dict()}
             else:
-                return {
-                    "success": False,
-                    "error": f"No metrics found for agent: {agent_id}"
-                }
+                return {"success": False, "error": f"No metrics found for agent: {agent_id}"}
         else:
             # Return all metrics
             all_metrics = {
-                agent_id: metrics.to_dict()
-                for agent_id, metrics in self.metrics.items()
+                agent_id: metrics.to_dict() for agent_id, metrics in self.metrics.items()
             }
 
-            return {
-                "success": True,
-                "total_agents": len(self.metrics),
-                "metrics": all_metrics
-            }
+            return {"success": True, "total_agents": len(self.metrics), "metrics": all_metrics}
 
     async def _get_activity_feed(self, task: Dict[str, Any]) -> Dict[str, Any]:
         """Get recent activity feed"""
@@ -618,17 +571,18 @@ class ActivityTrackerAgent(BaseAgent, ProtocolMixin):
         return {
             "success": True,
             "count": len(activities),
-            "activities": [a.to_dict() for a in activities]
+            "activities": [a.to_dict() for a in activities],
         }
 
     async def _get_system_health(self) -> Dict[str, Any]:
         """Get overall system health metrics"""
         total_agents = len(self.metrics)
         active_agents = sum(
-            1 for m in self.metrics.values()
-            if m.last_activity and (
-                datetime.now() - m.last_activity
-            ).seconds < self.typed_config.active_threshold_seconds
+            1
+            for m in self.metrics.values()
+            if m.last_activity
+            and (datetime.now() - m.last_activity).seconds
+            < self.typed_config.active_threshold_seconds
         )
 
         total_tasks = sum(m.tasks_completed + m.tasks_failed for m in self.metrics.values())
@@ -651,19 +605,18 @@ class ActivityTrackerAgent(BaseAgent, ProtocolMixin):
                     m.messages_sent + m.messages_received for m in self.metrics.values()
                 ),
                 "total_errors": sum(m.errors_count for m in self.metrics.values()),
-                "uptime_seconds": round((datetime.now() - self.start_time).total_seconds(), 2)
-            }
+                "uptime_seconds": round((datetime.now() - self.start_time).total_seconds(), 2),
+            },
         }
 
     async def _get_coordination_patterns(self) -> Dict[str, Any]:
         """Analyze agent coordination patterns"""
         # Find communication activities
         comm_activities = [
-            a for a in self.activities
-            if a.activity_type in [
-                ActivityType.COMMUNICATION_SENT,
-                ActivityType.COMMUNICATION_RECEIVED
-            ]
+            a
+            for a in self.activities
+            if a.activity_type
+            in [ActivityType.COMMUNICATION_SENT, ActivityType.COMMUNICATION_RECEIVED]
         ]
 
         # Build communication graph
@@ -682,11 +635,7 @@ class ActivityTrackerAgent(BaseAgent, ProtocolMixin):
         collaborations = []
         for sender, receivers in comm_graph.items():
             for receiver, count in receivers.items():
-                collaborations.append({
-                    "from": sender,
-                    "to": receiver,
-                    "message_count": count
-                })
+                collaborations.append({"from": sender, "to": receiver, "message_count": count})
 
         collaborations.sort(key=lambda x: x["message_count"], reverse=True)
 
@@ -694,7 +643,7 @@ class ActivityTrackerAgent(BaseAgent, ProtocolMixin):
             "success": True,
             "total_communications": len(comm_activities),
             "unique_connections": len(collaborations),
-            "top_collaborations": collaborations[:20]
+            "top_collaborations": collaborations[:20],
         }
 
     # =====================================================================
@@ -719,10 +668,7 @@ class ActivityTrackerAgent(BaseAgent, ProtocolMixin):
     def _analyze_ecosystem_overview(self) -> Dict[str, Any]:
         """High-level ecosystem overview"""
         recent_threshold = datetime.now() - timedelta(minutes=5)
-        recent_activity_count = len([
-            a for a in self.activities
-            if a.timestamp >= recent_threshold
-        ])
+        recent_activity_count = len([a for a in self.activities if a.timestamp >= recent_threshold])
 
         return {
             "total_agents": len(self.metrics),
@@ -732,15 +678,13 @@ class ActivityTrackerAgent(BaseAgent, ProtocolMixin):
                 for activity_type, activities in self.activities_by_type.items()
             },
             "top_performers": self._get_top_performers(5),
-            "recent_activity_count": recent_activity_count
+            "recent_activity_count": recent_activity_count,
         }
 
     def _analyze_performance(self) -> Dict[str, Any]:
         """Detailed performance analysis"""
         sorted_metrics = sorted(
-            self.metrics.values(),
-            key=lambda m: m.tasks_completed,
-            reverse=True
+            self.metrics.values(), key=lambda m: m.tasks_completed, reverse=True
         )
 
         return {
@@ -750,7 +694,7 @@ class ActivityTrackerAgent(BaseAgent, ProtocolMixin):
                     "agent_type": m.agent_type,
                     "tasks_completed": m.tasks_completed,
                     "success_rate": round(m.success_rate * 100, 2),
-                    "avg_execution_time_ms": round(m.avg_execution_time_ms, 2)
+                    "avg_execution_time_ms": round(m.avg_execution_time_ms, 2),
                 }
                 for m in sorted_metrics[:10]
             ],
@@ -758,14 +702,14 @@ class ActivityTrackerAgent(BaseAgent, ProtocolMixin):
                 [
                     {
                         "agent_id": m.agent_id,
-                        "avg_execution_time_ms": round(m.avg_execution_time_ms, 2)
+                        "avg_execution_time_ms": round(m.avg_execution_time_ms, 2),
                     }
                     for m in self.metrics.values()
                     if m.avg_execution_time_ms > 0
                 ],
                 key=lambda x: x["avg_execution_time_ms"],
-                reverse=True
-            )[:10]
+                reverse=True,
+            )[:10],
         }
 
     def _analyze_bottlenecks(self) -> Dict[str, Any]:
@@ -774,36 +718,42 @@ class ActivityTrackerAgent(BaseAgent, ProtocolMixin):
 
         for agent_id, metrics in self.metrics.items():
             # High failure rate
-            if metrics.tasks_failed > 0 and metrics.success_rate < self.typed_config.high_failure_threshold:
-                bottlenecks.append({
-                    "agent_id": agent_id,
-                    "issue": "high_failure_rate",
-                    "success_rate": round(metrics.success_rate * 100, 2),
-                    "severity": "high"
-                })
+            if (
+                metrics.tasks_failed > 0
+                and metrics.success_rate < self.typed_config.high_failure_threshold
+            ):
+                bottlenecks.append(
+                    {
+                        "agent_id": agent_id,
+                        "issue": "high_failure_rate",
+                        "success_rate": round(metrics.success_rate * 100, 2),
+                        "severity": "high",
+                    }
+                )
 
             # Slow execution
             if metrics.avg_execution_time_ms > self.typed_config.slow_execution_threshold_ms:
-                bottlenecks.append({
-                    "agent_id": agent_id,
-                    "issue": "slow_execution",
-                    "avg_time_ms": round(metrics.avg_execution_time_ms, 2),
-                    "severity": "medium"
-                })
+                bottlenecks.append(
+                    {
+                        "agent_id": agent_id,
+                        "issue": "slow_execution",
+                        "avg_time_ms": round(metrics.avg_execution_time_ms, 2),
+                        "severity": "medium",
+                    }
+                )
 
             # High error rate
             if metrics.errors_count > self.typed_config.high_error_threshold:
-                bottlenecks.append({
-                    "agent_id": agent_id,
-                    "issue": "frequent_errors",
-                    "error_count": metrics.errors_count,
-                    "severity": "high"
-                })
+                bottlenecks.append(
+                    {
+                        "agent_id": agent_id,
+                        "issue": "frequent_errors",
+                        "error_count": metrics.errors_count,
+                        "severity": "high",
+                    }
+                )
 
-        return {
-            "bottlenecks_found": len(bottlenecks),
-            "bottlenecks": bottlenecks
-        }
+        return {"bottlenecks_found": len(bottlenecks), "bottlenecks": bottlenecks}
 
     def _analyze_coordination(self) -> Dict[str, Any]:
         """Analyze coordination effectiveness"""
@@ -824,15 +774,13 @@ class ActivityTrackerAgent(BaseAgent, ProtocolMixin):
             "messages_received": received,
             "isolated_agents": len(isolated),
             "isolated_agent_ids": isolated,
-            "coordination_health": "good" if len(isolated) == 0 else "needs_improvement"
+            "coordination_health": "good" if len(isolated) == 0 else "needs_improvement",
         }
 
     def _get_top_performers(self, limit: int = 5) -> List[Dict]:
         """Get top performing agents"""
         sorted_metrics = sorted(
-            self.metrics.values(),
-            key=lambda m: (m.success_rate, m.tasks_completed),
-            reverse=True
+            self.metrics.values(), key=lambda m: (m.success_rate, m.tasks_completed), reverse=True
         )
 
         return [
@@ -840,7 +788,7 @@ class ActivityTrackerAgent(BaseAgent, ProtocolMixin):
                 "agent_id": m.agent_id,
                 "agent_type": m.agent_type,
                 "tasks_completed": m.tasks_completed,
-                "success_rate": round(m.success_rate * 100, 2)
+                "success_rate": round(m.success_rate * 100, 2),
             }
             for m in sorted_metrics[:limit]
         ]
@@ -850,9 +798,9 @@ class ActivityTrackerAgent(BaseAgent, ProtocolMixin):
 # Factory Function
 # =========================================================================
 
+
 async def create_activity_tracker_agent(
-    agent_id: str = "activity_tracker_001",
-    config: Optional[ActivityTrackerAgentConfig] = None
+    agent_id: str = "activity_tracker_001", config: Optional[ActivityTrackerAgentConfig] = None
 ) -> ActivityTrackerAgent:
     """
     Factory function to create and initialize an Activity Tracker Agent
@@ -867,10 +815,7 @@ async def create_activity_tracker_agent(
     if config is None:
         config = ActivityTrackerAgentConfig.from_environment()
 
-    agent = ActivityTrackerAgent(
-        agent_id=agent_id,
-        config=config
-    )
+    agent = ActivityTrackerAgent(agent_id=agent_id, config=config)
 
     await agent.initialize()
 
@@ -882,6 +827,7 @@ async def create_activity_tracker_agent(
 # =========================================================================
 
 if __name__ == "__main__":
+
     async def demo():
         """Demonstrate Activity Tracker Agent capabilities"""
         print("\n" + "=" * 80)
@@ -903,7 +849,7 @@ if __name__ == "__main__":
                 "agent_type": "data_processor",
                 "activity_type": "spawned",
                 "description": "Data processor spawned",
-                "details": {}
+                "details": {},
             },
             {
                 "operation": "log_activity",
@@ -911,7 +857,7 @@ if __name__ == "__main__":
                 "agent_type": "data_processor",
                 "activity_type": "task_started",
                 "description": "Processing dataset alpha",
-                "details": {"dataset": "alpha"}
+                "details": {"dataset": "alpha"},
             },
             {
                 "operation": "log_activity",
@@ -921,7 +867,7 @@ if __name__ == "__main__":
                 "description": "Dataset alpha processed",
                 "details": {"dataset": "alpha", "records": 1000},
                 "duration_ms": 1250.5,
-                "success": True
+                "success": True,
             },
             {
                 "operation": "log_activity",
@@ -929,7 +875,7 @@ if __name__ == "__main__":
                 "agent_type": "analyzer",
                 "activity_type": "spawned",
                 "description": "Analyzer spawned",
-                "details": {}
+                "details": {},
             },
             {
                 "operation": "log_activity",
@@ -939,23 +885,22 @@ if __name__ == "__main__":
                 "description": "Analysis complete",
                 "details": {"insights": 5},
                 "duration_ms": 850.2,
-                "success": True
-            }
+                "success": True,
+            },
         ]
 
         for activity in test_activities:
             result = await agent.execute(activity)
-            if result.get('success'):
+            if result.get("success"):
                 print(f"    Logged: {activity['description']}")
 
         # Get agent metrics
         print("\n[3] Agent metrics:")
-        metrics_result = await agent.execute({
-            "operation": "get_agent_metrics",
-            "agent_id": "test_agent_001"
-        })
-        if metrics_result.get('success'):
-            metrics = metrics_result['metrics']
+        metrics_result = await agent.execute(
+            {"operation": "get_agent_metrics", "agent_id": "test_agent_001"}
+        )
+        if metrics_result.get("success"):
+            metrics = metrics_result["metrics"]
             print(f"    Agent: {metrics['agent_id']}")
             print(f"    Tasks completed: {metrics['tasks_completed']}")
             print(f"    Success rate: {metrics['success_rate'] * 100:.1f}%")
@@ -963,20 +908,17 @@ if __name__ == "__main__":
 
         # Get activity feed
         print("\n[4] Activity feed:")
-        feed_result = await agent.execute({
-            "operation": "get_activity_feed",
-            "limit": 5
-        })
-        if feed_result.get('success'):
+        feed_result = await agent.execute({"operation": "get_activity_feed", "limit": 5})
+        if feed_result.get("success"):
             print(f"    Recent activities: {feed_result['count']}")
-            for activity in feed_result['activities'][:3]:
+            for activity in feed_result["activities"][:3]:
                 print(f"      - {activity['description']} ({activity['agent_id']})")
 
         # Get system health
         print("\n[5] System health:")
         health_result = await agent.execute({"operation": "get_system_health"})
-        if health_result.get('success'):
-            health = health_result['health']
+        if health_result.get("success"):
+            health = health_result["health"]
             print(f"    Total agents: {health['total_agents']}")
             print(f"    Active agents: {health['active_agents']}")
             print(f"    Tasks completed: {health['tasks_completed']}")
@@ -984,10 +926,7 @@ if __name__ == "__main__":
 
         # Analyze ecosystem
         print("\n[6] Ecosystem analysis:")
-        analysis_result = await agent.execute({
-            "operation": "analyze",
-            "analysis_type": "overview"
-        })
+        analysis_result = await agent.execute({"operation": "analyze", "analysis_type": "overview"})
         print(f"    Total activities: {analysis_result.get('total_activities', 0)}")
         print(f"    Recent activity: {analysis_result.get('recent_activity_count', 0)}")
 

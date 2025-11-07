@@ -29,6 +29,7 @@ logger = logging.getLogger(__name__)
 @dataclass
 class RefinementResult:
     """Result of complete goal refinement pipeline"""
+
     refinement_id: str
     original_goal: str
     refined_goal: RefinedGoal
@@ -122,7 +123,9 @@ class GoalRefinementAgent(BaseAgent):
                     answer = self.clarifier.auto_answer_from_memory(question, context)
                     if answer:
                         clarifications[question.question_text] = answer
-                        logger.info(f"[{refinement_id}] Auto-answered: {question.question_text[:50]}...")
+                        logger.info(
+                            f"[{refinement_id}] Auto-answered: {question.question_text[:50]}..."
+                        )
 
             # Step 3: Refine goal
             logger.info(f"[{refinement_id}] Step 3: Refining goal...")
@@ -134,7 +137,9 @@ class GoalRefinementAgent(BaseAgent):
 
             # Step 5: Generate strategies
             logger.info(f"[{refinement_id}] Step 5: Generating execution strategies...")
-            strategies = self.strategy_generator.generate_strategies(refined_goal, num_strategies=4, context=context)
+            strategies = self.strategy_generator.generate_strategies(
+                refined_goal, num_strategies=4, context=context
+            )
             strategies = self.strategy_generator.rank_strategies(strategies, context)
 
             # Step 6: Select best strategy
@@ -197,7 +202,9 @@ class GoalRefinementAgent(BaseAgent):
         result = await self.process_goal(goal, context)
 
         if result.readiness_score < 0.5:
-            logger.warning(f"Goal readiness low ({result.readiness_score:.0%}), requiring user confirmation")
+            logger.warning(
+                f"Goal readiness low ({result.readiness_score:.0%}), requiring user confirmation"
+            )
             return {"status": "pending_approval", "refinement_result": result.to_dict()}
 
         # Execute (would normally hand off to Strategy Agent)
@@ -215,7 +222,9 @@ class GoalRefinementAgent(BaseAgent):
         self.execution_history[result.refinement_id] = execution_result
         return execution_result
 
-    async def handle_vague_goal(self, goal: str, user_context: Optional[Dict] = None) -> RefinedGoal:
+    async def handle_vague_goal(
+        self, goal: str, user_context: Optional[Dict] = None
+    ) -> RefinedGoal:
         """
         Special handling for vague goals with interactive clarification
 
@@ -254,7 +263,9 @@ class GoalRefinementAgent(BaseAgent):
         logger.info("Vague goal refined successfully")
         return refined
 
-    async def generate_alternatives(self, goal: RefinedGoal, num_alternatives: int = 3) -> List[StrategyPath]:
+    async def generate_alternatives(
+        self, goal: RefinedGoal, num_alternatives: int = 3
+    ) -> List[StrategyPath]:
         """
         Generate alternative strategies for a refined goal
 
@@ -294,9 +305,7 @@ class GoalRefinementAgent(BaseAgent):
 
         # Start monitoring
         monitor = self.adaptive_executor.monitor_execution(
-            plan_id,
-            refinement_result.refined_goal,
-            refinement_result.selected_strategy
+            plan_id, refinement_result.refined_goal, refinement_result.selected_strategy
         )
 
         # In production, would execute strategy steps and monitor continuously
@@ -305,7 +314,9 @@ class GoalRefinementAgent(BaseAgent):
 
         for i, step in enumerate(refinement_result.selected_strategy.steps):
             # Simulate step execution
-            monitor.progress_percent = (i + 1) / len(refinement_result.selected_strategy.steps) * 100
+            monitor.progress_percent = (
+                (i + 1) / len(refinement_result.selected_strategy.steps) * 100
+            )
             monitor.completed_steps.append(step)
 
             # Detect environmental changes (in production, would be real-time)
@@ -316,19 +327,14 @@ class GoalRefinementAgent(BaseAgent):
 
                 # Assess impact
                 impact = self.adaptive_executor.assess_impact(
-                    changes,
-                    refinement_result.refined_goal,
-                    monitor.current_strategy
+                    changes, refinement_result.refined_goal, monitor.current_strategy
                 )
 
                 # Adapt if needed
                 if not impact.current_plan_viable:
                     logger.info("Current plan not viable, adapting...")
                     adapted, adaptations = self.adaptive_executor.adapt_plan(
-                        plan_id,
-                        refinement_result.refined_goal,
-                        monitor.current_strategy,
-                        impact
+                        plan_id, refinement_result.refined_goal, monitor.current_strategy, impact
                     )
                     execution_log.append(f"Adapted strategy: {adaptations}")
 
@@ -383,11 +389,7 @@ class GoalRefinementAgent(BaseAgent):
         logger.info(f"Recorded learning: {outcome} for {refinement.selected_strategy.name}")
 
     def _create_execution_plan(
-        self,
-        goal: RefinedGoal,
-        strategy: StrategyPath,
-        constraints: ConstraintSet,
-        context: Dict
+        self, goal: RefinedGoal, strategy: StrategyPath, constraints: ConstraintSet, context: Dict
     ) -> Dict:
         """Create detailed execution plan"""
         return {

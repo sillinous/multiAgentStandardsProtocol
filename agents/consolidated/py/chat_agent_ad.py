@@ -7,6 +7,7 @@ This agent monitors Restream chat and shows ads after a countdown unless enough 
 
 import sys
 from pathlib import Path
+
 # Add project root to Python path for imports
 project_root = str(Path(__file__).parent.parent.parent)
 if project_root not in sys.path:
@@ -36,7 +37,7 @@ import numpy as np
 import csv
 
 # Load environment variables from the project root
-env_path = Path(project_root) / '.env'
+env_path = Path(project_root) / ".env"
 if not env_path.exists():
     raise ValueError(f"🚨 .env file not found at {env_path}")
 
@@ -46,8 +47,8 @@ load_dotenv(dotenv_path=env_path)
 # AD CONFIGURATION CONSTANTS
 # ==============================
 AD_COUNTDOWN_MINUTES = 5  # How many minutes until ad plays (e.g., 1, 2, 3, etc.)
-AD_INTERVAL_SECONDS = 10   # How often to check/show countdown
-CHATS_TO_PREVENT_AD = 10    # Number of chats needed to prevent ad
+AD_INTERVAL_SECONDS = 10  # How often to check/show countdown
+CHATS_TO_PREVENT_AD = 10  # Number of chats needed to prevent ad
 AD_VIDEO_PATHS = [
     "/Users/md/Dropbox/dev/github/moon-dev-ai-agents-for-trading/src/data/chat_agent/7 minute ATC ad.mov"
     # Add more video paths here as needed
@@ -57,7 +58,7 @@ AD_VIDEO_PATHS = [
 AD_COUNTDOWN_SECONDS = AD_COUNTDOWN_MINUTES * 60
 
 # Model override settings
-MODEL_TYPE = "claude"  # Using Claude for chat responses ,, groq 
+MODEL_TYPE = "claude"  # Using Claude for chat responses ,, groq
 MODEL_NAME = "claude-3-haiku-20240307"  # Fast, efficient model llama-3.1-8b-instant
 
 # Configuration - All in one place! 🎯
@@ -79,11 +80,7 @@ MAX_777_PER_DAY = int(MAX_777_POINTS_PER_DAY / POINTS_PER_777)  # Auto-calculate
 
 # Restream configuration
 RESTREAM_WEBSOCKET_URL = "wss://chat.restream.io/embed/ws"
-RESTREAM_EVENT_SOURCES = {
-    2: "Twitch",
-    13: "YouTube",
-    28: "X/Twitter"
-}
+RESTREAM_EVENT_SOURCES = {2: "Twitch", 13: "YouTube", 28: "X/Twitter"}
 
 
 # Chat prompts - for responding to message
@@ -179,21 +176,59 @@ DEFAULT_CONFIG = {
     "initial_chats": DEFAULT_INITIAL_CHATS,
     "leaderboard_interval": 300,
     "use_restream": True,  # Force this to True
-    "restream_show_id": None
+    "restream_show_id": None,
 }
 
 # Add to configuration section
 DEBUG_MODE = True  # Add this near other constants
 
 # Update constants at the top
-LOVE_EMOJIS = ["❤️", "💖", "💝", "💗", "💓", "💞", "💕", "💘", "💟", "💌", "🫶", "💝", "💖", "💗", "🩵", "🩶", "🩷", "💛", "💚", "💙", "💜", "🤍", "🤎", "🖤", "❤️‍🔥", "🩵", "🩶", "🩷", "💛", "💚", "💙", "💜", "🤍", "🤎", "🖤", "❤️‍🔥"]
+LOVE_EMOJIS = [
+    "❤️",
+    "💖",
+    "💝",
+    "💗",
+    "💓",
+    "💞",
+    "💕",
+    "💘",
+    "💟",
+    "💌",
+    "🫶",
+    "💝",
+    "💖",
+    "💗",
+    "🩵",
+    "🩶",
+    "🩷",
+    "💛",
+    "💚",
+    "💙",
+    "💜",
+    "🤍",
+    "🤎",
+    "🖤",
+    "❤️‍🔥",
+    "🩵",
+    "🩶",
+    "🩷",
+    "💛",
+    "💚",
+    "💙",
+    "💜",
+    "🤍",
+    "🤎",
+    "🖤",
+    "❤️‍🔥",
+]
 LOVE_SPAM = " ".join(random.sample(LOVE_EMOJIS, 14))  # Random selection of love emojis
 
 
 class RestreamChatHandler:
     """Handler for Restream chat integration"""
+
     def __init__(self, client_id, client_secret):
-        self.embed_token = os.getenv('RESTREAM_EMBED_TOKEN')
+        self.embed_token = os.getenv("RESTREAM_EMBED_TOKEN")
         self.messages = []
         self.driver = None
         self.connected = False
@@ -202,7 +237,7 @@ class RestreamChatHandler:
         self.message_queue = []  # List of (timestamp, username, text) tuples
         self.message_timeout = 2  # Reduce timeout to 2 seconds
         self.last_message = None  # Track the last message we processed
-        
+
         # Initialize Selenium options
         self.chrome_options = Options()
         self.chrome_options.add_argument("--headless=new")
@@ -214,57 +249,57 @@ class RestreamChatHandler:
         self.chrome_options.add_argument("--disable-popup-blocking")
         self.chrome_options.add_argument("--disable-software-rasterizer")
         self.chrome_options.add_argument("--disable-extensions")
-        
+
         # Simple message tracking to prevent duplicates
         self.last_messages = []  # Keep track of last few messages to prevent duplicates
         self.pending_messages = {}  # {username: {'text': text, 'time': timestamp}}
-        
+
     def set_chat_agent(self, agent):
         """Set reference to ChatAgent for processing questions"""
         self.chat_agent = agent
-        
+
     def process_question(self, username, text):
         """Forward question processing to ChatAgent"""
         if self.chat_agent:
             return self.chat_agent.process_question(username, text)
         return None
-        
+
     def connect(self):
         if not self.embed_token:
             cprint("❌ RESTREAM_EMBED_TOKEN not found in .env!", "red")
             return
-            
+
         try:
             cprint("🔌 Connecting to Restream chat...", "cyan")
-            
+
             service = webdriver.ChromeService()
             self.driver = webdriver.Chrome(service=service, options=self.chrome_options)
             self.driver.set_page_load_timeout(30)
-            
+
             embed_url = f"https://chat.restream.io/embed?token={self.embed_token}"
             cprint(f"🌐 Loading chat URL", "cyan")
             self.driver.get(embed_url)
-            
+
             # Wait for page to load
             time.sleep(5)
-            
+
             # Debug page source
             cprint("🔍 Looking for chat elements...", "cyan")
             page_source = self.driver.page_source
-            
+
             # Try different class names that might be present
             possible_classes = [
-                "chat-message", 
-                "message", 
+                "chat-message",
+                "message",
                 "chat-item",
                 "message-item",
                 "chat-line",
                 "rs-chat-message",
                 "chat-messages",  # Added more possible classes
                 "message-wrapper",
-                "chat-message-wrapper"
+                "chat-message-wrapper",
             ]
-            
+
             found_class = None
             for class_name in possible_classes:
                 elements = self.driver.find_elements(By.CLASS_NAME, class_name)
@@ -272,7 +307,7 @@ class RestreamChatHandler:
                     found_class = class_name
                     cprint(f"✅ Found chat elements using class: {class_name}", "green")
                     break
-            
+
             if found_class:
                 self.message_class = found_class
                 self.connected = True
@@ -282,9 +317,9 @@ class RestreamChatHandler:
                 self.message_class = "chat-message"
                 cprint("⚠️ Using default message class: chat-message", "yellow")
                 self.connected = True
-            
+
             threading.Thread(target=self._poll_messages, daemon=True).start()
-            
+
         except Exception as e:
             cprint(f"❌ Error connecting to Restream: {str(e)}", "red")
             if self.driver:
@@ -308,10 +343,10 @@ class RestreamChatHandler:
                 if not message_containers:
                     time.sleep(0.1)
                     continue
-                    
+
                 # Get the last message
                 latest_msg = message_containers[-1]
-                
+
                 try:
                     # Try different class names for username
                     username = None
@@ -323,10 +358,10 @@ class RestreamChatHandler:
                                 break
                         except:
                             continue
-                    
+
                     if not username:
                         continue
-                        
+
                     # Try different class names for message text
                     text = None
                     for class_name in ["chat-text-normal", "message-text", "chat-message-text"]:
@@ -337,64 +372,64 @@ class RestreamChatHandler:
                                 break
                         except:
                             continue
-                    
+
                     if not text:
                         continue
-                    
+
                     # Skip system messages
                     if username == "Restream.io" or not text:
                         continue
-                    
+
                     current_time = time.time()
-                    
+
                     # Check if we already processed this exact message
                     message_id = f"{username}:{text}"
                     if message_id in self.last_messages:
                         continue
-                    
+
                     # Check if user has a pending message
                     if username in self.pending_messages:
                         pending = self.pending_messages[username]
                         # If new message contains the pending message (emoji added)
-                        if pending['text'] in text and len(text) > len(pending['text']):
+                        if pending["text"] in text and len(text) > len(pending["text"]):
                             # Update to the version with emoji
-                            self.pending_messages[username] = {'text': text, 'time': current_time}
+                            self.pending_messages[username] = {"text": text, "time": current_time}
                             continue
-                    
+
                     # Store as pending message
-                    self.pending_messages[username] = {'text': text, 'time': current_time}
-                    
+                    self.pending_messages[username] = {"text": text, "time": current_time}
+
                     # Process messages that have been pending for at least 0.1 seconds
                     users_to_process = []
                     for user, pending in self.pending_messages.items():
-                        if current_time - pending['time'] >= 0.1:
+                        if current_time - pending["time"] >= 0.1:
                             users_to_process.append(user)
-                    
+
                     # Process and remove pending messages
                     for user in users_to_process:
                         pending = self.pending_messages[user]
                         msg_id = f"{user}:{pending['text']}"
-                        
+
                         # Add to processed list
                         self.last_messages.append(msg_id)
                         if len(self.last_messages) > 50:
                             self.last_messages.pop(0)
-                        
+
                         # Process the message
                         if self.chat_agent:
-                            ai_response = self.chat_agent.process_question(user, pending['text'])
+                            ai_response = self.chat_agent.process_question(user, pending["text"])
                             if ai_response:
-                                self._display_chat(user, pending['text'], ai_response)
-                        
+                                self._display_chat(user, pending["text"], ai_response)
+
                         # Remove from pending
                         del self.pending_messages[user]
-                    
+
                 except Exception as e:
                     cprint(f"⚠️ Error processing message: {str(e)}", "yellow")
                     continue
 
                 time.sleep(0.1)
-                
+
             except Exception as e:
                 cprint(f"❌ Error polling messages: {str(e)}", "red")
                 time.sleep(0.1)
@@ -415,19 +450,19 @@ class RestreamChatHandler:
         """
         if not ai_response:
             return
-            
+
         # Check if this is a negativity response (contains both username and LOVE_SPAM)
         if isinstance(ai_response, str) and "💖" in ai_response and LOVE_SPAM in ai_response:
             # For negative messages, ONLY show the hearts and username, not the original message
             print(f"{random.choice(USER_EMOJIS)} ", end="")
-            username_part = ai_response.split('\n')[0]
+            username_part = ai_response.split("\n")[0]
             cprint(username_part, "white", "on_magenta")
             print(LOVE_SPAM)
-            print('❤️ ❤️ ❤️ I LOVE YOU!!!!!! KEEP GOING 777 ❤️ ❤️ ❤️')
+            print("❤️ ❤️ ❤️ I LOVE YOU!!!!!! KEEP GOING 777 ❤️ ❤️ ❤️")
             print(LOVE_SPAM)
             print()  # Add spacing
             return
-            
+
         # For 777 responses
         if isinstance(ai_response, str) and ai_response.startswith("777"):
             print(f"{random.choice(USER_EMOJIS)} ", end="")
@@ -439,7 +474,7 @@ class RestreamChatHandler:
             cprint(ai_response, "white", "on_cyan")
             print()  # Add spacing
             return
-            
+
         # For normal messages (ai_response is True)
         if ai_response is True:
             print(f"{random.choice(USER_EMOJIS)} ", end="")
@@ -447,7 +482,7 @@ class RestreamChatHandler:
             print(f": {text}")
             print()  # Add spacing
             return
-            
+
         # This case shouldn't happen anymore since we removed AI question responses
         # But keeping it for any potential future use
         if isinstance(ai_response, str) and not ai_response.startswith("777"):
@@ -456,107 +491,127 @@ class RestreamChatHandler:
             print(f": {text}")
             print()  # Add spacing
 
+
 class ChatAgentAd:
     def __init__(self):
         """Initialize the Chat Agent with Ad functionality"""
         cprint("\n🤖 Initializing Moon Dev's Chat Agent with Ad Support...", "cyan")
-        
+
         # Ad tracking variables
         self.chat_count = 0
         self.last_ad_time = time.time()
         self.countdown_active = False
         self.countdown_start_time = None
-        
+
         # Remove knowledge base initialization
         self.data_dir = Path(project_root) / "src" / "data" / "chat_agent"
         self.data_dir.mkdir(parents=True, exist_ok=True)
         self.chat_log_path = self.data_dir / "chat_history.csv"
         self.quotes_file_path = self.data_dir / "quotes_and_verses.txt"
-        
+
         # Load quotes and verses into memory
         self.quotes_and_verses = self._load_quotes_and_verses()
-        
+
         # Initialize chat memory
         self.chat_memory = []
-        
+
         # Create chat log if it doesn't exist
         if not self.chat_log_path.exists():
             self._create_chat_log()
-            
+
         # Debug environment variables
-        for key in ["OPENAI_KEY", "ANTHROPIC_KEY", "GEMINI_KEY", "GROQ_API_KEY", "DEEPSEEK_KEY", "YOUTUBE_API_KEY"]:
+        for key in [
+            "OPENAI_KEY",
+            "ANTHROPIC_KEY",
+            "GEMINI_KEY",
+            "GROQ_API_KEY",
+            "DEEPSEEK_KEY",
+            "YOUTUBE_API_KEY",
+        ]:
             if os.getenv(key):
                 cprint(f"✅ Found {key}", "green")
             else:
                 cprint(f"❌ Missing {key}", "red")
-        
+
         # Initialize model using factory
         self.model_factory = model_factory
         self.model = self.model_factory.get_model(MODEL_TYPE, MODEL_NAME)
-        
+
         if not self.model:
-            raise ValueError(f"🚨 Could not initialize {MODEL_TYPE} {MODEL_NAME} model! Check API key and model availability.")
-        
+            raise ValueError(
+                f"🚨 Could not initialize {MODEL_TYPE} {MODEL_NAME} model! Check API key and model availability."
+            )
+
         self._announce_model()
-        
+
         # Add leaderboard tracking
         self.chat_count_since_last_leaderboard = 0
         self.leaderboard_chat_interval = LEADERBOARD_INTERVAL  # Use the constant we defined (10)
-        
+
         # Initialize Restream handler
         cprint("\n🔄 Initializing Restream...", "cyan")
         restream_id = os.getenv("RESTREAM_CLIENT_ID")
         restream_secret = os.getenv("RESTREAM_CLIENT_SECRET")
-        
+
         if not restream_id or not restream_secret:
             cprint("❌ Missing Restream credentials in .env!", "red")
             raise ValueError("Missing Restream credentials!")
-            
+
         self.restream_handler = RestreamChatHandler(restream_id, restream_secret)
         self.restream_handler.set_chat_agent(self)
         self.restream_handler.connect()
         cprint("🎮 Restream chat integration enabled!", "green")
-        
+
         # Display ad configuration
         cprint("\n📺 AD CONFIGURATION:", "yellow")
         cprint(f"  • Ad countdown: {AD_COUNTDOWN_MINUTES} minutes", "yellow")
         cprint(f"  • Check interval: {AD_INTERVAL_SECONDS} seconds", "yellow")
         cprint(f"  • Chats to prevent ad: {CHATS_TO_PREVENT_AD}", "yellow")
         cprint(f"  • Videos: {len(AD_VIDEO_PATHS)} available", "yellow")
-        
+
         cprint("🎯 Moon Dev's Chat Agent with Ad Support initialized!", "green")
-        
+
         # Add tracking for 777 counts
         self.daily_777_counts = {}  # Format: {username: {'count': int, 'last_reset': datetime}}
-        
+
         # Start ad timer thread
         self.start_ad_timer()
-        
+
     def start_ad_timer(self):
         """Start the ad timer in a separate thread"""
+
         def ad_timer_loop():
             while True:
                 time.sleep(AD_INTERVAL_SECONDS)
                 current_time = time.time()
-                
+
                 # Check if we should start countdown
-                if not self.countdown_active and (current_time - self.last_ad_time) >= AD_INTERVAL_SECONDS:
+                if (
+                    not self.countdown_active
+                    and (current_time - self.last_ad_time) >= AD_INTERVAL_SECONDS
+                ):
                     self.countdown_active = True
                     self.countdown_start_time = current_time
                     self.chat_count = 0  # Reset chat count
-                    
+
                     # Show countdown message - single line with minutes
-                    time_str = f"{AD_COUNTDOWN_MINUTES} minute{'s' if AD_COUNTDOWN_MINUTES > 1 else ''}"
-                    cprint(f"📺 Ad in {time_str} 🚀 Stop it from showing by sending {CHATS_TO_PREVENT_AD} chats before time is up", "white", "on_red")
-                
+                    time_str = (
+                        f"{AD_COUNTDOWN_MINUTES} minute{'s' if AD_COUNTDOWN_MINUTES > 1 else ''}"
+                    )
+                    cprint(
+                        f"📺 Ad in {time_str} 🚀 Stop it from showing by sending {CHATS_TO_PREVENT_AD} chats before time is up",
+                        "white",
+                        "on_red",
+                    )
+
                 # Check if countdown is active
                 if self.countdown_active:
                     elapsed = current_time - self.countdown_start_time
                     remaining = AD_COUNTDOWN_SECONDS - int(elapsed)
-                    
+
                     # Remove periodic countdown updates - we already show it in the initial message
                     pass
-                    
+
                     # Check if countdown expired
                     if elapsed >= AD_COUNTDOWN_SECONDS:
                         if self.chat_count < CHATS_TO_PREVENT_AD:
@@ -565,53 +620,60 @@ class ChatAgentAd:
                         else:
                             # Ad prevented - just continue silently
                             pass
-                        
+
                         # Reset for next cycle
                         self.countdown_active = False
                         self.last_ad_time = current_time
                         self.chat_count = 0
-        
+
         # Start timer thread
         timer_thread = threading.Thread(target=ad_timer_loop, daemon=True)
         timer_thread.start()
-        
+
     def play_ad(self):
         """Play the ad video using available video player"""
         try:
             # Randomly select a video from the list
             selected_video = random.choice(AD_VIDEO_PATHS)
-            
+
             # Check if video file exists
             if not os.path.exists(selected_video):
                 cprint(f"❌ Ad video not found at: {selected_video}", "red")
                 return
-                
+
             # List of video players to try in order
             video_players = [
                 {
-                    'name': 'mpv',
-                    'command': ['mpv', '--really-quiet', '--geometry=66%x66%+0+0', selected_video]
+                    "name": "mpv",
+                    "command": ["mpv", "--really-quiet", "--geometry=66%x66%+0+0", selected_video],
                 },
                 {
-                    'name': 'VLC',
-                    'command': ['vlc', '--no-fullscreen', '--video-x=0', '--video-y=0', '--width=1280', '--height=720', '--play-and-exit', selected_video]
+                    "name": "VLC",
+                    "command": [
+                        "vlc",
+                        "--no-fullscreen",
+                        "--video-x=0",
+                        "--video-y=0",
+                        "--width=1280",
+                        "--height=720",
+                        "--play-and-exit",
+                        selected_video,
+                    ],
                 },
                 {
-                    'name': 'QuickTime (macOS)',
-                    'command': ['open', '-a', 'QuickTime Player', selected_video]
+                    "name": "QuickTime (macOS)",
+                    "command": ["open", "-a", "QuickTime Player", selected_video],
                 },
                 {
-                    'name': 'Default system player',
-                    'command': ['open', selected_video]  # macOS default
-                }
+                    "name": "Default system player",
+                    "command": ["open", selected_video],  # macOS default
+                },
             ]
-            
+
             # Try each player until one works
             for player in video_players:
                 try:
-                    result = subprocess.run(player['command'], 
-                                          capture_output=True, 
-                                          text=True)
+                    result = subprocess.run(player["command"], capture_output=True, text=True)
                     if result.returncode == 0:
                         # Successfully started playing, just return silently
                         return
@@ -619,18 +681,18 @@ class ChatAgentAd:
                     continue
                 except Exception as e:
                     continue
-            
+
             # If we get here, no player worked - show a single error message
             cprint("❌ Could not play ad - no video player found!", "red")
-            
+
         except Exception as e:
             cprint(f"❌ Error playing ad: {str(e)}", "red")
-        
+
     def _create_chat_log(self):
         """Create empty chat history CSV with all required columns"""
         try:
             # Create with all required columns
-            df = pd.DataFrame(columns=['timestamp', 'user', 'message', 'score'])
+            df = pd.DataFrame(columns=["timestamp", "user", "message", "score"])
             # Ensure directory exists
             self.chat_log_path.parent.mkdir(parents=True, exist_ok=True)
             # Save with index=False to avoid extra column
@@ -638,33 +700,33 @@ class ChatAgentAd:
             cprint("📝 Created fresh chat history log!", "green")
         except Exception as e:
             cprint(f"❌ Error creating chat log: {str(e)}", "red")
-        
+
     def _announce_model(self):
         """Announce current model with eye-catching formatting"""
         model_msg = f"🤖 USING MODEL: {MODEL_TYPE.upper()} - {MODEL_NAME} 🤖"
         border = "=" * (len(model_msg) + 4)
-        cprint(border, 'white', 'on_blue', attrs=['bold'])
-        cprint(f"  {model_msg}  ", 'white', 'on_blue', attrs=['bold'])
-        cprint(border, 'white', 'on_blue', attrs=['bold'])
-        
+        cprint(border, "white", "on_blue", attrs=["bold"])
+        cprint(f"  {model_msg}  ", "white", "on_blue", attrs=["bold"])
+        cprint(border, "white", "on_blue", attrs=["bold"])
+
     def _log_chat(self, user, question, confidence, response):
         """Log chat interaction to CSV silently"""
         try:
             new_data = {
-                'timestamp': datetime.now().strftime('%Y-%m-%d %H:%M:%S'),
-                'user': user,
-                'question': question,
-                'confidence': confidence,
-                'response': response
+                "timestamp": datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
+                "user": user,
+                "question": question,
+                "confidence": confidence,
+                "response": response,
             }
-            
+
             df = pd.read_csv(self.chat_log_path)
             df = pd.concat([df, pd.DataFrame([new_data])], ignore_index=True)
             df.to_csv(self.chat_log_path, index=False)
-            
+
         except Exception as e:
             cprint(f"❌ Error logging chat: {str(e)}", "red")
-            
+
     def _update_chat_memory(self, message):
         """Update the chat memory with new message"""
         self.chat_memory.append(message)
@@ -673,22 +735,22 @@ class ChatAgentAd:
 
     def _get_random_lucky_emojis(self, count=3):
         """Get random lucky emojis for 777 responses"""
-        return ' '.join(random.sample(LUCKY_EMOJIS, count))
+        return " ".join(random.sample(LUCKY_EMOJIS, count))
 
     def _should_skip_response(self, message):
         """Check if message should be skipped for response"""
         # Never skip 777 messages
         if message.strip() == "777":
             return False
-        
+
         # Skip if empty
         if not message.strip():
             return True
-        
+
         # Skip if too short
         if len(message.strip()) < MIN_CHARS_FOR_RESPONSE:
             return True
-        
+
         return False
 
     def _display_chat(self, username, text, ai_response):
@@ -702,17 +764,17 @@ class ChatAgentAd:
         """
         if not ai_response:
             return
-            
+
         # Check if this is a negativity response (contains both username and LOVE_SPAM)
         if isinstance(ai_response, str) and "💖" in ai_response and LOVE_SPAM in ai_response:
             # For negative messages, ONLY show the hearts and username, not the original message
             print(f"{random.choice(USER_EMOJIS)} ", end="")
-            username_part = ai_response.split('\n')[0]
+            username_part = ai_response.split("\n")[0]
             cprint(username_part, "white", "on_magenta")
             print(LOVE_SPAM)
             print()  # Add spacing
             return
-            
+
         # For 777 responses
         if isinstance(ai_response, str) and ai_response.startswith("777"):
             print(f"{random.choice(USER_EMOJIS)} ", end="")
@@ -724,7 +786,7 @@ class ChatAgentAd:
             cprint(ai_response, "white", "on_cyan")
             print()  # Add spacing
             return
-            
+
         # For normal messages (ai_response is True)
         if ai_response is True:
             print(f"{random.choice(USER_EMOJIS)} ", end="")
@@ -732,7 +794,7 @@ class ChatAgentAd:
             print(f": {text}")
             print()  # Add spacing
             return
-            
+
         # This case shouldn't happen anymore since we removed AI question responses
         # But keeping it for any potential future use
         if isinstance(ai_response, str) and not ai_response.startswith("777"):
@@ -744,39 +806,40 @@ class ChatAgentAd:
     def _get_daily_777_count(self, username):
         """Get and update the user's daily 777 count"""
         today = datetime.now().date()
-        
+
         if username not in self.daily_777_counts:
-            self.daily_777_counts[username] = {'count': 0, 'last_reset': today}
-            
+            self.daily_777_counts[username] = {"count": 0, "last_reset": today}
+
         # Check if we need to reset the count for a new day
         user_data = self.daily_777_counts[username]
-        if user_data['last_reset'] != today:
-            user_data['count'] = 0
-            user_data['last_reset'] = today
-            
-        return user_data['count']
-        
+        if user_data["last_reset"] != today:
+            user_data["count"] = 0
+            user_data["last_reset"] = today
+
+        return user_data["count"]
+
     def _load_quotes_and_verses(self):
         """Load quotes, verses and parables from file"""
         try:
             if not self.quotes_file_path.exists():
                 cprint("❌ quotes_and_verses.txt not found!", "red")
                 return []
-                
-            with open(self.quotes_file_path, 'r', encoding='utf-8') as f:
+
+            with open(self.quotes_file_path, "r", encoding="utf-8") as f:
                 lines = f.readlines()
-                
+
             # Filter out empty lines, comments and section headers
-            valid_lines = [line.strip() for line in lines 
-                         if line.strip() and not line.startswith('#')]
-            
+            valid_lines = [
+                line.strip() for line in lines if line.strip() and not line.startswith("#")
+            ]
+
             if not valid_lines:
                 cprint("⚠️ No quotes/verses found in file!", "yellow")
                 return []
-                
+
             cprint(f"✨ Loaded {len(valid_lines)} quotes/verses/parables!", "green")
             return valid_lines
-            
+
         except Exception as e:
             cprint(f"❌ Error loading quotes: {str(e)}", "red")
             return []
@@ -785,7 +848,7 @@ class ChatAgentAd:
         """Get a random quote, verse or parable"""
         if not self.quotes_and_verses:
             return "🌟 Stay positive and keep pushing forward! - Moon Dev"
-            
+
         return random.choice(self.quotes_and_verses)
 
     def process_question(self, user, question):
@@ -797,14 +860,17 @@ class ChatAgentAd:
         # Increment chat count when countdown is active
         if self.countdown_active:
             self.chat_count += 1
-        
+
         # Add API key warning
-        if any(key_word in question.lower() for key_word in ['apixxx', 'keyxxx', 'tokenxxx', 'secretxxx']):
+        if any(
+            key_word in question.lower()
+            for key_word in ["apixxx", "keyxxx", "tokenxxx", "secretxxx"]
+        ):
             return None
-            
+
         retries = 0
         max_retries = 3
-        
+
         while retries < max_retries:
             try:
                 # 1. Check for 777 FIRST
@@ -812,9 +878,9 @@ class ChatAgentAd:
                     # Check daily limit and add points
                     daily_count = self._get_daily_777_count(user)
                     if daily_count < MAX_777_PER_DAY:
-                        self.daily_777_counts[user]['count'] += 1
+                        self.daily_777_counts[user]["count"] += 1
                         self.save_chat_history(user, question, POINTS_PER_777)
-                    
+
                     # Get random quote/verse/parable from our file
                     response = self._get_random_quote_or_verse()
                     emojis = self._get_random_lucky_emojis()
@@ -823,14 +889,18 @@ class ChatAgentAd:
                 # 2. Check negativity for ALL non-777 messages
                 negativity_prompt = NEGATIVITY_CHECK_PROMPT.format(message=question)
                 try:
-                    negativity_response = self.model.generate_response(
-                        system_prompt=negativity_prompt,
-                        user_content=question,
-                        temperature=0.3,
-                        max_tokens=5
-                    ).content.strip().lower()
-                    
-                    if negativity_response == 'true':
+                    negativity_response = (
+                        self.model.generate_response(
+                            system_prompt=negativity_prompt,
+                            user_content=question,
+                            temperature=0.3,
+                            max_tokens=5,
+                        )
+                        .content.strip()
+                        .lower()
+                    )
+
+                    if negativity_response == "true":
                         self.save_chat_history(user, question, -1)
                         return f"💖 {user} 💖\n{LOVE_SPAM}"
                 except Exception as e:
@@ -839,18 +909,18 @@ class ChatAgentAd:
                         time.sleep(2)
                         continue
                     cprint(f"❌ Error checking negativity: {str(e)}", "red")
-                
+
                 # Save all non-negative messages to chat history with score 1
                 self.save_chat_history(user, question, 1)
-                
+
                 # 3. For non-negative messages, just display them (no AI response)
                 return True
-                
+
             except Exception as e:
                 cprint(f"❌ Error in process_question: {str(e)}", "red")
                 retries += 1
                 time.sleep(1)
-                
+
         return None
 
     def _get_leaderboard(self):
@@ -860,44 +930,40 @@ class ChatAgentAd:
         try:
             # Read chat history
             df = pd.read_csv(self.chat_log_path)
-            
+
             # Check if score column exists
-            if not df.empty and 'score' in df.columns:
-                scores = df.groupby('user')['score'].sum().sort_values(ascending=False)
+            if not df.empty and "score" in df.columns:
+                scores = df.groupby("user")["score"].sum().sort_values(ascending=False)
                 return scores.head(3)  # Get top 3
             return pd.Series()
         except Exception as e:
             cprint(f"❌ Error getting leaderboard: {str(e)}", "red")
             return pd.Series()
-            
+
     def _format_leaderboard_message(self, scores):
         """
         🌙 MOON DEV SAYS: Format that leaderboard with style! 🎨
         """
         if len(scores) == 0:
             return None
-            
+
         message = "⭐️ 🌟 💫 CHAT CHAMPS 💫 🌟 ⭐️ "
-        
+
         # Simple rank emojis
-        rank_decorations = [
-            "👑", # First place
-            "🥈", # Second place
-            "🥉"  # Third place
-        ]
-        
+        rank_decorations = ["👑", "🥈", "🥉"]  # First place  # Second place  # Third place
+
         # Add some randomized bonus emojis
         bonus_emojis = ["🎯", "🎲", "🎮", "🕹️"]
-        
+
         message += "\n"  # Add spacing after header
-        
+
         for i, (user, score) in enumerate(scores.items()):
             random_bonus = random.choice(bonus_emojis)
             message += f"\n{rank_decorations[i]} {user}: {score} points {random_bonus}"
-        
+
         message += "\n\n ⭐️ Winner Gets Free Bootcamp ⭐️ "
         return message.strip()
-        
+
     def _show_leaderboard(self):
         """
         🌙 MOON DEV SAYS: Time to show off those chat skills! 🚀
@@ -905,37 +971,37 @@ class ChatAgentAd:
         scores = self._get_leaderboard()
         if len(scores) == 0:
             return
-            
+
         message = self._format_leaderboard_message(scores)
         print(f"\n{message}\n")  # Display in console
         # You can add code here to post to chat if needed
-        
+
     def run(self):
         """Main loop for monitoring chat"""
-        cprint("\n🎯 Moon Dev's Chat Agent with Ad Support starting...", "cyan", attrs=['bold'])
+        cprint("\n🎯 Moon Dev's Chat Agent with Ad Support starting...", "cyan", attrs=["bold"])
         print()
-        
+
         cprint(f"📝 Will process last {DEFAULT_INITIAL_CHATS} messages on startup", "cyan")
         cprint(f"⏰ Leaderboard will show every {LEADERBOARD_INTERVAL} chats", "cyan")
         cprint(f"📺 Ad system active - countdown every {AD_INTERVAL_SECONDS}s", "yellow")
-        
+
         # Show initial leaderboard
         cprint("\n🏆 Initial Leaderboard:", "cyan")
         self._show_leaderboard()
         self.chat_count_since_last_leaderboard = 0
-        
+
         # Start Restream handler and keep main thread alive
         try:
             while True:
                 time.sleep(RESTREAM_CHECK_INTERVAL)
-                
+
                 # Show leaderboard every LEADERBOARD_INTERVAL chats
                 if self.chat_count_since_last_leaderboard >= LEADERBOARD_INTERVAL:
-                    #cprint("\n🏆 Time for the leaderboard!", "cyan")
+                    # cprint("\n🏆 Time for the leaderboard!", "cyan")
                     self._show_leaderboard()
                     self.chat_count_since_last_leaderboard = 0
                     print()  # Add spacing after leaderboard
-                
+
         except KeyboardInterrupt:
             raise
         except Exception as e:
@@ -948,8 +1014,8 @@ class ChatAgentAd:
         """
         try:
             df = pd.read_csv(self.chat_log_path)
-            if not df.empty and 'message' in df.columns:
-                return df[df['user'] == username]['message'].tolist()
+            if not df.empty and "message" in df.columns:
+                return df[df["user"] == username]["message"].tolist()
             return []
         except Exception as e:
             cprint(f"❌ Error getting user chat history: {str(e)}", "red")
@@ -960,16 +1026,17 @@ class ChatAgentAd:
         🌙 MOON DEV SAYS: Saving chat history with scores! 📊
         """
         timestamp = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
-        
+
         # Check if file exists and has headers
         file_exists = os.path.exists(self.chat_log_path)
-        
-        with open(self.chat_log_path, 'a', newline='') as f:
+
+        with open(self.chat_log_path, "a", newline="") as f:
             writer = csv.writer(f)
             if not file_exists:
                 # Write headers if file doesn't exist
-                writer.writerow(['timestamp', 'user', 'message', 'score'])
+                writer.writerow(["timestamp", "user", "message", "score"])
             writer.writerow([timestamp, username, message, score])
+
 
 def is_meaningful_chat(new_message, chat_history, threshold=0.3):
     """
@@ -977,37 +1044,39 @@ def is_meaningful_chat(new_message, chat_history, threshold=0.3):
     """
     # Ensure new_message is a string
     new_message = str(new_message)
-    
+
     if len(new_message.split()) < 3:  # Very short messages
         return False
-        
+
     if not chat_history:
         return True
-        
+
     # Convert all chat history items to strings
     chat_history = [str(msg) for msg in chat_history]
-    
+
     vectorizer = TfidfVectorizer()
     tfidf_matrix = vectorizer.fit_transform(chat_history + [new_message])
     similarities = cosine_similarity(tfidf_matrix[-1], tfidf_matrix[:-1])
-    
+
     if np.max(similarities) > threshold:
         return False
-        
+
     return True
+
 
 def update_chat_score(username, message, chat_history):
     """
-    🌙 MOON DEV SAYS: Let's track those chat points! 
+    🌙 MOON DEV SAYS: Let's track those chat points!
     """
     # Skip if message isn't meaningful
     if not is_meaningful_chat(message, chat_history):
         return 0
-        
+
     # Give 1 point for meaningful messages
     # Note: Negative points are handled by AI negativity check
     # 777 points are handled separately
     return 1
+
 
 if __name__ == "__main__":
     try:

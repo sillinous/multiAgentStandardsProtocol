@@ -44,16 +44,20 @@ from pathlib import Path
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
 
+
 class TrustLevel(Enum):
     """Trust levels for cross-enterprise collaboration"""
+
     UNKNOWN = "unknown"
     BASIC = "basic"
     VERIFIED = "verified"
     TRUSTED = "trusted"
     STRATEGIC_PARTNER = "strategic_partner"
 
+
 class CollaborationType(Enum):
     """Types of cross-enterprise collaboration"""
+
     KNOWLEDGE_SHARING = "knowledge_sharing"
     JOINT_ANALYSIS = "joint_analysis"
     RESOURCE_POOLING = "resource_pooling"
@@ -63,8 +67,10 @@ class CollaborationType(Enum):
     STRATEGIC_PARTNERSHIP = "strategic_partnership"
     REVENUE_SHARING = "revenue_sharing"
 
+
 class RevenueModel(Enum):
     """Revenue sharing models for collaborations"""
+
     EQUAL_SPLIT = "equal_split"
     CONTRIBUTION_BASED = "contribution_based"
     PERFORMANCE_BASED = "performance_based"
@@ -72,9 +78,11 @@ class RevenueModel(Enum):
     AUCTION_BASED = "auction_based"
     SUBSCRIPTION = "subscription"
 
+
 @dataclass
 class OrganizationProfile:
     """Organization profile for cross-enterprise collaboration"""
+
     org_id: str
     name: str
     industry: List[str]
@@ -89,9 +97,11 @@ class OrganizationProfile:
     created_at: datetime
     last_active: datetime
 
+
 @dataclass
 class AgentCapability:
     """Capability definition for cross-enterprise agents"""
+
     capability_id: str
     name: str
     description: str
@@ -103,9 +113,11 @@ class AgentCapability:
     collaboration_requirements: List[str]
     trust_requirements: TrustLevel
 
+
 @dataclass
 class CollaborationProposal:
     """Proposal for cross-enterprise collaboration"""
+
     proposal_id: str
     initiator_org: str
     target_orgs: List[str]
@@ -121,9 +133,11 @@ class CollaborationProposal:
     proposed_at: datetime
     status: str
 
+
 @dataclass
 class CollaborationContract:
     """Smart contract for cross-enterprise collaboration"""
+
     contract_id: str
     participants: List[str]
     terms: Dict[str, Any]
@@ -136,9 +150,11 @@ class CollaborationContract:
     signed_by: List[str]
     blockchain_hash: Optional[str]
 
+
 @dataclass
 class CrossEnterpriseProject:
     """Project managed across multiple enterprises"""
+
     project_id: str
     name: str
     description: str
@@ -153,6 +169,7 @@ class CrossEnterpriseProject:
     status: str
     performance_data: Dict[str, Any]
     created_at: datetime
+
 
 class TrustNetworkManager:
     """Manages trust relationships between organizations"""
@@ -182,10 +199,10 @@ class TrustNetworkManager:
 
             # Weighted trust score
             trust_score = (
-                direct_trust * 0.4 +
-                (org1_reputation + org2_reputation) / 2 * 0.3 +
-                history_score * 0.2 +
-                network_trust * 0.1
+                direct_trust * 0.4
+                + (org1_reputation + org2_reputation) / 2 * 0.3
+                + history_score * 0.2
+                + network_trust * 0.1
             )
 
             return min(max(trust_score, 0.0), 1.0)
@@ -202,7 +219,7 @@ class TrustNetworkManager:
         shared = []
         for h1 in history1:
             for h2 in history2:
-                if h1.get('project_id') == h2.get('project_id'):
+                if h1.get("project_id") == h2.get("project_id"):
                     shared.append(h1)
 
         return shared
@@ -216,12 +233,12 @@ class TrustNetworkManager:
         total_weight = 0.0
 
         for collaboration in history:
-            success_rate = collaboration.get('success_rate', 0.5)
-            revenue_delivered = collaboration.get('revenue_delivered', 0.0)
-            timeline_adherence = collaboration.get('timeline_adherence', 0.5)
+            success_rate = collaboration.get("success_rate", 0.5)
+            revenue_delivered = collaboration.get("revenue_delivered", 0.0)
+            timeline_adherence = collaboration.get("timeline_adherence", 0.5)
 
             # Weight recent collaborations more heavily
-            days_ago = (datetime.now() - collaboration.get('completed_at', datetime.now())).days
+            days_ago = (datetime.now() - collaboration.get("completed_at", datetime.now())).days
             weight = 1.0 / (1.0 + days_ago / 365.0)
 
             collaboration_score = (success_rate + timeline_adherence) / 2
@@ -236,10 +253,16 @@ class TrustNetworkManager:
     async def _calculate_network_trust(self, org1: str, org2: str) -> float:
         """Calculate trust through network connections"""
         # Find mutual trusted partners
-        org1_trusted = {org for (o1, o2), trust in self.trust_relationships.items()
-                       if o1 == org1 and trust > 0.7}
-        org2_trusted = {org for (o1, o2), trust in self.trust_relationships.items()
-                       if o1 == org2 and trust > 0.7}
+        org1_trusted = {
+            org
+            for (o1, o2), trust in self.trust_relationships.items()
+            if o1 == org1 and trust > 0.7
+        }
+        org2_trusted = {
+            org
+            for (o1, o2), trust in self.trust_relationships.items()
+            if o1 == org2 and trust > 0.7
+        }
 
         mutual_partners = org1_trusted.intersection(org2_trusted)
 
@@ -254,6 +277,7 @@ class TrustNetworkManager:
             network_trust += min(trust_to_partner1, trust_to_partner2)
 
         return min(network_trust / len(mutual_partners), 1.0)
+
 
 class RevenueShareEngine:
     """Manages revenue sharing across enterprise collaborations"""
@@ -270,7 +294,7 @@ class RevenueShareEngine:
         total_revenue: Decimal,
         revenue_model: RevenueModel,
         participants: List[str],
-        contributions: Dict[str, Dict[str, Any]]
+        contributions: Dict[str, Dict[str, Any]],
     ) -> Dict[str, Decimal]:
         """Calculate revenue distribution based on model and contributions"""
         try:
@@ -284,7 +308,9 @@ class RevenueShareEngine:
                 return await self._performance_based_split(project_id, total_revenue, participants)
 
             elif revenue_model == RevenueModel.HYBRID:
-                return await self._hybrid_split(project_id, total_revenue, participants, contributions)
+                return await self._hybrid_split(
+                    project_id, total_revenue, participants, contributions
+                )
 
             elif revenue_model == RevenueModel.AUCTION_BASED:
                 return await self._auction_based_split(project_id, total_revenue, participants)
@@ -296,7 +322,9 @@ class RevenueShareEngine:
             logger.error(f"Error calculating revenue distribution: {e}")
             return {}
 
-    async def _equal_split(self, total_revenue: Decimal, participants: List[str]) -> Dict[str, Decimal]:
+    async def _equal_split(
+        self, total_revenue: Decimal, participants: List[str]
+    ) -> Dict[str, Decimal]:
         """Equal split among all participants"""
         if not participants:
             return {}
@@ -305,22 +333,22 @@ class RevenueShareEngine:
         return {participant: share_per_participant for participant in participants}
 
     async def _contribution_based_split(
-        self,
-        total_revenue: Decimal,
-        contributions: Dict[str, Dict[str, Any]]
+        self, total_revenue: Decimal, contributions: Dict[str, Dict[str, Any]]
     ) -> Dict[str, Decimal]:
         """Split based on actual contributions"""
         if not contributions:
             return {}
 
         # Calculate total contribution value
-        total_contribution = Decimal('0')
+        total_contribution = Decimal("0")
         contribution_values = {}
 
         for org, contrib in contributions.items():
-            value = Decimal(str(contrib.get('resource_value', 0)))
-            value += Decimal(str(contrib.get('time_invested', 0))) * Decimal('100')  # Time weight
-            value += Decimal(str(contrib.get('expertise_level', 0))) * Decimal('50')  # Expertise weight
+            value = Decimal(str(contrib.get("resource_value", 0)))
+            value += Decimal(str(contrib.get("time_invested", 0))) * Decimal("100")  # Time weight
+            value += Decimal(str(contrib.get("expertise_level", 0))) * Decimal(
+                "50"
+            )  # Expertise weight
 
             contribution_values[org] = value
             total_contribution += value
@@ -336,10 +364,7 @@ class RevenueShareEngine:
         return revenue_distribution
 
     async def _performance_based_split(
-        self,
-        project_id: str,
-        total_revenue: Decimal,
-        participants: List[str]
+        self, project_id: str, total_revenue: Decimal, participants: List[str]
     ) -> Dict[str, Decimal]:
         """Split based on performance metrics"""
         performance_data = self.performance_metrics.get(project_id, {})
@@ -354,10 +379,10 @@ class RevenueShareEngine:
         for participant in participants:
             metrics = performance_data.get(participant, {})
             score = (
-                metrics.get('quality_score', 0.5) * 0.4 +
-                metrics.get('timeliness_score', 0.5) * 0.3 +
-                metrics.get('innovation_score', 0.5) * 0.2 +
-                metrics.get('collaboration_score', 0.5) * 0.1
+                metrics.get("quality_score", 0.5) * 0.4
+                + metrics.get("timeliness_score", 0.5) * 0.3
+                + metrics.get("innovation_score", 0.5) * 0.2
+                + metrics.get("collaboration_score", 0.5) * 0.1
             )
             participant_scores[participant] = score
             total_performance += score
@@ -368,7 +393,9 @@ class RevenueShareEngine:
         # Distribute based on performance
         revenue_distribution = {}
         for participant, score in participant_scores.items():
-            revenue_distribution[participant] = (Decimal(str(score)) / Decimal(str(total_performance))) * total_revenue
+            revenue_distribution[participant] = (
+                Decimal(str(score)) / Decimal(str(total_performance))
+            ) * total_revenue
 
         return revenue_distribution
 
@@ -377,13 +404,13 @@ class RevenueShareEngine:
         project_id: str,
         total_revenue: Decimal,
         participants: List[str],
-        contributions: Dict[str, Dict[str, Any]]
+        contributions: Dict[str, Dict[str, Any]],
     ) -> Dict[str, Decimal]:
         """Hybrid model combining multiple factors"""
         # 50% contribution-based, 30% performance-based, 20% equal split
-        base_share = total_revenue * Decimal('0.2')
-        contribution_share = total_revenue * Decimal('0.5')
-        performance_share = total_revenue * Decimal('0.3')
+        base_share = total_revenue * Decimal("0.2")
+        contribution_share = total_revenue * Decimal("0.5")
+        performance_share = total_revenue * Decimal("0.3")
 
         # Calculate each component
         equal_dist = await self._equal_split(base_share, participants)
@@ -394,12 +421,13 @@ class RevenueShareEngine:
         final_distribution = {}
         for participant in participants:
             final_distribution[participant] = (
-                equal_dist.get(participant, Decimal('0')) +
-                contrib_dist.get(participant, Decimal('0')) +
-                perf_dist.get(participant, Decimal('0'))
+                equal_dist.get(participant, Decimal("0"))
+                + contrib_dist.get(participant, Decimal("0"))
+                + perf_dist.get(participant, Decimal("0"))
             )
 
         return final_distribution
+
 
 class PartnershipDiscoveryEngine:
     """Discovers and recommends cross-enterprise partnerships"""
@@ -414,14 +442,14 @@ class PartnershipDiscoveryEngine:
         self,
         requesting_org: str,
         project_requirements: Dict[str, Any],
-        collaboration_type: CollaborationType
+        collaboration_type: CollaborationType,
     ) -> List[Dict[str, Any]]:
         """Discover potential partnerships for a project"""
         try:
-            required_capabilities = project_requirements.get('capabilities', [])
-            required_trust_level = TrustLevel(project_requirements.get('trust_level', 'basic'))
-            budget_range = project_requirements.get('budget_range', {})
-            timeline = project_requirements.get('timeline', {})
+            required_capabilities = project_requirements.get("capabilities", [])
+            required_trust_level = TrustLevel(project_requirements.get("trust_level", "basic"))
+            budget_range = project_requirements.get("budget_range", {})
+            timeline = project_requirements.get("timeline", {})
 
             candidate_organizations = []
 
@@ -438,9 +466,7 @@ class PartnershipDiscoveryEngine:
                     continue
 
                 # Check trust level
-                trust_score = await self.trust_manager.calculate_trust_score(
-                    requesting_org, org_id
-                )
+                trust_score = await self.trust_manager.calculate_trust_score(requesting_org, org_id)
 
                 trust_meets_requirement = self._trust_meets_requirement(
                     trust_score, required_trust_level
@@ -454,19 +480,27 @@ class PartnershipDiscoveryEngine:
                     requesting_org, org_id, project_requirements
                 )
 
-                candidate_organizations.append({
-                    'organization_id': org_id,
-                    'organization_name': profile.name,
-                    'capability_score': capability_score,
-                    'trust_score': trust_score,
-                    'compatibility_score': compatibility_score,
-                    'overall_score': (capability_score * 0.4 + trust_score * 0.3 + compatibility_score * 0.3),
-                    'estimated_cost': await self._estimate_collaboration_cost(org_id, project_requirements),
-                    'estimated_timeline': await self._estimate_collaboration_timeline(org_id, project_requirements)
-                })
+                candidate_organizations.append(
+                    {
+                        "organization_id": org_id,
+                        "organization_name": profile.name,
+                        "capability_score": capability_score,
+                        "trust_score": trust_score,
+                        "compatibility_score": compatibility_score,
+                        "overall_score": (
+                            capability_score * 0.4 + trust_score * 0.3 + compatibility_score * 0.3
+                        ),
+                        "estimated_cost": await self._estimate_collaboration_cost(
+                            org_id, project_requirements
+                        ),
+                        "estimated_timeline": await self._estimate_collaboration_timeline(
+                            org_id, project_requirements
+                        ),
+                    }
+                )
 
             # Sort by overall score
-            candidate_organizations.sort(key=lambda x: x['overall_score'], reverse=True)
+            candidate_organizations.sort(key=lambda x: x["overall_score"], reverse=True)
 
             return candidate_organizations[:10]  # Return top 10 candidates
 
@@ -475,9 +509,7 @@ class PartnershipDiscoveryEngine:
             return []
 
     async def _calculate_capability_match(
-        self,
-        org_id: str,
-        required_capabilities: List[str]
+        self, org_id: str, required_capabilities: List[str]
     ) -> float:
         """Calculate how well an organization's capabilities match requirements"""
         org_capabilities = self.capability_registry.get(org_id, [])
@@ -526,16 +558,13 @@ class PartnershipDiscoveryEngine:
             TrustLevel.BASIC: 0.3,
             TrustLevel.VERIFIED: 0.5,
             TrustLevel.TRUSTED: 0.7,
-            TrustLevel.STRATEGIC_PARTNER: 0.9
+            TrustLevel.STRATEGIC_PARTNER: 0.9,
         }
 
         return trust_score >= level_thresholds.get(required_level, 0.5)
 
     async def _calculate_compatibility(
-        self,
-        org1: str,
-        org2: str,
-        project_requirements: Dict[str, Any]
+        self, org1: str, org2: str, project_requirements: Dict[str, Any]
     ) -> float:
         """Calculate overall compatibility between organizations"""
         try:
@@ -551,25 +580,24 @@ class PartnershipDiscoveryEngine:
 
             # Revenue sharing preferences alignment
             revenue_alignment = self._calculate_revenue_preference_alignment(
-                profile1.revenue_sharing_preferences,
-                profile2.revenue_sharing_preferences
+                profile1.revenue_sharing_preferences, profile2.revenue_sharing_preferences
             )
 
             # Data sharing policy compatibility
             data_policy_compatibility = self._calculate_data_policy_compatibility(
                 profile1.data_sharing_policies,
                 profile2.data_sharing_policies,
-                project_requirements.get('data_requirements', {})
+                project_requirements.get("data_requirements", {}),
             )
 
             # Historical collaboration success
             historical_success = self._get_historical_collaboration_success(org1, org2)
 
             compatibility_score = (
-                industry_score * 0.25 +
-                revenue_alignment * 0.25 +
-                data_policy_compatibility * 0.25 +
-                historical_success * 0.25
+                industry_score * 0.25
+                + revenue_alignment * 0.25
+                + data_policy_compatibility * 0.25
+                + historical_success * 0.25
             )
 
             return compatibility_score
@@ -577,6 +605,7 @@ class PartnershipDiscoveryEngine:
         except Exception as e:
             logger.error(f"Error calculating compatibility: {e}")
             return 0.0
+
 
 class CrossEnterpriseCollaborationNetwork:
     """Main orchestrator for cross-enterprise agent collaboration"""
@@ -604,7 +633,7 @@ class CrossEnterpriseCollaborationNetwork:
                 "network_id": str(uuid.uuid4()),
                 "initialization_timestamp": datetime.now().isoformat(),
                 "active_organizations": 0,
-                "available_capabilities": 0
+                "available_capabilities": 0,
             }
 
             # Initialize trust network
@@ -621,11 +650,15 @@ class CrossEnterpriseCollaborationNetwork:
 
             # Load organization profiles
             await self._load_organization_profiles()
-            initialization_result["active_organizations"] = len(self.partnership_engine.organization_profiles)
+            initialization_result["active_organizations"] = len(
+                self.partnership_engine.organization_profiles
+            )
 
             # Load capability registry
             await self._load_capability_registry()
-            total_capabilities = sum(len(caps) for caps in self.partnership_engine.capability_registry.values())
+            total_capabilities = sum(
+                len(caps) for caps in self.partnership_engine.capability_registry.values()
+            )
             initialization_result["available_capabilities"] = total_capabilities
 
             # Initialize network monitoring
@@ -637,16 +670,9 @@ class CrossEnterpriseCollaborationNetwork:
 
         except Exception as e:
             logger.error(f"Error initializing collaboration network: {e}")
-            return {
-                "status": "error",
-                "error": str(e),
-                "components_initialized": []
-            }
+            return {"status": "error", "error": str(e), "components_initialized": []}
 
-    async def propose_collaboration(
-        self,
-        proposal: CollaborationProposal
-    ) -> Dict[str, Any]:
+    async def propose_collaboration(self, proposal: CollaborationProposal) -> Dict[str, Any]:
         """Propose a new cross-enterprise collaboration"""
         try:
             # Validate proposal
@@ -655,7 +681,7 @@ class CrossEnterpriseCollaborationNetwork:
                 return {
                     "status": "rejected",
                     "reason": validation_result["reason"],
-                    "proposal_id": proposal.proposal_id
+                    "proposal_id": proposal.proposal_id,
                 }
 
             # Find suitable partners
@@ -663,59 +689,44 @@ class CrossEnterpriseCollaborationNetwork:
                 "capabilities": proposal.required_capabilities,
                 "trust_level": proposal.trust_requirements.value,
                 "timeline": {"duration": proposal.duration.total_seconds()},
-                "collaboration_type": proposal.collaboration_type.value
+                "collaboration_type": proposal.collaboration_type.value,
             }
 
             potential_partners = await self.partnership_engine.discover_partnerships(
-                proposal.initiator_org,
-                project_requirements,
-                proposal.collaboration_type
+                proposal.initiator_org, project_requirements, proposal.collaboration_type
             )
 
             if not potential_partners:
                 return {
                     "status": "no_partners_found",
                     "reason": "No suitable partners found for the proposed collaboration",
-                    "proposal_id": proposal.proposal_id
+                    "proposal_id": proposal.proposal_id,
                 }
 
             # Store proposal
             self.pending_proposals[proposal.proposal_id] = proposal
 
             # Notify potential partners
-            notifications_sent = await self._notify_potential_partners(
-                proposal, potential_partners
-            )
+            notifications_sent = await self._notify_potential_partners(proposal, potential_partners)
 
             return {
                 "status": "proposal_submitted",
                 "proposal_id": proposal.proposal_id,
                 "potential_partners": len(potential_partners),
                 "notifications_sent": notifications_sent,
-                "estimated_response_time": "48-72 hours"
+                "estimated_response_time": "48-72 hours",
             }
 
         except Exception as e:
             logger.error(f"Error proposing collaboration: {e}")
-            return {
-                "status": "error",
-                "error": str(e),
-                "proposal_id": proposal.proposal_id
-            }
+            return {"status": "error", "error": str(e), "proposal_id": proposal.proposal_id}
 
-    async def execute_collaboration(
-        self,
-        project_id: str
-    ) -> Dict[str, Any]:
+    async def execute_collaboration(self, project_id: str) -> Dict[str, Any]:
         """Execute an active cross-enterprise collaboration"""
         try:
             project = self.active_collaborations.get(project_id)
             if not project:
-                return {
-                    "status": "error",
-                    "error": "Project not found",
-                    "project_id": project_id
-                }
+                return {"status": "error", "error": "Project not found", "project_id": project_id}
 
             # Execute current phase
             execution_result = await self._execute_project_phase(project)
@@ -738,16 +749,12 @@ class CrossEnterpriseCollaborationNetwork:
                 "project_id": project_id,
                 "current_phase": project.current_phase,
                 "execution_result": execution_result,
-                "next_actions": await self._get_next_project_actions(project)
+                "next_actions": await self._get_next_project_actions(project),
             }
 
         except Exception as e:
             logger.error(f"Error executing collaboration: {e}")
-            return {
-                "status": "error",
-                "error": str(e),
-                "project_id": project_id
-            }
+            return {"status": "error", "error": str(e), "project_id": project_id}
 
     async def get_network_analytics(self) -> Dict[str, Any]:
         """Get comprehensive analytics for the collaboration network"""
@@ -757,7 +764,7 @@ class CrossEnterpriseCollaborationNetwork:
                     "total_organizations": len(self.partnership_engine.organization_profiles),
                     "active_collaborations": len(self.active_collaborations),
                     "pending_proposals": len(self.pending_proposals),
-                    "total_contracts": len(self.collaboration_contracts)
+                    "total_contracts": len(self.collaboration_contracts),
                 },
                 "trust_analytics": await self._get_trust_analytics(),
                 "revenue_analytics": await self._get_revenue_analytics(),
@@ -765,7 +772,7 @@ class CrossEnterpriseCollaborationNetwork:
                 "partnership_analytics": await self._get_partnership_analytics(),
                 "capability_analytics": await self._get_capability_analytics(),
                 "trends": await self._get_collaboration_trends(),
-                "predictions": await self._get_network_predictions()
+                "predictions": await self._get_network_predictions(),
             }
 
             return analytics
@@ -807,7 +814,7 @@ class CrossEnterpriseCollaborationNetwork:
                 contact_endpoints=["api.techcorp.com"],
                 verification_status="verified",
                 created_at=datetime.now(),
-                last_active=datetime.now()
+                last_active=datetime.now(),
             ),
             OrganizationProfile(
                 org_id="org_002",
@@ -822,8 +829,8 @@ class CrossEnterpriseCollaborationNetwork:
                 contact_endpoints=["api.globalmarket.com"],
                 verification_status="verified",
                 created_at=datetime.now(),
-                last_active=datetime.now()
-            )
+                last_active=datetime.now(),
+            ),
         ]
 
         for org in sample_orgs:
@@ -843,9 +850,10 @@ class CrossEnterpriseCollaborationNetwork:
             "metrics": {
                 "average_trust_score": 0.8,
                 "collaboration_success_rate": 0.85,
-                "network_utilization": 0.7
-            }
+                "network_utilization": 0.7,
+            },
         }
+
 
 # Usage example and testing
 async def demonstrate_cross_enterprise_collaboration():
@@ -854,11 +862,7 @@ async def demonstrate_cross_enterprise_collaboration():
     # Initialize the network
     network = CrossEnterpriseCollaborationNetwork()
 
-    config = {
-        "environment": "development",
-        "enable_blockchain": True,
-        "trust_threshold": 0.6
-    }
+    config = {"environment": "development", "enable_blockchain": True, "trust_threshold": 0.6}
 
     init_result = await network.initialize_network(config)
     print(f"Network Initialization: {init_result}")
@@ -878,7 +882,7 @@ async def demonstrate_cross_enterprise_collaboration():
         data_sharing_requirements={"level": "medium"},
         success_metrics={"accuracy": 0.9, "timeliness": 0.95},
         proposed_at=datetime.now(),
-        status="pending"
+        status="pending",
     )
 
     # Submit proposal
@@ -892,8 +896,9 @@ async def demonstrate_cross_enterprise_collaboration():
     return {
         "network_initialized": init_result["status"] == "success",
         "proposal_submitted": proposal_result["status"] == "proposal_submitted",
-        "analytics_available": bool(analytics)
+        "analytics_available": bool(analytics),
     }
+
 
 if __name__ == "__main__":
     asyncio.run(demonstrate_cross_enterprise_collaboration())

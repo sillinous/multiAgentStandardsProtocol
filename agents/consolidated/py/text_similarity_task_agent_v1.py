@@ -43,7 +43,9 @@ class TextSimilarityTaskAgent(BaseAgent):
     and maximum reusability across APQC categories.
     """
 
-    def __init__(self, agent_id: str = "text_similarity_task_agent", config: Optional[Dict[str, Any]] = None):
+    def __init__(
+        self, agent_id: str = "text_similarity_task_agent", config: Optional[Dict[str, Any]] = None
+    ):
         """
         Initialize Text Similarity Task Agent
 
@@ -54,8 +56,8 @@ class TextSimilarityTaskAgent(BaseAgent):
         super().__init__(
             agent_id=agent_id,
             agent_type="analysis",
-            capabilities=['cosine_similarity', 'semantic_similarity', 'fuzzy_matching'],
-            config=config or {}
+            capabilities=["cosine_similarity", "semantic_similarity", "fuzzy_matching"],
+            config=config or {},
         )
 
         # Agent-specific initialization
@@ -65,24 +67,24 @@ class TextSimilarityTaskAgent(BaseAgent):
             "reusable": True,
             "composable": True,
             "stateless": True,
-            "framework": "APQC 7.0.1"
+            "framework": "APQC 7.0.1",
         }
 
         logger.info(f"Initialized Text Similarity Task Agent [{self.agent_id}]")
 
     async def execute_task(self, task: Dict[str, Any]) -> Dict[str, Any]:
         """
-        Execute the analysis task
+                Execute the analysis task
 
-        Args:
-            task: Task parameters containing:
-                - text1: string
-- text2: string
+                Args:
+                    task: Task parameters containing:
+                        - text1: string
+        - text2: string
 
-        Returns:
-            Result dictionary containing:
-                - similarity_score: float
-- method: string
+                Returns:
+                    Result dictionary containing:
+                        - similarity_score: float
+        - method: string
         """
         try:
             logger.info(f"[{self.agent_id}] Executing analysis task")
@@ -102,7 +104,7 @@ class TextSimilarityTaskAgent(BaseAgent):
                 "status": "success",
                 "agent_id": self.agent_id,
                 "timestamp": datetime.utcnow().isoformat(),
-                "result": output
+                "result": output,
             }
 
         except Exception as e:
@@ -111,7 +113,7 @@ class TextSimilarityTaskAgent(BaseAgent):
                 "status": "error",
                 "agent_id": self.agent_id,
                 "timestamp": datetime.utcnow().isoformat(),
-                "error": str(e)
+                "error": str(e),
             }
 
     def _validate_inputs(self, task: Dict[str, Any]) -> None:
@@ -124,7 +126,7 @@ class TextSimilarityTaskAgent(BaseAgent):
         Raises:
             ValueError: If required inputs are missing or invalid
         """
-        required_fields = ['text1', 'text2']
+        required_fields = ["text1", "text2"]
 
         for field in required_fields:
             if field not in task:
@@ -149,11 +151,7 @@ class TextSimilarityTaskAgent(BaseAgent):
         logger.info(f"[{self.agent_id}] Executing core logic for analysis")
 
         # Placeholder implementation
-        result = {
-            "executed": True,
-            "task_type": "analysis",
-            "inputs_received": list(task.keys())
-        }
+        result = {"executed": True, "task_type": "analysis", "inputs_received": list(task.keys())}
 
         # Simulate async work
         await asyncio.sleep(0.1)
@@ -177,8 +175,8 @@ class TextSimilarityTaskAgent(BaseAgent):
                 "agent_type": self.agent_type,
                 "level": 5,
                 "category": "analysis",
-                "timestamp": datetime.utcnow().isoformat()
-            }
+                "timestamp": datetime.utcnow().isoformat(),
+            },
         }
 
     async def handle_message(self, message: Dict[str, Any]) -> Dict[str, Any]:
@@ -200,10 +198,7 @@ class TextSimilarityTaskAgent(BaseAgent):
         elif message_type == "capabilities":
             return self.get_capabilities()
         else:
-            return {
-                "status": "error",
-                "error": f"Unknown message type: {message_type}"
-            }
+            return {"status": "error", "error": f"Unknown message type: {message_type}"}
 
     def get_status(self) -> Dict[str, Any]:
         """
@@ -217,7 +212,7 @@ class TextSimilarityTaskAgent(BaseAgent):
             "agent_type": self.agent_type,
             "status": "ready",
             "capabilities": self.capabilities,
-            "metadata": self.metadata
+            "metadata": self.metadata,
         }
 
     def get_capabilities(self) -> Dict[str, Any]:
@@ -230,11 +225,11 @@ class TextSimilarityTaskAgent(BaseAgent):
         return {
             "agent_id": self.agent_id,
             "capabilities": self.capabilities,
-            "inputs": {'text1': 'string', 'text2': 'string'},
-            "outputs": {'similarity_score': 'float', 'method': 'string'},
+            "inputs": {"text1": "string", "text2": "string"},
+            "outputs": {"similarity_score": "float", "method": "string"},
             "level": 5,
             "reusable": True,
-            "composable": True
+            "composable": True,
         }
 
 
@@ -248,7 +243,7 @@ async def main():
     # Example task
     task = {
         # Add example inputs here
-                # "text1": "example_text1",
+        # "text1": "example_text1",
         # "text2": "example_text2",
     }
 

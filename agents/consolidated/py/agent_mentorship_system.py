@@ -39,6 +39,7 @@ import json
 
 class MentorshipPhase(Enum):
     """Phases of the mentorship journey"""
+
     PAIRING = "pairing"  # Finding mentor-student match
     OBSERVATION = "observation"  # Student observes expert demonstrations
     GUIDED_PRACTICE = "guided_practice"  # Practice with mentor supervision
@@ -49,6 +50,7 @@ class MentorshipPhase(Enum):
 
 class TeachingMethod(Enum):
     """Methods mentors use to teach"""
+
     DEMONSTRATION = "demonstration"  # Show how it's done
     SOCRATIC = "socratic"  # Guide discovery through questions
     COLLABORATIVE = "collaborative"  # Work together on problem
@@ -58,6 +60,7 @@ class TeachingMethod(Enum):
 
 class CertificationLevel(Enum):
     """Industry-standard certification levels"""
+
     NOVICE = 1  # Basic understanding
     APPRENTICE = 2  # Can perform with supervision
     PRACTITIONER = 3  # Can perform independently
@@ -67,6 +70,7 @@ class CertificationLevel(Enum):
 
 class SkillDomain(Enum):
     """Domains of expertise"""
+
     CUSTOMER_SERVICE = "customer_service"
     DATA_ANALYSIS = "data_analysis"
     PROBLEM_SOLVING = "problem_solving"
@@ -80,6 +84,7 @@ class SkillDomain(Enum):
 @dataclass
 class Skill:
     """Measurable skill with proficiency level"""
+
     skill_id: str
     name: str
     domain: SkillDomain
@@ -96,6 +101,7 @@ class Skill:
 @dataclass
 class Demonstration:
     """Expert demonstration of a skill"""
+
     demonstration_id: str
     mentor_id: str
     skill_id: str
@@ -112,6 +118,7 @@ class Demonstration:
 @dataclass
 class PracticeSession:
     """Student practice session with mentor supervision"""
+
     session_id: str
     student_id: str
     mentor_id: str
@@ -132,6 +139,7 @@ class PracticeSession:
 @dataclass
 class SocraticQuestion:
     """Question designed to guide discovery"""
+
     question_id: str
     mentor_id: str
     student_id: str
@@ -146,6 +154,7 @@ class SocraticQuestion:
 @dataclass
 class Certification:
     """Formal certification of competency"""
+
     certification_id: str
     agent_id: str
     skill_id: str
@@ -163,6 +172,7 @@ class Certification:
 @dataclass
 class MentorProfile:
     """Profile of mentor agent with teaching stats"""
+
     mentor_id: str
     expertise: List[Skill]
     certification_levels: Dict[str, CertificationLevel]
@@ -180,6 +190,7 @@ class MentorProfile:
 @dataclass
 class StudentProfile:
     """Profile of student agent learning journey"""
+
     student_id: str
     current_skills: List[Skill]
     learning_goals: List[str]
@@ -196,6 +207,7 @@ class StudentProfile:
 @dataclass
 class MentorshipProgram:
     """Complete mentorship program from novice to expert"""
+
     program_id: str
     mentor_id: str
     student_id: str
@@ -237,7 +249,7 @@ class AgentMentorshipSystem:
             CertificationLevel.APPRENTICE: 25.0,
             CertificationLevel.PRACTITIONER: 50.0,
             CertificationLevel.EXPERT: 100.0,
-            CertificationLevel.MASTER: 250.0
+            CertificationLevel.MASTER: 250.0,
         }
 
         # Metrics
@@ -250,7 +262,7 @@ class AgentMentorshipSystem:
         self,
         agent_id: str,
         expertise: List[Skill],
-        teaching_style: Optional[List[TeachingMethod]] = None
+        teaching_style: Optional[List[TeachingMethod]] = None,
     ) -> MentorProfile:
         """
         Register agent as mentor
@@ -258,24 +270,25 @@ class AgentMentorshipSystem:
         """
         # Validate expertise level
         expert_skills = [
-            skill for skill in expertise
+            skill
+            for skill in expertise
             if skill.certification_level in [CertificationLevel.EXPERT, CertificationLevel.MASTER]
         ]
 
         if not expert_skills:
-            raise ValueError("Mentor must have Expert or Master certification in at least one skill")
+            raise ValueError(
+                "Mentor must have Expert or Master certification in at least one skill"
+            )
 
         # Create mentor profile
         mentor = MentorProfile(
             mentor_id=agent_id,
             expertise=expertise,
-            certification_levels={
-                skill.skill_id: skill.certification_level
-                for skill in expertise
-            },
+            certification_levels={skill.skill_id: skill.certification_level for skill in expertise},
             teaching_reputation=5.0,  # Start at middle reputation
-            teaching_style=teaching_style or [TeachingMethod.DEMONSTRATION, TeachingMethod.SOCRATIC],
-            specializations=list(set(skill.domain for skill in expert_skills))
+            teaching_style=teaching_style
+            or [TeachingMethod.DEMONSTRATION, TeachingMethod.SOCRATIC],
+            specializations=list(set(skill.domain for skill in expert_skills)),
         )
 
         self.mentors[agent_id] = mentor
@@ -283,16 +296,11 @@ class AgentMentorshipSystem:
         return mentor
 
     def register_student(
-        self,
-        agent_id: str,
-        learning_goals: List[str],
-        current_skills: Optional[List[Skill]] = None
+        self, agent_id: str, learning_goals: List[str], current_skills: Optional[List[Skill]] = None
     ) -> StudentProfile:
         """Register agent as student seeking mentorship"""
         student = StudentProfile(
-            student_id=agent_id,
-            current_skills=current_skills or [],
-            learning_goals=learning_goals
+            student_id=agent_id, current_skills=current_skills or [], learning_goals=learning_goals
         )
 
         self.students[agent_id] = student
@@ -304,7 +312,7 @@ class AgentMentorshipSystem:
         student_id: str,
         skill_id: str,
         min_reputation: float = 4.0,
-        preferred_teaching_style: Optional[TeachingMethod] = None
+        preferred_teaching_style: Optional[TeachingMethod] = None,
     ) -> Optional[MentorProfile]:
         """
         Find best mentor for student based on skill, reputation, and teaching style
@@ -320,7 +328,7 @@ class AgentMentorshipSystem:
             # Check certification level (must be Expert or Master)
             if mentor.certification_levels[skill_id] not in [
                 CertificationLevel.EXPERT,
-                CertificationLevel.MASTER
+                CertificationLevel.MASTER,
             ]:
                 continue
 
@@ -360,7 +368,7 @@ class AgentMentorshipSystem:
         mentor_id: str,
         student_id: str,
         skill_id: str,
-        target_level: CertificationLevel = CertificationLevel.PRACTITIONER
+        target_level: CertificationLevel = CertificationLevel.PRACTITIONER,
     ) -> MentorshipProgram:
         """
         Create formal mentorship program from novice to target certification level.
@@ -377,7 +385,7 @@ class AgentMentorshipSystem:
             started_at=datetime.now().isoformat(),
             estimated_completion_date=(
                 datetime.now() + timedelta(days=self._estimate_program_duration(target_level))
-            ).isoformat()
+            ).isoformat(),
         )
 
         self.programs[program_id] = program
@@ -400,7 +408,7 @@ class AgentMentorshipSystem:
         common_pitfalls: List[str],
         explanation: str,
         success_metrics: Optional[Dict[str, float]] = None,
-        difficulty_level: float = 0.5
+        difficulty_level: float = 0.5,
     ) -> Demonstration:
         """
         Expert demonstrates skill to student with detailed explanation.
@@ -421,7 +429,7 @@ class AgentMentorshipSystem:
             success_metrics=success_metrics or {},
             timestamp=datetime.now().isoformat(),
             explanation=explanation,
-            difficulty_level=difficulty_level
+            difficulty_level=difficulty_level,
         )
 
         self.demonstrations[demo_id] = demonstration
@@ -441,7 +449,7 @@ class AgentMentorshipSystem:
         mistakes_made: List[str],
         corrections_applied: List[str],
         success_score: float,
-        duration_seconds: int
+        duration_seconds: int,
     ) -> PracticeSession:
         """
         Student practices skill under mentor supervision.
@@ -464,7 +472,7 @@ class AgentMentorshipSystem:
             corrections_applied=corrections_applied,
             success_score=success_score,
             timestamp=datetime.now().isoformat(),
-            duration_seconds=duration_seconds
+            duration_seconds=duration_seconds,
         )
 
         program.practice_sessions.append(session)
@@ -497,7 +505,7 @@ class AgentMentorshipSystem:
         program_id: str,
         question: str,
         context: str,
-        desired_insight: str
+        desired_insight: str,
     ) -> SocraticQuestion:
         """
         Mentor asks Socratic question to guide student's discovery.
@@ -514,7 +522,7 @@ class AgentMentorshipSystem:
             question=question,
             context=context,
             desired_insight=desired_insight,
-            timestamp=datetime.now().isoformat()
+            timestamp=datetime.now().isoformat(),
         )
 
         program.socratic_dialogues.append(socratic_q)
@@ -522,10 +530,7 @@ class AgentMentorshipSystem:
         return socratic_q
 
     def respond_to_socratic_question(
-        self,
-        question_id: str,
-        program_id: str,
-        student_response: str
+        self, question_id: str, program_id: str, student_response: str
     ) -> Dict[str, Any]:
         """
         Student responds to Socratic question.
@@ -547,8 +552,7 @@ class AgentMentorshipSystem:
 
         # Evaluate response
         insight_reached = self._evaluate_socratic_response(
-            student_response,
-            question.desired_insight
+            student_response, question.desired_insight
         )
 
         # Generate follow-up questions if insight not reached
@@ -561,13 +565,11 @@ class AgentMentorshipSystem:
             "question_id": question_id,
             "insight_reached": insight_reached,
             "follow_up_questions": follow_ups,
-            "feedback": self._generate_socratic_feedback(question, insight_reached)
+            "feedback": self._generate_socratic_feedback(question, insight_reached),
         }
 
     def assess_for_certification(
-        self,
-        program_id: str,
-        validation_tasks: List[Dict[str, Any]]
+        self, program_id: str, validation_tasks: List[Dict[str, Any]]
     ) -> Tuple[bool, float, Optional[Certification]]:
         """
         Formal assessment to determine if student is ready for certification.
@@ -588,7 +590,7 @@ class AgentMentorshipSystem:
             CertificationLevel.APPRENTICE: 0.70,
             CertificationLevel.PRACTITIONER: 0.80,
             CertificationLevel.EXPERT: 0.90,
-            CertificationLevel.MASTER: 0.95
+            CertificationLevel.MASTER: 0.95,
         }
 
         threshold = passing_thresholds[program.target_certification_level]
@@ -609,7 +611,7 @@ class AgentMentorshipSystem:
                 expires_at=(datetime.now() + timedelta(days=730)).isoformat(),  # 2 years
                 assessment_score=assessment_score,
                 validation_tasks=validation_tasks,
-                endorsements=[program.mentor_id]
+                endorsements=[program.mentor_id],
             )
 
             self.certifications[cert_id] = certification
@@ -640,10 +642,7 @@ class AgentMentorshipSystem:
         return passed, assessment_score, certification
 
     def get_certification_path(
-        self,
-        skill_id: str,
-        current_level: CertificationLevel,
-        target_level: CertificationLevel
+        self, skill_id: str, current_level: CertificationLevel, target_level: CertificationLevel
     ) -> Dict[str, Any]:
         """
         Generate learning path from current level to target level.
@@ -654,7 +653,7 @@ class AgentMentorshipSystem:
             CertificationLevel.APPRENTICE,
             CertificationLevel.PRACTITIONER,
             CertificationLevel.EXPERT,
-            CertificationLevel.MASTER
+            CertificationLevel.MASTER,
         ]
 
         current_idx = levels.index(current_level)
@@ -663,31 +662,31 @@ class AgentMentorshipSystem:
         if target_idx <= current_idx:
             return {"error": "Target level must be higher than current level"}
 
-        path_levels = levels[current_idx + 1:target_idx + 1]
+        path_levels = levels[current_idx + 1 : target_idx + 1]
 
         # Estimate time and requirements for each level
         path = []
         for level in path_levels:
-            path.append({
-                "level": level.name,
-                "estimated_days": self._estimate_program_duration(level),
-                "required_demonstrations": self._get_required_demonstrations(level),
-                "required_practice_sessions": self._get_required_practice_sessions(level),
-                "minimum_success_rate": self._get_minimum_success_rate(level),
-                "key_competencies": self._get_key_competencies(skill_id, level)
-            })
+            path.append(
+                {
+                    "level": level.name,
+                    "estimated_days": self._estimate_program_duration(level),
+                    "required_demonstrations": self._get_required_demonstrations(level),
+                    "required_practice_sessions": self._get_required_practice_sessions(level),
+                    "minimum_success_rate": self._get_minimum_success_rate(level),
+                    "key_competencies": self._get_key_competencies(skill_id, level),
+                }
+            )
 
         return {
             "current_level": current_level.name,
             "target_level": target_level.name,
             "total_estimated_days": sum(step["estimated_days"] for step in path),
-            "path": path
+            "path": path,
         }
 
     def share_with_collective(
-        self,
-        program_id: str,
-        collective_consciousness_system: Any
+        self, program_id: str, collective_consciousness_system: Any
     ) -> Dict[str, Any]:
         """
         Share mentorship session with collective consciousness.
@@ -706,7 +705,7 @@ class AgentMentorshipSystem:
                     "steps": demo.steps_performed,
                     "rationale": demo.decision_rationale,
                     "pitfalls": demo.common_pitfalls,
-                    "explanation": demo.explanation
+                    "explanation": demo.explanation,
                 }
                 for demo in program.demonstrations
             ],
@@ -714,7 +713,7 @@ class AgentMentorshipSystem:
                 {
                     "mistake": session.mistakes_made,
                     "correction": session.corrections_applied,
-                    "feedback": session.mentor_feedback
+                    "feedback": session.mentor_feedback,
                 }
                 for session in program.practice_sessions
             ],
@@ -722,26 +721,26 @@ class AgentMentorshipSystem:
                 {
                     "question": q.question,
                     "insight": q.desired_insight,
-                    "response": q.student_response
+                    "response": q.student_response,
                 }
                 for q in program.socratic_dialogues
             ],
             "certification_level": program.target_certification_level.name,
-            "success_rate": program.progress_percentage
+            "success_rate": program.progress_percentage,
         }
 
         # Share with collective
         knowledge_id = collective_consciousness_system.share_knowledge(
             agent_id=program.mentor_id,
             knowledge=mentorship_knowledge,
-            importance=0.8  # Mentorship knowledge is high importance
+            importance=0.8,  # Mentorship knowledge is high importance
         )
 
         # All agents in collective now have this knowledge!
         return {
             "knowledge_id": knowledge_id,
             "shared_with": collective_consciousness_system.get_connected_agents(),
-            "impact": f"Entire collective learned from this mentorship session!"
+            "impact": f"Entire collective learned from this mentorship session!",
         }
 
     def get_mentor_leaderboard(self, top_n: int = 10) -> List[Dict[str, Any]]:
@@ -754,22 +753,24 @@ class AgentMentorshipSystem:
         for mentor in self.mentors.values():
             # Calculate composite score
             score = (
-                mentor.teaching_reputation * 10 +
-                mentor.successful_certifications * 5 +
-                mentor.average_student_success_rate * 100 +
-                mentor.tokens_earned * 0.1
+                mentor.teaching_reputation * 10
+                + mentor.successful_certifications * 5
+                + mentor.average_student_success_rate * 100
+                + mentor.tokens_earned * 0.1
             )
 
-            mentor_scores.append({
-                "mentor_id": mentor.mentor_id,
-                "reputation": mentor.teaching_reputation,
-                "students_taught": mentor.students_taught,
-                "successful_certifications": mentor.successful_certifications,
-                "average_success_rate": mentor.average_student_success_rate,
-                "tokens_earned": mentor.tokens_earned,
-                "specializations": [s.value for s in mentor.specializations],
-                "composite_score": score
-            })
+            mentor_scores.append(
+                {
+                    "mentor_id": mentor.mentor_id,
+                    "reputation": mentor.teaching_reputation,
+                    "students_taught": mentor.students_taught,
+                    "successful_certifications": mentor.successful_certifications,
+                    "average_success_rate": mentor.average_student_success_rate,
+                    "tokens_earned": mentor.tokens_earned,
+                    "specializations": [s.value for s in mentor.specializations],
+                    "composite_score": score,
+                }
+            )
 
         # Sort by composite score
         mentor_scores.sort(key=lambda x: x["composite_score"], reverse=True)
@@ -780,14 +781,13 @@ class AgentMentorshipSystem:
         """Get comprehensive mentorship system statistics"""
         avg_program_duration = 0.0
         if self.programs:
-            completed = [
-                p for p in self.programs.values()
-                if p.actual_completion_date
-            ]
+            completed = [p for p in self.programs.values() if p.actual_completion_date]
             if completed:
                 durations = [
-                    (datetime.fromisoformat(p.actual_completion_date) -
-                     datetime.fromisoformat(p.started_at)).days
+                    (
+                        datetime.fromisoformat(p.actual_completion_date)
+                        - datetime.fromisoformat(p.started_at)
+                    ).days
                     for p in completed
                 ]
                 avg_program_duration = sum(durations) / len(durations)
@@ -795,22 +795,22 @@ class AgentMentorshipSystem:
         return {
             "total_mentors": len(self.mentors),
             "total_students": len(self.students),
-            "active_programs": len([
-                p for p in self.programs.values()
-                if p.current_phase != MentorshipPhase.GRADUATED
-            ]),
+            "active_programs": len(
+                [p for p in self.programs.values() if p.current_phase != MentorshipPhase.GRADUATED]
+            ),
             "total_mentorships": self.total_mentorships,
             "successful_certifications": self.successful_certifications,
             "success_rate": (
                 self.successful_certifications / self.total_mentorships
-                if self.total_mentorships > 0 else 0.0
+                if self.total_mentorships > 0
+                else 0.0
             ),
             "total_teaching_hours": self.total_teaching_hours,
             "average_program_duration_days": avg_program_duration,
             "total_demonstrations": len(self.demonstrations),
             "total_certifications_issued": len(self.certifications),
             "knowledge_preservation_score": self._calculate_knowledge_preservation(),
-            "top_mentors": self.get_mentor_leaderboard(5)
+            "top_mentors": self.get_mentor_leaderboard(5),
         }
 
     # Private helper methods
@@ -822,7 +822,7 @@ class AgentMentorshipSystem:
             CertificationLevel.APPRENTICE: 14,
             CertificationLevel.PRACTITIONER: 30,
             CertificationLevel.EXPERT: 60,
-            CertificationLevel.MASTER: 120
+            CertificationLevel.MASTER: 120,
         }
         return duration_map.get(level, 30)
 
@@ -833,7 +833,7 @@ class AgentMentorshipSystem:
             CertificationLevel.APPRENTICE: 5,
             CertificationLevel.PRACTITIONER: 10,
             CertificationLevel.EXPERT: 20,
-            CertificationLevel.MASTER: 40
+            CertificationLevel.MASTER: 40,
         }
         return demo_map.get(level, 5)
 
@@ -844,7 +844,7 @@ class AgentMentorshipSystem:
             CertificationLevel.APPRENTICE: 15,
             CertificationLevel.PRACTITIONER: 30,
             CertificationLevel.EXPERT: 60,
-            CertificationLevel.MASTER: 100
+            CertificationLevel.MASTER: 100,
         }
         return practice_map.get(level, 15)
 
@@ -855,7 +855,7 @@ class AgentMentorshipSystem:
             CertificationLevel.APPRENTICE: 0.70,
             CertificationLevel.PRACTITIONER: 0.80,
             CertificationLevel.EXPERT: 0.90,
-            CertificationLevel.MASTER: 0.95
+            CertificationLevel.MASTER: 0.95,
         }
         return rate_map.get(level, 0.70)
 
@@ -865,10 +865,17 @@ class AgentMentorshipSystem:
         # For now, return generic competencies
         base_competencies = {
             CertificationLevel.NOVICE: ["Basic understanding", "Can follow instructions"],
-            CertificationLevel.APPRENTICE: ["Can perform with supervision", "Understands common patterns"],
+            CertificationLevel.APPRENTICE: [
+                "Can perform with supervision",
+                "Understands common patterns",
+            ],
             CertificationLevel.PRACTITIONER: ["Independent execution", "Handles standard cases"],
             CertificationLevel.EXPERT: ["Handles complex cases", "Can troubleshoot"],
-            CertificationLevel.MASTER: ["Can innovate", "Can teach others", "Creates new approaches"]
+            CertificationLevel.MASTER: [
+                "Can innovate",
+                "Can teach others",
+                "Creates new approaches",
+            ],
         }
         return base_competencies.get(level, [])
 
@@ -884,7 +891,9 @@ class AgentMentorshipSystem:
 
         # Add success rate component
         if program.practice_sessions:
-            avg_success = sum(s.success_score for s in program.practice_sessions) / len(program.practice_sessions)
+            avg_success = sum(s.success_score for s in program.practice_sessions) / len(
+                program.practice_sessions
+            )
             success_progress = avg_success * 20
         else:
             success_progress = 0.0
@@ -897,10 +906,10 @@ class AgentMentorshipSystem:
 
         phase_requirements = {
             MentorshipPhase.OBSERVATION: lambda p: len(p.demonstrations) >= 3,
-            MentorshipPhase.GUIDED_PRACTICE: lambda p: len(p.practice_sessions) >= 5 and
-                all(s.success_score >= 0.6 for s in p.practice_sessions[-3:]),
-            MentorshipPhase.INDEPENDENT_PRACTICE: lambda p: len(p.practice_sessions) >= 15 and
-                all(s.success_score >= 0.8 for s in p.practice_sessions[-5:]),
+            MentorshipPhase.GUIDED_PRACTICE: lambda p: len(p.practice_sessions) >= 5
+            and all(s.success_score >= 0.6 for s in p.practice_sessions[-3:]),
+            MentorshipPhase.INDEPENDENT_PRACTICE: lambda p: len(p.practice_sessions) >= 15
+            and all(s.success_score >= 0.8 for s in p.practice_sessions[-5:]),
         }
 
         requirement = phase_requirements.get(program.current_phase)
@@ -920,11 +929,13 @@ class AgentMentorshipSystem:
         next_phase = phase_progression.get(program.current_phase)
         if next_phase:
             program.current_phase = next_phase
-            program.milestones.append({
-                "phase": next_phase.value,
-                "achieved_at": datetime.now().isoformat(),
-                "progress_percentage": program.progress_percentage
-            })
+            program.milestones.append(
+                {
+                    "phase": next_phase.value,
+                    "achieved_at": datetime.now().isoformat(),
+                    "progress_percentage": program.progress_percentage,
+                }
+            )
 
     def _generate_mentor_feedback(self, session: PracticeSession) -> str:
         """Generate constructive mentor feedback"""
@@ -940,10 +951,14 @@ class AgentMentorshipSystem:
         suggestions = []
 
         for mistake in session.mistakes_made:
-            suggestions.append(f"To avoid '{mistake}', review the demonstration and note how the expert handled this step")
+            suggestions.append(
+                f"To avoid '{mistake}', review the demonstration and note how the expert handled this step"
+            )
 
         if session.success_score < 0.7:
-            suggestions.append("Schedule additional practice sessions before attempting certification")
+            suggestions.append(
+                "Schedule additional practice sessions before attempting certification"
+            )
             suggestions.append("Ask mentor for more demonstrations of challenging steps")
 
         return suggestions
@@ -958,23 +973,17 @@ class AgentMentorshipSystem:
         return matches >= len(insight_keywords) * 0.6
 
     def _generate_follow_up_questions(
-        self,
-        original_question: SocraticQuestion,
-        student_response: str
+        self, original_question: SocraticQuestion, student_response: str
     ) -> List[str]:
         """Generate follow-up questions to guide student closer to insight"""
         # This would use LLM in production
         return [
             "What would happen if you tried a different approach?",
             "Can you identify the key principle at work here?",
-            "How does this relate to what you observed in the demonstration?"
+            "How does this relate to what you observed in the demonstration?",
         ]
 
-    def _generate_socratic_feedback(
-        self,
-        question: SocraticQuestion,
-        insight_reached: bool
-    ) -> str:
+    def _generate_socratic_feedback(self, question: SocraticQuestion, insight_reached: bool) -> str:
         """Generate feedback on socratic response"""
         if insight_reached:
             return f"Excellent! You've discovered the key insight: {question.desired_insight}"
@@ -989,7 +998,9 @@ class AgentMentorshipSystem:
         total_students = mentor.students_taught
         if total_students > 0:
             current_avg = mentor.average_student_success_rate
-            new_success_rate = (current_avg * (total_students - 1) + (1.0 if success else 0.0)) / total_students
+            new_success_rate = (
+                current_avg * (total_students - 1) + (1.0 if success else 0.0)
+            ) / total_students
             mentor.average_student_success_rate = new_success_rate
 
             # Update reputation (0-10 scale)
@@ -1005,10 +1016,14 @@ class AgentMentorshipSystem:
 
         # Knowledge preserved = certifications issued / expert knowledge available
         total_expert_knowledge = sum(
-            len([s for s in m.expertise if s.certification_level in [
-                CertificationLevel.EXPERT,
-                CertificationLevel.MASTER
-            ]])
+            len(
+                [
+                    s
+                    for s in m.expertise
+                    if s.certification_level
+                    in [CertificationLevel.EXPERT, CertificationLevel.MASTER]
+                ]
+            )
             for m in self.mentors.values()
         )
 
@@ -1016,10 +1031,7 @@ class AgentMentorshipSystem:
             return 0.0
 
         # Each certification preserves knowledge
-        preservation_score = min(
-            self.successful_certifications / (total_expert_knowledge * 2),
-            1.0
-        )
+        preservation_score = min(self.successful_certifications / (total_expert_knowledge * 2), 1.0)
 
         return preservation_score
 
@@ -1040,14 +1052,14 @@ if __name__ == "__main__":
         acquired_at="2024-01-01T00:00:00",
         last_practiced="2025-10-19T00:00:00",
         practice_count=500,
-        success_rate=0.95
+        success_rate=0.95,
     )
 
     # Register expert as mentor
     mentor = mentorship.register_mentor(
         agent_id="expert_agent_001",
         expertise=[expert_skill],
-        teaching_style=[TeachingMethod.DEMONSTRATION, TeachingMethod.SOCRATIC]
+        teaching_style=[TeachingMethod.DEMONSTRATION, TeachingMethod.SOCRATIC],
     )
     print(f"✅ Registered mentor: {mentor.mentor_id}")
 
@@ -1055,7 +1067,7 @@ if __name__ == "__main__":
     student = mentorship.register_student(
         agent_id="novice_agent_001",
         learning_goals=["Master customer service", "Earn Expert certification"],
-        current_skills=[]
+        current_skills=[],
     )
     print(f"✅ Registered student: {student.student_id}")
 
@@ -1067,7 +1079,7 @@ if __name__ == "__main__":
         mentor_id=mentor.mentor_id,
         student_id=student.student_id,
         skill_id="customer_service_001",
-        target_level=CertificationLevel.EXPERT
+        target_level=CertificationLevel.EXPERT,
     )
     print(f"✅ Created mentorship program: {program.program_id}")
     print(f"   Target: {program.target_certification_level.name}")
@@ -1083,24 +1095,24 @@ if __name__ == "__main__":
             {"step": 2, "action": "Acknowledge frustration with empathy"},
             {"step": 3, "action": "Take ownership of the problem"},
             {"step": 4, "action": "Offer concrete solution with timeline"},
-            {"step": 5, "action": "Follow up to ensure satisfaction"}
+            {"step": 5, "action": "Follow up to ensure satisfaction"},
         ],
         decision_rationale=[
             "Listening first builds trust",
             "Empathy defuses anger",
             "Ownership shows accountability",
             "Concrete solution shows action",
-            "Follow-up demonstrates care"
+            "Follow-up demonstrates care",
         ],
         common_pitfalls=[
             "Don't interrupt customer",
             "Don't make excuses",
             "Don't overpromise",
-            "Don't pass blame"
+            "Don't pass blame",
         ],
         explanation="The key is empathy first, action second. Customer wants to feel heard before solutions.",
         success_metrics={"customer_satisfaction": 0.95, "resolution_time_minutes": 8},
-        difficulty_level=0.7
+        difficulty_level=0.7,
     )
     print(f"✅ Mentor demonstrated skill: {demo.demonstration_id}")
 
@@ -1116,20 +1128,20 @@ if __name__ == "__main__":
         mentor_observations=[
             "Good start with listening",
             "Empathy was present but could be deeper",
-            "Jumped to solution too quickly"
+            "Jumped to solution too quickly",
         ],
         mistakes_made=[
             "Didn't fully acknowledge customer's frustration",
             "Didn't ask clarifying questions",
-            "Missed opportunity to build trust before solving"
+            "Missed opportunity to build trust before solving",
         ],
         corrections_applied=[
             "Mentor demonstrated deeper empathy statement",
             "Showed how to ask open-ended questions",
-            "Explained trust-building before problem-solving"
+            "Explained trust-building before problem-solving",
         ],
         success_score=0.70,
-        duration_seconds=600
+        duration_seconds=600,
     )
     print(f"✅ Practice session completed: {practice.session_id}")
     print(f"   Success score: {practice.success_score*100:.1f}%")
@@ -1142,7 +1154,7 @@ if __name__ == "__main__":
         program_id=program.program_id,
         question="Why do you think I acknowledged the customer's frustration before offering a solution?",
         context="Student jumped to solution without deep empathy",
-        desired_insight="Customers need emotional validation before practical solutions"
+        desired_insight="Customers need emotional validation before practical solutions",
     )
     print(f"✅ Socratic question asked: {socratic.question_id}")
 
@@ -1150,7 +1162,7 @@ if __name__ == "__main__":
     response = mentorship.respond_to_socratic_question(
         question_id=socratic.question_id,
         program_id=program.program_id,
-        student_response="Because customers want to feel heard and understood before we fix things"
+        student_response="Because customers want to feel heard and understood before we fix things",
     )
     print(f"✅ Student response evaluated")
     print(f"   Insight reached: {response['insight_reached']}")
@@ -1160,11 +1172,11 @@ if __name__ == "__main__":
     path = mentorship.get_certification_path(
         skill_id="customer_service_001",
         current_level=CertificationLevel.NOVICE,
-        target_level=CertificationLevel.EXPERT
+        target_level=CertificationLevel.EXPERT,
     )
     print(f"\n📋 Certification Path:")
     print(f"   Total estimated days: {path['total_estimated_days']}")
-    for step in path['path']:
+    for step in path["path"]:
         print(f"   → {step['level']}: {step['estimated_days']} days")
 
     # Get statistics

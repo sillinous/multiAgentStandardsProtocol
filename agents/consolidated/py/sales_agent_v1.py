@@ -32,10 +32,7 @@ class SalesAgent(BaseAgent):
     """
 
     def __init__(
-        self,
-        agent_id: str = "apqc_3_0_lead_scoring",
-        workspace_path: str = "./workspace",
-        **kwargs
+        self, agent_id: str = "apqc_3_0_lead_scoring", workspace_path: str = "./workspace", **kwargs
     ):
         super().__init__(
             agent_id=agent_id,
@@ -43,9 +40,9 @@ class SalesAgent(BaseAgent):
             capabilities=[
                 AgentCapability.ANALYSIS,
                 AgentCapability.COMMUNICATION,
-                AgentCapability.COLLABORATION
+                AgentCapability.COLLABORATION,
             ],
-            workspace_path=workspace_path
+            workspace_path=workspace_path,
         )
 
         print(f"[{self.agent_id}] Sales Agent initialized")
@@ -71,7 +68,7 @@ class SalesAgent(BaseAgent):
             "agent_id": self.agent_id,
             "analysis_complete": True,
             "insights": ["Analysis successful", "Patterns identified"],
-            "confidence": 0.85
+            "confidence": 0.85,
         }
 
 
@@ -79,14 +76,12 @@ class SalesAgent(BaseAgent):
 async def main():
     agent = SalesAgent()
 
-    result = await agent.execute_task({
-        "type": "analyze",
-        "data": {"test": "data"}
-    })
+    result = await agent.execute_task({"type": "analyze", "data": {"test": "data"}})
 
     print(f"Result: {result}")
 
 
 if __name__ == "__main__":
     import asyncio
+
     asyncio.run(main())

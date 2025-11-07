@@ -37,6 +37,7 @@ logger = logging.getLogger(__name__)
 
 class GoalPriority(int, Enum):
     """Goal priority levels"""
+
     CRITICAL = 1
     HIGH = 5
     NORMAL = 10
@@ -46,6 +47,7 @@ class GoalPriority(int, Enum):
 @dataclass
 class Goal:
     """High-level objective"""
+
     goal_id: str
     description: str
     priority: int = GoalPriority.NORMAL.value
@@ -72,6 +74,7 @@ class Goal:
 @dataclass
 class WorkflowPlan:
     """Complete plan for achieving a goal"""
+
     plan_id: str
     goal: Goal
     task_tree: TaskTree
@@ -129,7 +132,7 @@ class StrategyAgent:
         self.goal_decomposer = GoalDecomposer(registry)
         self.orchestrator = WorkflowOrchestrator(message_bus, capability_matcher)
         self.validator = WorkflowValidator(registry, health_monitor)
-        self.llm = ModelFactory.create_model('anthropic')
+        self.llm = ModelFactory.create_model("anthropic")
 
         # Initialize Tier 3 sub-components (Autonomy Layer)
         self.foresight = ForesightAnalyzer(health_monitor, shared_memory)
@@ -285,7 +288,7 @@ class StrategyAgent:
                     }
                     for task_id, task_result in result.task_results.items()
                 ],
-            }
+            },
         )
         logger.info(f"Workflow efficiency: {efficiency.efficiency_percent:.1f}%")
 
@@ -383,13 +386,13 @@ class StrategyAgent:
         total = self.performance_metrics["total_workflows"]
         old_avg_time = self.performance_metrics["avg_execution_time_ms"]
         self.performance_metrics["avg_execution_time_ms"] = (
-            (old_avg_time * (total - 1) + result.duration_ms) / total
-        )
+            old_avg_time * (total - 1) + result.duration_ms
+        ) / total
 
         old_avg_success = self.performance_metrics["avg_success_rate"]
         self.performance_metrics["avg_success_rate"] = (
-            (old_avg_success * (total - 1) + result.overall_success_rate) / total
-        )
+            old_avg_success * (total - 1) + result.overall_success_rate
+        ) / total
 
     async def _learn_from_execution(
         self,
@@ -415,8 +418,7 @@ class StrategyAgent:
                 learnings.append(learning)
 
         # Analyze failure patterns
-        failed_tasks = [tr for tr in result.task_results.values()
-                       if tr.status.value == "failed"]
+        failed_tasks = [tr for tr in result.task_results.values() if tr.status.value == "failed"]
         if failed_tasks:
             learning = {
                 "type": "workflow_failure",
@@ -444,8 +446,8 @@ class StrategyAgent:
             "successful_workflows": self.performance_metrics["successful_workflows"],
             "failed_workflows": self.performance_metrics["failed_workflows"],
             "success_rate": (
-                self.performance_metrics["successful_workflows"] /
-                max(1, self.performance_metrics["total_workflows"])
+                self.performance_metrics["successful_workflows"]
+                / max(1, self.performance_metrics["total_workflows"])
             ),
             "avg_execution_time_ms": self.performance_metrics["avg_execution_time_ms"],
             "avg_success_rate": self.performance_metrics["avg_success_rate"],
@@ -453,9 +455,7 @@ class StrategyAgent:
 
     # ===== Tier 3: Autonomy Layer Methods =====
 
-    async def use_foresight_to_optimize_plan(
-        self, plan: WorkflowPlan
-    ) -> WorkflowPlan:
+    async def use_foresight_to_optimize_plan(self, plan: WorkflowPlan) -> WorkflowPlan:
         """
         Apply foresight predictions to optimize workflow plan.
 
@@ -470,7 +470,9 @@ class StrategyAgent:
                 {
                     "workflow_id": plan.plan_id,
                     "tasks": [t.task_id for t in plan.task_tree.leaf_tasks],
-                    "agents": [t.assigned_agents[0] for t in plan.task_tree.leaf_tasks if t.assigned_agents],
+                    "agents": [
+                        t.assigned_agents[0] for t in plan.task_tree.leaf_tasks if t.assigned_agents
+                    ],
                     "estimated_duration_ms": plan.estimated_total_duration_ms,
                 }
             )
@@ -489,10 +491,14 @@ class StrategyAgent:
                 task_tree=plan.task_tree,
                 estimated_total_duration_ms=plan.estimated_total_duration_ms,
                 estimated_success_probability=plan.estimated_success_probability,
-                resource_requirements=resource_pred.to_dict() if hasattr(resource_pred, 'to_dict') else {
-                    "memory_mb": resource_pred.predicted_memory_mb,
-                    "cpu_percent": resource_pred.predicted_cpu_percent,
-                },
+                resource_requirements=(
+                    resource_pred.to_dict()
+                    if hasattr(resource_pred, "to_dict")
+                    else {
+                        "memory_mb": resource_pred.predicted_memory_mb,
+                        "cpu_percent": resource_pred.predicted_cpu_percent,
+                    }
+                ),
             )
 
             logger.info(
@@ -506,9 +512,7 @@ class StrategyAgent:
             logger.warning(f"Error in foresight optimization: {str(e)}")
             return plan
 
-    async def schedule_with_foresight(
-        self, plan: WorkflowPlan
-    ) -> Any:
+    async def schedule_with_foresight(self, plan: WorkflowPlan) -> Any:
         """
         Schedule workflow using predictive planning.
 
@@ -521,7 +525,9 @@ class StrategyAgent:
             plan_dict = {
                 "plan_id": plan.plan_id,
                 "goal": plan.goal.description,
-                "agents": [t.assigned_agents[0] for t in plan.task_tree.leaf_tasks if t.assigned_agents],
+                "agents": [
+                    t.assigned_agents[0] for t in plan.task_tree.leaf_tasks if t.assigned_agents
+                ],
                 "tasks": [t.task_id for t in plan.task_tree.leaf_tasks],
                 "estimated_duration_ms": plan.estimated_total_duration_ms,
             }
@@ -545,6 +551,7 @@ class StrategyAgent:
             logger.warning(f"Error in predictive scheduling: {str(e)}")
             from datetime import datetime
             from .predictive_planning import ScheduledPlan
+
             return ScheduledPlan(
                 plan_id=plan.plan_id,
                 original_goal=plan.goal.description,
@@ -574,9 +581,11 @@ class StrategyAgent:
 
         try:
             # Create teams
-            trading_agents = [a for a in set(leaf_agents) if 'trading' in a or 'risk' in a]
-            analysis_agents = [a for a in set(leaf_agents) if 'sentiment' in a or 'chart' in a]
-            utility_agents = [a for a in set(leaf_agents) if a not in trading_agents and a not in analysis_agents]
+            trading_agents = [a for a in set(leaf_agents) if "trading" in a or "risk" in a]
+            analysis_agents = [a for a in set(leaf_agents) if "sentiment" in a or "chart" in a]
+            utility_agents = [
+                a for a in set(leaf_agents) if a not in trading_agents and a not in analysis_agents
+            ]
 
             if trading_agents:
                 trading_team = await self.coordinator.create_team(

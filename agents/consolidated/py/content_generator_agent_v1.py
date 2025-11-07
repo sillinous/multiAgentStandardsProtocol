@@ -31,11 +31,7 @@ class ContentGeneratorAgent:
         self.specialty = "content_creation"
 
     async def generate_blog_post(
-        self,
-        topic: str,
-        target_audience: str,
-        platform: str = "medium",
-        word_count: int = 1500
+        self, topic: str, target_audience: str, platform: str = "medium", word_count: int = 1500
     ) -> Dict[str, Any]:
         """
         Generate a complete blog post
@@ -62,16 +58,13 @@ class ContentGeneratorAgent:
             "call_to_action": self._generate_cta(platform),
             "estimated_read_time": word_count // 200,  # ~200 words/minute
             "seo_score": 85,  # Would calculate based on keywords, structure, etc.
-            "generated_at": datetime.now().isoformat()
+            "generated_at": datetime.now().isoformat(),
         }
 
         return article
 
     async def generate_twitter_thread(
-        self,
-        topic: str,
-        hook_style: str = "curiosity",
-        thread_length: int = 8
+        self, topic: str, hook_style: str = "curiosity", thread_length: int = 8
     ) -> List[str]:
         """
         Generate a viral-ready Twitter thread
@@ -94,10 +87,7 @@ class ContentGeneratorAgent:
         return thread
 
     async def generate_youtube_script(
-        self,
-        topic: str,
-        video_length_minutes: int = 10,
-        style: str = "tutorial"
+        self, topic: str, video_length_minutes: int = 10, style: str = "tutorial"
     ) -> Dict[str, Any]:
         """
         Generate a complete YouTube video script
@@ -113,16 +103,13 @@ class ContentGeneratorAgent:
             "sections": self._generate_video_sections(topic, video_length_minutes),
             "outro": "CTA and subscribe prompt",
             "tags": self._generate_tags(topic),
-            "estimated_length": f"{video_length_minutes} minutes"
+            "estimated_length": f"{video_length_minutes} minutes",
         }
 
         return script
 
     async def generate_documentation(
-        self,
-        project_name: str,
-        features: List[str],
-        target_users: str = "developers"
+        self, project_name: str, features: List[str], target_users: str = "developers"
     ) -> Dict[str, Any]:
         """Generate technical documentation"""
 
@@ -132,16 +119,13 @@ class ContentGeneratorAgent:
             "api_docs": self._generate_api_docs(features),
             "examples": self._generate_examples(features),
             "faq": self._generate_faq(project_name),
-            "contributing": self._generate_contributing_guide()
+            "contributing": self._generate_contributing_guide(),
         }
 
         return docs
 
     async def generate_landing_page_copy(
-        self,
-        product_name: str,
-        value_proposition: str,
-        target_customer: str
+        self, product_name: str, value_proposition: str, target_customer: str
     ) -> Dict[str, Any]:
         """Generate landing page copy"""
 
@@ -153,7 +137,7 @@ class ContentGeneratorAgent:
             "social_proof": "Join 1,000+ developers building autonomous systems",
             "pricing_copy": self._generate_pricing_copy(),
             "faq": self._generate_faq(product_name),
-            "final_cta": "Start Building Today"
+            "final_cta": "Start Building Today",
         }
 
         return copy
@@ -165,7 +149,7 @@ class ContentGeneratorAgent:
             f"The Complete Guide to {topic}",
             f"Building {topic}: A Developer's Journey",
             f"{topic}: What I Learned the Hard Way",
-            f"From Zero to {topic} in 30 Days"
+            f"From Zero to {topic} in 30 Days",
         ]
         return templates[0]  # Would use AI to pick/generate best
 
@@ -218,7 +202,7 @@ class ContentGeneratorAgent:
         ctas = {
             "medium": "Follow for more AI development tutorials",
             "substack": "Subscribe to get weekly insights delivered to your inbox",
-            "dev.to": "Drop a comment if you found this helpful!"
+            "dev.to": "Drop a comment if you found this helpful!",
         }
         return ctas.get(platform, "Check out my GitHub for more projects")
 
@@ -228,7 +212,7 @@ class ContentGeneratorAgent:
             "curiosity": f"I just discovered something about {topic} that changes everything...",
             "shocking_stat": f"95% of developers don't know this about {topic}",
             "personal_story": f"I spent 6 months building {topic}. Here's what I learned:",
-            "contrarian": f"Unpopular opinion: Everything you know about {topic} is wrong."
+            "contrarian": f"Unpopular opinion: Everything you know about {topic} is wrong.",
         }
         return hooks.get(style, hooks["curiosity"])
 
@@ -246,7 +230,11 @@ class ContentGeneratorAgent:
         num_sections = max(3, length // 2)
 
         return [
-            {"title": f"Section {i+1}", "duration": "2 minutes", "content": f"Cover aspect {i+1} of {topic}"}
+            {
+                "title": f"Section {i+1}",
+                "duration": "2 minutes",
+                "content": f"Cover aspect {i+1} of {topic}",
+            }
             for i in range(num_sections)
         ]
 
@@ -292,7 +280,7 @@ MIT
         return [
             {"q": f"What is {project}?", "a": "Brief explanation"},
             {"q": "How do I get started?", "a": "See Quick Start"},
-            {"q": "Is it free?", "a": "Open source under MIT license"}
+            {"q": "Is it free?", "a": "Open source under MIT license"},
         ]
 
     def _generate_contributing_guide(self) -> str:
@@ -312,7 +300,7 @@ MIT
         return [
             {"title": "Fast", "description": "Ship in hours, not weeks"},
             {"title": "Autonomous", "description": "Let AI handle the heavy lifting"},
-            {"title": "Scalable", "description": "From 1 to 1,000,000 agents"}
+            {"title": "Scalable", "description": "From 1 to 1,000,000 agents"},
         ]
 
     def _generate_pricing_copy(self) -> Dict:
@@ -320,7 +308,7 @@ MIT
         return {
             "free_tier": "Free forever for individuals",
             "pro_tier": "Pro features for teams",
-            "enterprise": "Custom solutions for enterprise"
+            "enterprise": "Custom solutions for enterprise",
         }
 
 
@@ -336,17 +324,10 @@ CONTENT_GENERATOR_BLUEPRINT = {
         "video_scripts",
         "documentation",
         "marketing_copy",
-        "seo_optimization"
+        "seo_optimization",
     ],
-    "platforms": [
-        "medium",
-        "substack",
-        "dev.to",
-        "twitter",
-        "youtube",
-        "linkedin"
-    ],
+    "platforms": ["medium", "substack", "dev.to", "twitter", "youtube", "linkedin"],
     "revenue_contribution": "high",
     "autonomy_level": 0.95,
-    "description": "Handles all content creation - you never need to write again"
+    "description": "Handles all content creation - you never need to write again",
 }

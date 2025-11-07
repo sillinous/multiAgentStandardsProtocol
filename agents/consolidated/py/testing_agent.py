@@ -17,7 +17,7 @@ from typing import Dict, List, Any, Optional
 from datetime import datetime
 
 # Add library path for protocol-compliant BaseAgent
-sys.path.insert(0, os.path.join(os.path.dirname(__file__), '..', 'library'))
+sys.path.insert(0, os.path.join(os.path.dirname(__file__), "..", "library"))
 
 # CRITICAL: Import from protocol-compliant BaseAgent (THE SINGLE SOURCE OF TRUTH)
 from superstandard.agents.base.base_agent import BaseAgent, AgentCapability, MessageType
@@ -36,13 +36,13 @@ class TestingAgent(BaseAgent):
         self,
         agent_id: str = "testing_agent_001",
         workspace_path: str = "./autonomous-ecosystem/workspace",
-        project_root: str = "."
+        project_root: str = ".",
     ):
         super().__init__(
             agent_id=agent_id,
             agent_type="testing",
             capabilities=[AgentCapability.TESTING],
-            workspace_path=workspace_path
+            workspace_path=workspace_path,
         )
         self.project_root = project_root
         self.test_results = []
@@ -72,7 +72,7 @@ class TestingAgent(BaseAgent):
             "summary": self._generate_summary(test_results),
             "critical_issues": self._identify_critical_issues(test_results),
             "recommendations": self._generate_recommendations(test_results),
-            "priority_items": self._prioritize_issues(test_results)
+            "priority_items": self._prioritize_issues(test_results),
         }
 
         return analysis
@@ -84,7 +84,7 @@ class TestingAgent(BaseAgent):
         test_results = {
             "timestamp": datetime.now().isoformat(),
             "iteration": self.current_iteration,
-            "components": {}
+            "components": {},
         }
 
         # Test Backend
@@ -122,15 +122,11 @@ class TestingAgent(BaseAgent):
         self.save_artifact(
             "test_reports",
             report,
-            f"comprehensive_test_report_{datetime.now().strftime('%Y%m%d_%H%M%S')}.json"
+            f"comprehensive_test_report_{datetime.now().strftime('%Y%m%d_%H%M%S')}.json",
         )
 
         # Send report to orchestrator
-        self.send_message(
-            MessageType.TEST_REPORT,
-            "orchestrator",
-            report
-        )
+        self.send_message(MessageType.TEST_REPORT, "orchestrator", report)
 
         return report
 
@@ -144,19 +140,21 @@ class TestingAgent(BaseAgent):
             "tests_passed": 0,
             "tests_failed": 0,
             "issues": [],
-            "coverage": 0.0
+            "coverage": 0.0,
         }
 
         # Check if backend is running
         backend_health = await self._check_backend_health()
         if not backend_health["healthy"]:
-            results["issues"].append({
-                "id": f"ISSUE-BACKEND-{datetime.now().timestamp()}",
-                "severity": "critical",
-                "component": "backend",
-                "description": "Backend is not running or not accessible",
-                "recommendation": "Ensure backend server is started and accessible at http://localhost:8000"
-            })
+            results["issues"].append(
+                {
+                    "id": f"ISSUE-BACKEND-{datetime.now().timestamp()}",
+                    "severity": "critical",
+                    "component": "backend",
+                    "description": "Backend is not running or not accessible",
+                    "recommendation": "Ensure backend server is started and accessible at http://localhost:8000",
+                }
+            )
             return results
 
         # Test API endpoints
@@ -195,19 +193,21 @@ class TestingAgent(BaseAgent):
             "tests_passed": 0,
             "tests_failed": 0,
             "issues": [],
-            "coverage": 0.0
+            "coverage": 0.0,
         }
 
         # Check if frontend is running
         frontend_health = await self._check_frontend_health()
         if not frontend_health["healthy"]:
-            results["issues"].append({
-                "id": f"ISSUE-FRONTEND-{datetime.now().timestamp()}",
-                "severity": "critical",
-                "component": "frontend",
-                "description": "Frontend is not running or not accessible",
-                "recommendation": "Ensure frontend server is started and accessible at http://localhost:3000"
-            })
+            results["issues"].append(
+                {
+                    "id": f"ISSUE-FRONTEND-{datetime.now().timestamp()}",
+                    "severity": "critical",
+                    "component": "frontend",
+                    "description": "Frontend is not running or not accessible",
+                    "recommendation": "Ensure frontend server is started and accessible at http://localhost:3000",
+                }
+            )
             return results
 
         # Test UI components
@@ -239,19 +239,21 @@ class TestingAgent(BaseAgent):
             "tests_passed": 0,
             "tests_failed": 0,
             "issues": [],
-            "coverage": 0.0
+            "coverage": 0.0,
         }
 
         # Test Celery worker connectivity
         worker_health = await self._check_worker_health()
         if not worker_health["healthy"]:
-            results["issues"].append({
-                "id": f"ISSUE-WORKER-{datetime.now().timestamp()}",
-                "severity": "high",
-                "component": "worker",
-                "description": "Worker is not running or not connected to Redis",
-                "recommendation": "Ensure Redis is running and worker is started"
-            })
+            results["issues"].append(
+                {
+                    "id": f"ISSUE-WORKER-{datetime.now().timestamp()}",
+                    "severity": "high",
+                    "component": "worker",
+                    "description": "Worker is not running or not connected to Redis",
+                    "recommendation": "Ensure Redis is running and worker is started",
+                }
+            )
 
         return results
 
@@ -265,19 +267,21 @@ class TestingAgent(BaseAgent):
             "tests_passed": 0,
             "tests_failed": 0,
             "issues": [],
-            "coverage": 0.0
+            "coverage": 0.0,
         }
 
         # Test database connectivity
         db_health = await self._check_database_health()
         if not db_health["healthy"]:
-            results["issues"].append({
-                "id": f"ISSUE-DATABASE-{datetime.now().timestamp()}",
-                "severity": "critical",
-                "component": "database",
-                "description": "Database is not accessible",
-                "recommendation": "Ensure database is running and accessible"
-            })
+            results["issues"].append(
+                {
+                    "id": f"ISSUE-DATABASE-{datetime.now().timestamp()}",
+                    "severity": "critical",
+                    "component": "database",
+                    "description": "Database is not accessible",
+                    "recommendation": "Ensure database is running and accessible",
+                }
+            )
 
         return results
 
@@ -291,7 +295,7 @@ class TestingAgent(BaseAgent):
             "tests_passed": 0,
             "tests_failed": 0,
             "issues": [],
-            "enhancements": []
+            "enhancements": [],
         }
 
         # Test: Market Research to Business Plan workflow
@@ -323,7 +327,7 @@ class TestingAgent(BaseAgent):
             "tests_run": 0,
             "tests_passed": 0,
             "tests_failed": 0,
-            "issues": []
+            "issues": [],
         }
 
         # Test OpenAI integration
@@ -357,7 +361,7 @@ class TestingAgent(BaseAgent):
         validation_results = {
             "timestamp": datetime.now().isoformat(),
             "issues_validated": [],
-            "issues_still_failing": []
+            "issues_still_failing": [],
         }
 
         for issue_id in issue_ids:
@@ -380,6 +384,7 @@ class TestingAgent(BaseAgent):
         try:
             # Try to ping backend health endpoint
             import aiohttp
+
             async with aiohttp.ClientSession() as session:
                 async with session.get("http://localhost:8000/api/v1/health", timeout=5) as resp:
                     return {"healthy": resp.status == 200}
@@ -390,6 +395,7 @@ class TestingAgent(BaseAgent):
         """Check if frontend is healthy"""
         try:
             import aiohttp
+
             async with aiohttp.ClientSession() as session:
                 async with session.get("http://localhost:3000", timeout=5) as resp:
                     return {"healthy": resp.status == 200}
@@ -401,6 +407,7 @@ class TestingAgent(BaseAgent):
         try:
             # Test 1: Check Redis connectivity
             import redis
+
             redis_host = os.getenv("REDIS_HOST", "localhost")
             redis_port = int(os.getenv("REDIS_PORT", "6379"))
 
@@ -416,7 +423,7 @@ class TestingAgent(BaseAgent):
                     "healthy": False,
                     "reason": "Redis not accessible",
                     "redis_healthy": False,
-                    "worker_healthy": False
+                    "worker_healthy": False,
                 }
 
             # Test 2: Check Celery worker status via Redis
@@ -426,7 +433,7 @@ class TestingAgent(BaseAgent):
                 "healthy": redis_healthy,
                 "redis_healthy": redis_healthy,
                 "worker_healthy": redis_healthy,  # Simplified check
-                "message": "Redis accessible - workers can connect"
+                "message": "Redis accessible - workers can connect",
             }
 
         except ImportError:
@@ -435,14 +442,14 @@ class TestingAgent(BaseAgent):
                 "healthy": False,
                 "reason": "Redis library not installed (pip install redis)",
                 "redis_healthy": False,
-                "worker_healthy": False
+                "worker_healthy": False,
             }
         except Exception as e:
             return {
                 "healthy": False,
                 "reason": f"Worker health check failed: {str(e)}",
                 "redis_healthy": False,
-                "worker_healthy": False
+                "worker_healthy": False,
             }
 
     async def _check_database_health(self) -> Dict[str, bool]:
@@ -454,12 +461,7 @@ class TestingAgent(BaseAgent):
         """Test backend API endpoints"""
         import aiohttp
 
-        results = {
-            "total": 0,
-            "passed": 0,
-            "failed": 0,
-            "issues": []
-        }
+        results = {"total": 0, "passed": 0, "failed": 0, "issues": []}
 
         # Define critical API endpoints to test
         endpoints = [
@@ -476,61 +478,65 @@ class TestingAgent(BaseAgent):
                         async with session.request(
                             endpoint["method"],
                             f"http://localhost:8000{endpoint['path']}",
-                            timeout=5
+                            timeout=5,
                         ) as resp:
                             if resp.status == endpoint["expected_status"]:
                                 results["passed"] += 1
                             else:
                                 results["failed"] += 1
-                                results["issues"].append({
-                                    "id": f"API-{endpoint['path'].replace('/', '-')}",
-                                    "severity": "high",
-                                    "component": "backend",
-                                    "description": f"API endpoint {endpoint['path']} returned {resp.status}, expected {endpoint['expected_status']}",
-                                    "recommendation": f"Fix {endpoint['path']} endpoint to return correct status"
-                                })
+                                results["issues"].append(
+                                    {
+                                        "id": f"API-{endpoint['path'].replace('/', '-')}",
+                                        "severity": "high",
+                                        "component": "backend",
+                                        "description": f"API endpoint {endpoint['path']} returned {resp.status}, expected {endpoint['expected_status']}",
+                                        "recommendation": f"Fix {endpoint['path']} endpoint to return correct status",
+                                    }
+                                )
                     except Exception as e:
                         results["failed"] += 1
-                        results["issues"].append({
-                            "id": f"API-{endpoint['path'].replace('/', '-')}-ERROR",
-                            "severity": "critical",
-                            "component": "backend",
-                            "description": f"API endpoint {endpoint['path']} failed: {str(e)}",
-                            "recommendation": f"Ensure {endpoint['path']} endpoint is accessible and functioning"
-                        })
+                        results["issues"].append(
+                            {
+                                "id": f"API-{endpoint['path'].replace('/', '-')}-ERROR",
+                                "severity": "critical",
+                                "component": "backend",
+                                "description": f"API endpoint {endpoint['path']} failed: {str(e)}",
+                                "recommendation": f"Ensure {endpoint['path']} endpoint is accessible and functioning",
+                            }
+                        )
         except Exception as e:
-            results["issues"].append({
-                "id": "API-CONNECTION-ERROR",
-                "severity": "critical",
-                "component": "backend",
-                "description": f"Failed to connect to backend: {str(e)}",
-                "recommendation": "Ensure backend server is running on port 8000"
-            })
+            results["issues"].append(
+                {
+                    "id": "API-CONNECTION-ERROR",
+                    "severity": "critical",
+                    "component": "backend",
+                    "description": f"Failed to connect to backend: {str(e)}",
+                    "recommendation": "Ensure backend server is running on port 8000",
+                }
+            )
 
         return results
 
     async def _test_database_operations(self) -> Dict[str, Any]:
         """Test database CRUD operations"""
-        results = {
-            "total": 0,
-            "passed": 0,
-            "failed": 0,
-            "issues": []
-        }
+        results = {"total": 0, "passed": 0, "failed": 0, "issues": []}
 
         try:
             # Test database connectivity
             import sqlite3
+
             db_path = os.path.join(self.project_root, "backend", "market_research.db")
 
             if not os.path.exists(db_path):
-                results["issues"].append({
-                    "id": "DB-NOT-FOUND",
-                    "severity": "critical",
-                    "component": "database",
-                    "description": "Database file not found",
-                    "recommendation": "Run database initialization: python backend/init_autonomous_db.py"
-                })
+                results["issues"].append(
+                    {
+                        "id": "DB-NOT-FOUND",
+                        "severity": "critical",
+                        "component": "database",
+                        "description": "Database file not found",
+                        "recommendation": "Run database initialization: python backend/init_autonomous_db.py",
+                    }
+                )
                 return results
 
             # Test connection
@@ -547,22 +553,26 @@ class TestingAgent(BaseAgent):
                 results["passed"] += 1
             except Exception as e:
                 results["failed"] += 1
-                results["issues"].append({
-                    "id": "DB-CONNECTION-ERROR",
-                    "severity": "high",
-                    "component": "database",
-                    "description": f"Database connection failed: {str(e)}",
-                    "recommendation": "Check database integrity and permissions"
-                })
+                results["issues"].append(
+                    {
+                        "id": "DB-CONNECTION-ERROR",
+                        "severity": "high",
+                        "component": "database",
+                        "description": f"Database connection failed: {str(e)}",
+                        "recommendation": "Check database integrity and permissions",
+                    }
+                )
 
         except Exception as e:
-            results["issues"].append({
-                "id": "DB-TEST-ERROR",
-                "severity": "high",
-                "component": "database",
-                "description": f"Database testing failed: {str(e)}",
-                "recommendation": "Review database configuration"
-            })
+            results["issues"].append(
+                {
+                    "id": "DB-TEST-ERROR",
+                    "severity": "high",
+                    "component": "database",
+                    "description": f"Database testing failed: {str(e)}",
+                    "recommendation": "Review database configuration",
+                }
+            )
 
         return results
 
@@ -570,50 +580,53 @@ class TestingAgent(BaseAgent):
         """Test backend AI integration with OpenAI"""
         import aiohttp
 
-        results = {
-            "total": 0,
-            "passed": 0,
-            "failed": 0,
-            "issues": []
-        }
+        results = {"total": 0, "passed": 0, "failed": 0, "issues": []}
 
         # Test 1: Check if AI service endpoint is accessible
         results["total"] += 1
         try:
             async with aiohttp.ClientSession() as session:
                 # Test the config endpoint to see if OpenAI key is configured
-                async with session.get("http://localhost:8000/api/v1/config/openai_key", timeout=5) as resp:
+                async with session.get(
+                    "http://localhost:8000/api/v1/config/openai_key", timeout=5
+                ) as resp:
                     if resp.status == 200:
                         data = await resp.json()
                         if data.get("configured", False):
                             results["passed"] += 1
                         else:
                             results["failed"] += 1
-                            results["issues"].append({
-                                "id": "AI-OPENAI-NOT-CONFIGURED",
-                                "severity": "high",
-                                "component": "ai_integration",
-                                "description": "OpenAI API key not configured",
-                                "recommendation": "Set OPENAI_API_KEY in environment or via UI configuration"
-                            })
+                            results["issues"].append(
+                                {
+                                    "id": "AI-OPENAI-NOT-CONFIGURED",
+                                    "severity": "high",
+                                    "component": "ai_integration",
+                                    "description": "OpenAI API key not configured",
+                                    "recommendation": "Set OPENAI_API_KEY in environment or via UI configuration",
+                                }
+                            )
                     else:
                         results["failed"] += 1
-                        results["issues"].append({
-                            "id": "AI-CONFIG-ENDPOINT-ERROR",
-                            "severity": "medium",
-                            "component": "ai_integration",
-                            "description": f"Config endpoint returned {resp.status}",
-                            "recommendation": "Check backend AI configuration endpoint"
-                        })
+                        results["issues"].append(
+                            {
+                                "id": "AI-CONFIG-ENDPOINT-ERROR",
+                                "severity": "medium",
+                                "component": "ai_integration",
+                                "description": f"Config endpoint returned {resp.status}",
+                                "recommendation": "Check backend AI configuration endpoint",
+                            }
+                        )
         except Exception as e:
             results["failed"] += 1
-            results["issues"].append({
-                "id": "AI-CONFIG-CONNECTION-ERROR",
-                "severity": "high",
-                "component": "ai_integration",
-                "description": f"Failed to check AI configuration: {str(e)}",
-                "recommendation": "Ensure backend is running and accessible"
-            })
+            results["issues"].append(
+                {
+                    "id": "AI-CONFIG-CONNECTION-ERROR",
+                    "severity": "high",
+                    "component": "ai_integration",
+                    "description": f"Failed to check AI configuration: {str(e)}",
+                    "recommendation": "Ensure backend is running and accessible",
+                }
+            )
 
         # Test 2: Check if AI analysis endpoint is functional
         results["total"] += 1
@@ -621,43 +634,47 @@ class TestingAgent(BaseAgent):
             async with aiohttp.ClientSession() as session:
                 test_payload = {
                     "query": "test market analysis",
-                    "context": "Testing AI integration"
+                    "context": "Testing AI integration",
                 }
                 async with session.post(
-                    "http://localhost:8000/api/v1/ai-analysis/quick",
-                    json=test_payload,
-                    timeout=30
+                    "http://localhost:8000/api/v1/ai-analysis/quick", json=test_payload, timeout=30
                 ) as resp:
                     if resp.status in [200, 201]:
                         results["passed"] += 1
                     elif resp.status == 400:
                         # Bad request might be due to missing API key
                         results["failed"] += 1
-                        results["issues"].append({
-                            "id": "AI-ANALYSIS-BAD-REQUEST",
-                            "severity": "high",
-                            "component": "ai_integration",
-                            "description": "AI analysis endpoint returned 400 (possibly missing API key)",
-                            "recommendation": "Verify OpenAI API key is properly configured"
-                        })
+                        results["issues"].append(
+                            {
+                                "id": "AI-ANALYSIS-BAD-REQUEST",
+                                "severity": "high",
+                                "component": "ai_integration",
+                                "description": "AI analysis endpoint returned 400 (possibly missing API key)",
+                                "recommendation": "Verify OpenAI API key is properly configured",
+                            }
+                        )
                     else:
                         results["failed"] += 1
-                        results["issues"].append({
-                            "id": "AI-ANALYSIS-ENDPOINT-ERROR",
-                            "severity": "medium",
-                            "component": "ai_integration",
-                            "description": f"AI analysis endpoint returned {resp.status}",
-                            "recommendation": "Check AI service configuration and logs"
-                        })
+                        results["issues"].append(
+                            {
+                                "id": "AI-ANALYSIS-ENDPOINT-ERROR",
+                                "severity": "medium",
+                                "component": "ai_integration",
+                                "description": f"AI analysis endpoint returned {resp.status}",
+                                "recommendation": "Check AI service configuration and logs",
+                            }
+                        )
         except Exception as e:
             results["failed"] += 1
-            results["issues"].append({
-                "id": "AI-ANALYSIS-ERROR",
-                "severity": "medium",
-                "component": "ai_integration",
-                "description": f"AI analysis test failed: {str(e)}",
-                "recommendation": "Review AI service integration and error logs"
-            })
+            results["issues"].append(
+                {
+                    "id": "AI-ANALYSIS-ERROR",
+                    "severity": "medium",
+                    "component": "ai_integration",
+                    "description": f"AI analysis test failed: {str(e)}",
+                    "recommendation": "Review AI service integration and error logs",
+                }
+            )
 
         return results
 
@@ -665,12 +682,7 @@ class TestingAgent(BaseAgent):
         """Test UI components"""
         import aiohttp
 
-        results = {
-            "total": 0,
-            "passed": 0,
-            "failed": 0,
-            "issues": []
-        }
+        results = {"total": 0, "passed": 0, "failed": 0, "issues": []}
 
         # Test key pages/components
         pages = [
@@ -684,48 +696,48 @@ class TestingAgent(BaseAgent):
                     results["total"] += 1
                     try:
                         async with session.get(
-                            f"http://localhost:3000{page['path']}",
-                            timeout=10
+                            f"http://localhost:3000{page['path']}", timeout=10
                         ) as resp:
                             if resp.status == 200:
                                 results["passed"] += 1
                             else:
                                 results["failed"] += 1
-                                results["issues"].append({
-                                    "id": f"UI-{page['name'].replace(' ', '-')}",
-                                    "severity": "medium",
-                                    "component": "frontend",
-                                    "description": f"{page['name']} returned status {resp.status}",
-                                    "recommendation": f"Fix {page['name']} rendering issue"
-                                })
+                                results["issues"].append(
+                                    {
+                                        "id": f"UI-{page['name'].replace(' ', '-')}",
+                                        "severity": "medium",
+                                        "component": "frontend",
+                                        "description": f"{page['name']} returned status {resp.status}",
+                                        "recommendation": f"Fix {page['name']} rendering issue",
+                                    }
+                                )
                     except Exception as e:
                         results["failed"] += 1
-                        results["issues"].append({
-                            "id": f"UI-{page['name'].replace(' ', '-')}-ERROR",
-                            "severity": "high",
-                            "component": "frontend",
-                            "description": f"{page['name']} failed to load: {str(e)}",
-                            "recommendation": f"Ensure {page['name']} is properly configured"
-                        })
+                        results["issues"].append(
+                            {
+                                "id": f"UI-{page['name'].replace(' ', '-')}-ERROR",
+                                "severity": "high",
+                                "component": "frontend",
+                                "description": f"{page['name']} failed to load: {str(e)}",
+                                "recommendation": f"Ensure {page['name']} is properly configured",
+                            }
+                        )
         except Exception as e:
-            results["issues"].append({
-                "id": "UI-TEST-ERROR",
-                "severity": "critical",
-                "component": "frontend",
-                "description": f"UI testing failed: {str(e)}",
-                "recommendation": "Ensure frontend server is running and accessible"
-            })
+            results["issues"].append(
+                {
+                    "id": "UI-TEST-ERROR",
+                    "severity": "critical",
+                    "component": "frontend",
+                    "description": f"UI testing failed: {str(e)}",
+                    "recommendation": "Ensure frontend server is running and accessible",
+                }
+            )
 
         return results
 
     async def _test_page_rendering(self) -> Dict[str, Any]:
         """Test page rendering"""
-        results = {
-            "total": 1,
-            "passed": 1,
-            "failed": 0,
-            "issues": []
-        }
+        results = {"total": 1, "passed": 1, "failed": 0, "issues": []}
 
         # Basic rendering test passed if we got here
         # More sophisticated tests would use headless browser
@@ -741,15 +753,12 @@ class TestingAgent(BaseAgent):
         try:
             async with aiohttp.ClientSession() as session:
                 # Step 1: Submit market research query
-                research_payload = {
-                    "query": "eco-friendly water bottles market",
-                    "depth": "quick"
-                }
+                research_payload = {"query": "eco-friendly water bottles market", "depth": "quick"}
 
                 async with session.post(
                     "http://localhost:8000/api/v1/ai-analysis/market-research",
                     json=research_payload,
-                    timeout=60
+                    timeout=60,
                 ) as resp:
                     if resp.status not in [200, 201]:
                         return {
@@ -759,8 +768,8 @@ class TestingAgent(BaseAgent):
                                 "severity": "high",
                                 "component": "e2e_workflows",
                                 "description": f"Market research API returned {resp.status}",
-                                "recommendation": "Fix market research endpoint or verify AI integration"
-                            }
+                                "recommendation": "Fix market research endpoint or verify AI integration",
+                            },
                         }
 
                     market_data = await resp.json()
@@ -770,13 +779,13 @@ class TestingAgent(BaseAgent):
                 plan_payload = {
                     "market_data": market_data,
                     "business_name": "EcoBottle Co",
-                    "target_market": "eco-conscious consumers"
+                    "target_market": "eco-conscious consumers",
                 }
 
                 async with session.post(
                     "http://localhost:8000/api/v1/ai-analysis/business-plan",
                     json=plan_payload,
-                    timeout=60
+                    timeout=60,
                 ) as resp:
                     if resp.status == 404:
                         # Endpoint doesn't exist yet
@@ -787,8 +796,8 @@ class TestingAgent(BaseAgent):
                                 "severity": "high",
                                 "component": "e2e_workflows",
                                 "description": "Business plan generation endpoint not implemented",
-                                "recommendation": "Implement /api/v1/ai-analysis/business-plan endpoint"
-                            }
+                                "recommendation": "Implement /api/v1/ai-analysis/business-plan endpoint",
+                            },
                         }
                     elif resp.status in [200, 201]:
                         # Workflow complete!
@@ -801,8 +810,8 @@ class TestingAgent(BaseAgent):
                                 "severity": "medium",
                                 "component": "e2e_workflows",
                                 "description": f"Business plan generation returned {resp.status}",
-                                "recommendation": "Debug business plan generation endpoint"
-                            }
+                                "recommendation": "Debug business plan generation endpoint",
+                            },
                         }
 
         except Exception as e:
@@ -813,8 +822,8 @@ class TestingAgent(BaseAgent):
                     "severity": "medium",
                     "component": "e2e_workflows",
                     "description": f"E2E workflow test failed: {str(e)}",
-                    "recommendation": "Ensure all E2E workflow components are operational"
-                }
+                    "recommendation": "Ensure all E2E workflow components are operational",
+                },
             }
 
     async def _test_one_button_deployment(self) -> Dict[str, Any]:
@@ -831,19 +840,19 @@ class TestingAgent(BaseAgent):
                     "business_plan": {
                         "name": "TestBusiness",
                         "market": "test market",
-                        "product": "test product"
+                        "product": "test product",
                     },
                     "deployment_options": {
                         "create_website": True,
                         "setup_payments": False,  # Don't actually charge anything in test
-                        "generate_assets": True
-                    }
+                        "generate_assets": True,
+                    },
                 }
 
                 async with session.post(
                     "http://localhost:8000/api/v1/autonomous/deploy",
                     json=deployment_payload,
-                    timeout=120
+                    timeout=120,
                 ) as resp:
                     if resp.status == 404:
                         # Feature not implemented yet (expected for now)
@@ -854,8 +863,8 @@ class TestingAgent(BaseAgent):
                                 "severity": "medium",
                                 "component": "e2e_workflows",
                                 "description": "One-button deployment endpoint not implemented",
-                                "recommendation": "Implement /api/v1/autonomous/deploy endpoint for full autonomous deployment"
-                            }
+                                "recommendation": "Implement /api/v1/autonomous/deploy endpoint for full autonomous deployment",
+                            },
                         }
                     elif resp.status in [200, 201, 202]:
                         # Deployment initiated or completed
@@ -873,8 +882,8 @@ class TestingAgent(BaseAgent):
                                     "severity": "medium",
                                     "component": "e2e_workflows",
                                     "description": "Deployment response missing required fields",
-                                    "recommendation": "Ensure deployment returns deployment_id and status"
-                                }
+                                    "recommendation": "Ensure deployment returns deployment_id and status",
+                                },
                             }
                     else:
                         return {
@@ -884,8 +893,8 @@ class TestingAgent(BaseAgent):
                                 "severity": "medium",
                                 "component": "e2e_workflows",
                                 "description": f"Deployment endpoint returned {resp.status}",
-                                "recommendation": "Debug deployment endpoint implementation"
-                            }
+                                "recommendation": "Debug deployment endpoint implementation",
+                            },
                         }
 
         except Exception as e:
@@ -896,16 +905,13 @@ class TestingAgent(BaseAgent):
                     "severity": "low",
                     "component": "e2e_workflows",
                     "description": f"Deployment test failed: {str(e)}",
-                    "recommendation": "This is expected if one-button deployment not yet implemented"
-                }
+                    "recommendation": "This is expected if one-button deployment not yet implemented",
+                },
             }
 
     async def _test_openai_integration(self) -> Dict[str, Any]:
         """Test OpenAI integration"""
-        return {
-            "passed": True,
-            "issue": None
-        }
+        return {"passed": True, "issue": None}
 
     async def _check_issue_resolved(self, issue_id: str) -> bool:
         """Check if a specific issue has been resolved by re-running targeted tests"""
@@ -917,18 +923,14 @@ class TestingAgent(BaseAgent):
             "API-": self._test_api_endpoints,
             "DB-": self._test_database_operations,
             "AI-": self._test_backend_ai_integration,
-
             # Frontend issues
             "ISSUE-FRONTEND": self._check_frontend_health,
             "UI-": self._test_ui_components,
-
             # Worker issues
             "ISSUE-WORKER": self._check_worker_health,
-
             # Database issues
             "ISSUE-DATABASE": self._check_database_health,
             "DB-": self._test_database_operations,
-
             # E2E workflow issues
             "E2E-MARKET-RESEARCH": self._test_market_research_to_business_plan,
             "E2E-BUSINESS-PLAN": self._test_market_research_to_business_plan,
@@ -1000,7 +1002,7 @@ class TestingAgent(BaseAgent):
             "passed": passed_tests,
             "failed": failed_tests,
             "coverage": passed_tests / total_tests if total_tests > 0 else 0,
-            "total_issues": len(all_issues)
+            "total_issues": len(all_issues),
         }
 
     def _identify_critical_issues(self, test_results: Dict[str, Any]) -> List[Dict[str, Any]]:
@@ -1064,7 +1066,7 @@ class TestingAgent(BaseAgent):
             "critical_issues": critical_issues,
             "priority_items": priority_items[:10],  # Top 10
             "recommendations": recommendations,
-            "enhancements": self._identify_enhancements(test_results)
+            "enhancements": self._identify_enhancements(test_results),
         }
 
         return report
@@ -1080,11 +1082,13 @@ class TestingAgent(BaseAgent):
         if "e2e_workflows" in components:
             e2e_results = components["e2e_workflows"]
             if e2e_results.get("tests_failed", 0) > 0:
-                enhancements.append({
-                    "id": f"ENH-E2E-{datetime.now().timestamp()}",
-                    "priority": "high",
-                    "description": "Complete end-to-end autonomous deployment workflow",
-                    "rationale": "Critical for achieving market-research-to-deployment vision"
-                })
+                enhancements.append(
+                    {
+                        "id": f"ENH-E2E-{datetime.now().timestamp()}",
+                        "priority": "high",
+                        "description": "Complete end-to-end autonomous deployment workflow",
+                        "rationale": "Critical for achieving market-research-to-deployment vision",
+                    }
+                )
 
         return enhancements

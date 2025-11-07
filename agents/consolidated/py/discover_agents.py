@@ -54,10 +54,10 @@ KEYWORD_INDICATORS = {
 TEXT_EXTENSIONS = {".py", ".md", ".toml", ".json", ".yml", ".yaml", ".txt"}
 
 KNOWN_PATH_PATTERNS = {
-    'agent-zero': 'agent-zero',
-    'ApiaryFundingAndResearch': 'ApiaryFundingAndResearch',
-    'nexus-workforce': 'nexus-workforce',
-    'agentx/examples': 'agentx/examples',
+    "agent-zero": "agent-zero",
+    "ApiaryFundingAndResearch": "ApiaryFundingAndResearch",
+    "nexus-workforce": "nexus-workforce",
+    "agentx/examples": "agentx/examples",
 }
 
 
@@ -79,13 +79,29 @@ class Candidate:
 
 def parse_args() -> argparse.Namespace:
     parser = argparse.ArgumentParser(description="Discover agent candidates in a repository tree")
-    parser.add_argument("root", nargs="?", default="C:/GitHub", help="Root directory to scan (default: C:/GitHub)")
-    parser.add_argument("--output-dir", default="knowledge/discovery-reports", help="Where to write discovery reports (relative or absolute path)")
-    parser.add_argument("--known-manifest", default="manifests/reference/README.md", help="Manifest reference table to mark known agents")
+    parser.add_argument(
+        "root", nargs="?", default="C:/GitHub", help="Root directory to scan (default: C:/GitHub)"
+    )
+    parser.add_argument(
+        "--output-dir",
+        default="knowledge/discovery-reports",
+        help="Where to write discovery reports (relative or absolute path)",
+    )
+    parser.add_argument(
+        "--known-manifest",
+        default="manifests/reference/README.md",
+        help="Manifest reference table to mark known agents",
+    )
     parser.add_argument("--max-depth", type=int, default=5, help="Maximum directory depth to scan")
-    parser.add_argument("--threshold", type=int, default=3, help="Minimum score to include a candidate")
-    parser.add_argument("--exclude", nargs="*", default=[], help="Additional directories to exclude")
-    parser.add_argument("--markdown", action="store_true", help="Also emit a Markdown summary alongside JSON")
+    parser.add_argument(
+        "--threshold", type=int, default=3, help="Minimum score to include a candidate"
+    )
+    parser.add_argument(
+        "--exclude", nargs="*", default=[], help="Additional directories to exclude"
+    )
+    parser.add_argument(
+        "--markdown", action="store_true", help="Also emit a Markdown summary alongside JSON"
+    )
     return parser.parse_args()
 
 
@@ -112,7 +128,9 @@ def iter_dirs(root: Path, max_depth: int) -> Iterable[tuple[Path, list[str], lis
         yield current_path, dirs, files
 
 
-def evaluate_directory(path: Path, files: list[str], dirs: list[str], exclude: set[str], max_files: int = 5) -> tuple[int, list[Indicator]]:
+def evaluate_directory(
+    path: Path, files: list[str], dirs: list[str], exclude: set[str], max_files: int = 5
+) -> tuple[int, list[Indicator]]:
     score = 0
     found: list[Indicator] = []
 
@@ -173,8 +191,19 @@ def main() -> None:
         total_scanned += 1
         score, indicators = evaluate_directory(current_path, files, dirs, exclude)
         if score >= args.threshold:
-            status = "known" if (any(k in str(current_path) for k in known_agents) or any(pattern in str(current_path) for pattern in known_patterns)) else "new"
-            last_modified_ts = max((current_path / item).stat().st_mtime for item in files) if files else current_path.stat().st_mtime
+            status = (
+                "known"
+                if (
+                    any(k in str(current_path) for k in known_agents)
+                    or any(pattern in str(current_path) for pattern in known_patterns)
+                )
+                else "new"
+            )
+            last_modified_ts = (
+                max((current_path / item).stat().st_mtime for item in files)
+                if files
+                else current_path.stat().st_mtime
+            )
             last_modified = datetime.fromtimestamp(last_modified_ts, tz=timezone.utc).isoformat()
             candidates.append(
                 Candidate(
@@ -216,7 +245,21 @@ def main() -> None:
     print(f"Wrote discovery report: {json_path}")
 
     if args.markdown:
-        md_lines = ["# Agent Discovery Report", "", f"Generated at: {generated_at}", "", "## Summary", "", f"- Total directories scanned: {total_scanned}", f"- Candidates found: {len(candidates)}", f"- Known agents: {report['summary']['known_agents']}" , f"- New candidates: {report['summary']['new_candidates']}", "", "## Candidates", ""]
+        md_lines = [
+            "# Agent Discovery Report",
+            "",
+            f"Generated at: {generated_at}",
+            "",
+            "## Summary",
+            "",
+            f"- Total directories scanned: {total_scanned}",
+            f"- Candidates found: {len(candidates)}",
+            f"- Known agents: {report['summary']['known_agents']}",
+            f"- New candidates: {report['summary']['new_candidates']}",
+            "",
+            "## Candidates",
+            "",
+        ]
         for cand in sorted(candidates, key=lambda c: c.score, reverse=True):
             md_lines.append(f"- **{cand.path}** (score {cand.score}, status {cand.status})")
             for ind in cand.indicators:

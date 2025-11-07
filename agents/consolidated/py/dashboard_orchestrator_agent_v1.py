@@ -31,7 +31,8 @@ from dataclasses import dataclass, asdict
 from collections import defaultdict
 
 import sys
-sys.path.insert(0, os.path.join(os.path.dirname(__file__), '../..'))
+
+sys.path.insert(0, os.path.join(os.path.dirname(__file__), "../.."))
 
 from superstandard.agents.base.base_agent import BaseAgent
 from library.core.protocols import ProtocolMixin
@@ -56,9 +57,11 @@ DEFAULT_CO2_PER_AGENT_KG = 2.5
 # Domain Models
 # =========================================================================
 
+
 @dataclass
 class DashboardState:
     """Current dashboard state snapshot"""
+
     active_agents: List[Dict]
     recent_activities: List[Dict]
     system_metrics: Dict
@@ -76,13 +79,14 @@ class DashboardState:
             "agent_network": self.agent_network,
             "business_impact": self.business_impact,
             "alerts": self.alerts,
-            "last_updated": self.last_updated.isoformat()
+            "last_updated": self.last_updated.isoformat(),
         }
 
 
 # =========================================================================
 # Configuration
 # =========================================================================
+
 
 @dataclass
 class DashboardOrchestratorAgentConfig:
@@ -92,6 +96,7 @@ class DashboardOrchestratorAgentConfig:
     All values can be overridden via environment variables following
     12-factor app methodology.
     """
+
     # Cache settings
     cache_ttl_seconds: int = DEFAULT_CACHE_TTL_SECONDS
     activity_feed_limit: int = DEFAULT_ACTIVITY_FEED_LIMIT
@@ -110,38 +115,31 @@ class DashboardOrchestratorAgentConfig:
     def from_environment(cls) -> "DashboardOrchestratorAgentConfig":
         """Create configuration from environment variables"""
         return cls(
-            cache_ttl_seconds=int(os.getenv(
-                "DASHBOARD_CACHE_TTL",
-                str(DEFAULT_CACHE_TTL_SECONDS)
-            )),
-            activity_feed_limit=int(os.getenv(
-                "DASHBOARD_FEED_LIMIT",
-                str(DEFAULT_ACTIVITY_FEED_LIMIT)
-            )),
-            cost_per_agent_hour=float(os.getenv(
-                "DASHBOARD_COST_PER_AGENT_HOUR",
-                str(DEFAULT_COST_PER_AGENT_HOUR)
-            )),
-            time_per_task_hours=float(os.getenv(
-                "DASHBOARD_TIME_PER_TASK",
-                str(DEFAULT_TIME_PER_TASK_HOURS)
-            )),
-            efficiency_base=float(os.getenv(
-                "DASHBOARD_EFFICIENCY_BASE",
-                str(DEFAULT_EFFICIENCY_BASE)
-            )),
-            co2_per_agent_kg=float(os.getenv(
-                "DASHBOARD_CO2_PER_AGENT",
-                str(DEFAULT_CO2_PER_AGENT_KG)
-            )),
+            cache_ttl_seconds=int(os.getenv("DASHBOARD_CACHE_TTL", str(DEFAULT_CACHE_TTL_SECONDS))),
+            activity_feed_limit=int(
+                os.getenv("DASHBOARD_FEED_LIMIT", str(DEFAULT_ACTIVITY_FEED_LIMIT))
+            ),
+            cost_per_agent_hour=float(
+                os.getenv("DASHBOARD_COST_PER_AGENT_HOUR", str(DEFAULT_COST_PER_AGENT_HOUR))
+            ),
+            time_per_task_hours=float(
+                os.getenv("DASHBOARD_TIME_PER_TASK", str(DEFAULT_TIME_PER_TASK_HOURS))
+            ),
+            efficiency_base=float(
+                os.getenv("DASHBOARD_EFFICIENCY_BASE", str(DEFAULT_EFFICIENCY_BASE))
+            ),
+            co2_per_agent_kg=float(
+                os.getenv("DASHBOARD_CO2_PER_AGENT", str(DEFAULT_CO2_PER_AGENT_KG))
+            ),
             memory_limit_mb=int(os.getenv("DASHBOARD_MEMORY_LIMIT_MB", "512")),
-            cpu_limit_percent=float(os.getenv("DASHBOARD_CPU_LIMIT_PERCENT", "80.0"))
+            cpu_limit_percent=float(os.getenv("DASHBOARD_CPU_LIMIT_PERCENT", "80.0")),
         )
 
 
 # =========================================================================
 # Dashboard Orchestrator Agent
 # =========================================================================
+
 
 class DashboardOrchestratorAgent(BaseAgent, ProtocolMixin):
     """
@@ -168,7 +166,7 @@ class DashboardOrchestratorAgent(BaseAgent, ProtocolMixin):
         agent_id: str,
         config: DashboardOrchestratorAgentConfig,
         activity_tracker=None,
-        agent_factory=None
+        agent_factory=None,
     ):
         """Initialize Dashboard Orchestrator Agent"""
         # Initialize both parent classes
@@ -196,18 +194,14 @@ class DashboardOrchestratorAgent(BaseAgent, ProtocolMixin):
         self.cache_timestamp: Optional[datetime] = None
 
         # State tracking
-        self.state = {
-            "initialized": False,
-            "last_update": None,
-            "websocket_clients_count": 0
-        }
+        self.state = {"initialized": False, "last_update": None, "websocket_clients_count": 0}
 
         # Metrics
         self.metrics = {
             "updates_generated": 0,
             "broadcasts_sent": 0,
             "cache_hits": 0,
-            "cache_misses": 0
+            "cache_misses": 0,
         }
 
         # Resource tracking
@@ -230,9 +224,7 @@ class DashboardOrchestratorAgent(BaseAgent, ProtocolMixin):
         return {}
 
     async def _execute_logic(
-        self,
-        input_data: Dict[str, Any],
-        fetched_data: Dict[str, Any]
+        self, input_data: Dict[str, Any], fetched_data: Dict[str, Any]
     ) -> Dict[str, Any]:
         """Core execution logic - delegates to execute() method"""
         return await self.execute(input_data)
@@ -259,14 +251,11 @@ class DashboardOrchestratorAgent(BaseAgent, ProtocolMixin):
                 "agent_id": self.agent_id,
                 "agent_type": self.agent_type,
                 "version": self.version,
-                "initialization_time_ms": round(init_time_ms, 2)
+                "initialization_time_ms": round(init_time_ms, 2),
             }
 
         except Exception as e:
-            return {
-                "success": False,
-                "error": f"Initialization failed: {str(e)}"
-            }
+            return {"success": False, "error": f"Initialization failed: {str(e)}"}
 
     async def execute(self, input_data: Dict[str, Any]) -> Dict[str, Any]:
         """
@@ -281,10 +270,7 @@ class DashboardOrchestratorAgent(BaseAgent, ProtocolMixin):
         - analyze: Analyze dashboard requirements
         """
         if not self.state["initialized"]:
-            return {
-                "success": False,
-                "error": "Agent not initialized. Call initialize() first."
-            }
+            return {"success": False, "error": "Agent not initialized. Call initialize() first."}
 
         start_time = time.time()
 
@@ -292,10 +278,7 @@ class DashboardOrchestratorAgent(BaseAgent, ProtocolMixin):
             operation = input_data.get("operation") or input_data.get("type")
 
             if not operation:
-                return {
-                    "success": False,
-                    "error": "No operation specified"
-                }
+                return {"success": False, "error": "No operation specified"}
 
             # Route to appropriate handler
             if operation == "get_dashboard_state":
@@ -311,10 +294,7 @@ class DashboardOrchestratorAgent(BaseAgent, ProtocolMixin):
             elif operation == "analyze":
                 result = await self.analyze(input_data)
             else:
-                result = {
-                    "success": False,
-                    "error": f"Unknown operation: {operation}"
-                }
+                result = {"success": False, "error": f"Unknown operation: {operation}"}
 
             # Track execution time
             execution_time_ms = (time.time() - start_time) * 1000
@@ -331,7 +311,7 @@ class DashboardOrchestratorAgent(BaseAgent, ProtocolMixin):
             return {
                 "success": False,
                 "error": str(e),
-                "execution_time_ms": round(execution_time_ms, 2)
+                "execution_time_ms": round(execution_time_ms, 2),
             }
 
     async def shutdown(self) -> Dict[str, Any]:
@@ -352,14 +332,11 @@ class DashboardOrchestratorAgent(BaseAgent, ProtocolMixin):
                     "updates_generated": self.metrics["updates_generated"],
                     "broadcasts_sent": self.metrics["broadcasts_sent"],
                     "cache_hits": self.metrics["cache_hits"],
-                    "cache_misses": self.metrics["cache_misses"]
-                }
+                    "cache_misses": self.metrics["cache_misses"],
+                },
             }
         except Exception as e:
-            return {
-                "status": "error",
-                "reason": f"Shutdown failed: {str(e)}"
-            }
+            return {"status": "error", "reason": f"Shutdown failed: {str(e)}"}
 
     async def health_check(self) -> Dict[str, Any]:
         """Perform health check"""
@@ -376,7 +353,7 @@ class DashboardOrchestratorAgent(BaseAgent, ProtocolMixin):
             dependencies_ok = True
             dependencies_status = {
                 "activity_tracker": "connected" if self.activity_tracker else "missing",
-                "agent_factory": "connected" if self.agent_factory else "missing"
+                "agent_factory": "connected" if self.agent_factory else "missing",
             }
 
             if not self.activity_tracker or not self.agent_factory:
@@ -391,21 +368,20 @@ class DashboardOrchestratorAgent(BaseAgent, ProtocolMixin):
                 "resources": {
                     "memory_mb": round(memory_mb, 2),
                     "memory_limit_mb": self.typed_config.memory_limit_mb,
-                    "memory_percent": round((memory_mb / self.typed_config.memory_limit_mb) * 100, 1),
+                    "memory_percent": round(
+                        (memory_mb / self.typed_config.memory_limit_mb) * 100, 1
+                    ),
                     "cpu_percent": round(cpu_percent, 1),
-                    "cpu_limit_percent": self.typed_config.cpu_limit_percent
+                    "cpu_limit_percent": self.typed_config.cpu_limit_percent,
                 },
                 "dependencies": dependencies_status,
                 "websocket_clients": len(self.websocket_clients),
                 "state": self.state.copy(),
-                "metrics": self.metrics.copy()
+                "metrics": self.metrics.copy(),
             }
 
         except Exception as e:
-            return {
-                "status": "error",
-                "error": str(e)
-            }
+            return {"status": "error", "error": str(e)}
 
     # =====================================================================
     # Dashboard State Management
@@ -429,22 +405,16 @@ class DashboardOrchestratorAgent(BaseAgent, ProtocolMixin):
                 agent_network=agent_network,
                 business_impact=business_impact,
                 alerts=alerts,
-                last_updated=datetime.now()
+                last_updated=datetime.now(),
             )
 
             self.current_state = state
             self.state["last_update"] = datetime.now().isoformat()
 
-            return {
-                "success": True,
-                "state": state.to_dict()
-            }
+            return {"success": True, "state": state.to_dict()}
 
         except Exception as e:
-            return {
-                "success": False,
-                "error": str(e)
-            }
+            return {"success": False, "error": str(e)}
 
     async def _get_active_agents(self) -> List[Dict]:
         """Get list of active agents with summaries"""
@@ -452,22 +422,22 @@ class DashboardOrchestratorAgent(BaseAgent, ProtocolMixin):
 
         # Get metrics from activity tracker if available
         if self.activity_tracker:
-            metrics_result = await self.activity_tracker.execute({
-                "operation": "get_agent_metrics"
-            })
+            metrics_result = await self.activity_tracker.execute({"operation": "get_agent_metrics"})
 
             if metrics_result.get("success"):
                 metrics_by_id = metrics_result.get("metrics", {})
 
                 for agent_id, metrics in metrics_by_id.items():
-                    active_agents.append({
-                        "agent_id": agent_id,
-                        "agent_type": metrics.get("agent_type", "unknown"),
-                        "status": metrics.get("current_state", "idle"),
-                        "tasks_completed": metrics.get("tasks_completed", 0),
-                        "success_rate": round(metrics.get("success_rate", 0) * 100, 2),
-                        "last_activity": metrics.get("last_activity")
-                    })
+                    active_agents.append(
+                        {
+                            "agent_id": agent_id,
+                            "agent_type": metrics.get("agent_type", "unknown"),
+                            "status": metrics.get("current_state", "idle"),
+                            "tasks_completed": metrics.get("tasks_completed", 0),
+                            "success_rate": round(metrics.get("success_rate", 0) * 100, 2),
+                            "last_activity": metrics.get("last_activity"),
+                        }
+                    )
 
         return active_agents
 
@@ -478,10 +448,9 @@ class DashboardOrchestratorAgent(BaseAgent, ProtocolMixin):
 
         limit = limit or self.typed_config.activity_feed_limit
 
-        feed_result = await self.activity_tracker.execute({
-            "operation": "get_activity_feed",
-            "limit": limit
-        })
+        feed_result = await self.activity_tracker.execute(
+            {"operation": "get_activity_feed", "limit": limit}
+        )
 
         if not feed_result.get("success"):
             return []
@@ -501,12 +470,10 @@ class DashboardOrchestratorAgent(BaseAgent, ProtocolMixin):
                 "overall_success_rate": 0,
                 "total_messages": 0,
                 "total_errors": 0,
-                "uptime_seconds": 0
+                "uptime_seconds": 0,
             }
 
-        health_result = await self.activity_tracker.execute({
-            "operation": "get_system_health"
-        })
+        health_result = await self.activity_tracker.execute({"operation": "get_system_health"})
 
         if health_result.get("success"):
             return health_result.get("health", {})
@@ -529,37 +496,39 @@ class DashboardOrchestratorAgent(BaseAgent, ProtocolMixin):
             return {"nodes": [], "edges": []}
 
         # Get coordination patterns
-        coord_result = await self.activity_tracker.execute({
-            "operation": "get_coordination_patterns"
-        })
+        coord_result = await self.activity_tracker.execute(
+            {"operation": "get_coordination_patterns"}
+        )
 
         if not coord_result.get("success"):
             return {"nodes": [], "edges": []}
 
         # Build nodes from active agents
-        metrics_result = await self.activity_tracker.execute({
-            "operation": "get_agent_metrics"
-        })
+        metrics_result = await self.activity_tracker.execute({"operation": "get_agent_metrics"})
 
         nodes = []
         if metrics_result.get("success"):
             for agent_id, metrics in metrics_result.get("metrics", {}).items():
-                nodes.append({
-                    "id": agent_id,
-                    "label": metrics.get("agent_type", "unknown"),
-                    "type": metrics.get("agent_type", "unknown"),
-                    "status": metrics.get("current_state", "idle"),
-                    "category": self._get_agent_category(metrics.get("agent_type", ""))
-                })
+                nodes.append(
+                    {
+                        "id": agent_id,
+                        "label": metrics.get("agent_type", "unknown"),
+                        "type": metrics.get("agent_type", "unknown"),
+                        "status": metrics.get("current_state", "idle"),
+                        "category": self._get_agent_category(metrics.get("agent_type", "")),
+                    }
+                )
 
         # Build edges from collaborations
         edges = []
         for collab in coord_result.get("top_collaborations", [])[:50]:
-            edges.append({
-                "source": collab["from"],
-                "target": collab["to"],
-                "weight": collab["message_count"]
-            })
+            edges.append(
+                {
+                    "source": collab["from"],
+                    "target": collab["to"],
+                    "weight": collab["message_count"],
+                }
+            )
 
         network = {"nodes": nodes, "edges": edges}
 
@@ -590,7 +559,7 @@ class DashboardOrchestratorAgent(BaseAgent, ProtocolMixin):
             "efficiency_gain_percent": round(efficiency_gain, 2),
             "co2_reduction_kg": round(co2_reduction, 2),
             "tasks_automated": tasks_completed,
-            "human_equivalent_hours": round(time_saved, 2)
+            "human_equivalent_hours": round(time_saved, 2),
         }
 
     async def _get_alerts(self) -> List[Dict]:
@@ -601,34 +570,36 @@ class DashboardOrchestratorAgent(BaseAgent, ProtocolMixin):
         alerts = []
 
         # Analyze for bottlenecks
-        analysis_result = await self.activity_tracker.execute({
-            "operation": "analyze",
-            "analysis_type": "bottlenecks"
-        })
+        analysis_result = await self.activity_tracker.execute(
+            {"operation": "analyze", "analysis_type": "bottlenecks"}
+        )
 
         for bottleneck in analysis_result.get("bottlenecks", []):
-            alerts.append({
-                "severity": bottleneck.get("severity", "medium"),
-                "type": "bottleneck",
-                "message": f"Agent {bottleneck['agent_id']}: {bottleneck['issue']}",
-                "details": bottleneck,
-                "timestamp": datetime.now().isoformat()
-            })
+            alerts.append(
+                {
+                    "severity": bottleneck.get("severity", "medium"),
+                    "type": "bottleneck",
+                    "message": f"Agent {bottleneck['agent_id']}: {bottleneck['issue']}",
+                    "details": bottleneck,
+                    "timestamp": datetime.now().isoformat(),
+                }
+            )
 
         # Check for isolated agents
-        coord_result = await self.activity_tracker.execute({
-            "operation": "analyze",
-            "analysis_type": "coordination"
-        })
+        coord_result = await self.activity_tracker.execute(
+            {"operation": "analyze", "analysis_type": "coordination"}
+        )
 
         if coord_result.get("isolated_agents", 0) > 0:
-            alerts.append({
-                "severity": "low",
-                "type": "coordination",
-                "message": f"{coord_result['isolated_agents']} agents are not coordinating",
-                "details": {"isolated_ids": coord_result.get("isolated_agent_ids", [])},
-                "timestamp": datetime.now().isoformat()
-            })
+            alerts.append(
+                {
+                    "severity": "low",
+                    "type": "coordination",
+                    "message": f"{coord_result['isolated_agents']} agents are not coordinating",
+                    "details": {"isolated_ids": coord_result.get("isolated_agent_ids", [])},
+                    "timestamp": datetime.now().isoformat(),
+                }
+            )
 
         return alerts
 
@@ -646,29 +617,25 @@ class DashboardOrchestratorAgent(BaseAgent, ProtocolMixin):
             return {"success": False, "error": "Activity tracker not available"}
 
         # Get metrics
-        metrics_result = await self.activity_tracker.execute({
-            "operation": "get_agent_metrics",
-            "agent_id": agent_id
-        })
+        metrics_result = await self.activity_tracker.execute(
+            {"operation": "get_agent_metrics", "agent_id": agent_id}
+        )
 
         if not metrics_result.get("success"):
             return {"success": False, "error": f"Agent {agent_id} not found"}
 
         # Get recent activities for this agent
-        activities_result = await self.activity_tracker.execute({
-            "operation": "get_activity_feed",
-            "agent_id": agent_id,
-            "limit": 20
-        })
+        activities_result = await self.activity_tracker.execute(
+            {"operation": "get_activity_feed", "agent_id": agent_id, "limit": 20}
+        )
 
-        activities = activities_result.get("activities", []) if activities_result.get("success") else []
+        activities = (
+            activities_result.get("activities", []) if activities_result.get("success") else []
+        )
 
         return {
             "success": True,
-            "agent": {
-                **metrics_result.get("metrics", {}),
-                "recent_activities": activities
-            }
+            "agent": {**metrics_result.get("metrics", {}), "recent_activities": activities},
         }
 
     async def _format_activity_feed(self, task: Dict[str, Any]) -> Dict[str, Any]:
@@ -682,19 +649,19 @@ class DashboardOrchestratorAgent(BaseAgent, ProtocolMixin):
             return {
                 "success": True,
                 "format": "timeline",
-                "activities": self._format_timeline(activities)
+                "activities": self._format_timeline(activities),
             }
         elif view_type == "grouped":
             return {
                 "success": True,
                 "format": "grouped",
-                "groups": self._group_activities(activities)
+                "groups": self._group_activities(activities),
             }
         elif view_type == "agent_centric":
             return {
                 "success": True,
                 "format": "agent_centric",
-                "by_agent": self._group_by_agent(activities)
+                "by_agent": self._group_by_agent(activities),
             }
         else:
             return {"success": False, "error": f"Unknown view type: {view_type}"}
@@ -709,7 +676,7 @@ class DashboardOrchestratorAgent(BaseAgent, ProtocolMixin):
                 "description": act.get("description", ""),
                 "icon": self._get_activity_icon(act.get("activity_type", "")),
                 "color": self._get_activity_color(act.get("activity_type", "")),
-                "success": act.get("success")
+                "success": act.get("success"),
             }
             for act in activities
         ]
@@ -739,13 +706,13 @@ class DashboardOrchestratorAgent(BaseAgent, ProtocolMixin):
             "data_flow_optimizations": [
                 f"Cache network graph for {self.typed_config.cache_ttl_seconds} seconds",
                 "Batch activity updates every 2 seconds",
-                "Pre-compute business impact metrics"
+                "Pre-compute business impact metrics",
             ],
             "recommendations": [
                 "Use WebSocket for real-time activity feed",
                 "Poll agent metrics every 3 seconds",
-                "Lazy-load agent detail modals"
-            ]
+                "Lazy-load agent detail modals",
+            ],
         }
 
     # =====================================================================
@@ -762,7 +729,7 @@ class DashboardOrchestratorAgent(BaseAgent, ProtocolMixin):
             "consensus": "decision",
             "task_assignment": "orchestration",
             "activity_tracker": "monitoring",
-            "dashboard_orchestrator": "ui"
+            "dashboard_orchestrator": "ui",
         }
         return category_map.get(agent_type, "other")
 
@@ -777,7 +744,7 @@ class DashboardOrchestratorAgent(BaseAgent, ProtocolMixin):
             "communication_sent": "[SEND]",
             "communication_received": "[RECV]",
             "state_changed": "[STATE]",
-            "error_occurred": "[ERROR]"
+            "error_occurred": "[ERROR]",
         }
         return icon_map.get(activity_type, "[INFO]")
 
@@ -792,7 +759,7 @@ class DashboardOrchestratorAgent(BaseAgent, ProtocolMixin):
             "communication_sent": "#06b6d4",
             "communication_received": "#06b6d4",
             "state_changed": "#f59e0b",
-            "error_occurred": "#ef4444"
+            "error_occurred": "#ef4444",
         }
         return color_map.get(activity_type, "#64748b")
 
@@ -814,11 +781,7 @@ class DashboardOrchestratorAgent(BaseAgent, ProtocolMixin):
 
     async def broadcast_update(self, update_type: str, data: Dict):
         """Broadcast update to all connected dashboards"""
-        message = {
-            "type": update_type,
-            "data": data,
-            "timestamp": datetime.now().isoformat()
-        }
+        message = {"type": update_type, "data": data, "timestamp": datetime.now().isoformat()}
 
         # Send to all connected WebSocket clients
         disconnected = []
@@ -850,11 +813,12 @@ class DashboardOrchestratorAgent(BaseAgent, ProtocolMixin):
 # Factory Function
 # =========================================================================
 
+
 async def create_dashboard_orchestrator_agent(
     agent_id: str = "dashboard_orchestrator_001",
     config: Optional[DashboardOrchestratorAgentConfig] = None,
     activity_tracker=None,
-    agent_factory=None
+    agent_factory=None,
 ) -> DashboardOrchestratorAgent:
     """
     Factory function to create and initialize a Dashboard Orchestrator Agent
@@ -875,7 +839,7 @@ async def create_dashboard_orchestrator_agent(
         agent_id=agent_id,
         config=config,
         activity_tracker=activity_tracker,
-        agent_factory=agent_factory
+        agent_factory=agent_factory,
     )
 
     await agent.initialize()
@@ -888,6 +852,7 @@ async def create_dashboard_orchestrator_agent(
 # =========================================================================
 
 if __name__ == "__main__":
+
     async def demo():
         """Demonstrate Dashboard Orchestrator Agent capabilities"""
         print("\n" + "=" * 80)
@@ -903,8 +868,8 @@ if __name__ == "__main__":
         # Get dashboard state (will be empty without dependencies)
         print("\n[2] Getting dashboard state (no dependencies)...")
         state_result = await agent.execute({"operation": "get_dashboard_state"})
-        if state_result.get('success'):
-            state = state_result['state']
+        if state_result.get("success"):
+            state = state_result["state"]
             print(f"    Active agents: {len(state.get('active_agents', []))}")
             print(f"    Recent activities: {len(state.get('recent_activities', []))}")
             print(f"    System metrics: {json.dumps(state.get('system_metrics', {}), indent=6)}")
@@ -912,7 +877,7 @@ if __name__ == "__main__":
         # Get business impact
         print("\n[3] Calculating business impact...")
         impact_result = await agent.execute({"operation": "get_business_impact"})
-        if impact_result.get('success'):
+        if impact_result.get("success"):
             impact = impact_result
             print(f"    Cost savings: ${impact.get('cost_savings', 0):.2f}")
             print(f"    Time saved: {impact.get('time_saved_hours', 0):.2f} hours")
@@ -920,21 +885,19 @@ if __name__ == "__main__":
 
         # Format activity feed
         print("\n[4] Formatting activity feed (timeline view)...")
-        feed_result = await agent.execute({
-            "operation": "format_activity_feed",
-            "view_type": "timeline",
-            "limit": 10
-        })
-        if feed_result.get('success'):
+        feed_result = await agent.execute(
+            {"operation": "format_activity_feed", "view_type": "timeline", "limit": 10}
+        )
+        if feed_result.get("success"):
             print(f"    Format: {feed_result.get('format')}")
             print(f"    Activities: {len(feed_result.get('activities', []))}")
 
         # Analyze dashboard
         print("\n[5] Analyzing dashboard requirements...")
         analysis_result = await agent.execute({"operation": "analyze"})
-        if analysis_result.get('success'):
+        if analysis_result.get("success"):
             print("    Optimizations:")
-            for opt in analysis_result.get('data_flow_optimizations', []):
+            for opt in analysis_result.get("data_flow_optimizations", []):
                 print(f"      - {opt}")
 
         # Health check

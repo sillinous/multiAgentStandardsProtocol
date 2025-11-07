@@ -23,10 +23,11 @@ sys.path.insert(0, str(Path(__file__).parent.parent))
 from tools.scan_agents import AgentScanner
 from library.core.agent_registry import AgentRegistry
 
+
 def main():
-    print("\n" + "="*60)
+    print("\n" + "=" * 60)
     print("Comprehensive Agent Scanner - Finding ALL Agents")
-    print("="*60 + "\n")
+    print("=" * 60 + "\n")
 
     # Scan multiple directories
     directories_to_scan = [
@@ -49,11 +50,11 @@ def main():
         agent_files = []
         for root, dirs, files in os.walk(base_dir):
             # Skip __pycache__ and test directories
-            dirs[:] = [d for d in dirs if d != '__pycache__' and 'test' not in d.lower()]
+            dirs[:] = [d for d in dirs if d != "__pycache__" and "test" not in d.lower()]
 
             for file in files:
-                if file.endswith('.py') and not file.startswith('__'):
-                    if 'agent' in file.lower() or 'Agent' in file:
+                if file.endswith(".py") and not file.startswith("__"):
+                    if "agent" in file.lower() or "Agent" in file:
                         agent_files.append(Path(root) / file)
 
         print(f"Found {len(agent_files)} potential agent files")
@@ -73,8 +74,10 @@ def main():
                 agent_data = scanner.analyze_agent_file(agent_file, category)
                 if agent_data:
                     all_agents.append(agent_data)
-                    status = "[OK]" if agent_data['compliance_status'] == 'compliant' else "[!]"
-                    print(f"  {status} {agent_data['agent_name']} v{agent_data['version']} ({category})")
+                    status = "[OK]" if agent_data["compliance_status"] == "compliant" else "[!]"
+                    print(
+                        f"  {status} {agent_data['agent_name']} v{agent_data['version']} ({category})"
+                    )
 
             except Exception as e:
                 print(f"  [ERROR] {agent_file.name}: {str(e)[:50]}")
@@ -87,7 +90,7 @@ def main():
     # Count by status
     status_counts = {}
     for agent in all_agents:
-        status = agent['compliance_status']
+        status = agent["compliance_status"]
         status_counts[status] = status_counts.get(status, 0) + 1
 
     print("Compliance Breakdown:")
@@ -105,37 +108,37 @@ def main():
             from library.core.agent_registry import ComplianceStatus
 
             # Convert string status to enum
-            status_str = agent['compliance_status']
-            if status_str == 'compliant':
+            status_str = agent["compliance_status"]
+            if status_str == "compliant":
                 compliance_status = ComplianceStatus.COMPLIANT
-            elif status_str == 'partially_compliant':
+            elif status_str == "partially_compliant":
                 compliance_status = ComplianceStatus.PARTIALLY_COMPLIANT
-            elif status_str == 'non_compliant':
+            elif status_str == "non_compliant":
                 compliance_status = ComplianceStatus.NON_COMPLIANT
             else:
                 compliance_status = ComplianceStatus.UNKNOWN
 
             agent_id = registry.register_agent(
-                agent_name=agent['agent_name'],
-                agent_type=agent['agent_type'],
-                category=agent['category'],
-                version=agent['version'],
-                file_path=agent['file_path'],
+                agent_name=agent["agent_name"],
+                agent_type=agent["agent_type"],
+                category=agent["category"],
+                version=agent["version"],
+                file_path=agent["file_path"],
                 compliance_status=compliance_status,
-                law_version=agent['law_version'],
-                protocols_supported=agent['protocols_supported'],
-                capabilities=agent['capabilities'],
-                has_protocol_mixin=agent['has_protocol_mixin'],
-                has_base_agent=agent['has_base_agent'],
-                has_environment_config=agent['has_environment_config'],
-                has_health_check=agent['has_health_check'],
-                has_resource_monitoring=agent['has_resource_monitoring'],
-                notes=agent['notes']
+                law_version=agent["law_version"],
+                protocols_supported=agent["protocols_supported"],
+                capabilities=agent["capabilities"],
+                has_protocol_mixin=agent["has_protocol_mixin"],
+                has_base_agent=agent["has_base_agent"],
+                has_environment_config=agent["has_environment_config"],
+                has_health_check=agent["has_health_check"],
+                has_resource_monitoring=agent["has_resource_monitoring"],
+                notes=agent["notes"],
             )
 
             # Add non-compliant to retrofit queue
-            if status_str != 'compliant':
-                priority = 5 if status_str == 'non_compliant' else 3
+            if status_str != "compliant":
+                priority = 5 if status_str == "non_compliant" else 3
                 registry.add_to_retrofit_queue(agent_id, priority)
 
         except Exception as e:
@@ -167,13 +170,16 @@ def main():
         print("Top 20 Retrofit Priorities")
         print(f"{'='*60}\n")
         for i, agent in enumerate(retrofit_queue, 1):
-            print(f"{i:2}. [{agent['retrofit_priority']}] {agent['agent_name']:40} v{agent['version']:8} ({agent['category']})")
+            print(
+                f"{i:2}. [{agent['retrofit_priority']}] {agent['agent_name']:40} v{agent['version']:8} ({agent['category']})"
+            )
 
     print(f"\n{'='*60}")
     print("Scan Complete!")
     print(f"{'='*60}\n")
 
     registry.close()
+
 
 if __name__ == "__main__":
     main()

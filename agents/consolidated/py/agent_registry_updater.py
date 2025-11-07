@@ -23,9 +23,7 @@ from datetime import datetime
 from pathlib import Path
 
 from app.a2a_communication.message_routing_agent import routing_agent
-from app.a2a_communication.interfaces import (
-    AgentIdentifier, AgentTeam
-)
+from app.a2a_communication.interfaces import AgentIdentifier, AgentTeam
 
 logger = logging.getLogger(__name__)
 
@@ -61,9 +59,9 @@ class AgentRegistryUpdater:
                 "registry_updates",
                 "dashboard_synchronization",
                 "capability_mapping",
-                "apqc_tracking"
+                "apqc_tracking",
             ],
-            status="active"
+            status="active",
         )
 
         # Base paths for agent discovery
@@ -78,17 +76,11 @@ class AgentRegistryUpdater:
                 self.base_path / "market_opportunity_scoring_agent.py",
                 self.base_path / "pricing_strategy_agent_a2a.py",
                 self.base_path / "customer_profiling_agent_a2a.py",
-                self.base_path / "business_model_agent_a2a.py"
+                self.base_path / "business_model_agent_a2a.py",
             ],
-            4: [
-                self.base_path / "activities"
-            ],
-            3: [
-                self.base_path / "processes"
-            ],
-            2: [
-                self.base_path / "process_groups"
-            ]
+            4: [self.base_path / "activities"],
+            3: [self.base_path / "processes"],
+            2: [self.base_path / "process_groups"],
         }
 
         # Registry database path
@@ -107,10 +99,7 @@ class AgentRegistryUpdater:
         except Exception as e:
             logger.error(f"Failed to register: {e}")
 
-    async def discover_and_update_registry(
-        self,
-        options: Dict[str, Any] = None
-    ) -> Dict[str, Any]:
+    async def discover_and_update_registry(self, options: Dict[str, Any] = None) -> Dict[str, Any]:
         """
         Discover all agents and update registry
 
@@ -135,7 +124,7 @@ class AgentRegistryUpdater:
             "agents_discovered": {},
             "registry_updated": False,
             "dashboard_synchronized": False,
-            "errors": []
+            "errors": [],
         }
 
         try:
@@ -219,18 +208,15 @@ class AgentRegistryUpdater:
 
         # Import and inspect Level 5 agents
         try:
-            from app.agents import (
-                product_data_validation_agent,
-                market_opportunity_scoring_agent
-            )
+            from app.agents import product_data_validation_agent, market_opportunity_scoring_agent
 
             # ProductDataValidationAgent
-            if hasattr(product_data_validation_agent, 'validation_agent'):
+            if hasattr(product_data_validation_agent, "validation_agent"):
                 agent = product_data_validation_agent.validation_agent
                 agents.append(self._extract_agent_metadata(agent, 5))
 
             # MarketOpportunityScoringAgent
-            if hasattr(market_opportunity_scoring_agent, 'scoring_agent'):
+            if hasattr(market_opportunity_scoring_agent, "scoring_agent"):
                 agent = market_opportunity_scoring_agent.scoring_agent
                 agents.append(self._extract_agent_metadata(agent, 5))
 
@@ -243,7 +229,7 @@ class AgentRegistryUpdater:
                     pricing_strategy_agent,
                     customer_profiling_agent,
                     business_model_agent,
-                    image_discovery_agent
+                    image_discovery_agent,
                 )
 
                 for agent_obj in [
@@ -253,7 +239,7 @@ class AgentRegistryUpdater:
                     pricing_strategy_agent,
                     customer_profiling_agent,
                     business_model_agent,
-                    image_discovery_agent
+                    image_discovery_agent,
                 ]:
                     agents.append(self._extract_agent_metadata(agent_obj, 5))
 
@@ -273,13 +259,13 @@ class AgentRegistryUpdater:
             from app.agents.activities import (
                 product_analysis_activity,
                 market_research_activity,
-                business_viability_activity
+                business_viability_activity,
             )
 
             for activity in [
                 product_analysis_activity,
                 market_research_activity,
-                business_viability_activity
+                business_viability_activity,
             ]:
                 agents.append(self._extract_agent_metadata(activity, 4))
 
@@ -293,10 +279,7 @@ class AgentRegistryUpdater:
         agents = []
 
         try:
-            from app.agents.processes import (
-                product_selection_process,
-                market_entry_process
-            )
+            from app.agents.processes import product_selection_process, market_entry_process
 
             for process in [product_selection_process, market_entry_process]:
                 agents.append(self._extract_agent_metadata(process, 3))
@@ -343,11 +326,11 @@ class AgentRegistryUpdater:
             "apqc_domain": "Unknown",
             "capabilities": [],
             "status": "unknown",
-            "version": "1.0.0"
+            "version": "1.0.0",
         }
 
         try:
-            if hasattr(agent_obj, 'identifier'):
+            if hasattr(agent_obj, "identifier"):
                 identifier = agent_obj.identifier
                 metadata["id"] = identifier.id
                 metadata["name"] = identifier.name
@@ -355,8 +338,12 @@ class AgentRegistryUpdater:
                 metadata["capabilities"] = identifier.capabilities
                 metadata["status"] = identifier.status
                 metadata["version"] = identifier.version
-                if hasattr(identifier, 'team'):
-                    metadata["team"] = identifier.team.value if hasattr(identifier.team, 'value') else str(identifier.team)
+                if hasattr(identifier, "team"):
+                    metadata["team"] = (
+                        identifier.team.value
+                        if hasattr(identifier.team, "value")
+                        else str(identifier.team)
+                    )
 
         except Exception as e:
             logger.warning(f"Error extracting metadata: {e}")
@@ -371,49 +358,40 @@ class AgentRegistryUpdater:
             "levels": {},
             "by_capability": {},
             "by_apqc_domain": {},
-            "by_team": {}
+            "by_team": {},
         }
 
         # Organize by level
         for level_key, agents in discovered_agents.items():
             level = int(level_key.split("_")[1])
-            registry["levels"][level] = {
-                "count": len(agents),
-                "agents": agents
-            }
+            registry["levels"][level] = {"count": len(agents), "agents": agents}
 
             # Index by capability
             for agent in agents:
                 for capability in agent.get("capabilities", []):
                     if capability not in registry["by_capability"]:
                         registry["by_capability"][capability] = []
-                    registry["by_capability"][capability].append({
-                        "id": agent["id"],
-                        "name": agent["name"],
-                        "level": agent["level"]
-                    })
+                    registry["by_capability"][capability].append(
+                        {"id": agent["id"], "name": agent["name"], "level": agent["level"]}
+                    )
 
             # Index by APQC domain
             for agent in agents:
                 domain = agent.get("apqc_domain", "Unknown")
                 if domain not in registry["by_apqc_domain"]:
                     registry["by_apqc_domain"][domain] = []
-                registry["by_apqc_domain"][domain].append({
-                    "id": agent["id"],
-                    "name": agent["name"],
-                    "level": agent["level"]
-                })
+                registry["by_apqc_domain"][domain].append(
+                    {"id": agent["id"], "name": agent["name"], "level": agent["level"]}
+                )
 
             # Index by team
             for agent in agents:
                 team = agent.get("team", "Unknown")
                 if team not in registry["by_team"]:
                     registry["by_team"][team] = []
-                registry["by_team"][team].append({
-                    "id": agent["id"],
-                    "name": agent["name"],
-                    "level": agent["level"]
-                })
+                registry["by_team"][team].append(
+                    {"id": agent["id"], "name": agent["name"], "level": agent["level"]}
+                )
 
         return registry
 
@@ -424,7 +402,7 @@ class AgentRegistryUpdater:
             self.registry_path.parent.mkdir(parents=True, exist_ok=True)
 
             # Write registry data
-            with open(self.registry_path, 'w') as f:
+            with open(self.registry_path, "w") as f:
                 json.dump(registry_data, f, indent=2)
 
             logger.info(f"✓ Registry database updated: {self.registry_path}")
@@ -443,16 +421,16 @@ class AgentRegistryUpdater:
                     "total_agents": registry_data["total_agents"],
                     "levels_implemented": len(registry_data["levels"]),
                     "total_capabilities": len(registry_data["by_capability"]),
-                    "apqc_domains_covered": len(registry_data["by_apqc_domain"])
+                    "apqc_domains_covered": len(registry_data["by_apqc_domain"]),
                 },
                 "levels": registry_data["levels"],
                 "capabilities": registry_data["by_capability"],
-                "apqc_coverage": registry_data["by_apqc_domain"]
+                "apqc_coverage": registry_data["by_apqc_domain"],
             }
 
             # Write dashboard data
             dashboard_path = self.base_path / "registry" / "dashboard_data.json"
-            with open(dashboard_path, 'w') as f:
+            with open(dashboard_path, "w") as f:
                 json.dump(dashboard_data, f, indent=2)
 
             logger.info(f"✓ Dashboard synchronized: {dashboard_path}")
@@ -467,15 +445,12 @@ class AgentRegistryUpdater:
             "total_agents": registry_data["total_agents"],
             "levels_implemented": len(registry_data["levels"]),
             "level_breakdown": {
-                level: data["count"]
-                for level, data in registry_data["levels"].items()
+                level: data["count"] for level, data in registry_data["levels"].items()
             },
             "apqc_domains_covered": len(registry_data["by_apqc_domain"]),
             "top_capabilities": sorted(
-                registry_data["by_capability"].items(),
-                key=lambda x: len(x[1]),
-                reverse=True
-            )[:10]
+                registry_data["by_capability"].items(), key=lambda x: len(x[1]), reverse=True
+            )[:10],
         }
 
 

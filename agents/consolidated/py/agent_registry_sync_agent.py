@@ -49,7 +49,7 @@ class AgentRegistrySyncAgent:
             "agents_discovered": 0,
             "agents_registered": 0,
             "sync_errors": 0,
-            "total_syncs": 0
+            "total_syncs": 0,
         }
 
         logger.info(f"🔄 {self.name} initialized")
@@ -102,7 +102,7 @@ class AgentRegistrySyncAgent:
             Agent metadata dict or None if not an agent file
         """
         try:
-            with open(file_path, 'r', encoding='utf-8') as f:
+            with open(file_path, "r", encoding="utf-8") as f:
                 content = f.read()
 
             # Parse the file
@@ -114,14 +114,14 @@ class AgentRegistrySyncAgent:
                     continue
 
                 # Check if it's an agent class (ends with Agent or inherits from BaseAgent/HybridBaseAgent)
-                if not (node.name.endswith('Agent') or self._inherits_from_agent(node)):
+                if not (node.name.endswith("Agent") or self._inherits_from_agent(node)):
                     continue
 
                 # Extract docstring
                 docstring = ast.get_docstring(node) or "No description available"
 
                 # Extract class-level attributes
-                agent_id = self._extract_class_attribute(node, 'agent_id')
+                agent_id = self._extract_class_attribute(node, "agent_id")
                 if not agent_id:
                     # Generate ID from filename
                     agent_id = f"{file_path.stem}_v1"
@@ -138,13 +138,13 @@ class AgentRegistrySyncAgent:
                 return {
                     "id": agent_id,
                     "name": node.name,
-                    "description": docstring.split('\n')[0],  # First line
+                    "description": docstring.split("\n")[0],  # First line
                     "category": category,
                     "capabilities": capabilities,
                     "file_path": f"/{rel_path}",
                     "class_name": node.name,
                     "discovered_at": datetime.utcnow().isoformat(),
-                    "tags": self._generate_tags(file_path, base_dir)
+                    "tags": self._generate_tags(file_path, base_dir),
                 }
 
             return None
@@ -157,7 +157,7 @@ class AgentRegistrySyncAgent:
         """Check if class inherits from an agent base class"""
         for base in node.bases:
             if isinstance(base, ast.Name):
-                if 'Agent' in base.id:
+                if "Agent" in base.id:
                     return True
         return False
 
@@ -179,7 +179,7 @@ class AgentRegistrySyncAgent:
         for item in node.body:
             if isinstance(item, ast.Assign):
                 for target in item.targets:
-                    if isinstance(target, ast.Name) and target.id == 'capabilities':
+                    if isinstance(target, ast.Name) and target.id == "capabilities":
                         if isinstance(item.value, ast.List):
                             for elt in item.value.elts:
                                 if isinstance(elt, ast.Constant):
@@ -191,9 +191,9 @@ class AgentRegistrySyncAgent:
             name_parts = []
             for char in node.name:
                 if char.isupper() and name_parts:
-                    name_parts.append('_')
+                    name_parts.append("_")
                 name_parts.append(char.lower())
-            capability = ''.join(name_parts).replace('_agent', '')
+            capability = "".join(name_parts).replace("_agent", "")
             capabilities.append(capability)
 
         return capabilities
@@ -264,7 +264,7 @@ class AgentRegistrySyncAgent:
             "sync_time": self.stats["last_sync"],
             "agents_discovered": len(all_discovered),
             "agents": all_discovered,
-            "stats": self.stats
+            "stats": self.stats,
         }
 
         logger.info(f"✅ Sync complete: {len(all_discovered)} agents discovered")
@@ -279,7 +279,7 @@ class AgentRegistrySyncAgent:
             "version": self.version,
             "last_sync": self.stats["last_sync"],
             "stats": self.stats,
-            "scan_directories": self.scan_directories
+            "scan_directories": self.scan_directories,
         }
 
     async def register_agent(self, agent_metadata: Dict[str, Any]) -> bool:

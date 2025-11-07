@@ -49,7 +49,9 @@ class PriceCalculatorTaskAgent(BaseAgent):
     and maximum reusability across APQC categories.
     """
 
-    def __init__(self, agent_id: str = "price_calculator_task_agent", config: Optional[Dict[str, Any]] = None):
+    def __init__(
+        self, agent_id: str = "price_calculator_task_agent", config: Optional[Dict[str, Any]] = None
+    ):
         """
         Initialize Price Calculator Task Agent
 
@@ -60,8 +62,14 @@ class PriceCalculatorTaskAgent(BaseAgent):
         super().__init__(
             agent_id=agent_id,
             agent_type="business_logic",
-            capabilities=['discount_rules', 'tax_calculation', 'shipping_calculation', 'bundle_pricing', 'currency_conversion'],
-            config=config or {}
+            capabilities=[
+                "discount_rules",
+                "tax_calculation",
+                "shipping_calculation",
+                "bundle_pricing",
+                "currency_conversion",
+            ],
+            config=config or {},
         )
 
         # Agent-specific initialization
@@ -71,28 +79,28 @@ class PriceCalculatorTaskAgent(BaseAgent):
             "reusable": True,
             "composable": True,
             "stateless": True,
-            "framework": "APQC 7.0.1"
+            "framework": "APQC 7.0.1",
         }
 
         logger.info(f"Initialized Price Calculator Task Agent [{self.agent_id}]")
 
     async def execute_task(self, task: Dict[str, Any]) -> Dict[str, Any]:
         """
-        Execute the business logic task
+                Execute the business logic task
 
-        Args:
-            task: Task parameters containing:
-                - base_price: float
-- quantity: int
-- discounts: list
-- tax_rate: float
-- shipping: float
+                Args:
+                    task: Task parameters containing:
+                        - base_price: float
+        - quantity: int
+        - discounts: list
+        - tax_rate: float
+        - shipping: float
 
-        Returns:
-            Result dictionary containing:
-                - final_price: float
-- breakdown: dict
-- applied_discounts: list
+                Returns:
+                    Result dictionary containing:
+                        - final_price: float
+        - breakdown: dict
+        - applied_discounts: list
         """
         try:
             logger.info(f"[{self.agent_id}] Executing business_logic task")
@@ -112,7 +120,7 @@ class PriceCalculatorTaskAgent(BaseAgent):
                 "status": "success",
                 "agent_id": self.agent_id,
                 "timestamp": datetime.utcnow().isoformat(),
-                "result": output
+                "result": output,
             }
 
         except Exception as e:
@@ -121,7 +129,7 @@ class PriceCalculatorTaskAgent(BaseAgent):
                 "status": "error",
                 "agent_id": self.agent_id,
                 "timestamp": datetime.utcnow().isoformat(),
-                "error": str(e)
+                "error": str(e),
             }
 
     def _validate_inputs(self, task: Dict[str, Any]) -> None:
@@ -134,7 +142,7 @@ class PriceCalculatorTaskAgent(BaseAgent):
         Raises:
             ValueError: If required inputs are missing or invalid
         """
-        required_fields = ['base_price', 'quantity', 'discounts', 'tax_rate', 'shipping']
+        required_fields = ["base_price", "quantity", "discounts", "tax_rate", "shipping"]
 
         for field in required_fields:
             if field not in task:
@@ -162,7 +170,7 @@ class PriceCalculatorTaskAgent(BaseAgent):
         result = {
             "executed": True,
             "task_type": "business_logic",
-            "inputs_received": list(task.keys())
+            "inputs_received": list(task.keys()),
         }
 
         # Simulate async work
@@ -187,8 +195,8 @@ class PriceCalculatorTaskAgent(BaseAgent):
                 "agent_type": self.agent_type,
                 "level": 5,
                 "category": "business_logic",
-                "timestamp": datetime.utcnow().isoformat()
-            }
+                "timestamp": datetime.utcnow().isoformat(),
+            },
         }
 
     async def handle_message(self, message: Dict[str, Any]) -> Dict[str, Any]:
@@ -210,10 +218,7 @@ class PriceCalculatorTaskAgent(BaseAgent):
         elif message_type == "capabilities":
             return self.get_capabilities()
         else:
-            return {
-                "status": "error",
-                "error": f"Unknown message type: {message_type}"
-            }
+            return {"status": "error", "error": f"Unknown message type: {message_type}"}
 
     def get_status(self) -> Dict[str, Any]:
         """
@@ -227,7 +232,7 @@ class PriceCalculatorTaskAgent(BaseAgent):
             "agent_type": self.agent_type,
             "status": "ready",
             "capabilities": self.capabilities,
-            "metadata": self.metadata
+            "metadata": self.metadata,
         }
 
     def get_capabilities(self) -> Dict[str, Any]:
@@ -240,11 +245,17 @@ class PriceCalculatorTaskAgent(BaseAgent):
         return {
             "agent_id": self.agent_id,
             "capabilities": self.capabilities,
-            "inputs": {'base_price': 'float', 'quantity': 'int', 'discounts': 'list', 'tax_rate': 'float', 'shipping': 'float'},
-            "outputs": {'final_price': 'float', 'breakdown': 'dict', 'applied_discounts': 'list'},
+            "inputs": {
+                "base_price": "float",
+                "quantity": "int",
+                "discounts": "list",
+                "tax_rate": "float",
+                "shipping": "float",
+            },
+            "outputs": {"final_price": "float", "breakdown": "dict", "applied_discounts": "list"},
             "level": 5,
             "reusable": True,
-            "composable": True
+            "composable": True,
         }
 
 
@@ -258,7 +269,7 @@ async def main():
     # Example task
     task = {
         # Add example inputs here
-                # "base_price": "example_base_price",
+        # "base_price": "example_base_price",
         # "quantity": "example_quantity",
         # "discounts": "example_discounts",
         # "tax_rate": "example_tax_rate",

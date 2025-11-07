@@ -39,6 +39,7 @@ import json
 
 class AgentStatus(Enum):
     """Agent availability status"""
+
     AVAILABLE = "available"
     BUSY = "busy"
     OFFLINE = "offline"
@@ -47,6 +48,7 @@ class AgentStatus(Enum):
 
 class ContractStatus(Enum):
     """Status of work contract"""
+
     PENDING = "pending"  # User created, agent not accepted yet
     ACTIVE = "active"  # Agent accepted and working
     COMPLETED = "completed"  # Work finished successfully
@@ -57,6 +59,7 @@ class ContractStatus(Enum):
 
 class PricingModel(Enum):
     """How agent charges for work"""
+
     PER_TASK = "per_task"  # Fixed price per task
     HOURLY = "hourly"  # Charge by time
     SUBSCRIPTION = "subscription"  # Monthly subscription
@@ -66,6 +69,7 @@ class PricingModel(Enum):
 
 class InsuranceClaim(Enum):
     """Types of insurance claims"""
+
     TASK_FAILED = "task_failed"
     POOR_QUALITY = "poor_quality"
     MISSED_DEADLINE = "missed_deadline"
@@ -75,6 +79,7 @@ class InsuranceClaim(Enum):
 @dataclass
 class AgentCapability:
     """A specific capability an agent can perform"""
+
     capability_id: str
     name: str
     description: str
@@ -90,6 +95,7 @@ class AgentCapability:
 @dataclass
 class AgentListing:
     """Agent's marketplace listing"""
+
     agent_id: str
     display_name: str
     description: str
@@ -114,6 +120,7 @@ class AgentListing:
 @dataclass
 class UserProfile:
     """User profile in marketplace"""
+
     user_id: str
     display_name: str
     reputation_score: float  # Users also have reputation (pay on time, fair reviews)
@@ -128,6 +135,7 @@ class UserProfile:
 @dataclass
 class WorkContract:
     """Contract between user and agent for specific work"""
+
     contract_id: str
     user_id: str
     agent_id: str
@@ -153,6 +161,7 @@ class WorkContract:
 @dataclass
 class Review:
     """User review of agent performance"""
+
     review_id: str
     contract_id: str
     reviewer_id: str  # Can be user or agent
@@ -168,6 +177,7 @@ class Review:
 @dataclass
 class InsurancePool:
     """Insurance pool that covers failed contracts"""
+
     pool_id: str
     total_funds: float  # Total tokens in pool
     total_premiums_collected: float = 0.0
@@ -181,6 +191,7 @@ class InsurancePool:
 @dataclass
 class MarketplaceFee:
     """Marketplace commission structure"""
+
     base_commission_rate: float = 0.10  # 10% commission
     high_reputation_discount: float = 0.05  # 5% discount for reputation > 8.0
     subscription_discount: float = 0.03  # 3% discount for subscription model
@@ -202,8 +213,7 @@ class AgentMarketplace:
         self.contracts: Dict[str, WorkContract] = {}
         self.reviews: Dict[str, Review] = {}
         self.insurance_pool = InsurancePool(
-            pool_id="main_pool",
-            total_funds=10000.0  # Start with 10k tokens
+            pool_id="main_pool", total_funds=10000.0  # Start with 10k tokens
         )
 
         # Marketplace economics
@@ -224,7 +234,7 @@ class AgentMarketplace:
         pricing_model: PricingModel,
         base_price: float,
         tags: Optional[List[str]] = None,
-        certifications: Optional[List[str]] = None
+        certifications: Optional[List[str]] = None,
     ) -> AgentListing:
         """
         List agent on marketplace.
@@ -240,7 +250,7 @@ class AgentMarketplace:
             base_price=base_price,
             reputation_score=5.0,  # Start at neutral reputation
             tags=tags or [],
-            certifications=certifications or []
+            certifications=certifications or [],
         )
 
         self.agents[agent_id] = listing
@@ -259,17 +269,14 @@ class AgentMarketplace:
         return listing
 
     def register_user(
-        self,
-        user_id: str,
-        display_name: str,
-        initial_token_balance: float = 1000.0
+        self, user_id: str, display_name: str, initial_token_balance: float = 1000.0
     ) -> UserProfile:
         """Register user in marketplace"""
         user = UserProfile(
             user_id=user_id,
             display_name=display_name,
             reputation_score=5.0,  # Start at neutral
-            token_balance=initial_token_balance
+            token_balance=initial_token_balance,
         )
 
         self.users[user_id] = user
@@ -284,7 +291,7 @@ class AgentMarketplace:
         pricing_model: Optional[PricingModel] = None,
         min_success_rate: float = 0.0,
         certified_only: bool = False,
-        sort_by: str = "reputation"  # reputation, price, success_rate, tasks_completed
+        sort_by: str = "reputation",  # reputation, price, success_rate, tasks_completed
     ) -> List[AgentListing]:
         """
         Search for agents by capabilities, reputation, price, etc.
@@ -295,58 +302,35 @@ class AgentMarketplace:
         # Filter by capabilities
         if capabilities:
             candidates = [
-                agent for agent in candidates
-                if any(
-                    cap.name in capabilities
-                    for cap in agent.capabilities
-                )
+                agent
+                for agent in candidates
+                if any(cap.name in capabilities for cap in agent.capabilities)
             ]
 
         # Filter by tags
         if tags:
-            candidates = [
-                agent for agent in candidates
-                if any(tag in agent.tags for tag in tags)
-            ]
+            candidates = [agent for agent in candidates if any(tag in agent.tags for tag in tags)]
 
         # Filter by reputation
-        candidates = [
-            agent for agent in candidates
-            if agent.reputation_score >= min_reputation
-        ]
+        candidates = [agent for agent in candidates if agent.reputation_score >= min_reputation]
 
         # Filter by price
         if max_price is not None:
-            candidates = [
-                agent for agent in candidates
-                if agent.base_price <= max_price
-            ]
+            candidates = [agent for agent in candidates if agent.base_price <= max_price]
 
         # Filter by pricing model
         if pricing_model:
-            candidates = [
-                agent for agent in candidates
-                if agent.pricing_model == pricing_model
-            ]
+            candidates = [agent for agent in candidates if agent.pricing_model == pricing_model]
 
         # Filter by success rate
-        candidates = [
-            agent for agent in candidates
-            if agent.success_rate >= min_success_rate
-        ]
+        candidates = [agent for agent in candidates if agent.success_rate >= min_success_rate]
 
         # Filter by certification
         if certified_only:
-            candidates = [
-                agent for agent in candidates
-                if len(agent.certifications) > 0
-            ]
+            candidates = [agent for agent in candidates if len(agent.certifications) > 0]
 
         # Filter by status (only show available agents)
-        candidates = [
-            agent for agent in candidates
-            if agent.status == AgentStatus.AVAILABLE
-        ]
+        candidates = [agent for agent in candidates if agent.status == AgentStatus.AVAILABLE]
 
         # Sort results
         sort_keys = {
@@ -354,7 +338,7 @@ class AgentMarketplace:
             "price": lambda a: a.base_price,
             "success_rate": lambda a: a.success_rate,
             "tasks_completed": lambda a: a.total_tasks_completed,
-            "rating": lambda a: a.average_rating
+            "rating": lambda a: a.average_rating,
         }
 
         sort_key = sort_keys.get(sort_by, sort_keys["reputation"])
@@ -372,7 +356,7 @@ class AgentMarketplace:
         pricing_model: PricingModel,
         agreed_price: float,
         deadline: Optional[str] = None,
-        require_insurance: bool = True
+        require_insurance: bool = True,
     ) -> WorkContract:
         """
         Create work contract between user and agent.
@@ -385,7 +369,9 @@ class AgentMarketplace:
 
         # Calculate total cost (price + insurance + marketplace fee)
         marketplace_fee = self._calculate_marketplace_fee(agent_id, agreed_price)
-        insurance_premium = agreed_price * self.insurance_pool.premium_rate if require_insurance else 0.0
+        insurance_premium = (
+            agreed_price * self.insurance_pool.premium_rate if require_insurance else 0.0
+        )
         total_cost = agreed_price + marketplace_fee + insurance_premium
 
         if user.token_balance < total_cost:
@@ -413,7 +399,9 @@ class AgentMarketplace:
             created_at=datetime.now().isoformat(),
             deadline=deadline,
             escrow_held=agreed_price + marketplace_fee,
-            insurance_coverage=agreed_price * self.insurance_pool.coverage_ratio if require_insurance else 0.0
+            insurance_coverage=(
+                agreed_price * self.insurance_pool.coverage_ratio if require_insurance else 0.0
+            ),
         )
 
         self.contracts[contract_id] = contract
@@ -445,7 +433,9 @@ class AgentMarketplace:
             raise ValueError(f"Contract {contract_id} not assigned to agent {agent_id}")
 
         if contract.status != ContractStatus.PENDING:
-            raise ValueError(f"Contract {contract_id} is not pending (status: {contract.status.value})")
+            raise ValueError(
+                f"Contract {contract_id} is not pending (status: {contract.status.value})"
+            )
 
         # Update contract
         contract.status = ContractStatus.ACTIVE
@@ -459,10 +449,7 @@ class AgentMarketplace:
         return contract
 
     def complete_contract(
-        self,
-        contract_id: str,
-        agent_id: str,
-        deliverables: List[Dict[str, Any]]
+        self, contract_id: str, agent_id: str, deliverables: List[Dict[str, Any]]
     ) -> WorkContract:
         """
         Agent marks contract as complete and submits deliverables.
@@ -493,7 +480,7 @@ class AgentMarketplace:
         user_id: str,
         rating: float,
         review_text: str,
-        category_ratings: Optional[Dict[str, float]] = None
+        category_ratings: Optional[Dict[str, float]] = None,
     ) -> Tuple[WorkContract, Review]:
         """
         User approves work and releases payment from escrow.
@@ -523,7 +510,7 @@ class AgentMarketplace:
             rating=rating,
             review_text=review_text,
             categories=category_ratings or {},
-            verified_contract=True
+            verified_contract=True,
         )
 
         self.reviews[review_id] = review
@@ -559,11 +546,7 @@ class AgentMarketplace:
         return contract, review
 
     def dispute_contract(
-        self,
-        contract_id: str,
-        user_id: str,
-        dispute_reason: str,
-        claim_type: InsuranceClaim
+        self, contract_id: str, user_id: str, dispute_reason: str, claim_type: InsuranceClaim
     ) -> WorkContract:
         """
         User disputes contract quality/completion.
@@ -607,28 +590,28 @@ class AgentMarketplace:
             raise ValueError(f"Agent {agent_id} not found")
 
         # Get all contracts for this agent
-        agent_contracts = [
-            c for c in self.contracts.values()
-            if c.agent_id == agent_id
-        ]
+        agent_contracts = [c for c in self.contracts.values() if c.agent_id == agent_id]
 
         # Get all reviews
-        agent_reviews = [
-            r for r in self.reviews.values()
-            if r.reviewee_id == agent_id
-        ]
+        agent_reviews = [r for r in self.reviews.values() if r.reviewee_id == agent_id]
 
         # Calculate metrics
         total_contracts = len(agent_contracts)
-        completed_contracts = len([c for c in agent_contracts if c.status == ContractStatus.COMPLETED])
-        disputed_contracts = len([c for c in agent_contracts if c.status == ContractStatus.DISPUTED])
+        completed_contracts = len(
+            [c for c in agent_contracts if c.status == ContractStatus.COMPLETED]
+        )
+        disputed_contracts = len(
+            [c for c in agent_contracts if c.status == ContractStatus.DISPUTED]
+        )
         failed_contracts = len([c for c in agent_contracts if c.status == ContractStatus.FAILED])
 
         success_rate = completed_contracts / total_contracts if total_contracts > 0 else 0.0
 
         # Revenue analytics
         total_earnings = agent.total_earnings
-        avg_contract_value = total_earnings / completed_contracts if completed_contracts > 0 else 0.0
+        avg_contract_value = (
+            total_earnings / completed_contracts if completed_contracts > 0 else 0.0
+        )
 
         # Rating breakdown
         rating_distribution = {
@@ -665,7 +648,7 @@ class AgentMarketplace:
             "capability_demand": capability_demand,
             "response_time_minutes": agent.response_time_minutes,
             "certifications": agent.certifications,
-            "endorsements": len(agent.endorsements)
+            "endorsements": len(agent.endorsements),
         }
 
     def get_marketplace_statistics(self) -> Dict[str, Any]:
@@ -675,19 +658,23 @@ class AgentMarketplace:
         total_users = len(self.users)
 
         total_contracts = len(self.contracts)
-        active_contracts = len([c for c in self.contracts.values() if c.status == ContractStatus.ACTIVE])
-        completed_contracts = len([c for c in self.contracts.values() if c.status == ContractStatus.COMPLETED])
-        disputed_contracts = len([c for c in self.contracts.values() if c.status == ContractStatus.DISPUTED])
+        active_contracts = len(
+            [c for c in self.contracts.values() if c.status == ContractStatus.ACTIVE]
+        )
+        completed_contracts = len(
+            [c for c in self.contracts.values() if c.status == ContractStatus.COMPLETED]
+        )
+        disputed_contracts = len(
+            [c for c in self.contracts.values() if c.status == ContractStatus.DISPUTED]
+        )
 
         success_rate = completed_contracts / total_contracts if total_contracts > 0 else 0.0
         dispute_rate = disputed_contracts / total_contracts if total_contracts > 0 else 0.0
 
         # Top agents
-        top_agents = sorted(
-            self.agents.values(),
-            key=lambda a: a.reputation_score,
-            reverse=True
-        )[:5]
+        top_agents = sorted(self.agents.values(), key=lambda a: a.reputation_score, reverse=True)[
+            :5
+        ]
 
         # Top capabilities in demand
         capability_counts = {}
@@ -697,11 +684,7 @@ class AgentMarketplace:
                     capability_counts[cap.name] = 0
                 capability_counts[cap.name] += 1
 
-        top_capabilities = sorted(
-            capability_counts.items(),
-            key=lambda x: x[1],
-            reverse=True
-        )[:5]
+        top_capabilities = sorted(capability_counts.items(), key=lambda x: x[1], reverse=True)[:5]
 
         return {
             "marketplace_id": self.marketplace_id,
@@ -716,7 +699,9 @@ class AgentMarketplace:
             "dispute_rate": dispute_rate,
             "total_volume": self.total_volume,
             "total_fees_collected": self.total_fees_collected,
-            "average_contract_value": self.total_volume / completed_contracts if completed_contracts > 0 else 0.0,
+            "average_contract_value": (
+                self.total_volume / completed_contracts if completed_contracts > 0 else 0.0
+            ),
             "insurance_pool_balance": self.insurance_pool.total_funds,
             "insurance_claim_rate": self.insurance_pool.claim_rate,
             "top_agents": [
@@ -724,21 +709,17 @@ class AgentMarketplace:
                     "agent_id": a.agent_id,
                     "display_name": a.display_name,
                     "reputation": a.reputation_score,
-                    "earnings": a.total_earnings
+                    "earnings": a.total_earnings,
                 }
                 for a in top_agents
             ],
             "top_capabilities": [
-                {"capability": cap, "agent_count": count}
-                for cap, count in top_capabilities
-            ]
+                {"capability": cap, "agent_count": count} for cap, count in top_capabilities
+            ],
         }
 
     def recommend_agent(
-        self,
-        user_id: str,
-        task_description: str,
-        max_price: Optional[float] = None
+        self, user_id: str, task_description: str, max_price: Optional[float] = None
     ) -> List[Tuple[AgentListing, float]]:
         """
         Recommend best agents for user's task using ML-style matching.
@@ -817,21 +798,19 @@ class AgentMarketplace:
         # Update average rating
         total_tasks = agent.total_tasks_completed
         if total_tasks > 0:
-            agent.average_rating = (
-                (agent.average_rating * (total_tasks - 1) + rating) / total_tasks
-            )
+            agent.average_rating = (agent.average_rating * (total_tasks - 1) + rating) / total_tasks
         else:
             agent.average_rating = rating
 
         # Update success rate
-        successful = len([
-            c for c in self.contracts.values()
-            if c.agent_id == agent_id and c.status == ContractStatus.COMPLETED
-        ])
-        total = len([
-            c for c in self.contracts.values()
-            if c.agent_id == agent_id
-        ])
+        successful = len(
+            [
+                c
+                for c in self.contracts.values()
+                if c.agent_id == agent_id and c.status == ContractStatus.COMPLETED
+            ]
+        )
+        total = len([c for c in self.contracts.values() if c.agent_id == agent_id])
         agent.success_rate = successful / total if total > 0 else 0.0
 
         # Calculate reputation score (0-10 scale)
@@ -846,11 +825,7 @@ class AgentMarketplace:
         if agent.reputation_score < 2.0:
             agent.status = AgentStatus.SUSPENDED
 
-    def _process_insurance_claim(
-        self,
-        contract: WorkContract,
-        claim_type: InsuranceClaim
-    ) -> float:
+    def _process_insurance_claim(self, contract: WorkContract, claim_type: InsuranceClaim) -> float:
         """
         Process insurance claim and return refund amount.
         Uses simple rule-based approval (production would use ML).
@@ -864,10 +839,7 @@ class AgentMarketplace:
 
         elif claim_type == InsuranceClaim.POOR_QUALITY:
             # Approve if agent has pattern of poor quality
-            agent_reviews = [
-                r for r in self.reviews.values()
-                if r.reviewee_id == contract.agent_id
-            ]
+            agent_reviews = [r for r in self.reviews.values() if r.reviewee_id == contract.agent_id]
             if agent_reviews:
                 avg_rating = sum(r.rating for r in agent_reviews) / len(agent_reviews)
                 approved = avg_rating < 2.5
@@ -894,10 +866,13 @@ class AgentMarketplace:
             self.insurance_pool.total_claims_paid += claim_amount
 
             # Update claim rate
-            total_policies = self.insurance_pool.total_premiums_collected / self.insurance_pool.premium_rate
+            total_policies = (
+                self.insurance_pool.total_premiums_collected / self.insurance_pool.premium_rate
+            )
             self.insurance_pool.claim_rate = (
                 self.insurance_pool.total_claims_paid / total_policies
-                if total_policies > 0 else 0.0
+                if total_policies > 0
+                else 0.0
             )
 
             return claim_amount
@@ -920,7 +895,7 @@ if __name__ == "__main__":
         certification_level="Expert",
         success_rate=0.95,
         tasks_completed=150,
-        average_rating=4.8
+        average_rating=4.8,
     )
 
     # List agent on marketplace
@@ -932,7 +907,7 @@ if __name__ == "__main__":
         pricing_model=PricingModel.PER_TASK,
         base_price=50.0,
         tags=["customer_service", "support", "expert"],
-        certifications=["Expert Customer Service Certification"]
+        certifications=["Expert Customer Service Certification"],
     )
     print(f"✅ Listed agent: {agent_listing.display_name}")
     print(f"   Base price: {agent_listing.base_price} tokens")
@@ -940,19 +915,14 @@ if __name__ == "__main__":
 
     # Register user
     user = marketplace.register_user(
-        user_id="user_001",
-        display_name="TechCorp",
-        initial_token_balance=5000.0
+        user_id="user_001", display_name="TechCorp", initial_token_balance=5000.0
     )
     print(f"\n✅ Registered user: {user.display_name}")
     print(f"   Token balance: {user.token_balance}")
 
     # Search for agents
     results = marketplace.search_agents(
-        capabilities=["Customer Service"],
-        min_reputation=4.0,
-        max_price=100.0,
-        sort_by="reputation"
+        capabilities=["Customer Service"], min_reputation=4.0, max_price=100.0, sort_by="reputation"
     )
     print(f"\n🔍 Search results: Found {len(results)} agents")
     for agent in results:
@@ -962,7 +932,7 @@ if __name__ == "__main__":
     recommendations = marketplace.recommend_agent(
         user_id="user_001",
         task_description="Handle customer complaint about product quality",
-        max_price=100.0
+        max_price=100.0,
     )
     print(f"\n💡 Recommendations: {len(recommendations)} agents matched")
     for agent, score in recommendations[:3]:
@@ -976,7 +946,7 @@ if __name__ == "__main__":
         pricing_model=PricingModel.PER_TASK,
         agreed_price=50.0,
         deadline=(datetime.now() + timedelta(days=1)).isoformat(),
-        require_insurance=True
+        require_insurance=True,
     )
     print(f"\n📋 Created contract: {contract.contract_id}")
     print(f"   Price: {contract.agreed_price} tokens")
@@ -995,8 +965,8 @@ if __name__ == "__main__":
         agent_id="agent_001",
         deliverables=[
             {"ticket_id": "T001", "resolution": "Replaced defective unit", "satisfaction": 5.0},
-            {"ticket_id": "T002", "resolution": "Issued refund", "satisfaction": 4.8}
-        ]
+            {"ticket_id": "T002", "resolution": "Issued refund", "satisfaction": 4.8},
+        ],
     )
     print(f"\n✅ Agent completed work")
     print(f"   Status: {contract.status.value}")
@@ -1008,11 +978,7 @@ if __name__ == "__main__":
         user_id="user_001",
         rating=4.9,
         review_text="Excellent service! Fast response and great results.",
-        category_ratings={
-            "quality": 5.0,
-            "speed": 4.8,
-            "communication": 4.9
-        }
+        category_ratings={"quality": 5.0, "speed": 4.8, "communication": 4.9},
     )
     print(f"\n💰 Payment released")
     print(f"   User rating: {contract.user_rating}/5.0")

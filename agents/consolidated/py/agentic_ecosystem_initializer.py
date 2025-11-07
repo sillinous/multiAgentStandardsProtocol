@@ -13,28 +13,26 @@ from dataclasses import asdict
 from .ecosystem_initialization import (
     initialize_casp_ecosystem,
     EcosystemInitializationConfig,
-    get_ecosystem_status
+    get_ecosystem_status,
 )
 from .blockchain_agentic_protocol import (
     initialize_blockchain_agentic_protocol,
-    get_blockchain_agentic_protocol
+    get_blockchain_agentic_protocol,
 )
-from .apqc_agent_specialization_framework import (
-    initialize_apqc_framework,
-    get_apqc_framework
-)
+from .apqc_agent_specialization_framework import initialize_apqc_framework, get_apqc_framework
 from .market_research_agents import (
     initialize_market_research_agents,
-    get_market_research_orchestrator
+    get_market_research_orchestrator,
 )
 from .ai_service import AIService
 from .beyond_enterprise_protocol_engine import BeyondEnterpriseProtocolEngine
 from .autonomous_agent_orchestrator import (
     initialize_autonomous_orchestrator,
-    get_autonomous_orchestrator
+    get_autonomous_orchestrator,
 )
 
 logger = logging.getLogger(__name__)
+
 
 class AgenticEcosystemInitializer:
     """
@@ -52,13 +50,13 @@ class AgenticEcosystemInitializer:
             "casp_ecosystem",
             "ai_service",
             "market_research_agents",
-            "autonomous_orchestrator"
+            "autonomous_orchestrator",
         ]
         self.ecosystem_health = {
             "overall_status": "initializing",
             "component_status": {},
             "initialization_time": None,
-            "ready_for_production": False
+            "ready_for_production": False,
         }
 
     async def initialize_complete_ecosystem(self) -> Dict[str, Any]:
@@ -76,7 +74,7 @@ class AgenticEcosystemInitializer:
                 "initialization_start": start_time.isoformat(),
                 "components_initialized": [],
                 "initialization_order": self.initialization_order,
-                "status": "in_progress"
+                "status": "in_progress",
             }
 
             # Phase 1: Initialize APQC Framework
@@ -140,28 +138,34 @@ class AgenticEcosystemInitializer:
             end_time = datetime.utcnow()
             initialization_time = (end_time - start_time).total_seconds()
 
-            self.ecosystem_health.update({
-                "overall_status": "operational",
-                "initialization_time": initialization_time,
-                "ready_for_production": True,
-                "ecosystem_capabilities": await self._get_ecosystem_capabilities()
-            })
+            self.ecosystem_health.update(
+                {
+                    "overall_status": "operational",
+                    "initialization_time": initialization_time,
+                    "ready_for_production": True,
+                    "ecosystem_capabilities": await self._get_ecosystem_capabilities(),
+                }
+            )
 
-            initialization_report.update({
-                "status": "completed",
-                "initialization_end": end_time.isoformat(),
-                "total_initialization_time_seconds": initialization_time,
-                "ecosystem_health": self.ecosystem_health,
-                "next_steps": [
-                    "Begin autonomous agent operations",
-                    "Start market research testbed evaluation",
-                    "Monitor agent collaboration patterns",
-                    "Collect performance metrics",
-                    "Prepare for scaling to full APQC coverage"
-                ]
-            })
+            initialization_report.update(
+                {
+                    "status": "completed",
+                    "initialization_end": end_time.isoformat(),
+                    "total_initialization_time_seconds": initialization_time,
+                    "ecosystem_health": self.ecosystem_health,
+                    "next_steps": [
+                        "Begin autonomous agent operations",
+                        "Start market research testbed evaluation",
+                        "Monitor agent collaboration patterns",
+                        "Collect performance metrics",
+                        "Prepare for scaling to full APQC coverage",
+                    ],
+                }
+            )
 
-            logger.info(f"🎉 Beyond-Enterprise-Grade Agentic Ecosystem Successfully Initialized in {initialization_time:.2f} seconds")
+            logger.info(
+                f"🎉 Beyond-Enterprise-Grade Agentic Ecosystem Successfully Initialized in {initialization_time:.2f} seconds"
+            )
             return initialization_report
 
         except Exception as e:
@@ -184,15 +188,15 @@ class AgenticEcosystemInitializer:
                     "total_specializations_defined": len(specializations),
                     "apqc_categories_covered": 13,
                     "framework_version": "7.4",
-                    "capabilities": "Complete business process coverage"
-                }
+                    "capabilities": "Complete business process coverage",
+                },
             }
         except Exception as e:
             logger.error(f"APQC framework initialization failed: {e}")
             return {
                 "component": "APQC Agent Specialization Framework",
                 "status": "failed",
-                "error": str(e)
+                "error": str(e),
             }
 
     async def _initialize_blockchain_protocol(self) -> Dict[str, Any]:
@@ -203,7 +207,7 @@ class AgenticEcosystemInitializer:
                 "consensus_mechanism": "proof_of_stake",
                 "token_economics": "enabled",
                 "nft_capabilities": "enabled",
-                "smart_contracts": "enabled"
+                "smart_contracts": "enabled",
             }
 
             protocol = await initialize_blockchain_agentic_protocol(protocol_config)
@@ -216,16 +220,12 @@ class AgenticEcosystemInitializer:
                     "economic_models": "Token economics and NFT capabilities enabled",
                     "smart_contracts": "Collaboration and marketplace contracts deployed",
                     "security_level": "Enterprise-grade with quantum readiness",
-                    "capabilities": "Agent wallets, capability NFTs, reputation tokens"
-                }
+                    "capabilities": "Agent wallets, capability NFTs, reputation tokens",
+                },
             }
         except Exception as e:
             logger.error(f"Blockchain protocol initialization failed: {e}")
-            return {
-                "component": "Blockchain-Agentic Protocol",
-                "status": "failed",
-                "error": str(e)
-            }
+            return {"component": "Blockchain-Agentic Protocol", "status": "failed", "error": str(e)}
 
     async def _initialize_protocol_engine(self) -> Dict[str, Any]:
         """Initialize Beyond-Enterprise Protocol Engine"""
@@ -239,15 +239,15 @@ class AgenticEcosystemInitializer:
                     "message_routing": "Universal routing enabled",
                     "security": "End-to-end encryption with quantum resistance",
                     "performance": "High-throughput message processing",
-                    "capabilities": "Multi-protocol communication hub"
-                }
+                    "capabilities": "Multi-protocol communication hub",
+                },
             }
         except Exception as e:
             logger.error(f"Protocol engine initialization failed: {e}")
             return {
                 "component": "Beyond-Enterprise Protocol Engine",
                 "status": "failed",
-                "error": str(e)
+                "error": str(e),
             }
 
     async def _initialize_casp_ecosystem(self) -> Dict[str, Any]:
@@ -263,7 +263,7 @@ class AgenticEcosystemInitializer:
                 security_requirements={"encryption": True, "authentication": True},
                 compliance_standards=["APQC", "ISO27001", "SOC2"],
                 auto_remediation=True,
-                human_escalation=True
+                human_escalation=True,
             )
 
             casp_result = await initialize_casp_ecosystem(casp_config)
@@ -277,16 +277,12 @@ class AgenticEcosystemInitializer:
                     "compliance_level": casp_result["compliance_level"],
                     "quality_score": casp_result["quality_score"],
                     "protocols_active": casp_result["protocols_active"],
-                    "capabilities": "Enterprise-grade agent lifecycle management"
-                }
+                    "capabilities": "Enterprise-grade agent lifecycle management",
+                },
             }
         except Exception as e:
             logger.error(f"CASP ecosystem initialization failed: {e}")
-            return {
-                "component": "CASP Ecosystem",
-                "status": "failed",
-                "error": str(e)
-            }
+            return {"component": "CASP Ecosystem", "status": "failed", "error": str(e)}
 
     async def _initialize_ai_service(self) -> Dict[str, Any]:
         """Initialize AI Service Integration"""
@@ -302,16 +298,12 @@ class AgenticEcosystemInitializer:
                     "market_analysis_enabled": True,
                     "agent_ai_integration": "Full integration with all agent types",
                     "performance_optimization": "Rate limiting and cost optimization enabled",
-                    "capabilities": "Advanced AI reasoning for all agent operations"
-                }
+                    "capabilities": "Advanced AI reasoning for all agent operations",
+                },
             }
         except Exception as e:
             logger.error(f"AI service initialization failed: {e}")
-            return {
-                "component": "AI Service Integration",
-                "status": "failed",
-                "error": str(e)
-            }
+            return {"component": "AI Service Integration", "status": "failed", "error": str(e)}
 
     async def _initialize_market_research_agents(self) -> Dict[str, Any]:
         """Initialize Market Research Agent Testbed"""
@@ -332,15 +324,15 @@ class AgenticEcosystemInitializer:
                     "collaboration_enabled": True,
                     "blockchain_integration": "Agents have wallets and capability NFTs",
                     "ai_integration": "Full AI service integration",
-                    "capabilities": "Autonomous market analysis and opportunity identification"
-                }
+                    "capabilities": "Autonomous market analysis and opportunity identification",
+                },
             }
         except Exception as e:
             logger.error(f"Market research agents initialization failed: {e}")
             return {
                 "component": "Market Research Agent Testbed",
                 "status": "failed",
-                "error": str(e)
+                "error": str(e),
             }
 
     async def _initialize_autonomous_orchestrator(self) -> Dict[str, Any]:
@@ -351,12 +343,14 @@ class AgenticEcosystemInitializer:
                 "max_concurrent_agents": 100,
                 "collaboration_timeout": 1800,
                 "evolution_enabled": True,
-                "spawning_enabled": True
+                "spawning_enabled": True,
             }
 
             # Mock protocol engine for orchestrator
             protocol_engine = BeyondEnterpriseProtocolEngine()
-            orchestrator = await initialize_autonomous_orchestrator(orchestrator_config, protocol_engine)
+            orchestrator = await initialize_autonomous_orchestrator(
+                orchestrator_config, protocol_engine
+            )
 
             return {
                 "component": "Autonomous Agent Orchestrator",
@@ -366,15 +360,15 @@ class AgenticEcosystemInitializer:
                     "background_processes": "Health monitoring, performance analysis, optimization",
                     "intelligence_features": "Predictive analytics, capability matching, ecosystem optimization",
                     "collaboration_patterns": "Hierarchical, peer-to-peer, swarm, mesh patterns supported",
-                    "capabilities": "Fully autonomous agent ecosystem management"
-                }
+                    "capabilities": "Fully autonomous agent ecosystem management",
+                },
             }
         except Exception as e:
             logger.error(f"Autonomous orchestrator initialization failed: {e}")
             return {
                 "component": "Autonomous Agent Orchestrator",
                 "status": "failed",
-                "error": str(e)
+                "error": str(e),
             }
 
     async def _validate_ecosystem_integration(self) -> Dict[str, Any]:
@@ -385,81 +379,96 @@ class AgenticEcosystemInitializer:
             # Test 1: APQC Framework Integration
             apqc_framework = get_apqc_framework()
             if apqc_framework:
-                validation_tests.append({
-                    "test": "APQC Framework Accessibility",
-                    "status": "passed",
-                    "details": f"{len(apqc_framework.get_all_processes())} processes available"
-                })
+                validation_tests.append(
+                    {
+                        "test": "APQC Framework Accessibility",
+                        "status": "passed",
+                        "details": f"{len(apqc_framework.get_all_processes())} processes available",
+                    }
+                )
             else:
-                validation_tests.append({
-                    "test": "APQC Framework Accessibility",
-                    "status": "failed",
-                    "details": "Framework not accessible"
-                })
+                validation_tests.append(
+                    {
+                        "test": "APQC Framework Accessibility",
+                        "status": "failed",
+                        "details": "Framework not accessible",
+                    }
+                )
 
             # Test 2: Blockchain Protocol Integration
             blockchain_protocol = await get_blockchain_agentic_protocol()
             if blockchain_protocol:
-                validation_tests.append({
-                    "test": "Blockchain Protocol Connectivity",
-                    "status": "passed",
-                    "details": "Protocol engine operational"
-                })
+                validation_tests.append(
+                    {
+                        "test": "Blockchain Protocol Connectivity",
+                        "status": "passed",
+                        "details": "Protocol engine operational",
+                    }
+                )
             else:
-                validation_tests.append({
-                    "test": "Blockchain Protocol Connectivity",
-                    "status": "failed",
-                    "details": "Protocol not accessible"
-                })
+                validation_tests.append(
+                    {
+                        "test": "Blockchain Protocol Connectivity",
+                        "status": "failed",
+                        "details": "Protocol not accessible",
+                    }
+                )
 
             # Test 3: Market Research Agents Integration
             orchestrator = await get_market_research_orchestrator()
             if orchestrator:
                 agent_status = orchestrator.get_agent_status()
-                validation_tests.append({
-                    "test": "Market Research Agents Operational",
-                    "status": "passed",
-                    "details": f"{len(agent_status)} agents operational"
-                })
+                validation_tests.append(
+                    {
+                        "test": "Market Research Agents Operational",
+                        "status": "passed",
+                        "details": f"{len(agent_status)} agents operational",
+                    }
+                )
             else:
-                validation_tests.append({
-                    "test": "Market Research Agents Operational",
-                    "status": "failed",
-                    "details": "Agents not operational"
-                })
+                validation_tests.append(
+                    {
+                        "test": "Market Research Agents Operational",
+                        "status": "failed",
+                        "details": "Agents not operational",
+                    }
+                )
 
             # Test 4: CASP Ecosystem Status
             casp_status = await get_ecosystem_status()
             if casp_status.get("status") != "not_initialized":
-                validation_tests.append({
-                    "test": "CASP Ecosystem Health",
-                    "status": "passed",
-                    "details": f"Ecosystem operational with {casp_status.get('agent_count', 0)} agents"
-                })
+                validation_tests.append(
+                    {
+                        "test": "CASP Ecosystem Health",
+                        "status": "passed",
+                        "details": f"Ecosystem operational with {casp_status.get('agent_count', 0)} agents",
+                    }
+                )
             else:
-                validation_tests.append({
-                    "test": "CASP Ecosystem Health",
-                    "status": "failed",
-                    "details": "CASP ecosystem not initialized"
-                })
+                validation_tests.append(
+                    {
+                        "test": "CASP Ecosystem Health",
+                        "status": "failed",
+                        "details": "CASP ecosystem not initialized",
+                    }
+                )
 
             passed_tests = sum(1 for test in validation_tests if test["status"] == "passed")
             total_tests = len(validation_tests)
 
             return {
-                "overall_integration_status": "passed" if passed_tests == total_tests else "partial",
+                "overall_integration_status": (
+                    "passed" if passed_tests == total_tests else "partial"
+                ),
                 "tests_passed": passed_tests,
                 "total_tests": total_tests,
                 "success_rate": f"{passed_tests/total_tests*100:.1f}%",
-                "detailed_results": validation_tests
+                "detailed_results": validation_tests,
             }
 
         except Exception as e:
             logger.error(f"Ecosystem integration validation failed: {e}")
-            return {
-                "overall_integration_status": "failed",
-                "error": str(e)
-            }
+            return {"overall_integration_status": "failed", "error": str(e)}
 
     async def _establish_communication_channels(self) -> Dict[str, Any]:
         """Establish communication channels between components"""
@@ -470,22 +479,19 @@ class AgenticEcosystemInitializer:
                 "agent_to_ai": "AI service integration channels active",
                 "orchestrator_to_agents": "Command and control channels operational",
                 "user_to_ecosystem": "API endpoints exposed and operational",
-                "ecosystem_to_external": "External protocol adapters ready"
+                "ecosystem_to_external": "External protocol adapters ready",
             }
 
             return {
                 "communication_status": "fully_operational",
                 "channels_established": len(communication_setup),
                 "protocol_coverage": "Complete coverage of all component interactions",
-                "details": communication_setup
+                "details": communication_setup,
             }
 
         except Exception as e:
             logger.error(f"Communication channel establishment failed: {e}")
-            return {
-                "communication_status": "failed",
-                "error": str(e)
-            }
+            return {"communication_status": "failed", "error": str(e)}
 
     async def _perform_ecosystem_health_check(self) -> Dict[str, Any]:
         """Perform comprehensive ecosystem health check"""
@@ -494,7 +500,7 @@ class AgenticEcosystemInitializer:
                 "component_availability": {},
                 "performance_metrics": {},
                 "resource_utilization": {},
-                "error_rates": {}
+                "error_rates": {},
             }
 
             # Check each component
@@ -502,7 +508,7 @@ class AgenticEcosystemInitializer:
                 ("apqc_framework", get_apqc_framework),
                 ("blockchain_protocol", get_blockchain_agentic_protocol),
                 ("market_research_orchestrator", get_market_research_orchestrator),
-                ("autonomous_orchestrator", get_autonomous_orchestrator)
+                ("autonomous_orchestrator", get_autonomous_orchestrator),
             ]
 
             for component_name, getter_func in components:
@@ -514,18 +520,19 @@ class AgenticEcosystemInitializer:
 
                     health_metrics["component_availability"][component_name] = {
                         "status": "healthy" if component else "unavailable",
-                        "availability": 1.0 if component else 0.0
+                        "availability": 1.0 if component else 0.0,
                     }
                 except Exception as e:
                     health_metrics["component_availability"][component_name] = {
                         "status": "error",
                         "availability": 0.0,
-                        "error": str(e)
+                        "error": str(e),
                     }
 
             # Calculate overall health score
             available_components = sum(
-                1 for comp in health_metrics["component_availability"].values()
+                1
+                for comp in health_metrics["component_availability"].values()
                 if comp["status"] == "healthy"
             )
             total_components = len(health_metrics["component_availability"])
@@ -533,20 +540,20 @@ class AgenticEcosystemInitializer:
 
             return {
                 "overall_health_score": overall_health,
-                "health_status": "excellent" if overall_health > 0.9 else "good" if overall_health > 0.7 else "degraded",
+                "health_status": (
+                    "excellent"
+                    if overall_health > 0.9
+                    else "good" if overall_health > 0.7 else "degraded"
+                ),
                 "available_components": available_components,
                 "total_components": total_components,
                 "detailed_metrics": health_metrics,
-                "recommendations": self._get_health_recommendations(overall_health)
+                "recommendations": self._get_health_recommendations(overall_health),
             }
 
         except Exception as e:
             logger.error(f"Ecosystem health check failed: {e}")
-            return {
-                "overall_health_score": 0.0,
-                "health_status": "critical",
-                "error": str(e)
-            }
+            return {"overall_health_score": 0.0, "health_status": "critical", "error": str(e)}
 
     async def _get_ecosystem_capabilities(self) -> List[str]:
         """Get list of all ecosystem capabilities"""
@@ -563,7 +570,7 @@ class AgenticEcosystemInitializer:
             "Cross-domain pattern recognition",
             "Automated business model generation",
             "Risk assessment and mitigation",
-            "Performance optimization and scaling"
+            "Performance optimization and scaling",
         ]
 
     def _get_health_recommendations(self, health_score: float) -> List[str]:
@@ -572,19 +579,19 @@ class AgenticEcosystemInitializer:
             return [
                 "Ecosystem is operating at optimal levels",
                 "Begin production workload deployment",
-                "Monitor performance metrics for scaling opportunities"
+                "Monitor performance metrics for scaling opportunities",
             ]
         elif health_score > 0.7:
             return [
                 "Investigate and resolve component availability issues",
                 "Monitor system performance closely",
-                "Consider component redundancy improvements"
+                "Consider component redundancy improvements",
             ]
         else:
             return [
                 "Critical system issues detected - immediate attention required",
                 "Perform detailed component diagnostics",
-                "Consider emergency failover procedures"
+                "Consider emergency failover procedures",
             ]
 
     async def get_ecosystem_status(self) -> Dict[str, Any]:
@@ -592,11 +599,13 @@ class AgenticEcosystemInitializer:
         return {
             "ecosystem_health": self.ecosystem_health,
             "initialization_status": self.initialization_status,
-            "timestamp": datetime.utcnow().isoformat()
+            "timestamp": datetime.utcnow().isoformat(),
         }
+
 
 # Global ecosystem initializer
 ecosystem_initializer: Optional[AgenticEcosystemInitializer] = None
+
 
 async def initialize_complete_agentic_ecosystem(config: Dict[str, Any] = None) -> Dict[str, Any]:
     """
@@ -614,15 +623,18 @@ async def initialize_complete_agentic_ecosystem(config: Dict[str, Any] = None) -
             "enable_blockchain": True,
             "enable_ai_integration": True,
             "enable_market_research_agents": True,
-            "enable_full_apqc_coverage": False  # Start with market research testbed
+            "enable_full_apqc_coverage": False,  # Start with market research testbed
         }
 
     ecosystem_initializer = AgenticEcosystemInitializer(config)
     result = await ecosystem_initializer.initialize_complete_ecosystem()
 
-    logger.info("🌟 Beyond-Enterprise-Grade Agentic Ecosystem is now operational and ready for autonomous business operations!")
+    logger.info(
+        "🌟 Beyond-Enterprise-Grade Agentic Ecosystem is now operational and ready for autonomous business operations!"
+    )
 
     return result
+
 
 async def get_ecosystem_initializer() -> Optional[AgenticEcosystemInitializer]:
     """Get the global ecosystem initializer instance"""

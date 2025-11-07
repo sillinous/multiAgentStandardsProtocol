@@ -18,6 +18,7 @@ logger = logging.getLogger(__name__)
 @dataclass
 class AgentResult:
     """Result from an agent's analysis"""
+
     agent_name: str
     data: Dict
     confidence: float
@@ -52,6 +53,7 @@ class ProductIntelligenceAgent(EnrichmentBaseAgent):
 
     def analyze(self, keyword: str, context: Dict = None) -> AgentResult:
         import time
+
         start_time = time.time()
 
         logger.info(f"🔍 {self.name} analyzing: {keyword}")
@@ -61,7 +63,7 @@ class ProductIntelligenceAgent(EnrichmentBaseAgent):
                 agent_name=self.name,
                 data=self._fallback_intelligence(keyword),
                 confidence=0.5,
-                processing_time=time.time() - start_time
+                processing_time=time.time() - start_time,
             )
 
         try:
@@ -94,11 +96,14 @@ Be SPECIFIC and DETAILED. Use real market knowledge."""
             response = self.client.chat.completions.create(
                 model="gpt-4o-mini",
                 messages=[
-                    {"role": "system", "content": "You are a product intelligence specialist. Provide detailed, market-accurate product information."},
-                    {"role": "user", "content": prompt}
+                    {
+                        "role": "system",
+                        "content": "You are a product intelligence specialist. Provide detailed, market-accurate product information.",
+                    },
+                    {"role": "user", "content": prompt},
                 ],
                 temperature=0.7,
-                response_format={"type": "json_object"}
+                response_format={"type": "json_object"},
             )
 
             data = json.loads(response.choices[0].message.content)
@@ -109,7 +114,7 @@ Be SPECIFIC and DETAILED. Use real market knowledge."""
                 agent_name=self.name,
                 data=data,
                 confidence=0.9,
-                processing_time=time.time() - start_time
+                processing_time=time.time() - start_time,
             )
 
         except Exception as e:
@@ -118,19 +123,19 @@ Be SPECIFIC and DETAILED. Use real market knowledge."""
                 agent_name=self.name,
                 data=self._fallback_intelligence(keyword),
                 confidence=0.5,
-                processing_time=time.time() - start_time
+                processing_time=time.time() - start_time,
             )
 
     def _fallback_intelligence(self, keyword: str) -> Dict:
         return {
             "title": keyword.title(),
-            "brand": keyword.split()[0].title() if ' ' in keyword else "Generic",
+            "brand": keyword.split()[0].title() if " " in keyword else "Generic",
             "category": "Consumer Products",
             "description": f"High-quality {keyword} designed for optimal performance.",
             "features": [f"Premium {keyword}", "Durable construction", "Easy to use"],
             "specs": {"Type": keyword.title()},
             "price_range_low": 30,
-            "price_range_high": 150
+            "price_range_high": 150,
         }
 
 
@@ -146,6 +151,7 @@ class ImageDiscoveryAgent(EnrichmentBaseAgent):
 
     def analyze(self, keyword: str, context: Dict = None) -> AgentResult:
         import time
+
         start_time = time.time()
 
         logger.info(f"📸 {self.name} searching images for: {keyword}")
@@ -156,7 +162,7 @@ class ImageDiscoveryAgent(EnrichmentBaseAgent):
             agent_name=self.name,
             data={"images": images, "primary_image": images[0] if images else None},
             confidence=0.8 if images else 0.3,
-            processing_time=time.time() - start_time
+            processing_time=time.time() - start_time,
         )
 
     def _search_images(self, keyword: str, context: Dict = None) -> List[str]:
@@ -174,13 +180,13 @@ class ImageDiscoveryAgent(EnrichmentBaseAgent):
                 response = requests.get(url, headers=headers, params=params, timeout=5)
                 if response.status_code == 200:
                     data = response.json()
-                    images.extend([photo['urls']['regular'] for photo in data.get('results', [])])
+                    images.extend([photo["urls"]["regular"] for photo in data.get("results", [])])
             except Exception as e:
                 logger.warning(f"Unsplash search failed: {e}")
 
         # Fallback placeholder images
         if not images:
-            keyword_slug = keyword.replace(' ', '-').lower()
+            keyword_slug = keyword.replace(" ", "-").lower()
             images = [
                 f"https://source.unsplash.com/400x400/?{keyword_slug},product",
                 f"https://images.unsplash.com/photo-1505740420928-5e560c06d30e?w=400&h=400&fit=crop",
@@ -201,6 +207,7 @@ class MarketAnalysisAgent(EnrichmentBaseAgent):
 
     def analyze(self, keyword: str, context: Dict = None) -> AgentResult:
         import time
+
         start_time = time.time()
 
         logger.info(f"📊 {self.name} analyzing market for: {keyword}")
@@ -234,11 +241,14 @@ Provide comprehensive market analysis in JSON:
             response = self.client.chat.completions.create(
                 model="gpt-4o-mini",
                 messages=[
-                    {"role": "system", "content": "You are a market research analyst specializing in e-commerce opportunities."},
-                    {"role": "user", "content": prompt}
+                    {
+                        "role": "system",
+                        "content": "You are a market research analyst specializing in e-commerce opportunities.",
+                    },
+                    {"role": "user", "content": prompt},
                 ],
                 temperature=0.7,
-                response_format={"type": "json_object"}
+                response_format={"type": "json_object"},
             )
 
             data = json.loads(response.choices[0].message.content)
@@ -249,7 +259,7 @@ Provide comprehensive market analysis in JSON:
                 agent_name=self.name,
                 data=data,
                 confidence=0.85,
-                processing_time=time.time() - start_time
+                processing_time=time.time() - start_time,
             )
 
         except Exception as e:
@@ -258,16 +268,17 @@ Provide comprehensive market analysis in JSON:
 
     def _fallback_analysis(self, keyword: str, start_time: float) -> AgentResult:
         import time
+
         return AgentResult(
             agent_name=self.name,
             data={
                 "market_size_usd": "Growing market",
                 "demand_level": "medium",
                 "opportunity_score": 0.7,
-                "competition_level": "medium"
+                "competition_level": "medium",
             },
             confidence=0.5,
-            processing_time=time.time() - start_time
+            processing_time=time.time() - start_time,
         )
 
 
@@ -282,6 +293,7 @@ class CompetitiveIntelligenceAgent(EnrichmentBaseAgent):
 
     def analyze(self, keyword: str, context: Dict = None) -> AgentResult:
         import time
+
         start_time = time.time()
 
         logger.info(f"🎯 {self.name} analyzing competition for: {keyword}")
@@ -319,10 +331,10 @@ Provide competitive intelligence in JSON:
                 model="gpt-4o-mini",
                 messages=[
                     {"role": "system", "content": "You are a competitive intelligence analyst."},
-                    {"role": "user", "content": prompt}
+                    {"role": "user", "content": prompt},
                 ],
                 temperature=0.7,
-                response_format={"type": "json_object"}
+                response_format={"type": "json_object"},
             )
 
             data = json.loads(response.choices[0].message.content)
@@ -333,7 +345,7 @@ Provide competitive intelligence in JSON:
                 agent_name=self.name,
                 data=data,
                 confidence=0.8,
-                processing_time=time.time() - start_time
+                processing_time=time.time() - start_time,
             )
 
         except Exception as e:
@@ -342,15 +354,20 @@ Provide competitive intelligence in JSON:
 
     def _fallback_analysis(self, keyword: str, start_time: float) -> AgentResult:
         import time
+
         return AgentResult(
             agent_name=self.name,
             data={
                 "competitive_intensity": "medium",
                 "market_concentration": "fragmented",
-                "differentiation_opportunities": ["Quality focus", "Better service", "Faster shipping"]
+                "differentiation_opportunities": [
+                    "Quality focus",
+                    "Better service",
+                    "Faster shipping",
+                ],
             },
             confidence=0.5,
-            processing_time=time.time() - start_time
+            processing_time=time.time() - start_time,
         )
 
 
@@ -365,16 +382,17 @@ class PricingStrategyAgent(EnrichmentBaseAgent):
 
     def analyze(self, keyword: str, context: Dict = None) -> AgentResult:
         import time
+
         start_time = time.time()
 
         logger.info(f"💰 {self.name} calculating pricing for: {keyword}")
 
-        product_intel = context.get('product_intelligence', {}) if context else {}
-        market_data = context.get('market_analysis', {}) if context else {}
+        product_intel = context.get("product_intelligence", {}) if context else {}
+        market_data = context.get("market_analysis", {}) if context else {}
 
         # Calculate pricing based on available data
-        price_low = product_intel.get('price_range_low', 30)
-        price_high = product_intel.get('price_range_high', 150)
+        price_low = product_intel.get("price_range_low", 30)
+        price_high = product_intel.get("price_range_high", 150)
         avg_price = (price_low + price_high) / 2
 
         data = {
@@ -387,11 +405,11 @@ class PricingStrategyAgent(EnrichmentBaseAgent):
             "promotional_pricing": {
                 "launch_discount": round(avg_price * 0.85, 2),
                 "bulk_discount_3": round(avg_price * 0.90, 2),
-                "seasonal_sale": round(avg_price * 0.80, 2)
+                "seasonal_sale": round(avg_price * 0.80, 2),
             },
             "price_elasticity": "moderate",
             "psychological_price_point": round(avg_price * 0.99, 2),  # $X.99 pricing
-            "competitor_price_range": f"${price_low}-${price_high}"
+            "competitor_price_range": f"${price_low}-${price_high}",
         }
 
         logger.info(f"✅ {self.name} completed analysis")
@@ -400,7 +418,7 @@ class PricingStrategyAgent(EnrichmentBaseAgent):
             agent_name=self.name,
             data=data,
             confidence=0.8,
-            processing_time=time.time() - start_time
+            processing_time=time.time() - start_time,
         )
 
 
@@ -415,6 +433,7 @@ class CustomerProfilingAgent(EnrichmentBaseAgent):
 
     def analyze(self, keyword: str, context: Dict = None) -> AgentResult:
         import time
+
         start_time = time.time()
 
         logger.info(f"👥 {self.name} profiling customers for: {keyword}")
@@ -456,10 +475,10 @@ Provide comprehensive customer intelligence in JSON:
                 model="gpt-4o-mini",
                 messages=[
                     {"role": "system", "content": "You are a customer insights specialist."},
-                    {"role": "user", "content": prompt}
+                    {"role": "user", "content": prompt},
                 ],
                 temperature=0.7,
-                response_format={"type": "json_object"}
+                response_format={"type": "json_object"},
             )
 
             data = json.loads(response.choices[0].message.content)
@@ -470,7 +489,7 @@ Provide comprehensive customer intelligence in JSON:
                 agent_name=self.name,
                 data=data,
                 confidence=0.85,
-                processing_time=time.time() - start_time
+                processing_time=time.time() - start_time,
             )
 
         except Exception as e:
@@ -479,6 +498,7 @@ Provide comprehensive customer intelligence in JSON:
 
     def _fallback_profile(self, keyword: str, start_time: float) -> AgentResult:
         import time
+
         return AgentResult(
             agent_name=self.name,
             data={
@@ -487,11 +507,11 @@ Provide comprehensive customer intelligence in JSON:
                     "age_range": "25-45",
                     "income_level": "Middle income",
                     "pain_points": ["Needs quality at fair price"],
-                    "buying_triggers": ["Good reviews", "Fair price", "Fast shipping"]
+                    "buying_triggers": ["Good reviews", "Fair price", "Fast shipping"],
                 }
             },
             confidence=0.5,
-            processing_time=time.time() - start_time
+            processing_time=time.time() - start_time,
         )
 
 
@@ -506,56 +526,57 @@ class BusinessModelAgent(EnrichmentBaseAgent):
 
     def analyze(self, keyword: str, context: Dict = None) -> AgentResult:
         import time
+
         start_time = time.time()
 
         logger.info(f"🏢 {self.name} designing business models for: {keyword}")
 
-        pricing_data = context.get('pricing_strategy', {}) if context else {}
-        price = pricing_data.get('recommended_retail_price', 75)
+        pricing_data = context.get("pricing_strategy", {}) if context else {}
+        price = pricing_data.get("recommended_retail_price", 75)
 
         models = [
             {
-                'name': 'Amazon FBA',
-                'description': f'Sell {keyword} via Amazon with FBA fulfillment',
-                'startup_cost': price * 50 + 500,
-                'monthly_revenue_potential': price * 60,
-                'profit_margin': 25,
-                'pros': ['Huge audience', 'Fulfillment handled', 'Prime badge'],
-                'cons': ['FBA fees', 'Competition', 'Amazon dependency'],
-                'difficulty': 'Medium',
-                'time_to_profit': '2-3 months'
+                "name": "Amazon FBA",
+                "description": f"Sell {keyword} via Amazon with FBA fulfillment",
+                "startup_cost": price * 50 + 500,
+                "monthly_revenue_potential": price * 60,
+                "profit_margin": 25,
+                "pros": ["Huge audience", "Fulfillment handled", "Prime badge"],
+                "cons": ["FBA fees", "Competition", "Amazon dependency"],
+                "difficulty": "Medium",
+                "time_to_profit": "2-3 months",
             },
             {
-                'name': 'Direct E-commerce (Shopify)',
-                'description': f'Own branded store selling {keyword}',
-                'startup_cost': price * 25 + 300,
-                'monthly_revenue_potential': price * 40,
-                'profit_margin': 40,
-                'pros': ['Brand control', 'Higher margins', 'Customer data'],
-                'cons': ['Marketing costs', 'Customer acquisition', 'Fulfillment'],
-                'difficulty': 'Medium-High',
-                'time_to_profit': '3-6 months'
+                "name": "Direct E-commerce (Shopify)",
+                "description": f"Own branded store selling {keyword}",
+                "startup_cost": price * 25 + 300,
+                "monthly_revenue_potential": price * 40,
+                "profit_margin": 40,
+                "pros": ["Brand control", "Higher margins", "Customer data"],
+                "cons": ["Marketing costs", "Customer acquisition", "Fulfillment"],
+                "difficulty": "Medium-High",
+                "time_to_profit": "3-6 months",
             },
             {
-                'name': 'Dropshipping',
-                'description': f'Sell {keyword} without inventory',
-                'startup_cost': 500,
-                'monthly_revenue_potential': price * 30,
-                'profit_margin': 20,
-                'pros': ['Low startup', 'No inventory risk', 'Easy scaling'],
-                'cons': ['Low margins', 'Shipping times', 'Less control'],
-                'difficulty': 'Low',
-                'time_to_profit': '1-2 months'
-            }
+                "name": "Dropshipping",
+                "description": f"Sell {keyword} without inventory",
+                "startup_cost": 500,
+                "monthly_revenue_potential": price * 30,
+                "profit_margin": 20,
+                "pros": ["Low startup", "No inventory risk", "Easy scaling"],
+                "cons": ["Low margins", "Shipping times", "Less control"],
+                "difficulty": "Low",
+                "time_to_profit": "1-2 months",
+            },
         ]
 
         logger.info(f"✅ {self.name} completed analysis")
 
         return AgentResult(
             agent_name=self.name,
-            data={'business_models': models, 'recommended_model': models[0]['name']},
+            data={"business_models": models, "recommended_model": models[0]["name"]},
             confidence=0.9,
-            processing_time=time.time() - start_time
+            processing_time=time.time() - start_time,
         )
 
 
@@ -564,13 +585,13 @@ class MultiAgentEnrichmentOrchestrator:
 
     def __init__(self):
         self.agents = {
-            'product_intelligence': ProductIntelligenceAgent(),
-            'image_discovery': ImageDiscoveryAgent(),
-            'market_analysis': MarketAnalysisAgent(),
-            'competitive_intelligence': CompetitiveIntelligenceAgent(),
-            'pricing_strategy': PricingStrategyAgent(),
-            'customer_profiling': CustomerProfilingAgent(),
-            'business_model': BusinessModelAgent()
+            "product_intelligence": ProductIntelligenceAgent(),
+            "image_discovery": ImageDiscoveryAgent(),
+            "market_analysis": MarketAnalysisAgent(),
+            "competitive_intelligence": CompetitiveIntelligenceAgent(),
+            "pricing_strategy": PricingStrategyAgent(),
+            "customer_profiling": CustomerProfilingAgent(),
+            "business_model": BusinessModelAgent(),
         }
         logger.info(f"🚀 Multi-Agent Orchestrator initialized with {len(self.agents)} agents")
 
@@ -578,6 +599,7 @@ class MultiAgentEnrichmentOrchestrator:
         """Coordinate all agents to enrich product data"""
 
         import time
+
         total_start = time.time()
 
         logger.info(f"🎯 Starting multi-agent enrichment for: {keyword}")
@@ -586,38 +608,38 @@ class MultiAgentEnrichmentOrchestrator:
         context = {}
 
         # Phase 1: Product Intelligence (must go first)
-        result = self.agents['product_intelligence'].analyze(keyword, context)
-        results['product_intelligence'] = result
-        context['product_intelligence'] = result.data
+        result = self.agents["product_intelligence"].analyze(keyword, context)
+        results["product_intelligence"] = result
+        context["product_intelligence"] = result.data
 
         # Phase 2: Parallel market and competitive analysis
-        result = self.agents['market_analysis'].analyze(keyword, context)
-        results['market_analysis'] = result
-        context['market_analysis'] = result.data
+        result = self.agents["market_analysis"].analyze(keyword, context)
+        results["market_analysis"] = result
+        context["market_analysis"] = result.data
 
-        result = self.agents['competitive_intelligence'].analyze(keyword, context)
-        results['competitive_intelligence'] = result
-        context['competitive_intelligence'] = result.data
+        result = self.agents["competitive_intelligence"].analyze(keyword, context)
+        results["competitive_intelligence"] = result
+        context["competitive_intelligence"] = result.data
 
         # Phase 3: Image discovery (can run in parallel)
-        result = self.agents['image_discovery'].analyze(keyword, context)
-        results['image_discovery'] = result
-        context['image_discovery'] = result.data
+        result = self.agents["image_discovery"].analyze(keyword, context)
+        results["image_discovery"] = result
+        context["image_discovery"] = result.data
 
         # Phase 4: Pricing strategy (depends on product + market data)
-        result = self.agents['pricing_strategy'].analyze(keyword, context)
-        results['pricing_strategy'] = result
-        context['pricing_strategy'] = result.data
+        result = self.agents["pricing_strategy"].analyze(keyword, context)
+        results["pricing_strategy"] = result
+        context["pricing_strategy"] = result.data
 
         # Phase 5: Customer profiling
-        result = self.agents['customer_profiling'].analyze(keyword, context)
-        results['customer_profiling'] = result
-        context['customer_profiling'] = result.data
+        result = self.agents["customer_profiling"].analyze(keyword, context)
+        results["customer_profiling"] = result
+        context["customer_profiling"] = result.data
 
         # Phase 6: Business model design (depends on pricing)
-        result = self.agents['business_model'].analyze(keyword, context)
-        results['business_model'] = result
-        context['business_model'] = result.data
+        result = self.agents["business_model"].analyze(keyword, context)
+        results["business_model"] = result
+        context["business_model"] = result.data
 
         total_time = time.time() - total_start
 
@@ -629,67 +651,63 @@ class MultiAgentEnrichmentOrchestrator:
     def _compile_enriched_data(self, keyword: str, results: Dict[str, AgentResult]) -> Dict:
         """Compile results from all agents into final product data"""
 
-        product_intel = results['product_intelligence'].data
-        market_data = results['market_analysis'].data
-        competitive_data = results['competitive_intelligence'].data
-        pricing_data = results['pricing_strategy'].data
-        customer_data = results['customer_profiling'].data
-        business_model_data = results['business_model'].data
-        image_data = results['image_discovery'].data
+        product_intel = results["product_intelligence"].data
+        market_data = results["market_analysis"].data
+        competitive_data = results["competitive_intelligence"].data
+        pricing_data = results["pricing_strategy"].data
+        customer_data = results["customer_profiling"].data
+        business_model_data = results["business_model"].data
+        image_data = results["image_discovery"].data
 
         # Calculate composite score based on multiple factors
-        opportunity_score = market_data.get('opportunity_score', 0.7)
-        competition_factor = 0.8 if competitive_data.get('competitive_intensity') == 'low' else 0.6
+        opportunity_score = market_data.get("opportunity_score", 0.7)
+        competition_factor = 0.8 if competitive_data.get("competitive_intensity") == "low" else 0.6
         composite_score = (opportunity_score + competition_factor) / 2
 
         return {
             # Core product data
-            'title': product_intel.get('title', keyword),
-            'canonical_title': product_intel.get('title', keyword),
-            'brand': product_intel.get('brand'),
-            'model': product_intel.get('model'),
-            'category': product_intel.get('category'),
-            'description': product_intel.get('description'),
-            'features': product_intel.get('features', []),
-            'specs': product_intel.get('specs', {}),
-
+            "title": product_intel.get("title", keyword),
+            "canonical_title": product_intel.get("title", keyword),
+            "brand": product_intel.get("brand"),
+            "model": product_intel.get("model"),
+            "category": product_intel.get("category"),
+            "description": product_intel.get("description"),
+            "features": product_intel.get("features", []),
+            "specs": product_intel.get("specs", {}),
             # Images
-            'main_image_url': image_data.get('primary_image'),
-            'image': image_data.get('primary_image'),
-            'additional_images': image_data.get('images', []),
-
+            "main_image_url": image_data.get("primary_image"),
+            "image": image_data.get("primary_image"),
+            "additional_images": image_data.get("images", []),
             # Pricing
-            'price': pricing_data.get('recommended_retail_price', 75),
-            'average_price_market': pricing_data.get('recommended_retail_price', 75),
-            'profit_margin': pricing_data.get('profit_margin_percent', 35),
-
+            "price": pricing_data.get("recommended_retail_price", 75),
+            "average_price_market": pricing_data.get("recommended_retail_price", 75),
+            "profit_margin": pricing_data.get("profit_margin_percent", 35),
             # Market data
-            'sales_per_month': 50,  # Estimate
-            'composite_score': composite_score,
-            'rating': 4.3,
-            'reviews': 150,
-
+            "sales_per_month": 50,  # Estimate
+            "composite_score": composite_score,
+            "rating": 4.3,
+            "reviews": 150,
             # Rich opportunity data
-            'market_intelligence': {
-                'market_size': market_data.get('market_size_usd'),
-                'growth_rate': market_data.get('growth_rate_annual'),
-                'demand_level': market_data.get('demand_level'),
-                'competition_level': market_data.get('competition_level'),
-                'opportunity_score': opportunity_score
+            "market_intelligence": {
+                "market_size": market_data.get("market_size_usd"),
+                "growth_rate": market_data.get("growth_rate_annual"),
+                "demand_level": market_data.get("demand_level"),
+                "competition_level": market_data.get("competition_level"),
+                "opportunity_score": opportunity_score,
             },
-
-            'competitive_landscape': competitive_data,
-            'customer_profiles': customer_data,
-            'business_models': business_model_data.get('business_models', []),
-            'pricing_strategy': pricing_data,
-
+            "competitive_landscape": competitive_data,
+            "customer_profiles": customer_data,
+            "business_models": business_model_data.get("business_models", []),
+            "pricing_strategy": pricing_data,
             # Agent metadata
-            'enrichment_metadata': {
-                'agents_used': list(results.keys()),
-                'confidence_scores': {name: result.confidence for name, result in results.items()},
-                'processing_times': {name: result.processing_time for name, result in results.items()},
-                'total_agents': len(results)
-            }
+            "enrichment_metadata": {
+                "agents_used": list(results.keys()),
+                "confidence_scores": {name: result.confidence for name, result in results.items()},
+                "processing_times": {
+                    name: result.processing_time for name, result in results.items()
+                },
+                "total_agents": len(results),
+            },
         }
 
 

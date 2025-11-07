@@ -47,7 +47,9 @@ class RetryHandlerTaskAgent(BaseAgent):
     and maximum reusability across APQC categories.
     """
 
-    def __init__(self, agent_id: str = "retry_handler_task_agent", config: Optional[Dict[str, Any]] = None):
+    def __init__(
+        self, agent_id: str = "retry_handler_task_agent", config: Optional[Dict[str, Any]] = None
+    ):
         """
         Initialize Retry Handler Task Agent
 
@@ -58,8 +60,14 @@ class RetryHandlerTaskAgent(BaseAgent):
         super().__init__(
             agent_id=agent_id,
             agent_type="workflow_automation",
-            capabilities=['exponential_backoff', 'jitter', 'conditional_retry', 'circuit_breaker', 'retry_telemetry'],
-            config=config or {}
+            capabilities=[
+                "exponential_backoff",
+                "jitter",
+                "conditional_retry",
+                "circuit_breaker",
+                "retry_telemetry",
+            ],
+            config=config or {},
         )
 
         # Agent-specific initialization
@@ -69,26 +77,26 @@ class RetryHandlerTaskAgent(BaseAgent):
             "reusable": True,
             "composable": True,
             "stateless": True,
-            "framework": "APQC 7.0.1"
+            "framework": "APQC 7.0.1",
         }
 
         logger.info(f"Initialized Retry Handler Task Agent [{self.agent_id}]")
 
     async def execute_task(self, task: Dict[str, Any]) -> Dict[str, Any]:
         """
-        Execute the workflow automation task
+                Execute the workflow automation task
 
-        Args:
-            task: Task parameters containing:
-                - operation: dict
-- retry_config: dict
-- failure_conditions: list
+                Args:
+                    task: Task parameters containing:
+                        - operation: dict
+        - retry_config: dict
+        - failure_conditions: list
 
-        Returns:
-            Result dictionary containing:
-                - result: any
-- attempt_count: int
-- retry_history: list
+                Returns:
+                    Result dictionary containing:
+                        - result: any
+        - attempt_count: int
+        - retry_history: list
         """
         try:
             logger.info(f"[{self.agent_id}] Executing workflow_automation task")
@@ -108,7 +116,7 @@ class RetryHandlerTaskAgent(BaseAgent):
                 "status": "success",
                 "agent_id": self.agent_id,
                 "timestamp": datetime.utcnow().isoformat(),
-                "result": output
+                "result": output,
             }
 
         except Exception as e:
@@ -117,7 +125,7 @@ class RetryHandlerTaskAgent(BaseAgent):
                 "status": "error",
                 "agent_id": self.agent_id,
                 "timestamp": datetime.utcnow().isoformat(),
-                "error": str(e)
+                "error": str(e),
             }
 
     def _validate_inputs(self, task: Dict[str, Any]) -> None:
@@ -130,7 +138,7 @@ class RetryHandlerTaskAgent(BaseAgent):
         Raises:
             ValueError: If required inputs are missing or invalid
         """
-        required_fields = ['operation', 'retry_config', 'failure_conditions']
+        required_fields = ["operation", "retry_config", "failure_conditions"]
 
         for field in required_fields:
             if field not in task:
@@ -158,7 +166,7 @@ class RetryHandlerTaskAgent(BaseAgent):
         result = {
             "executed": True,
             "task_type": "workflow_automation",
-            "inputs_received": list(task.keys())
+            "inputs_received": list(task.keys()),
         }
 
         # Simulate async work
@@ -183,8 +191,8 @@ class RetryHandlerTaskAgent(BaseAgent):
                 "agent_type": self.agent_type,
                 "level": 5,
                 "category": "workflow_automation",
-                "timestamp": datetime.utcnow().isoformat()
-            }
+                "timestamp": datetime.utcnow().isoformat(),
+            },
         }
 
     async def handle_message(self, message: Dict[str, Any]) -> Dict[str, Any]:
@@ -206,10 +214,7 @@ class RetryHandlerTaskAgent(BaseAgent):
         elif message_type == "capabilities":
             return self.get_capabilities()
         else:
-            return {
-                "status": "error",
-                "error": f"Unknown message type: {message_type}"
-            }
+            return {"status": "error", "error": f"Unknown message type: {message_type}"}
 
     def get_status(self) -> Dict[str, Any]:
         """
@@ -223,7 +228,7 @@ class RetryHandlerTaskAgent(BaseAgent):
             "agent_type": self.agent_type,
             "status": "ready",
             "capabilities": self.capabilities,
-            "metadata": self.metadata
+            "metadata": self.metadata,
         }
 
     def get_capabilities(self) -> Dict[str, Any]:
@@ -236,11 +241,11 @@ class RetryHandlerTaskAgent(BaseAgent):
         return {
             "agent_id": self.agent_id,
             "capabilities": self.capabilities,
-            "inputs": {'operation': 'dict', 'retry_config': 'dict', 'failure_conditions': 'list'},
-            "outputs": {'result': 'any', 'attempt_count': 'int', 'retry_history': 'list'},
+            "inputs": {"operation": "dict", "retry_config": "dict", "failure_conditions": "list"},
+            "outputs": {"result": "any", "attempt_count": "int", "retry_history": "list"},
             "level": 5,
             "reusable": True,
-            "composable": True
+            "composable": True,
         }
 
 
@@ -254,7 +259,7 @@ async def main():
     # Example task
     task = {
         # Add example inputs here
-                # "operation": "example_operation",
+        # "operation": "example_operation",
         # "retry_config": "example_retry_config",
         # "failure_conditions": "example_failure_conditions",
     }

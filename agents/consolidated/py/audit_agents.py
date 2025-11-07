@@ -11,6 +11,7 @@ from pathlib import Path
 from typing import Dict, List, Any, Set
 import requests
 
+
 class AgentAuditor:
     """Audits all agents in the codebase"""
 
@@ -25,7 +26,7 @@ class AgentAuditor:
         agents = []
 
         try:
-            with open(file_path, 'r', encoding='utf-8') as f:
+            with open(file_path, "r", encoding="utf-8") as f:
                 content = f.read()
                 tree = ast.parse(content)
 
@@ -39,44 +40,46 @@ class AgentAuditor:
                     for base in node.bases:
                         if isinstance(base, ast.Name):
                             bases.append(base.id)
-                            if 'Agent' in base.id or 'agent' in base.id.lower():
+                            if "Agent" in base.id or "agent" in base.id.lower():
                                 is_agent = True
                         elif isinstance(base, ast.Attribute):
                             bases.append(base.attr)
-                            if 'Agent' in base.attr or 'agent' in base.attr.lower():
+                            if "Agent" in base.attr or "agent" in base.attr.lower():
                                 is_agent = True
 
                     # Also check if class name suggests it's an agent
-                    if 'Agent' in node.name or 'agent' in node.name.lower():
+                    if "Agent" in node.name or "agent" in node.name.lower():
                         is_agent = True
 
                     if is_agent:
                         # Extract metadata from class
                         agent_info = {
-                            'class_name': node.name,
-                            'file_path': str(file_path.relative_to(self.base_dir)),
-                            'bases': bases,
-                            'methods': [],
-                            'attributes': {}
+                            "class_name": node.name,
+                            "file_path": str(file_path.relative_to(self.base_dir)),
+                            "bases": bases,
+                            "methods": [],
+                            "attributes": {},
                         }
 
                         # Extract methods and attributes
                         for item in node.body:
                             if isinstance(item, ast.FunctionDef):
-                                agent_info['methods'].append(item.name)
+                                agent_info["methods"].append(item.name)
                             elif isinstance(item, ast.Assign):
                                 for target in item.targets:
                                     if isinstance(target, ast.Name):
                                         try:
                                             if isinstance(item.value, ast.Constant):
-                                                agent_info['attributes'][target.id] = item.value.value
+                                                agent_info["attributes"][
+                                                    target.id
+                                                ] = item.value.value
                                         except:
                                             pass
 
                         # Extract docstring
                         docstring = ast.get_docstring(node)
                         if docstring:
-                            agent_info['description'] = docstring.strip()[:200]
+                            agent_info["description"] = docstring.strip()[:200]
 
                         agents.append(agent_info)
                         self.agent_classes.add(node.name)
@@ -107,7 +110,7 @@ class AgentAuditor:
             response = requests.get("http://localhost:8000/api/v1/agent-library")
             if response.status_code == 200:
                 data = response.json()
-                return data.get('agents', [])
+                return data.get("agents", [])
         except Exception as e:
             print(f"Error fetching registered agents: {e}")
 
@@ -140,25 +143,25 @@ class AgentAuditor:
 
         # Compare and identify missing agents
         print("\n3. Comparing discovered vs registered agents...")
-        registered_ids = {agent['id'] for agent in self.registered_agents}
-        registered_names = {agent['name'].lower() for agent in self.registered_agents}
-        registered_files = {agent.get('file_path', '').lower() for agent in self.registered_agents}
+        registered_ids = {agent["id"] for agent in self.registered_agents}
+        registered_names = {agent["name"].lower() for agent in self.registered_agents}
+        registered_files = {agent.get("file_path", "").lower() for agent in self.registered_agents}
 
         missing_agents = []
         for agent in self.discovered_agents:
             # Check if agent is registered by various criteria
-            class_name_lower = agent['class_name'].lower()
-            file_path_lower = agent['file_path'].lower()
+            class_name_lower = agent["class_name"].lower()
+            file_path_lower = agent["file_path"].lower()
 
             # Generate potential agent ID
-            potential_id = class_name_lower.replace('agent', '').replace('_', '')
+            potential_id = class_name_lower.replace("agent", "").replace("_", "")
 
             # Check various matching criteria
             is_registered = (
-                potential_id in {rid.lower() for rid in registered_ids} or
-                class_name_lower in registered_names or
-                any(class_name_lower in rname for rname in registered_names) or
-                any(file_path_lower in rf for rf in registered_files)
+                potential_id in {rid.lower() for rid in registered_ids}
+                or class_name_lower in registered_names
+                or any(class_name_lower in rname for rname in registered_names)
+                or any(file_path_lower in rf for rf in registered_files)
             )
 
             if not is_registered:
@@ -168,17 +171,21 @@ class AgentAuditor:
 
         # Generate report
         report = {
-            'summary': {
-                'discovered_agents': len(self.discovered_agents),
-                'unique_classes': len(self.agent_classes),
-                'registered_agents': len(self.registered_agents),
-                'potentially_missing': len(missing_agents),
-                'registration_rate': f"{((len(self.registered_agents) / len(self.discovered_agents)) * 100):.1f}%" if self.discovered_agents else "N/A"
+            "summary": {
+                "discovered_agents": len(self.discovered_agents),
+                "unique_classes": len(self.agent_classes),
+                "registered_agents": len(self.registered_agents),
+                "potentially_missing": len(missing_agents),
+                "registration_rate": (
+                    f"{((len(self.registered_agents) / len(self.discovered_agents)) * 100):.1f}%"
+                    if self.discovered_agents
+                    else "N/A"
+                ),
             },
-            'discovered_agents': self.discovered_agents,
-            'registered_agents': self.registered_agents,
-            'missing_agents': missing_agents,
-            'agent_classes': list(self.agent_classes)
+            "discovered_agents": self.discovered_agents,
+            "registered_agents": self.registered_agents,
+            "missing_agents": missing_agents,
+            "agent_classes": list(self.agent_classes),
         }
 
         return report
@@ -187,13 +194,13 @@ class AgentAuditor:
         """Generate comprehensive audit report"""
         output_file = self.base_dir / "AGENT_AUDIT_REPORT.md"
 
-        with open(output_file, 'w') as f:
+        with open(output_file, "w") as f:
             f.write("# Comprehensive Agent Audit Report\n\n")
             f.write(f"**Generated:** October 17, 2025\n\n")
 
             # Summary
             f.write("## Executive Summary\n\n")
-            summary = report['summary']
+            summary = report["summary"]
             f.write(f"- **Discovered Agent Classes:** {summary['discovered_agents']}\n")
             f.write(f"- **Unique Class Names:** {summary['unique_classes']}\n")
             f.write(f"- **Registered in Library:** {summary['registered_agents']}\n")
@@ -201,19 +208,19 @@ class AgentAuditor:
             f.write(f"- **Registration Rate:** {summary['registration_rate']}\n\n")
 
             # Missing Agents
-            if report['missing_agents']:
+            if report["missing_agents"]:
                 f.write("## Unregistered Agents\n\n")
                 f.write("The following agent classes were discovered but are not registered:\n\n")
 
-                for agent in report['missing_agents']:
+                for agent in report["missing_agents"]:
                     f.write(f"### {agent['class_name']}\n\n")
                     f.write(f"- **File:** `{agent['file_path']}`\n")
-                    if agent.get('description'):
+                    if agent.get("description"):
                         f.write(f"- **Description:** {agent['description']}\n")
-                    if agent['bases']:
+                    if agent["bases"]:
                         f.write(f"- **Base Classes:** {', '.join(agent['bases'])}\n")
-                    if agent['methods']:
-                        key_methods = [m for m in agent['methods'] if not m.startswith('_')][:5]
+                    if agent["methods"]:
+                        key_methods = [m for m in agent["methods"] if not m.startswith("_")][:5]
                         f.write(f"- **Key Methods:** {', '.join(key_methods)}\n")
                     f.write("\n")
 
@@ -222,8 +229,8 @@ class AgentAuditor:
 
             # Group by directory
             by_directory = {}
-            for agent in report['discovered_agents']:
-                dir_name = str(Path(agent['file_path']).parent)
+            for agent in report["discovered_agents"]:
+                dir_name = str(Path(agent["file_path"]).parent)
                 if dir_name not in by_directory:
                     by_directory[dir_name] = []
                 by_directory[dir_name].append(agent)
@@ -240,8 +247,8 @@ class AgentAuditor:
 
             # Group by category
             by_category = {}
-            for agent in report['registered_agents']:
-                category = agent.get('category', 'unknown')
+            for agent in report["registered_agents"]:
+                category = agent.get("category", "unknown")
                 if category not in by_category:
                     by_category[category] = []
                 by_category[category].append(agent)
@@ -249,18 +256,28 @@ class AgentAuditor:
             for category, agents in sorted(by_category.items()):
                 f.write(f"### {category.upper().replace('_', ' ')}\n\n")
                 for agent in agents:
-                    status = agent.get('status', 'unknown')
+                    status = agent.get("status", "unknown")
                     f.write(f"- **{agent['name']}** (`{agent['id']}`) - {status}\n")
                 f.write("\n")
 
             # Recommendations
             f.write("## Recommendations\n\n")
-            if report['missing_agents']:
-                f.write("1. **Register Missing Agents:** Review and register the identified unregistered agents\n")
-                f.write("2. **Categorize Agents:** Assign appropriate categories (CORE_UTILITY, APQC_FRAMEWORK, etc.)\n")
-                f.write("3. **Update Metadata:** Add descriptions, capabilities, and ROI impact for each agent\n")
-                f.write("4. **Create Agent Index:** Implement quick indexing feature for architecture debt tracking\n")
-                f.write("5. **Update Agent Factory:** Add agent identification function for dynamic discovery\n")
+            if report["missing_agents"]:
+                f.write(
+                    "1. **Register Missing Agents:** Review and register the identified unregistered agents\n"
+                )
+                f.write(
+                    "2. **Categorize Agents:** Assign appropriate categories (CORE_UTILITY, APQC_FRAMEWORK, etc.)\n"
+                )
+                f.write(
+                    "3. **Update Metadata:** Add descriptions, capabilities, and ROI impact for each agent\n"
+                )
+                f.write(
+                    "4. **Create Agent Index:** Implement quick indexing feature for architecture debt tracking\n"
+                )
+                f.write(
+                    "5. **Update Agent Factory:** Add agent identification function for dynamic discovery\n"
+                )
             else:
                 f.write("✓ All discovered agents appear to be registered!\n")
 
@@ -268,23 +285,25 @@ class AgentAuditor:
 
         # Also save JSON version
         json_file = self.base_dir / "AGENT_AUDIT_REPORT.json"
-        with open(json_file, 'w') as f:
+        with open(json_file, "w") as f:
             json.dump(report, f, indent=2)
         print(f"✓ JSON data saved to: {json_file}")
+
 
 def main():
     auditor = AgentAuditor()
     report = auditor.perform_audit()
     auditor.generate_report_file(report)
 
-    print("\n" + "="*80)
+    print("\n" + "=" * 80)
     print("AUDIT COMPLETE")
-    print("="*80)
+    print("=" * 80)
     print(f"\nDiscovered: {report['summary']['discovered_agents']} agent classes")
     print(f"Registered: {report['summary']['registered_agents']} agents")
     print(f"Missing: {report['summary']['potentially_missing']} agents")
     print(f"Registration Rate: {report['summary']['registration_rate']}")
     print("\nSee AGENT_AUDIT_REPORT.md for full details.")
+
 
 if __name__ == "__main__":
     main()

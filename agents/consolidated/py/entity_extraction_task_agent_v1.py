@@ -42,7 +42,11 @@ class EntityExtractionTaskAgent(BaseAgent):
     and maximum reusability across APQC categories.
     """
 
-    def __init__(self, agent_id: str = "entity_extraction_task_agent", config: Optional[Dict[str, Any]] = None):
+    def __init__(
+        self,
+        agent_id: str = "entity_extraction_task_agent",
+        config: Optional[Dict[str, Any]] = None,
+    ):
         """
         Initialize Entity Extraction Task Agent
 
@@ -53,8 +57,8 @@ class EntityExtractionTaskAgent(BaseAgent):
         super().__init__(
             agent_id=agent_id,
             agent_type="analysis",
-            capabilities=['ner', 'entity_linking', 'coreference_resolution'],
-            config=config or {}
+            capabilities=["ner", "entity_linking", "coreference_resolution"],
+            config=config or {},
         )
 
         # Agent-specific initialization
@@ -64,23 +68,23 @@ class EntityExtractionTaskAgent(BaseAgent):
             "reusable": True,
             "composable": True,
             "stateless": True,
-            "framework": "APQC 7.0.1"
+            "framework": "APQC 7.0.1",
         }
 
         logger.info(f"Initialized Entity Extraction Task Agent [{self.agent_id}]")
 
     async def execute_task(self, task: Dict[str, Any]) -> Dict[str, Any]:
         """
-        Execute the analysis task
+                Execute the analysis task
 
-        Args:
-            task: Task parameters containing:
-                - text: string
+                Args:
+                    task: Task parameters containing:
+                        - text: string
 
-        Returns:
-            Result dictionary containing:
-                - entities: list
-- entity_types: dict
+                Returns:
+                    Result dictionary containing:
+                        - entities: list
+        - entity_types: dict
         """
         try:
             logger.info(f"[{self.agent_id}] Executing analysis task")
@@ -100,7 +104,7 @@ class EntityExtractionTaskAgent(BaseAgent):
                 "status": "success",
                 "agent_id": self.agent_id,
                 "timestamp": datetime.utcnow().isoformat(),
-                "result": output
+                "result": output,
             }
 
         except Exception as e:
@@ -109,7 +113,7 @@ class EntityExtractionTaskAgent(BaseAgent):
                 "status": "error",
                 "agent_id": self.agent_id,
                 "timestamp": datetime.utcnow().isoformat(),
-                "error": str(e)
+                "error": str(e),
             }
 
     def _validate_inputs(self, task: Dict[str, Any]) -> None:
@@ -122,7 +126,7 @@ class EntityExtractionTaskAgent(BaseAgent):
         Raises:
             ValueError: If required inputs are missing or invalid
         """
-        required_fields = ['text']
+        required_fields = ["text"]
 
         for field in required_fields:
             if field not in task:
@@ -147,11 +151,7 @@ class EntityExtractionTaskAgent(BaseAgent):
         logger.info(f"[{self.agent_id}] Executing core logic for analysis")
 
         # Placeholder implementation
-        result = {
-            "executed": True,
-            "task_type": "analysis",
-            "inputs_received": list(task.keys())
-        }
+        result = {"executed": True, "task_type": "analysis", "inputs_received": list(task.keys())}
 
         # Simulate async work
         await asyncio.sleep(0.1)
@@ -175,8 +175,8 @@ class EntityExtractionTaskAgent(BaseAgent):
                 "agent_type": self.agent_type,
                 "level": 5,
                 "category": "analysis",
-                "timestamp": datetime.utcnow().isoformat()
-            }
+                "timestamp": datetime.utcnow().isoformat(),
+            },
         }
 
     async def handle_message(self, message: Dict[str, Any]) -> Dict[str, Any]:
@@ -198,10 +198,7 @@ class EntityExtractionTaskAgent(BaseAgent):
         elif message_type == "capabilities":
             return self.get_capabilities()
         else:
-            return {
-                "status": "error",
-                "error": f"Unknown message type: {message_type}"
-            }
+            return {"status": "error", "error": f"Unknown message type: {message_type}"}
 
     def get_status(self) -> Dict[str, Any]:
         """
@@ -215,7 +212,7 @@ class EntityExtractionTaskAgent(BaseAgent):
             "agent_type": self.agent_type,
             "status": "ready",
             "capabilities": self.capabilities,
-            "metadata": self.metadata
+            "metadata": self.metadata,
         }
 
     def get_capabilities(self) -> Dict[str, Any]:
@@ -228,11 +225,11 @@ class EntityExtractionTaskAgent(BaseAgent):
         return {
             "agent_id": self.agent_id,
             "capabilities": self.capabilities,
-            "inputs": {'text': 'string'},
-            "outputs": {'entities': 'list', 'entity_types': 'dict'},
+            "inputs": {"text": "string"},
+            "outputs": {"entities": "list", "entity_types": "dict"},
             "level": 5,
             "reusable": True,
-            "composable": True
+            "composable": True,
         }
 
 
@@ -246,7 +243,7 @@ async def main():
     # Example task
     task = {
         # Add example inputs here
-                # "text": "example_text",
+        # "text": "example_text",
     }
 
     # Execute task

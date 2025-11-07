@@ -48,7 +48,7 @@ async def generate_priority_agents(count: int = 10):
         print("  2. Re-run this script")
         print()
         choice = input("Continue in mock mode? (y/n): ")
-        if choice.lower() != 'y':
+        if choice.lower() != "y":
             print("Aborted.")
             return
         print()
@@ -82,27 +82,31 @@ async def generate_priority_agents(count: int = 10):
     print(f"Total Agents: {result['total_agents']}")
     print(f"Completed: {result['completed']}")
     print(f"Failed: {result['failed']}")
-    print(f"Success Rate: {(result['completed']/result['total_agents']*100 if result['total_agents'] > 0 else 0):.1f}%")
+    print(
+        f"Success Rate: {(result['completed']/result['total_agents']*100 if result['total_agents'] > 0 else 0):.1f}%"
+    )
     print(f"Duration: {duration:.1f} seconds ({duration/60:.1f} minutes)")
     print(f"Avg Time per Agent: {duration/result['total_agents']:.1f} seconds")
     print()
 
     # Show successful generations
-    if result['completed'] > 0:
+    if result["completed"] > 0:
         print("Successfully Generated Agents:")
-        for agent_result in result['results']:
-            if agent_result.get('status') == 'completed':
+        for agent_result in result["results"]:
+            if agent_result.get("status") == "completed":
                 print(f"  - {agent_result.get('agent_id')}")
-                for file_path in agent_result.get('files_created', []):
+                for file_path in agent_result.get("files_created", []):
                     print(f"      {file_path}")
         print()
 
     # Show failures
-    if result['failed'] > 0:
+    if result["failed"] > 0:
         print("Failed Generations:")
-        for agent_result in result['results']:
-            if agent_result.get('status') != 'completed':
-                print(f"  - {agent_result.get('agent_id', 'unknown')}: {agent_result.get('errors', ['Unknown error'])[0] if agent_result.get('errors') else 'Unknown error'}")
+        for agent_result in result["results"]:
+            if agent_result.get("status") != "completed":
+                print(
+                    f"  - {agent_result.get('agent_id', 'unknown')}: {agent_result.get('errors', ['Unknown error'])[0] if agent_result.get('errors') else 'Unknown error'}"
+                )
         print()
 
     print("=" * 80)

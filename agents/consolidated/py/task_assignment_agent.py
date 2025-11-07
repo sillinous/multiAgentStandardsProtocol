@@ -20,6 +20,7 @@ import heapq
 
 import sys
 import os
+
 sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
 from superstandard.agents.base.base_agent import BaseAgent, AgentCapability
@@ -27,6 +28,7 @@ from superstandard.agents.base.base_agent import BaseAgent, AgentCapability
 
 class TaskPriority(Enum):
     """Task priority levels"""
+
     LOW = 1
     MEDIUM = 2
     HIGH = 3
@@ -35,6 +37,7 @@ class TaskPriority(Enum):
 
 class TaskStatus(Enum):
     """Task status"""
+
     QUEUED = "queued"
     ASSIGNED = "assigned"
     IN_PROGRESS = "in_progress"
@@ -46,6 +49,7 @@ class TaskStatus(Enum):
 @dataclass
 class Task:
     """Task definition"""
+
     task_id: str
     task_type: str
     description: str
@@ -64,6 +68,7 @@ class Task:
 @dataclass
 class AgentWorkload:
     """Agent workload tracking"""
+
     agent_id: str
     agent_type: str
     current_tasks: int = 0
@@ -91,13 +96,13 @@ class TaskAssignmentAgent(BaseAgent):
     def __init__(
         self,
         agent_id: str = "task_assignment_001",
-        workspace_path: str = "./autonomous-ecosystem/workspace"
+        workspace_path: str = "./autonomous-ecosystem/workspace",
     ):
         super().__init__(
             agent_id=agent_id,
             agent_type="task_assignment",
             capabilities=[AgentCapability.ORCHESTRATION],
-            workspace_path=workspace_path
+            workspace_path=workspace_path,
         )
 
         # Task queue (priority queue)
@@ -133,10 +138,7 @@ class TaskAssignmentAgent(BaseAgent):
         elif task_type == "update_agent_status":
             return await self._update_agent_status(task)
         else:
-            return {
-                "success": False,
-                "error": f"Unknown task type: {task_type}"
-            }
+            return {"success": False, "error": f"Unknown task type: {task_type}"}
 
     async def analyze(self, input_data: Dict[str, Any]) -> Dict[str, Any]:
         """Analyze task distribution patterns and efficiency"""
@@ -166,7 +168,7 @@ class TaskAssignmentAgent(BaseAgent):
                 description=task_data.get("description", ""),
                 requirements=task_data.get("requirements", {}),
                 priority=TaskPriority(task_data.get("priority", TaskPriority.MEDIUM.value)),
-                created_at=datetime.now()
+                created_at=datetime.now(),
             )
 
             # Add to queue (priority queue, higher priority first)
@@ -180,14 +182,11 @@ class TaskAssignmentAgent(BaseAgent):
                 "success": True,
                 "task_id": task_id,
                 "status": task.status.value,
-                "message": "Task submitted successfully"
+                "message": "Task submitted successfully",
             }
 
         except Exception as e:
-            return {
-                "success": False,
-                "error": str(e)
-            }
+            return {"success": False, "error": str(e)}
 
     async def _assign_pending_tasks(self) -> Dict[str, Any]:
         """Assign pending tasks to available agents"""
@@ -224,7 +223,7 @@ class TaskAssignmentAgent(BaseAgent):
             "success": True,
             "assigned": assigned_count,
             "failed": failed_count,
-            "remaining_in_queue": len(self.task_queue)
+            "remaining_in_queue": len(self.task_queue),
         }
 
     async def _select_best_agent(self, task: Task) -> Optional[str]:
@@ -292,26 +291,30 @@ class TaskAssignmentAgent(BaseAgent):
             workload.last_assigned = datetime.now()
 
             # Record assignment
-            self.assignment_history.append({
-                "task_id": task.task_id,
-                "agent_id": agent_id,
-                "assigned_at": task.assigned_at.isoformat(),
-                "priority": task.priority.value
-            })
+            self.assignment_history.append(
+                {
+                    "task_id": task.task_id,
+                    "agent_id": agent_id,
+                    "assigned_at": task.assigned_at.isoformat(),
+                    "priority": task.priority.value,
+                }
+            )
 
             # Log activity
             if self.activity_tracker:
-                await self.activity_tracker._log_activity({
-                    "agent_id": agent_id,
-                    "agent_type": workload.agent_type,
-                    "activity_type": "task_assigned",
-                    "description": f"Assigned task: {task.description}",
-                    "details": {
-                        "task_id": task.task_id,
-                        "task_type": task.task_type,
-                        "priority": task.priority.value
+                await self.activity_tracker._log_activity(
+                    {
+                        "agent_id": agent_id,
+                        "agent_type": workload.agent_type,
+                        "activity_type": "task_assigned",
+                        "description": f"Assigned task: {task.description}",
+                        "details": {
+                            "task_id": task.task_id,
+                            "task_type": task.task_type,
+                            "priority": task.priority.value,
+                        },
                     }
-                })
+                )
 
             return True
 
@@ -343,8 +346,8 @@ class TaskAssignmentAgent(BaseAgent):
                 "started_at": task.started_at.isoformat() if task.started_at else None,
                 "completed_at": task.completed_at.isoformat() if task.completed_at else None,
                 "result": task.result,
-                "error": task.error
-            }
+                "error": task.error,
+            },
         }
 
     async def _cancel_task(self, task_data: Dict[str, Any]) -> Dict[str, Any]:
@@ -367,20 +370,11 @@ class TaskAssignmentAgent(BaseAgent):
         if task.assigned_to and task.assigned_to in self.agents:
             self.agents[task.assigned_to].current_tasks -= 1
 
-        return {
-            "success": True,
-            "message": f"Task {task_id} cancelled"
-        }
+        return {"success": True, "message": f"Task {task_id} cancelled"}
 
     async def _get_queue_status(self) -> Dict[str, Any]:
         """Get current queue status"""
-        status_counts = {
-            "queued": 0,
-            "assigned": 0,
-            "in_progress": 0,
-            "completed": 0,
-            "failed": 0
-        }
+        status_counts = {"queued": 0, "assigned": 0, "in_progress": 0, "completed": 0, "failed": 0}
 
         for task in self.tasks.values():
             status_counts[task.status.value] += 1
@@ -391,10 +385,11 @@ class TaskAssignmentAgent(BaseAgent):
             "total_tasks": len(self.tasks),
             "status_breakdown": status_counts,
             "available_agents": sum(
-                1 for a in self.agents.values()
+                1
+                for a in self.agents.values()
                 if a.is_available and a.current_tasks < a.max_concurrent_tasks
             ),
-            "total_agents": len(self.agents)
+            "total_agents": len(self.agents),
         }
 
     # =====================================================================
@@ -410,15 +405,12 @@ class TaskAssignmentAgent(BaseAgent):
         workload = AgentWorkload(
             agent_id=agent_id,
             agent_type=agent_data.get("agent_type", "unknown"),
-            max_concurrent_tasks=agent_data.get("max_concurrent_tasks", 3)
+            max_concurrent_tasks=agent_data.get("max_concurrent_tasks", 3),
         )
 
         self.agents[agent_id] = workload
 
-        return {
-            "success": True,
-            "message": f"Agent {agent_id} registered"
-        }
+        return {"success": True, "message": f"Agent {agent_id} registered"}
 
     async def _update_agent_status(self, agent_data: Dict[str, Any]) -> Dict[str, Any]:
         """Update agent availability or workload"""
@@ -451,10 +443,7 @@ class TaskAssignmentAgent(BaseAgent):
             total = workload.total_completed + workload.total_failed
             workload.success_rate = workload.total_completed / total if total > 0 else 1.0
 
-        return {
-            "success": True,
-            "agent": asdict(workload)
-        }
+        return {"success": True, "agent": asdict(workload)}
 
     # =====================================================================
     # Analysis
@@ -467,11 +456,12 @@ class TaskAssignmentAgent(BaseAgent):
             "queued_tasks": len(self.task_queue),
             "total_agents": len(self.agents),
             "available_agents": sum(
-                1 for a in self.agents.values()
+                1
+                for a in self.agents.values()
                 if a.is_available and a.current_tasks < a.max_concurrent_tasks
             ),
             "total_assignments": len(self.assignment_history),
-            "avg_queue_time_seconds": self._calculate_avg_queue_time()
+            "avg_queue_time_seconds": self._calculate_avg_queue_time(),
         }
 
     def _analyze_load_balance(self) -> Dict[str, Any]:
@@ -484,7 +474,7 @@ class TaskAssignmentAgent(BaseAgent):
                 "agent_id": agent_id,
                 "current_load": workload.current_tasks,
                 "max_capacity": workload.max_concurrent_tasks,
-                "utilization": (workload.current_tasks / workload.max_concurrent_tasks) * 100
+                "utilization": (workload.current_tasks / workload.max_concurrent_tasks) * 100,
             }
             for agent_id, workload in self.agents.items()
         ]
@@ -498,7 +488,7 @@ class TaskAssignmentAgent(BaseAgent):
             "balanced": variance < 20,  # Variance threshold
             "avg_utilization": round(avg_util, 2),
             "variance": round(variance, 2),
-            "agents": agent_loads
+            "agents": agent_loads,
         }
 
     def _analyze_bottlenecks(self) -> Dict[str, Any]:
@@ -508,48 +498,40 @@ class TaskAssignmentAgent(BaseAgent):
         # Check for overloaded agents
         for agent_id, workload in self.agents.items():
             if workload.current_tasks >= workload.max_concurrent_tasks:
-                bottlenecks.append({
-                    "type": "overloaded_agent",
-                    "agent_id": agent_id,
-                    "current_tasks": workload.current_tasks
-                })
+                bottlenecks.append(
+                    {
+                        "type": "overloaded_agent",
+                        "agent_id": agent_id,
+                        "current_tasks": workload.current_tasks,
+                    }
+                )
 
         # Check for long queue
         if len(self.task_queue) > 10:
-            bottlenecks.append({
-                "type": "long_queue",
-                "queue_length": len(self.task_queue)
-            })
+            bottlenecks.append({"type": "long_queue", "queue_length": len(self.task_queue)})
 
         # Check for low availability
         available = sum(
-            1 for a in self.agents.values()
+            1
+            for a in self.agents.values()
             if a.is_available and a.current_tasks < a.max_concurrent_tasks
         )
         if available == 0 and len(self.task_queue) > 0:
-            bottlenecks.append({
-                "type": "no_available_agents",
-                "queued_tasks": len(self.task_queue)
-            })
+            bottlenecks.append(
+                {"type": "no_available_agents", "queued_tasks": len(self.task_queue)}
+            )
 
-        return {
-            "bottlenecks_found": len(bottlenecks),
-            "bottlenecks": bottlenecks
-        }
+        return {"bottlenecks_found": len(bottlenecks), "bottlenecks": bottlenecks}
 
     def _calculate_avg_queue_time(self) -> float:
         """Calculate average time tasks spend in queue"""
-        completed_tasks = [
-            t for t in self.tasks.values()
-            if t.assigned_at and t.created_at
-        ]
+        completed_tasks = [t for t in self.tasks.values() if t.assigned_at and t.created_at]
 
         if not completed_tasks:
             return 0.0
 
         total_queue_time = sum(
-            (t.assigned_at - t.created_at).total_seconds()
-            for t in completed_tasks
+            (t.assigned_at - t.created_at).total_seconds() for t in completed_tasks
         )
 
         return total_queue_time / len(completed_tasks)
@@ -570,6 +552,7 @@ class TaskAssignmentAgent(BaseAgent):
 # Singleton instance
 _task_assignment_agent = None
 
+
 def get_task_assignment_agent() -> TaskAssignmentAgent:
     """Get or create task assignment agent instance"""
     global _task_assignment_agent
@@ -586,24 +569,22 @@ if __name__ == "__main__":
         assigner = get_task_assignment_agent()
 
         # Register some agents
-        await assigner._register_agent({
-            "agent_id": "agent_001",
-            "agent_type": "demand_predictor",
-            "max_concurrent_tasks": 3
-        })
+        await assigner._register_agent(
+            {"agent_id": "agent_001", "agent_type": "demand_predictor", "max_concurrent_tasks": 3}
+        )
 
-        await assigner._register_agent({
-            "agent_id": "agent_002",
-            "agent_type": "traffic_analyzer",
-            "max_concurrent_tasks": 2
-        })
+        await assigner._register_agent(
+            {"agent_id": "agent_002", "agent_type": "traffic_analyzer", "max_concurrent_tasks": 2}
+        )
 
         # Submit tasks
-        task1 = await assigner._submit_task({
-            "task_type": "demand_predictor",
-            "description": "Predict demand hotspots",
-            "priority": TaskPriority.HIGH.value
-        })
+        task1 = await assigner._submit_task(
+            {
+                "task_type": "demand_predictor",
+                "description": "Predict demand hotspots",
+                "priority": TaskPriority.HIGH.value,
+            }
+        )
         print("\n[Task Submitted]")
         print(json.dumps(task1, indent=2))
 

@@ -15,7 +15,7 @@ router = APIRouter()
 
 @router.get("/knowledge/stats")
 async def get_knowledge_base_stats(
-    current_user: Dict[str, Any] = Depends(get_current_user)
+    current_user: Dict[str, Any] = Depends(get_current_user),
 ) -> Dict[str, Any]:
     """
     Get statistics about the agent knowledge base
@@ -86,7 +86,7 @@ async def search_knowledge(
 
 @router.get("/agents/learning-stats")
 async def get_agent_learning_stats(
-    current_user: Dict[str, Any] = Depends(get_current_user)
+    current_user: Dict[str, Any] = Depends(get_current_user),
 ) -> Dict[str, Any]:
     """
     Get learning statistics for all agents
@@ -171,7 +171,7 @@ async def export_knowledge_for_agent(
 
 @router.get("/teaching/sessions")
 async def get_teaching_sessions(
-    current_user: Dict[str, Any] = Depends(get_current_user)
+    current_user: Dict[str, Any] = Depends(get_current_user),
 ) -> Dict[str, Any]:
     """
     Get history of agent teaching sessions
@@ -205,7 +205,7 @@ async def get_teaching_sessions(
 
 @router.get("/knowledge/categories")
 async def get_knowledge_categories(
-    current_user: Dict[str, Any] = Depends(get_current_user)
+    current_user: Dict[str, Any] = Depends(get_current_user),
 ) -> Dict[str, Any]:
     """
     Get available knowledge categories and their counts

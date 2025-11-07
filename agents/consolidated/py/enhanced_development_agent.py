@@ -35,23 +35,20 @@ class EnhancedDevelopmentAgent(BaseAgent):
         agent_id: str = "enhanced_dev_agent_001",
         workspace_path: str = "./autonomous-ecosystem/workspace",
         project_root: str = ".",
-        claude_api_key: Optional[str] = None
+        claude_api_key: Optional[str] = None,
     ):
         super().__init__(
             agent_id=agent_id,
             agent_type="enhanced_development",
             capabilities=[AgentCapability.DEVELOPMENT],
-            workspace_path=workspace_path
+            workspace_path=workspace_path,
         )
 
         self.project_root = project_root
 
         # Initialize services
         self.code_generator = ClaudeCodeGenerator(claude_api_key)
-        self.file_ops = SafeFileOperations(
-            project_root,
-            os.path.join(workspace_path, "backups")
-        )
+        self.file_ops = SafeFileOperations(project_root, os.path.join(workspace_path, "backups"))
         self.test_runner = TestRunner(project_root)
         self.analyzer = CodebaseAnalyzer(project_root)
 
@@ -60,7 +57,9 @@ class EnhancedDevelopmentAgent(BaseAgent):
         print(f"[{self.agent_id}] Enhanced Development Agent initialized")
         print(f"  Project Root: {project_root}")
         print(f"  Workspace: {workspace_path}")
-        print(f"  Code Generation: {'Claude API' if not self.code_generator.mock_mode else 'Mock Mode'}")
+        print(
+            f"  Code Generation: {'Claude API' if not self.code_generator.mock_mode else 'Mock Mode'}"
+        )
 
     async def execute_task(self, task: Dict[str, Any]) -> Dict[str, Any]:
         """Execute development task"""
@@ -109,7 +108,7 @@ class EnhancedDevelopmentAgent(BaseAgent):
             "changes": [],
             "tests_added": [],
             "status": "in_progress",
-            "real_implementation": True  # Flag to indicate this is real, not conceptual
+            "real_implementation": True,  # Flag to indicate this is real, not conceptual
         }
 
         try:
@@ -130,11 +129,9 @@ class EnhancedDevelopmentAgent(BaseAgent):
                     print(f"[{self.agent_id}]     ✓ {change['type']}: {change['file']}")
                 except Exception as e:
                     print(f"[{self.agent_id}]     ✗ Failed: {change_spec['file']} - {e}")
-                    implementation["changes"].append({
-                        "file": change_spec['file'],
-                        "type": "failed",
-                        "error": str(e)
-                    })
+                    implementation["changes"].append(
+                        {"file": change_spec["file"], "type": "failed", "error": str(e)}
+                    )
 
             # Step 4: Generate and add tests
             if len(implementation["changes"]) > 0:
@@ -166,15 +163,11 @@ class EnhancedDevelopmentAgent(BaseAgent):
         self.save_artifact(
             "implementations",
             implementation,
-            f"implementation_{spec.get('id')}_{datetime.now().strftime('%Y%m%d_%H%M%S')}.json"
+            f"implementation_{spec.get('id')}_{datetime.now().strftime('%Y%m%d_%H%M%S')}.json",
         )
 
         # Send to orchestrator
-        self.send_message(
-            MessageType.IMPLEMENTATION_REPORT,
-            "orchestrator",
-            implementation
-        )
+        self.send_message(MessageType.IMPLEMENTATION_REPORT, "orchestrator", implementation)
 
         self.implementations_completed.append(implementation)
 
@@ -188,81 +181,93 @@ class EnhancedDevelopmentAgent(BaseAgent):
             "component": component,
             "project_structure": await self.analyzer.get_project_structure(),
             "component_analysis": await self.analyzer.get_component_context(component),
-            "related_files": await self.analyzer.find_related_files(component)
+            "related_files": await self.analyzer.find_related_files(component),
         }
 
         return context
 
-    async def _create_implementation_plan(self, spec: Dict[str, Any], context: Dict[str, Any]) -> Dict[str, Any]:
+    async def _create_implementation_plan(
+        self, spec: Dict[str, Any], context: Dict[str, Any]
+    ) -> Dict[str, Any]:
         """Create detailed implementation plan"""
         component = spec.get("component")
         requirements = spec.get("requirements", [])
 
-        plan = {
-            "changes": []
-        }
+        plan = {"changes": []}
 
         # Determine what files need to be created/modified based on component
         if component == "e2e_workflows":
             # E2E workflows need orchestration and deployment systems
-            plan["changes"].extend([
-                {
-                    "file": "backend/app/orchestration/__init__.py",
-                    "type": "create_if_not_exists",
-                    "purpose": "Initialize orchestration module",
-                    "requirements": ["Empty init file for Python package"]
-                },
-                {
-                    "file": "backend/app/orchestration/workflow_coordinator.py",
-                    "type": "create",
-                    "purpose": "Coordinate end-to-end workflow from market research to deployment",
-                    "requirements": requirements
-                },
-                {
-                    "file": "backend/app/deployment/__init__.py",
-                    "type": "create_if_not_exists",
-                    "purpose": "Initialize deployment module",
-                    "requirements": ["Empty init file for Python package"]
-                },
-                {
-                    "file": "backend/app/deployment/autonomous_deployer.py",
-                    "type": "create",
-                    "purpose": "Autonomous business deployment system",
-                    "requirements": ["One-button deployment", "Infrastructure provisioning", "E-commerce setup"]
-                },
-                {
-                    "file": "backend/app/api/endpoints/orchestration.py",
-                    "type": "create",
-                    "purpose": "API endpoints for orchestration",
-                    "requirements": ["POST /api/v1/orchestrate/deploy endpoint"]
-                }
-            ])
+            plan["changes"].extend(
+                [
+                    {
+                        "file": "backend/app/orchestration/__init__.py",
+                        "type": "create_if_not_exists",
+                        "purpose": "Initialize orchestration module",
+                        "requirements": ["Empty init file for Python package"],
+                    },
+                    {
+                        "file": "backend/app/orchestration/workflow_coordinator.py",
+                        "type": "create",
+                        "purpose": "Coordinate end-to-end workflow from market research to deployment",
+                        "requirements": requirements,
+                    },
+                    {
+                        "file": "backend/app/deployment/__init__.py",
+                        "type": "create_if_not_exists",
+                        "purpose": "Initialize deployment module",
+                        "requirements": ["Empty init file for Python package"],
+                    },
+                    {
+                        "file": "backend/app/deployment/autonomous_deployer.py",
+                        "type": "create",
+                        "purpose": "Autonomous business deployment system",
+                        "requirements": [
+                            "One-button deployment",
+                            "Infrastructure provisioning",
+                            "E-commerce setup",
+                        ],
+                    },
+                    {
+                        "file": "backend/app/api/endpoints/orchestration.py",
+                        "type": "create",
+                        "purpose": "API endpoints for orchestration",
+                        "requirements": ["POST /api/v1/orchestrate/deploy endpoint"],
+                    },
+                ]
+            )
 
         elif component == "backend":
             # Backend fixes - ensure server starts correctly
-            plan["changes"].extend([
-                {
-                    "file": "backend/app/main.py",
-                    "type": "modify_if_exists",
-                    "purpose": "Fix backend startup and configuration",
-                    "requirements": requirements
-                }
-            ])
+            plan["changes"].extend(
+                [
+                    {
+                        "file": "backend/app/main.py",
+                        "type": "modify_if_exists",
+                        "purpose": "Fix backend startup and configuration",
+                        "requirements": requirements,
+                    }
+                ]
+            )
 
         elif component == "frontend":
             # Frontend fixes
-            plan["changes"].extend([
-                {
-                    "file": "frontend/package.json",
-                    "type": "modify_if_exists",
-                    "purpose": "Fix frontend configuration",
-                    "requirements": requirements
-                }
-            ])
+            plan["changes"].extend(
+                [
+                    {
+                        "file": "frontend/package.json",
+                        "type": "modify_if_exists",
+                        "purpose": "Fix frontend configuration",
+                        "requirements": requirements,
+                    }
+                ]
+            )
 
         return plan
 
-    async def _implement_change(self, change_spec: Dict[str, Any], context: Dict[str, Any], spec: Dict[str, Any]) -> Dict[str, Any]:
+    async def _implement_change(
+        self, change_spec: Dict[str, Any], context: Dict[str, Any], spec: Dict[str, Any]
+    ) -> Dict[str, Any]:
         """Implement a specific file change using Claude API"""
         file_path = change_spec["file"]
         change_type = change_spec["type"]
@@ -271,11 +276,7 @@ class EnhancedDevelopmentAgent(BaseAgent):
             # Check if file exists
             if self.file_ops.file_exists(file_path):
                 if change_type == "create_if_not_exists":
-                    return {
-                        "file": file_path,
-                        "type": "skipped",
-                        "reason": "File already exists"
-                    }
+                    return {"file": file_path, "type": "skipped", "reason": "File already exists"}
                 else:
                     # Modify existing file instead
                     change_type = "modify"
@@ -283,44 +284,31 @@ class EnhancedDevelopmentAgent(BaseAgent):
         if change_type == "create":
             # Generate new file content using Claude
             code = await self.code_generator.generate_new_file(
-                file_path,
-                change_spec["purpose"],
-                change_spec.get("requirements", []),
-                context
+                file_path, change_spec["purpose"], change_spec.get("requirements", []), context
             )
 
             # Write file
             self.file_ops.create_file(file_path, code)
 
-            return {
-                "file": file_path,
-                "type": "created",
-                "lines": len(code.split('\n'))
-            }
+            return {"file": file_path, "type": "created", "lines": len(code.split("\n"))}
 
         elif change_type in ["modify", "modify_if_exists"]:
             # Read existing file
             if not self.file_ops.file_exists(file_path):
                 if change_type == "modify_if_exists":
-                    return {
-                        "file": file_path,
-                        "type": "skipped",
-                        "reason": "File does not exist"
-                    }
+                    return {"file": file_path, "type": "skipped", "reason": "File does not exist"}
                 else:
                     raise FileNotFoundError(f"File not found: {file_path}")
 
             current_content = self.file_ops.read_file(file_path)
 
             # Generate modifications using Claude
-            changes_needed = f"{change_spec['purpose']}\n\nRequirements:\n" + \
-                           "\n".join(f"- {req}" for req in change_spec.get("requirements", []))
+            changes_needed = f"{change_spec['purpose']}\n\nRequirements:\n" + "\n".join(
+                f"- {req}" for req in change_spec.get("requirements", [])
+            )
 
             modified_code = await self.code_generator.modify_file(
-                file_path,
-                current_content,
-                changes_needed,
-                context
+                file_path, current_content, changes_needed, context
             )
 
             # Write modified file
@@ -329,13 +317,17 @@ class EnhancedDevelopmentAgent(BaseAgent):
             return {
                 "file": file_path,
                 "type": "modified",
-                "lines_changed": abs(len(modified_code.split('\n')) - len(current_content.split('\n')))
+                "lines_changed": abs(
+                    len(modified_code.split("\n")) - len(current_content.split("\n"))
+                ),
             }
 
         else:
             raise ValueError(f"Unknown change type: {change_type}")
 
-    async def _generate_and_add_tests(self, spec: Dict[str, Any], changes: List[Dict[str, Any]], context: Dict[str, Any]) -> List[str]:
+    async def _generate_and_add_tests(
+        self, spec: Dict[str, Any], changes: List[Dict[str, Any]], context: Dict[str, Any]
+    ) -> List[str]:
         """Generate tests for implementation"""
         tests_added = []
 
@@ -368,21 +360,13 @@ class EnhancedDevelopmentAgent(BaseAgent):
         # Similar to implement_specification but focused on fixing a specific issue
         # Implementation would use code_generator.generate_fix()
 
-        return {
-            "issue_id": issue["id"],
-            "status": "fixed",
-            "changes": []
-        }
+        return {"issue_id": issue["id"], "status": "fixed", "changes": []}
 
     async def implement_enhancement(self, enhancement: Dict[str, Any]) -> Dict[str, Any]:
         """Implement an enhancement"""
         print(f"[{self.agent_id}] Implementing enhancement: {enhancement.get('id')}")
 
-        return {
-            "enhancement_id": enhancement["id"],
-            "status": "implemented",
-            "changes": []
-        }
+        return {"enhancement_id": enhancement["id"], "status": "implemented", "changes": []}
 
     async def analyze_design_spec(self, spec: Dict[str, Any]) -> Dict[str, Any]:
         """Analyze design spec and estimate effort"""
@@ -397,5 +381,5 @@ class EnhancedDevelopmentAgent(BaseAgent):
             "component": component,
             "estimated_files": len(plan["changes"]),
             "complexity": "high" if len(plan["changes"]) > 3 else "medium",
-            "dependencies": context.get("related_files", [])
+            "dependencies": context.get("related_files", []),
         }

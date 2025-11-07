@@ -20,10 +20,10 @@ AUTONOMOUS = True
 TWITTER = True
 
 # OBS Recording Folder
-OBS_FOLDER = '/Volumes/Moon 26/OBS'
+OBS_FOLDER = "/Volumes/Moon 26/OBS"
 
 # Clips Output Folder (will be created in src/data/)
-CLIPS_BASE_FOLDER = 'realtime_clips'
+CLIPS_BASE_FOLDER = "realtime_clips"
 
 # Autonomous Settings
 AUTO_CLIP_INTERVAL = 120  # Check every 2 minutes (120 seconds)
@@ -32,8 +32,10 @@ AUTO_CLIP_LENGTH = 2  # Analyze the last 2 minutes
 # AI Model Configuration (via Model Factory)
 # Available types: 'groq', 'openai', 'claude', 'deepseek', 'xai', 'ollama'
 # Groq is recommended for speed! (Default: llama-3.3-70b-versatile)
-AI_MODEL_TYPE = 'xai'
-AI_MODEL_NAME = None  # None = use default for model type, or specify: 'llama-3.3-70b-versatile', 'gpt-4o', etc.
+AI_MODEL_TYPE = "xai"
+AI_MODEL_NAME = (
+    None  # None = use default for model type, or specify: 'llama-3.3-70b-versatile', 'gpt-4o', etc.
+)
 
 # AI Decision Prompt - Should we clip this?
 DECISION_PROMPT = """You are analyzing a video transcript segment that has ALREADY been trimmed to the best content by another AI.
@@ -151,13 +153,14 @@ from src.models.model_factory import model_factory
 
 # Setup paths relative to src/data/
 PROJECT_ROOT = Path(__file__).parent.parent
-DATA_DIR = PROJECT_ROOT / 'data' / CLIPS_BASE_FOLDER
+DATA_DIR = PROJECT_ROOT / "data" / CLIPS_BASE_FOLDER
 DATA_DIR.mkdir(parents=True, exist_ok=True)
 
 # Load Whisper model (runs locally, free!)
 cprint("🔧 Loading Whisper model (this only happens once)...", "cyan")
 whisper_model = whisper.load_model("base")  # Options: tiny, base, small, medium, large
 cprint("✅ Whisper model loaded!", "green")
+
 
 class RealtimeClipsAgent:
     """AI-powered real-time clip creator using Moon Dev's Model Factory"""
@@ -195,7 +198,7 @@ class RealtimeClipsAgent:
     def find_current_recording(self):
         """Find the most recent .mov file (currently recording)."""
         cprint("🔍 Looking for current OBS recording...", "cyan")
-        mov_files = list(self.obs_folder.glob('*.mov'))
+        mov_files = list(self.obs_folder.glob("*.mov"))
 
         if not mov_files:
             cprint("❌ No .mov files found in OBS folder", "red")
@@ -212,15 +215,20 @@ class RealtimeClipsAgent:
         cprint("⏱️  Getting video duration...", "cyan")
         try:
             cmd = [
-                'ffprobe',
-                '-v', 'error',
-                '-show_entries', 'format=duration',
-                '-of', 'default=noprint_wrappers=1:nokey=1',
-                str(video_path)
+                "ffprobe",
+                "-v",
+                "error",
+                "-show_entries",
+                "format=duration",
+                "-of",
+                "default=noprint_wrappers=1:nokey=1",
+                str(video_path),
             ]
             result = subprocess.run(cmd, capture_output=True, text=True, check=True)
             duration = float(result.stdout.strip())
-            cprint(f"✅ Video duration: {duration/60:.1f} minutes ({duration:.1f} seconds)", "green")
+            cprint(
+                f"✅ Video duration: {duration/60:.1f} minutes ({duration:.1f} seconds)", "green"
+            )
             return duration
         except Exception as e:
             cprint(f"❌ Error getting duration: {e}", "red")
@@ -260,13 +268,17 @@ class RealtimeClipsAgent:
         # Extract clip using ffmpeg
         # Use codec copy for speed (no re-encoding)
         cmd = [
-            'ffmpeg',
-            '-ss', str(start_time),  # Seek before input
-            '-i', str(recording),
-            '-t', str(minutes * 60),
-            '-c', 'copy',  # Copy codec (fast, no re-encoding)
-            '-y',
-            str(temp_file)
+            "ffmpeg",
+            "-ss",
+            str(start_time),  # Seek before input
+            "-i",
+            str(recording),
+            "-t",
+            str(minutes * 60),
+            "-c",
+            "copy",  # Copy codec (fast, no re-encoding)
+            "-y",
+            str(temp_file),
         ]
 
         try:
@@ -291,20 +303,16 @@ class RealtimeClipsAgent:
 
         try:
             # Transcribe using local Whisper model
-            result = whisper_model.transcribe(
-                str(video_file),
-                verbose=False,
-                word_timestamps=True
-            )
+            result = whisper_model.transcribe(str(video_file), verbose=False, word_timestamps=True)
 
             cprint(f"✅ Transcription complete!", "green")
             cprint(f"📝 Total segments: {len(result['segments'])}", "cyan")
             cprint(f"📝 Full text length: {len(result['text'])} characters", "cyan")
 
             # Show first few words
-            preview = result['text'][:150]
+            preview = result["text"][:150]
             cprint(f"\n📄 Transcript preview (first 150 chars):", "cyan")
-            cprint(f"   \"{preview}...\"", "yellow")
+            cprint(f'   "{preview}..."', "yellow")
 
             return result
 
@@ -315,10 +323,10 @@ class RealtimeClipsAgent:
     def get_segment_text(self, transcript_obj, start_time, end_time):
         """Extract text from transcript for a specific time segment."""
         segment_texts = []
-        for seg in transcript_obj['segments']:
+        for seg in transcript_obj["segments"]:
             # Include segments that overlap with our time range
-            if seg['end'] >= start_time and seg['start'] <= end_time:
-                segment_texts.append(seg['text'])
+            if seg["end"] >= start_time and seg["start"] <= end_time:
+                segment_texts.append(seg["text"])
         return " ".join(segment_texts)
 
     def chat_with_ai(self, system_prompt, user_content):
@@ -328,10 +336,10 @@ class RealtimeClipsAgent:
                 system_prompt=system_prompt,
                 user_content=user_content,
                 temperature=0.7,
-                max_tokens=1024
+                max_tokens=1024,
             )
 
-            if hasattr(response, 'content'):
+            if hasattr(response, "content"):
                 return response.content
             return str(response)
 
@@ -348,13 +356,12 @@ class RealtimeClipsAgent:
         # Show transcript preview
         preview = transcript_text[:300]
         cprint(f"📄 Transcript preview:", "cyan")
-        cprint(f"   \"{preview}...\"", "yellow")
+        cprint(f'   "{preview}..."', "yellow")
         cprint(f"\n🤖 Asking {self.model.model_name} to rate this clip (1-5)...", "cyan")
 
         try:
             result_text = self.chat_with_ai(
-                DECISION_PROMPT,
-                f"Video transcript:\n\n{transcript_text}\n\nRate this clip 1-5:"
+                DECISION_PROMPT, f"Video transcript:\n\n{transcript_text}\n\nRate this clip 1-5:"
             )
 
             if not result_text:
@@ -366,14 +373,14 @@ class RealtimeClipsAgent:
 
             # Parse JSON response (remove markdown if present)
             clean_result = result_text.strip()
-            if clean_result.startswith('```'):
-                clean_result = re.sub(r'```json?\n?', '', clean_result)
-                clean_result = re.sub(r'```', '', clean_result)
+            if clean_result.startswith("```"):
+                clean_result = re.sub(r"```json?\n?", "", clean_result)
+                clean_result = re.sub(r"```", "", clean_result)
                 clean_result = clean_result.strip()
 
             result = json.loads(clean_result)
-            score = result['score']
-            reason = result['reason']
+            score = result["score"]
+            reason = result["reason"]
 
             # Generate star rating visualization
             stars = "⭐" * score + "☆" * (5 - score)
@@ -411,7 +418,7 @@ class RealtimeClipsAgent:
 
         # Format transcript with timestamps
         formatted = []
-        for seg in transcript_obj['segments']:
+        for seg in transcript_obj["segments"]:
             formatted.append(f"[{seg['start']:.1f}s - {seg['end']:.1f}s] {seg['text']}")
 
         transcript_text = "\n".join(formatted)
@@ -422,7 +429,7 @@ class RealtimeClipsAgent:
         try:
             result_text = self.chat_with_ai(
                 TRIM_PROMPT,
-                f"Transcript with timestamps:\n\n{transcript_text}\n\nFind the best segment:"
+                f"Transcript with timestamps:\n\n{transcript_text}\n\nFind the best segment:",
             )
 
             if not result_text:
@@ -434,16 +441,16 @@ class RealtimeClipsAgent:
 
             # Parse JSON response (remove markdown if present)
             clean_result = result_text.strip()
-            if clean_result.startswith('```'):
-                clean_result = re.sub(r'```json?\n?', '', clean_result)
-                clean_result = re.sub(r'```', '', clean_result)
+            if clean_result.startswith("```"):
+                clean_result = re.sub(r"```json?\n?", "", clean_result)
+                clean_result = re.sub(r"```", "", clean_result)
                 clean_result = clean_result.strip()
 
             result = json.loads(clean_result)
 
-            start = result['start_time']
-            end = result['end_time']
-            reason = result['reason']
+            start = result["start_time"]
+            end = result["end_time"]
+            reason = result["reason"]
 
             duration = end - start
             cprint(f"\n✅ Best segment identified:", "green")
@@ -471,13 +478,12 @@ class RealtimeClipsAgent:
         # Show transcript preview
         preview = transcript_text[:200]
         cprint(f"📄 Transcript preview for title generation:", "cyan")
-        cprint(f"   \"{preview}...\"", "yellow")
+        cprint(f'   "{preview}..."', "yellow")
         cprint(f"\n🤖 Asking {self.model.model_name} for a short title...", "cyan")
 
         try:
             title = self.chat_with_ai(
-                TITLE_PROMPT,
-                f"Video transcript:\n\n{transcript_text}\n\nWrite a short title:"
+                TITLE_PROMPT, f"Video transcript:\n\n{transcript_text}\n\nWrite a short title:"
             )
 
             if not title:
@@ -486,14 +492,14 @@ class RealtimeClipsAgent:
                 return f"clip_{timestamp}"
 
             title = title.strip()
-            cprint(f"✅ AI-generated title: \"{title}\"", "green")
+            cprint(f'✅ AI-generated title: "{title}"', "green")
 
             # Convert to filename-safe format (replace spaces with underscores, remove special chars)
-            safe_title = re.sub(r'[^\w\s-]', '', title.lower())
-            safe_title = re.sub(r'[\s_]+', '_', safe_title)
-            safe_title = safe_title.strip('_')
+            safe_title = re.sub(r"[^\w\s-]", "", title.lower())
+            safe_title = re.sub(r"[\s_]+", "_", safe_title)
+            safe_title = safe_title.strip("_")
 
-            cprint(f"📝 Filename-safe version: \"{safe_title}\"", "cyan")
+            cprint(f'📝 Filename-safe version: "{safe_title}"', "cyan")
 
             return safe_title
 
@@ -523,13 +529,17 @@ class RealtimeClipsAgent:
         cprint("⚙️  Running ffmpeg...", "cyan")
 
         cmd = [
-            'ffmpeg',
-            '-ss', str(start_time),
-            '-i', str(temp_file),
-            '-t', str(duration),
-            '-c', 'copy',
-            '-y',
-            str(output_file)
+            "ffmpeg",
+            "-ss",
+            str(start_time),
+            "-i",
+            str(temp_file),
+            "-t",
+            str(duration),
+            "-c",
+            "copy",
+            "-y",
+            str(output_file),
         ]
 
         try:
@@ -560,19 +570,29 @@ class RealtimeClipsAgent:
         )
 
         cmd_tall = [
-            'ffmpeg',
-            '-i', str(output_file),
-            '-filter_complex', filter_complex,
-            '-map', '[out]',
-            '-map', '0:a?',
-            '-c:v', 'h264_videotoolbox',
-            '-b:v', '5M',
-            '-pix_fmt', 'yuv420p',
-            '-c:a', 'aac',
-            '-b:a', '128k',
-            '-movflags', '+faststart',
-            '-y',
-            str(output_file_tall)
+            "ffmpeg",
+            "-i",
+            str(output_file),
+            "-filter_complex",
+            filter_complex,
+            "-map",
+            "[out]",
+            "-map",
+            "0:a?",
+            "-c:v",
+            "h264_videotoolbox",
+            "-b:v",
+            "5M",
+            "-pix_fmt",
+            "yuv420p",
+            "-c:a",
+            "aac",
+            "-b:a",
+            "128k",
+            "-movflags",
+            "+faststart",
+            "-y",
+            str(output_file_tall),
         ]
 
         try:
@@ -626,10 +646,15 @@ class RealtimeClipsAgent:
 
         # Step 3: Find best segment FIRST
         start_time, end_time = self.find_best_segment(transcript_obj)
-        if start_time is None or end_time is None or start_time == end_time or (end_time - start_time) < 10:
+        if (
+            start_time is None
+            or end_time is None
+            or start_time == end_time
+            or (end_time - start_time) < 10
+        ):
             cprint("⚠️  AI returned invalid times, using full clip", "yellow")
             start_time = 0
-            end_time = transcript_obj['segments'][-1]['end']
+            end_time = transcript_obj["segments"][-1]["end"]
 
         # Step 4: Extract just the trimmed segment's text for rating
         trimmed_text = self.get_segment_text(transcript_obj, start_time, end_time)
@@ -676,9 +701,9 @@ class RealtimeClipsAgent:
         cprint(f"{'='*80}", "cyan")
 
         # Convert underscores to spaces for readable title
-        tweet_text = title.replace('_', ' ')
+        tweet_text = title.replace("_", " ")
 
-        cprint(f"📝 Tweet text: \"{tweet_text}\"", "yellow")
+        cprint(f'📝 Tweet text: "{tweet_text}"', "yellow")
         cprint(f"🎬 Video file: {video_file.name}", "yellow")
 
         # Encode for URL
@@ -744,10 +769,13 @@ Model Factory Integration:
 
 def autonomous_mode(agent):
     """Run autonomous clipping mode - checks every N minutes, AI decides if worth clipping."""
-    cprint("\n" + "="*80, "green")
+    cprint("\n" + "=" * 80, "green")
     cprint("🤖 AUTONOMOUS MODE ACTIVATED", "green")
-    cprint("="*80, "green")
-    cprint(f"⏰ Checking every {AUTO_CLIP_INTERVAL} seconds ({AUTO_CLIP_INTERVAL/60:.0f} minutes)", "cyan")
+    cprint("=" * 80, "green")
+    cprint(
+        f"⏰ Checking every {AUTO_CLIP_INTERVAL} seconds ({AUTO_CLIP_INTERVAL/60:.0f} minutes)",
+        "cyan",
+    )
     cprint(f"✂️  Analyzing last {AUTO_CLIP_LENGTH} minutes each time", "cyan")
     cprint(f"🧠 AI decides if segment is worth clipping", "cyan")
     cprint(f"📁 Recording folder: {agent.obs_folder}", "cyan")
@@ -781,7 +809,10 @@ def autonomous_mode(agent):
 
             cprint(f"\n⏳ Sleeping for {AUTO_CLIP_INTERVAL} seconds...", "yellow")
             cprint(f"   (Processing time was ~{(time.time() - check_start_time):.0f}s)", "yellow")
-            cprint(f"   Next check: {datetime.fromtimestamp(time.time() + AUTO_CLIP_INTERVAL).strftime('%H:%M:%S')}", "yellow")
+            cprint(
+                f"   Next check: {datetime.fromtimestamp(time.time() + AUTO_CLIP_INTERVAL).strftime('%H:%M:%S')}",
+                "yellow",
+            )
 
             time.sleep(AUTO_CLIP_INTERVAL)
 
@@ -807,20 +838,20 @@ def interactive_loop(agent):
             if not user_input:
                 continue
 
-            if user_input.startswith('/'):
+            if user_input.startswith("/"):
                 cmd = user_input.lower()
 
-                if cmd == '/quit' or cmd == '/exit':
+                if cmd == "/quit" or cmd == "/exit":
                     cprint("\n👋 Later, Doctor Data Dawg! 🌙\n", "cyan")
                     break
 
-                elif cmd == '/help':
+                elif cmd == "/help":
                     print_help()
 
                 else:
                     cprint(f"⚠️  Unknown command: {cmd}", "yellow")
 
-            elif user_input.lower().startswith('clip'):
+            elif user_input.lower().startswith("clip"):
                 parts = user_input.split()
                 if len(parts) == 2 and parts[1].isdigit():
                     minutes = int(parts[1])
@@ -846,9 +877,9 @@ def interactive_loop(agent):
 
 def main():
     """Main entry point."""
-    cprint("\n" + "="*80, "cyan")
+    cprint("\n" + "=" * 80, "cyan")
     cprint("🌙 MOON DEV'S REAL-TIME CLIPS AGENT 🌙", "cyan")
-    cprint("="*80, "cyan")
+    cprint("=" * 80, "cyan")
 
     agent = RealtimeClipsAgent()
 
@@ -857,9 +888,9 @@ def main():
         autonomous_mode(agent)
     else:
         # Run in interactive mode
-        cprint("\n" + "="*80, "cyan")
+        cprint("\n" + "=" * 80, "cyan")
         cprint("✂️  AI-POWERED OBS CLIP CREATOR", "cyan")
-        cprint("="*80, "cyan")
+        cprint("=" * 80, "cyan")
         cprint("\nCommands:", "cyan")
         cprint("  Just type a number: 3, 5, or 10  - Create AI-trimmed clips", "yellow")
         cprint("  /help                             - Show full help", "yellow")

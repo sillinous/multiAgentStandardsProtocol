@@ -785,7 +785,7 @@ def process_data(data):
 
 # Factory function
 def create_research_intelligence_agent(
-    config: Optional[Dict[str, Any]] = None
+    config: Optional[Dict[str, Any]] = None,
 ) -> ResearchIntelligenceAgent:
     """Create Research Intelligence Agent instance"""
     return ResearchIntelligenceAgent(config=config)

@@ -24,6 +24,7 @@ from src.models.model_factory import ModelFactory
 
 class TestingPhase(str, Enum):
     """Phases in the QA/Testing cycle"""
+
     USER_TESTING = "user_testing"
     QA_EVALUATION = "qa_evaluation"
     ENHANCEMENT_ANALYSIS = "enhancement_analysis"
@@ -36,6 +37,7 @@ class TestingPhase(str, Enum):
 @dataclass
 class TestResult:
     """Result from a testing phase"""
+
     phase: TestingPhase
     agent: str
     timestamp: str
@@ -49,6 +51,7 @@ class TestResult:
 @dataclass
 class QACycle:
     """A complete QA/Testing cycle"""
+
     cycle_id: str
     feature: str
     user_request: str
@@ -104,7 +107,7 @@ Respond in JSON format:
                 system_prompt="You are an expert software QA user tester.",
                 user_content=prompt,
                 temperature=0.7,
-                max_tokens=1500
+                max_tokens=1500,
             )
 
             result_data = json.loads(response)
@@ -116,7 +119,7 @@ Respond in JSON format:
                 passed=result_data.get("passed", True),
                 confidence_score=result_data.get("confidence_score", 0.0),
                 recommendations=result_data.get("recommendations", []),
-                details=result_data
+                details=result_data,
             )
         except Exception as e:
             print(f"User testing error: {e}")
@@ -125,7 +128,7 @@ Respond in JSON format:
                 agent=self.name,
                 timestamp=datetime.now().isoformat(),
                 passed=False,
-                details={"error": str(e)}
+                details={"error": str(e)},
             )
 
 
@@ -174,7 +177,7 @@ Respond in JSON format:
                 system_prompt="You are an expert QA engineer.",
                 user_content=prompt,
                 temperature=0.7,
-                max_tokens=1500
+                max_tokens=1500,
             )
 
             result_data = json.loads(response)
@@ -186,7 +189,7 @@ Respond in JSON format:
                 passed=result_data.get("passed", True),
                 confidence_score=result_data.get("confidence_score", 0.0),
                 recommendations=result_data.get("recommendations", []),
-                details=result_data
+                details=result_data,
             )
         except Exception as e:
             print(f"QA evaluation error: {e}")
@@ -195,7 +198,7 @@ Respond in JSON format:
                 agent=self.name,
                 timestamp=datetime.now().isoformat(),
                 passed=False,
-                details={"error": str(e)}
+                details={"error": str(e)},
             )
 
 
@@ -209,7 +212,9 @@ class EnhancementAnalystAgent:
         self.model = ModelFactory.create_model()
         self.name = "EnhancementAnalyst v1.5"
 
-    async def analyze_enhancements(self, feature: str, current_feedback: List[Dict[str, Any]]) -> TestResult:
+    async def analyze_enhancements(
+        self, feature: str, current_feedback: List[Dict[str, Any]]
+    ) -> TestResult:
         """
         Identify enhancement and optimization opportunities
         """
@@ -244,7 +249,7 @@ Respond in JSON format:
                 system_prompt="You are a product enhancement specialist.",
                 user_content=prompt,
                 temperature=0.8,
-                max_tokens=1500
+                max_tokens=1500,
             )
 
             result_data = json.loads(response)
@@ -254,7 +259,7 @@ Respond in JSON format:
                 timestamp=datetime.now().isoformat(),
                 passed=True,
                 recommendations=result_data.get("recommendations", []),
-                details=result_data
+                details=result_data,
             )
         except Exception as e:
             print(f"Enhancement analysis error: {e}")
@@ -263,7 +268,7 @@ Respond in JSON format:
                 agent=self.name,
                 timestamp=datetime.now().isoformat(),
                 passed=False,
-                details={"error": str(e)}
+                details={"error": str(e)},
             )
 
 
@@ -282,7 +287,7 @@ class DevelopmentSwarmCoordinator:
         feature: str,
         test_issues: List[Dict[str, Any]],
         qa_issues: List[Dict[str, Any]],
-        enhancements: List[Dict[str, Any]]
+        enhancements: List[Dict[str, Any]],
     ) -> TestResult:
         """
         Plan development tasks based on feedback
@@ -322,7 +327,7 @@ Respond in JSON format:
                 system_prompt="You are a development team coordinator.",
                 user_content=prompt,
                 temperature=0.7,
-                max_tokens=2000
+                max_tokens=2000,
             )
 
             result_data = json.loads(response)
@@ -331,7 +336,7 @@ Respond in JSON format:
                 agent=self.name,
                 timestamp=datetime.now().isoformat(),
                 passed=True,
-                details=result_data
+                details=result_data,
             )
         except Exception as e:
             print(f"Development planning error: {e}")
@@ -340,7 +345,7 @@ Respond in JSON format:
                 agent=self.name,
                 timestamp=datetime.now().isoformat(),
                 passed=False,
-                details={"error": str(e)}
+                details={"error": str(e)},
             )
 
 
@@ -359,10 +364,7 @@ class QASwarmOrchestrator:
         self.agreement_threshold = 0.75  # 75% confidence/agreement needed
 
     async def run_qa_cycle(
-        self,
-        feature: str,
-        user_request: str,
-        implementation_details: str = ""
+        self, feature: str, user_request: str, implementation_details: str = ""
     ) -> QACycle:
         """
         Run a complete QA cycle: Test → QA → Enhance → Develop → Verify → Repeat
@@ -374,7 +376,7 @@ class QASwarmOrchestrator:
             user_request=user_request,
             current_phase=TestingPhase.USER_TESTING,
             iteration=1,
-            started_at=datetime.now().isoformat()
+            started_at=datetime.now().isoformat(),
         )
 
         print(f"\n{'='*60}")
@@ -400,12 +402,13 @@ class QASwarmOrchestrator:
             elif cycle.current_phase == TestingPhase.QA_EVALUATION:
                 print("\n🔍 Running QA Evaluation...")
                 qa_result = await self.qa_evaluator.evaluate_quality(
-                    feature,
-                    implementation_details
+                    feature, implementation_details
                 )
                 cycle.test_results.append(qa_result)
                 cycle.current_phase = TestingPhase.ENHANCEMENT_ANALYSIS
-                print(f"   ✓ Quality Score: {qa_result.details.get('quality_metrics', {}).get('code_quality', 'N/A')}%")
+                print(
+                    f"   ✓ Quality Score: {qa_result.details.get('quality_metrics', {}).get('code_quality', 'N/A')}%"
+                )
                 print(f"   ✓ Issues Found: {len(qa_result.issues_found)}")
 
             # Phase 3: Enhancement Analysis
@@ -414,12 +417,11 @@ class QASwarmOrchestrator:
                 # Gather feedback from previous phases
                 all_feedback = [r.details for r in cycle.test_results]
                 enhancement = await self.enhancement_analyst.analyze_enhancements(
-                    feature,
-                    all_feedback
+                    feature, all_feedback
                 )
                 cycle.test_results.append(enhancement)
                 cycle.current_phase = TestingPhase.DEVELOPMENT_PLANNING
-                recommendations = enhancement.details.get('recommendations', [])
+                recommendations = enhancement.details.get("recommendations", [])
                 print(f"   ✓ Enhancement Ideas: {len(recommendations)}")
 
             # Phase 4: Development Planning
@@ -439,13 +441,10 @@ class QASwarmOrchestrator:
                         enhancements = result.recommendations
 
                 dev_plan = await self.dev_coordinator.plan_development(
-                    feature,
-                    test_issues,
-                    qa_issues,
-                    enhancements
+                    feature, test_issues, qa_issues, enhancements
                 )
                 cycle.test_results.append(dev_plan)
-                cycle.development_tasks = dev_plan.details.get('development_tasks', [])
+                cycle.development_tasks = dev_plan.details.get("development_tasks", [])
                 cycle.current_phase = TestingPhase.IMPLEMENTATION
                 print(f"   ✓ Tasks Created: {len(cycle.development_tasks)}")
 
@@ -466,12 +465,12 @@ class QASwarmOrchestrator:
                 # Run user testing again
                 user_test = await self.user_tester.test_feature(feature, user_request)
                 cycle.test_results.append(user_test)
-                cycle.agreements['user_tester'] = user_test.passed
+                cycle.agreements["user_tester"] = user_test.passed
 
                 # Run QA evaluation again
                 qa_result = await self.qa_evaluator.evaluate_quality(feature)
                 cycle.test_results.append(qa_result)
-                cycle.agreements['qa_evaluator'] = qa_result.passed
+                cycle.agreements["qa_evaluator"] = qa_result.passed
 
                 print(f"   ✓ User Tester: {'PASS ✓' if user_test.passed else 'FAIL ✗'}")
                 print(f"   ✓ QA Evaluator: {'PASS ✓' if qa_result.passed else 'FAIL ✗'}")
@@ -482,7 +481,9 @@ class QASwarmOrchestrator:
                     cycle.is_complete = True
                     cycle.current_phase = TestingPhase.COMPLETE
                 else:
-                    print(f"\n⚠️ Continuing refinement (Iteration {cycle.iteration}/{self.max_iterations})")
+                    print(
+                        f"\n⚠️ Continuing refinement (Iteration {cycle.iteration}/{self.max_iterations})"
+                    )
                     cycle.current_phase = TestingPhase.USER_TESTING
 
         print(f"\n{'='*60}")
@@ -508,7 +509,7 @@ async def main():
     cycle = await orchestrator.run_qa_cycle(
         feature="ExecutionMonitor Console with Agent Activity Logs",
         user_request="Users need to see what agents are doing in real-time during execution",
-        implementation_details="React component with live console showing agent logs"
+        implementation_details="React component with live console showing agent logs",
     )
 
     # Print final report
