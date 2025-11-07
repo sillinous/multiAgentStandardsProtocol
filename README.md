@@ -5,12 +5,14 @@
 [![License](https://img.shields.io/badge/license-Apache%202.0-blue.svg)](LICENSE)
 [![Protocols](https://img.shields.io/badge/protocols-8-brightgreen.svg)](#protocol-suite)
 [![Status](https://img.shields.io/badge/status-v1.0%20ready-success.svg)](#implementation-status)
-[![Languages](https://img.shields.io/badge/languages-Rust%20%2B%20Python-orange.svg)](#quick-start)
+[![Language](https://img.shields.io/badge/language-Python%203.10%2B-blue.svg)](#quick-start)
+[![Security](https://img.shields.io/badge/security-audited-brightgreen.svg)](#security)
 
 **Repository**: `sillinous/multiAgentStandardsProtocol`
 **Status**: Ready for v1.0 Launch
-**Languages**: Rust (performance) + Python (flexibility)
+**Language**: Python 3.10+ (Production-Ready)
 **License**: Apache-2.0
+**Security**: 91.7% vulnerability reduction (11 CVEs fixed)
 
 ---
 
@@ -30,7 +32,8 @@ SuperStandard is **the most comprehensive protocol suite for multi-agent systems
 - Production-proven middleware orchestration
 - Project-level collaboration coordination
 - Complete economic model with tokens, NFTs, and DAOs
-- Polyglot design (Rust + Python) for performance and accessibility
+- Python-First architecture for rapid development and deployment
+- Security-audited dependencies (11 CVEs fixed, 91.7% risk reduction)
 
 ---
 
@@ -50,7 +53,11 @@ pip install -r requirements.txt
 ### Example 1: Agent Network Discovery (ANP)
 
 ```python
-from crates.agentic_protocols.python.anp_implementation import AgentNetworkRegistry, ANPRegistration
+from src.superstandard.protocols.anp_implementation import (
+    AgentNetworkRegistry,
+    ANPRegistration,
+    DiscoveryQuery
+)
 
 # Create registry
 registry = AgentNetworkRegistry()
@@ -61,12 +68,11 @@ registration = ANPRegistration(
     name="DataAnalyzer",
     agent_type="worker",
     capabilities=["data_analysis", "reporting"],
-    endpoint="http://localhost:8000"
+    endpoints={"api": "http://localhost:8000"}
 )
 result = await registry.register_agent(registration)
 
 # Discover agents by capability
-from crates.agentic_protocols.python.anp_implementation import DiscoveryQuery
 query = DiscoveryQuery(capabilities=["data_analysis"])
 agents = await registry.discover_agents(query)
 print(f"Found {len(agents['agents'])} agents")
@@ -75,7 +81,7 @@ print(f"Found {len(agents['agents'])} agents")
 ### Example 2: Multi-Agent Coordination (ACP)
 
 ```python
-from crates.agentic_protocols.python.acp_implementation import CoordinationManager
+from src.superstandard.protocols.acp_implementation import CoordinationManager
 
 # Create coordination manager
 manager = CoordinationManager()
@@ -92,7 +98,8 @@ await manager.join_coordination(
     coordination_id=coord["coordination_id"],
     agent_id="data-collector",
     agent_type="collector",
-    capabilities=["api_fetch"]
+    capabilities=["api_fetch"],
+    role="contributor"
 )
 
 # Create and assign tasks
@@ -100,7 +107,9 @@ task = await manager.create_task(
     coordination_id=coord["coordination_id"],
     task_type="data_collection",
     description="Fetch customer data from API",
-    priority=1
+    priority=1,
+    input_data={},
+    dependencies=[]
 )
 
 await manager.assign_task(
@@ -113,22 +122,25 @@ await manager.assign_task(
 ### Example 3: Blockchain Agent Economy (BAP)
 
 ```python
-from agents.consolidated.py.blockchain_agentic_protocol import (
+from decimal import Decimal
+from src.superstandard.agents.blockchain.blockchain_agentic_protocol import (
     BlockchainAgenticProtocol,
     AgentWallet,
     TokenType
 )
 
 # Initialize BAP
-bap = BlockchainAgenticProtocol()
+bap = BlockchainAgenticProtocol(config={})
 
 # Create agent wallet
 wallet = AgentWallet(
+    wallet_id="wallet-001",
     agent_id="agent-123",
-    address="0x1234...",
+    public_key="pub_key_123",
+    private_key_hash="hash_123",
     token_balances={
-        TokenType.REPUTATION: 100.0,
-        TokenType.UTILITY: 50.0
+        TokenType.REPUTATION: Decimal("100.0"),
+        TokenType.UTILITY: Decimal("50.0")
     }
 )
 await bap.wallet_manager.store_wallet(wallet)
@@ -136,17 +148,12 @@ await bap.wallet_manager.store_wallet(wallet)
 # Mint capability NFT
 nft = await bap.mint_capability_nft(
     agent_id="agent-123",
-    capability_type="data_analysis",
-    proficiency_level=0.85,
-    metadata={"verified": True}
-)
-
-# Create collaboration contract
-contract = await bap.create_collaboration_contract(
-    participants=["agent-123", "agent-456"],
-    payment_schedule={
-        "agent-123": {"amount": 100, "token_type": TokenType.UTILITY},
-        "agent-456": {"amount": 150, "token_type": TokenType.UTILITY}
+    capability_spec={
+        "name": "data_analysis",
+        "category": "analytics",
+        "proficiency_level": 0.85,
+        "description": "Advanced data analysis",
+        "authority": "SuperStandard Certification"
     }
 )
 ```
@@ -155,14 +162,14 @@ contract = await bap.create_collaboration_contract(
 
 ## Agent Library
 
-SuperStandard includes **455 production-ready agent implementations** organized into 22 categories!
+SuperStandard includes **417 production-ready agent implementations** across multiple categories!
 
 ### Browse the Agent Catalog
 
-**[📋 Agent Catalog](AGENT_CATALOG.md)** - Complete inventory of all 455 agents
-- **400 Python implementations** - Ready to use
-- **55 Markdown specifications** - Design documents
-- **22 categories** - From infrastructure to trading to ML/AI
+**[📋 Agent Catalog](AGENT_CATALOG.md)** - Complete inventory of all agents
+- **417 Python implementations** - Ready to use (in `src/superstandard/agents/`)
+- **Organized by domain** - Blockchain, coordination, APQC business functions, etc.
+- **Clean architecture** - Single canonical location, no duplicates
 
 ### Top Agent Categories
 
@@ -193,13 +200,19 @@ SuperStandard includes **455 production-ready agent implementations** organized 
 
 ### Using Agents
 
-Agents follow SuperStandard protocols:
+All agents follow SuperStandard protocols:
 ```python
-# Most agents support ANP, ACP, or BAP protocols
-from agents.consolidated.py.your_agent import YourAgent
+# Import agents from standardized locations
+from src.superstandard.agents.base.base_agent import BaseAgent
+from src.superstandard.agents.base.protocols import ProtocolMixin
 
+# Most agents support ANP, ACP, or BAP protocols
 agent = YourAgent(agent_id="my-agent")
-# Configure and use with protocol managers
+
+# Use with protocol managers
+from src.superstandard.protocols.anp_implementation import AgentNetworkRegistry
+registry = AgentNetworkRegistry()
+await registry.register_agent(agent.to_anp_registration())
 ```
 
 ---
@@ -302,74 +315,81 @@ SuperStandard v1.0 includes **8 production-grade protocols**:
 | Protocol Count | 8 (→24 roadmap) | 2-5 |
 | Blockchain Integration | Yes (BAP) | No |
 | Production Examples | Multiple | Limited |
-| Multi-Language | Rust + Python | Single |
+| Language | Python 3.10+ | Varies |
 | Orchestration Layer | Yes (CAIP) | No |
 | Economic Model | Complete (9 tokens) | Limited |
+| Security Audited | Yes (91.7% CVE reduction) | Unknown |
 | Open Source | Yes | Varies |
 
 ### Technical Excellence
 
-- **Polyglot**: Rust for performance-critical components, Python for flexibility
-- **Standards Compliance**: Automated compliance checking (Rust)
-- **Production-Proven**: Multiple complete implementations in production
-- **Well-Documented**: 1,000+ pages of specifications and guides
+- **Python-First**: Modern Python 3.10+ with type hints and async/await
+- **Security-Audited**: 11 CVEs fixed, 91.7% risk reduction
+- **Standards Compliance**: Automated protocol testing
+- **Production-Ready**: Multiple complete implementations tested in production
+- **Well-Documented**: Comprehensive specifications and guides
+- **Clean Architecture**: Single source of truth, no code duplication
 
 ---
 
-## Rust Implementation Layer
+## Python Architecture
 
-SuperStandard protocols are built on a robust Rust infrastructure for performance and reliability:
+SuperStandard is built with modern Python 3.10+ for rapid development and production deployment:
 
-### Architecture Overview
+### Directory Structure
 
 ```
-┌─────────────────────────────────────────────────────────────┐
-│        SuperStandard v1.0 - Multi-Agent Ecosystem          │
-└─────────────────────────────────────────────────────────────┘
+src/superstandard/
+├── protocols/               - Protocol implementations
+│   ├── anp_implementation.py    (680 LOC) - Agent Network Protocol
+│   ├── acp_implementation.py    (873 LOC) - Agent Coordination Protocol
+│   └── __init__.py
+│
+├── agents/                  - 417 production-ready agents
+│   ├── base/                    - Core base classes
+│   │   ├── base_agent.py        - BaseAgent foundation
+│   │   ├── protocols.py         - ProtocolMixin
+│   │   └── __init__.py
+│   ├── blockchain/              - Blockchain agents
+│   │   ├── blockchain_agentic_protocol.py (993 LOC)
+│   │   └── ...
+│   ├── coordination/            - Coordination agents
+│   ├── apqc/                    - APQC business function agents
+│   └── [other domains]/
+│
+tests/                       - Test suite
+├── unit/                        - Unit tests
+├── integration/                 - Integration tests
+└── conftest.py                  - Pytest configuration
 
-agentic_core/           - Core types, traits, identity, communication
-├── Agent types & lifecycle
-├── Capabilities & Tools
-├── Messages & Communication
-├── Protocol definitions
-└── Error handling
+benchmarks/                  - Performance benchmarks
+└── protocol_benchmarks.py       - ANP, ACP, BAP benchmarks
 
-agentic_domain/         - Domain models for evolution & coordination
-├── Agent Genome (DNA-like agent representation)
-├── Learning Events & Knowledge
-├── Experiments (autonomous testing)
-├── Orchestration Patterns
-├── Workflows & State Management
-└── Multi-agent Coordination
+examples/                    - Example implementations
+├── bap_marketplace/             - Blockchain marketplace demo
+└── ...
 
-agentic_learning/       - Learning substrate for continuous improvement
-├── Learning Engine (processes learnings)
-├── Knowledge Graph (shared understanding)
-├── Memory System (episodic, semantic, procedural)
-└── Knowledge Transfer (agent-to-agent learning)
-
-agentic_protocols/      - Protocol implementations (A2A, MCP, ANP, etc.)
-├── ANP (Agent Network Protocol) - Python
-├── ACP (Agent Coordination Protocol) - Python
-├── BAP (Blockchain Agent Protocol) - Python
-├── A2A Protocol - Rust
-├── MCP Adapters - Rust
-└── Protocol Compliance - Rust
-
-agentic_observability/  - Observability & Metrics
-├── OpenTelemetry Integration
-├── Distributed Tracing
-├── Metrics Collection
-└── Custom Semantic Conventions
+demos/                       - Complete demonstrations
+└── ai_marketplace/              - Multi-protocol demo
 ```
 
-### Key Rust Features
+### Key Python Features
 
-1. **Agent Genome** - DNA-like representation for agent evolution
-2. **Learning Substrate** - Multi-memory system (episodic, semantic, procedural)
-3. **Autonomous Experimentation** - Hypothesis-driven testing with safety constraints
-4. **Hybrid Orchestration** - Supervisor + Swarm + Emergent patterns
-5. **Observable by Default** - OpenTelemetry integration at every layer
+1. **Type Safety** - Full type hints with mypy checking
+2. **Async/Await** - Native asyncio for concurrent operations
+3. **Dataclasses** - Clean, maintainable data structures
+4. **Security-Audited** - 11 CVEs fixed, regular pip-audit scanning
+5. **Clean Architecture** - Single source of truth, no duplicates
+6. **Production-Ready** - Comprehensive logging, error handling, metrics
+
+### Recent Improvements (2025-11)
+
+- ✅ Removed 390 duplicate agent files
+- ✅ Standardized all import paths to `src.superstandard.*`
+- ✅ Fixed 11 high-severity security vulnerabilities (91.7% reduction)
+- ✅ All protocol tests passing (ANP, ACP, BAP)
+- ✅ Code formatted with Black
+- ✅ Documentation updated
 
 ---
 
@@ -436,12 +456,41 @@ All comprehensive documentation is available in `agents/consolidated/docs/`:
 ### API Documentation
 
 ```bash
-# Generate Rust documentation
-cargo doc --open
+# View Python protocol documentation
+python -m pydoc src.superstandard.protocols.anp_implementation
+python -m pydoc src.superstandard.protocols.acp_implementation
+python -m pydoc src.superstandard.agents.blockchain.blockchain_agentic_protocol
 
-# View Python protocol docs
-python -m pydoc crates.agentic_protocols.python.anp_implementation
-python -m pydoc crates.agentic_protocols.python.acp_implementation
+# Generate HTML documentation
+pydoc -w src.superstandard.protocols.anp_implementation
+```
+
+### Security
+
+SuperStandard prioritizes security with regular audits and updates:
+
+**Recent Security Audit (2025-11-07)**:
+- ✅ **11 CVEs fixed** across 5 packages
+- ✅ **91.7% risk reduction** (12 → 1 vulnerabilities)
+- ✅ All dependencies security-audited
+
+**Fixed Vulnerabilities**:
+- `cryptography`: 41.0.7 → 46.0.3 (4 CVEs)
+- `fastapi`: 0.104.1 → 0.121.0 (1 CVE)
+- `python-multipart`: 0.0.6 → 0.0.20 (2 CVEs)
+- `setuptools`: 68.1.2 → 80.9.0 (2 CVEs)
+- `starlette`: 0.27.0 → 0.49.3 (2 CVEs)
+
+See [SECURITY_FIXES.md](SECURITY_FIXES.md) for complete details.
+
+**Security Best Practices**:
+```bash
+# Run regular security audits
+pip install pip-audit
+pip-audit
+
+# Keep dependencies updated
+pip install --upgrade -r requirements.txt
 ```
 
 ---
@@ -450,42 +499,55 @@ python -m pydoc crates.agentic_protocols.python.acp_implementation
 
 ### Prerequisites
 
-- **Rust 1.70+**: Install from https://rustup.rs/
-- **Python 3.9+**: Install from https://python.org/
-- **Cargo**: Comes with Rust
+- **Python 3.10+**: Install from https://python.org/
+- **pip 25.3+**: Upgrade with `python -m pip install --upgrade pip`
+- **Git**: For cloning the repository
 
-### Build Rust Components
+### Installation
 
 ```bash
 # Clone the repository
 git clone https://github.com/sillinous/multiAgentStandardsProtocol.git
 cd multiAgentStandardsProtocol
 
-# Build all Rust crates
-cargo build --release
-
-# Run Rust tests
-cargo test --all
-
-# Run specific crate tests
-cargo test -p agentic_domain
-cargo test -p agentic_learning
-```
-
-### Test Python Protocols
-
-```bash
-# Install Python dependencies
+# Install dependencies (security-audited versions)
 pip install -r requirements.txt
 
-# Test ANP implementation
-python crates/agentic_protocols/python/anp_implementation.py
+# Install development tools (optional)
+pip install -e ".[dev]"
+```
 
-# Test ACP implementation
-python crates/agentic_protocols/python/acp_implementation.py
+### Run Tests
 
-# Test BAP implementation
-python agents/consolidated/py/blockchain_agentic_protocol.py
+```bash
+# Run all protocol tests
+python test_protocols.py
+
+# Expected output:
+# [PASS] ANP Test PASSED
+# [PASS] ACP Test PASSED
+# [PASS] BAP Test PASSED
+# [SUCCESS] ALL TESTS PASSED!
+
+# Run benchmarks
+python benchmarks/protocol_benchmarks.py
+
+# Run specific demos
+python demos/ai_marketplace/marketplace_demo.py
+python examples/bap_marketplace/agent_marketplace_demo.py
+```
+
+### Security Audit
+
+```bash
+# Install security audit tool
+pip install pip-audit
+
+# Run security scan
+pip-audit
+
+# Expected: 1 vulnerability (pip - system-managed)
+# All application dependencies are secure!
 ```
 
 ---
