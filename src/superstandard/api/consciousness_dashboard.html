@@ -367,8 +367,8 @@
             <label>Collective ID</label>
             <input type="text" id="collectiveId" value="test_collective" placeholder="Enter collective ID">
         </div>
-        <button class="btn" onclick="connect()">Connect</button>
-        <button class="btn" onclick="disconnect()">Disconnect</button>
+        <button class="btn" id="connectBtn" onclick="connect()" style="display: inline-block;">Connect</button>
+        <button class="btn" id="disconnectBtn" onclick="disconnect()" style="display: none; background: linear-gradient(90deg, #ef4444 0%, #dc2626 100%);">Disconnect</button>
     </div>
 
     <div class="dashboard">
@@ -516,12 +516,19 @@
 
         function updateConnectionStatus(connected) {
             const status = document.getElementById('connectionStatus');
+            const connectBtn = document.getElementById('connectBtn');
+            const disconnectBtn = document.getElementById('disconnectBtn');
+
             if (connected) {
                 status.textContent = `Connected to ${collectiveId}`;
                 status.className = 'connection-status connected pulse';
+                connectBtn.style.display = 'none';
+                disconnectBtn.style.display = 'inline-block';
             } else {
                 status.textContent = 'Disconnected';
                 status.className = 'connection-status disconnected';
+                connectBtn.style.display = 'inline-block';
+                disconnectBtn.style.display = 'none';
             }
         }
 

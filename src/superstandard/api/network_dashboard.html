@@ -691,22 +691,33 @@
         // Render agent list
         function renderAgentList(filteredAgents = agents) {
             const listEl = document.getElementById('agentList');
-            listEl.innerHTML = filteredAgents.map(agent => `
-                <div class="agent-item ${agent.status}">
-                    <div class="agent-header">
-                        <span class="agent-id">${agent.id}</span>
-                        <span class="agent-status ${agent.status}">${agent.status}</span>
+
+            if (filteredAgents.length === 0) {
+                listEl.innerHTML = `
+                    <div style="text-align: center; opacity: 0.6; padding: 40px 20px;">
+                        <div style="font-size: 48px; margin-bottom: 16px;">🤖</div>
+                        <div style="font-size: 16px; font-weight: 600; margin-bottom: 8px; color: #fff;">No agents registered</div>
+                        <div style="font-size: 14px; color: rgba(255,255,255,0.7);">Register your first agent to see it appear here</div>
                     </div>
-                    <div class="agent-details">
-                        <span class="agent-detail">📍 ${agent.region}</span>
-                        <span class="agent-detail">⚡ Load: ${(agent.load * 100).toFixed(0)}%</span>
-                        <span class="agent-detail">🔗 ${agent.endpoint}</span>
+                `;
+            } else {
+                listEl.innerHTML = filteredAgents.map(agent => `
+                    <div class="agent-item ${agent.status}">
+                        <div class="agent-header">
+                            <span class="agent-id">${agent.id}</span>
+                            <span class="agent-status ${agent.status}">${agent.status}</span>
+                        </div>
+                        <div class="agent-details">
+                            <span class="agent-detail">📍 ${agent.region}</span>
+                            <span class="agent-detail">⚡ Load: ${(agent.load * 100).toFixed(0)}%</span>
+                            <span class="agent-detail">🔗 ${agent.endpoint}</span>
+                        </div>
+                        <div class="capabilities">
+                            ${agent.capabilities.map(cap => `<span class="capability-tag">${cap}</span>`).join('')}
+                        </div>
                     </div>
-                    <div class="capabilities">
-                        ${agent.capabilities.map(cap => `<span class="capability-tag">${cap}</span>`).join('')}
-                    </div>
-                </div>
-            `).join('');
+                `).join('');
+            }
 
             document.getElementById('agentCount').textContent = filteredAgents.length;
         }

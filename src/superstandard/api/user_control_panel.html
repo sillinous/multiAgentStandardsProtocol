@@ -282,6 +282,31 @@
             font-size: 24px;
             font-weight: 600;
             margin-bottom: 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .modal-close {
+            background: none;
+            border: none;
+            color: #fff;
+            font-size: 28px;
+            cursor: pointer;
+            padding: 0;
+            width: 32px;
+            height: 32px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 50%;
+            transition: background 0.3s;
+            opacity: 0.7;
+        }
+
+        .modal-close:hover {
+            background: rgba(255, 255, 255, 0.1);
+            opacity: 1;
         }
 
         .form-group {
@@ -397,9 +422,100 @@
         .animate-in {
             animation: slideIn 0.5s ease-out;
         }
+
+        /* Toast Notifications */
+        .toast-container {
+            position: fixed;
+            top: 80px;
+            right: 20px;
+            z-index: 10000;
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+
+        .toast {
+            background: rgba(255, 255, 255, 0.95);
+            color: #333;
+            padding: 16px 20px;
+            border-radius: 12px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+            min-width: 300px;
+            max-width: 400px;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            animation: slideInRight 0.3s ease-out;
+            border-left: 4px solid;
+        }
+
+        @keyframes slideInRight {
+            from {
+                transform: translateX(400px);
+                opacity: 0;
+            }
+            to {
+                transform: translateX(0);
+                opacity: 1;
+            }
+        }
+
+        .toast.success {
+            border-left-color: #4ade80;
+        }
+
+        .toast.error {
+            border-left-color: #f87171;
+        }
+
+        .toast.info {
+            border-left-color: #60a5fa;
+        }
+
+        .toast-icon {
+            font-size: 24px;
+            flex-shrink: 0;
+        }
+
+        .toast-content {
+            flex: 1;
+        }
+
+        .toast-title {
+            font-weight: 600;
+            margin-bottom: 4px;
+        }
+
+        .toast-message {
+            font-size: 14px;
+            opacity: 0.8;
+        }
+
+        .toast-close {
+            background: none;
+            border: none;
+            color: #666;
+            font-size: 20px;
+            cursor: pointer;
+            padding: 0;
+            width: 24px;
+            height: 24px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 50%;
+            transition: background 0.2s;
+            flex-shrink: 0;
+        }
+
+        .toast-close:hover {
+            background: rgba(0, 0, 0, 0.1);
+        }
     </style>
 </head>
 <body>
+    <!-- Toast Container -->
+    <div class="toast-container" id="toastContainer"></div>
     <nav class="navbar">
         <h1>⚡ SuperStandard Control Panel</h1>
         <div class="nav-links">
@@ -525,7 +641,11 @@
     <div class="recent-activity">
         <h3 class="section-header">Recent Activity</h3>
         <div class="activity-list scrollbar-custom" id="activityList">
-            <!-- Dynamically populated -->
+            <div style="text-align: center; opacity: 0.6; padding: 40px 20px;">
+                <div style="font-size: 48px; margin-bottom: 16px;">🕐</div>
+                <div style="font-size: 16px; font-weight: 600; margin-bottom: 8px;">No recent activity</div>
+                <div style="font-size: 14px;">Your actions will be logged here</div>
+            </div>
         </div>
     </div>
 
@@ -534,7 +654,10 @@
     <!-- Register Agent Modal -->
     <div class="modal" id="registerAgentModal">
         <div class="modal-content">
-            <div class="modal-header">Register New Agent</div>
+            <div class="modal-header">
+                <span>Register New Agent</span>
+                <button class="modal-close" onclick="closeModal('registerAgent')" aria-label="Close">&times;</button>
+            </div>
             <form onsubmit="submitRegisterAgent(event)">
                 <div class="form-group">
                     <label>Agent ID</label>
@@ -569,7 +692,10 @@
     <!-- Create Session Modal -->
     <div class="modal" id="createSessionModal">
         <div class="modal-content">
-            <div class="modal-header">Create Coordination Session</div>
+            <div class="modal-header">
+                <span>Create Coordination Session</span>
+                <button class="modal-close" onclick="closeModal('createSession')" aria-label="Close">&times;</button>
+            </div>
             <form onsubmit="submitCreateSession(event)">
                 <div class="form-group">
                     <label>Session Name</label>
@@ -600,7 +726,10 @@
     <!-- Join Collective Modal -->
     <div class="modal" id="joinCollectiveModal">
         <div class="modal-content">
-            <div class="modal-header">Join Collective Consciousness</div>
+            <div class="modal-header">
+                <span>Join Collective Consciousness</span>
+                <button class="modal-close" onclick="closeModal('joinCollective')" aria-label="Close">&times;</button>
+            </div>
             <form onsubmit="submitJoinCollective(event)">
                 <div class="form-group">
                     <label>Agent ID</label>
@@ -643,6 +772,45 @@
                 }
             });
         });
+
+        // Close modal on ESC key
+        document.addEventListener('keydown', (e) => {
+            if (e.key === 'Escape') {
+                document.querySelectorAll('.modal.active').forEach(modal => {
+                    modal.classList.remove('active');
+                });
+            }
+        });
+
+        // Toast Notification System
+        function showToast(title, message, type = 'info') {
+            const container = document.getElementById('toastContainer');
+            const toast = document.createElement('div');
+            toast.className = `toast ${type}`;
+
+            const icons = {
+                success: '✅',
+                error: '❌',
+                info: 'ℹ️'
+            };
+
+            toast.innerHTML = `
+                <span class="toast-icon">${icons[type]}</span>
+                <div class="toast-content">
+                    <div class="toast-title">${title}</div>
+                    <div class="toast-message">${message}</div>
+                </div>
+                <button class="toast-close" onclick="this.parentElement.remove()">&times;</button>
+            `;
+
+            container.appendChild(toast);
+
+            // Auto-remove after 5 seconds
+            setTimeout(() => {
+                toast.style.animation = 'slideInRight 0.3s ease-out reverse';
+                setTimeout(() => toast.remove(), 300);
+            }, 5000);
+        }
 
         // API Configuration
         const API_BASE = window.location.origin;
@@ -711,17 +879,17 @@
                 const result = await response.json();
 
                 if (result.success) {
-                    alert(`✅ Agent ${data.agentId} registered successfully!`);
+                    showToast('Agent Registered', `Agent ${data.agentId} registered successfully!`, 'success');
                     addActivity('agent', `New agent registered: ${data.agentId} (${data.agentType})`);
                     closeModal('registerAgent');
                     e.target.reset();
                     updateStats();
                 } else {
-                    alert(`❌ Registration failed: ${result.message || 'Unknown error'}`);
+                    showToast('Registration Failed', result.message || 'Unknown error', 'error');
                 }
             } catch (error) {
                 console.error('[UserPanel] Registration error:', error);
-                alert(`❌ Registration failed: ${error.message}`);
+                showToast('Registration Error', error.message, 'error');
             }
         }
 
@@ -747,17 +915,17 @@
                 const result = await response.json();
 
                 if (result.success) {
-                    alert(`✅ Session "${data.sessionName}" created successfully!\nSession ID: ${result.session_id}`);
+                    showToast('Session Created', `"${data.sessionName}" created successfully! ID: ${result.session_id}`, 'success');
                     addActivity('session', `New ${data.coordinationType} session: ${data.sessionName}`);
                     closeModal('createSession');
                     e.target.reset();
                     updateStats();
                 } else {
-                    alert(`❌ Session creation failed: ${result.message || 'Unknown error'}`);
+                    showToast('Session Creation Failed', result.message || 'Unknown error', 'error');
                 }
             } catch (error) {
                 console.error('[UserPanel] Session creation error:', error);
-                alert(`❌ Session creation failed: ${error.message}`);
+                showToast('Session Creation Error', error.message, 'error');
             }
         }
 
@@ -788,17 +956,17 @@
                 const result = await response.json();
 
                 if (result.success) {
-                    alert(`✅ Agent ${data.agentId} joined collective ${data.collectiveId}!`);
+                    showToast('Joined Collective', `Agent ${data.agentId} joined ${data.collectiveId}!`, 'success');
                     addActivity('thought', `${data.agentId} joined collective: ${data.collectiveId}`);
                     closeModal('joinCollective');
                     e.target.reset();
                     updateStats();
                 } else {
-                    alert(`❌ Failed to join collective: ${result.message || 'Unknown error'}`);
+                    showToast('Join Failed', result.message || 'Unknown error', 'error');
                 }
             } catch (error) {
                 console.error('[UserPanel] Join collective error:', error);
-                alert(`❌ Failed to join collective: ${error.message}`);
+                showToast('Join Error', error.message, 'error');
             }
         }
 
@@ -818,15 +986,26 @@
 
         function renderActivities() {
             const listEl = document.getElementById('activityList');
-            listEl.innerHTML = activities.slice(0, 10).map(activity => {
-                const timeAgo = getTimeAgo(activity.time);
-                return `
-                    <div class="activity-item ${activity.type}">
-                        <div class="activity-time">${timeAgo}</div>
-                        <div class="activity-text">${activity.text}</div>
+
+            if (activities.length === 0) {
+                listEl.innerHTML = `
+                    <div style="text-align: center; opacity: 0.6; padding: 40px 20px;">
+                        <div style="font-size: 48px; margin-bottom: 16px;">🕐</div>
+                        <div style="font-size: 16px; font-weight: 600; margin-bottom: 8px;">No recent activity</div>
+                        <div style="font-size: 14px;">Your actions will be logged here</div>
                     </div>
                 `;
-            }).join('');
+            } else {
+                listEl.innerHTML = activities.slice(0, 10).map(activity => {
+                    const timeAgo = getTimeAgo(activity.time);
+                    return `
+                        <div class="activity-item ${activity.type}">
+                            <div class="activity-time">${timeAgo}</div>
+                            <div class="activity-text">${activity.text}</div>
+                        </div>
+                    `;
+                }).join('');
+            }
         }
 
         function getTimeAgo(date) {

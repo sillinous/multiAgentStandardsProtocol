@@ -473,7 +473,11 @@
         <div class="activity-feed">
             <h3>Recent Activity</h3>
             <div id="activityFeed">
-                <!-- Activity items will be added dynamically -->
+                <div style="text-align: center; opacity: 0.6; padding: 40px 20px;">
+                    <div style="font-size: 48px; margin-bottom: 16px;">📊</div>
+                    <div style="font-size: 16px; font-weight: 600; margin-bottom: 8px;">No activity yet</div>
+                    <div style="font-size: 14px;">Activity will appear here as agents register and sessions are created</div>
+                </div>
             </div>
         </div>
     </div>
@@ -591,6 +595,13 @@
 
         function addActivityItem(protocol, title, time) {
             const feed = document.getElementById('activityFeed');
+
+            // Remove empty state if it exists
+            const emptyState = feed.querySelector('[style*="text-align: center"]');
+            if (emptyState) {
+                emptyState.remove();
+            }
+
             const item = document.createElement('div');
             item.className = 'activity-item';
             item.innerHTML = `

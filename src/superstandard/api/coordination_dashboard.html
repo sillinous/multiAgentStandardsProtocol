@@ -662,28 +662,39 @@
         // Render sessions
         function renderSessions() {
             const listEl = document.getElementById('sessionList');
-            listEl.innerHTML = sessions.map(session => {
-                const progress = (session.completedTasks / session.totalTasks * 100).toFixed(0);
-                return `
-                    <div class="session-card ${session.type}" onclick="selectSession('${session.id}')">
-                        <div class="session-header">
-                            <span class="session-title">${session.name}</span>
-                            <span class="session-status ${session.status}">${session.status}</span>
-                        </div>
-                        <div class="session-meta">
-                            <span class="coordination-type-badge type-${session.type}">${session.type}</span>
-                            <span>👥 ${session.participantCount} participants</span>
-                            <span>📋 ${session.totalTasks} tasks</span>
-                        </div>
-                        <div class="session-progress">
-                            <div class="progress-bar">
-                                <div class="progress-fill" style="width: ${progress}%"></div>
-                            </div>
-                            <div class="progress-text">${session.completedTasks}/${session.totalTasks} tasks completed (${progress}%)</div>
-                        </div>
+
+            if (sessions.length === 0) {
+                listEl.innerHTML = `
+                    <div style="text-align: center; opacity: 0.6; padding: 40px 20px;">
+                        <div style="font-size: 48px; margin-bottom: 16px;">🤝</div>
+                        <div style="font-size: 16px; font-weight: 600; margin-bottom: 8px; color: #fff;">No active sessions</div>
+                        <div style="font-size: 14px; color: rgba(255,255,255,0.7);">Create a coordination session to get started</div>
                     </div>
                 `;
-            }).join('');
+            } else {
+                listEl.innerHTML = sessions.map(session => {
+                    const progress = (session.completedTasks / session.totalTasks * 100).toFixed(0);
+                    return `
+                        <div class="session-card ${session.type}" onclick="selectSession('${session.id}')">
+                            <div class="session-header">
+                                <span class="session-title">${session.name}</span>
+                                <span class="session-status ${session.status}">${session.status}</span>
+                            </div>
+                            <div class="session-meta">
+                                <span class="coordination-type-badge type-${session.type}">${session.type}</span>
+                                <span>👥 ${session.participantCount} participants</span>
+                                <span>📋 ${session.totalTasks} tasks</span>
+                            </div>
+                            <div class="session-progress">
+                                <div class="progress-bar">
+                                    <div class="progress-fill" style="width: ${progress}%"></div>
+                                </div>
+                                <div class="progress-text">${session.completedTasks}/${session.totalTasks} tasks completed (${progress}%)</div>
+                            </div>
+                        </div>
+                    `;
+                }).join('');
+            }
 
             document.getElementById('sessionCount').textContent = `${sessions.length} sessions`;
         }
@@ -812,10 +823,10 @@
                 ctx.textAlign = 'center';
                 ctx.fillText(`Task ${i + 1}`, x, y + nodeRadius + 20);
 
-                // Progress
-                const progress = Math.floor(Math.random() * 100);
-                ctx.font = '10px "Segoe UI"';
-                ctx.fillText(`${progress}%`, x, y + 4);
+                // Status icon (no fake progress data)
+                ctx.font = '14px "Segoe UI"';
+                // Show step number instead of random percentage
+                ctx.fillText(`${i + 1}`, x, y + 4);
             }
         }
 
