@@ -16,9 +16,12 @@ Features:
 Usage:
     python -m uvicorn src.superstandard.api.server:app --reload --port 8080
 
-    Access dashboards at:
-    - http://localhost:8080/dashboard/user
+    Dashboard Hub:
+    - http://localhost:8080/dashboard (Main landing page)
+
+    Individual Dashboards:
     - http://localhost:8080/dashboard/admin
+    - http://localhost:8080/dashboard/user
     - http://localhost:8080/dashboard/network
     - http://localhost:8080/dashboard/coordination
     - http://localhost:8080/dashboard/consciousness
@@ -205,6 +208,12 @@ async def root():
         </body>
     </html>
     """)
+
+@app.get("/dashboard")
+async def dashboard_landing():
+    """Serve main dashboard landing page."""
+    dashboard_path = Path(__file__).parent / "dashboard_landing.html"
+    return FileResponse(dashboard_path)
 
 @app.get("/dashboard/user")
 async def user_dashboard():
@@ -857,12 +866,15 @@ async def startup_event():
     print("   ✅ ACP (Agent Coordination Protocol)")
     print("   ✅ AConsP (Agent Consciousness Protocol)")
     print()
-    print("🌐 Dashboards available at:")
-    print("   - http://localhost:8080/dashboard/user")
-    print("   - http://localhost:8080/dashboard/admin")
-    print("   - http://localhost:8080/dashboard/network")
-    print("   - http://localhost:8080/dashboard/coordination")
-    print("   - http://localhost:8080/dashboard/consciousness")
+    print("🌐 Dashboard Hub:")
+    print("   🏠 http://localhost:8080/dashboard (Main landing page)")
+    print()
+    print("   Individual Dashboards:")
+    print("   📊 http://localhost:8080/dashboard/admin")
+    print("   🎛️ http://localhost:8080/dashboard/user")
+    print("   🌐 http://localhost:8080/dashboard/network")
+    print("   🤝 http://localhost:8080/dashboard/coordination")
+    print("   🧠 http://localhost:8080/dashboard/consciousness")
     print()
     print("=" * 80)
 

@@ -1,0 +1,377 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SuperStandard Platform - Dashboard Hub</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: #fff;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            padding: 20px;
+        }
+
+        .header {
+            text-align: center;
+            padding: 40px 20px;
+            margin-bottom: 40px;
+        }
+
+        .header h1 {
+            font-size: 3em;
+            margin-bottom: 10px;
+            text-shadow: 0 2px 10px rgba(0,0,0,0.3);
+        }
+
+        .header .subtitle {
+            font-size: 1.3em;
+            opacity: 0.9;
+            margin-bottom: 20px;
+        }
+
+        .status-indicator {
+            display: inline-flex;
+            align-items: center;
+            gap: 10px;
+            background: rgba(255, 255, 255, 0.2);
+            padding: 10px 25px;
+            border-radius: 25px;
+            backdrop-filter: blur(10px);
+            margin-top: 20px;
+        }
+
+        .status-dot {
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
+            background: #4ade80;
+            animation: pulse 2s infinite;
+        }
+
+        @keyframes pulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.5; }
+        }
+
+        .dashboard-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
+            gap: 25px;
+            max-width: 1400px;
+            margin: 0 auto;
+            width: 100%;
+        }
+
+        .dashboard-card {
+            background: rgba(255, 255, 255, 0.15);
+            backdrop-filter: blur(10px);
+            border-radius: 20px;
+            padding: 30px;
+            transition: all 0.3s;
+            cursor: pointer;
+            border: 2px solid rgba(255, 255, 255, 0.2);
+            text-decoration: none;
+            color: #fff;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .dashboard-card:hover {
+            transform: translateY(-10px);
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.3);
+            background: rgba(255, 255, 255, 0.25);
+            border-color: rgba(255, 255, 255, 0.5);
+        }
+
+        .dashboard-icon {
+            font-size: 3em;
+            margin-bottom: 15px;
+        }
+
+        .dashboard-title {
+            font-size: 1.5em;
+            font-weight: 600;
+            margin-bottom: 10px;
+        }
+
+        .dashboard-description {
+            font-size: 0.95em;
+            opacity: 0.9;
+            line-height: 1.6;
+            margin-bottom: 15px;
+            flex-grow: 1;
+        }
+
+        .dashboard-features {
+            list-style: none;
+            padding: 0;
+            margin: 15px 0;
+        }
+
+        .dashboard-features li {
+            padding: 5px 0;
+            font-size: 0.9em;
+            opacity: 0.8;
+        }
+
+        .dashboard-features li:before {
+            content: "✓ ";
+            margin-right: 8px;
+            color: #4ade80;
+        }
+
+        .dashboard-badge {
+            display: inline-block;
+            padding: 5px 12px;
+            background: rgba(74, 222, 128, 0.3);
+            border-radius: 15px;
+            font-size: 0.75em;
+            font-weight: 600;
+            margin-top: 10px;
+        }
+
+        .stats-bar {
+            background: rgba(255, 255, 255, 0.15);
+            backdrop-filter: blur(10px);
+            border-radius: 15px;
+            padding: 20px;
+            margin-bottom: 30px;
+            max-width: 1400px;
+            margin-left: auto;
+            margin-right: auto;
+        }
+
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+            gap: 20px;
+            text-align: center;
+        }
+
+        .stat-item {
+            padding: 10px;
+        }
+
+        .stat-value {
+            font-size: 2em;
+            font-weight: 700;
+            display: block;
+            margin-bottom: 5px;
+        }
+
+        .stat-label {
+            font-size: 0.85em;
+            opacity: 0.8;
+        }
+
+        .footer {
+            text-align: center;
+            margin-top: auto;
+            padding: 30px 20px;
+            opacity: 0.8;
+        }
+
+        .api-docs-link {
+            display: inline-block;
+            margin-top: 20px;
+            padding: 12px 30px;
+            background: rgba(255, 255, 255, 0.2);
+            border-radius: 25px;
+            text-decoration: none;
+            color: #fff;
+            transition: all 0.3s;
+        }
+
+        .api-docs-link:hover {
+            background: rgba(255, 255, 255, 0.3);
+            transform: translateY(-2px);
+        }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <h1>🚀 SuperStandard Platform</h1>
+        <p class="subtitle">World's First Complete Multi-Agent Protocol Platform</p>
+        <div class="status-indicator">
+            <span class="status-dot"></span>
+            <span id="systemStatus">System Operational</span>
+        </div>
+    </div>
+
+    <div class="stats-bar">
+        <div class="stats-grid">
+            <div class="stat-item">
+                <span class="stat-value" id="totalAgents">-</span>
+                <span class="stat-label">Total Agents</span>
+            </div>
+            <div class="stat-item">
+                <span class="stat-value" id="activeSessions">-</span>
+                <span class="stat-label">Active Sessions</span>
+            </div>
+            <div class="stat-item">
+                <span class="stat-value" id="totalThoughts">-</span>
+                <span class="stat-label">Thoughts Shared</span>
+            </div>
+            <div class="stat-item">
+                <span class="stat-value" id="patternsDiscovered">-</span>
+                <span class="stat-label">Patterns Discovered</span>
+            </div>
+        </div>
+    </div>
+
+    <div class="dashboard-grid">
+        <a href="/dashboard/admin" class="dashboard-card">
+            <div class="dashboard-icon">📊</div>
+            <div class="dashboard-title">Admin Dashboard</div>
+            <div class="dashboard-description">
+                System-wide overview with real-time metrics across all protocols. Monitor health,
+                track performance, and view activity feed.
+            </div>
+            <ul class="dashboard-features">
+                <li>System health monitoring</li>
+                <li>Protocol statistics (ANP, ACP, AConsP)</li>
+                <li>Live activity feed</li>
+                <li>Quick action buttons</li>
+            </ul>
+            <span class="dashboard-badge">LIVE DATA</span>
+        </a>
+
+        <a href="/dashboard/user" class="dashboard-card">
+            <div class="dashboard-icon">🎛️</div>
+            <div class="dashboard-title">User Control Panel</div>
+            <div class="dashboard-description">
+                User-friendly interface for common operations. Register agents, create sessions,
+                and join collectives with simple forms.
+            </div>
+            <ul class="dashboard-features">
+                <li>Register new agents</li>
+                <li>Create coordination sessions</li>
+                <li>Join collective consciousness</li>
+                <li>Interactive forms</li>
+            </ul>
+            <span class="dashboard-badge">LIVE DATA</span>
+        </a>
+
+        <a href="/dashboard/network" class="dashboard-card">
+            <div class="dashboard-icon">🌐</div>
+            <div class="dashboard-title">Network Topology</div>
+            <div class="dashboard-description">
+                Live force-directed graph visualizing agent network. Watch agents appear in real-time
+                with physics-based animations.
+            </div>
+            <ul class="dashboard-features">
+                <li>Force-directed graph visualization</li>
+                <li>Agent discovery queries</li>
+                <li>Network health monitoring</li>
+                <li>Real-time agent registration</li>
+            </ul>
+            <span class="dashboard-badge">LIVE DATA</span>
+        </a>
+
+        <a href="/dashboard/coordination" class="dashboard-card">
+            <div class="dashboard-icon">🤝</div>
+            <div class="dashboard-title">Coordination Hub</div>
+            <div class="dashboard-description">
+                Multi-agent orchestration dashboard. Manage sessions, track tasks, view participants,
+                and visualize workflows.
+            </div>
+            <ul class="dashboard-features">
+                <li>Active session management</li>
+                <li>Global task queue</li>
+                <li>Session participants</li>
+                <li>Workflow visualization</li>
+            </ul>
+            <span class="dashboard-badge">LIVE DATA</span>
+        </a>
+
+        <a href="/dashboard/consciousness" class="dashboard-card">
+            <div class="dashboard-icon">🧠</div>
+            <div class="dashboard-title">Consciousness Monitor</div>
+            <div class="dashboard-description">
+                Revolutionary collective intelligence visualization. Watch thoughts emerge,
+                entangle, and collapse into emergent patterns.
+            </div>
+            <ul class="dashboard-features">
+                <li>Collective awareness meter</li>
+                <li>Thought stream visualization</li>
+                <li>Entanglement graph</li>
+                <li>Pattern discovery</li>
+            </ul>
+            <span class="dashboard-badge">LIVE DATA</span>
+        </a>
+    </div>
+
+    <div class="footer">
+        <p>All dashboards feature real-time WebSocket streaming and REST API integration</p>
+        <a href="/docs" class="api-docs-link">📖 View API Documentation</a>
+    </div>
+
+    <script>
+        const API_BASE = window.location.origin;
+
+        // Fetch system statistics
+        async function fetchStats() {
+            try {
+                const response = await fetch(`${API_BASE}/api/admin/stats`);
+                const data = await response.json();
+
+                if (data.success) {
+                    const system = data.system || {};
+                    document.getElementById('totalAgents').textContent =
+                        system.total_agents_registered || 0;
+                    document.getElementById('activeSessions').textContent =
+                        data.acp?.active_sessions || 0;
+                    document.getElementById('totalThoughts').textContent =
+                        system.total_thoughts_submitted || 0;
+                    document.getElementById('patternsDiscovered').textContent =
+                        system.total_patterns_discovered || 0;
+
+                    document.getElementById('systemStatus').textContent = 'System Operational';
+                } else {
+                    document.getElementById('systemStatus').textContent = 'System Status Unknown';
+                }
+            } catch (error) {
+                console.error('Failed to fetch stats:', error);
+                document.getElementById('systemStatus').textContent = 'System Offline';
+                document.getElementById('totalAgents').textContent = '-';
+                document.getElementById('activeSessions').textContent = '-';
+                document.getElementById('totalThoughts').textContent = '-';
+                document.getElementById('patternsDiscovered').textContent = '-';
+            }
+        }
+
+        // Check system health
+        async function checkHealth() {
+            try {
+                const response = await fetch(`${API_BASE}/api/health`);
+                const data = await response.json();
+
+                if (data.status === 'healthy') {
+                    document.getElementById('systemStatus').textContent = 'System Operational';
+                } else {
+                    document.getElementById('systemStatus').textContent = 'System Degraded';
+                }
+            } catch (error) {
+                document.getElementById('systemStatus').textContent = 'System Offline';
+            }
+        }
+
+        // Initialize
+        checkHealth();
+        fetchStats();
+
+        // Refresh every 5 seconds
+        setInterval(fetchStats, 5000);
+    </script>
+</body>
+</html>
