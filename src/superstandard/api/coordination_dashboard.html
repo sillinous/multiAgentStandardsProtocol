@@ -535,11 +535,192 @@
         .toast-close:hover {
             background: rgba(0, 0, 0, 0.1);
         }
+
+        /* Modal Styles */
+        .modal {
+            display: none;
+            position: fixed;
+            z-index: 9999;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.7);
+            backdrop-filter: blur(5px);
+            align-items: center;
+            justify-content: center;
+        }
+
+        .modal.active {
+            display: flex;
+        }
+
+        .modal-content {
+            background: linear-gradient(135deg, #1e293b 0%, #0f172a 100%);
+            padding: 30px;
+            border-radius: 15px;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.5);
+            max-width: 500px;
+            width: 90%;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            animation: modalSlideIn 0.3s ease-out;
+        }
+
+        @keyframes modalSlideIn {
+            from {
+                transform: translateY(-50px);
+                opacity: 0;
+            }
+            to {
+                transform: translateY(0);
+                opacity: 1;
+            }
+        }
+
+        .modal-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+        }
+
+        .modal-title {
+            font-size: 24px;
+            font-weight: 700;
+            color: #fff;
+        }
+
+        .modal-close {
+            background: none;
+            border: none;
+            color: rgba(255, 255, 255, 0.6);
+            font-size: 28px;
+            cursor: pointer;
+            padding: 0;
+            width: 30px;
+            height: 30px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 50%;
+            transition: all 0.2s;
+        }
+
+        .modal-close:hover {
+            background: rgba(255, 255, 255, 0.1);
+            color: #fff;
+        }
+
+        .form-group {
+            margin-bottom: 20px;
+        }
+
+        .form-group label {
+            display: block;
+            margin-bottom: 8px;
+            color: rgba(255, 255, 255, 0.9);
+            font-weight: 500;
+        }
+
+        .form-group input,
+        .form-group select,
+        .form-group textarea {
+            width: 100%;
+            padding: 12px;
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            border-radius: 8px;
+            color: #fff;
+            font-size: 14px;
+            transition: border-color 0.3s;
+        }
+
+        .form-group input:focus,
+        .form-group select:focus,
+        .form-group textarea:focus {
+            outline: none;
+            border-color: rgba(96, 165, 250, 0.5);
+        }
+
+        .form-group textarea {
+            resize: vertical;
+            min-height: 80px;
+        }
+
+        .modal-actions {
+            display: flex;
+            gap: 10px;
+            justify-content: flex-end;
+            margin-top: 25px;
+        }
+
+        .btn-modal {
+            padding: 10px 20px;
+            border: none;
+            border-radius: 8px;
+            font-size: 14px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .btn-modal-primary {
+            background: linear-gradient(90deg, #667eea 0%, #764ba2 100%);
+            color: white;
+        }
+
+        .btn-modal-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(102, 126, 234, 0.4);
+        }
+
+        .btn-modal-secondary {
+            background: rgba(255, 255, 255, 0.1);
+            color: rgba(255, 255, 255, 0.9);
+        }
+
+        .btn-modal-secondary:hover {
+            background: rgba(255, 255, 255, 0.15);
+        }
     </style>
 </head>
 <body>
     <!-- Toast Container -->
     <div class="toast-container" id="toastContainer"></div>
+
+    <!-- Session Creation Modal -->
+    <div class="modal" id="createSessionModal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2 class="modal-title">Create Coordination Session</h2>
+                <button class="modal-close" onclick="closeSessionModal()">&times;</button>
+            </div>
+            <form id="createSessionForm" onsubmit="submitCreateSession(event)">
+                <div class="form-group">
+                    <label for="sessionName">Session Name *</label>
+                    <input type="text" id="sessionName" name="sessionName" required placeholder="Enter session name">
+                </div>
+                <div class="form-group">
+                    <label for="coordinationType">Coordination Type *</label>
+                    <select id="coordinationType" name="coordinationType" required>
+                        <option value="">Select type...</option>
+                        <option value="pipeline">Pipeline - Sequential task execution</option>
+                        <option value="swarm">Swarm - Parallel collaboration</option>
+                        <option value="supervisor">Supervisor - Hierarchical oversight</option>
+                        <option value="marketplace">Marketplace - Task bidding</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label for="sessionDescription">Description (optional)</label>
+                    <textarea id="sessionDescription" name="sessionDescription" placeholder="Enter session description"></textarea>
+                </div>
+                <div class="modal-actions">
+                    <button type="button" class="btn-modal btn-modal-secondary" onclick="closeSessionModal()">Cancel</button>
+                    <button type="submit" class="btn-modal btn-modal-primary">Create Session</button>
+                </div>
+            </form>
+        </div>
+    </div>
 
     <nav class="navbar">
         <h1>🤝 ACP Coordination Dashboard</h1>
@@ -607,7 +788,7 @@
             <div class="card">
                 <h2>Quick Actions</h2>
                 <div class="action-buttons">
-                    <button class="btn btn-primary" onclick="window.location.href='/dashboard/user'">
+                    <button class="btn btn-primary" onclick="openSessionModal()">
                         ➕ New Session
                     </button>
                     <button class="btn btn-secondary" onclick="refreshDashboard()" title="Refresh data">
@@ -1025,6 +1206,67 @@
         }
 
         // Actions
+        // Session creation modal functions
+        function openSessionModal() {
+            document.getElementById('createSessionModal').classList.add('active');
+            // Clear form
+            document.getElementById('createSessionForm').reset();
+        }
+
+        function closeSessionModal() {
+            document.getElementById('createSessionModal').classList.remove('active');
+        }
+
+        // Close modal on outside click
+        document.addEventListener('DOMContentLoaded', () => {
+            document.getElementById('createSessionModal').addEventListener('click', (e) => {
+                if (e.target.id === 'createSessionModal') {
+                    closeSessionModal();
+                }
+            });
+
+            // Close modal on ESC key
+            document.addEventListener('keydown', (e) => {
+                if (e.key === 'Escape') {
+                    closeSessionModal();
+                }
+            });
+        });
+
+        async function submitCreateSession(e) {
+            e.preventDefault();
+
+            const formData = new FormData(e.target);
+            const sessionName = formData.get('sessionName');
+            const coordinationType = formData.get('coordinationType');
+            const sessionDescription = formData.get('sessionDescription');
+
+            try {
+                const response = await fetch(`${API_BASE}/api/acp/sessions`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        name: sessionName,
+                        coordination_type: coordinationType,
+                        description: sessionDescription || `${coordinationType} coordination session`
+                    })
+                });
+
+                const result = await response.json();
+
+                if (result.success) {
+                    showToast('Session Created', `Session "${sessionName}" created successfully!`, 'success');
+                    closeSessionModal();
+                    fetchSessions(); // Refresh session list
+                } else {
+                    showToast('Creation Failed', result.message || 'Unknown error', 'error');
+                }
+            } catch (error) {
+                showToast('Connection Error', 'Failed to create session. Check your connection.', 'error');
+                console.error('[Coordination] Session creation error:', error);
+            }
+        }
+
         function exportMetrics() {
             const metrics = {
                 sessions: sessions,

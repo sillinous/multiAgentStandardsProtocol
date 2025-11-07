@@ -313,9 +313,107 @@
             font-size: 0.85em;
             color: #666;
         }
+
+        /* Toast Notifications */
+        .toast-container {
+            position: fixed;
+            top: 80px;
+            right: 20px;
+            z-index: 10000;
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+            pointer-events: none;
+        }
+
+        .toast {
+            background: rgba(255, 255, 255, 0.95);
+            color: #333;
+            padding: 16px 20px;
+            border-radius: 12px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+            min-width: 300px;
+            max-width: 400px;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            animation: slideInRight 0.3s ease-out;
+            border-left: 4px solid;
+            pointer-events: auto;
+        }
+
+        @keyframes slideInRight {
+            from {
+                transform: translateX(400px);
+                opacity: 0;
+            }
+            to {
+                transform: translateX(0);
+                opacity: 1;
+            }
+        }
+
+        .toast.success {
+            border-left-color: #4ade80;
+        }
+
+        .toast.error {
+            border-left-color: #f87171;
+        }
+
+        .toast.info {
+            border-left-color: #60a5fa;
+        }
+
+        .toast.warning {
+            border-left-color: #fbbf24;
+        }
+
+        .toast-icon {
+            font-size: 24px;
+            flex-shrink: 0;
+        }
+
+        .toast-content {
+            flex: 1;
+        }
+
+        .toast-title {
+            font-weight: 600;
+            margin-bottom: 4px;
+        }
+
+        .toast-message {
+            font-size: 14px;
+            opacity: 0.8;
+        }
+
+        .toast-close {
+            background: none;
+            border: none;
+            color: #666;
+            font-size: 20px;
+            cursor: pointer;
+            padding: 0;
+            width: 24px;
+            height: 24px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 50%;
+            transition: background 0.2s;
+            flex-shrink: 0;
+        }
+
+        .toast-close:hover {
+            background: rgba(0, 0, 0, 0.1);
+        }
     </style>
 </head>
 <body>
+    <!-- Toast Container -->
+    <div class="toast-container" id="toastContainer"></div>
+
     <nav class="nav-bar">
         <h1>🌟 SuperStandard Admin</h1>
         <div class="nav-links">
@@ -504,6 +602,41 @@
             return escapeHTML(str);
         }
 
+        // Toast Notification System
+        function showToast(title, message, type = 'info') {
+            const container = document.getElementById('toastContainer');
+            const toast = document.createElement('div');
+
+            // Validate type - only allow known values
+            const validTypes = ['success', 'error', 'info', 'warning'];
+            const safeType = validTypes.includes(type) ? type : 'info';
+            toast.className = `toast ${safeType}`;
+
+            const icons = {
+                success: '✅',
+                error: '❌',
+                info: 'ℹ️',
+                warning: '⚠️'
+            };
+
+            toast.innerHTML = `
+                <span class="toast-icon">${icons[safeType]}</span>
+                <div class="toast-content">
+                    <div class="toast-title">${sanitizeHTML(title)}</div>
+                    <div class="toast-message">${sanitizeHTML(message)}</div>
+                </div>
+                <button class="toast-close" onclick="this.parentElement.remove()">&times;</button>
+            `;
+
+            container.appendChild(toast);
+
+            // Auto-remove after 5 seconds
+            setTimeout(() => {
+                toast.style.animation = 'slideInRight 0.3s ease-out reverse';
+                setTimeout(() => toast.remove(), 300);
+            }, 5000);
+        }
+
         // Connect to WebSocket for real-time updates
         function connectWebSocket() {
             try {
@@ -514,6 +647,7 @@
                     if (reconnectInterval) {
                         clearInterval(reconnectInterval);
                         reconnectInterval = null;
+                        showToast('Connected', 'Real-time updates reconnected', 'success');
                     }
                 };
 
@@ -523,15 +657,18 @@
                         handleWebSocketMessage(data);
                     } catch (e) {
                         console.error('[Admin] Failed to parse WebSocket message:', e);
+                        showToast('Message Error', 'Failed to parse WebSocket message', 'error');
                     }
                 };
 
                 ws.onerror = (error) => {
                     console.error('[Admin] WebSocket error:', error);
+                    showToast('Connection Error', 'WebSocket connection error occurred', 'error');
                 };
 
                 ws.onclose = () => {
                     console.log('[Admin] WebSocket disconnected');
+                    showToast('Disconnected', 'Real-time updates disconnected. Reconnecting...', 'warning');
                     // Auto-reconnect after 5 seconds
                     if (!reconnectInterval) {
                         reconnectInterval = setInterval(() => {
@@ -581,6 +718,7 @@
                     document.getElementById('activeCollectives').textContent = '0';
                     document.getElementById('totalThoughts').textContent = '0';
                     document.getElementById('emergentPatterns').textContent = '0';
+                    showToast('Stats Error', 'Failed to load dashboard statistics', 'error');
                 }
             } catch (error) {
                 console.error('[Admin] Failed to fetch stats:', error);
@@ -590,6 +728,7 @@
                 document.getElementById('activeCollectives').textContent = '0';
                 document.getElementById('totalThoughts').textContent = '0';
                 document.getElementById('emergentPatterns').textContent = '0';
+                showToast('Connection Error', 'Could not connect to API server', 'error');
             }
         }
 
