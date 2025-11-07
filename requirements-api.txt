@@ -1,20 +1,18 @@
-# Consciousness API Requirements
+# SuperStandard API Server Requirements
 # Install with: pip install -r requirements-api.txt
 
-# Core API framework
-fastapi>=0.104.0
-uvicorn[standard]>=0.24.0
-websockets>=12.0
-python-multipart>=0.0.6
+# FastAPI and ASGI server
+fastapi==0.104.1
+uvicorn[standard]==0.24.0
 
-# HTTP client for demos
-aiohttp>=3.9.0
+# WebSocket support
+websockets==12.0
 
-# Data validation
-pydantic>=2.4.0
+# Pydantic for data validation
+pydantic==2.5.0
 
-# CORS support (included in fastapi)
+# CORS middleware
+python-multipart==0.0.6
 
-# Optional: Production deployment
-# gunicorn>=21.2.0
-# python-jose[cryptography]>=3.3.0  # For JWT auth if needed
+# Additional utilities
+python-dateutil==2.8.2
