@@ -346,6 +346,16 @@ async def list_agents():
     try:
         agents = []
         for agent_id, agent_info in state.network_registry.agents.items():
+            # Handle last_heartbeat - it might be datetime, string, or None
+            last_hb = agent_info.last_heartbeat
+            if last_hb:
+                if hasattr(last_hb, 'isoformat'):
+                    last_hb_str = last_hb.isoformat()
+                else:
+                    last_hb_str = str(last_hb)
+            else:
+                last_hb_str = None
+
             agents.append(
                 {
                     "agent_id": agent_info.agent_id,
@@ -356,9 +366,7 @@ async def list_agents():
                     "region": agent_info.region,
                     "tags": agent_info.tags,
                     "endpoints": agent_info.endpoints,
-                    "last_heartbeat": (
-                        agent_info.last_heartbeat.isoformat() if agent_info.last_heartbeat else None
-                    ),
+                    "last_heartbeat": last_hb_str,
                 }
             )
 
