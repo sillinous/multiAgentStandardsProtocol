@@ -433,17 +433,28 @@ async def create_session(request: SessionCreationRequest, background_tasks: Back
         coord_type_map = {
             "pipeline": CoordinationType.PIPELINE,
             "swarm": CoordinationType.SWARM,
-            "supervisor": CoordinationType.SUPERVISOR,
-            "negotiation": CoordinationType.NEGOTIATION,
+            "supervisor": CoordinationType.HIERARCHICAL,  # supervisor → hierarchical
+            "hierarchical": CoordinationType.HIERARCHICAL,
+            "negotiation": CoordinationType.CONSENSUS,  # negotiation → consensus
+            "consensus": CoordinationType.CONSENSUS,
+            "auction": CoordinationType.AUCTION,
+            "collaborative": CoordinationType.COLLABORATIVE,
         }
 
         coord_type = coord_type_map.get(request.coordination_type.lower())
         if not coord_type:
             raise HTTPException(status_code=400, detail="Invalid coordination type")
 
-        session_id = await state.coordination_manager.create_coordination(
-            request.name, coord_type, request.metadata
+        # Create coordination with proper parameters
+        result = await state.coordination_manager.create_coordination(
+            coordinator_id="system",  # System-initiated coordination
+            coordination_type=coord_type.value,  # Convert enum to string
+            goal=request.description or request.name,  # Use description as goal
+            coordination_plan=None,
+            metadata=request.metadata
         )
+
+        session_id = result.get("coordination_id") if isinstance(result, dict) else result
 
         if session_id:
             state.stats["total_sessions_created"] += 1
@@ -581,18 +592,18 @@ async def acp_stats():
     """Get ACP coordination statistics."""
     try:
         active_sessions = sum(
-            1 for s in state.coordination_manager.sessions.values() if s.status == "active"
+            1 for s in state.coordination_manager.coordinations.values() if s.status == "active"
         )
 
-        total_tasks = sum(len(s.tasks) for s in state.coordination_manager.sessions.values())
+        total_tasks = sum(len(s.tasks) for s in state.coordination_manager.coordinations.values())
 
         completed_tasks = sum(
             sum(1 for t in s.tasks.values() if t.status == TaskStatus.COMPLETED.value)
-            for s in state.coordination_manager.sessions.values()
+            for s in state.coordination_manager.coordinations.values()
         )
 
         total_participants = sum(
-            len(s.participants) for s in state.coordination_manager.sessions.values()
+            len(s.participants) for s in state.coordination_manager.coordinations.values()
         )
 
         completion_rate = (completed_tasks / total_tasks * 100) if total_tasks > 0 else 0
@@ -647,7 +658,6 @@ async def submit_thought(
             request.content,
             request.confidence,
             request.emotional_valence,
-            request.context,
         )
 
         if thought:
@@ -678,10 +688,14 @@ async def submit_thought(
                 },
             )
 
+        # Generate thought ID from timestamp
+        thought_id = f"{request.agent_id}_{thought.timestamp.isoformat()}" if thought else None
+
         return {
             "success": thought is not None,
-            "thought_id": thought.thought_id if thought else None,
+            "thought_id": thought_id,
             "collective_id": collective_id,
+            "agent_id": request.agent_id,
         }
 
     except Exception as e:
