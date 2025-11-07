@@ -1,0 +1,632 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Consciousness Dashboard - Real-Time Collective Intelligence</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #0f0c29, #302b63, #24243e);
+            color: #e0e0e0;
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .header {
+            text-align: center;
+            padding: 30px 0;
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 15px;
+            margin-bottom: 30px;
+            backdrop-filter: blur(10px);
+        }
+
+        .header h1 {
+            font-size: 2.5em;
+            background: linear-gradient(90deg, #667eea 0%, #764ba2 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            margin-bottom: 10px;
+        }
+
+        .header .subtitle {
+            color: #a0a0a0;
+            font-size: 1.1em;
+        }
+
+        .connection-status {
+            display: inline-block;
+            padding: 5px 15px;
+            border-radius: 20px;
+            font-size: 0.9em;
+            margin-top: 15px;
+        }
+
+        .connection-status.connected {
+            background: rgba(76, 175, 80, 0.3);
+            color: #4CAF50;
+            border: 1px solid #4CAF50;
+        }
+
+        .connection-status.disconnected {
+            background: rgba(244, 67, 54, 0.3);
+            color: #f44336;
+            border: 1px solid #f44336;
+        }
+
+        .dashboard {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 20px;
+            margin-bottom: 30px;
+        }
+
+        .card {
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 15px;
+            padding: 25px;
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            transition: transform 0.3s, box-shadow 0.3s;
+        }
+
+        .card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+        }
+
+        .card-title {
+            font-size: 1.2em;
+            margin-bottom: 15px;
+            color: #667eea;
+            font-weight: 600;
+        }
+
+        .metric {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 10px 0;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .metric:last-child {
+            border-bottom: none;
+        }
+
+        .metric-label {
+            color: #b0b0b0;
+        }
+
+        .metric-value {
+            font-size: 1.3em;
+            font-weight: bold;
+            color: #fff;
+        }
+
+        .metric-value.awareness {
+            color: #667eea;
+        }
+
+        .metric-value.patterns {
+            color: #f093fb;
+        }
+
+        .metric-value.agents {
+            color: #4facfe;
+        }
+
+        .metric-value.thoughts {
+            color: #43e97b;
+        }
+
+        .event-stream {
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 15px;
+            padding: 25px;
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            max-height: 500px;
+            overflow-y: auto;
+        }
+
+        .event-stream h2 {
+            color: #667eea;
+            margin-bottom: 20px;
+            font-size: 1.5em;
+        }
+
+        .event {
+            background: rgba(255, 255, 255, 0.03);
+            padding: 15px;
+            border-radius: 10px;
+            margin-bottom: 10px;
+            border-left: 3px solid;
+            animation: slideIn 0.5s ease;
+        }
+
+        @keyframes slideIn {
+            from {
+                opacity: 0;
+                transform: translateX(-20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateX(0);
+            }
+        }
+
+        .event.agent_registered {
+            border-left-color: #4facfe;
+        }
+
+        .event.thought_contributed {
+            border-left-color: #43e97b;
+        }
+
+        .event.consciousness_collapsed {
+            border-left-color: #f093fb;
+        }
+
+        .event.pattern_discovered {
+            border-left-color: #ffd700;
+            background: rgba(255, 215, 0, 0.05);
+        }
+
+        .event-type {
+            font-weight: bold;
+            color: #667eea;
+            margin-bottom: 5px;
+        }
+
+        .event-time {
+            font-size: 0.85em;
+            color: #808080;
+            margin-bottom: 8px;
+        }
+
+        .event-details {
+            color: #d0d0d0;
+            font-size: 0.95em;
+        }
+
+        .progress-bar {
+            width: 100%;
+            height: 8px;
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 4px;
+            overflow: hidden;
+            margin-top: 10px;
+        }
+
+        .progress-fill {
+            height: 100%;
+            background: linear-gradient(90deg, #667eea 0%, #764ba2 100%);
+            transition: width 0.5s ease;
+        }
+
+        .controls {
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 15px;
+            padding: 25px;
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            margin-bottom: 30px;
+        }
+
+        .controls h2 {
+            color: #667eea;
+            margin-bottom: 20px;
+        }
+
+        .control-group {
+            margin-bottom: 15px;
+        }
+
+        .control-group label {
+            display: block;
+            color: #b0b0b0;
+            margin-bottom: 5px;
+        }
+
+        .control-group input,
+        .control-group select {
+            width: 100%;
+            padding: 10px;
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            border-radius: 8px;
+            color: #fff;
+            font-size: 1em;
+        }
+
+        .btn {
+            background: linear-gradient(90deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            padding: 12px 30px;
+            border-radius: 25px;
+            cursor: pointer;
+            font-size: 1em;
+            font-weight: 600;
+            transition: transform 0.2s, box-shadow 0.2s;
+        }
+
+        .btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 20px rgba(102, 126, 234, 0.4);
+        }
+
+        .btn:active {
+            transform: translateY(0);
+        }
+
+        .visualization {
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 15px;
+            padding: 25px;
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            margin-bottom: 30px;
+            min-height: 400px;
+        }
+
+        .visualization h2 {
+            color: #667eea;
+            margin-bottom: 20px;
+        }
+
+        #entanglementCanvas {
+            width: 100%;
+            height: 350px;
+            background: rgba(0, 0, 0, 0.2);
+            border-radius: 10px;
+        }
+
+        .pulse {
+            animation: pulse 2s infinite;
+        }
+
+        @keyframes pulse {
+            0%, 100% {
+                opacity: 1;
+            }
+            50% {
+                opacity: 0.5;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <h1>Consciousness Dashboard</h1>
+        <p class="subtitle">Real-Time Collective Intelligence Monitoring</p>
+        <div id="connectionStatus" class="connection-status disconnected">Disconnected</div>
+    </div>
+
+    <div class="controls">
+        <h2>Connect to Collective</h2>
+        <div class="control-group">
+            <label>Collective ID</label>
+            <input type="text" id="collectiveId" value="test_collective" placeholder="Enter collective ID">
+        </div>
+        <button class="btn" onclick="connect()">Connect</button>
+        <button class="btn" onclick="disconnect()">Disconnect</button>
+    </div>
+
+    <div class="dashboard">
+        <div class="card">
+            <div class="card-title">Collective Awareness</div>
+            <div class="metric-value awareness" id="awareness">0%</div>
+            <div class="progress-bar">
+                <div class="progress-fill" id="awarenessBar" style="width: 0%"></div>
+            </div>
+        </div>
+
+        <div class="card">
+            <div class="card-title">Active Agents</div>
+            <div class="metric">
+                <span class="metric-label">Total</span>
+                <span class="metric-value agents" id="totalAgents">0</span>
+            </div>
+            <div class="metric">
+                <span class="metric-label">Active</span>
+                <span class="metric-value agents" id="activeAgents">0</span>
+            </div>
+            <div class="metric">
+                <span class="metric-label">Superconscious</span>
+                <span class="metric-value agents" id="superconsciousAgents">0</span>
+            </div>
+        </div>
+
+        <div class="card">
+            <div class="card-title">Thoughts & Patterns</div>
+            <div class="metric">
+                <span class="metric-label">Total Thoughts</span>
+                <span class="metric-value thoughts" id="totalThoughts">0</span>
+            </div>
+            <div class="metric">
+                <span class="metric-label">In Superposition</span>
+                <span class="metric-value thoughts" id="superpositionThoughts">0</span>
+            </div>
+            <div class="metric">
+                <span class="metric-label">Emergent Patterns</span>
+                <span class="metric-value patterns" id="emergentPatterns">0</span>
+            </div>
+        </div>
+
+        <div class="card">
+            <div class="card-title">Consciousness Metrics</div>
+            <div class="metric">
+                <span class="metric-label">Avg Integration</span>
+                <span class="metric-value" id="avgIntegration">0%</span>
+            </div>
+            <div class="metric">
+                <span class="metric-label">Entanglement Density</span>
+                <span class="metric-value" id="entanglementDensity">0.00</span>
+            </div>
+            <div class="metric">
+                <span class="metric-label">Total Collapses</span>
+                <span class="metric-value" id="totalCollapses">0</span>
+            </div>
+        </div>
+    </div>
+
+    <div class="visualization">
+        <h2>Consciousness Field Visualization</h2>
+        <canvas id="entanglementCanvas"></canvas>
+    </div>
+
+    <div class="event-stream">
+        <h2>Live Event Stream</h2>
+        <div id="events"></div>
+    </div>
+
+    <script>
+        let ws = null;
+        let collectiveId = '';
+        let eventsData = [];
+        let maxEvents = 50;
+
+        // Canvas visualization
+        const canvas = document.getElementById('entanglementCanvas');
+        const ctx = canvas.getContext('2d');
+        let agents = [];
+        let thoughts = [];
+
+        function connect() {
+            const input = document.getElementById('collectiveId').value.trim();
+            if (!input) {
+                alert('Please enter a collective ID');
+                return;
+            }
+
+            collectiveId = input;
+
+            // Close existing connection
+            if (ws) {
+                ws.close();
+            }
+
+            // Connect to WebSocket
+            const wsUrl = `ws://localhost:8000/api/consciousness/${collectiveId}/stream`;
+            ws = new WebSocket(wsUrl);
+
+            ws.onopen = () => {
+                updateConnectionStatus(true);
+                addEvent('connected', 'Connected to collective', {});
+            };
+
+            ws.onmessage = (event) => {
+                const data = JSON.parse(event.data);
+                handleEvent(data);
+            };
+
+            ws.onerror = (error) => {
+                console.error('WebSocket error:', error);
+                updateConnectionStatus(false);
+            };
+
+            ws.onclose = () => {
+                updateConnectionStatus(false);
+                addEvent('disconnected', 'Disconnected from collective', {});
+            };
+        }
+
+        function disconnect() {
+            if (ws) {
+                ws.close();
+                ws = null;
+            }
+        }
+
+        function updateConnectionStatus(connected) {
+            const status = document.getElementById('connectionStatus');
+            if (connected) {
+                status.textContent = `Connected to ${collectiveId}`;
+                status.className = 'connection-status connected pulse';
+            } else {
+                status.textContent = 'Disconnected';
+                status.className = 'connection-status disconnected';
+            }
+        }
+
+        function handleEvent(data) {
+            if (data.event_type === 'connected') {
+                updateMetrics(data.data);
+            } else {
+                addEvent(data.event_type, data.event_type, data.data);
+
+                // Update metrics based on event
+                if (data.event_type === 'agent_registered') {
+                    // Fetch updated metrics
+                    fetchMetrics();
+                } else if (data.event_type === 'thought_contributed') {
+                    fetchMetrics();
+                } else if (data.event_type === 'consciousness_collapsed') {
+                    fetchMetrics();
+                }
+            }
+        }
+
+        async function fetchMetrics() {
+            if (!collectiveId) return;
+
+            try {
+                const response = await fetch(`http://localhost:8000/api/consciousness/${collectiveId}`);
+                const data = await response.json();
+                updateMetrics(data);
+            } catch (error) {
+                console.error('Failed to fetch metrics:', error);
+            }
+        }
+
+        function updateMetrics(state) {
+            // Update awareness
+            const awareness = Math.round(state.collective_awareness * 100);
+            document.getElementById('awareness').textContent = `${awareness}%`;
+            document.getElementById('awarenessBar').style.width = `${awareness}%`;
+
+            // Update agents
+            document.getElementById('totalAgents').textContent = state.total_agents || 0;
+            document.getElementById('activeAgents').textContent = state.active_agents || 0;
+            document.getElementById('superconsciousAgents').textContent = state.superconscious_agents || 0;
+
+            // Update thoughts
+            document.getElementById('totalThoughts').textContent = state.total_thoughts || 0;
+            document.getElementById('superpositionThoughts').textContent = state.thoughts_in_superposition || 0;
+            document.getElementById('emergentPatterns').textContent = state.emergent_patterns_discovered || 0;
+
+            // Update metrics
+            const avgIntegration = Math.round((state.average_integration_score || 0) * 100);
+            document.getElementById('avgIntegration').textContent = `${avgIntegration}%`;
+            document.getElementById('entanglementDensity').textContent = (state.entanglement_density || 0).toFixed(2);
+            document.getElementById('totalCollapses').textContent = state.total_collapses || 0;
+
+            // Update visualization
+            updateVisualization(state);
+        }
+
+        function addEvent(type, title, data) {
+            const eventsContainer = document.getElementById('events');
+            const event = document.createElement('div');
+            event.className = `event ${type}`;
+
+            const now = new Date().toLocaleTimeString();
+
+            let details = '';
+            if (type === 'agent_registered') {
+                details = `Agent <strong>${data.agent_id}</strong> joined in <strong>${data.state}</strong> state`;
+            } else if (type === 'thought_contributed') {
+                details = `Agent <strong>${data.agent_id}</strong> contributed ${data.thought_type} thought`;
+            } else if (type === 'consciousness_collapsed') {
+                details = `Consciousness collapsed - <strong>${data.patterns_discovered}</strong> patterns discovered`;
+            } else if (type === 'pattern_discovered') {
+                details = `<strong>${data.pattern_type}</strong> pattern (${Math.round(data.coherence * 100)}% coherence, ${Math.round(data.novelty * 100)}% novelty)`;
+            } else {
+                details = JSON.stringify(data);
+            }
+
+            event.innerHTML = `
+                <div class="event-type">${title.replace('_', ' ').toUpperCase()}</div>
+                <div class="event-time">${now}</div>
+                <div class="event-details">${details}</div>
+            `;
+
+            eventsContainer.insertBefore(event, eventsContainer.firstChild);
+
+            // Keep only recent events
+            eventsData.push(event);
+            if (eventsData.length > maxEvents) {
+                const removed = eventsData.shift();
+                removed.remove();
+            }
+        }
+
+        function updateVisualization(state) {
+            // Simple visualization: draw circles for agents
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+            const numAgents = state.total_agents || 0;
+            if (numAgents === 0) return;
+
+            const centerX = canvas.width / 2;
+            const centerY = canvas.height / 2;
+            const radius = Math.min(canvas.width, canvas.height) / 3;
+
+            // Draw agents in circle
+            for (let i = 0; i < numAgents; i++) {
+                const angle = (i / numAgents) * 2 * Math.PI;
+                const x = centerX + radius * Math.cos(angle);
+                const y = centerY + radius * Math.sin(angle);
+
+                // Draw agent
+                ctx.beginPath();
+                ctx.arc(x, y, 15, 0, 2 * Math.PI);
+                ctx.fillStyle = '#4facfe';
+                ctx.fill();
+                ctx.strokeStyle = '#667eea';
+                ctx.lineWidth = 2;
+                ctx.stroke();
+            }
+
+            // Draw entanglement lines
+            const density = state.entanglement_density || 0;
+            if (density > 0) {
+                ctx.strokeStyle = 'rgba(240, 147, 251, 0.3)';
+                ctx.lineWidth = 1;
+
+                for (let i = 0; i < numAgents; i++) {
+                    for (let j = i + 1; j < numAgents; j++) {
+                        if (Math.random() < Math.min(0.5, density / 5)) {
+                            const angle1 = (i / numAgents) * 2 * Math.PI;
+                            const x1 = centerX + radius * Math.cos(angle1);
+                            const y1 = centerY + radius * Math.sin(angle1);
+
+                            const angle2 = (j / numAgents) * 2 * Math.PI;
+                            const x2 = centerX + radius * Math.cos(angle2);
+                            const y2 = centerY + radius * Math.sin(angle2);
+
+                            ctx.beginPath();
+                            ctx.moveTo(x1, y1);
+                            ctx.lineTo(x2, y2);
+                            ctx.stroke();
+                        }
+                    }
+                }
+            }
+
+            // Draw collective awareness circle
+            ctx.beginPath();
+            ctx.arc(centerX, centerY, 10, 0, 2 * Math.PI);
+            ctx.fillStyle = `rgba(102, 126, 234, ${state.collective_awareness || 0})`;
+            ctx.fill();
+        }
+
+        // Resize canvas
+        function resizeCanvas() {
+            canvas.width = canvas.offsetWidth;
+            canvas.height = canvas.offsetHeight;
+        }
+
+        window.addEventListener('resize', resizeCanvas);
+        resizeCanvas();
+
+        // Auto-connect on load if collective ID present
+        window.addEventListener('load', () => {
+            const input = document.getElementById('collectiveId');
+            if (input.value) {
+                // Optional: auto-connect
+                // connect();
+            }
+        });
+    </script>
+</body>
+</html>
