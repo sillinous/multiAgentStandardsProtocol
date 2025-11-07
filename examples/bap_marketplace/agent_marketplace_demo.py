@@ -21,7 +21,7 @@ from datetime import datetime, timedelta
 # Add parent directories to path
 sys.path.insert(0, str(Path(__file__).parent.parent.parent))
 
-from agents.consolidated.py.blockchain_agentic_protocol import (
+from src.superstandard.agents.blockchain.blockchain_agentic_protocol import (
     BlockchainAgenticProtocol,
     AgentWallet,
     TokenType,

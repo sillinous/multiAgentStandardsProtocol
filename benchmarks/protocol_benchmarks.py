@@ -28,7 +28,7 @@ from src.superstandard.protocols.anp_implementation import (
     AgentStatus,
 )
 from src.superstandard.protocols.acp_implementation import CoordinationManager
-from agents.consolidated.py.blockchain_agentic_protocol import (
+from src.superstandard.agents.blockchain.blockchain_agentic_protocol import (
     BlockchainAgenticProtocol,
     AgentWallet,
     TokenType,

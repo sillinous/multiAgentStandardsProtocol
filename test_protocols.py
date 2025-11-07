@@ -46,7 +46,7 @@ async def main():
     print("\nTest 3: BAP (Blockchain Agent Protocol)")
     print("-" * 70)
     try:
-        from agents.consolidated.py.blockchain_agentic_protocol import (
+        from src.superstandard.agents.blockchain.blockchain_agentic_protocol import (
             BlockchainAgenticProtocol,
             AgentWallet,
             TokenType,
