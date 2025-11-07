@@ -1,0 +1,720 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ANP Network Topology Dashboard</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: #fff;
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .navbar {
+            background: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(10px);
+            padding: 15px 30px;
+            border-radius: 15px;
+            margin-bottom: 30px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .navbar h1 {
+            font-size: 24px;
+            font-weight: 600;
+        }
+
+        .nav-links {
+            display: flex;
+            gap: 20px;
+        }
+
+        .nav-links a {
+            color: #fff;
+            text-decoration: none;
+            padding: 8px 16px;
+            border-radius: 8px;
+            transition: background 0.3s;
+        }
+
+        .nav-links a:hover {
+            background: rgba(255, 255, 255, 0.2);
+        }
+
+        .nav-links a.active {
+            background: rgba(255, 255, 255, 0.3);
+            font-weight: 600;
+        }
+
+        .dashboard-container {
+            display: grid;
+            grid-template-columns: 2fr 1fr;
+            gap: 20px;
+            margin-bottom: 20px;
+        }
+
+        .card {
+            background: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(10px);
+            border-radius: 15px;
+            padding: 25px;
+            box-shadow: 0 8px 32px 0 rgba(31, 38, 135, 0.37);
+        }
+
+        .card h2 {
+            margin-bottom: 20px;
+            font-size: 20px;
+            font-weight: 600;
+            border-bottom: 2px solid rgba(255, 255, 255, 0.2);
+            padding-bottom: 10px;
+        }
+
+        #networkCanvas {
+            width: 100%;
+            height: 500px;
+            background: rgba(0, 0, 0, 0.2);
+            border-radius: 10px;
+            cursor: grab;
+        }
+
+        #networkCanvas:active {
+            cursor: grabbing;
+        }
+
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 15px;
+            margin-bottom: 20px;
+        }
+
+        .stat-item {
+            background: rgba(255, 255, 255, 0.1);
+            padding: 15px;
+            border-radius: 10px;
+            text-align: center;
+        }
+
+        .stat-value {
+            font-size: 32px;
+            font-weight: 700;
+            margin-bottom: 5px;
+        }
+
+        .stat-label {
+            font-size: 12px;
+            opacity: 0.8;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        .agent-list {
+            max-height: 400px;
+            overflow-y: auto;
+        }
+
+        .agent-item {
+            background: rgba(255, 255, 255, 0.05);
+            padding: 15px;
+            border-radius: 8px;
+            margin-bottom: 10px;
+            border-left: 4px solid #4ade80;
+            transition: all 0.3s;
+        }
+
+        .agent-item:hover {
+            background: rgba(255, 255, 255, 0.15);
+            transform: translateX(5px);
+        }
+
+        .agent-item.degraded {
+            border-left-color: #fbbf24;
+        }
+
+        .agent-item.unhealthy {
+            border-left-color: #f87171;
+        }
+
+        .agent-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 8px;
+        }
+
+        .agent-id {
+            font-weight: 600;
+            font-size: 14px;
+        }
+
+        .agent-status {
+            display: inline-block;
+            padding: 4px 12px;
+            border-radius: 12px;
+            font-size: 11px;
+            font-weight: 600;
+            text-transform: uppercase;
+        }
+
+        .agent-status.healthy {
+            background: #4ade80;
+            color: #000;
+        }
+
+        .agent-status.degraded {
+            background: #fbbf24;
+            color: #000;
+        }
+
+        .agent-status.unhealthy {
+            background: #f87171;
+            color: #000;
+        }
+
+        .agent-details {
+            font-size: 12px;
+            opacity: 0.9;
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+            margin-top: 8px;
+        }
+
+        .agent-detail {
+            display: flex;
+            align-items: center;
+            gap: 5px;
+        }
+
+        .capabilities {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 5px;
+            margin-top: 8px;
+        }
+
+        .capability-tag {
+            background: rgba(255, 255, 255, 0.2);
+            padding: 4px 10px;
+            border-radius: 12px;
+            font-size: 11px;
+        }
+
+        .controls-section {
+            background: rgba(255, 255, 255, 0.05);
+            padding: 15px;
+            border-radius: 10px;
+            margin-bottom: 20px;
+        }
+
+        .control-group {
+            margin-bottom: 15px;
+        }
+
+        .control-group label {
+            display: block;
+            margin-bottom: 8px;
+            font-size: 13px;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            opacity: 0.9;
+        }
+
+        .control-group input,
+        .control-group select {
+            width: 100%;
+            padding: 10px;
+            border: none;
+            border-radius: 8px;
+            background: rgba(255, 255, 255, 0.2);
+            color: #fff;
+            font-size: 14px;
+        }
+
+        .control-group input::placeholder {
+            color: rgba(255, 255, 255, 0.6);
+        }
+
+        .btn {
+            padding: 10px 20px;
+            border: none;
+            border-radius: 8px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s;
+            font-size: 14px;
+            width: 100%;
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: #fff;
+        }
+
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(102, 126, 234, 0.4);
+        }
+
+        .topology-legend {
+            display: flex;
+            gap: 20px;
+            margin-top: 15px;
+            flex-wrap: wrap;
+        }
+
+        .legend-item {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-size: 12px;
+        }
+
+        .legend-dot {
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
+        }
+
+        .bottom-section {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 20px;
+        }
+
+        .metric-card {
+            background: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(10px);
+            border-radius: 15px;
+            padding: 20px;
+            text-align: center;
+        }
+
+        .metric-card h3 {
+            font-size: 14px;
+            opacity: 0.8;
+            margin-bottom: 10px;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        .metric-card .value {
+            font-size: 36px;
+            font-weight: 700;
+            margin-bottom: 5px;
+        }
+
+        .metric-card .subtext {
+            font-size: 12px;
+            opacity: 0.7;
+        }
+
+        .scrollbar-custom::-webkit-scrollbar {
+            width: 8px;
+        }
+
+        .scrollbar-custom::-webkit-scrollbar-track {
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 10px;
+        }
+
+        .scrollbar-custom::-webkit-scrollbar-thumb {
+            background: rgba(255, 255, 255, 0.3);
+            border-radius: 10px;
+        }
+
+        .scrollbar-custom::-webkit-scrollbar-thumb:hover {
+            background: rgba(255, 255, 255, 0.5);
+        }
+
+        @keyframes pulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.5; }
+        }
+
+        .live-indicator {
+            display: inline-block;
+            width: 8px;
+            height: 8px;
+            background: #4ade80;
+            border-radius: 50%;
+            animation: pulse 2s infinite;
+            margin-right: 8px;
+        }
+    </style>
+</head>
+<body>
+    <nav class="navbar">
+        <h1>🌐 ANP Network Topology Dashboard</h1>
+        <div class="nav-links">
+            <a href="admin_dashboard.html">Admin</a>
+            <a href="network_dashboard.html" class="active">ANP Network</a>
+            <a href="coordination_dashboard.html">ACP Coordination</a>
+            <a href="consciousness_dashboard.html">AConsP Consciousness</a>
+            <a href="user_control_panel.html">User Panel</a>
+        </div>
+    </nav>
+
+    <div class="dashboard-container">
+        <!-- Network Topology Visualization -->
+        <div class="card">
+            <h2>
+                <span class="live-indicator"></span>
+                Live Network Topology
+            </h2>
+            <canvas id="networkCanvas"></canvas>
+            <div class="topology-legend">
+                <div class="legend-item">
+                    <div class="legend-dot" style="background: #4ade80;"></div>
+                    <span>Healthy Agent</span>
+                </div>
+                <div class="legend-item">
+                    <div class="legend-dot" style="background: #fbbf24;"></div>
+                    <span>Degraded Agent</span>
+                </div>
+                <div class="legend-item">
+                    <div class="legend-dot" style="background: #f87171;"></div>
+                    <span>Unhealthy Agent</span>
+                </div>
+                <div class="legend-item">
+                    <div class="legend-dot" style="background: #60a5fa;"></div>
+                    <span>Coordinator</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- Controls & Stats -->
+        <div>
+            <div class="card" style="margin-bottom: 20px;">
+                <h2>Network Statistics</h2>
+                <div class="stats-grid">
+                    <div class="stat-item">
+                        <div class="stat-value" id="totalAgents">0</div>
+                        <div class="stat-label">Total Agents</div>
+                    </div>
+                    <div class="stat-item">
+                        <div class="stat-value" id="healthyAgents">0</div>
+                        <div class="stat-label">Healthy</div>
+                    </div>
+                    <div class="stat-item">
+                        <div class="stat-value" id="avgLoad">0%</div>
+                        <div class="stat-label">Avg Load</div>
+                    </div>
+                    <div class="stat-item">
+                        <div class="stat-value" id="totalCapabilities">0</div>
+                        <div class="stat-label">Capabilities</div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="card">
+                <h2>Discovery Query</h2>
+                <div class="controls-section">
+                    <div class="control-group">
+                        <label>Agent Type</label>
+                        <select id="agentTypeFilter">
+                            <option value="">All Types</option>
+                            <option value="analyst">Analyst</option>
+                            <option value="processor">Processor</option>
+                            <option value="validator">Validator</option>
+                            <option value="coordinator">Coordinator</option>
+                        </select>
+                    </div>
+                    <div class="control-group">
+                        <label>Required Capability</label>
+                        <input type="text" id="capabilityFilter" placeholder="e.g., analysis, processing">
+                    </div>
+                    <div class="control-group">
+                        <label>Health Status</label>
+                        <select id="healthFilter">
+                            <option value="">All Status</option>
+                            <option value="healthy">Healthy</option>
+                            <option value="degraded">Degraded</option>
+                            <option value="unhealthy">Unhealthy</option>
+                        </select>
+                    </div>
+                    <div class="control-group">
+                        <label>Max Load</label>
+                        <input type="number" id="maxLoadFilter" placeholder="0.0 - 1.0" step="0.1" min="0" max="1">
+                    </div>
+                    <button class="btn btn-primary" onclick="applyFilters()">Apply Filters</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Registered Agents List -->
+    <div class="card">
+        <h2>Registered Agents (<span id="agentCount">0</span>)</h2>
+        <div class="agent-list scrollbar-custom" id="agentList">
+            <!-- Dynamically populated -->
+        </div>
+    </div>
+
+    <!-- Bottom Metrics -->
+    <div class="bottom-section" style="margin-top: 20px;">
+        <div class="metric-card">
+            <h3>Total Discoveries</h3>
+            <div class="value" id="totalDiscoveries">0</div>
+            <div class="subtext">Last 24 hours</div>
+        </div>
+        <div class="metric-card">
+            <h3>Heartbeat Rate</h3>
+            <div class="value" id="heartbeatRate">0</div>
+            <div class="subtext">per minute</div>
+        </div>
+        <div class="metric-card">
+            <h3>Network Uptime</h3>
+            <div class="value" id="networkUptime">100%</div>
+            <div class="subtext">Last 7 days</div>
+        </div>
+    </div>
+
+    <script>
+        // Canvas setup
+        const canvas = document.getElementById('networkCanvas');
+        const ctx = canvas.getContext('2d');
+
+        // Set canvas size
+        function resizeCanvas() {
+            const rect = canvas.getBoundingClientRect();
+            canvas.width = rect.width;
+            canvas.height = rect.height;
+        }
+        resizeCanvas();
+        window.addEventListener('resize', resizeCanvas);
+
+        // Network state
+        let agents = [];
+        let selectedAgent = null;
+
+        // Simulate agents
+        function generateMockAgents() {
+            const types = ['analyst', 'processor', 'validator', 'coordinator'];
+            const statuses = ['healthy', 'healthy', 'healthy', 'degraded', 'unhealthy'];
+            const capabilities = ['analysis', 'processing', 'validation', 'coordination', 'testing', 'development'];
+
+            agents = [];
+            for (let i = 0; i < 15; i++) {
+                const type = types[Math.floor(Math.random() * types.length)];
+                const status = statuses[Math.floor(Math.random() * statuses.length)];
+                const agentCaps = [];
+                const numCaps = Math.floor(Math.random() * 3) + 1;
+                for (let j = 0; j < numCaps; j++) {
+                    const cap = capabilities[Math.floor(Math.random() * capabilities.length)];
+                    if (!agentCaps.includes(cap)) agentCaps.push(cap);
+                }
+
+                agents.push({
+                    id: `${type}_${String(i + 1).padStart(3, '0')}`,
+                    type: type,
+                    status: status,
+                    capabilities: agentCaps,
+                    load: Math.random().toFixed(2),
+                    lastHeartbeat: new Date(Date.now() - Math.random() * 60000).toISOString(),
+                    region: ['us-east', 'us-west', 'eu-central', 'ap-south'][Math.floor(Math.random() * 4)],
+                    endpoint: `http://localhost:${8000 + i}`,
+                    x: Math.random() * (canvas.width - 100) + 50,
+                    y: Math.random() * (canvas.height - 100) + 50,
+                    vx: (Math.random() - 0.5) * 2,
+                    vy: (Math.random() - 0.5) * 2
+                });
+            }
+        }
+
+        // Physics simulation
+        function updatePhysics() {
+            const centerX = canvas.width / 2;
+            const centerY = canvas.height / 2;
+            const centerForce = 0.001;
+            const repelForce = 500;
+            const damping = 0.95;
+
+            for (let i = 0; i < agents.length; i++) {
+                const agent = agents[i];
+
+                // Center attraction
+                const dx = centerX - agent.x;
+                const dy = centerY - agent.y;
+                agent.vx += dx * centerForce;
+                agent.vy += dy * centerForce;
+
+                // Agent repulsion
+                for (let j = 0; j < agents.length; j++) {
+                    if (i === j) continue;
+                    const other = agents[j];
+                    const dx = agent.x - other.x;
+                    const dy = agent.y - other.y;
+                    const dist = Math.sqrt(dx * dx + dy * dy) || 1;
+                    const force = repelForce / (dist * dist);
+                    agent.vx += (dx / dist) * force;
+                    agent.vy += (dy / dist) * force;
+                }
+
+                // Apply velocity with damping
+                agent.vx *= damping;
+                agent.vy *= damping;
+                agent.x += agent.vx;
+                agent.y += agent.vy;
+
+                // Boundary bounce
+                const margin = 30;
+                if (agent.x < margin) { agent.x = margin; agent.vx *= -0.5; }
+                if (agent.x > canvas.width - margin) { agent.x = canvas.width - margin; agent.vx *= -0.5; }
+                if (agent.y < margin) { agent.y = margin; agent.vy *= -0.5; }
+                if (agent.y > canvas.height - margin) { agent.y = canvas.height - margin; agent.vy *= -0.5; }
+            }
+        }
+
+        // Draw network
+        function drawNetwork() {
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+            // Draw connections
+            ctx.strokeStyle = 'rgba(255, 255, 255, 0.1)';
+            ctx.lineWidth = 1;
+            for (let i = 0; i < agents.length; i++) {
+                for (let j = i + 1; j < agents.length; j++) {
+                    const a1 = agents[i];
+                    const a2 = agents[j];
+                    const dist = Math.sqrt((a1.x - a2.x) ** 2 + (a1.y - a2.y) ** 2);
+                    if (dist < 150) {
+                        ctx.globalAlpha = 1 - (dist / 150);
+                        ctx.beginPath();
+                        ctx.moveTo(a1.x, a1.y);
+                        ctx.lineTo(a2.x, a2.y);
+                        ctx.stroke();
+                    }
+                }
+            }
+            ctx.globalAlpha = 1;
+
+            // Draw agents
+            agents.forEach(agent => {
+                const colors = {
+                    healthy: '#4ade80',
+                    degraded: '#fbbf24',
+                    unhealthy: '#f87171'
+                };
+                const color = agent.type === 'coordinator' ? '#60a5fa' : colors[agent.status];
+
+                // Node shadow
+                ctx.shadowColor = color;
+                ctx.shadowBlur = 15;
+
+                // Node
+                ctx.fillStyle = color;
+                ctx.beginPath();
+                ctx.arc(agent.x, agent.y, agent.type === 'coordinator' ? 12 : 8, 0, Math.PI * 2);
+                ctx.fill();
+
+                // Reset shadow
+                ctx.shadowBlur = 0;
+
+                // Label
+                ctx.fillStyle = '#fff';
+                ctx.font = '10px "Segoe UI"';
+                ctx.textAlign = 'center';
+                ctx.fillText(agent.id, agent.x, agent.y - 15);
+            });
+        }
+
+        // Render agent list
+        function renderAgentList(filteredAgents = agents) {
+            const listEl = document.getElementById('agentList');
+            listEl.innerHTML = filteredAgents.map(agent => `
+                <div class="agent-item ${agent.status}">
+                    <div class="agent-header">
+                        <span class="agent-id">${agent.id}</span>
+                        <span class="agent-status ${agent.status}">${agent.status}</span>
+                    </div>
+                    <div class="agent-details">
+                        <span class="agent-detail">📍 ${agent.region}</span>
+                        <span class="agent-detail">⚡ Load: ${(agent.load * 100).toFixed(0)}%</span>
+                        <span class="agent-detail">🔗 ${agent.endpoint}</span>
+                    </div>
+                    <div class="capabilities">
+                        ${agent.capabilities.map(cap => `<span class="capability-tag">${cap}</span>`).join('')}
+                    </div>
+                </div>
+            `).join('');
+
+            document.getElementById('agentCount').textContent = filteredAgents.length;
+        }
+
+        // Update stats
+        function updateStats() {
+            const healthy = agents.filter(a => a.status === 'healthy').length;
+            const avgLoad = (agents.reduce((sum, a) => sum + parseFloat(a.load), 0) / agents.length * 100).toFixed(0);
+            const allCaps = new Set(agents.flatMap(a => a.capabilities));
+
+            document.getElementById('totalAgents').textContent = agents.length;
+            document.getElementById('healthyAgents').textContent = healthy;
+            document.getElementById('avgLoad').textContent = avgLoad + '%';
+            document.getElementById('totalCapabilities').textContent = allCaps.size;
+
+            // Bottom metrics
+            document.getElementById('totalDiscoveries').textContent = Math.floor(Math.random() * 1000 + 500);
+            document.getElementById('heartbeatRate').textContent = Math.floor(Math.random() * 50 + 30);
+            document.getElementById('networkUptime').textContent = (99.5 + Math.random() * 0.5).toFixed(2) + '%';
+        }
+
+        // Apply filters
+        function applyFilters() {
+            const typeFilter = document.getElementById('agentTypeFilter').value;
+            const capFilter = document.getElementById('capabilityFilter').value.toLowerCase();
+            const healthFilter = document.getElementById('healthFilter').value;
+            const maxLoad = parseFloat(document.getElementById('maxLoadFilter').value);
+
+            const filtered = agents.filter(agent => {
+                if (typeFilter && agent.type !== typeFilter) return false;
+                if (capFilter && !agent.capabilities.some(c => c.includes(capFilter))) return false;
+                if (healthFilter && agent.status !== healthFilter) return false;
+                if (maxLoad && parseFloat(agent.load) > maxLoad) return false;
+                return true;
+            });
+
+            renderAgentList(filtered);
+        }
+
+        // Animation loop
+        function animate() {
+            updatePhysics();
+            drawNetwork();
+            requestAnimationFrame(animate);
+        }
+
+        // Initialize
+        generateMockAgents();
+        renderAgentList();
+        updateStats();
+        animate();
+
+        // Periodic updates
+        setInterval(() => {
+            // Simulate status changes
+            agents.forEach(agent => {
+                if (Math.random() < 0.05) {
+                    const statuses = ['healthy', 'degraded', 'unhealthy'];
+                    agent.status = statuses[Math.floor(Math.random() * statuses.length)];
+                }
+                agent.load = Math.random().toFixed(2);
+            });
+            updateStats();
+            renderAgentList();
+        }, 5000);
+    </script>
+</body>
+</html>

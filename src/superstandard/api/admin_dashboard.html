@@ -1,0 +1,581 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SuperStandard Admin - Unified Protocol Dashboard</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: #fff;
+            min-height: 100vh;
+        }
+
+        .nav-bar {
+            background: rgba(0, 0, 0, 0.3);
+            padding: 15px 30px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            backdrop-filter: blur(10px);
+        }
+
+        .nav-bar h1 {
+            font-size: 1.5em;
+        }
+
+        .nav-links {
+            display: flex;
+            gap: 20px;
+        }
+
+        .nav-links a {
+            color: #fff;
+            text-decoration: none;
+            padding: 8px 16px;
+            border-radius: 8px;
+            transition: background 0.3s;
+        }
+
+        .nav-links a:hover, .nav-links a.active {
+            background: rgba(255, 255, 255, 0.2);
+        }
+
+        .container {
+            max-width: 1400px;
+            margin: 30px auto;
+            padding: 0 20px;
+        }
+
+        .header {
+            text-align: center;
+            padding: 40px 0;
+        }
+
+        .header h2 {
+            font-size: 2.5em;
+            margin-bottom: 10px;
+        }
+
+        .header p {
+            font-size: 1.2em;
+            opacity: 0.9;
+        }
+
+        .protocol-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
+            gap: 25px;
+            margin-bottom: 30px;
+        }
+
+        .protocol-card {
+            background: rgba(255, 255, 255, 0.95);
+            color: #333;
+            border-radius: 15px;
+            padding: 25px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+            transition: transform 0.3s, box-shadow 0.3s;
+        }
+
+        .protocol-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 15px 40px rgba(0, 0, 0, 0.3);
+        }
+
+        .protocol-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+        }
+
+        .protocol-title {
+            font-size: 1.5em;
+            font-weight: 600;
+        }
+
+        .protocol-icon {
+            font-size: 2em;
+        }
+
+        .protocol-stats {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 15px;
+        }
+
+        .stat {
+            background: #f8f9fa;
+            padding: 15px;
+            border-radius: 10px;
+            text-align: center;
+        }
+
+        .stat-value {
+            font-size: 2em;
+            font-weight: bold;
+            color: #667eea;
+        }
+
+        .stat-label {
+            color: #666;
+            margin-top: 5px;
+            font-size: 0.9em;
+        }
+
+        .action-buttons {
+            display: flex;
+            gap: 10px;
+            margin-top: 15px;
+        }
+
+        .btn {
+            flex: 1;
+            padding: 10px;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: 600;
+            transition: all 0.3s;
+        }
+
+        .btn-primary {
+            background: #667eea;
+            color: white;
+        }
+
+        .btn-primary:hover {
+            background: #5568d3;
+            transform: scale(1.05);
+        }
+
+        .btn-secondary {
+            background: #e9ecef;
+            color: #333;
+        }
+
+        .btn-secondary:hover {
+            background: #dee2e6;
+        }
+
+        .system-overview {
+            background: rgba(255, 255, 255, 0.95);
+            color: #333;
+            border-radius: 15px;
+            padding: 30px;
+            margin-bottom: 30px;
+        }
+
+        .system-overview h3 {
+            margin-bottom: 20px;
+            color: #667eea;
+        }
+
+        .overview-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 20px;
+        }
+
+        .overview-stat {
+            text-align: center;
+            padding: 20px;
+            background: #f8f9fa;
+            border-radius: 10px;
+        }
+
+        .overview-stat-value {
+            font-size: 2.5em;
+            font-weight: bold;
+            color: #667eea;
+        }
+
+        .overview-stat-label {
+            color: #666;
+            margin-top: 8px;
+        }
+
+        .status-indicator {
+            display: inline-block;
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
+            margin-right: 8px;
+        }
+
+        .status-healthy {
+            background: #28a745;
+            box-shadow: 0 0 8px #28a745;
+        }
+
+        .status-warning {
+            background: #ffc107;
+            box-shadow: 0 0 8px #ffc107;
+        }
+
+        .status-error {
+            background: #dc3545;
+            box-shadow: 0 0 8px #dc3545;
+        }
+
+        .quick-actions {
+            background: rgba(255, 255, 255, 0.95);
+            color: #333;
+            border-radius: 15px;
+            padding: 30px;
+        }
+
+        .quick-actions h3 {
+            margin-bottom: 20px;
+            color: #667eea;
+        }
+
+        .quick-actions-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 15px;
+        }
+
+        .quick-action-btn {
+            padding: 20px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            border-radius: 10px;
+            cursor: pointer;
+            font-size: 1.1em;
+            font-weight: 600;
+            transition: transform 0.3s;
+        }
+
+        .quick-action-btn:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 5px 20px rgba(102, 126, 234, 0.4);
+        }
+
+        .activity-feed {
+            background: rgba(255, 255, 255, 0.95);
+            color: #333;
+            border-radius: 15px;
+            padding: 30px;
+            margin-top: 30px;
+            max-height: 400px;
+            overflow-y: auto;
+        }
+
+        .activity-feed h3 {
+            margin-bottom: 20px;
+            color: #667eea;
+        }
+
+        .activity-item {
+            padding: 15px;
+            background: #f8f9fa;
+            border-radius: 8px;
+            margin-bottom: 10px;
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+
+        .activity-icon {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.2em;
+        }
+
+        .activity-icon.anp { background: #e3f2fd; color: #2196f3; }
+        .activity-icon.acp { background: #fff3e0; color: #ff9800; }
+        .activity-icon.aconsp { background: #f3e5f5; color: #9c27b0; }
+
+        .activity-content {
+            flex: 1;
+        }
+
+        .activity-title {
+            font-weight: 600;
+            margin-bottom: 5px;
+        }
+
+        .activity-time {
+            font-size: 0.85em;
+            color: #666;
+        }
+    </style>
+</head>
+<body>
+    <nav class="nav-bar">
+        <h1>🌟 SuperStandard Admin</h1>
+        <div class="nav-links">
+            <a href="/admin" class="active">Overview</a>
+            <a href="/network">Network (ANP)</a>
+            <a href="/coordination">Coordination (ACP)</a>
+            <a href="/consciousness">Consciousness (AConsP)</a>
+            <a href="/api/docs" target="_blank">API Docs</a>
+        </div>
+    </nav>
+
+    <div class="container">
+        <div class="header">
+            <h2>Unified Protocol Dashboard</h2>
+            <p>Real-time monitoring of all SuperStandard protocols</p>
+        </div>
+
+        <!-- System Overview -->
+        <div class="system-overview">
+            <h3><span class="status-indicator status-healthy"></span>System Health: Operational</h3>
+            <div class="overview-grid">
+                <div class="overview-stat">
+                    <div class="overview-stat-value" id="totalAgents">0</div>
+                    <div class="overview-stat-label">Total Agents</div>
+                </div>
+                <div class="overview-stat">
+                    <div class="overview-stat-value" id="activeProtocols">3</div>
+                    <div class="overview-stat-label">Active Protocols</div>
+                </div>
+                <div class="overview-stat">
+                    <div class="overview-stat-value" id="activeCoordinations">0</div>
+                    <div class="overview-stat-label">Active Sessions</div>
+                </div>
+                <div class="overview-stat">
+                    <div class="overview-stat-value" id="activeCollectives">0</div>
+                    <div class="overview-stat-label">Consciousness Fields</div>
+                </div>
+                <div class="overview-stat">
+                    <div class="overview-stat-value" id="totalThoughts">0</div>
+                    <div class="overview-stat-label">Thoughts Shared</div>
+                </div>
+                <div class="overview-stat">
+                    <div class="overview-stat-value" id="emergentPatterns">0</div>
+                    <div class="overview-stat-label">Emergent Patterns</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Protocol Cards -->
+        <div class="protocol-grid">
+            <!-- ANP Card -->
+            <div class="protocol-card">
+                <div class="protocol-header">
+                    <div class="protocol-title">Agent Network (ANP)</div>
+                    <div class="protocol-icon">🌐</div>
+                </div>
+                <div class="protocol-stats">
+                    <div class="stat">
+                        <div class="stat-value" id="anpRegistered">0</div>
+                        <div class="stat-label">Registered Agents</div>
+                    </div>
+                    <div class="stat">
+                        <div class="stat-value" id="anpHealthy">0</div>
+                        <div class="stat-label">Healthy</div>
+                    </div>
+                    <div class="stat">
+                        <div class="stat-value" id="anpDiscoveries">0</div>
+                        <div class="stat-label">Discoveries</div>
+                    </div>
+                    <div class="stat">
+                        <div class="stat-value" id="anpHeartbeats">0</div>
+                        <div class="stat-label">Heartbeats</div>
+                    </div>
+                </div>
+                <div class="action-buttons">
+                    <button class="btn btn-primary" onclick="window.location.href='/network'">View Network</button>
+                    <button class="btn btn-secondary" onclick="registerAgent()">Register Agent</button>
+                </div>
+            </div>
+
+            <!-- ACP Card -->
+            <div class="protocol-card">
+                <div class="protocol-header">
+                    <div class="protocol-title">Coordination (ACP)</div>
+                    <div class="protocol-icon">🤝</div>
+                </div>
+                <div class="protocol-stats">
+                    <div class="stat">
+                        <div class="stat-value" id="acpSessions">0</div>
+                        <div class="stat-label">Active Sessions</div>
+                    </div>
+                    <div class="stat">
+                        <div class="stat-value" id="acpTasks">0</div>
+                        <div class="stat-label">Total Tasks</div>
+                    </div>
+                    <div class="stat">
+                        <div class="stat-value" id="acpCompleted">0</div>
+                        <div class="stat-label">Completed</div>
+                    </div>
+                    <div class="stat">
+                        <div class="stat-value" id="acpParticipants">0</div>
+                        <div class="stat-label">Participants</div>
+                    </div>
+                </div>
+                <div class="action-buttons">
+                    <button class="btn btn-primary" onclick="window.location.href='/coordination'">View Sessions</button>
+                    <button class="btn btn-secondary" onclick="createSession()">Create Session</button>
+                </div>
+            </div>
+
+            <!-- AConsP Card -->
+            <div class="protocol-card">
+                <div class="protocol-header">
+                    <div class="protocol-title">Consciousness (AConsP)</div>
+                    <div class="protocol-icon">🧠</div>
+                </div>
+                <div class="protocol-stats">
+                    <div class="stat">
+                        <div class="stat-value" id="aconspCollectives">0</div>
+                        <div class="stat-label">Collectives</div>
+                    </div>
+                    <div class="stat">
+                        <div class="stat-value" id="aconspThoughts">0</div>
+                        <div class="stat-label">Thoughts</div>
+                    </div>
+                    <div class="stat">
+                        <div class="stat-value" id="aconspPatterns">0</div>
+                        <div class="stat-label">Emergent Patterns</div>
+                    </div>
+                    <div class="stat">
+                        <div class="stat-value" id="aconspAwareness">0%</div>
+                        <div class="stat-label">Avg Awareness</div>
+                    </div>
+                </div>
+                <div class="action-buttons">
+                    <button class="btn btn-primary" onclick="window.location.href='/dashboard'">View Dashboard</button>
+                    <button class="btn btn-secondary" onclick="createCollective()">Create Collective</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Quick Actions -->
+        <div class="quick-actions">
+            <h3>Quick Actions</h3>
+            <div class="quick-actions-grid">
+                <button class="quick-action-btn" onclick="runDemo()">🚀 Run Demo</button>
+                <button class="quick-action-btn" onclick="viewMetrics()">📊 View Metrics</button>
+                <button class="quick-action-btn" onclick="exportData()">💾 Export Data</button>
+                <button class="quick-action-btn" onclick="viewLogs()">📋 View Logs</button>
+            </div>
+        </div>
+
+        <!-- Activity Feed -->
+        <div class="activity-feed">
+            <h3>Recent Activity</h3>
+            <div id="activityFeed">
+                <!-- Activity items will be added dynamically -->
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Mock data - replace with real API calls
+        function updateDashboard() {
+            // Update overview stats
+            document.getElementById('totalAgents').textContent = Math.floor(Math.random() * 50) + 10;
+            document.getElementById('activeCoordinations').textContent = Math.floor(Math.random() * 10) + 1;
+            document.getElementById('activeCollectives').textContent = Math.floor(Math.random() * 5) + 1;
+            document.getElementById('totalThoughts').textContent = Math.floor(Math.random() * 200) + 50;
+            document.getElementById('emergentPatterns').textContent = Math.floor(Math.random() * 15) + 3;
+
+            // Update ANP stats
+            document.getElementById('anpRegistered').textContent = Math.floor(Math.random() * 50) + 10;
+            document.getElementById('anpHealthy').textContent = Math.floor(Math.random() * 45) + 8;
+            document.getElementById('anpDiscoveries').textContent = Math.floor(Math.random() * 100) + 20;
+            document.getElementById('anpHeartbeats').textContent = Math.floor(Math.random() * 500) + 100;
+
+            // Update ACP stats
+            document.getElementById('acpSessions').textContent = Math.floor(Math.random() * 10) + 1;
+            document.getElementById('acpTasks').textContent = Math.floor(Math.random() * 50) + 10;
+            document.getElementById('acpCompleted').textContent = Math.floor(Math.random() * 40) + 5;
+            document.getElementById('acpParticipants').textContent = Math.floor(Math.random() * 30) + 5;
+
+            // Update AConsP stats
+            document.getElementById('aconspCollectives').textContent = Math.floor(Math.random() * 5) + 1;
+            document.getElementById('aconspThoughts').textContent = Math.floor(Math.random() * 200) + 50;
+            document.getElementById('aconspPatterns').textContent = Math.floor(Math.random() * 15) + 3;
+            document.getElementById('aconspAwareness').textContent = Math.floor(Math.random() * 60) + 20 + '%';
+        }
+
+        function addActivityItem(protocol, title, time) {
+            const feed = document.getElementById('activityFeed');
+            const item = document.createElement('div');
+            item.className = 'activity-item';
+            item.innerHTML = `
+                <div class="activity-icon ${protocol}">
+                    ${protocol === 'anp' ? '🌐' : protocol === 'acp' ? '🤝' : '🧠'}
+                </div>
+                <div class="activity-content">
+                    <div class="activity-title">${title}</div>
+                    <div class="activity-time">${time}</div>
+                </div>
+            `;
+            feed.insertBefore(item, feed.firstChild);
+
+            // Keep only last 10 items
+            while (feed.children.length > 10) {
+                feed.removeChild(feed.lastChild);
+            }
+        }
+
+        // Simulate activity
+        function simulateActivity() {
+            const activities = [
+                { protocol: 'anp', title: 'New agent registered: analyst_042' },
+                { protocol: 'acp', title: 'Task completed in session pipeline_003' },
+                { protocol: 'aconsp', title: 'Emergent pattern discovered (coherence: 87%)' },
+                { protocol: 'anp', title: 'Agent discovery query: 15 matches found' },
+                { protocol: 'aconsp', title: 'Consciousness collapse: 3 patterns emerged' },
+                { protocol: 'acp', title: 'New coordination session created' }
+            ];
+
+            const activity = activities[Math.floor(Math.random() * activities.length)];
+            const now = new Date().toLocaleTimeString();
+            addActivityItem(activity.protocol, activity.title, now);
+        }
+
+        // Action functions
+        function registerAgent() {
+            alert('Register Agent dialog would open here');
+        }
+
+        function createSession() {
+            alert('Create Coordination Session dialog would open here');
+        }
+
+        function createCollective() {
+            alert('Create Collective Consciousness dialog would open here');
+        }
+
+        function runDemo() {
+            alert('Demo launcher would start here');
+        }
+
+        function viewMetrics() {
+            alert('Detailed metrics view would open here');
+        }
+
+        function exportData() {
+            alert('Data export dialog would open here');
+        }
+
+        function viewLogs() {
+            alert('System logs viewer would open here');
+        }
+
+        // Initialize
+        updateDashboard();
+        setInterval(updateDashboard, 5000);
+        setInterval(simulateActivity, 3000);
+    </script>
+</body>
+</html>

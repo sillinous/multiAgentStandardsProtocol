@@ -1,0 +1,765 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SuperStandard Control Panel</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: #fff;
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .navbar {
+            background: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(10px);
+            padding: 15px 30px;
+            border-radius: 15px;
+            margin-bottom: 30px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .navbar h1 {
+            font-size: 24px;
+            font-weight: 600;
+        }
+
+        .nav-links {
+            display: flex;
+            gap: 20px;
+        }
+
+        .nav-links a {
+            color: #fff;
+            text-decoration: none;
+            padding: 8px 16px;
+            border-radius: 8px;
+            transition: background 0.3s;
+        }
+
+        .nav-links a:hover {
+            background: rgba(255, 255, 255, 0.2);
+        }
+
+        .nav-links a.active {
+            background: rgba(255, 255, 255, 0.3);
+            font-weight: 600;
+        }
+
+        .hero-section {
+            text-align: center;
+            margin-bottom: 40px;
+        }
+
+        .hero-section h2 {
+            font-size: 36px;
+            margin-bottom: 15px;
+            background: linear-gradient(135deg, #fff, #e0e7ff);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .hero-section p {
+            font-size: 16px;
+            opacity: 0.9;
+            max-width: 600px;
+            margin: 0 auto;
+        }
+
+        .quick-actions {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 20px;
+            margin-bottom: 30px;
+        }
+
+        .action-card {
+            background: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(10px);
+            border-radius: 15px;
+            padding: 30px;
+            text-align: center;
+            transition: all 0.3s;
+            cursor: pointer;
+            border: 2px solid transparent;
+        }
+
+        .action-card:hover {
+            transform: translateY(-5px);
+            border-color: rgba(255, 255, 255, 0.3);
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+        }
+
+        .action-icon {
+            font-size: 48px;
+            margin-bottom: 15px;
+        }
+
+        .action-title {
+            font-size: 20px;
+            font-weight: 600;
+            margin-bottom: 10px;
+        }
+
+        .action-description {
+            font-size: 14px;
+            opacity: 0.8;
+            margin-bottom: 20px;
+        }
+
+        .action-button {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: #fff;
+            border: none;
+            padding: 12px 24px;
+            border-radius: 8px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s;
+            width: 100%;
+            font-size: 14px;
+        }
+
+        .action-button:hover {
+            box-shadow: 0 5px 15px rgba(102, 126, 234, 0.4);
+        }
+
+        .protocols-section {
+            margin-bottom: 30px;
+        }
+
+        .section-header {
+            font-size: 24px;
+            font-weight: 600;
+            margin-bottom: 20px;
+            padding-bottom: 10px;
+            border-bottom: 2px solid rgba(255, 255, 255, 0.2);
+        }
+
+        .protocol-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
+            gap: 20px;
+        }
+
+        .protocol-card {
+            background: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(10px);
+            border-radius: 15px;
+            padding: 25px;
+            border-left: 5px solid;
+        }
+
+        .protocol-card.anp {
+            border-left-color: #60a5fa;
+        }
+
+        .protocol-card.acp {
+            border-left-color: #f59e0b;
+        }
+
+        .protocol-card.aconsp {
+            border-left-color: #ec4899;
+        }
+
+        .protocol-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+        }
+
+        .protocol-title {
+            font-size: 20px;
+            font-weight: 600;
+        }
+
+        .protocol-badge {
+            padding: 5px 12px;
+            border-radius: 12px;
+            font-size: 11px;
+            font-weight: 600;
+            text-transform: uppercase;
+        }
+
+        .badge-anp { background: #60a5fa; color: #000; }
+        .badge-acp { background: #f59e0b; color: #000; }
+        .badge-aconsp { background: #ec4899; color: #fff; }
+
+        .protocol-stats {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 15px;
+            margin-bottom: 20px;
+        }
+
+        .stat-box {
+            background: rgba(255, 255, 255, 0.05);
+            padding: 12px;
+            border-radius: 8px;
+            text-align: center;
+        }
+
+        .stat-value {
+            font-size: 24px;
+            font-weight: 700;
+            margin-bottom: 5px;
+        }
+
+        .stat-label {
+            font-size: 11px;
+            opacity: 0.8;
+            text-transform: uppercase;
+        }
+
+        .protocol-actions {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 10px;
+        }
+
+        .btn {
+            padding: 10px 16px;
+            border: none;
+            border-radius: 8px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s;
+            font-size: 13px;
+        }
+
+        .btn-primary {
+            background: rgba(255, 255, 255, 0.2);
+            color: #fff;
+        }
+
+        .btn-primary:hover {
+            background: rgba(255, 255, 255, 0.3);
+        }
+
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.7);
+            backdrop-filter: blur(5px);
+            z-index: 1000;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .modal.active {
+            display: flex;
+        }
+
+        .modal-content {
+            background: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(20px);
+            border-radius: 20px;
+            padding: 40px;
+            max-width: 500px;
+            width: 90%;
+            max-height: 80vh;
+            overflow-y: auto;
+        }
+
+        .modal-header {
+            font-size: 24px;
+            font-weight: 600;
+            margin-bottom: 20px;
+        }
+
+        .form-group {
+            margin-bottom: 20px;
+        }
+
+        .form-group label {
+            display: block;
+            margin-bottom: 8px;
+            font-size: 14px;
+            font-weight: 600;
+            opacity: 0.9;
+        }
+
+        .form-group input,
+        .form-group select,
+        .form-group textarea {
+            width: 100%;
+            padding: 12px;
+            border: none;
+            border-radius: 8px;
+            background: rgba(255, 255, 255, 0.2);
+            color: #fff;
+            font-size: 14px;
+            font-family: inherit;
+        }
+
+        .form-group input::placeholder,
+        .form-group textarea::placeholder {
+            color: rgba(255, 255, 255, 0.6);
+        }
+
+        .form-actions {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 10px;
+            margin-top: 30px;
+        }
+
+        .btn-submit {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: #fff;
+        }
+
+        .btn-cancel {
+            background: rgba(255, 255, 255, 0.1);
+            color: #fff;
+        }
+
+        .recent-activity {
+            background: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(10px);
+            border-radius: 15px;
+            padding: 25px;
+        }
+
+        .activity-list {
+            max-height: 300px;
+            overflow-y: auto;
+        }
+
+        .activity-item {
+            background: rgba(255, 255, 255, 0.05);
+            padding: 15px;
+            border-radius: 8px;
+            margin-bottom: 10px;
+            border-left: 3px solid;
+        }
+
+        .activity-item.agent { border-left-color: #60a5fa; }
+        .activity-item.session { border-left-color: #f59e0b; }
+        .activity-item.thought { border-left-color: #ec4899; }
+
+        .activity-time {
+            font-size: 11px;
+            opacity: 0.7;
+            margin-bottom: 5px;
+        }
+
+        .activity-text {
+            font-size: 14px;
+        }
+
+        .scrollbar-custom::-webkit-scrollbar {
+            width: 8px;
+        }
+
+        .scrollbar-custom::-webkit-scrollbar-track {
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 10px;
+        }
+
+        .scrollbar-custom::-webkit-scrollbar-thumb {
+            background: rgba(255, 255, 255, 0.3);
+            border-radius: 10px;
+        }
+
+        .scrollbar-custom::-webkit-scrollbar-thumb:hover {
+            background: rgba(255, 255, 255, 0.5);
+        }
+
+        @keyframes slideIn {
+            from {
+                opacity: 0;
+                transform: translateY(20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .animate-in {
+            animation: slideIn 0.5s ease-out;
+        }
+    </style>
+</head>
+<body>
+    <nav class="navbar">
+        <h1>⚡ SuperStandard Control Panel</h1>
+        <div class="nav-links">
+            <a href="admin_dashboard.html">Admin</a>
+            <a href="network_dashboard.html">ANP Network</a>
+            <a href="coordination_dashboard.html">ACP Coordination</a>
+            <a href="consciousness_dashboard.html">AConsP Consciousness</a>
+            <a href="user_control_panel.html" class="active">User Panel</a>
+        </div>
+    </nav>
+
+    <!-- Hero Section -->
+    <div class="hero-section animate-in">
+        <h2>Welcome to SuperStandard Multi-Agent Platform</h2>
+        <p>Manage your intelligent agents, coordinate complex workflows, and explore emergent collective intelligence—all from one unified interface.</p>
+    </div>
+
+    <!-- Quick Actions -->
+    <div class="quick-actions animate-in">
+        <div class="action-card" onclick="openModal('registerAgent')">
+            <div class="action-icon">🤖</div>
+            <div class="action-title">Register New Agent</div>
+            <div class="action-description">Add a new agent to the network with custom capabilities</div>
+            <button class="action-button">Get Started</button>
+        </div>
+
+        <div class="action-card" onclick="openModal('createSession')">
+            <div class="action-icon">🤝</div>
+            <div class="action-title">Create Coordination</div>
+            <div class="action-description">Start a new multi-agent coordination session</div>
+            <button class="action-button">Create Session</button>
+        </div>
+
+        <div class="action-card" onclick="openModal('joinCollective')">
+            <div class="action-icon">🧠</div>
+            <div class="action-title">Join Collective</div>
+            <div class="action-description">Connect agents to collective consciousness</div>
+            <button class="action-button">Join Now</button>
+        </div>
+
+        <div class="action-card" onclick="window.location.href='admin_dashboard.html'">
+            <div class="action-icon">📊</div>
+            <div class="action-title">View Dashboards</div>
+            <div class="action-description">Access advanced monitoring and analytics</div>
+            <button class="action-button">Open Dashboards</button>
+        </div>
+    </div>
+
+    <!-- Protocol Overview -->
+    <div class="protocols-section">
+        <h3 class="section-header">Active Protocols</h3>
+        <div class="protocol-grid">
+            <!-- ANP Card -->
+            <div class="protocol-card anp">
+                <div class="protocol-header">
+                    <span class="protocol-title">Agent Network Protocol</span>
+                    <span class="protocol-badge badge-anp">ANP</span>
+                </div>
+                <div class="protocol-stats">
+                    <div class="stat-box">
+                        <div class="stat-value" id="anpAgents">0</div>
+                        <div class="stat-label">Agents</div>
+                    </div>
+                    <div class="stat-box">
+                        <div class="stat-value" id="anpHealthy">0</div>
+                        <div class="stat-label">Healthy</div>
+                    </div>
+                </div>
+                <div class="protocol-actions">
+                    <button class="btn btn-primary" onclick="openModal('registerAgent')">Register Agent</button>
+                    <button class="btn btn-primary" onclick="window.location.href='network_dashboard.html'">View Network</button>
+                </div>
+            </div>
+
+            <!-- ACP Card -->
+            <div class="protocol-card acp">
+                <div class="protocol-header">
+                    <span class="protocol-title">Agent Coordination Protocol</span>
+                    <span class="protocol-badge badge-acp">ACP</span>
+                </div>
+                <div class="protocol-stats">
+                    <div class="stat-box">
+                        <div class="stat-value" id="acpSessions">0</div>
+                        <div class="stat-label">Sessions</div>
+                    </div>
+                    <div class="stat-box">
+                        <div class="stat-value" id="acpTasks">0</div>
+                        <div class="stat-label">Tasks</div>
+                    </div>
+                </div>
+                <div class="protocol-actions">
+                    <button class="btn btn-primary" onclick="openModal('createSession')">New Session</button>
+                    <button class="btn btn-primary" onclick="window.location.href='coordination_dashboard.html'">View Sessions</button>
+                </div>
+            </div>
+
+            <!-- AConsP Card -->
+            <div class="protocol-card aconsp">
+                <div class="protocol-header">
+                    <span class="protocol-title">Agent Consciousness Protocol</span>
+                    <span class="protocol-badge badge-aconsp">AConsP</span>
+                </div>
+                <div class="protocol-stats">
+                    <div class="stat-box">
+                        <div class="stat-value" id="aconspCollectives">0</div>
+                        <div class="stat-label">Collectives</div>
+                    </div>
+                    <div class="stat-box">
+                        <div class="stat-value" id="aconspThoughts">0</div>
+                        <div class="stat-label">Thoughts</div>
+                    </div>
+                </div>
+                <div class="protocol-actions">
+                    <button class="btn btn-primary" onclick="openModal('joinCollective')">Join Collective</button>
+                    <button class="btn btn-primary" onclick="window.location.href='consciousness_dashboard.html'">View Consciousness</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Recent Activity -->
+    <div class="recent-activity">
+        <h3 class="section-header">Recent Activity</h3>
+        <div class="activity-list scrollbar-custom" id="activityList">
+            <!-- Dynamically populated -->
+        </div>
+    </div>
+
+    <!-- Modals -->
+
+    <!-- Register Agent Modal -->
+    <div class="modal" id="registerAgentModal">
+        <div class="modal-content">
+            <div class="modal-header">Register New Agent</div>
+            <form onsubmit="submitRegisterAgent(event)">
+                <div class="form-group">
+                    <label>Agent ID</label>
+                    <input type="text" name="agentId" placeholder="e.g., analyst_001" required>
+                </div>
+                <div class="form-group">
+                    <label>Agent Type</label>
+                    <select name="agentType" required>
+                        <option value="">Select Type</option>
+                        <option value="analyst">Analyst</option>
+                        <option value="processor">Processor</option>
+                        <option value="validator">Validator</option>
+                        <option value="coordinator">Coordinator</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label>Capabilities (comma-separated)</label>
+                    <input type="text" name="capabilities" placeholder="e.g., analysis, processing, validation">
+                </div>
+                <div class="form-group">
+                    <label>Endpoint URL</label>
+                    <input type="url" name="endpoint" placeholder="http://localhost:8000">
+                </div>
+                <div class="form-actions">
+                    <button type="submit" class="btn btn-submit">Register Agent</button>
+                    <button type="button" class="btn btn-cancel" onclick="closeModal('registerAgent')">Cancel</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Create Session Modal -->
+    <div class="modal" id="createSessionModal">
+        <div class="modal-content">
+            <div class="modal-header">Create Coordination Session</div>
+            <form onsubmit="submitCreateSession(event)">
+                <div class="form-group">
+                    <label>Session Name</label>
+                    <input type="text" name="sessionName" placeholder="e.g., Data Processing Pipeline" required>
+                </div>
+                <div class="form-group">
+                    <label>Coordination Type</label>
+                    <select name="coordinationType" required>
+                        <option value="">Select Type</option>
+                        <option value="pipeline">Pipeline - Sequential task execution</option>
+                        <option value="swarm">Swarm - Parallel distributed work</option>
+                        <option value="supervisor">Supervisor - Centralized coordination</option>
+                        <option value="negotiation">Negotiation - Agent bargaining</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label>Description</label>
+                    <textarea name="description" rows="3" placeholder="Describe the coordination goal..."></textarea>
+                </div>
+                <div class="form-actions">
+                    <button type="submit" class="btn btn-submit">Create Session</button>
+                    <button type="button" class="btn btn-cancel" onclick="closeModal('createSession')">Cancel</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Join Collective Modal -->
+    <div class="modal" id="joinCollectiveModal">
+        <div class="modal-content">
+            <div class="modal-header">Join Collective Consciousness</div>
+            <form onsubmit="submitJoinCollective(event)">
+                <div class="form-group">
+                    <label>Agent ID</label>
+                    <input type="text" name="agentId" placeholder="e.g., analyst_001" required>
+                </div>
+                <div class="form-group">
+                    <label>Collective ID</label>
+                    <input type="text" name="collectiveId" placeholder="e.g., main_collective" required>
+                </div>
+                <div class="form-group">
+                    <label>Auto-Respond to Queries</label>
+                    <select name="autoRespond">
+                        <option value="true">Yes - Automatically participate in collective queries</option>
+                        <option value="false">No - Manual participation only</option>
+                    </select>
+                </div>
+                <div class="form-actions">
+                    <button type="submit" class="btn btn-submit">Join Collective</button>
+                    <button type="button" class="btn btn-cancel" onclick="closeModal('joinCollective')">Cancel</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <script>
+        // Modal management
+        function openModal(modalName) {
+            document.getElementById(`${modalName}Modal`).classList.add('active');
+        }
+
+        function closeModal(modalName) {
+            document.getElementById(`${modalName}Modal`).classList.remove('active');
+        }
+
+        // Close modal on outside click
+        document.querySelectorAll('.modal').forEach(modal => {
+            modal.addEventListener('click', (e) => {
+                if (e.target === modal) {
+                    modal.classList.remove('active');
+                }
+            });
+        });
+
+        // Form submissions
+        function submitRegisterAgent(e) {
+            e.preventDefault();
+            const formData = new FormData(e.target);
+            const data = Object.fromEntries(formData);
+
+            console.log('Registering agent:', data);
+            alert(`Agent ${data.agentId} registered successfully!`);
+            addActivity('agent', `New agent registered: ${data.agentId} (${data.agentType})`);
+            closeModal('registerAgent');
+            e.target.reset();
+            updateStats();
+        }
+
+        function submitCreateSession(e) {
+            e.preventDefault();
+            const formData = new FormData(e.target);
+            const data = Object.fromEntries(formData);
+
+            console.log('Creating session:', data);
+            alert(`Session "${data.sessionName}" created successfully!`);
+            addActivity('session', `New ${data.coordinationType} session: ${data.sessionName}`);
+            closeModal('createSession');
+            e.target.reset();
+            updateStats();
+        }
+
+        function submitJoinCollective(e) {
+            e.preventDefault();
+            const formData = new FormData(e.target);
+            const data = Object.fromEntries(formData);
+
+            console.log('Joining collective:', data);
+            alert(`Agent ${data.agentId} joined collective ${data.collectiveId}!`);
+            addActivity('thought', `${data.agentId} joined collective: ${data.collectiveId}`);
+            closeModal('joinCollective');
+            e.target.reset();
+            updateStats();
+        }
+
+        // Activity tracking
+        let activities = [
+            { type: 'agent', text: 'analyst_001 registered on network', time: new Date(Date.now() - 120000) },
+            { type: 'session', text: 'Pipeline session "Data Processing" started', time: new Date(Date.now() - 300000) },
+            { type: 'thought', text: 'Collective pattern emerged: optimization_strategy', time: new Date(Date.now() - 600000) }
+        ];
+
+        function addActivity(type, text) {
+            activities.unshift({
+                type: type,
+                text: text,
+                time: new Date()
+            });
+            renderActivities();
+        }
+
+        function renderActivities() {
+            const listEl = document.getElementById('activityList');
+            listEl.innerHTML = activities.slice(0, 10).map(activity => {
+                const timeAgo = getTimeAgo(activity.time);
+                return `
+                    <div class="activity-item ${activity.type}">
+                        <div class="activity-time">${timeAgo}</div>
+                        <div class="activity-text">${activity.text}</div>
+                    </div>
+                `;
+            }).join('');
+        }
+
+        function getTimeAgo(date) {
+            const seconds = Math.floor((new Date() - date) / 1000);
+            if (seconds < 60) return `${seconds}s ago`;
+            const minutes = Math.floor(seconds / 60);
+            if (minutes < 60) return `${minutes}m ago`;
+            const hours = Math.floor(minutes / 60);
+            if (hours < 24) return `${hours}h ago`;
+            const days = Math.floor(hours / 24);
+            return `${days}d ago`;
+        }
+
+        // Stats
+        function updateStats() {
+            document.getElementById('anpAgents').textContent = Math.floor(Math.random() * 50 + 20);
+            document.getElementById('anpHealthy').textContent = Math.floor(Math.random() * 45 + 18);
+            document.getElementById('acpSessions').textContent = Math.floor(Math.random() * 15 + 5);
+            document.getElementById('acpTasks').textContent = Math.floor(Math.random() * 100 + 50);
+            document.getElementById('aconspCollectives').textContent = Math.floor(Math.random() * 8 + 2);
+            document.getElementById('aconspThoughts').textContent = Math.floor(Math.random() * 500 + 200);
+        }
+
+        // Initialize
+        renderActivities();
+        updateStats();
+
+        // Periodic updates
+        setInterval(() => {
+            updateStats();
+        }, 5000);
+
+        // Simulate new activities
+        setInterval(() => {
+            const types = ['agent', 'session', 'thought'];
+            const messages = [
+                'New agent joined the network',
+                'Task completed successfully',
+                'Pattern discovered in collective',
+                'Session coordination updated',
+                'Agent heartbeat received'
+            ];
+
+            if (Math.random() < 0.3) {
+                addActivity(
+                    types[Math.floor(Math.random() * types.length)],
+                    messages[Math.floor(Math.random() * messages.length)]
+                );
+            }
+        }, 10000);
+    </script>
+</body>
+</html>
