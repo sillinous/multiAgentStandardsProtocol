@@ -496,41 +496,97 @@
         resizeCanvas();
         window.addEventListener('resize', resizeCanvas);
 
+        // API Configuration
+        const API_BASE = window.location.origin;
+        const WS_BASE = window.location.protocol === 'https:' ? 'wss://' : 'ws://';
+        const WS_URL = WS_BASE + window.location.host + '/ws/network';
+
         // Network state
         let agents = [];
         let selectedAgent = null;
+        let ws = null;
 
-        // Simulate agents
-        function generateMockAgents() {
-            const types = ['analyst', 'processor', 'validator', 'coordinator'];
-            const statuses = ['healthy', 'healthy', 'healthy', 'degraded', 'unhealthy'];
-            const capabilities = ['analysis', 'processing', 'validation', 'coordination', 'testing', 'development'];
+        // WebSocket connection for real-time updates
+        function connectWebSocket() {
+            try {
+                ws = new WebSocket(WS_URL);
 
-            agents = [];
-            for (let i = 0; i < 15; i++) {
-                const type = types[Math.floor(Math.random() * types.length)];
-                const status = statuses[Math.floor(Math.random() * statuses.length)];
-                const agentCaps = [];
-                const numCaps = Math.floor(Math.random() * 3) + 1;
-                for (let j = 0; j < numCaps; j++) {
-                    const cap = capabilities[Math.floor(Math.random() * capabilities.length)];
-                    if (!agentCaps.includes(cap)) agentCaps.push(cap);
+                ws.onopen = () => {
+                    console.log('[Network] WebSocket connected');
+                };
+
+                ws.onmessage = (event) => {
+                    try {
+                        const data = JSON.parse(event.data);
+                        if (data.type === 'agent_registered') {
+                            console.log('[Network] New agent registered:', data.agent_id);
+                            fetchAgents(); // Refresh agent list
+                        }
+                    } catch (e) {
+                        console.error('[Network] Failed to parse WebSocket message:', e);
+                    }
+                };
+
+                ws.onclose = () => {
+                    console.log('[Network] WebSocket disconnected, reconnecting...');
+                    setTimeout(connectWebSocket, 5000);
+                };
+            } catch (e) {
+                console.error('[Network] Failed to connect WebSocket:', e);
+            }
+        }
+
+        // Fetch real agents from API
+        async function fetchAgents() {
+            try {
+                const response = await fetch(`${API_BASE}/api/anp/agents`);
+                const data = await response.json();
+
+                if (data.success) {
+                    const apiAgents = data.agents || [];
+
+                    // Keep existing physics state for agents, add new ones
+                    const newAgents = [];
+
+                    apiAgents.forEach(apiAgent => {
+                        // Find existing agent to preserve physics state
+                        const existing = agents.find(a => a.id === apiAgent.agent_id);
+
+                        if (existing) {
+                            // Update existing agent data but keep physics
+                            existing.type = apiAgent.agent_type;
+                            existing.status = apiAgent.health_status;
+                            existing.capabilities = apiAgent.capabilities;
+                            existing.load = apiAgent.load_score || 0;
+                            existing.lastHeartbeat = apiAgent.last_heartbeat;
+                            existing.region = apiAgent.region || 'unknown';
+                            existing.endpoint = apiAgent.endpoints?.http || 'N/A';
+                            newAgents.push(existing);
+                        } else {
+                            // New agent - initialize with random position and physics
+                            newAgents.push({
+                                id: apiAgent.agent_id,
+                                type: apiAgent.agent_type,
+                                status: apiAgent.health_status,
+                                capabilities: apiAgent.capabilities,
+                                load: apiAgent.load_score || 0,
+                                lastHeartbeat: apiAgent.last_heartbeat,
+                                region: apiAgent.region || 'unknown',
+                                endpoint: apiAgent.endpoints?.http || 'N/A',
+                                x: Math.random() * (canvas.width - 100) + 50,
+                                y: Math.random() * (canvas.height - 100) + 50,
+                                vx: (Math.random() - 0.5) * 2,
+                                vy: (Math.random() - 0.5) * 2
+                            });
+                        }
+                    });
+
+                    agents = newAgents;
+                    renderAgentList();
+                    updateStats();
                 }
-
-                agents.push({
-                    id: `${type}_${String(i + 1).padStart(3, '0')}`,
-                    type: type,
-                    status: status,
-                    capabilities: agentCaps,
-                    load: Math.random().toFixed(2),
-                    lastHeartbeat: new Date(Date.now() - Math.random() * 60000).toISOString(),
-                    region: ['us-east', 'us-west', 'eu-central', 'ap-south'][Math.floor(Math.random() * 4)],
-                    endpoint: `http://localhost:${8000 + i}`,
-                    x: Math.random() * (canvas.width - 100) + 50,
-                    y: Math.random() * (canvas.height - 100) + 50,
-                    vx: (Math.random() - 0.5) * 2,
-                    vy: (Math.random() - 0.5) * 2
-                });
+            } catch (error) {
+                console.error('[Network] Failed to fetch agents:', error);
             }
         }
 
@@ -697,24 +753,38 @@
         }
 
         // Initialize
-        generateMockAgents();
-        renderAgentList();
-        updateStats();
+        console.log('[Network] Initializing network dashboard...');
+
+        // Fetch initial agent data
+        fetchAgents();
+
+        // Connect WebSocket for real-time updates
+        connectWebSocket();
+
+        // Start physics animation
         animate();
 
-        // Periodic updates
-        setInterval(() => {
-            // Simulate status changes
-            agents.forEach(agent => {
-                if (Math.random() < 0.05) {
-                    const statuses = ['healthy', 'degraded', 'unhealthy'];
-                    agent.status = statuses[Math.floor(Math.random() * statuses.length)];
-                }
-                agent.load = Math.random().toFixed(2);
-            });
-            updateStats();
-            renderAgentList();
-        }, 5000);
+        // Periodic refresh (every 5 seconds as backup to WebSocket)
+        setInterval(fetchAgents, 5000);
+
+        // Fetch ANP stats
+        async function fetchANPStats() {
+            try {
+                const response = await fetch(`${API_BASE}/api/anp/stats`);
+                const data = await response.json();
+
+                // Update bottom metrics
+                document.getElementById('totalDiscoveries').textContent = data.discoveries_24h || 0;
+                document.getElementById('heartbeatRate').textContent = data.heartbeat_rate || 0;
+                document.getElementById('networkUptime').textContent = (data.network_uptime || 99.9).toFixed(2) + '%';
+            } catch (error) {
+                console.error('[Network] Failed to fetch ANP stats:', error);
+            }
+        }
+
+        // Fetch stats initially and periodically
+        fetchANPStats();
+        setInterval(fetchANPStats, 10000);
     </script>
 </body>
 </html>
