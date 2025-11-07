@@ -319,11 +319,11 @@
     <nav class="nav-bar">
         <h1>🌟 SuperStandard Admin</h1>
         <div class="nav-links">
-            <a href="/admin" class="active">Overview</a>
-            <a href="/network">Network (ANP)</a>
-            <a href="/coordination">Coordination (ACP)</a>
-            <a href="/consciousness">Consciousness (AConsP)</a>
-            <a href="/api/docs" target="_blank">API Docs</a>
+            <a href="/dashboard/admin" class="active">Overview</a>
+            <a href="/dashboard/network">Network (ANP)</a>
+            <a href="/dashboard/coordination">Coordination (ACP)</a>
+            <a href="/dashboard/consciousness">Consciousness (AConsP)</a>
+            <a href="/docs" target="_blank">API Docs</a>
         </div>
     </nav>
 
@@ -478,32 +478,114 @@
     </div>
 
     <script>
-        // Mock data - replace with real API calls
-        function updateDashboard() {
-            // Update overview stats
-            document.getElementById('totalAgents').textContent = Math.floor(Math.random() * 50) + 10;
-            document.getElementById('activeCoordinations').textContent = Math.floor(Math.random() * 10) + 1;
-            document.getElementById('activeCollectives').textContent = Math.floor(Math.random() * 5) + 1;
-            document.getElementById('totalThoughts').textContent = Math.floor(Math.random() * 200) + 50;
-            document.getElementById('emergentPatterns').textContent = Math.floor(Math.random() * 15) + 3;
+        // API Configuration
+        const API_BASE = window.location.origin;
+        const WS_BASE = window.location.protocol === 'https:' ? 'wss://' : 'ws://';
+        const WS_URL = WS_BASE + window.location.host + '/ws/admin';
 
-            // Update ANP stats
-            document.getElementById('anpRegistered').textContent = Math.floor(Math.random() * 50) + 10;
-            document.getElementById('anpHealthy').textContent = Math.floor(Math.random() * 45) + 8;
-            document.getElementById('anpDiscoveries').textContent = Math.floor(Math.random() * 100) + 20;
-            document.getElementById('anpHeartbeats').textContent = Math.floor(Math.random() * 500) + 100;
+        // WebSocket connection
+        let ws = null;
+        let reconnectInterval = null;
 
-            // Update ACP stats
-            document.getElementById('acpSessions').textContent = Math.floor(Math.random() * 10) + 1;
-            document.getElementById('acpTasks').textContent = Math.floor(Math.random() * 50) + 10;
-            document.getElementById('acpCompleted').textContent = Math.floor(Math.random() * 40) + 5;
-            document.getElementById('acpParticipants').textContent = Math.floor(Math.random() * 30) + 5;
+        // Connect to WebSocket for real-time updates
+        function connectWebSocket() {
+            try {
+                ws = new WebSocket(WS_URL);
 
-            // Update AConsP stats
-            document.getElementById('aconspCollectives').textContent = Math.floor(Math.random() * 5) + 1;
-            document.getElementById('aconspThoughts').textContent = Math.floor(Math.random() * 200) + 50;
-            document.getElementById('aconspPatterns').textContent = Math.floor(Math.random() * 15) + 3;
-            document.getElementById('aconspAwareness').textContent = Math.floor(Math.random() * 60) + 20 + '%';
+                ws.onopen = () => {
+                    console.log('[Admin] WebSocket connected');
+                    if (reconnectInterval) {
+                        clearInterval(reconnectInterval);
+                        reconnectInterval = null;
+                    }
+                };
+
+                ws.onmessage = (event) => {
+                    try {
+                        const data = JSON.parse(event.data);
+                        handleWebSocketMessage(data);
+                    } catch (e) {
+                        console.error('[Admin] Failed to parse WebSocket message:', e);
+                    }
+                };
+
+                ws.onerror = (error) => {
+                    console.error('[Admin] WebSocket error:', error);
+                };
+
+                ws.onclose = () => {
+                    console.log('[Admin] WebSocket disconnected');
+                    // Auto-reconnect after 5 seconds
+                    if (!reconnectInterval) {
+                        reconnectInterval = setInterval(() => {
+                            console.log('[Admin] Attempting to reconnect...');
+                            connectWebSocket();
+                        }, 5000);
+                    }
+                };
+            } catch (e) {
+                console.error('[Admin] Failed to connect WebSocket:', e);
+            }
+        }
+
+        // Handle WebSocket messages
+        function handleWebSocketMessage(data) {
+            console.log('[Admin] WebSocket message:', data);
+
+            // Handle activity events
+            if (data.type === 'activity') {
+                const now = new Date().toLocaleTimeString();
+                addActivityItem(data.category, data.message, now);
+            }
+
+            // Refresh stats on any event
+            fetchDashboardStats();
+        }
+
+        // Fetch comprehensive dashboard statistics from API
+        async function fetchDashboardStats() {
+            try {
+                const response = await fetch(`${API_BASE}/api/admin/stats`);
+                const data = await response.json();
+
+                if (data.success) {
+                    updateDashboardWithStats(data);
+                }
+            } catch (error) {
+                console.error('[Admin] Failed to fetch stats:', error);
+            }
+        }
+
+        // Update dashboard with real API data
+        function updateDashboardWithStats(data) {
+            // System overview
+            const system = data.system || {};
+            document.getElementById('totalAgents').textContent = system.total_agents_registered || 0;
+            document.getElementById('activeCoordinations').textContent = data.acp?.active_sessions || 0;
+            document.getElementById('activeCollectives').textContent = data.aconsp?.total_collectives || 0;
+            document.getElementById('totalThoughts').textContent = system.total_thoughts_submitted || 0;
+            document.getElementById('emergentPatterns').textContent = system.total_patterns_discovered || 0;
+
+            // ANP stats
+            const anp = data.anp || {};
+            document.getElementById('anpRegistered').textContent = anp.total_agents || 0;
+            document.getElementById('anpHealthy').textContent = anp.healthy_agents || 0;
+            document.getElementById('anpDiscoveries').textContent = anp.discoveries_24h || 0;
+            document.getElementById('anpHeartbeats').textContent = anp.heartbeat_rate || 0;
+
+            // ACP stats
+            const acp = data.acp || {};
+            document.getElementById('acpSessions').textContent = acp.active_sessions || 0;
+            document.getElementById('acpTasks').textContent = acp.total_tasks || 0;
+            document.getElementById('acpCompleted').textContent = acp.completed_tasks || 0;
+            document.getElementById('acpParticipants').textContent = acp.total_participants || 0;
+
+            // AConsP stats
+            const aconsp = data.aconsp || {};
+            document.getElementById('aconspCollectives').textContent = aconsp.total_collectives || 0;
+            document.getElementById('aconspThoughts').textContent = aconsp.total_thoughts || 0;
+            document.getElementById('aconspPatterns').textContent = aconsp.total_patterns || 0;
+            document.getElementById('aconspAwareness').textContent = (aconsp.average_awareness || 0) + '%';
         }
 
         function addActivityItem(protocol, title, time) {
@@ -512,7 +594,7 @@
             item.className = 'activity-item';
             item.innerHTML = `
                 <div class="activity-icon ${protocol}">
-                    ${protocol === 'anp' ? '🌐' : protocol === 'acp' ? '🤝' : '🧠'}
+                    ${protocol === 'anp' || protocol === 'agent' ? '🌐' : protocol === 'acp' || protocol === 'session' ? '🤝' : '🧠'}
                 </div>
                 <div class="activity-content">
                     <div class="activity-title">${title}</div>
@@ -527,55 +609,61 @@
             }
         }
 
-        // Simulate activity
-        function simulateActivity() {
-            const activities = [
-                { protocol: 'anp', title: 'New agent registered: analyst_042' },
-                { protocol: 'acp', title: 'Task completed in session pipeline_003' },
-                { protocol: 'aconsp', title: 'Emergent pattern discovered (coherence: 87%)' },
-                { protocol: 'anp', title: 'Agent discovery query: 15 matches found' },
-                { protocol: 'aconsp', title: 'Consciousness collapse: 3 patterns emerged' },
-                { protocol: 'acp', title: 'New coordination session created' }
-            ];
-
-            const activity = activities[Math.floor(Math.random() * activities.length)];
-            const now = new Date().toLocaleTimeString();
-            addActivityItem(activity.protocol, activity.title, now);
-        }
-
         // Action functions
         function registerAgent() {
-            alert('Register Agent dialog would open here');
+            window.location.href = '/dashboard/user';
         }
 
         function createSession() {
-            alert('Create Coordination Session dialog would open here');
+            window.location.href = '/dashboard/coordination';
         }
 
         function createCollective() {
-            alert('Create Collective Consciousness dialog would open here');
+            window.location.href = '/dashboard/consciousness';
         }
 
         function runDemo() {
-            alert('Demo launcher would start here');
+            alert('Run the live demo script:\n\npython examples/live_platform_demo.py');
         }
 
         function viewMetrics() {
-            alert('Detailed metrics view would open here');
+            window.open(`${API_BASE}/docs`, '_blank');
         }
 
         function exportData() {
-            alert('Data export dialog would open here');
+            fetchDashboardStats().then(() => {
+                alert('Data export feature coming soon!\n\nFor now, use the API endpoints directly.');
+            });
         }
 
         function viewLogs() {
-            alert('System logs viewer would open here');
+            alert('System logs viewer coming soon!\n\nCheck the server console for now.');
         }
 
         // Initialize
-        updateDashboard();
-        setInterval(updateDashboard, 5000);
-        setInterval(simulateActivity, 3000);
+        console.log('[Admin] Initializing dashboard...');
+
+        // Initial data fetch
+        fetchDashboardStats();
+
+        // Connect WebSocket
+        connectWebSocket();
+
+        // Periodic refresh (every 5 seconds as backup to WebSocket)
+        setInterval(fetchDashboardStats, 5000);
+
+        // Health check
+        async function checkHealth() {
+            try {
+                const response = await fetch(`${API_BASE}/api/health`);
+                const data = await response.json();
+                console.log('[Admin] Health check:', data);
+            } catch (error) {
+                console.error('[Admin] Health check failed:', error);
+            }
+        }
+
+        checkHealth();
     </script>
 </body>
 </html>
