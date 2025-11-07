@@ -403,11 +403,12 @@
     <nav class="navbar">
         <h1>⚡ SuperStandard Control Panel</h1>
         <div class="nav-links">
-            <a href="admin_dashboard.html">Admin</a>
-            <a href="network_dashboard.html">ANP Network</a>
-            <a href="coordination_dashboard.html">ACP Coordination</a>
-            <a href="consciousness_dashboard.html">AConsP Consciousness</a>
-            <a href="user_control_panel.html" class="active">User Panel</a>
+            <a href="/dashboard">🏠 Home</a>
+            <a href="/dashboard/admin">Admin</a>
+            <a href="/dashboard/network">ANP Network</a>
+            <a href="/dashboard/coordination">ACP Coordination</a>
+            <a href="/dashboard/consciousness">AConsP Consciousness</a>
+            <a href="/dashboard/user" class="active">User Panel</a>
         </div>
     </nav>
 
@@ -440,7 +441,7 @@
             <button class="action-button">Join Now</button>
         </div>
 
-        <div class="action-card" onclick="window.location.href='admin_dashboard.html'">
+        <div class="action-card" onclick="window.location.href='/dashboard/admin'">
             <div class="action-icon">📊</div>
             <div class="action-title">View Dashboards</div>
             <div class="action-description">Access advanced monitoring and analytics</div>
@@ -470,7 +471,7 @@
                 </div>
                 <div class="protocol-actions">
                     <button class="btn btn-primary" onclick="openModal('registerAgent')">Register Agent</button>
-                    <button class="btn btn-primary" onclick="window.location.href='network_dashboard.html'">View Network</button>
+                    <button class="btn btn-primary" onclick="window.location.href='/dashboard/network'">View Network</button>
                 </div>
             </div>
 
@@ -492,7 +493,7 @@
                 </div>
                 <div class="protocol-actions">
                     <button class="btn btn-primary" onclick="openModal('createSession')">New Session</button>
-                    <button class="btn btn-primary" onclick="window.location.href='coordination_dashboard.html'">View Sessions</button>
+                    <button class="btn btn-primary" onclick="window.location.href='/dashboard/coordination'">View Sessions</button>
                 </div>
             </div>
 
@@ -514,7 +515,7 @@
                 </div>
                 <div class="protocol-actions">
                     <button class="btn btn-primary" onclick="openModal('joinCollective')">Join Collective</button>
-                    <button class="btn btn-primary" onclick="window.location.href='consciousness_dashboard.html'">View Consciousness</button>
+                    <button class="btn btn-primary" onclick="window.location.href='/dashboard/consciousness'">View Consciousness</button>
                 </div>
             </div>
         </div>
