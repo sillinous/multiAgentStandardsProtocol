@@ -126,6 +126,11 @@ class AgentFactory:
                     workspace_path=kwargs.get("workspace_path", "./workspace")
                 )
 
+            async def initialize_agent(self):
+                """Initialize generic agent (no network registration needed for demo)"""
+                logger.info(f"[{self.agent_id}] Generic agent initialized")
+                return None
+
             async def execute_task(self, task: Dict[str, Any]) -> Dict[str, Any]:
                 """Execute generic task"""
                 task_type = task.get("type", "unknown")
