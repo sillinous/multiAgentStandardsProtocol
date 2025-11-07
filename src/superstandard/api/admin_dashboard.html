@@ -492,6 +492,18 @@
         let ws = null;
         let reconnectInterval = null;
 
+        // HTML Sanitization - Prevent XSS attacks
+        function escapeHTML(str) {
+            const div = document.createElement('div');
+            div.textContent = str;
+            return div.innerHTML;
+        }
+
+        function sanitizeHTML(str) {
+            if (typeof str !== 'string') return '';
+            return escapeHTML(str);
+        }
+
         // Connect to WebSocket for real-time updates
         function connectWebSocket() {
             try {
@@ -550,14 +562,34 @@
         // Fetch comprehensive dashboard statistics from API
         async function fetchDashboardStats() {
             try {
+                // Show loading state
+                document.getElementById('totalAgents').textContent = '...';
+                document.getElementById('activeCoordinations').textContent = '...';
+                document.getElementById('activeCollectives').textContent = '...';
+                document.getElementById('totalThoughts').textContent = '...';
+                document.getElementById('emergentPatterns').textContent = '...';
+
                 const response = await fetch(`${API_BASE}/api/admin/stats`);
                 const data = await response.json();
 
                 if (data.success) {
                     updateDashboardWithStats(data);
+                } else {
+                    // On error, show 0 instead of loading
+                    document.getElementById('totalAgents').textContent = '0';
+                    document.getElementById('activeCoordinations').textContent = '0';
+                    document.getElementById('activeCollectives').textContent = '0';
+                    document.getElementById('totalThoughts').textContent = '0';
+                    document.getElementById('emergentPatterns').textContent = '0';
                 }
             } catch (error) {
                 console.error('[Admin] Failed to fetch stats:', error);
+                // On error, show 0 instead of loading
+                document.getElementById('totalAgents').textContent = '0';
+                document.getElementById('activeCoordinations').textContent = '0';
+                document.getElementById('activeCollectives').textContent = '0';
+                document.getElementById('totalThoughts').textContent = '0';
+                document.getElementById('emergentPatterns').textContent = '0';
             }
         }
 
@@ -602,15 +634,19 @@
                 emptyState.remove();
             }
 
+            // Validate protocol for CSS class safety
+            const validProtocols = ['anp', 'agent', 'acp', 'session', 'aconsp', 'collective'];
+            const safeProtocol = validProtocols.includes(protocol) ? protocol : 'info';
+
             const item = document.createElement('div');
             item.className = 'activity-item';
             item.innerHTML = `
-                <div class="activity-icon ${protocol}">
-                    ${protocol === 'anp' || protocol === 'agent' ? '🌐' : protocol === 'acp' || protocol === 'session' ? '🤝' : '🧠'}
+                <div class="activity-icon ${safeProtocol}">
+                    ${safeProtocol === 'anp' || safeProtocol === 'agent' ? '🌐' : safeProtocol === 'acp' || safeProtocol === 'session' ? '🤝' : '🧠'}
                 </div>
                 <div class="activity-content">
-                    <div class="activity-title">${title}</div>
-                    <div class="activity-time">${time}</div>
+                    <div class="activity-title">${sanitizeHTML(title)}</div>
+                    <div class="activity-time">${sanitizeHTML(time)}</div>
                 </div>
             `;
             feed.insertBefore(item, feed.firstChild);
@@ -634,22 +670,8 @@
             window.location.href = '/dashboard/consciousness';
         }
 
-        function runDemo() {
-            alert('Run the live demo script:\n\npython examples/live_platform_demo.py');
-        }
-
         function viewMetrics() {
             window.open(`${API_BASE}/docs`, '_blank');
-        }
-
-        function exportData() {
-            fetchDashboardStats().then(() => {
-                alert('Data export feature coming soon!\n\nFor now, use the API endpoints directly.');
-            });
-        }
-
-        function viewLogs() {
-            alert('System logs viewer coming soon!\n\nCheck the server console for now.');
         }
 
         // Initialize

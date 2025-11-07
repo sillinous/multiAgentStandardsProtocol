@@ -511,6 +511,18 @@
         let selectedAgent = null;
         let ws = null;
 
+        // HTML Sanitization - Prevent XSS attacks
+        function escapeHTML(str) {
+            const div = document.createElement('div');
+            div.textContent = str;
+            return div.innerHTML;
+        }
+
+        function sanitizeHTML(str) {
+            if (typeof str !== 'string') return '';
+            return escapeHTML(str);
+        }
+
         // WebSocket connection for real-time updates
         function connectWebSocket() {
             try {
@@ -544,6 +556,12 @@
         // Fetch real agents from API
         async function fetchAgents() {
             try {
+                // Show loading state
+                document.getElementById('totalAgents').textContent = '...';
+                document.getElementById('healthyAgents').textContent = '...';
+                document.getElementById('avgLoad').textContent = '...';
+                document.getElementById('totalCapabilities').textContent = '...';
+
                 const response = await fetch(`${API_BASE}/api/anp/agents`);
                 const data = await response.json();
 
@@ -705,22 +723,28 @@
                     </div>
                 `;
             } else {
-                listEl.innerHTML = filteredAgents.map(agent => `
-                    <div class="agent-item ${agent.status}">
+                listEl.innerHTML = filteredAgents.map(agent => {
+                    // Sanitize status - only allow known values
+                    const validStatuses = ['healthy', 'degraded', 'unhealthy'];
+                    const safeStatus = validStatuses.includes(agent.status) ? agent.status : 'unhealthy';
+
+                    return `
+                    <div class="agent-item ${safeStatus}">
                         <div class="agent-header">
-                            <span class="agent-id">${agent.id}</span>
-                            <span class="agent-status ${agent.status}">${agent.status}</span>
+                            <span class="agent-id">${sanitizeHTML(agent.id)}</span>
+                            <span class="agent-status ${safeStatus}">${sanitizeHTML(agent.status)}</span>
                         </div>
                         <div class="agent-details">
-                            <span class="agent-detail">📍 ${agent.region}</span>
-                            <span class="agent-detail">⚡ Load: ${(agent.load * 100).toFixed(0)}%</span>
-                            <span class="agent-detail">🔗 ${agent.endpoint}</span>
+                            <span class="agent-detail">📍 ${sanitizeHTML(agent.region)}</span>
+                            <span class="agent-detail">⚡ Load: ${(parseFloat(agent.load) * 100).toFixed(0)}%</span>
+                            <span class="agent-detail">🔗 ${sanitizeHTML(agent.endpoint)}</span>
                         </div>
                         <div class="capabilities">
-                            ${agent.capabilities.map(cap => `<span class="capability-tag">${cap}</span>`).join('')}
+                            ${agent.capabilities.map(cap => `<span class="capability-tag">${sanitizeHTML(cap)}</span>`).join('')}
                         </div>
                     </div>
-                `).join('');
+                `;
+                }).join('');
             }
 
             document.getElementById('agentCount').textContent = filteredAgents.length;
@@ -785,10 +809,10 @@
             const healthFilter = document.getElementById('healthFilter').value;
             const maxLoad = document.getElementById('maxLoadFilter').value;
 
-            if (typeFilter) filters.push(`Type: ${typeFilter}`);
-            if (capFilter) filters.push(`Capability: ${capFilter}`);
-            if (healthFilter) filters.push(`Status: ${healthFilter}`);
-            if (maxLoad) filters.push(`Max Load: ${maxLoad}`);
+            if (typeFilter) filters.push(`Type: ${sanitizeHTML(typeFilter)}`);
+            if (capFilter) filters.push(`Capability: ${sanitizeHTML(capFilter)}`);
+            if (healthFilter) filters.push(`Status: ${sanitizeHTML(healthFilter)}`);
+            if (maxLoad) filters.push(`Max Load: ${sanitizeHTML(maxLoad)}`);
 
             if (filters.length > 0) {
                 activeEl.innerHTML = `<span style="color: #60a5fa;">🔍 Active filters:</span> ${filters.join(' • ')}`;

@@ -648,11 +648,27 @@
         let selectedSessionId = null;
         let ws = null;
 
+        // HTML Sanitization - Prevent XSS attacks
+        function escapeHTML(str) {
+            const div = document.createElement('div');
+            div.textContent = str;
+            return div.innerHTML;
+        }
+
+        function sanitizeHTML(str) {
+            if (typeof str !== 'string') return '';
+            return escapeHTML(str);
+        }
+
         // Toast Notification System
         function showToast(title, message, type = 'info') {
             const container = document.getElementById('toastContainer');
             const toast = document.createElement('div');
-            toast.className = `toast ${type}`;
+
+            // Validate type - only allow known values
+            const validTypes = ['success', 'error', 'info'];
+            const safeType = validTypes.includes(type) ? type : 'info';
+            toast.className = `toast ${safeType}`;
 
             const icons = {
                 success: '✅',
@@ -661,10 +677,10 @@
             };
 
             toast.innerHTML = `
-                <span class="toast-icon">${icons[type]}</span>
+                <span class="toast-icon">${icons[safeType]}</span>
                 <div class="toast-content">
-                    <div class="toast-title">${title}</div>
-                    <div class="toast-message">${message}</div>
+                    <div class="toast-title">${sanitizeHTML(title)}</div>
+                    <div class="toast-message">${sanitizeHTML(message)}</div>
                 </div>
                 <button class="toast-close" onclick="this.parentElement.remove()">&times;</button>
             `;
@@ -791,23 +807,30 @@
                 `;
             } else {
                 listEl.innerHTML = sessions.map(session => {
+                    // Sanitize and validate
+                    const validTypes = ['pipeline', 'swarm', 'supervisor', 'marketplace'];
+                    const validStatuses = ['active', 'paused', 'completed'];
+                    const safeType = validTypes.includes(session.type) ? session.type : 'pipeline';
+                    const safeStatus = validStatuses.includes(session.status) ? session.status : 'active';
+                    const safeId = sanitizeHTML(session.id);
+
                     const progress = (session.completedTasks / session.totalTasks * 100).toFixed(0);
                     return `
-                        <div class="session-card ${session.type}" onclick="selectSession('${session.id}')">
+                        <div class="session-card ${safeType}" onclick="selectSession('${safeId}')">
                             <div class="session-header">
-                                <span class="session-title">${session.name}</span>
-                                <span class="session-status ${session.status}">${session.status}</span>
+                                <span class="session-title">${sanitizeHTML(session.name)}</span>
+                                <span class="session-status ${safeStatus}">${sanitizeHTML(session.status)}</span>
                             </div>
                             <div class="session-meta">
-                                <span class="coordination-type-badge type-${session.type}">${session.type}</span>
-                                <span>👥 ${session.participantCount} participants</span>
-                                <span>📋 ${session.totalTasks} tasks</span>
+                                <span class="coordination-type-badge type-${safeType}">${sanitizeHTML(session.type)}</span>
+                                <span>👥 ${parseInt(session.participantCount) || 0} participants</span>
+                                <span>📋 ${parseInt(session.totalTasks) || 0} tasks</span>
                             </div>
                             <div class="session-progress">
                                 <div class="progress-bar">
                                     <div class="progress-fill" style="width: ${progress}%"></div>
                                 </div>
-                                <div class="progress-text">${session.completedTasks}/${session.totalTasks} tasks completed (${progress}%)</div>
+                                <div class="progress-text">${parseInt(session.completedTasks) || 0}/${parseInt(session.totalTasks) || 0} tasks completed (${progress}%)</div>
                             </div>
                         </div>
                     `;
@@ -825,23 +848,33 @@
                 return priorityOrder[a.priority] - priorityOrder[b.priority];
             });
 
-            listEl.innerHTML = sortedTasks.slice(0, 20).map(task => `
-                <div class="task-item ${task.status}">
+            listEl.innerHTML = sortedTasks.slice(0, 20).map(task => {
+                // Sanitize and validate
+                const validStatuses = ['pending', 'in_progress', 'completed', 'failed'];
+                const validPriorities = ['high', 'medium', 'low'];
+                const safeStatus = validStatuses.includes(task.status) ? task.status : 'pending';
+                const safePriority = validPriorities.includes(task.priority) ? task.priority : 'medium';
+
+                const sanitizedDeps = (task.dependencies || []).map(dep => sanitizeHTML(dep));
+
+                return `
+                <div class="task-item ${safeStatus}">
                     <div class="task-header">
-                        <span class="task-title">${task.description}</span>
-                        <span class="task-priority ${task.priority}">${task.priority}</span>
+                        <span class="task-title">${sanitizeHTML(task.description)}</span>
+                        <span class="task-priority ${safePriority}">${sanitizeHTML(task.priority)}</span>
                     </div>
                     <div class="task-details">
-                        Type: ${task.type} | Status: ${task.status} | Progress: ${task.progress}%
+                        Type: ${sanitizeHTML(task.type)} | Status: ${sanitizeHTML(task.status)} | Progress: ${parseInt(task.progress) || 0}%
                     </div>
-                    ${task.assignee ? `<div class="task-assignee">Assigned to: ${task.assignee}</div>` : ''}
-                    ${task.dependencies.length > 0 ? `
+                    ${task.assignee ? `<div class="task-assignee">Assigned to: ${sanitizeHTML(task.assignee)}</div>` : ''}
+                    ${sanitizedDeps.length > 0 ? `
                         <div class="dependency-graph">
-                            <span class="dependency-arrow">↳</span> Depends on: ${task.dependencies.join(', ')}
+                            <span class="dependency-arrow">↳</span> Depends on: ${sanitizedDeps.join(', ')}
                         </div>
                     ` : ''}
                 </div>
-            `).join('');
+                `;
+            }).join('');
 
             document.getElementById('taskCount').textContent = `${tasks.length} tasks`;
         }
@@ -992,40 +1025,6 @@
         }
 
         // Actions
-        async function createSession(type) {
-            const name = prompt(`Enter name for new ${type} session:`, `${type.charAt(0).toUpperCase() + type.slice(1)} Session`);
-            if (!name) return;
-
-            const description = prompt('Enter description (optional):', '');
-
-            try {
-                const response = await fetch(`${API_BASE}/api/acp/sessions`, {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({
-                        name: name,
-                        coordination_type: type,
-                        description: description || `${type} coordination session`
-                    })
-                });
-
-                const result = await response.json();
-
-                if (result.success) {
-                    showToast('Session Created', `Session ${result.session_id} created successfully!`, 'success');
-                    fetchSessions();
-                } else {
-                    showToast('Session Creation Failed', result.message || 'Unknown error', 'error');
-                }
-            } catch (error) {
-                showToast('Session Creation Error', error.message, 'error');
-            }
-        }
-
-        function pauseAllSessions() {
-            alert('Pause functionality not yet implemented in API');
-        }
-
         function exportMetrics() {
             const metrics = {
                 sessions: sessions,

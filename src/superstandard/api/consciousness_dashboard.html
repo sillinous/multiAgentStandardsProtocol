@@ -482,6 +482,18 @@
         let agents = [];
         let thoughts = [];
 
+        // HTML Sanitization - Prevent XSS attacks
+        function escapeHTML(str) {
+            const div = document.createElement('div');
+            div.textContent = str;
+            return div.innerHTML;
+        }
+
+        function sanitizeHTML(str) {
+            if (typeof str !== 'string') return '';
+            return escapeHTML(str);
+        }
+
         function connect() {
             const inputEl = document.getElementById('collectiveId');
             const connectBtn = document.getElementById('connectBtn');
@@ -660,26 +672,30 @@
         function addEvent(type, title, data) {
             const eventsContainer = document.getElementById('events');
             const event = document.createElement('div');
-            event.className = `event ${type}`;
+
+            // Validate type for CSS class safety
+            const validTypes = ['agent_registered', 'thought_contributed', 'consciousness_collapsed', 'pattern_discovered', 'connected', 'disconnected'];
+            const safeType = validTypes.includes(type) ? type : 'info';
+            event.className = `event ${safeType}`;
 
             const now = new Date().toLocaleTimeString();
 
             let details = '';
             if (type === 'agent_registered') {
-                details = `Agent <strong>${data.agent_id}</strong> joined in <strong>${data.state}</strong> state`;
+                details = `Agent <strong>${sanitizeHTML(data.agent_id)}</strong> joined in <strong>${sanitizeHTML(data.state)}</strong> state`;
             } else if (type === 'thought_contributed') {
-                details = `Agent <strong>${data.agent_id}</strong> contributed ${data.thought_type} thought`;
+                details = `Agent <strong>${sanitizeHTML(data.agent_id)}</strong> contributed ${sanitizeHTML(data.thought_type)} thought`;
             } else if (type === 'consciousness_collapsed') {
-                details = `Consciousness collapsed - <strong>${data.patterns_discovered}</strong> patterns discovered`;
+                details = `Consciousness collapsed - <strong>${parseInt(data.patterns_discovered) || 0}</strong> patterns discovered`;
             } else if (type === 'pattern_discovered') {
-                details = `<strong>${data.pattern_type}</strong> pattern (${Math.round(data.coherence * 100)}% coherence, ${Math.round(data.novelty * 100)}% novelty)`;
+                details = `<strong>${sanitizeHTML(data.pattern_type)}</strong> pattern (${Math.round(parseFloat(data.coherence) * 100)}% coherence, ${Math.round(parseFloat(data.novelty) * 100)}% novelty)`;
             } else {
-                details = JSON.stringify(data);
+                details = sanitizeHTML(JSON.stringify(data));
             }
 
             event.innerHTML = `
-                <div class="event-type">${title.replace('_', ' ').toUpperCase()}</div>
-                <div class="event-time">${now}</div>
+                <div class="event-type">${sanitizeHTML(title).replace('_', ' ').toUpperCase()}</div>
+                <div class="event-time">${sanitizeHTML(now)}</div>
                 <div class="event-details">${details}</div>
             `;
 

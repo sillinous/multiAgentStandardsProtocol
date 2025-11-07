@@ -837,11 +837,27 @@
             }
         });
 
+        // HTML Sanitization - Prevent XSS attacks
+        function escapeHTML(str) {
+            const div = document.createElement('div');
+            div.textContent = str;
+            return div.innerHTML;
+        }
+
+        function sanitizeHTML(str) {
+            if (typeof str !== 'string') return '';
+            return escapeHTML(str);
+        }
+
         // Toast Notification System
         function showToast(title, message, type = 'info') {
             const container = document.getElementById('toastContainer');
             const toast = document.createElement('div');
-            toast.className = `toast ${type}`;
+
+            // Validate type - only allow known values
+            const validTypes = ['success', 'error', 'info'];
+            const safeType = validTypes.includes(type) ? type : 'info';
+            toast.className = `toast ${safeType}`;
 
             const icons = {
                 success: '✅',
@@ -850,10 +866,10 @@
             };
 
             toast.innerHTML = `
-                <span class="toast-icon">${icons[type]}</span>
+                <span class="toast-icon">${icons[safeType]}</span>
                 <div class="toast-content">
-                    <div class="toast-title">${title}</div>
-                    <div class="toast-message">${message}</div>
+                    <div class="toast-title">${sanitizeHTML(title)}</div>
+                    <div class="toast-message">${sanitizeHTML(message)}</div>
                 </div>
                 <button class="toast-close" onclick="this.parentElement.remove()">&times;</button>
             `;
@@ -1095,10 +1111,14 @@
             } else {
                 listEl.innerHTML = activities.slice(0, 10).map(activity => {
                     const timeAgo = getTimeAgo(activity.time);
+                    // Validate type for CSS class safety
+                    const validTypes = ['agent', 'session', 'collective', 'info'];
+                    const safeType = validTypes.includes(activity.type) ? activity.type : 'info';
+
                     return `
-                        <div class="activity-item ${activity.type}">
-                            <div class="activity-time">${timeAgo}</div>
-                            <div class="activity-text">${activity.text}</div>
+                        <div class="activity-item ${safeType}">
+                            <div class="activity-time">${sanitizeHTML(timeAgo)}</div>
+                            <div class="activity-text">${sanitizeHTML(activity.text)}</div>
                         </div>
                     `;
                 }).join('');
