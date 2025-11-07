@@ -42,6 +42,11 @@ IMPORT_PATTERNS = [
         "from src.superstandard.agents.base.base_agent import",
     ),
     (r"from\s+src\.base_agent\s+import", "from src.superstandard.agents.base.base_agent import"),
+    # ProtocolMixin imports (CRITICAL - 277+ files affected!)
+    (
+        r"from\s+library\.core\.protocols\s+import",
+        "from src.superstandard.agents.base.protocols import",
+    ),
     # Protocol imports (if any old ones remain)
     (
         r"from\s+crates\.agentic_protocols\.python\.anp_implementation\s+import",

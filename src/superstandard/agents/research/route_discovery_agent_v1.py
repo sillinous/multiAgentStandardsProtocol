@@ -75,7 +75,7 @@ import sys
 sys.path.append(os.path.join(os.path.dirname(__file__), "../.."))
 
 from superstandard.agents.base.base_agent import BaseAgent
-from library.core.protocols import ProtocolMixin
+from src.superstandard.agents.base.protocols import ProtocolMixin
 
 # Agent metadata
 AGENT_TYPE = "route_discovery"

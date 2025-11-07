@@ -33,7 +33,7 @@ import sys
 sys.path.insert(0, os.path.join(os.path.dirname(__file__), "../.."))
 
 from superstandard.agents.base.base_agent import BaseAgent
-from library.core.protocols import ProtocolMixin
+from src.superstandard.agents.base.protocols import ProtocolMixin
 
 
 # =========================================================================

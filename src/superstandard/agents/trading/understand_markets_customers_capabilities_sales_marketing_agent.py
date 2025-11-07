@@ -34,7 +34,7 @@ from typing import Dict, Any, List, Optional
 from datetime import datetime
 
 from src.superstandard.agents.base.base_agent import BaseAgent
-from library.core.protocols import ProtocolMixin
+from src.superstandard.agents.base.protocols import ProtocolMixin
 
 
 @dataclass

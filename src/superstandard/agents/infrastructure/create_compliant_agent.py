@@ -123,7 +123,7 @@ import sys
 sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
 from superstandard.agents.base.base_agent import BaseAgent
-from library.core.protocols import (
+from src.superstandard.agents.base.protocols import (
     ProtocolMixin,
     A2AMessage,
     A2PTransaction,

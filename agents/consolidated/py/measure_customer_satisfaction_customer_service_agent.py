@@ -18,7 +18,7 @@ from datetime import datetime
 from collections import defaultdict
 
 from superstandard.agents.base.base_agent import BaseAgent
-from library.core.protocols import ProtocolMixin
+from src.superstandard.agents.base.protocols import ProtocolMixin
 
 
 @dataclass
