@@ -41,11 +41,11 @@ from uuid import uuid4
 # Add src to path
 sys.path.insert(0, str(Path(__file__).parent.parent.parent))
 
-from fastapi import FastAPI, WebSocket, WebSocketDisconnect, HTTPException, BackgroundTasks
+from fastapi import FastAPI, WebSocket, WebSocketDisconnect, HTTPException, BackgroundTasks, Security, Request, Depends
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.staticfiles import StaticFiles
 from fastapi.responses import HTMLResponse, FileResponse
-from pydantic import BaseModel, Field
+from pydantic import BaseModel, Field, validator
 
 # Import all protocols
 from superstandard.protocols.anp_implementation import (
@@ -57,12 +57,28 @@ from superstandard.protocols.anp_implementation import (
 from superstandard.protocols.acp_implementation import (
     CoordinationManager,
     CoordinationType,
-    TaskStatus
+    TaskStatus,
+    ACPCoordination,
+    CoordinationStatus,
+    Task,
+    Participant
 )
 from superstandard.protocols.consciousness_protocol import (
     CollectiveConsciousness,
     ThoughtType,
-    ConsciousnessState
+    ConsciousnessState,
+    Thought
+)
+
+# Import security module
+from superstandard.api.security import (
+    setup_security,
+    AuthLevel,
+    verify_api_key,
+    rate_limiter,
+    verify_websocket_token,
+    sanitize_string_input,
+    validate_agent_id
 )
 
 # ============================================================================
@@ -76,6 +92,18 @@ class AgentRegistrationRequest(BaseModel):
     capabilities: List[str] = Field(default=[], description="Agent capabilities")
     endpoints: Dict[str, str] = Field(default={}, description="Agent endpoints")
     metadata: Dict[str, Any] = Field(default={}, description="Additional metadata")
+
+    @validator('agent_id')
+    def validate_agent_id_format(cls, v):
+        return validate_agent_id(v)
+
+    @validator('agent_type')
+    def validate_agent_type(cls, v):
+        return sanitize_string_input(v, max_length=100)
+
+    @validator('capabilities', each_item=True)
+    def validate_capabilities(cls, v):
+        return sanitize_string_input(v, max_length=100)
 
 class AgentDiscoveryRequest(BaseModel):
     """Request to discover agents by criteria."""
@@ -93,6 +121,24 @@ class SessionCreationRequest(BaseModel):
     coordination_type: str = Field(..., description="Type: pipeline, swarm, supervisor, negotiation")
     description: Optional[str] = None
     metadata: Dict[str, Any] = Field(default={}, description="Session metadata")
+
+    @validator('name')
+    def validate_name(cls, v):
+        return sanitize_string_input(v, max_length=200)
+
+    @validator('coordination_type')
+    def validate_coordination_type(cls, v):
+        v = v.lower()
+        valid_types = ['pipeline', 'swarm', 'supervisor', 'negotiation']
+        if v not in valid_types:
+            raise ValueError(f'Invalid coordination type. Must be one of: {", ".join(valid_types)}')
+        return v
+
+    @validator('description')
+    def validate_description(cls, v):
+        if v:
+            return sanitize_string_input(v, max_length=1000)
+        return v
 
 class TaskCreationRequest(BaseModel):
     """Request to add task to session."""
@@ -158,8 +204,11 @@ class ServerState:
         if channel not in self.ws_connections:
             return
 
+        # Create a copy of the list to avoid race conditions during iteration
+        connections = list(self.ws_connections[channel])
         disconnected = []
-        for ws in self.ws_connections[channel]:
+
+        for ws in connections:
             try:
                 await ws.send_json(event)
             except Exception:
@@ -167,7 +216,8 @@ class ServerState:
 
         # Remove disconnected clients
         for ws in disconnected:
-            self.ws_connections[channel].remove(ws)
+            if ws in self.ws_connections[channel]:
+                self.ws_connections[channel].remove(ws)
 
 # Initialize global state
 state = ServerState()
@@ -182,14 +232,8 @@ app = FastAPI(
     version="1.0.0"
 )
 
-# CORS middleware for browser access
-app.add_middleware(
-    CORSMiddleware,
-    allow_origins=["*"],  # Configure appropriately for production
-    allow_credentials=True,
-    allow_methods=["*"],
-    allow_headers=["*"],
-)
+# Setup security (CORS, auth, rate limiting, headers)
+setup_security(app)
 
 # ============================================================================
 # Static File Serving - Dashboards
@@ -357,19 +401,17 @@ async def populate_demo_data(background_tasks: BackgroundTasks):
 
     for session_data in sample_sessions:
         try:
-            session_id = f"session_{str(uuid4())[:8]}"
-            session = CoordinationSession(
-                session_id=session_id,
-                name=session_data["name"],
+            # Use the correct create_coordination method signature
+            result = await state.coordination_manager.create_coordination(
+                coordinator_id="demo_system",
                 coordination_type=session_data["coordination_type"],
-                objective=session_data["objective"],
-                description=session_data["description"],
-                status=SessionStatus.ACTIVE.value,
-                created_at=datetime.now()
+                goal=session_data["objective"],
+                coordination_plan={"description": session_data["description"]},
+                metadata={"name": session_data["name"]}
             )
 
-            success = await state.coordination_manager.create_coordination(session)
-            if success:
+            if result.get("success"):
+                session_id = result.get("coordination_id")
                 results["sessions_created"].append(session_id)
                 state.stats["total_sessions_created"] += 1
 
@@ -430,17 +472,15 @@ async def populate_demo_data(background_tasks: BackgroundTasks):
 
     for thought_data in sample_thoughts:
         try:
-            thought = Thought(
-                thought_id=f"thought_{str(uuid4())[:8]}",
+            # Use the contribute_thought method which creates the Thought object internally
+            thought = await collective.contribute_thought(
                 agent_id=thought_data["agent_id"],
-                thought_type=thought_data["thought_type"],
+                thought_type=ThoughtType(thought_data["thought_type"]),
                 content=thought_data["content"],
-                confidence=thought_data["confidence"],
-                timestamp=datetime.now()
+                confidence=thought_data["confidence"]
             )
 
-            await collective.contribute_thought(thought)
-            results["thoughts_submitted"].append(thought.thought_id)
+            results["thoughts_submitted"].append(thought_data["agent_id"])
             state.stats["total_thoughts_submitted"] += 1
 
             # Broadcast to WebSocket clients
@@ -465,8 +505,16 @@ async def populate_demo_data(background_tasks: BackgroundTasks):
 # ============================================================================
 
 @app.post("/api/anp/agents/register")
-async def register_agent(request: AgentRegistrationRequest, background_tasks: BackgroundTasks):
-    """Register an agent on the network."""
+async def register_agent(
+    request: AgentRegistrationRequest,
+    background_tasks: BackgroundTasks,
+    http_request: Request,
+    auth_level: str = Security(verify_api_key, scopes=[AuthLevel.CLIENT])
+):
+    """Register an agent on the network. Requires CLIENT or ADMIN authentication."""
+    # Apply rate limiting
+    await rate_limiter(http_request)
+
     try:
         registration = ANPRegistration(
             action="register",

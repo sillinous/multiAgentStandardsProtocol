@@ -347,7 +347,10 @@ class AgentNetworkRegistry:
         agents_to_mark_offline = []
 
         for agent_id, agent_info in self.agents.items():
-            last_heartbeat = datetime.fromisoformat(agent_info.last_heartbeat)
+            # Handle both string and datetime types for last_heartbeat
+            last_heartbeat = agent_info.last_heartbeat
+            if isinstance(last_heartbeat, str):
+                last_heartbeat = datetime.fromisoformat(last_heartbeat)
 
             if last_heartbeat < timeout_threshold:
                 if agent_info.health_status != AgentStatus.OFFLINE.value:

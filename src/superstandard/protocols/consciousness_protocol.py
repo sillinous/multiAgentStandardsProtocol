@@ -182,6 +182,12 @@ class CollectiveConsciousness:
        and evolution over time
     """
 
+    # Memory management constants
+    MAX_THOUGHT_HISTORY = 10000
+    MAX_SUPERPOSITION_STATES = 5000
+    MAX_COLLAPSED_STATES = 5000
+    MAX_PATTERNS = 1000
+
     def __init__(self, consciousness_id: str = "primary"):
         self.consciousness_id = consciousness_id
         self.agents: Dict[str, ConsciousnessSnapshot] = {}
@@ -266,6 +272,24 @@ class CollectiveConsciousness:
         self.thought_stream.append(thought)
         self.superposition_states.append(thought)
         self.agents[agent_id].thoughts.append(thought)
+
+        # Memory management: prevent unbounded growth
+        if len(self.thought_stream) > self.MAX_THOUGHT_HISTORY:
+            self.thought_stream = self.thought_stream[-self.MAX_THOUGHT_HISTORY:]
+
+        if len(self.superposition_states) > self.MAX_SUPERPOSITION_STATES:
+            # Move oldest to collapsed
+            overflow = self.superposition_states[:len(self.superposition_states) - self.MAX_SUPERPOSITION_STATES]
+            for old_thought in overflow:
+                old_thought.quantum_state = "collapsed"
+            self.collapsed_states.extend(overflow)
+            self.superposition_states = self.superposition_states[-self.MAX_SUPERPOSITION_STATES:]
+
+        if len(self.collapsed_states) > self.MAX_COLLAPSED_STATES:
+            self.collapsed_states = self.collapsed_states[-self.MAX_COLLAPSED_STATES:]
+
+        if len(self.emergent_patterns) > self.MAX_PATTERNS:
+            self.emergent_patterns = self.emergent_patterns[-self.MAX_PATTERNS:]
 
         # Increase agent's awareness through contribution
         self.agents[agent_id].awareness_level = min(
