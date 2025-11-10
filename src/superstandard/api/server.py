@@ -671,7 +671,7 @@ async def list_sessions():
     """List all coordination sessions."""
     try:
         sessions = []
-        for session_id, session in state.coordination_manager.sessions.items():
+        for session_id, session in state.coordination_manager.coordinations.items():
             completed_tasks = sum(
                 1 for t in session.tasks.values()
                 if t.status == TaskStatus.COMPLETED.value
@@ -737,7 +737,7 @@ async def add_task(session_id: str, request: TaskCreationRequest, background_tas
 async def list_tasks(session_id: str):
     """List tasks in a session."""
     try:
-        session = state.coordination_manager.sessions.get(session_id)
+        session = state.coordination_manager.coordinations.get(session_id)
         if not session:
             raise HTTPException(status_code=404, detail="Session not found")
 
@@ -769,21 +769,21 @@ async def acp_stats():
     """Get ACP coordination statistics."""
     try:
         active_sessions = sum(
-            1 for s in state.coordination_manager.sessions.values()
+            1 for s in state.coordination_manager.coordinations.values()
             if s.status == "active"
         )
 
         total_tasks = sum(
-            len(s.tasks) for s in state.coordination_manager.sessions.values()
+            len(s.tasks) for s in state.coordination_manager.coordinations.values()
         )
 
         completed_tasks = sum(
             sum(1 for t in s.tasks.values() if t.status == TaskStatus.COMPLETED.value)
-            for s in state.coordination_manager.sessions.values()
+            for s in state.coordination_manager.coordinations.values()
         )
 
         total_participants = sum(
-            len(s.participants) for s in state.coordination_manager.sessions.values()
+            len(s.participants) for s in state.coordination_manager.coordinations.values()
         )
 
         completion_rate = (completed_tasks / total_tasks * 100) if total_tasks > 0 else 0
