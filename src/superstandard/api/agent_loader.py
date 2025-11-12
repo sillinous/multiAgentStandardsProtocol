@@ -101,14 +101,20 @@ class PCFAgentRegistry:
         agents_dir = Path(__file__).parent.parent / 'agents/pcf'
 
         # Implemented agents - Process 1.1.1 COMPLETE (7/7 activities)
+        # Implemented agents - Process 1.1.2 COMPLETE (3/3 activities)
         self._agent_implementations = {
+            # Process 1.1.1 - Assess the external environment
             '1.1.1.1': 'superstandard.agents.pcf.category_01_vision_strategy.pg_1_1_define_vision.p_1_1_1_assess_external.a_1_1_1_1_identify_competitors',
             '1.1.1.2': 'superstandard.agents.pcf.category_01_vision_strategy.pg_1_1_define_vision.p_1_1_1_assess_external.a_1_1_1_2_identify_economic_trends',
             '1.1.1.3': 'superstandard.agents.pcf.category_01_vision_strategy.pg_1_1_define_vision.p_1_1_1_assess_external.a_1_1_1_3_identify_political_regulatory',
             '1.1.1.4': 'superstandard.agents.pcf.category_01_vision_strategy.pg_1_1_define_vision.p_1_1_1_assess_external.a_1_1_1_4_identify_technology_innovations',
             '1.1.1.5': 'superstandard.agents.pcf.category_01_vision_strategy.pg_1_1_define_vision.p_1_1_1_assess_external.a_1_1_1_5_analyze_demographics',
             '1.1.1.6': 'superstandard.agents.pcf.category_01_vision_strategy.pg_1_1_define_vision.p_1_1_1_assess_external.a_1_1_1_6_identify_social_cultural',
-            '1.1.1.7': 'superstandard.agents.pcf.category_01_vision_strategy.pg_1_1_define_vision.p_1_1_1_assess_external.a_1_1_1_7_identify_ecological'
+            '1.1.1.7': 'superstandard.agents.pcf.category_01_vision_strategy.pg_1_1_define_vision.p_1_1_1_assess_external.a_1_1_1_7_identify_ecological',
+            # Process 1.1.2 - Survey market and determine customer needs and wants
+            '1.1.2.1': 'superstandard.agents.pcf.category_01_vision_strategy.pg_1_1_define_vision.p_1_1_2_survey_market.a_1_1_2_1_conduct_research',
+            '1.1.2.2': 'superstandard.agents.pcf.category_01_vision_strategy.pg_1_1_define_vision.p_1_1_2_survey_market.a_1_1_2_2_capture_needs',
+            '1.1.2.3': 'superstandard.agents.pcf.category_01_vision_strategy.pg_1_1_define_vision.p_1_1_2_survey_market.a_1_1_2_3_assess_needs'
         }
 
         self.logger.info(f"Discovered {len(self._agent_implementations)} agent implementations")
