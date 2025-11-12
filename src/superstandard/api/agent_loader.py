@@ -102,6 +102,7 @@ class PCFAgentRegistry:
 
         # Implemented agents - Process 1.1.1 COMPLETE (7/7 activities)
         # Implemented agents - Process 1.1.2 COMPLETE (3/3 activities)
+        # Implemented agents - Process 1.1.3 COMPLETE (4/4 activities)
         self._agent_implementations = {
             # Process 1.1.1 - Assess the external environment
             '1.1.1.1': 'superstandard.agents.pcf.category_01_vision_strategy.pg_1_1_define_vision.p_1_1_1_assess_external.a_1_1_1_1_identify_competitors',
@@ -114,7 +115,12 @@ class PCFAgentRegistry:
             # Process 1.1.2 - Survey market and determine customer needs and wants
             '1.1.2.1': 'superstandard.agents.pcf.category_01_vision_strategy.pg_1_1_define_vision.p_1_1_2_survey_market.a_1_1_2_1_conduct_research',
             '1.1.2.2': 'superstandard.agents.pcf.category_01_vision_strategy.pg_1_1_define_vision.p_1_1_2_survey_market.a_1_1_2_2_capture_needs',
-            '1.1.2.3': 'superstandard.agents.pcf.category_01_vision_strategy.pg_1_1_define_vision.p_1_1_2_survey_market.a_1_1_2_3_assess_needs'
+            '1.1.2.3': 'superstandard.agents.pcf.category_01_vision_strategy.pg_1_1_define_vision.p_1_1_2_survey_market.a_1_1_2_3_assess_needs',
+            # Process 1.1.3 - Select relevant markets
+            '1.1.3.1': 'superstandard.agents.pcf.category_01_vision_strategy.pg_1_1_define_vision.p_1_1_3_select_markets.a_1_1_3_1_segment_markets',
+            '1.1.3.2': 'superstandard.agents.pcf.category_01_vision_strategy.pg_1_1_define_vision.p_1_1_3_select_markets.a_1_1_3_2_evaluate_attractiveness',
+            '1.1.3.3': 'superstandard.agents.pcf.category_01_vision_strategy.pg_1_1_define_vision.p_1_1_3_select_markets.a_1_1_3_3_assess_strategic_fit',
+            '1.1.3.4': 'superstandard.agents.pcf.category_01_vision_strategy.pg_1_1_define_vision.p_1_1_3_select_markets.a_1_1_3_4_select_target_markets'
         }
 
         self.logger.info(f"Discovered {len(self._agent_implementations)} agent implementations")
