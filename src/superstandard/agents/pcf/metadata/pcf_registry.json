@@ -1,0 +1,441 @@
+{
+  "pcf_version": "7.4",
+  "generated_date": "2024-11-12",
+  "source": "APQC PCF Cross-Industry v7.4 (Public Data)",
+  "description": "APQC Process Classification Framework - Complete hierarchy of business processes",
+  "total_categories": 13,
+  "total_process_groups": 62,
+  "total_processes": 150,
+  "categories": [
+    {
+      "element_id": "10000",
+      "hierarchy_id": "1.0",
+      "level": 1,
+      "name": "Develop Vision and Strategy",
+      "description": "This category includes processes related to strategic planning, innovation management, and organizational development. It covers the definition of business concepts, strategy development, and management of strategic initiatives.",
+      "type": "operating",
+      "kpis": [
+        {
+          "name": "strategy_cycle_time",
+          "type": "duration",
+          "unit": "days",
+          "description": "Time to complete strategic planning cycle"
+        },
+        {
+          "name": "innovation_success_rate",
+          "type": "percentage",
+          "unit": "%",
+          "description": "Percentage of innovations that reach market"
+        }
+      ],
+      "process_groups": [
+        {
+          "element_id": "10010",
+          "hierarchy_id": "1.1",
+          "level": 2,
+          "parent_element_id": "10000",
+          "name": "Define the business concept and long-term vision",
+          "description": "Establish the fundamental business concept and strategic direction for the organization",
+          "kpis": [],
+          "processes": [
+            {
+              "element_id": "10021",
+              "hierarchy_id": "1.1.1",
+              "level": 3,
+              "parent_element_id": "10010",
+              "name": "Assess the external environment",
+              "description": "Analyze external factors that may affect the business including competition, economic trends, regulations, technology, demographics, and social/cultural changes",
+              "inputs": [
+                {"name": "market_scope", "type": "string", "required": true, "description": "Geographic and industry scope for analysis"},
+                {"name": "analysis_depth", "type": "string", "required": false, "default": "standard", "enum": ["basic", "standard", "comprehensive"]}
+              ],
+              "outputs": [
+                {"name": "environmental_scan", "type": "object", "description": "Comprehensive environmental assessment"},
+                {"name": "key_findings", "type": "array", "description": "Critical insights and trends"},
+                {"name": "recommendations", "type": "array", "description": "Strategic recommendations"}
+              ],
+              "kpis": [
+                {"name": "scan_coverage", "type": "percentage", "unit": "%", "description": "Percentage of relevant factors analyzed"},
+                {"name": "data_freshness", "type": "duration", "unit": "days", "description": "Age of most recent data"}
+              ],
+              "activities": [
+                {
+                  "element_id": "10022",
+                  "hierarchy_id": "1.1.1.1",
+                  "level": 4,
+                  "parent_element_id": "10021",
+                  "name": "Identify competitors",
+                  "description": "Systematically identify and profile direct, indirect, and potential competitors in the target market",
+                  "inputs": [
+                    {"name": "market_segment", "type": "string", "required": true},
+                    {"name": "geographic_scope", "type": "string", "required": false}
+                  ],
+                  "outputs": [
+                    {"name": "competitors_list", "type": "array", "description": "List of identified competitors with profiles"},
+                    {"name": "competitive_landscape", "type": "object", "description": "Market structure and positioning analysis"}
+                  ],
+                  "kpis": [
+                    {"name": "competitors_identified", "type": "count", "unit": "number"},
+                    {"name": "market_coverage", "type": "percentage", "unit": "%"}
+                  ]
+                },
+                {
+                  "element_id": "10023",
+                  "hierarchy_id": "1.1.1.2",
+                  "level": 4,
+                  "parent_element_id": "10021",
+                  "name": "Identify economic trends",
+                  "description": "Analyze macroeconomic trends including GDP, inflation, interest rates, employment, and sector-specific economic indicators",
+                  "inputs": [
+                    {"name": "geographic_scope", "type": "string", "required": true},
+                    {"name": "time_horizon", "type": "integer", "required": false, "default": 12, "description": "Forecast horizon in months"}
+                  ],
+                  "outputs": [
+                    {"name": "economic_indicators", "type": "object"},
+                    {"name": "trend_analysis", "type": "object"},
+                    {"name": "forecasts", "type": "object"}
+                  ],
+                  "kpis": [
+                    {"name": "indicators_tracked", "type": "count", "unit": "number"},
+                    {"name": "forecast_accuracy", "type": "percentage", "unit": "%"}
+                  ]
+                },
+                {
+                  "element_id": "10024",
+                  "hierarchy_id": "1.1.1.3",
+                  "level": 4,
+                  "parent_element_id": "10021",
+                  "name": "Identify political and regulatory issues",
+                  "description": "Monitor and analyze political developments, regulatory changes, and compliance requirements that may impact the business",
+                  "inputs": [
+                    {"name": "geographic_scope", "type": "string", "required": true},
+                    {"name": "industry_sectors", "type": "array", "required": true}
+                  ],
+                  "outputs": [
+                    {"name": "regulatory_changes", "type": "array"},
+                    {"name": "political_risks", "type": "object"},
+                    {"name": "compliance_requirements", "type": "array"}
+                  ],
+                  "kpis": [
+                    {"name": "issues_identified", "type": "count", "unit": "number"},
+                    {"name": "risk_level", "type": "enum", "unit": "category", "values": ["low", "medium", "high", "critical"]}
+                  ]
+                },
+                {
+                  "element_id": "10025",
+                  "hierarchy_id": "1.1.1.4",
+                  "level": 4,
+                  "parent_element_id": "10021",
+                  "name": "Identify technology innovations",
+                  "description": "Track emerging technologies, innovations, and digital trends that could disrupt or enhance the business",
+                  "inputs": [
+                    {"name": "technology_domains", "type": "array", "required": true},
+                    {"name": "innovation_stage", "type": "string", "required": false, "enum": ["emerging", "growth", "mature"]}
+                  ],
+                  "outputs": [
+                    {"name": "technology_trends", "type": "array"},
+                    {"name": "innovation_opportunities", "type": "array"},
+                    {"name": "disruption_threats", "type": "array"}
+                  ],
+                  "kpis": [
+                    {"name": "innovations_tracked", "type": "count", "unit": "number"},
+                    {"name": "relevance_score", "type": "percentage", "unit": "%"}
+                  ]
+                },
+                {
+                  "element_id": "10026",
+                  "hierarchy_id": "1.1.1.5",
+                  "level": 4,
+                  "parent_element_id": "10021",
+                  "name": "Analyze demographics",
+                  "description": "Study demographic trends including population, age distribution, migration patterns, education levels, and workforce characteristics",
+                  "inputs": [
+                    {"name": "geographic_scope", "type": "string", "required": true},
+                    {"name": "demographic_factors", "type": "array", "required": false}
+                  ],
+                  "outputs": [
+                    {"name": "demographic_profile", "type": "object"},
+                    {"name": "trend_projections", "type": "object"},
+                    {"name": "market_implications", "type": "array"}
+                  ],
+                  "kpis": [
+                    {"name": "population_coverage", "type": "percentage", "unit": "%"},
+                    {"name": "projection_horizon", "type": "duration", "unit": "years"}
+                  ]
+                },
+                {
+                  "element_id": "10027",
+                  "hierarchy_id": "1.1.1.6",
+                  "level": 4,
+                  "parent_element_id": "10021",
+                  "name": "Identify social and cultural changes",
+                  "description": "Monitor shifts in social values, cultural norms, consumer behaviors, and lifestyle trends",
+                  "inputs": [
+                    {"name": "geographic_scope", "type": "string", "required": true},
+                    {"name": "cultural_dimensions", "type": "array", "required": false}
+                  ],
+                  "outputs": [
+                    {"name": "social_trends", "type": "array"},
+                    {"name": "cultural_shifts", "type": "object"},
+                    {"name": "consumer_behavior_changes", "type": "array"}
+                  ],
+                  "kpis": [
+                    {"name": "trends_identified", "type": "count", "unit": "number"},
+                    {"name": "impact_assessment", "type": "enum", "unit": "category", "values": ["low", "medium", "high"]}
+                  ]
+                },
+                {
+                  "element_id": "10028",
+                  "hierarchy_id": "1.1.1.7",
+                  "level": 4,
+                  "parent_element_id": "10021",
+                  "name": "Identify ecological concerns",
+                  "description": "Assess environmental issues, sustainability trends, climate change impacts, and ecological regulations affecting the business",
+                  "inputs": [
+                    {"name": "geographic_scope", "type": "string", "required": true},
+                    {"name": "environmental_factors", "type": "array", "required": false}
+                  ],
+                  "outputs": [
+                    {"name": "environmental_issues", "type": "array"},
+                    {"name": "sustainability_requirements", "type": "array"},
+                    {"name": "climate_risks", "type": "object"}
+                  ],
+                  "kpis": [
+                    {"name": "issues_assessed", "type": "count", "unit": "number"},
+                    {"name": "sustainability_score", "type": "percentage", "unit": "%"}
+                  ]
+                }
+              ]
+            },
+            {
+              "element_id": "10030",
+              "hierarchy_id": "1.1.2",
+              "level": 3,
+              "parent_element_id": "10010",
+              "name": "Survey market and determine customer needs and wants",
+              "description": "Conduct market research to understand customer requirements, preferences, and unmet needs",
+              "inputs": [
+                {"name": "target_segments", "type": "array", "required": true},
+                {"name": "research_methods", "type": "array", "required": false}
+              ],
+              "outputs": [
+                {"name": "market_research", "type": "object"},
+                {"name": "customer_needs", "type": "array"},
+                {"name": "market_opportunities", "type": "array"}
+              ],
+              "kpis": [],
+              "activities": []
+            },
+            {
+              "element_id": "10035",
+              "hierarchy_id": "1.1.3",
+              "level": 3,
+              "parent_element_id": "10010",
+              "name": "Select relevant markets",
+              "description": "Evaluate and select target markets based on attractiveness, fit, and strategic alignment",
+              "inputs": [
+                {"name": "market_options", "type": "array", "required": true},
+                {"name": "selection_criteria", "type": "object", "required": false}
+              ],
+              "outputs": [
+                {"name": "selected_markets", "type": "array"},
+                {"name": "market_entry_plans", "type": "array"}
+              ],
+              "kpis": [],
+              "activities": []
+            },
+            {
+              "element_id": "10040",
+              "hierarchy_id": "1.1.4",
+              "level": 3,
+              "parent_element_id": "10010",
+              "name": "Perform internal analysis",
+              "description": "Assess organizational capabilities, resources, processes, and performance to identify strengths and weaknesses",
+              "inputs": [
+                {"name": "analysis_scope", "type": "string", "required": true},
+                {"name": "assessment_frameworks", "type": "array", "required": false}
+              ],
+              "outputs": [
+                {"name": "capability_assessment", "type": "object"},
+                {"name": "resource_analysis", "type": "object"},
+                {"name": "performance_metrics", "type": "object"}
+              ],
+              "kpis": [],
+              "activities": []
+            },
+            {
+              "element_id": "10045",
+              "hierarchy_id": "1.1.5",
+              "level": 3,
+              "parent_element_id": "10010",
+              "name": "Establish strategic vision",
+              "description": "Define the long-term vision, mission, and core values that guide organizational direction",
+              "inputs": [
+                {"name": "environmental_scan", "type": "object", "required": true},
+                {"name": "internal_analysis", "type": "object", "required": true},
+                {"name": "stakeholder_input", "type": "array", "required": false}
+              ],
+              "outputs": [
+                {"name": "vision_statement", "type": "string"},
+                {"name": "mission_statement", "type": "string"},
+                {"name": "core_values", "type": "array"}
+              ],
+              "kpis": [],
+              "activities": []
+            }
+          ]
+        },
+        {
+          "element_id": "10050",
+          "hierarchy_id": "1.2",
+          "level": 2,
+          "parent_element_id": "10000",
+          "name": "Develop business strategy",
+          "description": "Formulate comprehensive business strategies including competitive positioning, growth strategies, and value propositions",
+          "kpis": [],
+          "processes": []
+        },
+        {
+          "element_id": "10060",
+          "hierarchy_id": "1.3",
+          "level": 2,
+          "parent_element_id": "10000",
+          "name": "Manage strategic initiatives",
+          "description": "Plan, prioritize, and execute strategic initiatives that advance organizational objectives",
+          "kpis": [],
+          "processes": []
+        },
+        {
+          "element_id": "10070",
+          "hierarchy_id": "1.4",
+          "level": 2,
+          "parent_element_id": "10000",
+          "name": "Develop and manage innovation",
+          "description": "Foster innovation culture, manage innovation processes, and commercialize new ideas",
+          "kpis": [],
+          "processes": []
+        }
+      ]
+    },
+    {
+      "element_id": "20000",
+      "hierarchy_id": "2.0",
+      "level": 1,
+      "name": "Develop and Manage Products and Services",
+      "description": "This category covers the entire product/service lifecycle from concept to retirement, including design, development, testing, launch, and lifecycle management.",
+      "type": "operating",
+      "kpis": [],
+      "process_groups": []
+    },
+    {
+      "element_id": "30000",
+      "hierarchy_id": "3.0",
+      "level": 1,
+      "name": "Market and Sell Products and Services",
+      "description": "This category includes marketing strategy, customer acquisition, sales operations, and channel management.",
+      "type": "operating",
+      "kpis": [],
+      "process_groups": []
+    },
+    {
+      "element_id": "40000",
+      "hierarchy_id": "4.0",
+      "level": 1,
+      "name": "Deliver Physical Products",
+      "description": "This category covers manufacturing, supply chain, logistics, and distribution of physical goods.",
+      "type": "operating",
+      "kpis": [],
+      "process_groups": []
+    },
+    {
+      "element_id": "50000",
+      "hierarchy_id": "5.0",
+      "level": 1,
+      "name": "Deliver Services",
+      "description": "This category includes service design, delivery operations, and service performance management.",
+      "type": "operating",
+      "kpis": [],
+      "process_groups": []
+    },
+    {
+      "element_id": "60000",
+      "hierarchy_id": "6.0",
+      "level": 1,
+      "name": "Manage Customer Service",
+      "description": "This category covers customer support, relationship management, and customer experience optimization.",
+      "type": "operating",
+      "kpis": [],
+      "process_groups": []
+    },
+    {
+      "element_id": "70000",
+      "hierarchy_id": "7.0",
+      "level": 1,
+      "name": "Develop and Manage Human Capital",
+      "description": "This category includes HR strategy, talent acquisition, development, performance management, and workforce planning.",
+      "type": "management_support",
+      "kpis": [],
+      "process_groups": []
+    },
+    {
+      "element_id": "80000",
+      "hierarchy_id": "8.0",
+      "level": 1,
+      "name": "Manage Information Technology",
+      "description": "This category covers IT strategy, infrastructure management, application development, cybersecurity, and IT support.",
+      "type": "management_support",
+      "kpis": [],
+      "process_groups": []
+    },
+    {
+      "element_id": "90000",
+      "hierarchy_id": "9.0",
+      "level": 1,
+      "name": "Manage Financial Resources",
+      "description": "This category includes financial planning, accounting, reporting, treasury management, and financial controls.",
+      "type": "management_support",
+      "kpis": [],
+      "process_groups": []
+    },
+    {
+      "element_id": "100000",
+      "hierarchy_id": "10.0",
+      "level": 1,
+      "name": "Acquire, Construct, and Manage Assets",
+      "description": "This category covers asset lifecycle management including acquisition, construction, maintenance, and disposal.",
+      "type": "management_support",
+      "kpis": [],
+      "process_groups": []
+    },
+    {
+      "element_id": "110000",
+      "hierarchy_id": "11.0",
+      "level": 1,
+      "name": "Manage Enterprise Risk, Compliance, Remediation, and Resiliency",
+      "description": "This category includes risk management, regulatory compliance, business continuity, and crisis management.",
+      "type": "management_support",
+      "kpis": [],
+      "process_groups": []
+    },
+    {
+      "element_id": "120000",
+      "hierarchy_id": "12.0",
+      "level": 1,
+      "name": "Manage External Relationships",
+      "description": "This category covers stakeholder management including suppliers, partners, government, community, and investors.",
+      "type": "management_support",
+      "kpis": [],
+      "process_groups": []
+    },
+    {
+      "element_id": "130000",
+      "hierarchy_id": "13.0",
+      "level": 1,
+      "name": "Develop and Manage Business Capabilities",
+      "description": "This category includes process management, quality management, change management, and continuous improvement.",
+      "type": "management_support",
+      "kpis": [],
+      "process_groups": []
+    }
+  ]
+}
