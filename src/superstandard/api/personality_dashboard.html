@@ -1,0 +1,781 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Agent Personality Dashboard - SuperStandard</title>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #1e3c72 0%, #2a5298 50%, #7e22ce 100%);
+            min-height: 100vh;
+            padding: 20px;
+            color: #fff;
+        }
+
+        .header {
+            text-align: center;
+            margin-bottom: 30px;
+        }
+
+        .header h1 {
+            font-size: 2.5em;
+            margin-bottom: 10px;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.3);
+        }
+
+        .header p {
+            font-size: 1.1em;
+            opacity: 0.9;
+        }
+
+        .nav {
+            display: flex;
+            justify-content: center;
+            gap: 15px;
+            margin-bottom: 30px;
+            flex-wrap: wrap;
+        }
+
+        .nav-button {
+            padding: 12px 24px;
+            background: rgba(255,255,255,0.15);
+            border: 2px solid rgba(255,255,255,0.3);
+            border-radius: 25px;
+            color: #fff;
+            text-decoration: none;
+            font-weight: 600;
+            transition: all 0.3s;
+            backdrop-filter: blur(10px);
+        }
+
+        .nav-button:hover {
+            background: rgba(255,255,255,0.25);
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(0,0,0,0.3);
+        }
+
+        .nav-button.active {
+            background: rgba(126, 34, 206, 0.6);
+            border-color: rgba(255,255,255,0.5);
+        }
+
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+        }
+
+        .grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
+            gap: 25px;
+            margin-bottom: 30px;
+        }
+
+        .card {
+            background: rgba(255,255,255,0.1);
+            backdrop-filter: blur(10px);
+            border-radius: 15px;
+            padding: 25px;
+            box-shadow: 0 8px 32px rgba(0,0,0,0.2);
+            border: 1px solid rgba(255,255,255,0.2);
+            transition: transform 0.3s, box-shadow 0.3s;
+        }
+
+        .card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 12px 40px rgba(0,0,0,0.3);
+        }
+
+        .card h2 {
+            font-size: 1.5em;
+            margin-bottom: 20px;
+            color: #fff;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .archetype-badge {
+            display: inline-block;
+            padding: 5px 15px;
+            background: rgba(126, 34, 206, 0.6);
+            border-radius: 20px;
+            font-size: 0.7em;
+            font-weight: 600;
+            text-transform: uppercase;
+        }
+
+        .chart-container {
+            position: relative;
+            height: 300px;
+            margin-bottom: 20px;
+        }
+
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 15px;
+            margin-top: 20px;
+        }
+
+        .stat-item {
+            background: rgba(0,0,0,0.2);
+            padding: 12px;
+            border-radius: 10px;
+            text-align: center;
+        }
+
+        .stat-label {
+            font-size: 0.85em;
+            opacity: 0.8;
+            margin-bottom: 5px;
+        }
+
+        .stat-value {
+            font-size: 1.5em;
+            font-weight: 700;
+            color: #ffd700;
+        }
+
+        .trait-bar {
+            margin-bottom: 15px;
+        }
+
+        .trait-label {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 5px;
+            font-size: 0.95em;
+        }
+
+        .trait-progress {
+            height: 10px;
+            background: rgba(0,0,0,0.3);
+            border-radius: 5px;
+            overflow: hidden;
+        }
+
+        .trait-fill {
+            height: 100%;
+            background: linear-gradient(90deg, #ffd700, #ff6b6b);
+            border-radius: 5px;
+            transition: width 1s ease;
+        }
+
+        .personality-comparison {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 20px;
+            margin-top: 20px;
+        }
+
+        .agent-card {
+            background: rgba(255,255,255,0.08);
+            padding: 15px;
+            border-radius: 10px;
+            border-left: 4px solid;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+
+        .agent-card:hover {
+            background: rgba(255,255,255,0.15);
+            transform: scale(1.02);
+        }
+
+        .agent-card.selected {
+            border-left-width: 6px;
+            background: rgba(255,255,255,0.2);
+        }
+
+        .agent-card.innovator { border-left-color: #ff6b6b; }
+        .agent-card.executor { border-left-color: #4ecdc4; }
+        .agent-card.collaborator { border-left-color: #95e1d3; }
+        .agent-card.explorer { border-left-color: #ffbe0b; }
+        .agent-card.specialist { border-left-color: #8338ec; }
+        .agent-card.cautious { border-left-color: #fb5607; }
+        .agent-card.balanced { border-left-color: #06ffa5; }
+
+        .agent-name {
+            font-weight: 700;
+            font-size: 1.1em;
+            margin-bottom: 8px;
+        }
+
+        .agent-archetype {
+            font-size: 0.85em;
+            opacity: 0.9;
+            margin-bottom: 10px;
+        }
+
+        .loading {
+            text-align: center;
+            padding: 50px;
+            font-size: 1.2em;
+        }
+
+        .refresh-button {
+            position: fixed;
+            bottom: 30px;
+            right: 30px;
+            padding: 15px 30px;
+            background: rgba(126, 34, 206, 0.8);
+            border: none;
+            border-radius: 30px;
+            color: #fff;
+            font-weight: 700;
+            font-size: 1em;
+            cursor: pointer;
+            box-shadow: 0 5px 20px rgba(0,0,0,0.3);
+            transition: all 0.3s;
+        }
+
+        .refresh-button:hover {
+            background: rgba(126, 34, 206, 1);
+            transform: scale(1.05);
+        }
+
+        .performance-scorecard {
+            margin-top: 20px;
+        }
+
+        .score-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 10px;
+            margin-bottom: 8px;
+            background: rgba(0,0,0,0.2);
+            border-radius: 8px;
+        }
+
+        .score-bar {
+            flex: 1;
+            height: 8px;
+            background: rgba(0,0,0,0.3);
+            border-radius: 4px;
+            margin: 0 15px;
+            overflow: hidden;
+        }
+
+        .score-fill {
+            height: 100%;
+            background: linear-gradient(90deg, #4ecdc4, #95e1d3);
+            border-radius: 4px;
+            transition: width 1s ease;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .card {
+            animation: fadeIn 0.5s ease;
+        }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <h1>🧠 Agent Personality Dashboard</h1>
+        <p>Real-Time Personality Profiles & Performance Analytics</p>
+    </div>
+
+    <div class="nav">
+        <a href="/dashboard/admin" class="nav-button">Admin Dashboard</a>
+        <a href="/dashboard/user" class="nav-button">User Panel</a>
+        <a href="/dashboard/network" class="nav-button">Network Topology</a>
+        <a href="/dashboard/coordination" class="nav-button">Coordination</a>
+        <a href="/dashboard/consciousness" class="nav-button">Consciousness</a>
+        <a href="/dashboard/personality" class="nav-button active">Personality</a>
+    </div>
+
+    <div class="container">
+        <div id="loadingIndicator" class="loading">
+            🔄 Loading personality profiles...
+        </div>
+
+        <div id="agentSelector" class="card" style="display:none;">
+            <h2>📋 Select Agent to Analyze</h2>
+            <div id="agentList" class="personality-comparison"></div>
+        </div>
+
+        <div id="dashboardContent" style="display:none;">
+            <div class="grid">
+                <!-- Personality Radar Chart -->
+                <div class="card">
+                    <h2 id="agentName">Agent Personality</h2>
+                    <div class="chart-container">
+                        <canvas id="personalityRadar"></canvas>
+                    </div>
+                </div>
+
+                <!-- Trait Bars -->
+                <div class="card">
+                    <h2>📊 Personality Traits</h2>
+                    <div id="traitBars"></div>
+                </div>
+
+                <!-- Performance Modifiers -->
+                <div class="card">
+                    <h2>⚙️ Performance Modifiers</h2>
+                    <div class="stats-grid" id="modifiersGrid"></div>
+                </div>
+
+                <!-- Multi-Dimensional Scorecard -->
+                <div class="card">
+                    <h2>🎯 Performance Scorecard</h2>
+                    <div class="performance-scorecard" id="performanceScorecard"></div>
+                </div>
+
+                <!-- Trading Impact -->
+                <div class="card">
+                    <h2>💹 Trading Behavior</h2>
+                    <div id="tradingBehavior"></div>
+                </div>
+
+                <!-- Coordination Style -->
+                <div class="card">
+                    <h2>🤝 Coordination Style</h2>
+                    <div id="coordinationStyle"></div>
+                </div>
+            </div>
+
+            <!-- Team Compatibility -->
+            <div class="card">
+                <h2>👥 Team Compatibility Matrix</h2>
+                <div class="chart-container">
+                    <canvas id="compatibilityMatrix"></canvas>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <button class="refresh-button" onclick="refreshData()">🔄 Refresh</button>
+
+    <script>
+        let selectedAgentId = null;
+        let allAgents = [];
+        let personalityRadarChart = null;
+        let compatibilityChart = null;
+
+        // Fetch agents with personality data
+        async function fetchAgents() {
+            try {
+                const response = await fetch('/api/anp/agents');
+                const data = await response.json();
+
+                if (data.success && data.agents) {
+                    // Filter agents with personality data
+                    allAgents = data.agents.filter(agent =>
+                        agent.metadata && agent.metadata.personality
+                    );
+
+                    if (allAgents.length > 0) {
+                        displayAgentSelector();
+                        if (!selectedAgentId) {
+                            selectAgent(allAgents[0].agent_id);
+                        } else {
+                            displayPersonality(selectedAgentId);
+                        }
+                    } else {
+                        document.getElementById('loadingIndicator').innerHTML =
+                            '⚠️ No agents with personality profiles found.<br><br>' +
+                            '<small>Register agents with personality data to see profiles.</small>';
+                    }
+                } else {
+                    throw new Error('Failed to fetch agents');
+                }
+            } catch (error) {
+                console.error('Error fetching agents:', error);
+                document.getElementById('loadingIndicator').innerHTML =
+                    '❌ Error loading personality data<br><br>' +
+                    '<small>Make sure the API server is running.</small>';
+            }
+        }
+
+        function displayAgentSelector() {
+            const selector = document.getElementById('agentSelector');
+            const list = document.getElementById('agentList');
+            list.innerHTML = '';
+
+            allAgents.forEach(agent => {
+                const archetype = agent.metadata.archetype || 'balanced';
+                const card = document.createElement('div');
+                card.className = `agent-card ${archetype.toLowerCase()} ${agent.agent_id === selectedAgentId ? 'selected' : ''}`;
+                card.onclick = () => selectAgent(agent.agent_id);
+                card.innerHTML = `
+                    <div class="agent-name">${agent.agent_id}</div>
+                    <div class="agent-archetype">${archetype}</div>
+                    <div class="agent-archetype" style="font-size: 0.75em;">${agent.agent_type}</div>
+                `;
+                list.appendChild(card);
+            });
+
+            selector.style.display = 'block';
+            document.getElementById('loadingIndicator').style.display = 'none';
+        }
+
+        function selectAgent(agentId) {
+            selectedAgentId = agentId;
+            displayPersonality(agentId);
+
+            // Update selector UI
+            document.querySelectorAll('.agent-card').forEach(card => {
+                card.classList.remove('selected');
+            });
+            event?.target?.closest('.agent-card')?.classList.add('selected');
+        }
+
+        function displayPersonality(agentId) {
+            const agent = allAgents.find(a => a.agent_id === agentId);
+            if (!agent) return;
+
+            const personality = agent.metadata.personality;
+
+            // Show dashboard
+            document.getElementById('dashboardContent').style.display = 'block';
+
+            // Update agent name
+            document.getElementById('agentName').innerHTML =
+                `${agentId} <span class="archetype-badge">${personality.archetype}</span>`;
+
+            // Render personality radar
+            renderPersonalityRadar(personality);
+
+            // Render trait bars
+            renderTraitBars(personality);
+
+            // Render modifiers
+            renderModifiers(personality.modifiers);
+
+            // Render performance scorecard
+            renderPerformanceScorecard(personality);
+
+            // Render trading behavior
+            renderTradingBehavior(personality);
+
+            // Render coordination style
+            renderCoordinationStyle(personality);
+
+            // Render compatibility matrix
+            renderCompatibilityMatrix(agent);
+        }
+
+        function renderPersonalityRadar(personality) {
+            const ctx = document.getElementById('personalityRadar').getContext('2d');
+
+            const data = {
+                labels: ['Openness', 'Conscientiousness', 'Extraversion', 'Agreeableness', 'Neuroticism'],
+                datasets: [{
+                    label: 'Personality Profile',
+                    data: [
+                        personality.openness,
+                        personality.conscientiousness,
+                        personality.extraversion,
+                        personality.agreeableness,
+                        personality.neuroticism
+                    ],
+                    backgroundColor: 'rgba(126, 34, 206, 0.2)',
+                    borderColor: 'rgba(126, 34, 206, 1)',
+                    borderWidth: 3,
+                    pointBackgroundColor: 'rgba(255, 215, 0, 1)',
+                    pointBorderColor: '#fff',
+                    pointHoverBackgroundColor: '#fff',
+                    pointHoverBorderColor: 'rgba(126, 34, 206, 1)',
+                    pointRadius: 6,
+                    pointHoverRadius: 8
+                }]
+            };
+
+            if (personalityRadarChart) {
+                personalityRadarChart.destroy();
+            }
+
+            personalityRadarChart = new Chart(ctx, {
+                type: 'radar',
+                data: data,
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    scales: {
+                        r: {
+                            beginAtZero: true,
+                            max: 1,
+                            ticks: {
+                                stepSize: 0.2,
+                                color: 'rgba(255,255,255,0.8)',
+                                backdropColor: 'transparent'
+                            },
+                            grid: {
+                                color: 'rgba(255,255,255,0.2)'
+                            },
+                            pointLabels: {
+                                color: 'rgba(255,255,255,0.9)',
+                                font: {
+                                    size: 13,
+                                    weight: '600'
+                                }
+                            }
+                        }
+                    },
+                    plugins: {
+                        legend: {
+                            display: false
+                        }
+                    }
+                }
+            });
+        }
+
+        function renderTraitBars(personality) {
+            const container = document.getElementById('traitBars');
+            const traits = [
+                {name: 'Openness', value: personality.openness, desc: 'Creativity & Innovation'},
+                {name: 'Conscientiousness', value: personality.conscientiousness, desc: 'Planning & Thoroughness'},
+                {name: 'Extraversion', value: personality.extraversion, desc: 'Collaboration & Communication'},
+                {name: 'Agreeableness', value: personality.agreeableness, desc: 'Team & Consensus'},
+                {name: 'Neuroticism', value: personality.neuroticism, desc: 'Stress & Caution'}
+            ];
+
+            container.innerHTML = traits.map(trait => `
+                <div class="trait-bar">
+                    <div class="trait-label">
+                        <span><strong>${trait.name}</strong><br><small style="opacity:0.7">${trait.desc}</small></span>
+                        <span style="font-weight:700;color:#ffd700">${(trait.value * 100).toFixed(0)}%</span>
+                    </div>
+                    <div class="trait-progress">
+                        <div class="trait-fill" style="width: ${trait.value * 100}%"></div>
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        function renderModifiers(modifiers) {
+            const container = document.getElementById('modifiersGrid');
+            const items = [
+                {label: 'Risk Tolerance', value: modifiers.risk_tolerance, icon: '🎲'},
+                {label: 'Innovation', value: modifiers.innovation_capacity, icon: '💡'},
+                {label: 'Reliability', value: modifiers.execution_reliability, icon: '✅'},
+                {label: 'Leadership', value: modifiers.leadership_tendency, icon: '👑'},
+                {label: 'Learning Speed', value: modifiers.learning_speed, icon: '📚'},
+                {label: 'Stress Resistance', value: modifiers.stress_resistance, icon: '💪'},
+                {label: 'Collaboration', value: modifiers.collaboration_bonus, icon: '🤝'}
+            ];
+
+            container.innerHTML = items.map(item => `
+                <div class="stat-item">
+                    <div class="stat-label">${item.icon} ${item.label}</div>
+                    <div class="stat-value">${(item.value * 100).toFixed(0)}%</div>
+                </div>
+            `).join('');
+        }
+
+        function renderPerformanceScorecard(personality) {
+            const container = document.getElementById('performanceScorecard');
+            const scores = [
+                {dimension: 'Efficiency', score: personality.modifiers.execution_reliability},
+                {dimension: 'Quality', score: personality.conscientiousness * 0.7 + (1 - personality.neuroticism) * 0.3},
+                {dimension: 'Reliability', score: personality.modifiers.stress_resistance},
+                {dimension: 'Collaboration', score: personality.modifiers.collaboration_bonus},
+                {dimension: 'Innovation', score: personality.modifiers.innovation_capacity},
+                {dimension: 'Learning', score: personality.modifiers.learning_speed},
+                {dimension: 'Leadership', score: personality.modifiers.leadership_tendency}
+            ];
+
+            container.innerHTML = scores.map(item => `
+                <div class="score-item">
+                    <span style="min-width:120px;font-weight:600">${item.dimension}</span>
+                    <div class="score-bar">
+                        <div class="score-fill" style="width: ${item.score * 100}%"></div>
+                    </div>
+                    <span style="min-width:50px;text-align:right;font-weight:700;color:#ffd700">${(item.score * 100).toFixed(0)}%</span>
+                </div>
+            `).join('');
+        }
+
+        function renderTradingBehavior(personality) {
+            const container = document.getElementById('tradingBehavior');
+            const riskTolerance = personality.modifiers.risk_tolerance;
+            const strategy = riskTolerance > 0.7 ? 'Aggressive' :
+                           riskTolerance > 0.4 ? 'Balanced' : 'Conservative';
+
+            container.innerHTML = `
+                <div class="stat-item" style="margin-bottom: 15px;">
+                    <div class="stat-label">Strategy Type</div>
+                    <div class="stat-value" style="font-size:1.2em">${strategy}</div>
+                </div>
+                <div class="trait-bar">
+                    <div class="trait-label">
+                        <span>Position Sizing</span>
+                        <span style="font-weight:700">${(riskTolerance * 100).toFixed(0)}% of base</span>
+                    </div>
+                    <div class="trait-progress">
+                        <div class="trait-fill" style="width: ${riskTolerance * 100}%"></div>
+                    </div>
+                </div>
+                <div style="margin-top:15px;padding:10px;background:rgba(0,0,0,0.2);border-radius:8px;">
+                    <small>
+                        <strong>Behavior Traits:</strong><br>
+                        • Stop Loss: ${personality.neuroticism > 0.6 ? 'Tight' : 'Moderate'}<br>
+                        • Holding Period: ${personality.conscientiousness > 0.6 ? 'Long-term' : 'Short-term'}<br>
+                        • Approach: ${personality.openness > 0.6 ? 'Experimental' : 'Systematic'}
+                    </small>
+                </div>
+            `;
+        }
+
+        function renderCoordinationStyle(personality) {
+            const container = document.getElementById('coordinationStyle');
+            const leadership = personality.modifiers.leadership_tendency;
+            const role = leadership > 0.7 ? 'Coordinator' :
+                        personality.modifiers.collaboration_bonus > 0.7 ? 'Facilitator' :
+                        personality.modifiers.execution_reliability > 0.7 ? 'Executor' : 'Contributor';
+
+            container.innerHTML = `
+                <div class="stat-item" style="margin-bottom: 15px;">
+                    <div class="stat-label">Preferred Role</div>
+                    <div class="stat-value" style="font-size:1.2em">${role}</div>
+                </div>
+                <div class="trait-bar">
+                    <div class="trait-label">
+                        <span>Communication Frequency</span>
+                        <span style="font-weight:700">${personality.extraversion > 0.6 ? 'High' : personality.extraversion > 0.3 ? 'Medium' : 'Low'}</span>
+                    </div>
+                    <div class="trait-progress">
+                        <div class="trait-fill" style="width: ${personality.extraversion * 100}%"></div>
+                    </div>
+                </div>
+                <div style="margin-top:15px;padding:10px;background:rgba(0,0,0,0.2);border-radius:8px;">
+                    <small>
+                        <strong>Coordination Traits:</strong><br>
+                        • Conflict Style: ${personality.agreeableness > 0.6 ? 'Accommodating' : 'Competing'}<br>
+                        • Decision Making: ${personality.conscientiousness > 0.6 ? 'Planned' : 'Adaptive'}<br>
+                        • Team Orientation: ${personality.extraversion > 0.6 ? 'Highly Collaborative' : 'Independent'}
+                    </small>
+                </div>
+            `;
+        }
+
+        function renderCompatibilityMatrix(currentAgent) {
+            const ctx = document.getElementById('compatibilityMatrix').getContext('2d');
+            const currentPersonality = currentAgent.metadata.personality;
+
+            // Calculate compatibility with other agents
+            const compatibilities = allAgents
+                .filter(a => a.agent_id !== currentAgent.agent_id)
+                .map(agent => {
+                    const otherPersonality = agent.metadata.personality;
+                    const score = calculateCompatibility(currentPersonality, otherPersonality);
+                    return {
+                        agentId: agent.agent_id,
+                        score: score
+                    };
+                })
+                .sort((a, b) => b.score - a.score)
+                .slice(0, 10);
+
+            if (compatibilityChart) {
+                compatibilityChart.destroy();
+            }
+
+            compatibilityChart = new Chart(ctx, {
+                type: 'bar',
+                data: {
+                    labels: compatibilities.map(c => c.agentId),
+                    datasets: [{
+                        label: 'Compatibility Score',
+                        data: compatibilities.map(c => c.score * 100),
+                        backgroundColor: compatibilities.map(c =>
+                            c.score > 0.7 ? 'rgba(75, 192, 192, 0.6)' :
+                            c.score > 0.5 ? 'rgba(255, 206, 86, 0.6)' :
+                            'rgba(255, 99, 132, 0.6)'
+                        ),
+                        borderColor: compatibilities.map(c =>
+                            c.score > 0.7 ? 'rgba(75, 192, 192, 1)' :
+                            c.score > 0.5 ? 'rgba(255, 206, 86, 1)' :
+                            'rgba(255, 99, 132, 1)'
+                        ),
+                        borderWidth: 2
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    indexAxis: 'y',
+                    scales: {
+                        x: {
+                            beginAtZero: true,
+                            max: 100,
+                            ticks: {
+                                color: 'rgba(255,255,255,0.8)'
+                            },
+                            grid: {
+                                color: 'rgba(255,255,255,0.1)'
+                            }
+                        },
+                        y: {
+                            ticks: {
+                                color: 'rgba(255,255,255,0.8)',
+                                font: {
+                                    size: 11
+                                }
+                            },
+                            grid: {
+                                display: false
+                            }
+                        }
+                    },
+                    plugins: {
+                        legend: {
+                            display: false
+                        }
+                    }
+                }
+            });
+        }
+
+        function calculateCompatibility(p1, p2) {
+            // Calculate trait differences
+            const diffO = Math.abs(p1.openness - p2.openness);
+            const diffC = Math.abs(p1.conscientiousness - p2.conscientiousness);
+            const diffE = Math.abs(p1.extraversion - p2.extraversion);
+            const diffA = Math.abs(p1.agreeableness - p2.agreeableness);
+            const diffN = Math.abs(p1.neuroticism - p2.neuroticism);
+
+            // Similarity score (similar traits work better)
+            const similarity = (
+                (1 - diffO) * 0.2 +
+                (1 - diffC) * 0.3 +
+                (1 - diffN) * 0.2
+            );
+
+            // Complementary score (extrovert + agreeable works well)
+            const complementary = (
+                Math.min(p1.extraversion, p2.agreeableness) * 0.15 +
+                Math.min(p2.extraversion, p1.agreeableness) * 0.15
+            );
+
+            return similarity + complementary;
+        }
+
+        function refreshData() {
+            fetchAgents();
+        }
+
+        // Auto-refresh every 30 seconds
+        setInterval(refreshData, 30000);
+
+        // Initial load
+        fetchAgents();
+    </script>
+</body>
+</html>

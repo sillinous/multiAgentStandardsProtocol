@@ -245,6 +245,12 @@ async def consciousness_dashboard():
     dashboard_path = Path(__file__).parent / "consciousness_dashboard.html"
     return FileResponse(dashboard_path)
 
+@app.get("/dashboard/personality")
+async def personality_dashboard():
+    """Serve Agent Personality Dashboard."""
+    dashboard_path = Path(__file__).parent / "personality_dashboard.html"
+    return FileResponse(dashboard_path)
+
 # ============================================================================
 # Demo Endpoint - Populate Platform with Sample Data
 # ============================================================================
