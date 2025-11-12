@@ -104,7 +104,8 @@ class PCFAgentRegistry:
         self._agent_implementations = {
             '1.1.1.1': 'superstandard.agents.pcf.category_01_vision_strategy.pg_1_1_define_vision.p_1_1_1_assess_external.a_1_1_1_1_identify_competitors',
             '1.1.1.2': 'superstandard.agents.pcf.category_01_vision_strategy.pg_1_1_define_vision.p_1_1_1_assess_external.a_1_1_1_2_identify_economic_trends',
-            '1.1.1.3': 'superstandard.agents.pcf.category_01_vision_strategy.pg_1_1_define_vision.p_1_1_1_assess_external.a_1_1_1_3_identify_political_regulatory'
+            '1.1.1.3': 'superstandard.agents.pcf.category_01_vision_strategy.pg_1_1_define_vision.p_1_1_1_assess_external.a_1_1_1_3_identify_political_regulatory',
+            '1.1.1.4': 'superstandard.agents.pcf.category_01_vision_strategy.pg_1_1_define_vision.p_1_1_1_assess_external.a_1_1_1_4_identify_technology_innovations'
         }
 
         self.logger.info(f"Discovered {len(self._agent_implementations)} agent implementations")
