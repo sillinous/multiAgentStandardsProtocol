@@ -1,0 +1,132 @@
+<?xml version="1.0" ?>
+<bpmn:definitions xmlns:bpmn="http://www.omg.org/spec/BPMN/20100524/MODEL" xmlns:camunda="http://camunda.org/schema/1.0/bpmn" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" id="pcf_1.1.1" targetNamespace="http://superstandard.ai/pcf/1.1.1" xsi:schemaLocation="http://www.omg.org/spec/BPMN/20100524/MODEL http://www.omg.org/spec/BPMN/2.0/20100501/BPMN20.xsd">
+  <bpmn:process id="Process_1_1_1" name="Assess the external environment" isExecutable="true">
+    <bpmn:documentation>APQC PCF Process: 1.1.1
+Element ID: 10021
+Description: Analyze external factors that may affect the business including competition, economic trends, regulations, technology, demographics, and social/cultural changes
+Generated: 2025-11-12T15:32:32.685989</bpmn:documentation>
+    <bpmn:startEvent id="StartEvent_10021" name="Start Assess the external environment">
+      <bpmn:outgoing>Flow_Start</bpmn:outgoing>
+    </bpmn:startEvent>
+    <bpmn:serviceTask id="Task_1_1_1_1" name="Identify competitors" camunda:asyncBefore="true" camunda:delegateExpression="${pcfAgentDelegate}">
+      <bpmn:incoming>Flow_Start</bpmn:incoming>
+      <bpmn:outgoing>Flow_ToFork</bpmn:outgoing>
+      <bpmn:extensionElements>
+        <camunda:inputOutput>
+          <camunda:inputParameter name="pcf_element_id">10022</camunda:inputParameter>
+          <camunda:inputParameter name="hierarchy_id">1.1.1.1</camunda:inputParameter>
+          <camunda:inputParameter name="market_segment">${market_segment}</camunda:inputParameter>
+          <camunda:inputParameter name="geographic_scope">${geographic_scope}</camunda:inputParameter>
+        </camunda:inputOutput>
+      </bpmn:extensionElements>
+    </bpmn:serviceTask>
+    <bpmn:parallelGateway id="Gateway_Fork" name="Execute in Parallel">
+      <bpmn:incoming>Flow_ToFork</bpmn:incoming>
+      <bpmn:outgoing>Flow_Fork_1</bpmn:outgoing>
+      <bpmn:outgoing>Flow_Fork_2</bpmn:outgoing>
+      <bpmn:outgoing>Flow_Fork_3</bpmn:outgoing>
+      <bpmn:outgoing>Flow_Fork_4</bpmn:outgoing>
+      <bpmn:outgoing>Flow_Fork_5</bpmn:outgoing>
+      <bpmn:outgoing>Flow_Fork_6</bpmn:outgoing>
+    </bpmn:parallelGateway>
+    <bpmn:serviceTask id="Task_1_1_1_2" name="Identify economic trends" camunda:asyncBefore="true" camunda:delegateExpression="${pcfAgentDelegate}">
+      <bpmn:incoming>Flow_Fork_1</bpmn:incoming>
+      <bpmn:outgoing>Flow_Join_1</bpmn:outgoing>
+      <bpmn:extensionElements>
+        <camunda:inputOutput>
+          <camunda:inputParameter name="pcf_element_id">10023</camunda:inputParameter>
+          <camunda:inputParameter name="hierarchy_id">1.1.1.2</camunda:inputParameter>
+          <camunda:inputParameter name="geographic_scope">${geographic_scope}</camunda:inputParameter>
+          <camunda:inputParameter name="time_horizon">${time_horizon}</camunda:inputParameter>
+        </camunda:inputOutput>
+      </bpmn:extensionElements>
+    </bpmn:serviceTask>
+    <bpmn:serviceTask id="Task_1_1_1_3" name="Identify political and regulatory issues" camunda:asyncBefore="true" camunda:delegateExpression="${pcfAgentDelegate}">
+      <bpmn:incoming>Flow_Fork_2</bpmn:incoming>
+      <bpmn:outgoing>Flow_Join_2</bpmn:outgoing>
+      <bpmn:extensionElements>
+        <camunda:inputOutput>
+          <camunda:inputParameter name="pcf_element_id">10024</camunda:inputParameter>
+          <camunda:inputParameter name="hierarchy_id">1.1.1.3</camunda:inputParameter>
+          <camunda:inputParameter name="geographic_scope">${geographic_scope}</camunda:inputParameter>
+          <camunda:inputParameter name="industry_sectors">${industry_sectors}</camunda:inputParameter>
+        </camunda:inputOutput>
+      </bpmn:extensionElements>
+    </bpmn:serviceTask>
+    <bpmn:serviceTask id="Task_1_1_1_4" name="Identify technology innovations" camunda:asyncBefore="true" camunda:delegateExpression="${pcfAgentDelegate}">
+      <bpmn:incoming>Flow_Fork_3</bpmn:incoming>
+      <bpmn:outgoing>Flow_Join_3</bpmn:outgoing>
+      <bpmn:extensionElements>
+        <camunda:inputOutput>
+          <camunda:inputParameter name="pcf_element_id">10025</camunda:inputParameter>
+          <camunda:inputParameter name="hierarchy_id">1.1.1.4</camunda:inputParameter>
+          <camunda:inputParameter name="technology_domains">${technology_domains}</camunda:inputParameter>
+          <camunda:inputParameter name="innovation_stage">${innovation_stage}</camunda:inputParameter>
+        </camunda:inputOutput>
+      </bpmn:extensionElements>
+    </bpmn:serviceTask>
+    <bpmn:serviceTask id="Task_1_1_1_5" name="Analyze demographics" camunda:asyncBefore="true" camunda:delegateExpression="${pcfAgentDelegate}">
+      <bpmn:incoming>Flow_Fork_4</bpmn:incoming>
+      <bpmn:outgoing>Flow_Join_4</bpmn:outgoing>
+      <bpmn:extensionElements>
+        <camunda:inputOutput>
+          <camunda:inputParameter name="pcf_element_id">10026</camunda:inputParameter>
+          <camunda:inputParameter name="hierarchy_id">1.1.1.5</camunda:inputParameter>
+          <camunda:inputParameter name="geographic_scope">${geographic_scope}</camunda:inputParameter>
+          <camunda:inputParameter name="demographic_factors">${demographic_factors}</camunda:inputParameter>
+        </camunda:inputOutput>
+      </bpmn:extensionElements>
+    </bpmn:serviceTask>
+    <bpmn:serviceTask id="Task_1_1_1_6" name="Identify social and cultural changes" camunda:asyncBefore="true" camunda:delegateExpression="${pcfAgentDelegate}">
+      <bpmn:incoming>Flow_Fork_5</bpmn:incoming>
+      <bpmn:outgoing>Flow_Join_5</bpmn:outgoing>
+      <bpmn:extensionElements>
+        <camunda:inputOutput>
+          <camunda:inputParameter name="pcf_element_id">10027</camunda:inputParameter>
+          <camunda:inputParameter name="hierarchy_id">1.1.1.6</camunda:inputParameter>
+          <camunda:inputParameter name="geographic_scope">${geographic_scope}</camunda:inputParameter>
+          <camunda:inputParameter name="cultural_dimensions">${cultural_dimensions}</camunda:inputParameter>
+        </camunda:inputOutput>
+      </bpmn:extensionElements>
+    </bpmn:serviceTask>
+    <bpmn:serviceTask id="Task_1_1_1_7" name="Identify ecological concerns" camunda:asyncBefore="true" camunda:delegateExpression="${pcfAgentDelegate}">
+      <bpmn:incoming>Flow_Fork_6</bpmn:incoming>
+      <bpmn:outgoing>Flow_Join_6</bpmn:outgoing>
+      <bpmn:extensionElements>
+        <camunda:inputOutput>
+          <camunda:inputParameter name="pcf_element_id">10028</camunda:inputParameter>
+          <camunda:inputParameter name="hierarchy_id">1.1.1.7</camunda:inputParameter>
+          <camunda:inputParameter name="geographic_scope">${geographic_scope}</camunda:inputParameter>
+          <camunda:inputParameter name="environmental_factors">${environmental_factors}</camunda:inputParameter>
+        </camunda:inputOutput>
+      </bpmn:extensionElements>
+    </bpmn:serviceTask>
+    <bpmn:parallelGateway id="Gateway_Join" name="Join Results">
+      <bpmn:incoming>Flow_Join_1</bpmn:incoming>
+      <bpmn:incoming>Flow_Join_2</bpmn:incoming>
+      <bpmn:incoming>Flow_Join_3</bpmn:incoming>
+      <bpmn:incoming>Flow_Join_4</bpmn:incoming>
+      <bpmn:incoming>Flow_Join_5</bpmn:incoming>
+      <bpmn:incoming>Flow_Join_6</bpmn:incoming>
+      <bpmn:outgoing>Flow_ToEnd</bpmn:outgoing>
+    </bpmn:parallelGateway>
+    <bpmn:endEvent id="EndEvent_10021" name="Assess the external environment Complete">
+      <bpmn:incoming>Flow_ToEnd</bpmn:incoming>
+    </bpmn:endEvent>
+    <bpmn:sequenceFlow id="Flow_Start" sourceRef="StartEvent_*" targetRef="Task_*"/>
+    <bpmn:sequenceFlow id="Flow_ToFork" sourceRef="Task_*" targetRef="Gateway_Fork"/>
+    <bpmn:sequenceFlow id="Flow_Fork_1" sourceRef="Gateway_Fork" targetRef="Task_*"/>
+    <bpmn:sequenceFlow id="Flow_Fork_2" sourceRef="Gateway_Fork" targetRef="Task_*"/>
+    <bpmn:sequenceFlow id="Flow_Fork_3" sourceRef="Gateway_Fork" targetRef="Task_*"/>
+    <bpmn:sequenceFlow id="Flow_Fork_4" sourceRef="Gateway_Fork" targetRef="Task_*"/>
+    <bpmn:sequenceFlow id="Flow_Fork_5" sourceRef="Gateway_Fork" targetRef="Task_*"/>
+    <bpmn:sequenceFlow id="Flow_Fork_6" sourceRef="Gateway_Fork" targetRef="Task_*"/>
+    <bpmn:sequenceFlow id="Flow_Join_1" sourceRef="Task_*" targetRef="Gateway_Join"/>
+    <bpmn:sequenceFlow id="Flow_Join_2" sourceRef="Task_*" targetRef="Gateway_Join"/>
+    <bpmn:sequenceFlow id="Flow_Join_3" sourceRef="Task_*" targetRef="Gateway_Join"/>
+    <bpmn:sequenceFlow id="Flow_Join_4" sourceRef="Task_*" targetRef="Gateway_Join"/>
+    <bpmn:sequenceFlow id="Flow_Join_5" sourceRef="Task_*" targetRef="Gateway_Join"/>
+    <bpmn:sequenceFlow id="Flow_Join_6" sourceRef="Task_*" targetRef="Gateway_Join"/>
+    <bpmn:sequenceFlow id="Flow_ToEnd" sourceRef="Gateway_Join" targetRef="EndEvent_*"/>
+  </bpmn:process>
+</bpmn:definitions>
