@@ -1,0 +1,732 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Market Simulation Dashboard - Agentic Forge</title>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #1a1a2e 0%, #0f3460 100%);
+            color: #e0e0e0;
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .header {
+            text-align: center;
+            margin-bottom: 30px;
+            padding: 20px;
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 15px;
+            backdrop-filter: blur(10px);
+        }
+
+        .header h1 {
+            font-size: 2.5em;
+            color: #4fc3f7;
+            margin-bottom: 10px;
+        }
+
+        .header p {
+            color: #b0b0b0;
+            font-size: 1.1em;
+        }
+
+        .dashboard-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(400px, 1fr));
+            gap: 20px;
+            margin-bottom: 20px;
+        }
+
+        .panel {
+            background: rgba(255, 255, 255, 0.08);
+            border-radius: 15px;
+            padding: 20px;
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .panel h2 {
+            color: #4fc3f7;
+            margin-bottom: 15px;
+            font-size: 1.4em;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .chart-container {
+            position: relative;
+            height: 300px;
+            margin-top: 15px;
+        }
+
+        .controls {
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+        }
+
+        .control-group {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+        }
+
+        .control-group label {
+            color: #b0b0b0;
+            font-size: 0.9em;
+            font-weight: 600;
+        }
+
+        select, input {
+            background: rgba(255, 255, 255, 0.1);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            color: #e0e0e0;
+            padding: 10px;
+            border-radius: 8px;
+            font-size: 1em;
+        }
+
+        select:focus, input:focus {
+            outline: none;
+            border-color: #4fc3f7;
+        }
+
+        button {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            padding: 12px 24px;
+            border-radius: 8px;
+            font-size: 1em;
+            font-weight: 600;
+            cursor: pointer;
+            transition: transform 0.2s, box-shadow 0.2s;
+        }
+
+        button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(102, 126, 234, 0.4);
+        }
+
+        button:active {
+            transform: translateY(0);
+        }
+
+        button.secondary {
+            background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+        }
+
+        button.danger {
+            background: linear-gradient(135deg, #fa709a 0%, #fee140 100%);
+        }
+
+        .status-bar {
+            display: flex;
+            justify-content: space-between;
+            padding: 15px;
+            background: rgba(79, 195, 247, 0.1);
+            border-radius: 10px;
+            margin-bottom: 15px;
+        }
+
+        .status-item {
+            text-align: center;
+        }
+
+        .status-label {
+            font-size: 0.8em;
+            color: #b0b0b0;
+            margin-bottom: 5px;
+        }
+
+        .status-value {
+            font-size: 1.3em;
+            font-weight: 700;
+            color: #4fc3f7;
+        }
+
+        .regime-badge {
+            display: inline-block;
+            padding: 5px 15px;
+            border-radius: 20px;
+            font-weight: 600;
+            font-size: 0.9em;
+        }
+
+        .regime-bull { background: #4caf50; color: white; }
+        .regime-bear { background: #f44336; color: white; }
+        .regime-volatile { background: #ff9800; color: white; }
+        .regime-sideways { background: #2196f3; color: white; }
+        .regime-crash { background: #9c27b0; color: white; }
+        .regime-recovery { background: #00bcd4; color: white; }
+
+        .event-log {
+            max-height: 200px;
+            overflow-y: auto;
+            background: rgba(0, 0, 0, 0.2);
+            border-radius: 8px;
+            padding: 10px;
+        }
+
+        .event-item {
+            padding: 8px;
+            margin-bottom: 5px;
+            border-left: 3px solid #4fc3f7;
+            background: rgba(79, 195, 247, 0.1);
+            border-radius: 4px;
+            font-size: 0.9em;
+            animation: slideIn 0.3s ease-out;
+        }
+
+        @keyframes slideIn {
+            from {
+                opacity: 0;
+                transform: translateX(-20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateX(0);
+            }
+        }
+
+        .performance-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 15px;
+        }
+
+        .performance-table th,
+        .performance-table td {
+            padding: 10px;
+            text-align: left;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .performance-table th {
+            background: rgba(79, 195, 247, 0.2);
+            color: #4fc3f7;
+            font-weight: 600;
+        }
+
+        .performance-table tr:hover {
+            background: rgba(255, 255, 255, 0.05);
+        }
+
+        .positive { color: #4caf50; }
+        .negative { color: #f44336; }
+
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+            gap: 15px;
+            margin-top: 15px;
+        }
+
+        .stat-card {
+            background: rgba(79, 195, 247, 0.1);
+            padding: 15px;
+            border-radius: 10px;
+            text-align: center;
+        }
+
+        .stat-label {
+            font-size: 0.85em;
+            color: #b0b0b0;
+            margin-bottom: 5px;
+        }
+
+        .stat-value {
+            font-size: 1.5em;
+            font-weight: 700;
+            color: #4fc3f7;
+        }
+
+        .full-width {
+            grid-column: 1 / -1;
+        }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <h1>🌊 Market Simulation Dashboard</h1>
+        <p>Realistic synthetic market generation for agent testing and training</p>
+    </div>
+
+    <!-- Status Bar -->
+    <div class="status-bar">
+        <div class="status-item">
+            <div class="status-label">Current Regime</div>
+            <div class="status-value"><span id="currentRegime" class="regime-badge regime-sideways">SIDEWAYS</span></div>
+        </div>
+        <div class="status-item">
+            <div class="status-label">Current Price</div>
+            <div class="status-value" id="currentPrice">$100.00</div>
+        </div>
+        <div class="status-item">
+            <div class="status-label">Total Bars</div>
+            <div class="status-value" id="totalBars">0</div>
+        </div>
+        <div class="status-item">
+            <div class="status-label">Total Return</div>
+            <div class="status-value" id="totalReturn">+0.00%</div>
+        </div>
+        <div class="status-item">
+            <div class="status-label">Events</div>
+            <div class="status-value" id="totalEvents">0</div>
+        </div>
+    </div>
+
+    <div class="dashboard-grid">
+        <!-- Market Controls -->
+        <div class="panel">
+            <h2>⚙️ Market Controls</h2>
+            <div class="controls">
+                <div class="control-group">
+                    <label>Market Regime</label>
+                    <select id="regimeSelect">
+                        <option value="bull">🐂 Bull Market</option>
+                        <option value="bear">🐻 Bear Market</option>
+                        <option value="volatile">⚡ Volatile</option>
+                        <option value="sideways" selected>↔️ Sideways</option>
+                        <option value="crash">💥 Crash</option>
+                        <option value="recovery">📈 Recovery</option>
+                    </select>
+                </div>
+                <div class="control-group">
+                    <label>Number of Bars</label>
+                    <input type="number" id="numBars" value="50" min="10" max="200">
+                </div>
+                <button onclick="generateMarket()">Generate Market Data</button>
+                <button class="secondary" onclick="resetSimulation()">Reset Simulation</button>
+            </div>
+        </div>
+
+        <!-- Event Injection -->
+        <div class="panel">
+            <h2>⚡ Event Injection</h2>
+            <div class="controls">
+                <div class="control-group">
+                    <label>Event Type</label>
+                    <select id="eventType">
+                        <option value="news_shock">📰 News Shock</option>
+                        <option value="volatility_spike">📊 Volatility Spike</option>
+                        <option value="trend_reversal">🔄 Trend Reversal</option>
+                    </select>
+                </div>
+                <div class="control-group">
+                    <label>Magnitude (0.0 - 1.0)</label>
+                    <input type="number" id="eventMagnitude" value="0.7" min="0" max="1" step="0.1">
+                </div>
+                <div class="control-group">
+                    <label>Direction</label>
+                    <select id="eventDirection">
+                        <option value="1">📈 Positive</option>
+                        <option value="-1">📉 Negative</option>
+                    </select>
+                </div>
+                <button class="danger" onclick="injectEvent()">Inject Event</button>
+            </div>
+        </div>
+
+        <!-- Price Chart -->
+        <div class="panel full-width">
+            <h2>📈 Price Chart</h2>
+            <div class="chart-container">
+                <canvas id="priceChart"></canvas>
+            </div>
+        </div>
+
+        <!-- Market Statistics -->
+        <div class="panel">
+            <h2>📊 Market Statistics</h2>
+            <div class="stats-grid">
+                <div class="stat-card">
+                    <div class="stat-label">Avg Return</div>
+                    <div class="stat-value" id="avgReturn">0.00%</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-label">Volatility</div>
+                    <div class="stat-value" id="volatility">0.00%</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-label">Sharpe Ratio</div>
+                    <div class="stat-value" id="sharpe">0.00</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-label">Max Drawdown</div>
+                    <div class="stat-value" id="maxDrawdown">0.00%</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Event Log -->
+        <div class="panel">
+            <h2>📋 Event Log</h2>
+            <div class="event-log" id="eventLog">
+                <div class="event-item">Simulation ready. Generate market data to begin.</div>
+            </div>
+        </div>
+
+        <!-- Agent Performance (when backtesting) -->
+        <div class="panel full-width">
+            <h2>🤖 Agent Performance Comparison</h2>
+            <table class="performance-table">
+                <thead>
+                    <tr>
+                        <th>Rank</th>
+                        <th>Agent</th>
+                        <th>Personality</th>
+                        <th>Return</th>
+                        <th>Sharpe</th>
+                        <th>Win Rate</th>
+                        <th>Trades</th>
+                        <th>Fitness</th>
+                    </tr>
+                </thead>
+                <tbody id="performanceTable">
+                    <tr>
+                        <td colspan="8" style="text-align: center; padding: 20px; color: #b0b0b0;">
+                            Run backtest to see agent performance
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
+            <button onclick="runBacktest()" style="margin-top: 15px; width: 100%;">Run Agent Backtest</button>
+        </div>
+    </div>
+
+    <script>
+        // =====================================================================
+        // Market Simulation State
+        // =====================================================================
+
+        let simulator = {
+            initialPrice: 100.0,
+            currentPrice: 100.0,
+            bars: [],
+            events: [],
+            currentRegime: 'sideways'
+        };
+
+        // Chart instances
+        let priceChart;
+
+        // =====================================================================
+        // Initialize Charts
+        // =====================================================================
+
+        function initCharts() {
+            const priceCtx = document.getElementById('priceChart').getContext('2d');
+
+            priceChart = new Chart(priceCtx, {
+                type: 'line',
+                data: {
+                    labels: [],
+                    datasets: [{
+                        label: 'Price',
+                        data: [],
+                        borderColor: '#4fc3f7',
+                        backgroundColor: 'rgba(79, 195, 247, 0.1)',
+                        borderWidth: 2,
+                        fill: true,
+                        tension: 0.1
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: { display: false },
+                        tooltip: {
+                            backgroundColor: 'rgba(0, 0, 0, 0.8)',
+                            titleColor: '#4fc3f7',
+                            bodyColor: '#e0e0e0'
+                        }
+                    },
+                    scales: {
+                        x: {
+                            ticks: { color: '#b0b0b0' },
+                            grid: { color: 'rgba(255, 255, 255, 0.1)' }
+                        },
+                        y: {
+                            ticks: { color: '#b0b0b0' },
+                            grid: { color: 'rgba(255, 255, 255, 0.1)' }
+                        }
+                    }
+                }
+            });
+        }
+
+        // =====================================================================
+        // Market Generation (Simulated)
+        // =====================================================================
+
+        function generateMarket() {
+            const regime = document.getElementById('regimeSelect').value;
+            const numBars = parseInt(document.getElementById('numBars').value);
+
+            simulator.currentRegime = regime;
+
+            logEvent(`Generating ${numBars} bars in ${regime.toUpperCase()} regime...`);
+
+            // Get regime parameters
+            const params = getRegimeParams(regime);
+
+            // Generate bars
+            for (let i = 0; i < numBars; i++) {
+                const bar = generateBar(params);
+                simulator.bars.push(bar);
+            }
+
+            // Update UI
+            updateCharts();
+            updateStatistics();
+            updateStatus();
+
+            logEvent(`✅ Generated ${numBars} bars. Price: $${simulator.bars[simulator.bars.length - 1].close.toFixed(2)}`);
+        }
+
+        function getRegimeParams(regime) {
+            const params = {
+                'bull': { drift: 0.0008, volatility: 0.015, momentum: 0.15 },
+                'bear': { drift: -0.0006, volatility: 0.020, momentum: 0.10 },
+                'volatile': { drift: 0.0, volatility: 0.035, momentum: 0.05 },
+                'sideways': { drift: 0.0, volatility: 0.010, momentum: 0.03 },
+                'crash': { drift: -0.003, volatility: 0.050, momentum: 0.20 },
+                'recovery': { drift: 0.002, volatility: 0.030, momentum: 0.18 }
+            };
+            return params[regime];
+        }
+
+        function generateBar(params) {
+            // Simple price generation with drift and volatility
+            let priceChange = (Math.random() - 0.5) * params.volatility * 2;
+            priceChange += params.drift;
+
+            // Momentum
+            if (simulator.bars.length > 0) {
+                const lastBar = simulator.bars[simulator.bars.length - 1];
+                const lastMove = (lastBar.close - lastBar.open) / lastBar.open;
+                priceChange += lastMove * params.momentum;
+            }
+
+            const open = simulator.currentPrice;
+            const close = open * (1 + priceChange);
+
+            const high = Math.max(open, close) * (1 + Math.random() * 0.005);
+            const low = Math.min(open, close) * (1 - Math.random() * 0.005);
+            const volume = 1000000 * (1 + Math.random() * 0.5);
+
+            simulator.currentPrice = close;
+
+            return { open, high, low, close, volume };
+        }
+
+        function injectEvent() {
+            const eventType = document.getElementById('eventType').value;
+            const magnitude = parseFloat(document.getElementById('eventMagnitude').value);
+            const direction = parseInt(document.getElementById('eventDirection').value);
+
+            const eventDescriptions = {
+                'news_shock': 'Major news announcement',
+                'volatility_spike': 'Sudden volatility increase',
+                'trend_reversal': 'Market trend reversal'
+            };
+
+            const event = {
+                type: eventType,
+                magnitude: magnitude,
+                direction: direction,
+                description: eventDescriptions[eventType]
+            };
+
+            simulator.events.push(event);
+
+            // Apply immediate impact
+            const impact = magnitude * 0.03 * direction;
+            simulator.currentPrice *= (1 + impact);
+
+            logEvent(`⚡ Event: ${event.description} (magnitude: ${magnitude.toFixed(2)}, direction: ${direction > 0 ? 'positive' : 'negative'})`);
+
+            updateStatus();
+        }
+
+        // =====================================================================
+        // UI Updates
+        // =====================================================================
+
+        function updateCharts() {
+            if (simulator.bars.length === 0) return;
+
+            const labels = simulator.bars.map((_, i) => i + 1);
+            const prices = simulator.bars.map(bar => bar.close);
+
+            priceChart.data.labels = labels;
+            priceChart.data.datasets[0].data = prices;
+            priceChart.update('none');
+        }
+
+        function updateStatistics() {
+            if (simulator.bars.length < 2) return;
+
+            const prices = simulator.bars.map(bar => bar.close);
+            const returns = [];
+
+            for (let i = 1; i < prices.length; i++) {
+                returns.push((prices[i] - prices[i - 1]) / prices[i - 1]);
+            }
+
+            const avgReturn = returns.reduce((a, b) => a + b, 0) / returns.length;
+            const variance = returns.reduce((sum, r) => sum + Math.pow(r - avgReturn, 2), 0) / returns.length;
+            const volatility = Math.sqrt(variance);
+            const sharpe = volatility > 0 ? avgReturn / volatility : 0;
+
+            let peak = prices[0];
+            let maxDD = 0;
+            for (const price of prices) {
+                if (price > peak) peak = price;
+                const dd = (peak - price) / peak;
+                if (dd > maxDD) maxDD = dd;
+            }
+
+            document.getElementById('avgReturn').textContent = (avgReturn * 100).toFixed(2) + '%';
+            document.getElementById('volatility').textContent = (volatility * 100).toFixed(2) + '%';
+            document.getElementById('sharpe').textContent = sharpe.toFixed(2);
+            document.getElementById('maxDrawdown').textContent = (maxDD * 100).toFixed(2) + '%';
+        }
+
+        function updateStatus() {
+            const regime = simulator.currentRegime;
+            const regimeBadge = document.getElementById('currentRegime');
+            regimeBadge.textContent = regime.toUpperCase();
+            regimeBadge.className = `regime-badge regime-${regime}`;
+
+            document.getElementById('currentPrice').textContent = `$${simulator.currentPrice.toFixed(2)}`;
+            document.getElementById('totalBars').textContent = simulator.bars.length;
+
+            if (simulator.bars.length > 0) {
+                const totalReturn = ((simulator.currentPrice - simulator.initialPrice) / simulator.initialPrice) * 100;
+                const returnEl = document.getElementById('totalReturn');
+                returnEl.textContent = (totalReturn >= 0 ? '+' : '') + totalReturn.toFixed(2) + '%';
+                returnEl.className = totalReturn >= 0 ? 'status-value positive' : 'status-value negative';
+            }
+
+            document.getElementById('totalEvents').textContent = simulator.events.length;
+        }
+
+        function logEvent(message) {
+            const eventLog = document.getElementById('eventLog');
+            const eventItem = document.createElement('div');
+            eventItem.className = 'event-item';
+            eventItem.textContent = message;
+            eventLog.insertBefore(eventItem, eventLog.firstChild);
+
+            // Keep only last 20 events
+            while (eventLog.children.length > 20) {
+                eventLog.removeChild(eventLog.lastChild);
+            }
+        }
+
+        function resetSimulation() {
+            simulator = {
+                initialPrice: 100.0,
+                currentPrice: 100.0,
+                bars: [],
+                events: [],
+                currentRegime: 'sideways'
+            };
+
+            priceChart.data.labels = [];
+            priceChart.data.datasets[0].data = [];
+            priceChart.update();
+
+            updateStatus();
+            updateStatistics();
+
+            document.getElementById('eventLog').innerHTML = '<div class="event-item">Simulation reset. Generate market data to begin.</div>';
+
+            logEvent('🔄 Simulation reset');
+        }
+
+        // =====================================================================
+        // Agent Backtesting
+        // =====================================================================
+
+        function runBacktest() {
+            if (simulator.bars.length < 50) {
+                logEvent('❌ Need at least 50 bars for backtesting. Generate more data.');
+                return;
+            }
+
+            logEvent('🤖 Running agent backtest...');
+
+            // Simulate different agents with different personalities
+            const agents = [
+                { name: 'Aggressive Innovator', personality: 'O=0.90 C=0.40 E=0.75', riskTolerance: 0.78 },
+                { name: 'Conservative Methodical', personality: 'O=0.35 C=0.90 E=0.40', riskTolerance: 0.25 },
+                { name: 'Balanced Trader', personality: 'O=0.60 C=0.65 E=0.55', riskTolerance: 0.50 },
+                { name: 'Cautious Follower', personality: 'O=0.30 C=0.80 E=0.35', riskTolerance: 0.26 }
+            ];
+
+            const results = agents.map(agent => {
+                // Simulate backtest results (in real app, call Python backend)
+                const returnPct = (Math.random() - 0.3) * 10; // -3% to +7%
+                const sharpe = Math.random() * 2 - 0.5; // -0.5 to 1.5
+                const winRate = 20 + Math.random() * 60; // 20% to 80%
+                const trades = Math.floor(5 + Math.random() * 15); // 5 to 20 trades
+                const fitness = 0.4 + Math.random() * 0.3; // 0.4 to 0.7
+
+                return {
+                    ...agent,
+                    return: returnPct,
+                    sharpe: sharpe,
+                    winRate: winRate,
+                    trades: trades,
+                    fitness: fitness
+                };
+            });
+
+            // Sort by fitness
+            results.sort((a, b) => b.fitness - a.fitness);
+
+            // Update table
+            const tbody = document.getElementById('performanceTable');
+            tbody.innerHTML = results.map((result, i) => `
+                <tr>
+                    <td>${i + 1}</td>
+                    <td><strong>${result.name}</strong></td>
+                    <td style="font-size: 0.85em; color: #b0b0b0;">${result.personality}</td>
+                    <td class="${result.return >= 0 ? 'positive' : 'negative'}">${result.return >= 0 ? '+' : ''}${result.return.toFixed(2)}%</td>
+                    <td>${result.sharpe.toFixed(2)}</td>
+                    <td>${result.winRate.toFixed(1)}%</td>
+                    <td>${result.trades}</td>
+                    <td><strong>${result.fitness.toFixed(3)}</strong></td>
+                </tr>
+            `).join('');
+
+            logEvent(`✅ Backtest complete. Best performer: ${results[0].name} (fitness: ${results[0].fitness.toFixed(3)})`);
+        }
+
+        // =====================================================================
+        // Initialize
+        // =====================================================================
+
+        window.addEventListener('load', () => {
+            initCharts();
+            updateStatus();
+            logEvent('🌊 Market Simulation Dashboard ready');
+        });
+    </script>
+</body>
+</html>

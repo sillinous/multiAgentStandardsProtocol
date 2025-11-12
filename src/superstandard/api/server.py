@@ -257,6 +257,12 @@ async def evolution_dashboard():
     dashboard_path = Path(__file__).parent / "evolution_dashboard.html"
     return FileResponse(dashboard_path)
 
+@app.get("/dashboard/market-simulation")
+async def market_simulation_dashboard():
+    """Serve Market Simulation Dashboard."""
+    dashboard_path = Path(__file__).parent / "market_simulation_dashboard.html"
+    return FileResponse(dashboard_path)
+
 # ============================================================================
 # Demo Endpoint - Populate Platform with Sample Data
 # ============================================================================
