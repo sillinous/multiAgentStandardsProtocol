@@ -251,6 +251,12 @@ async def personality_dashboard():
     dashboard_path = Path(__file__).parent / "personality_dashboard.html"
     return FileResponse(dashboard_path)
 
+@app.get("/dashboard/evolution")
+async def evolution_dashboard():
+    """Serve Evolution Dashboard."""
+    dashboard_path = Path(__file__).parent / "evolution_dashboard.html"
+    return FileResponse(dashboard_path)
+
 # ============================================================================
 # Demo Endpoint - Populate Platform with Sample Data
 # ============================================================================
