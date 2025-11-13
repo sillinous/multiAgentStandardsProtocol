@@ -11,11 +11,20 @@ from .market_simulation import (
     PerformanceMetrics
 )
 
+from .historical_data import (
+    HistoricalDataFetcher,
+    MarketRegimeDetector,
+    DataSource
+)
+
 __all__ = [
     'MarketBar',
     'MarketRegime',
     'MarketEvent',
     'MarketSimulator',
     'AgentBacktester',
-    'PerformanceMetrics'
+    'PerformanceMetrics',
+    'HistoricalDataFetcher',
+    'MarketRegimeDetector',
+    'DataSource'
 ]
