@@ -104,6 +104,8 @@ class PCFAgentRegistry:
         # Implemented agents - Process 1.1.2 COMPLETE (3/3 activities)
         # Implemented agents - Process 1.1.3 COMPLETE (4/4 activities)
         # Implemented agents - Process 1.1.4 COMPLETE (4/4 activities)
+        # Implemented agents - Process 1.1.5 COMPLETE (4/4 activities)
+        # *** PROCESS GROUP 1.1 - 100% COMPLETE! (22 agents total) ***
         self._agent_implementations = {
             # Process 1.1.1 - Assess the external environment
             '1.1.1.1': 'superstandard.agents.pcf.category_01_vision_strategy.pg_1_1_define_vision.p_1_1_1_assess_external.a_1_1_1_1_identify_competitors',
@@ -126,7 +128,12 @@ class PCFAgentRegistry:
             '1.1.4.1': 'superstandard.agents.pcf.category_01_vision_strategy.pg_1_1_define_vision.p_1_1_4_internal_analysis.a_1_1_4_1_analyze_capabilities',
             '1.1.4.2': 'superstandard.agents.pcf.category_01_vision_strategy.pg_1_1_define_vision.p_1_1_4_internal_analysis.a_1_1_4_2_evaluate_resources',
             '1.1.4.3': 'superstandard.agents.pcf.category_01_vision_strategy.pg_1_1_define_vision.p_1_1_4_internal_analysis.a_1_1_4_3_assess_performance',
-            '1.1.4.4': 'superstandard.agents.pcf.category_01_vision_strategy.pg_1_1_define_vision.p_1_1_4_internal_analysis.a_1_1_4_4_identify_strengths_weaknesses'
+            '1.1.4.4': 'superstandard.agents.pcf.category_01_vision_strategy.pg_1_1_define_vision.p_1_1_4_internal_analysis.a_1_1_4_4_identify_strengths_weaknesses',
+            # Process 1.1.5 - Establish strategic vision
+            '1.1.5.1': 'superstandard.agents.pcf.category_01_vision_strategy.pg_1_1_define_vision.p_1_1_5_strategic_vision.a_1_1_5_1_synthesize_insights',
+            '1.1.5.2': 'superstandard.agents.pcf.category_01_vision_strategy.pg_1_1_define_vision.p_1_1_5_strategic_vision.a_1_1_5_2_define_vision',
+            '1.1.5.3': 'superstandard.agents.pcf.category_01_vision_strategy.pg_1_1_define_vision.p_1_1_5_strategic_vision.a_1_1_5_3_define_mission_values',
+            '1.1.5.4': 'superstandard.agents.pcf.category_01_vision_strategy.pg_1_1_define_vision.p_1_1_5_strategic_vision.a_1_1_5_4_validate_alignment'
         }
 
         self.logger.info(f"Discovered {len(self._agent_implementations)} agent implementations")
