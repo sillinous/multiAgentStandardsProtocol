@@ -34,11 +34,21 @@ jupyter>=1.0.0              # Notebook support for experimentation
 # BAP (Blockchain Agent Protocol)
 # - Uses only Python standard library and dataclasses
 
-# Note: For production deployments, consider adding:
+# Production API Server (now required for dashboards)
+pydantic>=2.0.0              # Data validation (used in API server)
+fastapi>=0.100.0             # REST API framework
+uvicorn[standard]>=0.24.0    # ASGI server
+websockets>=11.0.0           # WebSocket support
+python-multipart>=0.0.6      # Form data parsing
+aiofiles>=23.2.1             # Async file operations
+httpx>=0.25.0                # Async HTTP client
+
+# Market Data & Trading System (required for evolution/validation)
+yfinance>=0.2.33             # Yahoo Finance API for historical data
+pandas>=2.1.0                # Data manipulation for market data
+numpy>=1.26.0                # Numerical operations
+
+# Additional production considerations:
 # - cryptography>=41.0.0    # For encryption and security
-# - pydantic>=2.0.0         # For advanced data validation
-# - fastapi>=0.100.0        # For REST API implementations
-# - websockets>=11.0.0      # For WebSocket support
-# - aiohttp>=3.8.0          # For async HTTP client/server
 # - redis>=4.6.0            # For distributed state management
 # - prometheus-client>=0.17.0  # For metrics and observability
