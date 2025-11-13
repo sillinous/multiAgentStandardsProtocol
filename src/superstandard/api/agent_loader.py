@@ -106,6 +106,12 @@ class PCFAgentRegistry:
         # Implemented agents - Process 1.1.4 COMPLETE (4/4 activities)
         # Implemented agents - Process 1.1.5 COMPLETE (4/4 activities)
         # *** PROCESS GROUP 1.1 - 100% COMPLETE! (22 agents total) ***
+        #
+        # Implemented agents - Process 1.2.1 COMPLETE (4/4 activities)
+        # Implemented agents - Process 1.2.2 COMPLETE (4/4 activities)
+        # Implemented agents - Process 1.2.3 COMPLETE (4/4 activities)
+        # Implemented agents - Process 1.2.4 COMPLETE (4/4 activities)
+        # *** PROCESS GROUP 1.2 - 100% COMPLETE! (16 agents total) ***
         self._agent_implementations = {
             # Process 1.1.1 - Assess the external environment
             '1.1.1.1': 'superstandard.agents.pcf.category_01_vision_strategy.pg_1_1_define_vision.p_1_1_1_assess_external.a_1_1_1_1_identify_competitors',
@@ -133,7 +139,27 @@ class PCFAgentRegistry:
             '1.1.5.1': 'superstandard.agents.pcf.category_01_vision_strategy.pg_1_1_define_vision.p_1_1_5_strategic_vision.a_1_1_5_1_synthesize_insights',
             '1.1.5.2': 'superstandard.agents.pcf.category_01_vision_strategy.pg_1_1_define_vision.p_1_1_5_strategic_vision.a_1_1_5_2_define_vision',
             '1.1.5.3': 'superstandard.agents.pcf.category_01_vision_strategy.pg_1_1_define_vision.p_1_1_5_strategic_vision.a_1_1_5_3_define_mission_values',
-            '1.1.5.4': 'superstandard.agents.pcf.category_01_vision_strategy.pg_1_1_define_vision.p_1_1_5_strategic_vision.a_1_1_5_4_validate_alignment'
+            '1.1.5.4': 'superstandard.agents.pcf.category_01_vision_strategy.pg_1_1_define_vision.p_1_1_5_strategic_vision.a_1_1_5_4_validate_alignment',
+            # Process 1.2.1 - Define strategic options
+            '1.2.1.1': 'superstandard.agents.pcf.category_01_vision_strategy.pg_1_2_develop_strategy.p_1_2_1_strategic_options.a_1_2_1_1_identify_alternatives',
+            '1.2.1.2': 'superstandard.agents.pcf.category_01_vision_strategy.pg_1_2_develop_strategy.p_1_2_1_strategic_options.a_1_2_1_2_analyze_positioning',
+            '1.2.1.3': 'superstandard.agents.pcf.category_01_vision_strategy.pg_1_2_develop_strategy.p_1_2_1_strategic_options.a_1_2_1_3_define_growth',
+            '1.2.1.4': 'superstandard.agents.pcf.category_01_vision_strategy.pg_1_2_develop_strategy.p_1_2_1_strategic_options.a_1_2_1_4_explore_partnerships',
+            # Process 1.2.2 - Evaluate and select strategies
+            '1.2.2.1': 'superstandard.agents.pcf.category_01_vision_strategy.pg_1_2_develop_strategy.p_1_2_2_evaluate_select.a_1_2_2_1_assess_criteria',
+            '1.2.2.2': 'superstandard.agents.pcf.category_01_vision_strategy.pg_1_2_develop_strategy.p_1_2_2_evaluate_select.a_1_2_2_2_scenario_analysis',
+            '1.2.2.3': 'superstandard.agents.pcf.category_01_vision_strategy.pg_1_2_develop_strategy.p_1_2_2_evaluate_select.a_1_2_2_3_evaluate_risk_return',
+            '1.2.2.4': 'superstandard.agents.pcf.category_01_vision_strategy.pg_1_2_develop_strategy.p_1_2_2_evaluate_select.a_1_2_2_4_select_portfolio',
+            # Process 1.2.3 - Develop business plans
+            '1.2.3.1': 'superstandard.agents.pcf.category_01_vision_strategy.pg_1_2_develop_strategy.p_1_2_3_business_plans.a_1_2_3_1_create_roadmap',
+            '1.2.3.2': 'superstandard.agents.pcf.category_01_vision_strategy.pg_1_2_develop_strategy.p_1_2_3_business_plans.a_1_2_3_2_financial_projections',
+            '1.2.3.3': 'superstandard.agents.pcf.category_01_vision_strategy.pg_1_2_develop_strategy.p_1_2_3_business_plans.a_1_2_3_3_resource_requirements',
+            '1.2.3.4': 'superstandard.agents.pcf.category_01_vision_strategy.pg_1_2_develop_strategy.p_1_2_3_business_plans.a_1_2_3_4_implementation_timeline',
+            # Process 1.2.4 - Develop and set organizational goals
+            '1.2.4.1': 'superstandard.agents.pcf.category_01_vision_strategy.pg_1_2_develop_strategy.p_1_2_4_set_goals.a_1_2_4_1_define_objectives',
+            '1.2.4.2': 'superstandard.agents.pcf.category_01_vision_strategy.pg_1_2_develop_strategy.p_1_2_4_set_goals.a_1_2_4_2_establish_okrs',
+            '1.2.4.3': 'superstandard.agents.pcf.category_01_vision_strategy.pg_1_2_develop_strategy.p_1_2_4_set_goals.a_1_2_4_3_set_performance_targets',
+            '1.2.4.4': 'superstandard.agents.pcf.category_01_vision_strategy.pg_1_2_develop_strategy.p_1_2_4_set_goals.a_1_2_4_4_measurement_framework'
         }
 
         self.logger.info(f"Discovered {len(self._agent_implementations)} agent implementations")
