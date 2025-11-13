@@ -1,0 +1,930 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Agent Ensemble Dashboard - Production Deployment</title>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #1e3c72 0%, #2a5298 100%);
+            color: #fff;
+            padding: 20px;
+            min-height: 100vh;
+        }
+
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+        }
+
+        header {
+            text-align: center;
+            margin-bottom: 30px;
+            padding: 20px;
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 15px;
+            backdrop-filter: blur(10px);
+        }
+
+        header h1 {
+            font-size: 2.5em;
+            margin-bottom: 10px;
+            text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.3);
+        }
+
+        header p {
+            font-size: 1.1em;
+            opacity: 0.9;
+        }
+
+        .connection-status {
+            display: inline-block;
+            padding: 5px 15px;
+            border-radius: 20px;
+            font-size: 0.9em;
+            margin-top: 10px;
+            background: rgba(255, 255, 255, 0.2);
+        }
+
+        .connection-status.connected {
+            background: rgba(76, 175, 80, 0.3);
+        }
+
+        .connection-status.disconnected {
+            background: rgba(244, 67, 54, 0.3);
+        }
+
+        .main-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px;
+            margin-bottom: 20px;
+        }
+
+        .card {
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 15px;
+            padding: 25px;
+            backdrop-filter: blur(10px);
+            box-shadow: 0 8px 32px 0 rgba(31, 38, 135, 0.37);
+            border: 1px solid rgba(255, 255, 255, 0.18);
+        }
+
+        .card h2 {
+            font-size: 1.5em;
+            margin-bottom: 20px;
+            padding-bottom: 10px;
+            border-bottom: 2px solid rgba(255, 255, 255, 0.3);
+        }
+
+        .full-width {
+            grid-column: 1 / -1;
+        }
+
+        /* Ensemble Creation */
+        .create-ensemble-form {
+            display: grid;
+            gap: 15px;
+        }
+
+        .form-group {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+        }
+
+        .form-group label {
+            font-weight: 600;
+            font-size: 0.95em;
+        }
+
+        .form-group input,
+        .form-group select {
+            padding: 12px;
+            border: none;
+            border-radius: 8px;
+            background: rgba(255, 255, 255, 0.9);
+            color: #333;
+            font-size: 1em;
+        }
+
+        .form-group input[type="checkbox"] {
+            width: 20px;
+            height: 20px;
+        }
+
+        .checkbox-group {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        button {
+            padding: 12px 30px;
+            border: none;
+            border-radius: 8px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            font-size: 1em;
+            font-weight: 600;
+            cursor: pointer;
+            transition: transform 0.2s, box-shadow 0.2s;
+        }
+
+        button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 20px rgba(102, 126, 234, 0.4);
+        }
+
+        button:active {
+            transform: translateY(0);
+        }
+
+        button:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        /* Ensemble List */
+        .ensemble-list {
+            max-height: 400px;
+            overflow-y: auto;
+        }
+
+        .ensemble-item {
+            background: rgba(255, 255, 255, 0.1);
+            padding: 15px;
+            border-radius: 8px;
+            margin-bottom: 10px;
+            cursor: pointer;
+            transition: background 0.2s, transform 0.2s;
+        }
+
+        .ensemble-item:hover {
+            background: rgba(255, 255, 255, 0.2);
+            transform: translateX(5px);
+        }
+
+        .ensemble-item.selected {
+            background: rgba(102, 126, 234, 0.3);
+            border: 2px solid rgba(102, 126, 234, 0.6);
+        }
+
+        .ensemble-item h3 {
+            font-size: 1.2em;
+            margin-bottom: 5px;
+        }
+
+        .ensemble-item .meta {
+            font-size: 0.9em;
+            opacity: 0.8;
+        }
+
+        /* Specialist Grid */
+        .specialist-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+            gap: 15px;
+        }
+
+        .specialist-card {
+            background: rgba(255, 255, 255, 0.1);
+            padding: 15px;
+            border-radius: 8px;
+            text-align: center;
+            transition: transform 0.2s;
+        }
+
+        .specialist-card:hover {
+            transform: scale(1.05);
+        }
+
+        .specialist-type {
+            font-weight: 600;
+            font-size: 1.1em;
+            margin-bottom: 10px;
+            text-transform: capitalize;
+        }
+
+        .specialist-badge {
+            display: inline-block;
+            padding: 4px 12px;
+            border-radius: 12px;
+            font-size: 0.85em;
+            margin: 5px;
+        }
+
+        .badge-bull { background: rgba(76, 175, 80, 0.3); }
+        .badge-bear { background: rgba(244, 67, 54, 0.3); }
+        .badge-volatile { background: rgba(255, 152, 0, 0.3); }
+        .badge-sideways { background: rgba(33, 150, 243, 0.3); }
+        .badge-generalist { background: rgba(156, 39, 176, 0.3); }
+
+        /* Decision Feed */
+        .decision-feed {
+            max-height: 500px;
+            overflow-y: auto;
+        }
+
+        .decision-item {
+            background: rgba(255, 255, 255, 0.1);
+            padding: 12px;
+            border-radius: 8px;
+            margin-bottom: 10px;
+            border-left: 4px solid;
+            animation: slideIn 0.3s ease-out;
+        }
+
+        @keyframes slideIn {
+            from {
+                opacity: 0;
+                transform: translateX(-20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateX(0);
+            }
+        }
+
+        .decision-item.buy { border-color: #4caf50; }
+        .decision-item.sell { border-color: #f44336; }
+        .decision-item.hold { border-color: #2196f3; }
+
+        .decision-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 8px;
+        }
+
+        .decision-action {
+            font-weight: 600;
+            font-size: 1.1em;
+            text-transform: uppercase;
+        }
+
+        .decision-time {
+            font-size: 0.85em;
+            opacity: 0.7;
+        }
+
+        .decision-details {
+            font-size: 0.9em;
+            opacity: 0.9;
+        }
+
+        /* Stats Grid */
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+            gap: 15px;
+        }
+
+        .stat-box {
+            background: rgba(255, 255, 255, 0.1);
+            padding: 20px;
+            border-radius: 8px;
+            text-align: center;
+        }
+
+        .stat-value {
+            font-size: 2em;
+            font-weight: 700;
+            margin-bottom: 5px;
+        }
+
+        .stat-label {
+            font-size: 0.9em;
+            opacity: 0.8;
+        }
+
+        /* Chart Container */
+        .chart-container {
+            position: relative;
+            height: 300px;
+            margin-top: 20px;
+        }
+
+        /* Scrollbar Styling */
+        ::-webkit-scrollbar {
+            width: 8px;
+            height: 8px;
+        }
+
+        ::-webkit-scrollbar-track {
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 4px;
+        }
+
+        ::-webkit-scrollbar-thumb {
+            background: rgba(255, 255, 255, 0.3);
+            border-radius: 4px;
+        }
+
+        ::-webkit-scrollbar-thumb:hover {
+            background: rgba(255, 255, 255, 0.5);
+        }
+
+        /* Responsive */
+        @media (max-width: 768px) {
+            .main-grid {
+                grid-template-columns: 1fr;
+            }
+
+            header h1 {
+                font-size: 1.8em;
+            }
+
+            .stats-grid {
+                grid-template-columns: repeat(2, 1fr);
+            }
+        }
+
+        .empty-state {
+            text-align: center;
+            padding: 40px;
+            opacity: 0.6;
+        }
+
+        .empty-state-icon {
+            font-size: 3em;
+            margin-bottom: 10px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>🤖 Agent Ensemble Dashboard</h1>
+            <p>Production Deployment & Management</p>
+            <div class="connection-status" id="connectionStatus">
+                ⚪ Connecting...
+            </div>
+        </header>
+
+        <!-- Global Stats -->
+        <div class="card full-width">
+            <h2>📊 Global Statistics</h2>
+            <div class="stats-grid">
+                <div class="stat-box">
+                    <div class="stat-value" id="totalEnsembles">0</div>
+                    <div class="stat-label">Total Ensembles</div>
+                </div>
+                <div class="stat-box">
+                    <div class="stat-value" id="totalSpecialists">0</div>
+                    <div class="stat-label">Total Specialists</div>
+                </div>
+                <div class="stat-box">
+                    <div class="stat-value" id="totalDecisions">0</div>
+                    <div class="stat-label">Total Decisions</div>
+                </div>
+                <div class="stat-box">
+                    <div class="stat-value" id="activeClients">1</div>
+                    <div class="stat-label">Active Clients</div>
+                </div>
+            </div>
+        </div>
+
+        <div class="main-grid">
+            <!-- Create Ensemble -->
+            <div class="card">
+                <h2>➕ Create Ensemble</h2>
+                <form class="create-ensemble-form" onsubmit="createEnsemble(event)">
+                    <div class="form-group">
+                        <label for="ensembleName">Ensemble Name</label>
+                        <input type="text" id="ensembleName" placeholder="My Trading Ensemble" required>
+                    </div>
+
+                    <div class="form-group">
+                        <div class="checkbox-group">
+                            <input type="checkbox" id="useVoting">
+                            <label for="useVoting">Enable Weighted Voting</label>
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="votingThreshold">Voting Threshold</label>
+                        <input type="range" id="votingThreshold" min="0" max="1" step="0.05" value="0.6">
+                        <span id="thresholdValue">60%</span>
+                    </div>
+
+                    <button type="submit">Create Ensemble</button>
+                </form>
+            </div>
+
+            <!-- Ensemble List -->
+            <div class="card">
+                <h2>📋 Active Ensembles</h2>
+                <div class="ensemble-list" id="ensembleList">
+                    <div class="empty-state">
+                        <div class="empty-state-icon">🎯</div>
+                        <p>No ensembles yet. Create one to get started!</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Selected Ensemble Details -->
+        <div class="card full-width" id="ensembleDetails" style="display: none;">
+            <h2>🎯 Ensemble: <span id="selectedEnsembleName">-</span></h2>
+
+            <div class="stats-grid" style="margin-bottom: 20px;">
+                <div class="stat-box">
+                    <div class="stat-value" id="ensembleSpecialists">0</div>
+                    <div class="stat-label">Specialists</div>
+                </div>
+                <div class="stat-box">
+                    <div class="stat-value" id="ensembleDecisions">0</div>
+                    <div class="stat-label">Decisions Made</div>
+                </div>
+                <div class="stat-box">
+                    <div class="stat-value" id="ensembleRouting">Direct</div>
+                    <div class="stat-label">Routing Method</div>
+                </div>
+            </div>
+
+            <h3 style="margin-top: 20px; margin-bottom: 15px;">Specialists</h3>
+            <div class="specialist-grid" id="specialistGrid">
+                <div class="empty-state">
+                    <p>No specialists added yet</p>
+                </div>
+            </div>
+
+            <div style="margin-top: 20px;">
+                <button onclick="addDemoSpecialists()">➕ Add Demo Specialists</button>
+                <button onclick="testDecision()" style="margin-left: 10px; background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);">
+                    🎲 Test Decision
+                </button>
+                <button onclick="deleteEnsemble()" style="margin-left: 10px; background: linear-gradient(135deg, #fa709a 0%, #fee140 100%);">
+                    🗑️ Delete Ensemble
+                </button>
+            </div>
+        </div>
+
+        <!-- Decision Feed -->
+        <div class="card full-width">
+            <h2>📈 Live Decision Feed</h2>
+            <div class="decision-feed" id="decisionFeed">
+                <div class="empty-state">
+                    <div class="empty-state-icon">💤</div>
+                    <p>No decisions yet. Test a decision to see it here!</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Routing Visualization -->
+        <div class="card full-width">
+            <h2>🎯 Routing Distribution</h2>
+            <div class="chart-container">
+                <canvas id="routingChart"></canvas>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Global state
+        let ws = null;
+        let selectedEnsembleId = null;
+        let ensembles = {};
+        let decisionCount = 0;
+        let routingData = {};
+
+        // Chart
+        let routingChart = null;
+
+        // Initialize
+        function init() {
+            connectWebSocket();
+            loadEnsembles();
+            initCharts();
+
+            // Update threshold display
+            document.getElementById('votingThreshold').addEventListener('input', (e) => {
+                document.getElementById('thresholdValue').textContent =
+                    Math.round(e.target.value * 100) + '%';
+            });
+        }
+
+        // WebSocket Connection
+        function connectWebSocket() {
+            const wsUrl = `ws://${window.location.host}/api/ensemble/stream`;
+            ws = new WebSocket(wsUrl);
+
+            ws.onopen = () => {
+                updateConnectionStatus(true);
+                console.log('WebSocket connected');
+            };
+
+            ws.onclose = () => {
+                updateConnectionStatus(false);
+                console.log('WebSocket disconnected');
+                setTimeout(connectWebSocket, 3000); // Reconnect
+            };
+
+            ws.onerror = (error) => {
+                console.error('WebSocket error:', error);
+                updateConnectionStatus(false);
+            };
+
+            ws.onmessage = (event) => {
+                const message = JSON.parse(event.data);
+                handleMessage(message);
+            };
+        }
+
+        function updateConnectionStatus(connected) {
+            const status = document.getElementById('connectionStatus');
+            if (connected) {
+                status.textContent = '🟢 Connected';
+                status.className = 'connection-status connected';
+            } else {
+                status.textContent = '🔴 Disconnected';
+                status.className = 'connection-status disconnected';
+            }
+        }
+
+        function handleMessage(message) {
+            console.log('Received message:', message);
+
+            switch(message.type) {
+                case 'connection_established':
+                    loadEnsembles();
+                    break;
+                case 'ensemble_created':
+                    loadEnsembles();
+                    break;
+                case 'specialist_added':
+                    if (selectedEnsembleId === message.ensemble_id) {
+                        loadEnsembleDetails(selectedEnsembleId);
+                    }
+                    break;
+                case 'decision_made':
+                    addDecisionToFeed(message);
+                    updateRoutingChart(message.specialist_used);
+                    decisionCount++;
+                    break;
+                case 'ensemble_deleted':
+                    if (selectedEnsembleId === message.ensemble_id) {
+                        selectedEnsembleId = null;
+                        document.getElementById('ensembleDetails').style.display = 'none';
+                    }
+                    loadEnsembles();
+                    break;
+            }
+        }
+
+        // Load ensembles
+        async function loadEnsembles() {
+            try {
+                const response = await fetch('/api/ensemble');
+                const data = await response.json();
+
+                ensembles = {};
+                data.forEach(e => {
+                    ensembles[e.ensemble_id] = e;
+                });
+
+                renderEnsembleList(data);
+                updateGlobalStats(data);
+            } catch (error) {
+                console.error('Failed to load ensembles:', error);
+            }
+        }
+
+        function renderEnsembleList(data) {
+            const list = document.getElementById('ensembleList');
+
+            if (data.length === 0) {
+                list.innerHTML = `
+                    <div class="empty-state">
+                        <div class="empty-state-icon">🎯</div>
+                        <p>No ensembles yet. Create one to get started!</p>
+                    </div>
+                `;
+                return;
+            }
+
+            list.innerHTML = data.map(ensemble => `
+                <div class="ensemble-item ${selectedEnsembleId === ensemble.ensemble_id ? 'selected' : ''}"
+                     onclick="selectEnsemble('${ensemble.ensemble_id}')">
+                    <h3>${ensemble.name}</h3>
+                    <div class="meta">
+                        ${ensemble.ensemble_stats.total_specialists} specialists |
+                        ${ensemble.total_decisions} decisions
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        function updateGlobalStats(data) {
+            document.getElementById('totalEnsembles').textContent = data.length;
+
+            const totalSpecialists = data.reduce((sum, e) =>
+                sum + (e.ensemble_stats.total_specialists || 0), 0);
+            document.getElementById('totalSpecialists').textContent = totalSpecialists;
+
+            const totalDecisions = data.reduce((sum, e) =>
+                sum + (e.total_decisions || 0), 0);
+            document.getElementById('totalDecisions').textContent = totalDecisions;
+        }
+
+        // Create ensemble
+        async function createEnsemble(event) {
+            event.preventDefault();
+
+            const name = document.getElementById('ensembleName').value;
+            const useVoting = document.getElementById('useVoting').checked;
+            const votingThreshold = parseFloat(document.getElementById('votingThreshold').value);
+
+            try {
+                const response = await fetch('/api/ensemble/create', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        name,
+                        use_voting: useVoting,
+                        voting_threshold: votingThreshold
+                    })
+                });
+
+                const result = await response.json();
+
+                if (result.success) {
+                    document.getElementById('ensembleName').value = '';
+                    await loadEnsembles();
+                    selectEnsemble(result.ensemble_id);
+                }
+            } catch (error) {
+                console.error('Failed to create ensemble:', error);
+                alert('Failed to create ensemble');
+            }
+        }
+
+        // Select ensemble
+        async function selectEnsemble(ensembleId) {
+            selectedEnsembleId = ensembleId;
+            await loadEnsembleDetails(ensembleId);
+            renderEnsembleList(Object.values(ensembles));
+        }
+
+        async function loadEnsembleDetails(ensembleId) {
+            try {
+                const response = await fetch(`/api/ensemble/${ensembleId}`);
+                const data = await response.json();
+
+                document.getElementById('selectedEnsembleName').textContent = data.name;
+                document.getElementById('ensembleSpecialists').textContent =
+                    data.ensemble_stats.total_specialists || 0;
+                document.getElementById('ensembleDecisions').textContent =
+                    data.total_decisions || 0;
+                document.getElementById('ensembleRouting').textContent =
+                    data.ensemble_stats.routing_method || 'direct';
+
+                renderSpecialists(data.ensemble_stats.specialists || {});
+
+                document.getElementById('ensembleDetails').style.display = 'block';
+            } catch (error) {
+                console.error('Failed to load ensemble details:', error);
+            }
+        }
+
+        function renderSpecialists(specialists) {
+            const grid = document.getElementById('specialistGrid');
+
+            const specialistList = Object.values(specialists);
+
+            if (specialistList.length === 0) {
+                grid.innerHTML = `
+                    <div class="empty-state">
+                        <p>No specialists added yet</p>
+                    </div>
+                `;
+                return;
+            }
+
+            grid.innerHTML = specialistList.map(spec => {
+                const type = spec.specialist_type.replace('_', ' ');
+                const badgeClass = `badge-${spec.specialist_type.split('_')[0]}`;
+
+                return `
+                    <div class="specialist-card">
+                        <div class="specialist-type">${type}</div>
+                        <div class="specialist-badge ${badgeClass}">
+                            Gen ${spec.generation}
+                        </div>
+                        <div class="specialist-badge">
+                            Fitness: ${spec.fitness.toFixed(3)}
+                        </div>
+                        <div style="margin-top: 10px; font-size: 0.9em; opacity: 0.8;">
+                            ${spec.genome_id}
+                        </div>
+                    </div>
+                `;
+            }).join('');
+        }
+
+        // Add demo specialists
+        async function addDemoSpecialists() {
+            if (!selectedEnsembleId) return;
+
+            const specialists = [
+                {
+                    type: 'bull_specialist',
+                    personality: { openness: 0.7, conscientiousness: 0.6, extraversion: 0.8, agreeableness: 0.6, neuroticism: 0.3 },
+                    fitness: 0.72
+                },
+                {
+                    type: 'bear_specialist',
+                    personality: { openness: 0.4, conscientiousness: 0.9, extraversion: 0.4, agreeableness: 0.5, neuroticism: 0.4 },
+                    fitness: 0.68
+                },
+                {
+                    type: 'volatile_specialist',
+                    personality: { openness: 0.8, conscientiousness: 0.5, extraversion: 0.6, agreeableness: 0.7, neuroticism: 0.5 },
+                    fitness: 0.65
+                }
+            ];
+
+            for (const spec of specialists) {
+                try {
+                    await fetch(`/api/ensemble/${selectedEnsembleId}/specialists`, {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({
+                            genome_data: {
+                                agent_id: `demo_${spec.type}_${Date.now()}`,
+                                generation: 5,
+                                personality: spec.personality,
+                                fitness_score: spec.fitness,
+                                parents: [],
+                                mutations: []
+                            },
+                            specialist_type: spec.type
+                        })
+                    });
+                } catch (error) {
+                    console.error('Failed to add specialist:', error);
+                }
+            }
+
+            setTimeout(() => loadEnsembleDetails(selectedEnsembleId), 500);
+        }
+
+        // Test decision
+        async function testDecision() {
+            if (!selectedEnsembleId) return;
+
+            // Generate random price history
+            const prices = [];
+            let price = 100;
+            for (let i = 0; i < 30; i++) {
+                price += (Math.random() - 0.5) * 2;
+                prices.push(price);
+            }
+
+            try {
+                await fetch(`/api/ensemble/${selectedEnsembleId}/decision`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        current_price: price,
+                        price_history: prices
+                    })
+                });
+            } catch (error) {
+                console.error('Failed to get decision:', error);
+            }
+        }
+
+        // Delete ensemble
+        async function deleteEnsemble() {
+            if (!selectedEnsembleId) return;
+
+            if (!confirm('Are you sure you want to delete this ensemble?')) return;
+
+            try {
+                await fetch(`/api/ensemble/${selectedEnsembleId}`, {
+                    method: 'DELETE'
+                });
+                selectedEnsembleId = null;
+                document.getElementById('ensembleDetails').style.display = 'none';
+                await loadEnsembles();
+            } catch (error) {
+                console.error('Failed to delete ensemble:', error);
+            }
+        }
+
+        // Decision feed
+        function addDecisionToFeed(message) {
+            const feed = document.getElementById('decisionFeed');
+
+            // Remove empty state if present
+            if (feed.querySelector('.empty-state')) {
+                feed.innerHTML = '';
+            }
+
+            const decision = document.createElement('div');
+            decision.className = `decision-item ${message.decision}`;
+            decision.innerHTML = `
+                <div class="decision-header">
+                    <span class="decision-action">${message.decision}</span>
+                    <span class="decision-time">${new Date().toLocaleTimeString()}</span>
+                </div>
+                <div class="decision-details">
+                    Regime: ${message.regime} |
+                    Specialist: ${message.specialist_used || 'none'} |
+                    Confidence: ${(message.confidence * 100).toFixed(0)}%
+                </div>
+            `;
+
+            feed.insertBefore(decision, feed.firstChild);
+
+            // Keep only last 20 decisions
+            while (feed.children.length > 20) {
+                feed.removeChild(feed.lastChild);
+            }
+        }
+
+        // Charts
+        function initCharts() {
+            const ctx = document.getElementById('routingChart').getContext('2d');
+
+            routingChart = new Chart(ctx, {
+                type: 'bar',
+                data: {
+                    labels: [],
+                    datasets: [{
+                        label: 'Decisions Routed',
+                        data: [],
+                        backgroundColor: [
+                            'rgba(76, 175, 80, 0.6)',
+                            'rgba(244, 67, 54, 0.6)',
+                            'rgba(255, 152, 0, 0.6)',
+                            'rgba(33, 150, 243, 0.6)',
+                            'rgba(156, 39, 176, 0.6)'
+                        ],
+                        borderColor: [
+                            'rgba(76, 175, 80, 1)',
+                            'rgba(244, 67, 54, 1)',
+                            'rgba(255, 152, 0, 1)',
+                            'rgba(33, 150, 243, 1)',
+                            'rgba(156, 39, 176, 1)'
+                        ],
+                        borderWidth: 2
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: {
+                            display: false
+                        }
+                    },
+                    scales: {
+                        y: {
+                            beginAtZero: true,
+                            ticks: {
+                                color: '#fff'
+                            },
+                            grid: {
+                                color: 'rgba(255, 255, 255, 0.1)'
+                            }
+                        },
+                        x: {
+                            ticks: {
+                                color: '#fff'
+                            },
+                            grid: {
+                                color: 'rgba(255, 255, 255, 0.1)'
+                            }
+                        }
+                    }
+                }
+            });
+        }
+
+        function updateRoutingChart(specialist) {
+            if (!specialist) specialist = 'none';
+
+            routingData[specialist] = (routingData[specialist] || 0) + 1;
+
+            routingChart.data.labels = Object.keys(routingData);
+            routingChart.data.datasets[0].data = Object.values(routingData);
+            routingChart.update();
+        }
+
+        // Initialize on load
+        window.addEventListener('load', init);
+    </script>
+</body>
+</html>

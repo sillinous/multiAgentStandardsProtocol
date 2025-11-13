@@ -263,6 +263,12 @@ async def market_simulation_dashboard():
     dashboard_path = Path(__file__).parent / "market_simulation_dashboard.html"
     return FileResponse(dashboard_path)
 
+@app.get("/dashboard/ensemble")
+async def ensemble_dashboard():
+    """Serve Agent Ensemble Dashboard."""
+    dashboard_path = Path(__file__).parent / "ensemble_dashboard.html"
+    return FileResponse(dashboard_path)
+
 # ============================================================================
 # Real-Time Evolution API - Live Genetic Breeding
 # ============================================================================
