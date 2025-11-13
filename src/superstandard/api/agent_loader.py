@@ -103,6 +103,7 @@ class PCFAgentRegistry:
         # Implemented agents - Process 1.1.1 COMPLETE (7/7 activities)
         # Implemented agents - Process 1.1.2 COMPLETE (3/3 activities)
         # Implemented agents - Process 1.1.3 COMPLETE (4/4 activities)
+        # Implemented agents - Process 1.1.4 COMPLETE (4/4 activities)
         self._agent_implementations = {
             # Process 1.1.1 - Assess the external environment
             '1.1.1.1': 'superstandard.agents.pcf.category_01_vision_strategy.pg_1_1_define_vision.p_1_1_1_assess_external.a_1_1_1_1_identify_competitors',
@@ -120,7 +121,12 @@ class PCFAgentRegistry:
             '1.1.3.1': 'superstandard.agents.pcf.category_01_vision_strategy.pg_1_1_define_vision.p_1_1_3_select_markets.a_1_1_3_1_segment_markets',
             '1.1.3.2': 'superstandard.agents.pcf.category_01_vision_strategy.pg_1_1_define_vision.p_1_1_3_select_markets.a_1_1_3_2_evaluate_attractiveness',
             '1.1.3.3': 'superstandard.agents.pcf.category_01_vision_strategy.pg_1_1_define_vision.p_1_1_3_select_markets.a_1_1_3_3_assess_strategic_fit',
-            '1.1.3.4': 'superstandard.agents.pcf.category_01_vision_strategy.pg_1_1_define_vision.p_1_1_3_select_markets.a_1_1_3_4_select_target_markets'
+            '1.1.3.4': 'superstandard.agents.pcf.category_01_vision_strategy.pg_1_1_define_vision.p_1_1_3_select_markets.a_1_1_3_4_select_target_markets',
+            # Process 1.1.4 - Perform internal analysis
+            '1.1.4.1': 'superstandard.agents.pcf.category_01_vision_strategy.pg_1_1_define_vision.p_1_1_4_internal_analysis.a_1_1_4_1_analyze_capabilities',
+            '1.1.4.2': 'superstandard.agents.pcf.category_01_vision_strategy.pg_1_1_define_vision.p_1_1_4_internal_analysis.a_1_1_4_2_evaluate_resources',
+            '1.1.4.3': 'superstandard.agents.pcf.category_01_vision_strategy.pg_1_1_define_vision.p_1_1_4_internal_analysis.a_1_1_4_3_assess_performance',
+            '1.1.4.4': 'superstandard.agents.pcf.category_01_vision_strategy.pg_1_1_define_vision.p_1_1_4_internal_analysis.a_1_1_4_4_identify_strengths_weaknesses'
         }
 
         self.logger.info(f"Discovered {len(self._agent_implementations)} agent implementations")
