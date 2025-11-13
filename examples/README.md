@@ -18,6 +18,11 @@ This directory contains comprehensive example applications demonstrating the Sup
 # Install dependencies
 pip install -r requirements.txt
 
+# Run COMPLETE PLATFORM DEMO (Recommended - Shows ALL features!)
+python examples/complete_platform_demo.py
+
+# Or run individual protocol examples:
+
 # Run ANP (Agent Network Protocol) example
 python examples/anp_discovery/agent_network_demo.py
 
@@ -32,8 +37,9 @@ python examples/bap_marketplace/agent_marketplace_demo.py
 
 ## Examples Overview
 
-| Example | Protocol | What It Demonstrates | Complexity |
-|---------|----------|---------------------|------------|
+| Example | Protocol/System | What It Demonstrates | Complexity |
+|---------|-----------------|---------------------|------------|
+| **🚀 Complete Platform Demo** | Agentic Forge | **Template deployment, analytics, backtesting, Pareto evolution** | **Beginner (RECOMMENDED)** |
 | **Agent Network Discovery** | ANP v1.0 | Agent registration, capability-based discovery, health monitoring | Beginner |
 | **Multi-Agent Pipeline** | ACP v1.0 | Coordination patterns, task management, shared state sync | Intermediate |
 | **Agent Marketplace** | BAP v1.0 | Blockchain economy, NFTs, smart contracts, DAO governance | Advanced |
@@ -60,6 +66,82 @@ pip install -r requirements.txt
 ---
 
 ## Running the Examples
+
+### 0. 🚀 Complete Platform Demo (RECOMMENDED START HERE!)
+
+**What you'll learn:**
+- How to deploy pre-configured agent ensembles with one command
+- How to view real-time analytics (4 interactive charts)
+- How to run historical backtests with equity curves and trade logs
+- How to run multi-objective Pareto evolution (NSGA-II algorithm)
+- How to explore the Pareto frontier for optimal trade-offs
+- **The COMPLETE power of the Agentic Forge platform!**
+
+**Prerequisites:**
+```bash
+# Start the API server first (in a separate terminal)
+cd src
+python -m superstandard.api.server
+```
+
+**Run the demo:**
+```bash
+python examples/complete_platform_demo.py
+```
+
+**What happens:**
+1. **Template Deployment** - Instantly creates "Balanced Trader" ensemble with 3 specialists
+2. **Analytics Display** - Shows performance metrics, regime distribution, and specialist effectiveness
+3. **Backtest Execution** - Runs 7-day historical validation with complete metrics
+4. **Pareto Evolution** (optional) - Evolves 20 agents over 10 generations optimizing return vs risk
+5. **Complete Summary** - Resource IDs and dashboard links for visual exploration
+
+**Expected output:**
+```
+🚀 AGENTIC FORGE - COMPLETE PLATFORM DEMO 🚀
+
+================================================================================
+  STEP 1: Deploy Ensemble Template
+================================================================================
+
+✅ Template deployed successfully!
+   Ensemble ID: abc-123-456-789
+   Ensemble Name: Balanced Trader
+   Specialists Added: 3
+
+================================================================================
+  STEP 3: Run Strategy Backtest
+================================================================================
+
+✅ Backtest completed!
+   Total Return: 25.34%
+   Win Rate: 62.50%
+   Sharpe Ratio: 1.85
+   Max Drawdown: -12.45%
+
+🧬 Run Pareto Evolution? (takes ~1-2 min) [y/N]: y
+
+================================================================================
+  STEP 4: Run Multi-Objective Pareto Evolution
+================================================================================
+
+✅ Pareto evolution completed!
+   Pareto Frontier Size: 12 agents
+   Total Fronts: 5
+```
+
+**Duration:** 2-3 minutes (including optional Pareto evolution)
+
+**Next Steps:**
+- Open dashboard at `http://localhost:8080/dashboard`
+- View analytics charts with real-time updates
+- Explore backtest equity curve and trade log
+- Analyze Pareto frontier scatter plot
+- Compare frontier agents with different trade-offs
+
+**Pro Tip:** This demo showcases features NO other multi-agent platform offers - research-grade NSGA-II optimization with zero-code visual interface!
+
+---
 
 ### 1. Agent Network Discovery (ANP)
 
