@@ -29,6 +29,16 @@ from .backtest_engine import (
     Trade,
     HistoricalDataGenerator
 )
+from .pareto_evolution import (
+    ParetoEvolutionEngine,
+    ParetoEvolutionConfig,
+    ParetoEvolutionResult,
+    ObjectiveType,
+    Objective,
+    MultiObjectiveScore,
+    MultiObjectiveEvaluator,
+    NSGA2
+)
 
 __all__ = [
     # Personality System
@@ -60,5 +70,15 @@ __all__ = [
     'BacktestMetrics',
     'MarketBar',
     'Trade',
-    'HistoricalDataGenerator'
+    'HistoricalDataGenerator',
+
+    # Multi-Objective Pareto Evolution
+    'ParetoEvolutionEngine',
+    'ParetoEvolutionConfig',
+    'ParetoEvolutionResult',
+    'ObjectiveType',
+    'Objective',
+    'MultiObjectiveScore',
+    'MultiObjectiveEvaluator',
+    'NSGA2'
 ]
