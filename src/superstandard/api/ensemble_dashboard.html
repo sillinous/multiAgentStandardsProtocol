@@ -440,6 +440,52 @@
             font-weight: 600;
         }
 
+        /* Pareto Evolution Styles */
+        .pareto-form {
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+        }
+
+        .objectives-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 10px;
+            margin-top: 10px;
+        }
+
+        .objective-checkbox {
+            display: flex;
+            align-items: center;
+            padding: 10px;
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.2s;
+            border: 2px solid transparent;
+        }
+
+        .objective-checkbox:hover {
+            background: rgba(255, 255, 255, 0.1);
+            border-color: rgba(75, 192, 192, 0.5);
+        }
+
+        .objective-checkbox input[type="checkbox"] {
+            margin-right: 10px;
+            cursor: pointer;
+            width: 18px;
+            height: 18px;
+        }
+
+        .objective-checkbox input[type="checkbox"]:checked + span {
+            font-weight: 600;
+            color: #4ade80;
+        }
+
+        .objective-checkbox span {
+            font-size: 0.95em;
+        }
+
         /* Template Browser */
         .template-filters {
             display: flex;
@@ -951,6 +997,104 @@
                 </div>
             </div>
         </div>
+
+        <!-- Pareto Evolution Section -->
+        <div class="card full-width" id="paretoSection" style="display: none;">
+            <h2>🧬 Multi-Objective Pareto Evolution</h2>
+            <p style="margin-bottom: 20px; opacity: 0.9;">
+                Discover optimal trade-offs between competing objectives using NSGA-II algorithm.
+                Find the Pareto frontier - agents balancing return, risk, consistency, and more!
+            </p>
+
+            <div class="main-grid">
+                <!-- Configuration -->
+                <div class="card">
+                    <h3>⚙️ Configure Evolution</h3>
+                    <form class="pareto-form" onsubmit="runParetoEvolution(event)">
+                        <div class="form-group">
+                            <label>Objectives (select 2-3)</label>
+                            <div class="objectives-grid">
+                                <label class="objective-checkbox">
+                                    <input type="checkbox" name="objective" value="return" checked>
+                                    <span>📈 Return (maximize)</span>
+                                </label>
+                                <label class="objective-checkbox">
+                                    <input type="checkbox" name="objective" value="sharpe_ratio">
+                                    <span>⚖️ Sharpe Ratio (maximize)</span>
+                                </label>
+                                <label class="objective-checkbox">
+                                    <input type="checkbox" name="objective" value="max_drawdown" checked>
+                                    <span>📉 Max Drawdown (minimize)</span>
+                                </label>
+                                <label class="objective-checkbox">
+                                    <input type="checkbox" name="objective" value="win_rate">
+                                    <span>🎯 Win Rate (maximize)</span>
+                                </label>
+                                <label class="objective-checkbox">
+                                    <input type="checkbox" name="objective" value="profit_factor">
+                                    <span>💰 Profit Factor (maximize)</span>
+                                </label>
+                                <label class="objective-checkbox">
+                                    <input type="checkbox" name="objective" value="total_trades">
+                                    <span>🔄 Trade Frequency</span>
+                                </label>
+                            </div>
+                        </div>
+
+                        <div class="form-group">
+                            <label for="paretoPopulation">Population Size</label>
+                            <input type="number" id="paretoPopulation" value="20" min="10" max="100" step="10" required>
+                        </div>
+
+                        <div class="form-group">
+                            <label for="paretoGenerations">Generations</label>
+                            <input type="number" id="paretoGenerations" value="10" min="5" max="50" step="5" required>
+                        </div>
+
+                        <button type="submit" id="runParetoBtn">
+                            🧬 Run Evolution
+                        </button>
+                    </form>
+                </div>
+
+                <!-- Status -->
+                <div class="card">
+                    <h3>📊 Evolution Status</h3>
+                    <div id="paretoStatus" class="empty-state">
+                        <div class="empty-state-icon">⏳</div>
+                        <p>Configure and run evolution to see results</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Pareto Frontier Visualization -->
+            <div id="paretoFrontierViz" style="display: none; margin-top: 20px;">
+                <h3>🎯 Pareto Frontier</h3>
+                <div class="chart-container" style="height: 400px;">
+                    <canvas id="paretoFrontierChart"></canvas>
+                </div>
+            </div>
+
+            <!-- Agent Comparison Table -->
+            <div id="paretoAgentTable" style="display: none; margin-top: 20px;">
+                <h3>⭐ Frontier Agents</h3>
+                <div class="trade-log-container">
+                    <table class="trade-log-table" id="paretoAgentsTable">
+                        <thead>
+                            <tr>
+                                <th>Agent ID</th>
+                                <th>Gen</th>
+                                <th>Rank</th>
+                                <th>Objectives</th>
+                                <th>Crowding Dist.</th>
+                            </tr>
+                        </thead>
+                        <tbody id="paretoAgentsBody">
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
     </div>
 
     <script>
@@ -1165,6 +1309,9 @@
 
                 // Show backtest section
                 showBacktestSection();
+
+                // Show Pareto evolution section
+                showParetoSection();
             } catch (error) {
                 console.error('Failed to load ensemble details:', error);
             }
@@ -2044,6 +2191,268 @@
 
         // ================================================================
         // END BACKTEST FUNCTIONS
+        // ================================================================
+
+        // ================================================================
+        // PARETO EVOLUTION FUNCTIONS
+        // ================================================================
+
+        // Global Pareto state
+        let currentEvolutionId = null;
+        let paretoFrontierChart = null;
+
+        async function runParetoEvolution(event) {
+            event.preventDefault();
+
+            if (!selectedEnsembleId) {
+                alert('Please select an ensemble first');
+                return;
+            }
+
+            // Get selected objectives
+            const checkboxes = document.querySelectorAll('input[name="objective"]:checked');
+            const objectives = [];
+
+            checkboxes.forEach(cb => {
+                const type = cb.value;
+                const minimize = type === 'max_drawdown'; // Only drawdown should be minimized
+
+                objectives.push({
+                    type: type,
+                    minimize: minimize,
+                    weight: 1.0
+                });
+            });
+
+            if (objectives.length < 2) {
+                alert('Please select at least 2 objectives');
+                return;
+            }
+
+            if (objectives.length > 4) {
+                alert('Please select at most 4 objectives for visualization');
+                return;
+            }
+
+            const button = document.getElementById('runParetoBtn');
+            button.disabled = true;
+            button.textContent = '⏳ Evolving...';
+
+            // Update status
+            const status = document.getElementById('paretoStatus');
+            status.innerHTML = `
+                <div class="stat-box">
+                    <div class="stat-value">⏳</div>
+                    <div class="stat-label">Running NSGA-II Evolution...</div>
+                </div>
+            `;
+
+            try {
+                const population = parseInt(document.getElementById('paretoPopulation').value);
+                const generations = parseInt(document.getElementById('paretoGenerations').value);
+
+                // Use backtest configuration from backtest section
+                const startDate = new Date();
+                startDate.setDate(startDate.getDate() - 7);
+                const endDate = new Date();
+
+                const response = await fetch('/api/pareto/evolve', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        ensemble_id: selectedEnsembleId,
+                        population_size: population,
+                        num_generations: generations,
+                        objectives: objectives,
+                        backtest_config: {
+                            symbol: 'BTC/USD',
+                            start_date: startDate.toISOString(),
+                            end_date: endDate.toISOString(),
+                            initial_capital: 10000.0,
+                            commission_rate: 0.001,
+                            slippage_rate: 0.0005,
+                            position_size: 0.95
+                        }
+                    })
+                });
+
+                const result = await response.json();
+
+                if (result.success) {
+                    currentEvolutionId = result.evolution_id;
+
+                    // Update status
+                    status.innerHTML = `
+                        <div class="stats-grid">
+                            <div class="stat-box">
+                                <div class="stat-value pnl-positive">${result.pareto_frontier_size}</div>
+                                <div class="stat-label">Pareto Frontier</div>
+                            </div>
+                            <div class="stat-box">
+                                <div class="stat-value">${result.total_fronts}</div>
+                                <div class="stat-label">Total Fronts</div>
+                            </div>
+                            <div class="stat-box">
+                                <div class="stat-value">${result.generations_completed}</div>
+                                <div class="stat-label">Generations</div>
+                            </div>
+                            <div class="stat-box">
+                                <div class="stat-value">${result.objectives.length}</div>
+                                <div class="stat-label">Objectives</div>
+                            </div>
+                        </div>
+                    `;
+
+                    // Load and display results
+                    await loadParetoResults(result.evolution_id);
+                } else {
+                    alert('❌ Evolution failed');
+                }
+
+            } catch (error) {
+                console.error('Pareto evolution error:', error);
+                alert('❌ Evolution failed: ' + error.message);
+            } finally {
+                button.disabled = false;
+                button.textContent = '🧬 Run Evolution';
+            }
+        }
+
+        async function loadParetoResults(evolutionId) {
+            try {
+                const response = await fetch(`/api/pareto/${evolutionId}`);
+                const result = await response.json();
+
+                // Display Pareto frontier chart
+                renderParetoFrontier(result);
+
+                // Display agent comparison table
+                displayParetoAgents(result);
+
+            } catch (error) {
+                console.error('Failed to load Pareto results:', error);
+            }
+        }
+
+        function renderParetoFrontier(result) {
+            const container = document.getElementById('paretoFrontierViz');
+            container.style.display = 'block';
+
+            const ctx = document.getElementById('paretoFrontierChart').getContext('2d');
+
+            if (paretoFrontierChart) {
+                paretoFrontierChart.destroy();
+            }
+
+            // Get the first two objectives for X and Y axes
+            const objectives = Object.keys(result.pareto_frontier[0].objectives);
+            const xObjective = objectives[0];
+            const yObjective = objectives[1];
+
+            // Prepare data
+            const frontierData = result.pareto_frontier.map(agent => ({
+                x: agent.objectives[xObjective],
+                y: agent.objectives[yObjective],
+                agent_id: agent.agent_id
+            }));
+
+            paretoFrontierChart = new Chart(ctx, {
+                type: 'scatter',
+                data: {
+                    datasets: [{
+                        label: 'Pareto Frontier',
+                        data: frontierData,
+                        backgroundColor: 'rgba(75, 192, 192, 0.6)',
+                        borderColor: 'rgb(75, 192, 192)',
+                        pointRadius: 8,
+                        pointHoverRadius: 12
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    scales: {
+                        x: {
+                            title: {
+                                display: true,
+                                text: xObjective.replace('_', ' ').toUpperCase(),
+                                color: '#fff'
+                            },
+                            ticks: { color: '#fff' },
+                            grid: { color: 'rgba(255, 255, 255, 0.1)' }
+                        },
+                        y: {
+                            title: {
+                                display: true,
+                                text: yObjective.replace('_', ' ').toUpperCase(),
+                                color: '#fff'
+                            },
+                            ticks: { color: '#fff' },
+                            grid: { color: 'rgba(255, 255, 255, 0.1)' }
+                        }
+                    },
+                    plugins: {
+                        legend: {
+                            labels: { color: '#fff' }
+                        },
+                        title: {
+                            display: true,
+                            text: `Pareto Frontier: ${xObjective} vs ${yObjective}`,
+                            color: '#fff',
+                            font: { size: 16 }
+                        },
+                        tooltip: {
+                            callbacks: {
+                                label: function(context) {
+                                    const point = context.raw;
+                                    return [
+                                        `${xObjective}: ${point.x.toFixed(2)}`,
+                                        `${yObjective}: ${point.y.toFixed(2)}`,
+                                        `Agent: ${point.agent_id.substring(0, 8)}...`
+                                    ];
+                                }
+                            }
+                        }
+                    }
+                }
+            });
+        }
+
+        function displayParetoAgents(result) {
+            const container = document.getElementById('paretoAgentTable');
+            const tbody = document.getElementById('paretoAgentsBody');
+
+            container.style.display = 'block';
+
+            tbody.innerHTML = result.pareto_frontier.map(agent => {
+                // Format objectives
+                const objectivesStr = Object.entries(agent.objectives)
+                    .map(([key, val]) => `${key}: ${val.toFixed(2)}`)
+                    .join(', ');
+
+                return `
+                    <tr>
+                        <td>${agent.agent_id.substring(0, 12)}...</td>
+                        <td>${agent.generation}</td>
+                        <td class="pnl-positive">${agent.dominance_rank}</td>
+                        <td style="max-width: 400px; overflow: hidden; text-overflow: ellipsis;">
+                            ${objectivesStr}
+                        </td>
+                        <td>${agent.crowding_distance.toFixed(3)}</td>
+                    </tr>
+                `;
+            }).join('');
+        }
+
+        // Show Pareto section when ensemble is selected
+        function showParetoSection() {
+            if (selectedEnsembleId) {
+                document.getElementById('paretoSection').style.display = 'block';
+            }
+        }
+
+        // ================================================================
+        // END PARETO EVOLUTION FUNCTIONS
         // ================================================================
 
         // Initialize on load
