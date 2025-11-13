@@ -537,6 +537,138 @@ async def delete_ensemble(ensemble_id: str):
         "message": "Ensemble deleted successfully"
     }
 
+# ============================================================================
+# Ensemble Templates API - One-Click Deployment
+# NOTE: These routes MUST come before general /api/ensemble routes
+# ============================================================================
+
+from superstandard.agents.ensemble_templates import (
+    TemplateLibrary,
+    TemplateCategory,
+    RiskLevel
+)
+
+class TemplateDeployRequest(BaseModel):
+    """Request to deploy template as ensemble"""
+    ensemble_name: Optional[str] = Field(None, description="Custom ensemble name (optional)")
+    customize_threshold: Optional[float] = Field(None, description="Override voting threshold")
+
+@app.get("/api/ensemble/templates")
+async def list_templates():
+    """
+    List all available ensemble templates.
+
+    Returns curated templates for different trading styles, markets, and strategies.
+    """
+    templates = TemplateLibrary.get_all_templates()
+    return [t.to_dict() for t in templates]
+
+@app.get("/api/ensemble/templates/{template_id}")
+async def get_template(template_id: str):
+    """Get specific template by ID"""
+    template = TemplateLibrary.get_template(template_id)
+
+    if not template:
+        raise HTTPException(status_code=404, detail="Template not found")
+
+    return template.to_dict()
+
+@app.get("/api/ensemble/templates/category/{category}")
+async def get_templates_by_category(category: str):
+    """Get templates by category"""
+    try:
+        cat = TemplateCategory(category)
+        templates = TemplateLibrary.get_templates_by_category(cat)
+        return [t.to_dict() for t in templates]
+    except ValueError:
+        raise HTTPException(status_code=400, detail="Invalid category")
+
+@app.get("/api/ensemble/templates/risk/{risk_level}")
+async def get_templates_by_risk(risk_level: str):
+    """Get templates by risk level"""
+    try:
+        risk = RiskLevel(risk_level)
+        templates = TemplateLibrary.get_templates_by_risk(risk)
+        return [t.to_dict() for t in templates]
+    except ValueError:
+        raise HTTPException(status_code=400, detail="Invalid risk level")
+
+@app.post("/api/ensemble/templates/{template_id}/deploy")
+async def deploy_template(template_id: str, request: TemplateDeployRequest):
+    """
+    Deploy template as a new ensemble (one-click deployment).
+
+    This creates an ensemble and adds all template specialists automatically.
+    """
+    try:
+        # Get template
+        template = TemplateLibrary.get_template(template_id)
+        if not template:
+            raise HTTPException(status_code=404, detail="Template not found")
+
+        # Create ensemble
+        ensemble_name = request.ensemble_name or template.name
+        voting_threshold = request.customize_threshold or template.voting_threshold
+
+        ensemble_id = await ensemble_manager.create_ensemble(
+            name=ensemble_name,
+            use_voting=template.use_voting,
+            voting_threshold=voting_threshold,
+            metadata={
+                'template_id': template.template_id,
+                'template_name': template.name,
+                'category': template.category.value,
+                'risk_level': template.risk_level.value,
+                'deployed_from_template': True
+            }
+        )
+
+        # Add all specialists from template
+        specialists_added = 0
+        for spec_template in template.specialists:
+            genome = spec_template.to_genome()
+
+            success = await ensemble_manager.add_specialist(
+                ensemble_id=ensemble_id,
+                genome_data={
+                    'agent_id': genome.agent_id,
+                    'generation': 0,
+                    'personality': {
+                        'openness': genome.personality.openness,
+                        'conscientiousness': genome.personality.conscientiousness,
+                        'extraversion': genome.personality.extraversion,
+                        'agreeableness': genome.personality.agreeableness,
+                        'neuroticism': genome.personality.neuroticism
+                    },
+                    'fitness_score': genome.fitness_score,
+                    'parents': [],
+                    'mutations': []
+                },
+                specialist_type=spec_template.specialist_type.value,
+                strategy_name=spec_template.name
+            )
+
+            if success:
+                specialists_added += 1
+
+        return {
+            "success": True,
+            "ensemble_id": ensemble_id,
+            "ensemble_name": ensemble_name,
+            "template_id": template_id,
+            "specialists_added": specialists_added,
+            "message": f"Template '{template.name}' deployed successfully with {specialists_added} specialists"
+        }
+
+    except HTTPException:
+        raise
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Failed to deploy template: {str(e)}")
+
+# ============================================================================
+# General Ensemble Routes (MUST come after template routes)
+# ============================================================================
+
 @app.get("/api/ensemble")
 async def list_ensembles():
     """List all ensembles"""

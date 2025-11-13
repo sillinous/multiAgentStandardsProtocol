@@ -13,6 +13,13 @@ from .agent_ensemble import (
     SpecialistType,
     SimpleRegimeDetector
 )
+from .ensemble_templates import (
+    EnsembleTemplate,
+    SpecialistTemplate,
+    TemplateLibrary,
+    TemplateCategory,
+    RiskLevel
+)
 
 __all__ = [
     # Personality System
@@ -28,5 +35,12 @@ __all__ = [
     'AgentEnsemble',
     'AgentSpecialist',
     'SpecialistType',
-    'SimpleRegimeDetector'
+    'SimpleRegimeDetector',
+
+    # Ensemble Templates
+    'EnsembleTemplate',
+    'SpecialistTemplate',
+    'TemplateLibrary',
+    'TemplateCategory',
+    'RiskLevel'
 ]
