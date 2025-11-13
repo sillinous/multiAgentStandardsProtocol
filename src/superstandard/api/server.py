@@ -334,6 +334,240 @@ async def evolution_websocket(websocket: WebSocket):
         await evolution_manager.unregister_client(websocket)
 
 # ============================================================================
+# Agent Ensemble API - Production Deployment of Evolved Agents
+# ============================================================================
+
+from .ensemble_service import ensemble_manager, EnsembleMessageType
+
+class EnsembleCreationRequest(BaseModel):
+    """Request to create new ensemble"""
+    name: str = Field(..., description="Ensemble name")
+    use_voting: bool = Field(default=False, description="Enable weighted voting")
+    voting_threshold: float = Field(default=0.6, description="Confidence threshold for voting (0.0-1.0)")
+    metadata: Dict[str, Any] = Field(default={}, description="Additional metadata")
+
+class SpecialistAddRequest(BaseModel):
+    """Request to add specialist to ensemble"""
+    genome_data: Dict[str, Any] = Field(..., description="Agent genome data")
+    specialist_type: str = Field(..., description="Specialist type (bull, bear, volatile, sideways, generalist)")
+    strategy_name: Optional[str] = Field(None, description="Optional strategy name")
+
+class DecisionRequest(BaseModel):
+    """Request trading decision from ensemble"""
+    current_price: float = Field(..., description="Current market price")
+    price_history: List[float] = Field(..., description="Recent price history")
+    metadata: Dict[str, Any] = Field(default={}, description="Additional market data")
+
+class PerformanceUpdateRequest(BaseModel):
+    """Update specialist performance"""
+    specialist_type: str = Field(..., description="Specialist type to update")
+    profit: Optional[float] = None
+    return_pct: Optional[float] = Field(None, alias='return')
+    sharpe: Optional[float] = None
+    max_drawdown: Optional[float] = None
+
+class HotSwapRequest(BaseModel):
+    """Hot-swap specialist with new agent"""
+    specialist_type: str = Field(..., description="Specialist type to replace")
+    new_genome_data: Dict[str, Any] = Field(..., description="New agent genome data")
+
+@app.post("/api/ensemble/create")
+async def create_ensemble(request: EnsembleCreationRequest):
+    """
+    Create new agent ensemble.
+
+    Returns ensemble_id for managing the ensemble.
+    """
+    try:
+        ensemble_id = await ensemble_manager.create_ensemble(
+            name=request.name,
+            use_voting=request.use_voting,
+            voting_threshold=request.voting_threshold,
+            metadata=request.metadata
+        )
+        return {
+            "success": True,
+            "ensemble_id": ensemble_id,
+            "message": f"Ensemble '{request.name}' created successfully"
+        }
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Failed to create ensemble: {str(e)}")
+
+@app.post("/api/ensemble/{ensemble_id}/specialists")
+async def add_specialist(ensemble_id: str, request: SpecialistAddRequest):
+    """
+    Add specialist agent to ensemble.
+
+    The genome_data should include personality traits, fitness score, etc.
+    """
+    try:
+        success = await ensemble_manager.add_specialist(
+            ensemble_id=ensemble_id,
+            genome_data=request.genome_data,
+            specialist_type=request.specialist_type,
+            strategy_name=request.strategy_name
+        )
+
+        if not success:
+            raise HTTPException(status_code=404, detail="Ensemble not found")
+
+        return {
+            "success": True,
+            "message": f"Specialist {request.specialist_type} added to ensemble"
+        }
+    except HTTPException:
+        raise
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Failed to add specialist: {str(e)}")
+
+@app.get("/api/ensemble/{ensemble_id}")
+async def get_ensemble(ensemble_id: str):
+    """Get ensemble information and statistics"""
+    entry = ensemble_manager.get_ensemble(ensemble_id)
+
+    if not entry:
+        raise HTTPException(status_code=404, detail="Ensemble not found")
+
+    return entry.to_dict()
+
+@app.post("/api/ensemble/{ensemble_id}/decision")
+async def get_decision(ensemble_id: str, request: DecisionRequest):
+    """
+    Get trading decision from ensemble.
+
+    Ensemble will detect market regime and route to appropriate specialist.
+    """
+    try:
+        result = await ensemble_manager.get_decision(
+            ensemble_id=ensemble_id,
+            market_data={
+                'current_price': request.current_price,
+                'price_history': request.price_history,
+                **request.metadata
+            }
+        )
+
+        if not result:
+            raise HTTPException(status_code=404, detail="Ensemble not found")
+
+        return result
+    except HTTPException:
+        raise
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Failed to get decision: {str(e)}")
+
+@app.post("/api/ensemble/{ensemble_id}/performance")
+async def update_performance(ensemble_id: str, request: PerformanceUpdateRequest):
+    """
+    Update specialist performance after trade execution.
+
+    Used for tracking specialist performance over time.
+    """
+    try:
+        performance_data = {}
+        if request.profit is not None:
+            performance_data['profit'] = request.profit
+        if request.return_pct is not None:
+            performance_data['return'] = request.return_pct
+        if request.sharpe is not None:
+            performance_data['sharpe'] = request.sharpe
+        if request.max_drawdown is not None:
+            performance_data['max_drawdown'] = request.max_drawdown
+
+        success = await ensemble_manager.update_performance(
+            ensemble_id=ensemble_id,
+            specialist_type=request.specialist_type,
+            performance_data=performance_data
+        )
+
+        if not success:
+            raise HTTPException(status_code=404, detail="Ensemble not found")
+
+        return {
+            "success": True,
+            "message": "Performance updated successfully"
+        }
+    except HTTPException:
+        raise
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Failed to update performance: {str(e)}")
+
+@app.post("/api/ensemble/{ensemble_id}/hot-swap")
+async def hot_swap_specialist(ensemble_id: str, request: HotSwapRequest):
+    """
+    Hot-swap underperforming specialist with new agent.
+
+    Replaces specialist without stopping ensemble operations.
+    """
+    try:
+        success = await ensemble_manager.hot_swap_specialist(
+            ensemble_id=ensemble_id,
+            specialist_type=request.specialist_type,
+            new_genome_data=request.new_genome_data
+        )
+
+        if not success:
+            raise HTTPException(status_code=404, detail="Ensemble not found")
+
+        return {
+            "success": True,
+            "message": f"Specialist {request.specialist_type} hot-swapped successfully"
+        }
+    except HTTPException:
+        raise
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Failed to hot-swap specialist: {str(e)}")
+
+@app.delete("/api/ensemble/{ensemble_id}")
+async def delete_ensemble(ensemble_id: str):
+    """Delete ensemble"""
+    success = await ensemble_manager.delete_ensemble(ensemble_id)
+
+    if not success:
+        raise HTTPException(status_code=404, detail="Ensemble not found")
+
+    return {
+        "success": True,
+        "message": "Ensemble deleted successfully"
+    }
+
+@app.get("/api/ensemble")
+async def list_ensembles():
+    """List all ensembles"""
+    return ensemble_manager.list_ensembles()
+
+@app.get("/api/ensemble/stats")
+async def get_ensemble_stats():
+    """Get global ensemble statistics"""
+    return ensemble_manager.get_global_stats()
+
+@app.websocket("/api/ensemble/stream")
+async def ensemble_websocket(websocket: WebSocket):
+    """
+    WebSocket endpoint for streaming live ensemble updates.
+
+    Clients connect here to receive real-time updates about:
+    - Ensemble creation/deletion
+    - Specialist additions/removals
+    - Trading decisions made
+    - Performance updates
+    - Hot-swaps
+    """
+    await ensemble_manager.register_client(websocket)
+
+    try:
+        # Keep connection alive and listen for messages
+        while True:
+            data = await websocket.receive_text()
+            # Could handle client messages here if needed
+
+    except WebSocketDisconnect:
+        await ensemble_manager.unregister_client(websocket)
+    except Exception as e:
+        print(f"Ensemble WebSocket error: {e}")
+        await ensemble_manager.unregister_client(websocket)
+
+# ============================================================================
 # Demo Endpoint - Populate Platform with Sample Data
 # ============================================================================
 
