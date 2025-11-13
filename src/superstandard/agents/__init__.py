@@ -39,6 +39,18 @@ from .pareto_evolution import (
     MultiObjectiveEvaluator,
     NSGA2
 )
+from .continuous_evolution import (
+    ContinuousEvolutionEngine,
+    ContinuousEvolutionConfig,
+    DegradationDetectionConfig,
+    ABTestConfig,
+    ABTest,
+    ABTestStatus,
+    EvolutionTrigger,
+    PerformanceMetrics,
+    PerformanceDegradationDetector,
+    EvolutionEvent
+)
 
 __all__ = [
     # Personality System
@@ -80,5 +92,17 @@ __all__ = [
     'Objective',
     'MultiObjectiveScore',
     'MultiObjectiveEvaluator',
-    'NSGA2'
+    'NSGA2',
+
+    # Continuous Evolution in Production
+    'ContinuousEvolutionEngine',
+    'ContinuousEvolutionConfig',
+    'DegradationDetectionConfig',
+    'ABTestConfig',
+    'ABTest',
+    'ABTestStatus',
+    'EvolutionTrigger',
+    'PerformanceMetrics',
+    'PerformanceDegradationDetector',
+    'EvolutionEvent'
 ]

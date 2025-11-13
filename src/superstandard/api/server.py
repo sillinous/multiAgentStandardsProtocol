@@ -1188,6 +1188,309 @@ async def delete_pareto_evolution(evolution_id: str):
 
 
 # ============================================================================
+# CONTINUOUS EVOLUTION ENDPOINTS - Self-Improving Agents in Production
+# ============================================================================
+
+from superstandard.agents.continuous_evolution import (
+    ContinuousEvolutionEngine,
+    ContinuousEvolutionConfig,
+    DegradationDetectionConfig,
+    ABTestConfig,
+    PerformanceMetrics,
+    EvolutionTrigger
+)
+
+# Global continuous evolution engines (one per ensemble)
+continuous_evolution_engines: Dict[str, ContinuousEvolutionEngine] = {}
+
+
+class ContinuousEvolutionStartRequest(BaseModel):
+    """Request to start continuous evolution for an ensemble"""
+    ensemble_id: str
+    degradation_window_size: int = 100
+    win_rate_threshold: float = 0.10
+    sharpe_threshold: float = 0.20
+    ab_traffic_split: float = 0.20
+    auto_promote: bool = True
+
+
+class ABTestStartRequest(BaseModel):
+    """Request to start an A/B test"""
+    ensemble_id: str
+    champion_genome: Dict[str, Any]
+    challenger_genome: Dict[str, Any]
+    traffic_split: float = 0.20
+
+
+class DecisionOutcomeRequest(BaseModel):
+    """Record a decision outcome for A/B test tracking"""
+    test_id: str
+    is_challenger: bool
+    decision: str
+    outcome: float
+    confidence: float
+
+
+@app.post("/api/continuous-evolution/start")
+async def start_continuous_evolution(request: ContinuousEvolutionStartRequest):
+    """
+    Start continuous evolution monitoring for an ensemble.
+
+    This enables:
+    - Automatic performance degradation detection
+    - Background evolution when performance declines
+    - A/B testing of evolved strategies
+    - Automatic promotion of better strategies
+
+    REVOLUTIONARY: Agents that improve themselves in production!
+    """
+    try:
+        ensemble_id = request.ensemble_id
+
+        # Check ensemble exists
+        entry = ensemble_manager.get_ensemble(ensemble_id)
+        if not entry:
+            raise HTTPException(status_code=404, detail="Ensemble not found")
+
+        # Create degradation detection config
+        degradation_config = DegradationDetectionConfig(
+            window_size=request.degradation_window_size,
+            win_rate_threshold=request.win_rate_threshold,
+            sharpe_threshold=request.sharpe_threshold
+        )
+
+        # Create A/B test config
+        ab_config = ABTestConfig(
+            traffic_split=request.ab_traffic_split
+        )
+
+        # Create continuous evolution config
+        evolution_config = ContinuousEvolutionConfig(
+            enabled=True,
+            degradation_config=degradation_config,
+            ab_test_config=ab_config,
+            auto_promote=request.auto_promote
+        )
+
+        # Create and start engine
+        engine = ContinuousEvolutionEngine(evolution_config)
+        engine.start_monitoring(ensemble_id, check_interval_seconds=60)
+
+        continuous_evolution_engines[ensemble_id] = engine
+
+        return {
+            'success': True,
+            'ensemble_id': ensemble_id,
+            'monitoring_started': True,
+            'config': {
+                'degradation_window': request.degradation_window_size,
+                'win_rate_threshold': f"{request.win_rate_threshold:.1%}",
+                'ab_traffic_split': f"{request.ab_traffic_split:.1%}",
+                'auto_promote': request.auto_promote
+            },
+            'message': f'Continuous evolution started for ensemble {ensemble_id}'
+        }
+
+    except HTTPException:
+        raise
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Failed to start continuous evolution: {str(e)}")
+
+
+@app.post("/api/continuous-evolution/stop")
+async def stop_continuous_evolution(ensemble_id: str):
+    """Stop continuous evolution monitoring for an ensemble"""
+    if ensemble_id not in continuous_evolution_engines:
+        raise HTTPException(status_code=404, detail="Continuous evolution not running for this ensemble")
+
+    engine = continuous_evolution_engines[ensemble_id]
+    engine.stop_monitoring()
+    del continuous_evolution_engines[ensemble_id]
+
+    return {
+        'success': True,
+        'ensemble_id': ensemble_id,
+        'monitoring_stopped': True,
+        'message': f'Continuous evolution stopped for ensemble {ensemble_id}'
+    }
+
+
+@app.post("/api/continuous-evolution/ab-test/start")
+async def start_ab_test(request: ABTestStartRequest):
+    """
+    Manually start an A/B test comparing champion vs challenger.
+
+    This allows users to test evolved strategies before full deployment.
+    """
+    try:
+        ensemble_id = request.ensemble_id
+
+        # Get or create evolution engine
+        if ensemble_id not in continuous_evolution_engines:
+            # Create default config
+            engine = ContinuousEvolutionEngine(ContinuousEvolutionConfig())
+            continuous_evolution_engines[ensemble_id] = engine
+        else:
+            engine = continuous_evolution_engines[ensemble_id]
+
+        # Convert genome dicts to AgentGenome objects
+        from superstandard.agents import AgentGenome, PersonalityProfile
+
+        champion_genome = AgentGenome(
+            agent_id=request.champion_genome['agent_id'],
+            generation=request.champion_genome.get('generation', 0),
+            personality_traits=request.champion_genome.get('personality', {})
+        )
+
+        challenger_genome = AgentGenome(
+            agent_id=request.challenger_genome['agent_id'],
+            generation=request.challenger_genome.get('generation', 0),
+            personality_traits=request.challenger_genome.get('personality', {})
+        )
+
+        # Create A/B test
+        ab_test = engine.create_ab_test(
+            ensemble_id=ensemble_id,
+            champion_genome=champion_genome,
+            challenger_genome=challenger_genome
+        )
+
+        return {
+            'success': True,
+            'test_id': ab_test.test_id,
+            'ensemble_id': ensemble_id,
+            'champion_id': champion_genome.agent_id,
+            'challenger_id': challenger_genome.agent_id,
+            'traffic_split': request.traffic_split,
+            'started_at': ab_test.started_at.isoformat(),
+            'message': 'A/B test started successfully'
+        }
+
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Failed to start A/B test: {str(e)}")
+
+
+@app.post("/api/continuous-evolution/ab-test/record")
+async def record_decision_outcome(request: DecisionOutcomeRequest):
+    """
+    Record a decision outcome for A/B test tracking.
+
+    This endpoint is called after each trading decision to track
+    champion vs challenger performance.
+    """
+    try:
+        # Find the engine that has this A/B test
+        for engine in continuous_evolution_engines.values():
+            if request.test_id in engine.active_ab_tests:
+                engine.record_decision_outcome(
+                    test_id=request.test_id,
+                    is_challenger=request.is_challenger,
+                    decision=request.decision,
+                    outcome=request.outcome,
+                    confidence=request.confidence
+                )
+
+                return {
+                    'success': True,
+                    'test_id': request.test_id,
+                    'recorded': True
+                }
+
+        raise HTTPException(status_code=404, detail="A/B test not found")
+
+    except HTTPException:
+        raise
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Failed to record outcome: {str(e)}")
+
+
+@app.get("/api/continuous-evolution/{ensemble_id}/summary")
+async def get_evolution_summary(ensemble_id: str):
+    """
+    Get comprehensive evolution summary for an ensemble.
+
+    Returns:
+    - Total evolution cycles
+    - Active A/B tests
+    - Recent evolution events
+    - Champion history
+    - Performance trends
+    """
+    if ensemble_id not in continuous_evolution_engines:
+        return {
+            'ensemble_id': ensemble_id,
+            'continuous_evolution_active': False,
+            'message': 'Continuous evolution not started for this ensemble'
+        }
+
+    engine = continuous_evolution_engines[ensemble_id]
+    summary = engine.get_evolution_summary(ensemble_id)
+
+    return {
+        'ensemble_id': ensemble_id,
+        'continuous_evolution_active': True,
+        'auto_promote': engine.config.auto_promote,
+        **summary
+    }
+
+
+@app.get("/api/continuous-evolution/{ensemble_id}/ab-tests")
+async def get_active_ab_tests(ensemble_id: str):
+    """Get all active A/B tests for an ensemble"""
+    if ensemble_id not in continuous_evolution_engines:
+        return {
+            'ensemble_id': ensemble_id,
+            'active_tests': [],
+            'total': 0
+        }
+
+    engine = continuous_evolution_engines[ensemble_id]
+    active_tests = [
+        {
+            'test_id': test.test_id,
+            'started_at': test.started_at.isoformat(),
+            'champion_decisions': len(test.champion_decisions),
+            'challenger_decisions': len(test.challenger_decisions),
+            'champion_win_rate': test.champion_win_rate,
+            'challenger_win_rate': test.challenger_win_rate,
+            'champion_sharpe': test.champion_sharpe,
+            'challenger_sharpe': test.challenger_sharpe,
+            'status': test.status.value,
+            'winner': test.winner
+        }
+        for test in engine.active_ab_tests.values()
+        if test.ensemble_id == ensemble_id
+    ]
+
+    return {
+        'ensemble_id': ensemble_id,
+        'active_tests': active_tests,
+        'total': len(active_tests)
+    }
+
+
+@app.get("/api/continuous-evolution")
+async def list_continuous_evolution():
+    """List all ensembles with continuous evolution active"""
+    active_evolutions = []
+
+    for ensemble_id, engine in continuous_evolution_engines.items():
+        summary = engine.get_evolution_summary(ensemble_id)
+        active_evolutions.append({
+            'ensemble_id': ensemble_id,
+            'running': engine.running,
+            'auto_promote': engine.config.auto_promote,
+            'active_ab_tests': summary['active_ab_tests'],
+            'total_evolution_cycles': summary['total_evolution_cycles']
+        })
+
+    return {
+        'total': len(active_evolutions),
+        'evolutions': active_evolutions
+    }
+
+
+# ============================================================================
 # Demo Endpoint - Populate Platform with Sample Data
 # ============================================================================
 

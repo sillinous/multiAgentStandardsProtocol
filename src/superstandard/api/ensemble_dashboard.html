@@ -1095,6 +1095,138 @@
                 </div>
             </div>
         </div>
+
+        <!-- Continuous Evolution Section -->
+        <div class="card full-width" id="continuousEvolutionSection" style="display: none;">
+            <h2>🚀 Continuous Evolution in Production</h2>
+            <p style="margin-bottom: 20px; opacity: 0.9;">
+                Agents that improve themselves automatically! Monitor performance, detect degradation,
+                run A/B tests, and watch your strategies evolve in real-time.
+            </p>
+
+            <div class="main-grid">
+                <!-- Control Panel -->
+                <div class="card">
+                    <h3>⚙️ Evolution Control</h3>
+
+                    <div id="evolutionControlPanel">
+                        <div class="form-group">
+                            <label for="degradationWindow">Degradation Window</label>
+                            <input type="number" id="degradationWindow" value="100" min="50" max="500" step="50">
+                            <small>Number of recent decisions to analyze</small>
+                        </div>
+
+                        <div class="form-group">
+                            <label for="winRateThreshold">Win Rate Threshold (%)</label>
+                            <input type="number" id="winRateThreshold" value="10" min="5" max="30" step="5">
+                            <small>Percentage drop that triggers evolution</small>
+                        </div>
+
+                        <div class="form-group">
+                            <label for="abTrafficSplit">A/B Traffic Split (%)</label>
+                            <input type="number" id="abTrafficSplit" value="20" min="10" max="50" step="10">
+                            <small>% of traffic to challenger during tests</small>
+                        </div>
+
+                        <div class="form-group">
+                            <label style="display: flex; align-items: center; gap: 10px;">
+                                <input type="checkbox" id="autoPromote" checked>
+                                <span>Auto-promote winning challengers</span>
+                            </label>
+                            <small>Automatically replace champion if challenger wins</small>
+                        </div>
+
+                        <button onclick="startContinuousEvolution()" id="startEvolutionBtn" class="btn-primary">
+                            🚀 Start Continuous Evolution
+                        </button>
+                        <button onclick="stopContinuousEvolution()" id="stopEvolutionBtn" class="btn-secondary" style="display: none;">
+                            ⏹️ Stop Evolution
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Status Display -->
+                <div class="card">
+                    <h3>📊 Evolution Status</h3>
+                    <div id="evolutionStatus" class="empty-state">
+                        <div class="empty-state-icon">⏳</div>
+                        <p>Start continuous evolution to monitor agent performance</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Active A/B Tests -->
+            <div id="activeAbTests" style="display: none; margin-top: 20px;">
+                <h3>🧪 Active A/B Tests</h3>
+                <div class="trade-log-container">
+                    <table class="trade-log-table" id="abTestsTable">
+                        <thead>
+                            <tr>
+                                <th>Test ID</th>
+                                <th>Started</th>
+                                <th>Champion Decisions</th>
+                                <th>Challenger Decisions</th>
+                                <th>Champion Win Rate</th>
+                                <th>Challenger Win Rate</th>
+                                <th>Status</th>
+                                <th>Winner</th>
+                            </tr>
+                        </thead>
+                        <tbody id="abTestsBody">
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+            <!-- Evolution History Chart -->
+            <div id="evolutionHistoryViz" style="display: none; margin-top: 20px;">
+                <h3>📈 Evolution History</h3>
+                <div class="chart-container" style="height: 300px;">
+                    <canvas id="evolutionHistoryChart"></canvas>
+                </div>
+            </div>
+
+            <!-- Champion vs Challenger Comparison -->
+            <div id="championChallengerComparison" style="display: none; margin-top: 20px;">
+                <h3>⚔️ Champion vs Challenger</h3>
+                <div class="main-grid" style="grid-template-columns: 1fr 1fr;">
+                    <div class="card">
+                        <h4>🏆 Champion</h4>
+                        <div id="championMetrics">
+                            <div class="metric">
+                                <div class="metric-label">Win Rate</div>
+                                <div class="metric-value" id="championWinRate">--</div>
+                            </div>
+                            <div class="metric">
+                                <div class="metric-label">Sharpe Ratio</div>
+                                <div class="metric-value" id="championSharpe">--</div>
+                            </div>
+                            <div class="metric">
+                                <div class="metric-label">Decisions</div>
+                                <div class="metric-value" id="championDecisions">--</div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="card">
+                        <h4>🆕 Challenger</h4>
+                        <div id="challengerMetrics">
+                            <div class="metric">
+                                <div class="metric-label">Win Rate</div>
+                                <div class="metric-value" id="challengerWinRate">--</div>
+                            </div>
+                            <div class="metric">
+                                <div class="metric-label">Sharpe Ratio</div>
+                                <div class="metric-value" id="challengerSharpe">--</div>
+                            </div>
+                            <div class="metric">
+                                <div class="metric-label">Decisions</div>
+                                <div class="metric-value" id="challengerDecisions">--</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
     </div>
 
     <script>
@@ -1312,6 +1444,9 @@
 
                 // Show Pareto evolution section
                 showParetoSection();
+
+                // Show continuous evolution section
+                showContinuousEvolutionSection();
             } catch (error) {
                 console.error('Failed to load ensemble details:', error);
             }
@@ -2453,6 +2588,329 @@
 
         // ================================================================
         // END PARETO EVOLUTION FUNCTIONS
+        // ================================================================
+
+        // ================================================================
+        // CONTINUOUS EVOLUTION FUNCTIONS
+        // ================================================================
+
+        let evolutionHistoryChart = null;
+
+        async function startContinuousEvolution() {
+            if (!selectedEnsembleId) {
+                alert('Please select an ensemble first!');
+                return;
+            }
+
+            const degradationWindow = parseInt(document.getElementById('degradationWindow').value);
+            const winRateThreshold = parseFloat(document.getElementById('winRateThreshold').value) / 100;
+            const abTrafficSplit = parseFloat(document.getElementById('abTrafficSplit').value) / 100;
+            const autoPromote = document.getElementById('autoPromote').checked;
+
+            document.getElementById('startEvolutionBtn').disabled = true;
+            document.getElementById('startEvolutionBtn').textContent = '🔄 Starting...';
+
+            try {
+                const response = await fetch('/api/continuous-evolution/start', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        ensemble_id: selectedEnsembleId,
+                        degradation_window_size: degradationWindow,
+                        win_rate_threshold: winRateThreshold,
+                        sharpe_threshold: 0.20,
+                        ab_traffic_split: abTrafficSplit,
+                        auto_promote: autoPromote
+                    })
+                });
+
+                const result = await response.json();
+
+                if (result.success) {
+                    document.getElementById('startEvolutionBtn').style.display = 'none';
+                    document.getElementById('stopEvolutionBtn').style.display = 'block';
+
+                    updateEvolutionStatus({
+                        continuous_evolution_active: true,
+                        auto_promote: autoPromote,
+                        total_evolution_cycles: 0,
+                        active_ab_tests: 0
+                    });
+
+                    // Start polling for updates
+                    startEvolutionPolling();
+
+                    alert('✅ Continuous evolution started!\n\nThe system will now monitor performance and trigger evolution when degradation is detected.');
+                } else {
+                    alert('Failed to start continuous evolution: ' + (result.detail || 'Unknown error'));
+                }
+            } catch (error) {
+                alert('Error starting continuous evolution: ' + error.message);
+            } finally {
+                document.getElementById('startEvolutionBtn').disabled = false;
+                document.getElementById('startEvolutionBtn').textContent = '🚀 Start Continuous Evolution';
+            }
+        }
+
+        async function stopContinuousEvolution() {
+            if (!selectedEnsembleId) return;
+
+            document.getElementById('stopEvolutionBtn').disabled = true;
+
+            try {
+                const response = await fetch(`/api/continuous-evolution/stop?ensemble_id=${selectedEnsembleId}`, {
+                    method: 'POST'
+                });
+
+                const result = await response.json();
+
+                if (result.success) {
+                    document.getElementById('stopEvolutionBtn').style.display = 'none';
+                    document.getElementById('startEvolutionBtn').style.display = 'block';
+
+                    clearInterval(evolutionPollingInterval);
+                    evolutionPollingInterval = null;
+
+                    document.getElementById('evolutionStatus').innerHTML = `
+                        <div class="empty-state">
+                            <div class="empty-state-icon">⏸️</div>
+                            <p>Continuous evolution stopped</p>
+                        </div>
+                    `;
+
+                    alert('⏹️ Continuous evolution stopped.');
+                } else {
+                    alert('Failed to stop continuous evolution: ' + (result.detail || 'Unknown error'));
+                }
+            } catch (error) {
+                alert('Error stopping continuous evolution: ' + error.message);
+            } finally {
+                document.getElementById('stopEvolutionBtn').disabled = false;
+            }
+        }
+
+        let evolutionPollingInterval = null;
+
+        function startEvolutionPolling() {
+            if (evolutionPollingInterval) {
+                clearInterval(evolutionPollingInterval);
+            }
+
+            // Poll every 10 seconds
+            evolutionPollingInterval = setInterval(async () => {
+                if (!selectedEnsembleId) {
+                    clearInterval(evolutionPollingInterval);
+                    return;
+                }
+
+                await loadEvolutionSummary();
+                await loadActiveAbTests();
+            }, 10000);
+
+            // Initial load
+            loadEvolutionSummary();
+            loadActiveAbTests();
+        }
+
+        async function loadEvolutionSummary() {
+            if (!selectedEnsembleId) return;
+
+            try {
+                const response = await fetch(`/api/continuous-evolution/${selectedEnsembleId}/summary`);
+                const summary = await response.json();
+
+                updateEvolutionStatus(summary);
+
+                // Update evolution history chart if we have events
+                if (summary.recent_events && summary.recent_events.length > 0) {
+                    updateEvolutionHistoryChart(summary.recent_events);
+                }
+            } catch (error) {
+                console.error('Error loading evolution summary:', error);
+            }
+        }
+
+        function updateEvolutionStatus(summary) {
+            const statusDiv = document.getElementById('evolutionStatus');
+
+            if (!summary.continuous_evolution_active) {
+                statusDiv.innerHTML = `
+                    <div class="empty-state">
+                        <div class="empty-state-icon">⏳</div>
+                        <p>Start continuous evolution to monitor agent performance</p>
+                    </div>
+                `;
+                return;
+            }
+
+            statusDiv.innerHTML = `
+                <div class="metrics-grid" style="grid-template-columns: repeat(3, 1fr);">
+                    <div class="metric">
+                        <div class="metric-label">Status</div>
+                        <div class="metric-value" style="color: #4CAF50;">🟢 Active</div>
+                    </div>
+                    <div class="metric">
+                        <div class="metric-label">Evolution Cycles</div>
+                        <div class="metric-value">${summary.total_evolution_cycles || 0}</div>
+                    </div>
+                    <div class="metric">
+                        <div class="metric-label">Active A/B Tests</div>
+                        <div class="metric-value">${summary.active_ab_tests || 0}</div>
+                    </div>
+                    <div class="metric">
+                        <div class="metric-label">Champions Archived</div>
+                        <div class="metric-value">${summary.champions_archived || 0}</div>
+                    </div>
+                    <div class="metric">
+                        <div class="metric-label">Auto-Promote</div>
+                        <div class="metric-value">${summary.auto_promote ? '✅ Enabled' : '❌ Disabled'}</div>
+                    </div>
+                    <div class="metric">
+                        <div class="metric-label">Last Event</div>
+                        <div class="metric-value">
+                            ${summary.recent_events && summary.recent_events.length > 0
+                                ? new Date(summary.recent_events[summary.recent_events.length - 1].triggered_at).toLocaleTimeString()
+                                : 'None'}
+                        </div>
+                    </div>
+                </div>
+            `;
+        }
+
+        async function loadActiveAbTests() {
+            if (!selectedEnsembleId) return;
+
+            try {
+                const response = await fetch(`/api/continuous-evolution/${selectedEnsembleId}/ab-tests`);
+                const data = await response.json();
+
+                if (data.active_tests && data.active_tests.length > 0) {
+                    displayActiveAbTests(data.active_tests);
+
+                    // Update champion vs challenger comparison for first active test
+                    updateChampionChallengerComparison(data.active_tests[0]);
+                } else {
+                    document.getElementById('activeAbTests').style.display = 'none';
+                    document.getElementById('championChallengerComparison').style.display = 'none';
+                }
+            } catch (error) {
+                console.error('Error loading A/B tests:', error);
+            }
+        }
+
+        function displayActiveAbTests(tests) {
+            const container = document.getElementById('activeAbTests');
+            const tbody = document.getElementById('abTestsBody');
+
+            container.style.display = 'block';
+
+            tbody.innerHTML = tests.map(test => {
+                const startedDate = new Date(test.started_at);
+                const statusClass = test.status === 'challenger_wins' ? 'pnl-positive' :
+                                  test.status === 'champion_wins' ? 'pnl-negative' : '';
+
+                return `
+                    <tr>
+                        <td>${test.test_id.substring(0, 16)}...</td>
+                        <td>${startedDate.toLocaleString()}</td>
+                        <td>${test.champion_decisions}</td>
+                        <td>${test.challenger_decisions}</td>
+                        <td>${(test.champion_win_rate * 100).toFixed(1)}%</td>
+                        <td>${(test.challenger_win_rate * 100).toFixed(1)}%</td>
+                        <td class="${statusClass}">${test.status.replace('_', ' ').toUpperCase()}</td>
+                        <td>${test.winner || '--'}</td>
+                    </tr>
+                `;
+            }).join('');
+        }
+
+        function updateChampionChallengerComparison(test) {
+            const container = document.getElementById('championChallengerComparison');
+            container.style.display = 'block';
+
+            document.getElementById('championWinRate').textContent = `${(test.champion_win_rate * 100).toFixed(1)}%`;
+            document.getElementById('championSharpe').textContent = test.champion_sharpe.toFixed(2);
+            document.getElementById('championDecisions').textContent = test.champion_decisions;
+
+            document.getElementById('challengerWinRate').textContent = `${(test.challenger_win_rate * 100).toFixed(1)}%`;
+            document.getElementById('challengerSharpe').textContent = test.challenger_sharpe.toFixed(2);
+            document.getElementById('challengerDecisions').textContent = test.challenger_decisions;
+
+            // Color code based on who's winning
+            if (test.challenger_win_rate > test.champion_win_rate) {
+                document.getElementById('challengerWinRate').style.color = '#4CAF50';
+                document.getElementById('championWinRate').style.color = '#666';
+            } else {
+                document.getElementById('championWinRate').style.color = '#4CAF50';
+                document.getElementById('challengerWinRate').style.color = '#666';
+            }
+        }
+
+        function updateEvolutionHistoryChart(events) {
+            const container = document.getElementById('evolutionHistoryViz');
+            container.style.display = 'block';
+
+            const ctx = document.getElementById('evolutionHistoryChart').getContext('2d');
+
+            // Prepare data
+            const labels = events.map((e, idx) => `Event ${idx + 1}`);
+            const improvements = events.map(e => e.improvement ? e.improvement * 100 : 0);
+
+            if (evolutionHistoryChart) {
+                evolutionHistoryChart.destroy();
+            }
+
+            evolutionHistoryChart = new Chart(ctx, {
+                type: 'bar',
+                data: {
+                    labels: labels,
+                    datasets: [{
+                        label: 'Performance Improvement (%)',
+                        data: improvements,
+                        backgroundColor: improvements.map(v => v > 0 ? 'rgba(76, 175, 80, 0.6)' : 'rgba(244, 67, 54, 0.6)'),
+                        borderColor: improvements.map(v => v > 0 ? 'rgb(76, 175, 80)' : 'rgb(244, 67, 54)'),
+                        borderWidth: 2
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    scales: {
+                        y: {
+                            beginAtZero: true,
+                            title: {
+                                display: true,
+                                text: 'Performance Improvement (%)'
+                            }
+                        }
+                    },
+                    plugins: {
+                        tooltip: {
+                            callbacks: {
+                                label: function(context) {
+                                    const event = events[context.dataIndex];
+                                    return [
+                                        `Improvement: ${context.parsed.y.toFixed(2)}%`,
+                                        `Trigger: ${event.trigger}`,
+                                        `Outcome: ${event.outcome}`
+                                    ];
+                                }
+                            }
+                        }
+                    }
+                }
+            });
+        }
+
+        // Show continuous evolution section when ensemble is selected
+        function showContinuousEvolutionSection() {
+            if (selectedEnsembleId) {
+                document.getElementById('continuousEvolutionSection').style.display = 'block';
+            }
+        }
+
+        // ================================================================
+        // END CONTINUOUS EVOLUTION FUNCTIONS
         // ================================================================
 
         // Initialize on load
