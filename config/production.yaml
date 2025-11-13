@@ -1,0 +1,310 @@
+# Production Configuration
+# Enterprise-grade data source configuration for production deployment
+
+environment: production
+
+# Agent Configuration
+agent_config:
+  use_mock_data: false  # CRITICAL: Set to false for production
+  execution_timeout: 180
+  retry_attempts: 3
+  enable_caching: true
+  enable_rate_limiting: true
+  enable_quality_monitoring: true
+  log_level: INFO
+
+# Data Quality Standards
+data_quality:
+  min_overall_score: 95.0  # Production minimum: 95%
+  min_dimension_score: 90.0  # No dimension < 90%
+  alert_on_degradation: true
+  sla_target: 99.5  # 99.5% uptime with quality standards
+
+# Data Sources Configuration
+data_sources:
+  # Competitive Intelligence
+  competitive_intelligence:
+    provider: "similarweb"  # Enterprise provider
+    api_key: "${SIMILARWEB_API_KEY}"  # Set via environment variable
+    base_url: "https://api.similarweb.com/v1"
+    rate_limit: 100  # requests per minute
+    cache_ttl: 86400  # 24 hours
+    timeout: 30
+    retry_attempts: 3
+    fallback_provider: "owler"  # Fallback if SimilarWeb fails
+
+  # Market Research
+  market_research:
+    provider: "qualtrics"  # Enterprise survey platform
+    api_key: "${QUALTRICS_API_KEY}"
+    datacenter: "us1"
+    base_url: "https://us1.qualtrics.com/API/v3"
+    rate_limit: 60
+    cache_ttl: 3600  # 1 hour
+    timeout: 45
+
+  # Economic Data
+  economic_data:
+    provider: "fred"  # Federal Reserve Economic Data (free but authoritative)
+    api_key: "${FRED_API_KEY}"
+    base_url: "https://api.stlouisfed.org/fred"
+    rate_limit: 120
+    cache_ttl: 86400  # 24 hours (economic data updates daily)
+
+  # CRM Data
+  crm:
+    provider: "salesforce"  # Enterprise CRM
+    username: "${SALESFORCE_USERNAME}"
+    password: "${SALESFORCE_PASSWORD}"
+    security_token: "${SALESFORCE_SECURITY_TOKEN}"
+    domain: "${SALESFORCE_DOMAIN}"  # e.g., "https://your-instance.salesforce.com"
+    rate_limit: 100
+    cache_ttl: 1800  # 30 minutes
+    timeout: 30
+
+  # Financial Planning
+  financial_planning:
+    provider: "anaplan"  # Enterprise planning platform
+    workspace_id: "${ANAPLAN_WORKSPACE_ID}"
+    model_id: "${ANAPLAN_MODEL_ID}"
+    auth_token: "${ANAPLAN_AUTH_TOKEN}"
+    base_url: "https://api.anaplan.com/2/0"
+    rate_limit: 50
+    cache_ttl: 3600
+    timeout: 60
+
+  # Portfolio Management
+  portfolio_management:
+    provider: "planview"  # Enterprise portfolio management
+    api_key: "${PLANVIEW_API_KEY}"
+    base_url: "${PLANVIEW_BASE_URL}"
+    tenant_id: "${PLANVIEW_TENANT_ID}"
+    rate_limit: 50
+    cache_ttl: 1800
+
+  # OKR Platform
+  okr_platform:
+    provider: "lattice"  # Enterprise OKR platform
+    api_key: "${LATTICE_API_KEY}"
+    base_url: "https://api.lattice.com/v1"
+    rate_limit: 100
+    cache_ttl: 3600
+
+# Caching Configuration
+cache:
+  provider: "redis"  # Production: Use Redis
+  host: "${REDIS_HOST}"
+  port: 6379
+  db: 0
+  password: "${REDIS_PASSWORD}"
+  ssl: true
+  max_connections: 50
+  socket_timeout: 5
+  socket_connect_timeout: 5
+
+# Rate Limiting Configuration
+rate_limiting:
+  enabled: true
+  default_rpm: 100  # requests per minute
+  burst_size: 20
+  strategy: "token_bucket"
+
+# Monitoring Configuration
+monitoring:
+  enabled: true
+  provider: "datadog"  # or "newrelic", "prometheus"
+  api_key: "${DATADOG_API_KEY}"
+  app_key: "${DATADOG_APP_KEY}"
+  metrics_flush_interval: 10  # seconds
+
+  # Metrics to track
+  tracked_metrics:
+    - agent_execution_time
+    - agent_success_rate
+    - data_quality_score
+    - api_response_time
+    - api_error_rate
+    - cache_hit_rate
+    - rate_limit_violations
+
+# Alerting Configuration
+alerting:
+  enabled: true
+  channels:
+    - type: "slack"
+      webhook_url: "${SLACK_WEBHOOK_URL}"
+      severity_threshold: "high"
+    - type: "pagerduty"
+      integration_key: "${PAGERDUTY_INTEGRATION_KEY}"
+      severity_threshold: "critical"
+    - type: "email"
+      smtp_host: "${SMTP_HOST}"
+      smtp_port: 587
+      from_email: "alerts@company.com"
+      to_emails: ["oncall@company.com"]
+      severity_threshold: "high"
+
+  # Alert rules
+  rules:
+    - name: "Data Quality Below Threshold"
+      condition: "data_quality_score < 95"
+      severity: "high"
+      message: "Data quality dropped below production threshold"
+
+    - name: "API Failure Rate High"
+      condition: "api_error_rate > 5"
+      severity: "critical"
+      message: "API error rate exceeded 5%"
+
+    - name: "Agent Execution Timeout"
+      condition: "agent_execution_time > 180"
+      severity: "medium"
+      message: "Agent execution exceeded timeout threshold"
+
+# Security Configuration
+security:
+  # Encryption
+  encryption_at_rest: true
+  encryption_in_transit: true
+  tls_version: "1.3"
+
+  # Secrets Management
+  secrets_provider: "aws_secrets_manager"  # or "hashicorp_vault", "azure_key_vault"
+  secrets_region: "us-east-1"
+
+  # API Key Rotation
+  rotate_api_keys: true
+  rotation_period_days: 90
+
+  # Access Control
+  rbac_enabled: true
+  audit_logging: true
+
+# Logging Configuration
+logging:
+  level: INFO  # DEBUG, INFO, WARNING, ERROR, CRITICAL
+  format: json  # json for production (easier parsing)
+  output: "stdout"  # stdout for container environments
+
+  # Log retention
+  retention_days: 90
+
+  # Sensitive data masking
+  mask_api_keys: true
+  mask_pii: true
+
+# Database Configuration (for caching historical data)
+database:
+  provider: "postgresql"  # Production-grade relational DB
+  host: "${DB_HOST}"
+  port: 5432
+  database: "${DB_NAME}"
+  username: "${DB_USERNAME}"
+  password: "${DB_PASSWORD}"
+  ssl_mode: "require"
+  connection_pool_size: 20
+  max_overflow: 10
+
+# Cost Management
+cost_management:
+  enabled: true
+  daily_budget_usd: 500
+  monthly_budget_usd: 10000
+  alert_threshold_percent: 80
+
+  # Cost tracking per service
+  track_costs: true
+  cost_allocation_tags:
+    environment: "production"
+    team: "platform"
+    application: "apqc-pcf-agents"
+
+# Performance Configuration
+performance:
+  # Connection pooling
+  max_connections_per_service: 10
+  connection_timeout: 30
+
+  # Request timeouts
+  default_timeout: 30
+  long_running_timeout: 300
+
+  # Async execution
+  max_concurrent_requests: 50
+  worker_threads: 4
+
+# Compliance Configuration
+compliance:
+  gdpr_enabled: true
+  data_retention_days: 365
+  pii_encryption: true
+  audit_trail: true
+
+  # Data residency
+  data_regions: ["us-east-1", "eu-west-1"]
+  primary_region: "us-east-1"
+
+---
+
+# Development Override (config/development.yaml)
+# Inherits from production.yaml but overrides for local development
+
+environment: development
+
+agent_config:
+  use_mock_data: true  # Use mock data in development
+  log_level: DEBUG
+
+data_sources:
+  competitive_intelligence:
+    provider: "mock"  # Use mock service in dev
+
+  market_research:
+    provider: "mock"
+
+# Use local Redis
+cache:
+  host: "localhost"
+  ssl: false
+  password: ""
+
+# Disable production monitoring in dev
+monitoring:
+  enabled: false
+
+alerting:
+  enabled: false
+
+security:
+  encryption_at_rest: false  # Not required for local dev
+
+cost_management:
+  enabled: false  # No cost tracking in dev
+
+---
+
+# Staging Override (config/staging.yaml)
+# Use sandbox APIs for testing
+
+environment: staging
+
+data_sources:
+  competitive_intelligence:
+    base_url: "https://sandbox.similarweb.com/v1"  # Sandbox API
+
+  crm:
+    domain: "https://test.salesforce.com"  # Salesforce sandbox
+
+# Reduced rate limits for sandbox
+rate_limiting:
+  default_rpm: 20
+
+# Enable monitoring but lower thresholds
+monitoring:
+  enabled: true
+
+alerting:
+  enabled: true
+  channels:
+    - type: "slack"
+      severity_threshold: "critical"  # Only critical alerts in staging
