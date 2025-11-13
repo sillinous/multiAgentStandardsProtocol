@@ -724,6 +724,207 @@ async def ensemble_websocket(websocket: WebSocket):
         print(f"Ensemble WebSocket error: {e}")
         await ensemble_manager.unregister_client(websocket)
 
+
+# ============================================================================
+# BACKTEST ENDPOINTS - Strategy Backtesting on Historical Data
+# ============================================================================
+
+from superstandard.agents.backtest_engine import (
+    BacktestEngine,
+    BacktestConfig,
+    HistoricalDataGenerator
+)
+
+# In-memory backtest results storage
+backtest_results_storage = {}
+
+class BacktestRequest(BaseModel):
+    """Request model for running a backtest"""
+    ensemble_id: str
+    symbol: str = "BTC/USD"
+    start_date: str  # ISO format
+    end_date: str  # ISO format
+    initial_capital: float = 10000.0
+    commission_rate: float = 0.001
+    slippage_rate: float = 0.0005
+    position_size: float = 0.95
+
+
+@app.post("/api/backtest/run")
+async def run_backtest(request: BacktestRequest):
+    """
+    Execute a backtest of an ensemble on historical data.
+
+    This simulates trading the ensemble's strategy on past market data
+    to evaluate performance before production deployment.
+
+    Returns:
+    - Backtest ID for retrieving results
+    - Preliminary metrics
+    """
+    try:
+        # Get ensemble
+        entry = ensemble_manager.get_ensemble(request.ensemble_id)
+        if not entry:
+            raise HTTPException(status_code=404, detail="Ensemble not found")
+
+        # Parse dates
+        start_date = datetime.fromisoformat(request.start_date.replace('Z', '+00:00'))
+        end_date = datetime.fromisoformat(request.end_date.replace('Z', '+00:00'))
+
+        # Generate historical data
+        historical_data = HistoricalDataGenerator.generate_price_data(
+            start_date=start_date,
+            end_date=end_date,
+            initial_price=100.0,
+            volatility=0.02
+        )
+
+        # Create backtest config
+        config = BacktestConfig(
+            symbol=request.symbol,
+            start_date=start_date,
+            end_date=end_date,
+            initial_capital=request.initial_capital,
+            commission_rate=request.commission_rate,
+            slippage_rate=request.slippage_rate,
+            position_size=request.position_size
+        )
+
+        # Run backtest
+        engine = BacktestEngine(config)
+        result = engine.run(entry.ensemble, historical_data)
+
+        # Store results
+        backtest_results_storage[result.backtest_id] = result
+
+        return {
+            'success': True,
+            'backtest_id': result.backtest_id,
+            'duration_seconds': result.duration_seconds,
+            'preliminary_metrics': {
+                'total_return_percent': result.metrics.total_return_percent,
+                'win_rate': result.metrics.win_rate,
+                'total_trades': result.metrics.total_trades,
+                'sharpe_ratio': result.metrics.sharpe_ratio,
+                'max_drawdown_percent': result.metrics.max_drawdown_percent
+            }
+        }
+
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Backtest failed: {str(e)}")
+
+
+@app.get("/api/backtest/{backtest_id}")
+async def get_backtest_results(backtest_id: str):
+    """
+    Retrieve complete backtest results.
+
+    Returns:
+    - Configuration
+    - Complete metrics
+    - Equity curve
+    - All trades
+    - Decision log
+    """
+    if backtest_id not in backtest_results_storage:
+        raise HTTPException(status_code=404, detail="Backtest not found")
+
+    result = backtest_results_storage[backtest_id]
+
+    return {
+        'backtest_id': result.backtest_id,
+        'config': {
+            'symbol': result.config.symbol,
+            'start_date': result.config.start_date.isoformat(),
+            'end_date': result.config.end_date.isoformat(),
+            'initial_capital': result.config.initial_capital,
+            'commission_rate': result.config.commission_rate,
+            'slippage_rate': result.config.slippage_rate,
+            'position_size': result.config.position_size
+        },
+        'metrics': {
+            'total_return': result.metrics.total_return,
+            'total_return_percent': result.metrics.total_return_percent,
+            'win_rate': result.metrics.win_rate,
+            'total_trades': result.metrics.total_trades,
+            'winning_trades': result.metrics.winning_trades,
+            'losing_trades': result.metrics.losing_trades,
+            'average_win': result.metrics.average_win,
+            'average_loss': result.metrics.average_loss,
+            'largest_win': result.metrics.largest_win,
+            'largest_loss': result.metrics.largest_loss,
+            'max_drawdown': result.metrics.max_drawdown,
+            'max_drawdown_percent': result.metrics.max_drawdown_percent,
+            'sharpe_ratio': result.metrics.sharpe_ratio,
+            'profit_factor': result.metrics.profit_factor,
+            'avg_trade_duration': result.metrics.avg_trade_duration,
+            'final_equity': result.metrics.final_equity
+        },
+        'equity_curve': result.equity_curve,
+        'trades': [
+            {
+                'trade_id': t.trade_id,
+                'entry_time': t.entry_time.isoformat(),
+                'exit_time': t.exit_time.isoformat() if t.exit_time else None,
+                'direction': t.direction,
+                'entry_price': t.entry_price,
+                'exit_price': t.exit_price,
+                'size': t.size,
+                'pnl': t.pnl,
+                'pnl_percent': t.pnl_percent,
+                'commission': t.commission,
+                'status': t.status
+            }
+            for t in result.trades
+        ],
+        'decision_log': result.decision_log[-100:],  # Last 100 decisions
+        'started_at': result.started_at.isoformat(),
+        'completed_at': result.completed_at.isoformat(),
+        'duration_seconds': result.duration_seconds
+    }
+
+
+@app.get("/api/backtest")
+async def list_backtests():
+    """
+    List all backtest results with summary information.
+    """
+    summaries = []
+
+    for backtest_id, result in backtest_results_storage.items():
+        summaries.append({
+            'backtest_id': backtest_id,
+            'symbol': result.config.symbol,
+            'start_date': result.config.start_date.isoformat(),
+            'end_date': result.config.end_date.isoformat(),
+            'total_return_percent': result.metrics.total_return_percent,
+            'win_rate': result.metrics.win_rate,
+            'total_trades': result.metrics.total_trades,
+            'sharpe_ratio': result.metrics.sharpe_ratio,
+            'completed_at': result.completed_at.isoformat()
+        })
+
+    return {
+        'total': len(summaries),
+        'backtests': summaries
+    }
+
+
+@app.delete("/api/backtest/{backtest_id}")
+async def delete_backtest(backtest_id: str):
+    """Delete a backtest result"""
+    if backtest_id not in backtest_results_storage:
+        raise HTTPException(status_code=404, detail="Backtest not found")
+
+    del backtest_results_storage[backtest_id]
+
+    return {
+        'success': True,
+        'message': f'Backtest {backtest_id} deleted'
+    }
+
+
 # ============================================================================
 # Demo Endpoint - Populate Platform with Sample Data
 # ============================================================================

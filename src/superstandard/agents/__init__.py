@@ -20,6 +20,15 @@ from .ensemble_templates import (
     TemplateCategory,
     RiskLevel
 )
+from .backtest_engine import (
+    BacktestEngine,
+    BacktestConfig,
+    BacktestResult,
+    BacktestMetrics,
+    MarketBar,
+    Trade,
+    HistoricalDataGenerator
+)
 
 __all__ = [
     # Personality System
@@ -42,5 +51,14 @@ __all__ = [
     'SpecialistTemplate',
     'TemplateLibrary',
     'TemplateCategory',
-    'RiskLevel'
+    'RiskLevel',
+
+    # Backtesting Engine
+    'BacktestEngine',
+    'BacktestConfig',
+    'BacktestResult',
+    'BacktestMetrics',
+    'MarketBar',
+    'Trade',
+    'HistoricalDataGenerator'
 ]

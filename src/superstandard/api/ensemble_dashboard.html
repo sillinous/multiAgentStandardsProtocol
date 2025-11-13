@@ -382,6 +382,64 @@
             margin-bottom: 10px;
         }
 
+        /* Backtest Styles */
+        .backtest-form {
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+        }
+
+        .trade-log-container {
+            max-height: 400px;
+            overflow-y: auto;
+            margin-top: 15px;
+        }
+
+        .trade-log-table {
+            width: 100%;
+            border-collapse: collapse;
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 8px;
+            overflow: hidden;
+        }
+
+        .trade-log-table th {
+            background: rgba(255, 255, 255, 0.1);
+            padding: 12px;
+            text-align: left;
+            font-weight: 600;
+            border-bottom: 2px solid rgba(255, 255, 255, 0.2);
+        }
+
+        .trade-log-table td {
+            padding: 10px 12px;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .trade-log-table tr:hover {
+            background: rgba(255, 255, 255, 0.05);
+        }
+
+        .trade-long {
+            color: #4ade80;
+            font-weight: 600;
+        }
+
+        .trade-short {
+            color: #f87171;
+            font-weight: 600;
+        }
+
+        .pnl-positive {
+            color: #4ade80;
+            font-weight: 600;
+        }
+
+        .pnl-negative {
+            color: #f87171;
+            font-weight: 600;
+        }
+
         /* Template Browser */
         .template-filters {
             display: flex;
@@ -806,6 +864,93 @@
                 🔄 Refresh Analytics
             </button>
         </div>
+
+        <!-- Backtesting Section -->
+        <div class="card full-width" id="backtestSection" style="display: none;">
+            <h2>🧪 Strategy Backtesting</h2>
+
+            <div class="main-grid">
+                <!-- Backtest Configuration -->
+                <div class="card">
+                    <h3>⚙️ Configure Backtest</h3>
+                    <form class="backtest-form" onsubmit="runBacktest(event)">
+                        <div class="form-group">
+                            <label for="backtestSymbol">Symbol</label>
+                            <input type="text" id="backtestSymbol" value="BTC/USD" required>
+                        </div>
+
+                        <div class="form-group">
+                            <label for="backtestStartDate">Start Date</label>
+                            <input type="datetime-local" id="backtestStartDate" required>
+                        </div>
+
+                        <div class="form-group">
+                            <label for="backtestEndDate">End Date</label>
+                            <input type="datetime-local" id="backtestEndDate" required>
+                        </div>
+
+                        <div class="form-group">
+                            <label for="backtestCapital">Initial Capital ($)</label>
+                            <input type="number" id="backtestCapital" value="10000" min="1000" step="1000" required>
+                        </div>
+
+                        <div class="form-group">
+                            <label for="backtestCommission">Commission Rate (%)</label>
+                            <input type="number" id="backtestCommission" value="0.1" min="0" max="5" step="0.01" required>
+                        </div>
+
+                        <div class="form-group">
+                            <label for="backtestPositionSize">Position Size (%)</label>
+                            <input type="number" id="backtestPositionSize" value="95" min="10" max="100" step="5" required>
+                        </div>
+
+                        <button type="submit" id="runBacktestBtn">
+                            🚀 Run Backtest
+                        </button>
+                    </form>
+                </div>
+
+                <!-- Backtest Results Summary -->
+                <div class="card">
+                    <h3>📊 Results Summary</h3>
+                    <div id="backtestSummary" class="empty-state">
+                        <div class="empty-state-icon">⏳</div>
+                        <p>Run a backtest to see results</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Equity Curve -->
+            <div id="backtestEquityCurve" style="display: none; margin-top: 20px;">
+                <h3>💰 Equity Curve</h3>
+                <div class="chart-container">
+                    <canvas id="equityCurveChart"></canvas>
+                </div>
+            </div>
+
+            <!-- Trade Log -->
+            <div id="backtestTradeLog" style="display: none; margin-top: 20px;">
+                <h3>📝 Trade Log</h3>
+                <div class="trade-log-container">
+                    <table class="trade-log-table" id="tradeLogTable">
+                        <thead>
+                            <tr>
+                                <th>ID</th>
+                                <th>Direction</th>
+                                <th>Entry Time</th>
+                                <th>Exit Time</th>
+                                <th>Entry Price</th>
+                                <th>Exit Price</th>
+                                <th>P&L</th>
+                                <th>P&L %</th>
+                            </tr>
+                        </thead>
+                        <tbody id="tradeLogBody">
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
     </div>
 
     <script>
@@ -1017,6 +1162,9 @@
 
                 // Load analytics for this ensemble
                 await loadAnalytics();
+
+                // Show backtest section
+                showBacktestSection();
             } catch (error) {
                 console.error('Failed to load ensemble details:', error);
             }
@@ -1669,6 +1817,233 @@
 
         // ================================================================
         // END ANALYTICS DASHBOARD
+        // ================================================================
+
+        // ================================================================
+        // BACKTEST FUNCTIONS
+        // ================================================================
+
+        // Global backtest state
+        let currentBacktestId = null;
+        let equityCurveChart = null;
+
+        async function runBacktest(event) {
+            event.preventDefault();
+
+            if (!selectedEnsembleId) {
+                alert('Please select an ensemble first');
+                return;
+            }
+
+            const button = document.getElementById('runBacktestBtn');
+            button.disabled = true;
+            button.textContent = '⏳ Running Backtest...';
+
+            try {
+                const startDate = new Date(document.getElementById('backtestStartDate').value).toISOString();
+                const endDate = new Date(document.getElementById('backtestEndDate').value).toISOString();
+                const capital = parseFloat(document.getElementById('backtestCapital').value);
+                const commission = parseFloat(document.getElementById('backtestCommission').value) / 100;
+                const positionSize = parseFloat(document.getElementById('backtestPositionSize').value) / 100;
+
+                const response = await fetch('/api/backtest/run', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        ensemble_id: selectedEnsembleId,
+                        symbol: document.getElementById('backtestSymbol').value,
+                        start_date: startDate,
+                        end_date: endDate,
+                        initial_capital: capital,
+                        commission_rate: commission,
+                        slippage_rate: 0.0005,
+                        position_size: positionSize
+                    })
+                });
+
+                const result = await response.json();
+
+                if (result.success) {
+                    currentBacktestId = result.backtest_id;
+                    await loadBacktestResults(result.backtest_id);
+                } else {
+                    alert('❌ Backtest failed');
+                }
+
+            } catch (error) {
+                console.error('Backtest error:', error);
+                alert('❌ Backtest failed: ' + error.message);
+            } finally {
+                button.disabled = false;
+                button.textContent = '🚀 Run Backtest';
+            }
+        }
+
+        async function loadBacktestResults(backtestId) {
+            try {
+                const response = await fetch(`/api/backtest/${backtestId}`);
+                const result = await response.json();
+
+                // Display summary
+                displayBacktestSummary(result.metrics, result.config);
+
+                // Display equity curve
+                displayEquityCurve(result.equity_curve);
+
+                // Display trade log
+                displayTradeLog(result.trades);
+
+            } catch (error) {
+                console.error('Failed to load backtest results:', error);
+            }
+        }
+
+        function displayBacktestSummary(metrics, config) {
+            const summary = document.getElementById('backtestSummary');
+
+            const returnClass = metrics.total_return_percent >= 0 ? 'pnl-positive' : 'pnl-negative';
+
+            summary.innerHTML = `
+                <div class="stats-grid">
+                    <div class="stat-box">
+                        <div class="stat-value ${returnClass}">${metrics.total_return_percent.toFixed(2)}%</div>
+                        <div class="stat-label">Total Return</div>
+                    </div>
+                    <div class="stat-box">
+                        <div class="stat-value">${metrics.win_rate.toFixed(2)}</div>
+                        <div class="stat-label">Win Rate</div>
+                    </div>
+                    <div class="stat-box">
+                        <div class="stat-value">${metrics.total_trades}</div>
+                        <div class="stat-label">Total Trades</div>
+                    </div>
+                    <div class="stat-box">
+                        <div class="stat-value">${metrics.sharpe_ratio.toFixed(2)}</div>
+                        <div class="stat-label">Sharpe Ratio</div>
+                    </div>
+                    <div class="stat-box">
+                        <div class="stat-value">${metrics.max_drawdown_percent.toFixed(2)}%</div>
+                        <div class="stat-label">Max Drawdown</div>
+                    </div>
+                    <div class="stat-box">
+                        <div class="stat-value">${metrics.profit_factor.toFixed(2)}</div>
+                        <div class="stat-label">Profit Factor</div>
+                    </div>
+                    <div class="stat-box">
+                        <div class="stat-value">$${metrics.final_equity.toFixed(2)}</div>
+                        <div class="stat-label">Final Equity</div>
+                    </div>
+                    <div class="stat-box">
+                        <div class="stat-value">${metrics.avg_trade_duration.toFixed(1)}h</div>
+                        <div class="stat-label">Avg Trade Duration</div>
+                    </div>
+                </div>
+            `;
+        }
+
+        function displayEquityCurve(equityCurve) {
+            const container = document.getElementById('backtestEquityCurve');
+            container.style.display = 'block';
+
+            const ctx = document.getElementById('equityCurveChart').getContext('2d');
+
+            if (equityCurveChart) {
+                equityCurveChart.destroy();
+            }
+
+            equityCurveChart = new Chart(ctx, {
+                type: 'line',
+                data: {
+                    labels: equityCurve.map((_, idx) => idx),
+                    datasets: [{
+                        label: 'Equity',
+                        data: equityCurve.map(e => e.equity),
+                        borderColor: 'rgb(75, 192, 192)',
+                        backgroundColor: 'rgba(75, 192, 192, 0.1)',
+                        tension: 0.3,
+                        fill: true
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    scales: {
+                        x: {
+                            title: {
+                                display: true,
+                                text: 'Time',
+                                color: '#fff'
+                            },
+                            ticks: { color: '#fff' },
+                            grid: { color: 'rgba(255, 255, 255, 0.1)' }
+                        },
+                        y: {
+                            title: {
+                                display: true,
+                                text: 'Equity ($)',
+                                color: '#fff'
+                            },
+                            ticks: { color: '#fff' },
+                            grid: { color: 'rgba(255, 255, 255, 0.1)' }
+                        }
+                    },
+                    plugins: {
+                        legend: {
+                            labels: { color: '#fff' }
+                        },
+                        title: {
+                            display: true,
+                            text: 'Equity Curve Over Time',
+                            color: '#fff'
+                        }
+                    }
+                }
+            });
+        }
+
+        function displayTradeLog(trades) {
+            const container = document.getElementById('backtestTradeLog');
+            const tbody = document.getElementById('tradeLogBody');
+
+            container.style.display = 'block';
+
+            tbody.innerHTML = trades.map(trade => {
+                const directionClass = trade.direction === 'long' ? 'trade-long' : 'trade-short';
+                const pnlClass = trade.pnl >= 0 ? 'pnl-positive' : 'pnl-negative';
+                const pnlSign = trade.pnl >= 0 ? '+' : '';
+
+                return `
+                    <tr>
+                        <td>${trade.trade_id}</td>
+                        <td class="${directionClass}">${trade.direction.toUpperCase()}</td>
+                        <td>${new Date(trade.entry_time).toLocaleString()}</td>
+                        <td>${trade.exit_time ? new Date(trade.exit_time).toLocaleString() : '-'}</td>
+                        <td>$${trade.entry_price.toFixed(2)}</td>
+                        <td>${trade.exit_price ? '$' + trade.exit_price.toFixed(2) : '-'}</td>
+                        <td class="${pnlClass}">${pnlSign}$${trade.pnl.toFixed(2)}</td>
+                        <td class="${pnlClass}">${pnlSign}${trade.pnl_percent.toFixed(2)}%</td>
+                    </tr>
+                `;
+            }).join('');
+        }
+
+        // Show backtest section when ensemble is selected
+        function showBacktestSection() {
+            if (selectedEnsembleId) {
+                document.getElementById('backtestSection').style.display = 'block';
+
+                // Set default dates (last 7 days)
+                const endDate = new Date();
+                const startDate = new Date();
+                startDate.setDate(startDate.getDate() - 7);
+
+                document.getElementById('backtestStartDate').value = startDate.toISOString().slice(0, 16);
+                document.getElementById('backtestEndDate').value = endDate.toISOString().slice(0, 16);
+            }
+        }
+
+        // ================================================================
+        // END BACKTEST FUNCTIONS
         // ================================================================
 
         // Initialize on load
