@@ -264,6 +264,76 @@ async def market_simulation_dashboard():
     return FileResponse(dashboard_path)
 
 # ============================================================================
+# Real-Time Evolution API - Live Genetic Breeding
+# ============================================================================
+
+from .evolution_service import evolution_manager, EvolutionConfig, EvolutionObjective
+
+@app.post("/api/evolution/start")
+async def start_evolution(config: EvolutionConfig):
+    """
+    Start a real-time evolution run.
+
+    Executes genetic breeding in background and streams updates via WebSocket.
+    """
+    try:
+        run_id = await evolution_manager.start_evolution(config)
+        return {
+            "success": True,
+            "run_id": run_id,
+            "message": "Evolution started successfully"
+        }
+    except ValueError as e:
+        raise HTTPException(status_code=400, detail=str(e))
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Failed to start evolution: {str(e)}")
+
+
+@app.post("/api/evolution/stop")
+async def stop_evolution():
+    """Stop the current evolution run."""
+    try:
+        await evolution_manager.stop_evolution()
+        return {
+            "success": True,
+            "message": "Evolution stopped successfully"
+        }
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Failed to stop evolution: {str(e)}")
+
+
+@app.get("/api/evolution/status")
+async def get_evolution_status():
+    """Get current evolution status."""
+    return evolution_manager.get_status()
+
+
+@app.websocket("/api/evolution/stream")
+async def evolution_websocket(websocket: WebSocket):
+    """
+    WebSocket endpoint for streaming live evolution updates.
+
+    Clients connect here to receive real-time updates about:
+    - Generation progress
+    - Fitness improvements
+    - Trait evolution
+    - Best agent updates
+    """
+    await evolution_manager.register_client(websocket)
+
+    try:
+        # Keep connection alive and listen for messages
+        while True:
+            data = await websocket.receive_text()
+            # Could handle client messages here if needed
+
+    except WebSocketDisconnect:
+        await evolution_manager.unregister_client(websocket)
+    except Exception as e:
+        print(f"WebSocket error: {e}")
+        await evolution_manager.unregister_client(websocket)
+
+# ============================================================================
 # Demo Endpoint - Populate Platform with Sample Data
 # ============================================================================
 

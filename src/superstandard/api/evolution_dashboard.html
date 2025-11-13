@@ -674,12 +674,130 @@
             }
         }
 
-        function startEvolution() {
-            if (isRunning) return;
+        // WebSocket connection for real-time evolution
+        let ws = null;
+        let initialFitness = 0;
 
-            isRunning = true;
-            document.getElementById('status').innerHTML = '<span class="status-indicator running"></span><span>Evolution in progress...</span>';
-            addLogEntry('🚀 Starting evolution...');
+        function connectWebSocket() {
+            const protocol = window.location.protocol === 'https:' ? 'wss:' : 'ws:';
+            const wsUrl = `${protocol}//${window.location.host}/api/evolution/stream`;
+
+            ws = new WebSocket(wsUrl);
+
+            ws.onopen = () => {
+                console.log('WebSocket connected');
+                addLogEntry('🔌 Connected to evolution server');
+            };
+
+            ws.onmessage = (event) => {
+                const message = JSON.parse(event.data);
+                handleEvolutionMessage(message);
+            };
+
+            ws.onclose = () => {
+                console.log('WebSocket disconnected');
+                if (isRunning) {
+                    addLogEntry('⚠️ Connection lost - attempting reconnect...');
+                    setTimeout(connectWebSocket, 2000);
+                }
+            };
+
+            ws.onerror = (error) => {
+                console.error('WebSocket error:', error);
+                addLogEntry('❌ Connection error');
+            };
+        }
+
+        function handleEvolutionMessage(message) {
+            console.log('Evolution message:', message);
+
+            switch (message.type) {
+                case 'evolution_started':
+                    addLogEntry(`🚀 Evolution started (Run ID: ${message.run_id})`);
+                    break;
+
+                case 'market_generated':
+                    addLogEntry(`📊 Market generated: ${message.regime} regime (${message.bars} bars)`);
+                    break;
+
+                case 'population_update':
+                    handlePopulationUpdate(message);
+                    break;
+
+                case 'generation_started':
+                    addLogEntry(`⚡ Generation ${message.generation} starting...`);
+                    break;
+
+                case 'evolution_completed':
+                    stopEvolution(true);
+                    addLogEntry('🎉 Evolution completed successfully!', true);
+                    break;
+
+                case 'evolution_stopped':
+                    stopEvolution(false);
+                    break;
+
+                case 'evolution_error':
+                    addLogEntry(`❌ Error: ${message.error}`, true);
+                    stopEvolution(false);
+                    break;
+            }
+        }
+
+        function handlePopulationUpdate(message) {
+            const gen = message.generation;
+            const stats = message.stats;
+            const traits = message.traits;
+            const archetypes = message.archetypes;
+            const bestAgent = message.best_agent;
+
+            // Track initial fitness
+            if (gen === 0) {
+                initialFitness = stats.avg_fitness;
+            }
+
+            // Update evolution data
+            evolutionData.generations.push(gen);
+            evolutionData.avgFitness.push(stats.avg_fitness);
+            evolutionData.maxFitness.push(stats.max_fitness);
+            evolutionData.minFitness.push(stats.min_fitness);
+
+            // Update charts
+            updateCharts({
+                generation: gen,
+                avg_fitness: stats.avg_fitness,
+                max_fitness: stats.max_fitness,
+                min_fitness: stats.min_fitness,
+                traits: traits,
+                archetypes: archetypes
+            });
+
+            // Update status
+            updateStatus({
+                generation: gen,
+                avg_fitness: stats.avg_fitness,
+                max_fitness: stats.max_fitness,
+                improvement: stats.improvement
+            });
+
+            // Update best agent
+            if (bestAgent) {
+                updateBestAgent({
+                    agent_id: bestAgent.id,
+                    generation: bestAgent.generation,
+                    fitness: bestAgent.fitness,
+                    archetype: bestAgent.personality.archetype,
+                    personality: bestAgent.personality
+                });
+            }
+
+            // Log update
+            const improvementStr = stats.improvement >= 0 ? `+${stats.improvement.toFixed(1)}%` : `${stats.improvement.toFixed(1)}%`;
+            addLogEntry(`Gen ${gen}: Avg=${stats.avg_fitness.toFixed(3)} Max=${stats.max_fitness.toFixed(3)} (${improvementStr})`);
+        }
+
+        async function startEvolution() {
+            if (isRunning) return;
 
             // Reset data
             evolutionData = {
@@ -709,120 +827,62 @@
             // Get config
             const config = {
                 objective: document.getElementById('objective').value,
-                population: parseInt(document.getElementById('population').value),
+                population_size: parseInt(document.getElementById('population').value),
                 generations: parseInt(document.getElementById('generations').value),
-                mutation: parseFloat(document.getElementById('mutation').value)
+                mutation_rate: parseFloat(document.getElementById('mutation').value),
+                market_regime: 'volatile'  // Default to volatile for testing
             };
 
-            // Simulate evolution (in real implementation, this would call backend API)
-            simulateEvolution(config);
+            // Connect WebSocket if not connected
+            if (!ws || ws.readyState !== WebSocket.OPEN) {
+                connectWebSocket();
+                await new Promise(resolve => setTimeout(resolve, 500)); // Wait for connection
+            }
+
+            isRunning = true;
+            document.getElementById('status').innerHTML = '<span class="status-indicator running"></span><span>Evolution in progress...</span>';
+            addLogEntry('🚀 Starting REAL evolution on server...');
+
+            // Start evolution on backend
+            try {
+                const response = await fetch('/api/evolution/start', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(config)
+                });
+
+                const result = await response.json();
+
+                if (result.success) {
+                    addLogEntry(`✅ Evolution started successfully (ID: ${result.run_id})`);
+                } else {
+                    throw new Error(result.message || 'Failed to start evolution');
+                }
+            } catch (error) {
+                console.error('Failed to start evolution:', error);
+                addLogEntry(`❌ Failed to start: ${error.message}`, true);
+                isRunning = false;
+                document.getElementById('status').innerHTML = '<span class="status-indicator error"></span><span>Error starting evolution</span>';
+            }
         }
 
-        function simulateEvolution(config) {
-            let generation = 0;
-            const totalGens = config.generations;
-
-            // Initial generation
-            const initialFitness = 0.3 + Math.random() * 0.3;
-            const genData = {
-                generation: 0,
-                avg_fitness: initialFitness,
-                max_fitness: initialFitness + 0.1,
-                min_fitness: initialFitness - 0.1,
-                traits: {
-                    openness: 0.5,
-                    conscientiousness: 0.5,
-                    extraversion: 0.5,
-                    agreeableness: 0.5,
-                    neuroticism: 0.5
-                },
-                archetypes: {
-                    'Balanced': 15,
-                    'Innovator': 2,
-                    'Executor': 2,
-                    'Explorer': 1
+        async function stopEvolution(complete = false) {
+            if (!complete && isRunning) {
+                // Call backend to stop evolution
+                try {
+                    await fetch('/api/evolution/stop', { method: 'POST' });
+                } catch (error) {
+                    console.error('Failed to stop evolution:', error);
                 }
-            };
-
-            evolutionData.avgFitness.push(genData.avg_fitness);
-            updateCharts(genData);
-            updateStatus(genData);
-            addLogEntry(`Gen 0: Initialized with avg fitness ${genData.avg_fitness.toFixed(3)}`);
-
-            evolutionInterval = setInterval(() => {
-                if (!isRunning || generation >= totalGens) {
-                    stopEvolution(true);
-                    return;
-                }
-
-                generation++;
-
-                // Simulate improvement
-                const improvement = 0.03 + Math.random() * 0.05;
-                const prevFitness = evolutionData.avgFitness[evolutionData.avgFitness.length - 1];
-                const newFitness = Math.min(1.0, prevFitness + improvement);
-
-                // Evolve traits toward objective
-                const traits = { ...genData.traits };
-                if (config.objective === 'innovation') {
-                    traits.openness = Math.min(1, traits.openness + 0.05);
-                    traits.conscientiousness = Math.max(0, traits.conscientiousness - 0.02);
-                } else if (config.objective === 'reliability') {
-                    traits.conscientiousness = Math.min(1, traits.conscientiousness + 0.05);
-                    traits.neuroticism = Math.max(0, traits.neuroticism - 0.03);
-                }
-
-                const newGenData = {
-                    generation: generation,
-                    avg_fitness: newFitness,
-                    max_fitness: newFitness + 0.08,
-                    min_fitness: newFitness - 0.15,
-                    traits: traits,
-                    archetypes: generation < totalGens / 2 ? {
-                        'Innovator': Math.floor(10 + generation * 0.5),
-                        'Executor': Math.floor(5 + generation * 0.3),
-                        'Balanced': Math.floor(5 - generation * 0.3)
-                    } : {
-                        'Innovator': config.population
-                    }
-                };
-
-                evolutionData.avgFitness.push(newGenData.avg_fitness);
-                updateCharts(newGenData);
-                updateStatus(newGenData);
-
-                const improvementPct = ((newFitness - initialFitness) / initialFitness * 100);
-                addLogEntry(`Gen ${generation}: Avg=${newFitness.toFixed(3)} (+${improvementPct.toFixed(1)}%)`);
-
-                if (generation % 3 === 0) {
-                    const bestAgent = {
-                        agent_id: `gen${generation}_agent_001`,
-                        generation: generation,
-                        fitness: newGenData.max_fitness,
-                        archetype: 'Innovator',
-                        personality: traits,
-                        mutations: generation
-                    };
-                    updateBestAgent(bestAgent);
-                    addLogEntry(`🏆 New best agent: ${bestAgent.agent_id} (fitness: ${bestAgent.fitness.toFixed(3)})`, true);
-                }
-            }, 800);
-        }
-
-        function stopEvolution(complete = false) {
-            if (evolutionInterval) {
-                clearInterval(evolutionInterval);
-                evolutionInterval = null;
             }
 
             isRunning = false;
 
             if (complete) {
                 document.getElementById('status').innerHTML = '<span class="status-indicator complete"></span><span>Evolution complete!</span>';
-                addLogEntry('✅ Evolution completed successfully!', true);
             } else {
                 document.getElementById('status').innerHTML = '<span class="status-indicator idle"></span><span>Evolution stopped</span>';
-                addLogEntry('⏹️ Evolution stopped by user');
+                addLogEntry('⏹️ Evolution stopped');
             }
         }
 
@@ -873,6 +933,7 @@
 
         // Initialize on page load
         initCharts();
+        connectWebSocket(); // Connect to evolution server
     </script>
 </body>
 </html>
