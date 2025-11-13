@@ -436,6 +436,25 @@ async def get_ensemble(ensemble_id: str):
 
     return entry.to_dict()
 
+@app.get("/api/ensemble/{ensemble_id}/analytics")
+async def get_analytics(ensemble_id: str):
+    """
+    Get comprehensive analytics data for ensemble visualization.
+
+    Returns:
+    - Performance history (win rates, returns over time)
+    - Regime history and distribution
+    - Routing analytics (specialist usage, confidence trends)
+    - Specialist performance comparison
+    - Decision timeline
+    """
+    entry = ensemble_manager.get_ensemble(ensemble_id)
+
+    if not entry:
+        raise HTTPException(status_code=404, detail="Ensemble not found")
+
+    return entry.get_analytics()
+
 @app.post("/api/ensemble/{ensemble_id}/decision")
 async def get_decision(ensemble_id: str, request: DecisionRequest):
     """

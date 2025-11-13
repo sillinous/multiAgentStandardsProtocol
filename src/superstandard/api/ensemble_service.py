@@ -71,6 +71,16 @@ class EnsembleRegistryEntry:
     decision_history: List[Dict[str, Any]] = field(default_factory=list)
     metadata: Dict[str, Any] = field(default_factory=dict)
 
+    # Analytics tracking
+    performance_history: List[Dict[str, Any]] = field(default_factory=list)
+    regime_history: List[Dict[str, Any]] = field(default_factory=list)
+    routing_analytics: Dict[str, Any] = field(default_factory=lambda: {
+        'specialist_usage': {},
+        'regime_distribution': {},
+        'decision_distribution': {},
+        'confidence_over_time': []
+    })
+
     def to_dict(self) -> Dict[str, Any]:
         """Export registry entry data"""
         return {
@@ -83,6 +93,91 @@ class EnsembleRegistryEntry:
             'metadata': self.metadata,
             'ensemble_stats': self.ensemble.get_statistics()
         }
+
+    def get_analytics(self) -> Dict[str, Any]:
+        """Export comprehensive analytics data for visualization"""
+        return {
+            'ensemble_id': self.ensemble_id,
+            'name': self.name,
+            'performance_history': self.performance_history[-100:],  # Last 100 snapshots
+            'regime_history': self.regime_history[-100:],
+            'routing_analytics': self.routing_analytics,
+            'specialist_performance': {
+                stype.value: {
+                    'win_rate': spec.get_win_rate(),
+                    'total_return': spec.total_return,
+                    'sharpe_ratio': spec.sharpe_ratio,
+                    'max_drawdown': spec.max_drawdown,
+                    'total_trades': spec.total_trades,
+                    'performance_score': spec.get_performance_score()
+                }
+                for stype, spec in self.ensemble.specialists.items()
+            },
+            'decision_timeline': [
+                {
+                    'timestamp': d['timestamp'],
+                    'decision': d['decision'],
+                    'regime': d['metadata'].get('regime'),
+                    'confidence': d['metadata'].get('confidence', 0.0)
+                }
+                for d in self.decision_history[-50:]  # Last 50 decisions
+            ]
+        }
+
+    def update_analytics(self, decision: str, metadata: Dict[str, Any], current_price: float):
+        """Update analytics tracking after each decision"""
+        now = datetime.now()
+
+        # Update regime history
+        regime = metadata.get('regime')
+        if regime:
+            self.regime_history.append({
+                'timestamp': now.isoformat(),
+                'regime': regime
+            })
+            if len(self.regime_history) > 200:
+                self.regime_history = self.regime_history[-200:]
+
+            # Update regime distribution
+            self.routing_analytics['regime_distribution'][regime] = \
+                self.routing_analytics['regime_distribution'].get(regime, 0) + 1
+
+        # Update decision distribution
+        self.routing_analytics['decision_distribution'][decision] = \
+            self.routing_analytics['decision_distribution'].get(decision, 0) + 1
+
+        # Update specialist usage
+        specialist = metadata.get('specialist_used')
+        if specialist:
+            self.routing_analytics['specialist_usage'][specialist] = \
+                self.routing_analytics['specialist_usage'].get(specialist, 0) + 1
+
+        # Track confidence over time
+        confidence = metadata.get('confidence', 0.0)
+        self.routing_analytics['confidence_over_time'].append({
+            'timestamp': now.isoformat(),
+            'confidence': confidence
+        })
+        if len(self.routing_analytics['confidence_over_time']) > 200:
+            self.routing_analytics['confidence_over_time'] = \
+                self.routing_analytics['confidence_over_time'][-200:]
+
+        # Update performance snapshot (every 10 decisions)
+        if self.total_decisions % 10 == 0:
+            self.performance_history.append({
+                'timestamp': now.isoformat(),
+                'total_decisions': self.total_decisions,
+                'specialists': {
+                    stype.value: {
+                        'win_rate': spec.get_win_rate(),
+                        'total_return': spec.total_return,
+                        'total_trades': spec.total_trades
+                    }
+                    for stype, spec in self.ensemble.specialists.items()
+                }
+            })
+            if len(self.performance_history) > 200:
+                self.performance_history = self.performance_history[-200:]
 
 
 # ============================================================================
@@ -429,6 +524,9 @@ class EnsembleManager:
         # Keep only recent history
         if len(entry.decision_history) > 100:
             entry.decision_history = entry.decision_history[-100:]
+
+        # Update analytics
+        entry.update_analytics(decision, metadata, current_price)
 
         # Broadcast
         await self.broadcast({

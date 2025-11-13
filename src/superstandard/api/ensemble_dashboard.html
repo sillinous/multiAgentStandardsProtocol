@@ -314,6 +314,28 @@
             margin-top: 20px;
         }
 
+        /* Analytics Grid */
+        .analytics-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(450px, 1fr));
+            gap: 20px;
+            margin-top: 20px;
+        }
+
+        .analytics-card {
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 10px;
+            padding: 20px;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .analytics-card h3 {
+            font-size: 1.2em;
+            margin-bottom: 15px;
+            color: #fff;
+            text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.2);
+        }
+
         /* Scrollbar Styling */
         ::-webkit-scrollbar {
             width: 8px;
@@ -741,6 +763,49 @@
                 <canvas id="routingChart"></canvas>
             </div>
         </div>
+
+        <!-- Analytics Dashboard -->
+        <div class="card full-width" id="analyticsSection" style="display: none;">
+            <h2>📊 Advanced Analytics</h2>
+
+            <div class="analytics-grid">
+                <!-- Performance Comparison -->
+                <div class="analytics-card">
+                    <h3>📈 Performance Over Time</h3>
+                    <div class="chart-container">
+                        <canvas id="performanceChart"></canvas>
+                    </div>
+                </div>
+
+                <!-- Regime Distribution -->
+                <div class="analytics-card">
+                    <h3>🌤️ Market Regime Distribution</h3>
+                    <div class="chart-container">
+                        <canvas id="regimeChart"></canvas>
+                    </div>
+                </div>
+
+                <!-- Confidence Trends -->
+                <div class="analytics-card">
+                    <h3>🎯 Decision Confidence Trends</h3>
+                    <div class="chart-container">
+                        <canvas id="confidenceChart"></canvas>
+                    </div>
+                </div>
+
+                <!-- Specialist Effectiveness -->
+                <div class="analytics-card">
+                    <h3>⭐ Specialist Effectiveness</h3>
+                    <div class="chart-container">
+                        <canvas id="effectivenessChart"></canvas>
+                    </div>
+                </div>
+            </div>
+
+            <button onclick="refreshAnalytics()" style="margin-top: 20px;">
+                🔄 Refresh Analytics
+            </button>
+        </div>
     </div>
 
     <script>
@@ -824,6 +889,10 @@
                     addDecisionToFeed(message);
                     updateRoutingChart(message.specialist_used);
                     decisionCount++;
+                    // Refresh analytics after every 5 decisions
+                    if (selectedEnsembleId && decisionCount % 5 === 0) {
+                        loadAnalytics();
+                    }
                     break;
                 case 'ensemble_deleted':
                     if (selectedEnsembleId === message.ensemble_id) {
@@ -945,6 +1014,9 @@
                 renderSpecialists(data.ensemble_stats.specialists || {});
 
                 document.getElementById('ensembleDetails').style.display = 'block';
+
+                // Load analytics for this ensemble
+                await loadAnalytics();
             } catch (error) {
                 console.error('Failed to load ensemble details:', error);
             }
@@ -1311,6 +1383,293 @@
                 alert('❌ Failed to deploy template: ' + error.message);
             }
         }
+
+        // ================================================================
+        // ANALYTICS DASHBOARD
+        // ================================================================
+
+        // Global analytics charts
+        let analyticsCharts = {
+            performance: null,
+            regime: null,
+            confidence: null,
+            effectiveness: null
+        };
+
+        async function loadAnalytics() {
+            if (!selectedEnsembleId) {
+                console.log('No ensemble selected');
+                return;
+            }
+
+            try {
+                const response = await fetch(`/api/ensemble/${selectedEnsembleId}/analytics`);
+                const analytics = await response.json();
+
+                // Show analytics section
+                document.getElementById('analyticsSection').style.display = 'block';
+
+                // Render all charts
+                renderPerformanceChart(analytics);
+                renderRegimeChart(analytics);
+                renderConfidenceChart(analytics);
+                renderEffectivenessChart(analytics);
+
+            } catch (error) {
+                console.error('Failed to load analytics:', error);
+            }
+        }
+
+        function renderPerformanceChart(analytics) {
+            const ctx = document.getElementById('performanceChart').getContext('2d');
+
+            // Destroy existing chart
+            if (analyticsCharts.performance) {
+                analyticsCharts.performance.destroy();
+            }
+
+            // Prepare data - show win rate over time for each specialist
+            const performanceHistory = analytics.performance_history || [];
+
+            if (performanceHistory.length === 0) {
+                return;
+            }
+
+            // Extract specialist names
+            const specialists = Object.keys(performanceHistory[0]?.specialists || {});
+
+            const datasets = specialists.map((specialist, idx) => {
+                const colors = [
+                    'rgb(255, 99, 132)',
+                    'rgb(54, 162, 235)',
+                    'rgb(255, 206, 86)',
+                    'rgb(75, 192, 192)',
+                    'rgb(153, 102, 255)'
+                ];
+
+                return {
+                    label: specialist,
+                    data: performanceHistory.map(snapshot => ({
+                        x: snapshot.total_decisions,
+                        y: (snapshot.specialists[specialist]?.win_rate || 0) * 100
+                    })),
+                    borderColor: colors[idx % colors.length],
+                    backgroundColor: colors[idx % colors.length].replace('rgb', 'rgba').replace(')', ', 0.1)'),
+                    tension: 0.3,
+                    fill: true
+                };
+            });
+
+            analyticsCharts.performance = new Chart(ctx, {
+                type: 'line',
+                data: { datasets },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    scales: {
+                        x: {
+                            type: 'linear',
+                            title: {
+                                display: true,
+                                text: 'Total Decisions',
+                                color: '#fff'
+                            },
+                            ticks: { color: '#fff' },
+                            grid: { color: 'rgba(255, 255, 255, 0.1)' }
+                        },
+                        y: {
+                            title: {
+                                display: true,
+                                text: 'Win Rate (%)',
+                                color: '#fff'
+                            },
+                            ticks: { color: '#fff' },
+                            grid: { color: 'rgba(255, 255, 255, 0.1)' }
+                        }
+                    },
+                    plugins: {
+                        legend: {
+                            labels: { color: '#fff' }
+                        },
+                        title: {
+                            display: true,
+                            text: 'Specialist Win Rates Over Time',
+                            color: '#fff'
+                        }
+                    }
+                }
+            });
+        }
+
+        function renderRegimeChart(analytics) {
+            const ctx = document.getElementById('regimeChart').getContext('2d');
+
+            if (analyticsCharts.regime) {
+                analyticsCharts.regime.destroy();
+            }
+
+            const regimeDistribution = analytics.routing_analytics?.regime_distribution || {};
+
+            analyticsCharts.regime = new Chart(ctx, {
+                type: 'doughnut',
+                data: {
+                    labels: Object.keys(regimeDistribution),
+                    datasets: [{
+                        data: Object.values(regimeDistribution),
+                        backgroundColor: [
+                            'rgba(75, 192, 192, 0.8)',   // bull - green
+                            'rgba(255, 99, 132, 0.8)',   // bear - red
+                            'rgba(255, 206, 86, 0.8)',   // volatile - yellow
+                            'rgba(153, 102, 255, 0.8)'   // sideways - purple
+                        ]
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: {
+                            labels: { color: '#fff' }
+                        },
+                        title: {
+                            display: true,
+                            text: 'Market Regime Distribution',
+                            color: '#fff'
+                        }
+                    }
+                }
+            });
+        }
+
+        function renderConfidenceChart(analytics) {
+            const ctx = document.getElementById('confidenceChart').getContext('2d');
+
+            if (analyticsCharts.confidence) {
+                analyticsCharts.confidence.destroy();
+            }
+
+            const confidenceData = analytics.routing_analytics?.confidence_over_time || [];
+
+            analyticsCharts.confidence = new Chart(ctx, {
+                type: 'line',
+                data: {
+                    labels: confidenceData.map((_, idx) => idx),
+                    datasets: [{
+                        label: 'Confidence',
+                        data: confidenceData.map(item => item.confidence * 100),
+                        borderColor: 'rgb(54, 162, 235)',
+                        backgroundColor: 'rgba(54, 162, 235, 0.1)',
+                        tension: 0.3,
+                        fill: true
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    scales: {
+                        x: {
+                            title: {
+                                display: true,
+                                text: 'Decision Number',
+                                color: '#fff'
+                            },
+                            ticks: { color: '#fff' },
+                            grid: { color: 'rgba(255, 255, 255, 0.1)' }
+                        },
+                        y: {
+                            min: 0,
+                            max: 100,
+                            title: {
+                                display: true,
+                                text: 'Confidence (%)',
+                                color: '#fff'
+                            },
+                            ticks: { color: '#fff' },
+                            grid: { color: 'rgba(255, 255, 255, 0.1)' }
+                        }
+                    },
+                    plugins: {
+                        legend: {
+                            labels: { color: '#fff' }
+                        },
+                        title: {
+                            display: true,
+                            text: 'Decision Confidence Trend',
+                            color: '#fff'
+                        }
+                    }
+                }
+            });
+        }
+
+        function renderEffectivenessChart(analytics) {
+            const ctx = document.getElementById('effectivenessChart').getContext('2d');
+
+            if (analyticsCharts.effectiveness) {
+                analyticsCharts.effectiveness.destroy();
+            }
+
+            const specialistPerf = analytics.specialist_performance || {};
+            const specialists = Object.keys(specialistPerf);
+
+            analyticsCharts.effectiveness = new Chart(ctx, {
+                type: 'bar',
+                data: {
+                    labels: specialists,
+                    datasets: [
+                        {
+                            label: 'Win Rate',
+                            data: specialists.map(s => specialistPerf[s]?.win_rate * 100 || 0),
+                            backgroundColor: 'rgba(75, 192, 192, 0.8)'
+                        },
+                        {
+                            label: 'Performance Score',
+                            data: specialists.map(s => specialistPerf[s]?.performance_score * 100 || 0),
+                            backgroundColor: 'rgba(54, 162, 235, 0.8)'
+                        }
+                    ]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    scales: {
+                        x: {
+                            ticks: { color: '#fff' },
+                            grid: { color: 'rgba(255, 255, 255, 0.1)' }
+                        },
+                        y: {
+                            min: 0,
+                            max: 100,
+                            title: {
+                                display: true,
+                                text: 'Score (%)',
+                                color: '#fff'
+                            },
+                            ticks: { color: '#fff' },
+                            grid: { color: 'rgba(255, 255, 255, 0.1)' }
+                        }
+                    },
+                    plugins: {
+                        legend: {
+                            labels: { color: '#fff' }
+                        },
+                        title: {
+                            display: true,
+                            text: 'Specialist Effectiveness Comparison',
+                            color: '#fff'
+                        }
+                    }
+                }
+            });
+        }
+
+        async function refreshAnalytics() {
+            await loadAnalytics();
+        }
+
+        // ================================================================
+        // END ANALYTICS DASHBOARD
+        // ================================================================
 
         // Initialize on load
         window.addEventListener('load', () => {
