@@ -926,6 +926,268 @@ async def delete_backtest(backtest_id: str):
 
 
 # ============================================================================
+# PARETO EVOLUTION ENDPOINTS - Multi-Objective Optimization
+# ============================================================================
+
+from superstandard.agents.pareto_evolution import (
+    ParetoEvolutionEngine,
+    ParetoEvolutionConfig,
+    Objective,
+    ObjectiveType
+)
+
+# In-memory Pareto evolution results storage
+pareto_results_storage = {}
+
+class ParetoEvolutionRequest(BaseModel):
+    """Request model for running Pareto evolution"""
+    ensemble_id: str
+    population_size: int = 30
+    num_generations: int = 10
+    objectives: List[Dict[str, Any]]  # List of {type, minimize, weight}
+    backtest_config: Dict[str, Any]  # Backtest configuration
+
+
+@app.post("/api/pareto/evolve")
+async def run_pareto_evolution(request: ParetoEvolutionRequest):
+    """
+    Run multi-objective Pareto evolution to find optimal trade-offs.
+
+    This discovers the Pareto frontier - agents that represent optimal
+    balance between competing objectives (return vs risk, etc.).
+
+    Returns:
+    - Evolution ID for retrieving results
+    - Preliminary metrics on Pareto frontier size
+    """
+    try:
+        # Get base ensemble
+        entry = ensemble_manager.get_ensemble(request.ensemble_id)
+        if not entry:
+            raise HTTPException(status_code=404, detail="Ensemble not found")
+
+        # Parse objectives
+        objectives = []
+        for obj_data in request.objectives:
+            obj_type = ObjectiveType(obj_data['type'])
+            objectives.append(Objective(
+                objective_type=obj_type,
+                minimize=obj_data.get('minimize', False),
+                weight=obj_data.get('weight', 1.0)
+            ))
+
+        # Create Pareto config
+        pareto_config = ParetoEvolutionConfig(
+            population_size=request.population_size,
+            num_generations=request.num_generations,
+            objectives=objectives,
+            mutation_rate=0.1
+        )
+
+        # Create engine
+        engine = ParetoEvolutionEngine(pareto_config)
+
+        # Parse backtest config
+        bt_config = request.backtest_config
+        start_date = datetime.fromisoformat(bt_config['start_date'].replace('Z', '+00:00'))
+        end_date = datetime.fromisoformat(bt_config['end_date'].replace('Z', '+00:00'))
+
+        # Generate historical data
+        historical_data = HistoricalDataGenerator.generate_price_data(
+            start_date=start_date,
+            end_date=end_date,
+            initial_price=100.0,
+            volatility=0.02
+        )
+
+        # Define fitness function
+        def fitness_func(genome):
+            # Create temporary ensemble with this genome
+            temp_ensemble = type(entry.ensemble)(
+                use_voting=entry.ensemble.use_voting,
+                voting_threshold=entry.ensemble.voting_threshold
+            )
+
+            # Add all specialists from original with same types but new genome
+            for spec_type in entry.ensemble.specialists.keys():
+                original_specialist = entry.ensemble.specialists[spec_type]
+                temp_ensemble.add_specialist(
+                    genome,
+                    spec_type,
+                    original_specialist.strategy_func
+                )
+
+            # Run backtest
+            bt_engine = BacktestEngine(BacktestConfig(
+                symbol=bt_config.get('symbol', 'BTC/USD'),
+                start_date=start_date,
+                end_date=end_date,
+                initial_capital=bt_config.get('initial_capital', 10000.0),
+                commission_rate=bt_config.get('commission_rate', 0.001),
+                slippage_rate=bt_config.get('slippage_rate', 0.0005),
+                position_size=bt_config.get('position_size', 0.95)
+            ))
+
+            result = bt_engine.run(temp_ensemble, historical_data)
+
+            return {
+                'total_return_percent': result.metrics.total_return_percent,
+                'sharpe_ratio': result.metrics.sharpe_ratio,
+                'win_rate': result.metrics.win_rate,
+                'max_drawdown_percent': result.metrics.max_drawdown_percent,
+                'total_trades': result.metrics.total_trades,
+                'profit_factor': result.metrics.profit_factor
+            }
+
+        # Run evolution
+        print(f"🧬 Starting Pareto evolution with {request.population_size} agents, {request.num_generations} generations...")
+        evolution_result = engine.evolve(fitness_func)
+
+        # Generate evolution ID
+        evolution_id = f"pareto_{datetime.now().strftime('%Y%m%d_%H%M%S')}_{request.ensemble_id[:8]}"
+
+        # Store results
+        pareto_results_storage[evolution_id] = {
+            'evolution_id': evolution_id,
+            'ensemble_id': request.ensemble_id,
+            'config': pareto_config,
+            'result': evolution_result,
+            'created_at': datetime.now()
+        }
+
+        # Return summary
+        return {
+            'success': True,
+            'evolution_id': evolution_id,
+            'pareto_frontier_size': len(evolution_result.pareto_frontier),
+            'total_fronts': len(evolution_result.all_fronts),
+            'generations_completed': request.num_generations,
+            'objectives': [obj.objective_type.value for obj in objectives]
+        }
+
+    except Exception as e:
+        import traceback
+        traceback.print_exc()
+        raise HTTPException(status_code=500, detail=f"Pareto evolution failed: {str(e)}")
+
+
+@app.get("/api/pareto/{evolution_id}")
+async def get_pareto_results(evolution_id: str):
+    """
+    Retrieve complete Pareto evolution results.
+
+    Returns:
+    - Pareto frontier (non-dominated solutions)
+    - All fronts
+    - Generation history
+    - Agent genomes with objective scores
+    """
+    if evolution_id not in pareto_results_storage:
+        raise HTTPException(status_code=404, detail="Evolution not found")
+
+    stored = pareto_results_storage[evolution_id]
+    result = stored['result']
+    config = stored['config']
+
+    # Format Pareto frontier
+    frontier_agents = []
+    for genome, score in result.pareto_frontier:
+        frontier_agents.append({
+            'agent_id': genome.agent_id,
+            'generation': genome.generation,
+            'fitness_score': genome.fitness_score,
+            'objectives': {
+                obj_type.value: score.objectives.get(obj_type, 0.0)
+                for obj_type in score.objectives.keys()
+            },
+            'dominance_rank': score.dominance_rank,
+            'crowding_distance': score.crowding_distance,
+            'personality': {
+                'openness': genome.personality.openness,
+                'conscientiousness': genome.personality.conscientiousness,
+                'extraversion': genome.personality.extraversion,
+                'agreeableness': genome.personality.agreeableness,
+                'neuroticism': genome.personality.neuroticism
+            }
+        })
+
+    # Format all fronts
+    all_fronts_formatted = []
+    for front_idx, front in enumerate(result.all_fronts):
+        front_agents = []
+        for genome, score in front:
+            front_agents.append({
+                'agent_id': genome.agent_id,
+                'objectives': {
+                    obj_type.value: score.objectives.get(obj_type, 0.0)
+                    for obj_type in score.objectives.keys()
+                },
+                'dominance_rank': score.dominance_rank
+            })
+        all_fronts_formatted.append({
+            'front_index': front_idx,
+            'agents': front_agents
+        })
+
+    return {
+        'evolution_id': evolution_id,
+        'ensemble_id': stored['ensemble_id'],
+        'created_at': stored['created_at'].isoformat(),
+        'config': {
+            'population_size': config.population_size,
+            'num_generations': config.num_generations,
+            'objectives': [
+                {
+                    'type': obj.objective_type.value,
+                    'minimize': obj.minimize,
+                    'weight': obj.weight
+                }
+                for obj in config.objectives
+            ]
+        },
+        'pareto_frontier': frontier_agents,
+        'all_fronts': all_fronts_formatted,
+        'generation_history': result.generation_history
+    }
+
+
+@app.get("/api/pareto")
+async def list_pareto_evolutions():
+    """List all Pareto evolution runs with summary information"""
+    summaries = []
+
+    for evolution_id, stored in pareto_results_storage.items():
+        result = stored['result']
+        summaries.append({
+            'evolution_id': evolution_id,
+            'ensemble_id': stored['ensemble_id'],
+            'created_at': stored['created_at'].isoformat(),
+            'pareto_frontier_size': len(result.pareto_frontier),
+            'total_fronts': len(result.all_fronts),
+            'generations': stored['config'].num_generations
+        })
+
+    return {
+        'total': len(summaries),
+        'evolutions': summaries
+    }
+
+
+@app.delete("/api/pareto/{evolution_id}")
+async def delete_pareto_evolution(evolution_id: str):
+    """Delete a Pareto evolution result"""
+    if evolution_id not in pareto_results_storage:
+        raise HTTPException(status_code=404, detail="Evolution not found")
+
+    del pareto_results_storage[evolution_id]
+
+    return {
+        'success': True,
+        'message': f'Evolution {evolution_id} deleted'
+    }
+
+
+# ============================================================================
 # Demo Endpoint - Populate Platform with Sample Data
 # ============================================================================
 
