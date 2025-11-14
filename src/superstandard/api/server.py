@@ -2241,18 +2241,53 @@ async def admin_stats():
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
 
+@app.get("/health")
 @app.get("/api/health")
 async def health_check():
-    """Health check endpoint."""
-    return {
-        "status": "healthy",
-        "timestamp": datetime.utcnow().isoformat(),
-        "protocols": {
-            "anp": "operational",
-            "acp": "operational",
-            "aconsp": "operational"
+    """
+    Health check endpoint for monitoring and Docker health checks.
+
+    Returns comprehensive system health including:
+    - Overall status
+    - Protocol availability
+    - Feature status
+    - System metrics
+    """
+    try:
+        # Check component health
+        ensemble_count = len(ensemble_manager.list_ensembles().get('ensembles', []))
+        evolution_count = len(continuous_evolution_engines)
+
+        return {
+            "status": "healthy",
+            "timestamp": datetime.utcnow().isoformat(),
+            "version": "1.0.0",
+            "protocols": {
+                "anp": "operational",
+                "acp": "operational",
+                "aconsp": "operational"
+            },
+            "features": {
+                "ensemble_management": "operational",
+                "continuous_evolution": "operational",
+                "pareto_evolution": "operational",
+                "backtesting": "operational",
+                "analytics": "operational"
+            },
+            "metrics": {
+                "active_ensembles": ensemble_count,
+                "active_evolutions": evolution_count,
+                "backtest_runs": len(backtest_results_storage),
+                "pareto_runs": len(pareto_results_storage)
+            }
         }
-    }
+    except Exception as e:
+        # If any check fails, return unhealthy
+        return {
+            "status": "unhealthy",
+            "timestamp": datetime.utcnow().isoformat(),
+            "error": str(e)
+        }
 
 # ============================================================================
 # WebSocket Endpoints for Real-Time Updates

@@ -1,0 +1,235 @@
+# Docker Compose for Agentic Forge Platform (Python Implementation)
+# Complete stack with API server, database, cache, and optional monitoring
+#
+# Usage:
+#   Development:  docker-compose -f docker-compose.python.yml up
+#   Production:   docker-compose -f docker-compose.python.yml --profile production up
+#   With monitoring: docker-compose -f docker-compose.python.yml --profile monitoring up
+
+version: '3.8'
+
+services:
+  # ============================================================================
+  # Agentic Forge API Server (Python)
+  # ============================================================================
+  api:
+    build:
+      context: .
+      dockerfile: Dockerfile.python
+      target: production
+    container_name: agentic-forge-api
+    ports:
+      - "${API_PORT:-8080}:8080"
+    environment:
+      # LLM Configuration
+      - ANTHROPIC_API_KEY=${ANTHROPIC_API_KEY}
+      - OPENAI_API_KEY=${OPENAI_API_KEY}
+      - DEFAULT_LLM_PROVIDER=${DEFAULT_LLM_PROVIDER:-anthropic}
+
+      # Server Configuration
+      - SERVER_HOST=0.0.0.0
+      - SERVER_PORT=8080
+      - LOG_LEVEL=${LOG_LEVEL:-info}
+
+      # Database (if using PostgreSQL)
+      - DATABASE_URL=${DATABASE_URL:-postgresql://agentic:agentic@postgres:5432/agentic}
+      - ENABLE_PERSISTENCE=${ENABLE_PERSISTENCE:-false}
+
+      # Redis (if using)
+      - REDIS_URL=${REDIS_URL:-redis://redis:6379/0}
+      - ENABLE_REDIS=${ENABLE_REDIS:-false}
+
+      # Features
+      - ENABLE_CONTINUOUS_EVOLUTION=true
+      - ENABLE_PARETO_EVOLUTION=true
+      - ENABLE_BACKTESTING=true
+
+      # Performance
+      - MAX_CONCURRENT_TASKS=${MAX_CONCURRENT_TASKS:-10}
+      - WORKER_THREADS=${WORKER_THREADS:-4}
+
+    volumes:
+      # Persist agent data and evolution history
+      - agent-data:/app/data
+
+      # Optional: Mount config directory
+      # - ./config:/app/config:ro
+
+      # Development: Mount source for hot reload
+      # - ./src:/app/src
+
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+
+    restart: unless-stopped
+
+    # Resource limits
+    deploy:
+      resources:
+        limits:
+          cpus: '2'
+          memory: 2G
+        reservations:
+          cpus: '0.5'
+          memory: 512M
+
+    # Health check
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8080/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
+
+    # Logging
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "10m"
+        max-file: "3"
+
+    networks:
+      - agentic-network
+
+  # ============================================================================
+  # PostgreSQL Database (Optional - for persistence)
+  # ============================================================================
+  postgres:
+    image: postgres:15-alpine
+    container_name: agentic-postgres
+    environment:
+      - POSTGRES_USER=agentic
+      - POSTGRES_PASSWORD=agentic
+      - POSTGRES_DB=agentic
+      - PGDATA=/var/lib/postgresql/data/pgdata
+    volumes:
+      - postgres-data:/var/lib/postgresql/data
+    ports:
+      - "${POSTGRES_PORT:-5432}:5432"
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U agentic"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    networks:
+      - agentic-network
+    profiles:
+      - persistence
+      - production
+
+  # ============================================================================
+  # Redis Cache (Optional - for state management)
+  # ============================================================================
+  redis:
+    image: redis:7-alpine
+    container_name: agentic-redis
+    command: redis-server --appendonly yes --requirepass ${REDIS_PASSWORD:-agentic}
+    volumes:
+      - redis-data:/data
+    ports:
+      - "${REDIS_PORT:-6379}:6379"
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    networks:
+      - agentic-network
+    profiles:
+      - cache
+      - production
+
+  # ============================================================================
+  # Prometheus Monitoring (Optional)
+  # ============================================================================
+  prometheus:
+    image: prom/prometheus:latest
+    container_name: agentic-prometheus
+    command:
+      - '--config.file=/etc/prometheus/prometheus.yml'
+      - '--storage.tsdb.path=/prometheus'
+      - '--storage.tsdb.retention.time=30d'
+    ports:
+      - "${PROMETHEUS_PORT:-9090}:9090"
+    volumes:
+      - ./monitoring/prometheus.yml:/etc/prometheus/prometheus.yml:ro
+      - prometheus-data:/prometheus
+    restart: unless-stopped
+    networks:
+      - agentic-network
+    profiles:
+      - monitoring
+
+  # ============================================================================
+  # Grafana Visualization (Optional)
+  # ============================================================================
+  grafana:
+    image: grafana/grafana:latest
+    container_name: agentic-grafana
+    environment:
+      - GF_SECURITY_ADMIN_USER=${GRAFANA_USER:-admin}
+      - GF_SECURITY_ADMIN_PASSWORD=${GRAFANA_PASSWORD:-admin}
+      - GF_SERVER_ROOT_URL=http://localhost:3000
+      - GF_INSTALL_PLUGINS=redis-datasource
+    ports:
+      - "${GRAFANA_PORT:-3000}:3000"
+    volumes:
+      - grafana-data:/var/lib/grafana
+      - ./monitoring/grafana/dashboards:/etc/grafana/provisioning/dashboards:ro
+      - ./monitoring/grafana/datasources:/etc/grafana/provisioning/datasources:ro
+    depends_on:
+      - prometheus
+    restart: unless-stopped
+    networks:
+      - agentic-network
+    profiles:
+      - monitoring
+
+  # ============================================================================
+  # Development Tools Container (Optional)
+  # ============================================================================
+  dev-tools:
+    build:
+      context: .
+      dockerfile: Dockerfile.python
+      target: development
+    container_name: agentic-dev-tools
+    volumes:
+      - ./src:/app/src
+      - ./tests:/app/tests
+      - ./examples:/app/examples
+    command: bash
+    stdin_open: true
+    tty: true
+    networks:
+      - agentic-network
+    profiles:
+      - development
+
+# ============================================================================
+# Volumes
+# ============================================================================
+volumes:
+  agent-data:
+    driver: local
+  postgres-data:
+    driver: local
+  redis-data:
+    driver: local
+  prometheus-data:
+    driver: local
+  grafana-data:
+    driver: local
+
+# ============================================================================
+# Networks
+# ============================================================================
+networks:
+  agentic-network:
+    driver: bridge
+    name: agentic-forge-network
