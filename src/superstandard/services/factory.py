@@ -233,5 +233,37 @@ class ServiceFactory:
         self._service_cache[cache_key] = service
         return service
 
+    def get_demographics_service(self) -> BaseDataService:
+        """Get demographics data service"""
+        cache_key = "demographics"
+
+        if cache_key in self._service_cache:
+            return self._service_cache[cache_key]
+
+        if self.use_mock:
+            from .data_sources.demographics.mock import MockDemographicsService
+            service = MockDemographicsService(
+                cache_service=self.cache_service,
+                rate_limiter=self.rate_limiter
+            )
+        else:
+            provider = self.config.get("data_sources", {}).get(
+                "demographics", {}
+            ).get("provider", "census")
+
+            if provider == "census":
+                from .data_sources.demographics.census import CensusService
+                api_key = self.config.get("data_sources", {}).get("demographics", {}).get("api_key")
+                service = CensusService(
+                    api_key=api_key,
+                    cache_service=self.cache_service,
+                    rate_limiter=self.rate_limiter
+                )
+            else:
+                raise ValueError(f"Unknown demographics provider: {provider}")
+
+        self._service_cache[cache_key] = service
+        return service
+
 
 __all__ = ['ServiceFactory']

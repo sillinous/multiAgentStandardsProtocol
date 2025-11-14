@@ -51,6 +51,14 @@ data_sources:
     rate_limit: 120
     cache_ttl: 86400  # 24 hours (economic data updates daily)
 
+  # Demographics Data
+  demographics:
+    provider: "census"  # US Census Bureau (free, authoritative)
+    api_key: "${CENSUS_API_KEY}"  # Optional but recommended for higher rate limits
+    base_url: "https://api.census.gov/data"
+    rate_limit: 500  # 500/day without key, 10000/day with key
+    cache_ttl: 2592000  # 30 days (census data updates annually)
+
   # CRM Data
   crm:
     provider: "salesforce"  # Enterprise CRM

@@ -9,11 +9,13 @@ from .base import BaseDataService
 from .data_sources.competitive.similarweb import SimilarWebService
 from .data_sources.market_research.qualtrics import QualtricsService
 from .data_sources.economic.fred import FREDService
+from .data_sources.demographics.census import CensusService
 
 __all__ = [
     'ServiceFactory',
     'BaseDataService',
     'SimilarWebService',
     'QualtricsService',
-    'FREDService'
+    'FREDService',
+    'CensusService'
 ]
