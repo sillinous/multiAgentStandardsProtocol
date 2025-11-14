@@ -48,6 +48,7 @@ requests>=2.31.0             # HTTP library for demo scripts
 yfinance>=0.2.33             # Yahoo Finance API for historical data
 pandas>=2.1.0                # Data manipulation for market data
 numpy>=1.26.0                # Numerical operations
+alpaca-py>=0.21.0            # Alpaca API for real-time data and paper trading
 
 # Additional production considerations:
 # - cryptography>=41.0.0    # For encryption and security

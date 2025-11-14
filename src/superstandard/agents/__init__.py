@@ -51,6 +51,24 @@ from .continuous_evolution import (
     PerformanceDegradationDetector,
     EvolutionEvent
 )
+from .market_data import (
+    AlpacaClient,
+    AlpacaConfig,
+    MarketDataBar,
+    Position,
+    Order,
+    OrderSide,
+    OrderType,
+    TimeInForce,
+    AccountInfo,
+    RealMarketDataAdapter,
+    RealDataConfig,
+    create_real_data_adapter,
+    PaperTradingEngine,
+    PaperTradingConfig,
+    TradingMode,
+    TradeExecutionResult
+)
 
 __all__ = [
     # Personality System
@@ -104,5 +122,23 @@ __all__ = [
     'EvolutionTrigger',
     'PerformanceMetrics',
     'PerformanceDegradationDetector',
-    'EvolutionEvent'
+    'EvolutionEvent',
+
+    # Real Market Data Integration
+    'AlpacaClient',
+    'AlpacaConfig',
+    'MarketDataBar',
+    'Position',
+    'Order',
+    'OrderSide',
+    'OrderType',
+    'TimeInForce',
+    'AccountInfo',
+    'RealMarketDataAdapter',
+    'RealDataConfig',
+    'create_real_data_adapter',
+    'PaperTradingEngine',
+    'PaperTradingConfig',
+    'TradingMode',
+    'TradeExecutionResult'
 ]
