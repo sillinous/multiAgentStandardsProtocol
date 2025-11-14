@@ -147,7 +147,8 @@ class OpportunityDiscoveryOrchestrator:
     def __init__(
         self,
         service_factory: Optional[ServiceFactory] = None,
-        quality_monitor: Optional[ProductionDataQualityMonitor] = None
+        quality_monitor: Optional[ProductionDataQualityMonitor] = None,
+        dashboard_state: Optional[Any] = None
     ):
         """
         Initialize the opportunity discovery orchestrator.
@@ -155,9 +156,19 @@ class OpportunityDiscoveryOrchestrator:
         Args:
             service_factory: Factory for creating data services
             quality_monitor: Quality monitoring service
+            dashboard_state: Optional dashboard state for real-time monitoring
         """
         self.service_factory = service_factory or ServiceFactory()
         self.quality_monitor = quality_monitor or ProductionDataQualityMonitor()
+
+        # Dashboard integration for real-time monitoring
+        self.dashboard = dashboard_state
+        if dashboard_state is None:
+            try:
+                from superstandard.monitoring.dashboard import get_dashboard
+                self.dashboard = get_dashboard()
+            except ImportError:
+                self.dashboard = None
 
         # Initialize all production agents
         self.competitors_agent = IdentifyCompetitorsAgentProduction(
@@ -221,6 +232,12 @@ class OpportunityDiscoveryOrchestrator:
         # Phase 1: Parallel Data Collection from All Agents
         self.logger.info("📊 Phase 1: Multi-Agent Data Collection (Parallel Execution)")
 
+        if self.dashboard:
+            await self.dashboard.synthesis_started(
+                phase="Data Collection",
+                description="Executing 4 agents in parallel: Competitors, Economics, Demographics, Research"
+            )
+
         agent_results = await self._execute_agents_parallel(
             industry=industry,
             geography=geography,
@@ -231,10 +248,33 @@ class OpportunityDiscoveryOrchestrator:
         # Phase 2: Cross-Agent Synthesis
         self.logger.info("🔄 Phase 2: Cross-Agent Pattern Recognition & Synthesis")
 
+        synthesis_start = datetime.utcnow()
+        if self.dashboard:
+            await self.dashboard.synthesis_started(
+                phase="Cross-Agent Synthesis",
+                description="Identifying patterns and gaps across agent outputs"
+            )
+
         synthesis = await self._synthesize_agent_outputs(agent_results)
+
+        synthesis_duration = (datetime.utcnow() - synthesis_start).total_seconds()
+        patterns_found = len(synthesis.get("patterns", [])) + len(synthesis.get("gaps", []))
+
+        if self.dashboard:
+            await self.dashboard.synthesis_completed(
+                phase="Cross-Agent Synthesis",
+                duration_ms=synthesis_duration * 1000,
+                patterns_found=patterns_found
+            )
 
         # Phase 3: Opportunity Extraction
         self.logger.info("💡 Phase 3: Opportunity Identification & Extraction")
+
+        if self.dashboard:
+            await self.dashboard.synthesis_started(
+                phase="Opportunity Extraction",
+                description="Extracting concrete business opportunities from patterns"
+            )
 
         raw_opportunities = await self._extract_opportunities(synthesis, agent_results)
 
@@ -244,6 +284,20 @@ class OpportunityDiscoveryOrchestrator:
         validated_opportunities = await self._validate_and_score(
             raw_opportunities, agent_results
         )
+
+        # Broadcast discovered opportunities to dashboard
+        if self.dashboard:
+            for opp in validated_opportunities:
+                await self.dashboard.opportunity_discovered(
+                    opportunity_id=opp.id,
+                    title=opp.title,
+                    description=opp.description,
+                    confidence_score=opp.confidence_score,
+                    revenue_potential=opp.revenue_potential,
+                    category=opp.category,
+                    estimated_revenue_min=opp.estimated_revenue_min,
+                    estimated_revenue_max=opp.estimated_revenue_max
+                )
 
         # Phase 5: Filtering & Ranking
         self.logger.info("📈 Phase 5: Filtering & Strategic Prioritization")

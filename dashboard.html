@@ -1,0 +1,913 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Agentic Standards Protocol - Real-Time Monitoring Dashboard</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+            background: linear-gradient(135deg, #0f0c29 0%, #302b63 50%, #24243e 100%);
+            color: #e0e0e0;
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .header {
+            text-align: center;
+            margin-bottom: 30px;
+            padding: 20px;
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 15px;
+            backdrop-filter: blur(10px);
+        }
+
+        .header h1 {
+            font-size: 2.5em;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            margin-bottom: 10px;
+        }
+
+        .header p {
+            color: #a0a0a0;
+            font-size: 1.1em;
+        }
+
+        .connection-status {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            padding: 8px 16px;
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 20px;
+            margin-top: 15px;
+        }
+
+        .status-indicator {
+            width: 10px;
+            height: 10px;
+            border-radius: 50%;
+            background: #4caf50;
+            animation: pulse 2s infinite;
+        }
+
+        .status-indicator.disconnected {
+            background: #f44336;
+            animation: none;
+        }
+
+        @keyframes pulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.5; }
+        }
+
+        .dashboard-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 20px;
+            margin-bottom: 30px;
+        }
+
+        .metric-card {
+            background: rgba(255, 255, 255, 0.05);
+            padding: 25px;
+            border-radius: 15px;
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+        }
+
+        .metric-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+        }
+
+        .metric-card h3 {
+            font-size: 0.9em;
+            text-transform: uppercase;
+            color: #a0a0a0;
+            margin-bottom: 10px;
+            letter-spacing: 1px;
+        }
+
+        .metric-value {
+            font-size: 2.5em;
+            font-weight: bold;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .metric-subtitle {
+            font-size: 0.85em;
+            color: #808080;
+            margin-top: 5px;
+        }
+
+        .events-container {
+            background: rgba(255, 255, 255, 0.05);
+            padding: 25px;
+            border-radius: 15px;
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            margin-bottom: 30px;
+        }
+
+        .events-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+        }
+
+        .events-header h2 {
+            font-size: 1.5em;
+            color: #e0e0e0;
+        }
+
+        .event-count {
+            background: rgba(102, 126, 234, 0.2);
+            color: #667eea;
+            padding: 5px 15px;
+            border-radius: 20px;
+            font-weight: bold;
+        }
+
+        .events-feed {
+            max-height: 600px;
+            overflow-y: auto;
+            padding-right: 10px;
+        }
+
+        .events-feed::-webkit-scrollbar {
+            width: 8px;
+        }
+
+        .events-feed::-webkit-scrollbar-track {
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 10px;
+        }
+
+        .events-feed::-webkit-scrollbar-thumb {
+            background: rgba(102, 126, 234, 0.5);
+            border-radius: 10px;
+        }
+
+        .events-feed::-webkit-scrollbar-thumb:hover {
+            background: rgba(102, 126, 234, 0.7);
+        }
+
+        .event-item {
+            background: rgba(255, 255, 255, 0.03);
+            padding: 15px;
+            border-radius: 10px;
+            margin-bottom: 12px;
+            border-left: 4px solid #667eea;
+            animation: slideIn 0.3s ease;
+            transition: background 0.2s ease;
+        }
+
+        .event-item:hover {
+            background: rgba(255, 255, 255, 0.07);
+        }
+
+        .event-item.success {
+            border-left-color: #4caf50;
+        }
+
+        .event-item.warning {
+            border-left-color: #ff9800;
+        }
+
+        .event-item.error {
+            border-left-color: #f44336;
+        }
+
+        @keyframes slideIn {
+            from {
+                opacity: 0;
+                transform: translateX(-20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateX(0);
+            }
+        }
+
+        .event-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: start;
+            margin-bottom: 8px;
+        }
+
+        .event-type {
+            font-weight: bold;
+            color: #667eea;
+            font-size: 0.95em;
+        }
+
+        .event-time {
+            font-size: 0.8em;
+            color: #808080;
+        }
+
+        .event-description {
+            color: #c0c0c0;
+            font-size: 0.9em;
+            line-height: 1.5;
+        }
+
+        .event-data {
+            margin-top: 10px;
+            padding: 10px;
+            background: rgba(0, 0, 0, 0.2);
+            border-radius: 5px;
+            font-size: 0.85em;
+            color: #a0a0a0;
+        }
+
+        .event-data-row {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 5px;
+        }
+
+        .event-data-row:last-child {
+            margin-bottom: 0;
+        }
+
+        .event-data-label {
+            color: #808080;
+        }
+
+        .event-data-value {
+            color: #e0e0e0;
+            font-weight: bold;
+        }
+
+        .opportunities-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(350px, 1fr));
+            gap: 20px;
+            margin-top: 30px;
+        }
+
+        .opportunity-card {
+            background: rgba(255, 255, 255, 0.05);
+            padding: 20px;
+            border-radius: 15px;
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+            animation: fadeIn 0.5s ease;
+        }
+
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+                transform: scale(0.95);
+            }
+            to {
+                opacity: 1;
+                transform: scale(1);
+            }
+        }
+
+        .opportunity-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 30px rgba(102, 126, 234, 0.3);
+        }
+
+        .opportunity-header {
+            margin-bottom: 15px;
+        }
+
+        .opportunity-title {
+            font-size: 1.2em;
+            font-weight: bold;
+            color: #e0e0e0;
+            margin-bottom: 5px;
+        }
+
+        .opportunity-category {
+            display: inline-block;
+            background: rgba(102, 126, 234, 0.2);
+            color: #667eea;
+            padding: 4px 12px;
+            border-radius: 15px;
+            font-size: 0.8em;
+            font-weight: bold;
+        }
+
+        .opportunity-description {
+            color: #c0c0c0;
+            font-size: 0.9em;
+            line-height: 1.6;
+            margin-bottom: 15px;
+        }
+
+        .opportunity-metrics {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 10px;
+        }
+
+        .opportunity-metric {
+            background: rgba(0, 0, 0, 0.2);
+            padding: 10px;
+            border-radius: 8px;
+        }
+
+        .opportunity-metric-label {
+            font-size: 0.75em;
+            color: #808080;
+            text-transform: uppercase;
+            margin-bottom: 5px;
+        }
+
+        .opportunity-metric-value {
+            font-size: 1.2em;
+            font-weight: bold;
+            color: #4caf50;
+        }
+
+        .confidence-high {
+            color: #4caf50;
+        }
+
+        .confidence-medium {
+            color: #ff9800;
+        }
+
+        .confidence-low {
+            color: #f44336;
+        }
+
+        .empty-state {
+            text-align: center;
+            padding: 60px 20px;
+            color: #808080;
+        }
+
+        .empty-state-icon {
+            font-size: 4em;
+            margin-bottom: 20px;
+            opacity: 0.3;
+        }
+
+        .empty-state-text {
+            font-size: 1.1em;
+        }
+
+        .loading {
+            text-align: center;
+            padding: 40px;
+            color: #808080;
+        }
+
+        .loading-spinner {
+            display: inline-block;
+            width: 40px;
+            height: 40px;
+            border: 4px solid rgba(102, 126, 234, 0.2);
+            border-top-color: #667eea;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+            margin-bottom: 15px;
+        }
+
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <h1>🤖 Agentic Standards Protocol</h1>
+        <p>Real-Time Autonomous Agent Monitoring Dashboard</p>
+        <div class="connection-status">
+            <div class="status-indicator" id="statusIndicator"></div>
+            <span id="connectionStatus">Initializing...</span>
+        </div>
+    </div>
+
+    <div class="dashboard-grid">
+        <div class="metric-card">
+            <h3>Total Events</h3>
+            <div class="metric-value" id="totalEvents">0</div>
+            <div class="metric-subtitle">All system events</div>
+        </div>
+
+        <div class="metric-card">
+            <h3>Agents Executed</h3>
+            <div class="metric-value" id="agentsExecuted">0</div>
+            <div class="metric-subtitle">Production agents run</div>
+        </div>
+
+        <div class="metric-card">
+            <h3>Opportunities Found</h3>
+            <div class="metric-value" id="opportunitiesFound">0</div>
+            <div class="metric-subtitle">Business opportunities discovered</div>
+        </div>
+
+        <div class="metric-card">
+            <h3>Avg Quality Score</h3>
+            <div class="metric-value" id="avgQuality">0%</div>
+            <div class="metric-subtitle">Data quality across all agents</div>
+        </div>
+
+        <div class="metric-card">
+            <h3>Active Agents</h3>
+            <div class="metric-value" id="activeAgents">0</div>
+            <div class="metric-subtitle">Currently running</div>
+        </div>
+
+        <div class="metric-card">
+            <h3>System Uptime</h3>
+            <div class="metric-value" id="systemUptime">0s</div>
+            <div class="metric-subtitle">Time since startup</div>
+        </div>
+    </div>
+
+    <div class="events-container">
+        <div class="events-header">
+            <h2>📡 Live Event Stream</h2>
+            <div class="event-count" id="eventCount">0 events</div>
+        </div>
+        <div class="events-feed" id="eventsFeed">
+            <div class="loading">
+                <div class="loading-spinner"></div>
+                <div>Waiting for events...</div>
+            </div>
+        </div>
+    </div>
+
+    <div class="events-container">
+        <div class="events-header">
+            <h2>💡 Discovered Opportunities</h2>
+        </div>
+        <div class="opportunities-grid" id="opportunitiesGrid">
+            <div class="empty-state">
+                <div class="empty-state-icon">🔍</div>
+                <div class="empty-state-text">No opportunities discovered yet</div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Dashboard State
+        const state = {
+            events: [],
+            opportunities: [],
+            metrics: {
+                totalEvents: 0,
+                agentsExecuted: 0,
+                opportunitiesFound: 0,
+                avgQuality: 0,
+                activeAgents: 0,
+                systemUptime: 0
+            },
+            connected: false
+        };
+
+        // Configuration
+        const config = {
+            // In production, this would be a WebSocket endpoint
+            // For demo, we'll use simulated events
+            simulateEvents: true,
+            maxEvents: 100,
+            dataFile: 'dashboard_data.json'
+        };
+
+        // Initialize Dashboard
+        async function initDashboard() {
+            // Try to load exported data first
+            const loaded = await loadExportedData();
+
+            if (loaded) {
+                updateConnectionStatus(true);
+                console.log('✅ Loaded dashboard data from file');
+            } else if (config.simulateEvents) {
+                updateConnectionStatus(true);
+                // Simulate demo events for demonstration
+                simulateDemoEvents();
+            } else {
+                // In production, connect to WebSocket
+                connectWebSocket();
+            }
+        }
+
+        // Load Exported Dashboard Data
+        async function loadExportedData() {
+            try {
+                const response = await fetch(config.dataFile);
+                if (!response.ok) {
+                    console.log('No exported data file found, using live/demo mode');
+                    return false;
+                }
+
+                const data = await response.json();
+
+                // Load events
+                if (data.events && data.events.length > 0) {
+                    data.events.reverse().forEach(event => {
+                        handleEvent(event);
+                    });
+                }
+
+                // Load metrics
+                if (data.metrics) {
+                    state.metrics = {
+                        ...state.metrics,
+                        ...data.metrics
+                    };
+                    updateMetrics();
+                }
+
+                console.log(`✅ Loaded ${data.events?.length || 0} events from exported data`);
+                return true;
+
+            } catch (error) {
+                console.log('Could not load exported data:', error.message);
+                return false;
+            }
+        }
+
+        // Update Connection Status
+        function updateConnectionStatus(connected) {
+            state.connected = connected;
+            const indicator = document.getElementById('statusIndicator');
+            const status = document.getElementById('connectionStatus');
+
+            if (connected) {
+                indicator.classList.remove('disconnected');
+                status.textContent = 'Connected - Live Updates';
+            } else {
+                indicator.classList.add('disconnected');
+                status.textContent = 'Disconnected';
+            }
+        }
+
+        // Handle Incoming Event
+        function handleEvent(event) {
+            // Add to events list
+            state.events.unshift(event);
+            if (state.events.length > config.maxEvents) {
+                state.events.pop();
+            }
+
+            // Update metrics
+            state.metrics.totalEvents++;
+
+            // Handle specific event types
+            switch (event.event_type) {
+                case 'agent_execution_completed':
+                    state.metrics.agentsExecuted++;
+                    if (event.data.quality_score) {
+                        updateAverageQuality(event.data.quality_score);
+                    }
+                    break;
+
+                case 'opportunity_discovered':
+                    state.metrics.opportunitiesFound++;
+                    state.opportunities.push(event.data);
+                    renderOpportunity(event.data);
+                    break;
+
+                case 'agent_execution_started':
+                    state.metrics.activeAgents++;
+                    break;
+
+                case 'system_health_updated':
+                    if (event.data.uptime_seconds !== undefined) {
+                        state.metrics.systemUptime = event.data.uptime_seconds;
+                    }
+                    if (event.data.active_agents !== undefined) {
+                        state.metrics.activeAgents = event.data.active_agents;
+                    }
+                    break;
+            }
+
+            // Render event and update UI
+            renderEvent(event);
+            updateMetrics();
+        }
+
+        // Update Average Quality
+        function updateAverageQuality(newScore) {
+            const total = state.metrics.agentsExecuted;
+            const current = state.metrics.avgQuality;
+            state.metrics.avgQuality = (current * (total - 1) + newScore) / total;
+        }
+
+        // Render Event
+        function renderEvent(event) {
+            const feed = document.getElementById('eventsFeed');
+
+            // Remove loading state
+            if (feed.querySelector('.loading')) {
+                feed.innerHTML = '';
+            }
+
+            const eventEl = document.createElement('div');
+            eventEl.className = `event-item ${event.severity}`;
+
+            const time = new Date(event.timestamp).toLocaleTimeString();
+            const eventType = event.event_type.replace(/_/g, ' ').toUpperCase();
+
+            let dataHTML = '';
+            if (event.data) {
+                const importantFields = getImportantFields(event.event_type, event.data);
+                if (importantFields.length > 0) {
+                    dataHTML = '<div class="event-data">';
+                    importantFields.forEach(field => {
+                        dataHTML += `
+                            <div class="event-data-row">
+                                <span class="event-data-label">${field.label}:</span>
+                                <span class="event-data-value">${field.value}</span>
+                            </div>
+                        `;
+                    });
+                    dataHTML += '</div>';
+                }
+            }
+
+            eventEl.innerHTML = `
+                <div class="event-header">
+                    <div class="event-type">${eventType}</div>
+                    <div class="event-time">${time}</div>
+                </div>
+                <div class="event-description">
+                    ${event.data.description || 'No description'}
+                </div>
+                ${dataHTML}
+            `;
+
+            feed.insertBefore(eventEl, feed.firstChild);
+
+            // Limit displayed events
+            while (feed.children.length > 50) {
+                feed.removeChild(feed.lastChild);
+            }
+        }
+
+        // Get Important Fields from Event Data
+        function getImportantFields(eventType, data) {
+            const fields = [];
+
+            switch (eventType) {
+                case 'agent_execution_started':
+                    if (data.agent_name) fields.push({ label: 'Agent', value: data.agent_name });
+                    break;
+
+                case 'agent_execution_completed':
+                    if (data.agent_name) fields.push({ label: 'Agent', value: data.agent_name });
+                    if (data.duration_ms) fields.push({ label: 'Duration', value: `${data.duration_ms.toFixed(0)}ms` });
+                    if (data.data_source) fields.push({ label: 'Source', value: data.data_source });
+                    if (data.quality_score) fields.push({ label: 'Quality', value: `${data.quality_score.toFixed(1)}%` });
+                    break;
+
+                case 'opportunity_discovered':
+                    if (data.title) fields.push({ label: 'Title', value: data.title });
+                    if (data.confidence_score) fields.push({ label: 'Confidence', value: `${(data.confidence_score * 100).toFixed(1)}%` });
+                    if (data.category) fields.push({ label: 'Category', value: data.category });
+                    break;
+
+                case 'synthesis_completed':
+                    if (data.phase) fields.push({ label: 'Phase', value: data.phase });
+                    if (data.patterns_found) fields.push({ label: 'Patterns', value: data.patterns_found });
+                    if (data.duration_ms) fields.push({ label: 'Duration', value: `${data.duration_ms.toFixed(0)}ms` });
+                    break;
+
+                case 'quality_score_updated':
+                    if (data.source) fields.push({ label: 'Source', value: data.source });
+                    if (data.overall_score) fields.push({ label: 'Score', value: `${data.overall_score.toFixed(1)}%` });
+                    break;
+            }
+
+            return fields;
+        }
+
+        // Render Opportunity
+        function renderOpportunity(opp) {
+            const grid = document.getElementById('opportunitiesGrid');
+
+            // Remove empty state
+            if (grid.querySelector('.empty-state')) {
+                grid.innerHTML = '';
+            }
+
+            const oppEl = document.createElement('div');
+            oppEl.className = 'opportunity-card';
+
+            const confidence = opp.confidence_score || 0;
+            const confidencePercent = (confidence * 100).toFixed(1);
+            const confidenceClass = confidence >= 0.8 ? 'confidence-high' : confidence >= 0.6 ? 'confidence-medium' : 'confidence-low';
+
+            oppEl.innerHTML = `
+                <div class="opportunity-header">
+                    <div class="opportunity-title">${opp.title || 'Untitled Opportunity'}</div>
+                    <div class="opportunity-category">${opp.category || 'General'}</div>
+                </div>
+                <div class="opportunity-description">
+                    ${opp.description || 'No description available'}
+                </div>
+                <div class="opportunity-metrics">
+                    <div class="opportunity-metric">
+                        <div class="opportunity-metric-label">Confidence</div>
+                        <div class="opportunity-metric-value ${confidenceClass}">${confidencePercent}%</div>
+                    </div>
+                    <div class="opportunity-metric">
+                        <div class="opportunity-metric-label">Revenue Potential</div>
+                        <div class="opportunity-metric-value">${opp.revenue_potential || 'N/A'}</div>
+                    </div>
+                </div>
+            `;
+
+            grid.insertBefore(oppEl, grid.firstChild);
+        }
+
+        // Update Metrics Display
+        function updateMetrics() {
+            document.getElementById('totalEvents').textContent = state.metrics.totalEvents;
+            document.getElementById('agentsExecuted').textContent = state.metrics.agentsExecuted;
+            document.getElementById('opportunitiesFound').textContent = state.metrics.opportunitiesFound;
+            document.getElementById('avgQuality').textContent = `${state.metrics.avgQuality.toFixed(1)}%`;
+            document.getElementById('activeAgents').textContent = state.metrics.activeAgents;
+            document.getElementById('systemUptime').textContent = formatUptime(state.metrics.systemUptime);
+            document.getElementById('eventCount').textContent = `${state.events.length} events`;
+        }
+
+        // Format Uptime
+        function formatUptime(seconds) {
+            if (seconds < 60) return `${Math.floor(seconds)}s`;
+            if (seconds < 3600) return `${Math.floor(seconds / 60)}m`;
+            return `${Math.floor(seconds / 3600)}h ${Math.floor((seconds % 3600) / 60)}m`;
+        }
+
+        // Simulate Demo Events
+        function simulateDemoEvents() {
+            const demoEvents = [
+                {
+                    event_type: 'agent_execution_started',
+                    severity: 'info',
+                    data: {
+                        agent_name: 'IdentifyCompetitorsAgent',
+                        task_description: 'Analyzing competitive landscape',
+                        description: 'Agent IdentifyCompetitorsAgent started: Analyzing competitive landscape'
+                    }
+                },
+                {
+                    event_type: 'agent_execution_started',
+                    severity: 'info',
+                    data: {
+                        agent_name: 'IdentifyEconomicTrendsAgent',
+                        task_description: 'Analyzing economic indicators',
+                        description: 'Agent IdentifyEconomicTrendsAgent started: Analyzing economic indicators'
+                    }
+                },
+                {
+                    event_type: 'synthesis_started',
+                    severity: 'info',
+                    data: {
+                        phase: 'Data Collection',
+                        description: 'Synthesis started: Data Collection phase'
+                    }
+                },
+                {
+                    event_type: 'agent_execution_completed',
+                    severity: 'success',
+                    data: {
+                        agent_name: 'IdentifyCompetitorsAgent',
+                        duration_ms: 1234,
+                        data_source: 'SimilarWeb API',
+                        quality_score: 98.5,
+                        description: 'Agent IdentifyCompetitorsAgent completed in 1234ms'
+                    }
+                },
+                {
+                    event_type: 'agent_execution_completed',
+                    severity: 'success',
+                    data: {
+                        agent_name: 'IdentifyEconomicTrendsAgent',
+                        duration_ms: 987,
+                        data_source: 'FRED API',
+                        quality_score: 96.2,
+                        description: 'Agent IdentifyEconomicTrendsAgent completed in 987ms'
+                    }
+                },
+                {
+                    event_type: 'synthesis_completed',
+                    severity: 'success',
+                    data: {
+                        phase: 'Data Collection',
+                        duration_ms: 2500,
+                        patterns_found: 12,
+                        description: 'Synthesis completed: 12 patterns found'
+                    }
+                },
+                {
+                    event_type: 'opportunity_discovered',
+                    severity: 'success',
+                    data: {
+                        opportunity_id: 'opp-001',
+                        title: 'AI-Powered Market Research Platform',
+                        description: 'Strong demand for automated market research tools in tech sector. Low competition, high growth potential.',
+                        confidence_score: 0.89,
+                        revenue_potential: '$500K-$2M ARR',
+                        category: 'SaaS Product'
+                    }
+                },
+                {
+                    event_type: 'opportunity_discovered',
+                    severity: 'success',
+                    data: {
+                        opportunity_id: 'opp-002',
+                        title: 'Demographics Analytics Service',
+                        description: 'Growing need for real-time demographics insights. Census data integration opportunity.',
+                        confidence_score: 0.82,
+                        revenue_potential: '$200K-$800K ARR',
+                        category: 'Data Service'
+                    }
+                },
+                {
+                    event_type: 'quality_score_updated',
+                    severity: 'success',
+                    data: {
+                        source: 'OpportunityDiscovery',
+                        overall_score: 97.3,
+                        description: 'Quality score: 97.3%'
+                    }
+                },
+                {
+                    event_type: 'system_health_updated',
+                    severity: 'info',
+                    data: {
+                        active_agents: 0,
+                        uptime_seconds: 45,
+                        description: 'System health: 0 active agents, 45s uptime'
+                    }
+                }
+            ];
+
+            let index = 0;
+            const interval = setInterval(() => {
+                if (index >= demoEvents.length) {
+                    clearInterval(interval);
+                    // Continue with periodic health updates
+                    setInterval(() => {
+                        state.metrics.systemUptime += 10;
+                        handleEvent({
+                            event_id: `evt-${Date.now()}`,
+                            event_type: 'system_health_updated',
+                            timestamp: new Date().toISOString(),
+                            severity: 'info',
+                            data: {
+                                active_agents: state.metrics.activeAgents,
+                                uptime_seconds: state.metrics.systemUptime,
+                                description: `System health: ${state.metrics.activeAgents} active agents, ${Math.floor(state.metrics.systemUptime)}s uptime`
+                            }
+                        });
+                    }, 10000);
+                    return;
+                }
+
+                const event = {
+                    event_id: `evt-${Date.now()}-${index}`,
+                    timestamp: new Date().toISOString(),
+                    ...demoEvents[index]
+                };
+
+                handleEvent(event);
+                index++;
+            }, 800);
+        }
+
+        // Connect to WebSocket (for production use)
+        function connectWebSocket() {
+            // In production, implement WebSocket connection:
+            // const ws = new WebSocket('ws://localhost:8000/ws/dashboard');
+            // ws.onmessage = (event) => {
+            //     const data = JSON.parse(event.data);
+            //     handleEvent(data);
+            // };
+            // ws.onopen = () => updateConnectionStatus(true);
+            // ws.onclose = () => updateConnectionStatus(false);
+        }
+
+        // Initialize on page load
+        window.addEventListener('DOMContentLoaded', initDashboard);
+    </script>
+</body>
+</html>
