@@ -87,6 +87,24 @@ from .decision_replay import (
     DecisionTimeline,
     ReplayFrame
 )
+from .sentiment import (
+    SentimentScore,
+    SentimentSource,
+    SentimentEngine,
+    SentimentAggregator,
+    NewsArticle,
+    NewsSentimentProvider,
+    SocialPost,
+    TwitterSentimentProvider,
+    RedditSentimentProvider,
+    TextSentimentAnalyzer,
+    KeywordExtractor
+)
+from .sentiment_integration import (
+    SentimentEnhancedData,
+    create_sentiment_enhanced_ensemble,
+    make_sentiment_aware_decision
+)
 
 __all__ = [
     # Personality System
@@ -172,5 +190,21 @@ __all__ = [
     'create_explainable_ensemble',
     'DecisionReplayEngine',
     'DecisionTimeline',
-    'ReplayFrame'
+    'ReplayFrame',
+
+    # Sentiment Analysis
+    'SentimentScore',
+    'SentimentSource',
+    'SentimentEngine',
+    'SentimentAggregator',
+    'NewsArticle',
+    'NewsSentimentProvider',
+    'SocialPost',
+    'TwitterSentimentProvider',
+    'RedditSentimentProvider',
+    'TextSentimentAnalyzer',
+    'KeywordExtractor',
+    'SentimentEnhancedData',
+    'create_sentiment_enhanced_ensemble',
+    'make_sentiment_aware_decision'
 ]
