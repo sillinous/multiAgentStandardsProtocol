@@ -34,11 +34,13 @@ jupyter>=1.0.0              # Notebook support for experimentation
 # BAP (Blockchain Agent Protocol)
 # - Uses only Python standard library and dataclasses
 
-# Note: For production deployments, consider adding:
+# Production dependencies for Agentic Standards Protocol
+aiohttp>=3.8.0              # Async HTTP client/server (WebSocket server)
+
+# Note: For additional production features, consider adding:
 # - cryptography>=41.0.0    # For encryption and security
 # - pydantic>=2.0.0         # For advanced data validation
 # - fastapi>=0.100.0        # For REST API implementations
-# - websockets>=11.0.0      # For WebSocket support
-# - aiohttp>=3.8.0          # For async HTTP client/server
+# - websockets>=11.0.0      # Alternative WebSocket library
 # - redis>=4.6.0            # For distributed state management
 # - prometheus-client>=0.17.0  # For metrics and observability
