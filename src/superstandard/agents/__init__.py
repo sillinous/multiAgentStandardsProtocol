@@ -105,6 +105,19 @@ from .sentiment_integration import (
     create_sentiment_enhanced_ensemble,
     make_sentiment_aware_decision
 )
+from .conversation import (
+    QueryProcessor,
+    QueryIntent,
+    QueryType,
+    ProcessedQuery,
+    CommandInterpreter,
+    TradingCommand,
+    CommandType,
+    CommandResult,
+    ConversationalAgent,
+    ConversationContext,
+    ConversationHistory
+)
 
 __all__ = [
     # Personality System
@@ -206,5 +219,18 @@ __all__ = [
     'KeywordExtractor',
     'SentimentEnhancedData',
     'create_sentiment_enhanced_ensemble',
-    'make_sentiment_aware_decision'
+    'make_sentiment_aware_decision',
+
+    # Natural Language Interface
+    'QueryProcessor',
+    'QueryIntent',
+    'QueryType',
+    'ProcessedQuery',
+    'CommandInterpreter',
+    'TradingCommand',
+    'CommandType',
+    'CommandResult',
+    'ConversationalAgent',
+    'ConversationContext',
+    'ConversationHistory'
 ]
