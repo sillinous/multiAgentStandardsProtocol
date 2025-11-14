@@ -7,16 +7,20 @@ discovery, and interaction in the Agentic Standards Protocol platform.
 Available Protocols:
 - Agent Discovery Protocol (ADP): Dynamic agent discovery by capability
 - Agent Reputation Protocol (ARP): Performance tracking and reputation scoring
+- Agent Contract Protocol (ACP): Formal agreements and SLA enforcement
 
 Usage:
     from src.superstandard.protocols.discovery import get_discovery_service
     from src.superstandard.protocols.reputation import get_reputation_service
+    from src.superstandard.protocols.contracts import get_contract_service
 
     discovery = get_discovery_service()
     reputation = get_reputation_service()
+    contracts = get_contract_service()
 
     await discovery.start()
     await reputation.start()
+    await contracts.start()
 """
 
 from .discovery import (
@@ -37,6 +41,18 @@ from .reputation import (
     get_reputation_service
 )
 
+from .contracts import (
+    ContractStatus,
+    BreachSeverity,
+    SLATerms,
+    PricingTerms,
+    ContractBreach,
+    ContractCompliance,
+    AgentContract,
+    ContractService,
+    get_contract_service
+)
+
 __all__ = [
     # Discovery
     'AgentStatus',
@@ -51,5 +67,15 @@ __all__ = [
     'DimensionScore',
     'AgentReputation',
     'ReputationService',
-    'get_reputation_service'
+    'get_reputation_service',
+    # Contracts
+    'ContractStatus',
+    'BreachSeverity',
+    'SLATerms',
+    'PricingTerms',
+    'ContractBreach',
+    'ContractCompliance',
+    'AgentContract',
+    'ContractService',
+    'get_contract_service'
 ]
