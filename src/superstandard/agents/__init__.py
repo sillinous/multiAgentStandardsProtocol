@@ -69,6 +69,24 @@ from .market_data import (
     TradingMode,
     TradeExecutionResult
 )
+from .explainable_ai import (
+    DecisionExplanationEngine,
+    DecisionExplanation,
+    ReasoningFactor,
+    ReasoningFactorType,
+    AgentContribution,
+    DecisionTreeVisualizer
+)
+from .explainable_ensemble import (
+    ExplainableAgentEnsemble,
+    ExplainableDecision,
+    create_explainable_ensemble
+)
+from .decision_replay import (
+    DecisionReplayEngine,
+    DecisionTimeline,
+    ReplayFrame
+)
 
 __all__ = [
     # Personality System
@@ -140,5 +158,19 @@ __all__ = [
     'PaperTradingEngine',
     'PaperTradingConfig',
     'TradingMode',
-    'TradeExecutionResult'
+    'TradeExecutionResult',
+
+    # Explainable AI
+    'DecisionExplanationEngine',
+    'DecisionExplanation',
+    'ReasoningFactor',
+    'ReasoningFactorType',
+    'AgentContribution',
+    'DecisionTreeVisualizer',
+    'ExplainableAgentEnsemble',
+    'ExplainableDecision',
+    'create_explainable_ensemble',
+    'DecisionReplayEngine',
+    'DecisionTimeline',
+    'ReplayFrame'
 ]

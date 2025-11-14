@@ -1,0 +1,730 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Explainable AI Dashboard - Agent Decision Transparency</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+        }
+
+        .header {
+            background: white;
+            padding: 30px;
+            border-radius: 15px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+            margin-bottom: 30px;
+            text-align: center;
+        }
+
+        .header h1 {
+            color: #667eea;
+            font-size: 2.5em;
+            margin-bottom: 10px;
+        }
+
+        .header p {
+            color: #666;
+            font-size: 1.1em;
+        }
+
+        .grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(400px, 1fr));
+            gap: 20px;
+            margin-bottom: 20px;
+        }
+
+        .card {
+            background: white;
+            border-radius: 15px;
+            padding: 25px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+            transition: transform 0.3s ease;
+        }
+
+        .card:hover {
+            transform: translateY(-5px);
+        }
+
+        .card h2 {
+            color: #667eea;
+            margin-bottom: 20px;
+            font-size: 1.5em;
+            border-bottom: 2px solid #667eea;
+            padding-bottom: 10px;
+        }
+
+        .decision-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            color: white;
+            padding: 20px;
+            border-radius: 10px;
+            margin-bottom: 20px;
+        }
+
+        .decision-header h3 {
+            font-size: 1.8em;
+        }
+
+        .confidence-bar {
+            background: #e0e0e0;
+            border-radius: 10px;
+            height: 30px;
+            position: relative;
+            overflow: hidden;
+            margin: 10px 0;
+        }
+
+        .confidence-fill {
+            background: linear-gradient(90deg, #4caf50, #8bc34a);
+            height: 100%;
+            border-radius: 10px;
+            transition: width 1s ease;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-weight: bold;
+        }
+
+        .reasoning-factor {
+            background: #f8f9fa;
+            border-left: 4px solid #667eea;
+            padding: 15px;
+            margin: 10px 0;
+            border-radius: 5px;
+            transition: all 0.3s ease;
+        }
+
+        .reasoning-factor:hover {
+            background: #e8e9ff;
+            transform: translateX(5px);
+        }
+
+        .reasoning-factor .factor-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 10px;
+        }
+
+        .reasoning-factor .factor-name {
+            font-weight: bold;
+            color: #333;
+            font-size: 1.1em;
+        }
+
+        .reasoning-factor .factor-influence {
+            padding: 5px 10px;
+            border-radius: 5px;
+            font-size: 0.9em;
+            font-weight: bold;
+        }
+
+        .influence-bullish {
+            background: #c8e6c9;
+            color: #2e7d32;
+        }
+
+        .influence-bearish {
+            background: #ffcdd2;
+            color: #c62828;
+        }
+
+        .influence-neutral {
+            background: #e0e0e0;
+            color: #666;
+        }
+
+        .weight-bar {
+            background: #e0e0e0;
+            height: 8px;
+            border-radius: 4px;
+            margin: 5px 0;
+            overflow: hidden;
+        }
+
+        .weight-fill {
+            background: linear-gradient(90deg, #667eea, #764ba2);
+            height: 100%;
+            border-radius: 4px;
+            transition: width 0.5s ease;
+        }
+
+        .agent-vote {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 12px;
+            margin: 8px 0;
+            background: #f8f9fa;
+            border-radius: 8px;
+            border-left: 4px solid #667eea;
+        }
+
+        .vote-buy {
+            border-left-color: #4caf50;
+        }
+
+        .vote-sell {
+            border-left-color: #f44336;
+        }
+
+        .vote-hold {
+            border-left-color: #ff9800;
+        }
+
+        .vote-badge {
+            padding: 5px 15px;
+            border-radius: 20px;
+            font-weight: bold;
+            font-size: 0.9em;
+        }
+
+        .vote-badge-buy {
+            background: #4caf50;
+            color: white;
+        }
+
+        .vote-badge-sell {
+            background: #f44336;
+            color: white;
+        }
+
+        .vote-badge-hold {
+            background: #ff9800;
+            color: white;
+        }
+
+        .decision-tree {
+            font-family: monospace;
+            background: #1e1e1e;
+            color: #d4d4d4;
+            padding: 20px;
+            border-radius: 10px;
+            overflow-x: auto;
+        }
+
+        .tree-node {
+            margin: 5px 0;
+            padding: 5px;
+            border-left: 2px solid #667eea;
+            padding-left: 15px;
+        }
+
+        .tree-node-root {
+            font-size: 1.2em;
+            font-weight: bold;
+            color: #4ec9b0;
+        }
+
+        .tree-node-branch {
+            color: #dcdcaa;
+        }
+
+        .tree-node-leaf {
+            color: #ce9178;
+        }
+
+        .qa-section {
+            margin-top: 20px;
+        }
+
+        .qa-input {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 20px;
+        }
+
+        .qa-input input {
+            flex: 1;
+            padding: 12px;
+            border: 2px solid #667eea;
+            border-radius: 8px;
+            font-size: 1em;
+        }
+
+        .qa-input button {
+            padding: 12px 24px;
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            color: white;
+            border: none;
+            border-radius: 8px;
+            font-size: 1em;
+            cursor: pointer;
+            transition: transform 0.2s ease;
+        }
+
+        .qa-input button:hover {
+            transform: scale(1.05);
+        }
+
+        .qa-answer {
+            background: #e8e9ff;
+            padding: 15px;
+            border-radius: 8px;
+            border-left: 4px solid #667eea;
+            margin: 10px 0;
+            animation: slideIn 0.3s ease;
+        }
+
+        @keyframes slideIn {
+            from {
+                opacity: 0;
+                transform: translateX(-20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateX(0);
+            }
+        }
+
+        .insight {
+            background: #fff3cd;
+            border-left: 4px solid #ffc107;
+            padding: 12px;
+            margin: 8px 0;
+            border-radius: 5px;
+        }
+
+        .risk {
+            background: #f8d7da;
+            border-left: 4px solid #dc3545;
+            padding: 12px;
+            margin: 8px 0;
+            border-radius: 5px;
+        }
+
+        .controls {
+            background: white;
+            padding: 20px;
+            border-radius: 15px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+            margin-bottom: 20px;
+        }
+
+        .controls button {
+            padding: 12px 24px;
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            color: white;
+            border: none;
+            border-radius: 8px;
+            font-size: 1em;
+            cursor: pointer;
+            margin-right: 10px;
+            transition: transform 0.2s ease;
+        }
+
+        .controls button:hover {
+            transform: scale(1.05);
+        }
+
+        .status {
+            display: inline-block;
+            padding: 5px 15px;
+            border-radius: 20px;
+            font-size: 0.9em;
+            font-weight: bold;
+        }
+
+        .status-live {
+            background: #4caf50;
+            color: white;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <!-- Header -->
+        <div class="header">
+            <h1>🔍 Explainable AI Dashboard</h1>
+            <p>Full Transparency into Agent Decision-Making</p>
+            <span class="status status-live">● LIVE</span>
+        </div>
+
+        <!-- Controls -->
+        <div class="controls">
+            <button onclick="makeNewDecision()">🎲 Make New Decision</button>
+            <button onclick="loadRecentDecisions()">📜 Load Recent Decisions</button>
+            <button onclick="compareEnsembles()">⚖️ Compare Ensembles</button>
+        </div>
+
+        <!-- Main Content Grid -->
+        <div class="grid">
+            <!-- Decision Summary -->
+            <div class="card">
+                <h2>📊 Decision Summary</h2>
+                <div id="decisionSummary">
+                    <div class="decision-header">
+                        <div>
+                            <h3 id="decisionAction">BUY AAPL</h3>
+                            <p id="decisionTime">2024-01-15 14:32:18</p>
+                        </div>
+                        <div style="text-align: right;">
+                            <div style="font-size: 2em;" id="confidencePercent">78%</div>
+                            <div>Confidence</div>
+                        </div>
+                    </div>
+
+                    <div class="confidence-bar">
+                        <div class="confidence-fill" id="confidenceBar" style="width: 78%;">78%</div>
+                    </div>
+
+                    <div style="margin-top: 20px;">
+                        <h3 style="color: #667eea; margin-bottom: 10px;">Natural Language Summary</h3>
+                        <p id="nlSummary">Loading decision explanation...</p>
+                    </div>
+
+                    <div id="insights" style="margin-top: 20px;"></div>
+                    <div id="risks" style="margin-top: 10px;"></div>
+                </div>
+            </div>
+
+            <!-- Reasoning Factors -->
+            <div class="card">
+                <h2>🔍 Reasoning Factors</h2>
+                <div id="reasoningFactors">
+                    <!-- Dynamically populated -->
+                </div>
+            </div>
+        </div>
+
+        <!-- Second Row -->
+        <div class="grid">
+            <!-- Agent Contributions -->
+            <div class="card">
+                <h2>🤖 Agent Contributions</h2>
+                <div id="agentContributions">
+                    <!-- Dynamically populated -->
+                </div>
+            </div>
+
+            <!-- Decision Tree -->
+            <div class="card">
+                <h2>🌳 Decision Tree</h2>
+                <div class="decision-tree" id="decisionTree">
+                    <!-- Dynamically populated -->
+                </div>
+            </div>
+        </div>
+
+        <!-- Natural Language Q&A -->
+        <div class="card">
+            <h2>💬 Ask Questions About This Decision</h2>
+            <div class="qa-section">
+                <div class="qa-input">
+                    <input type="text" id="questionInput" placeholder="Ask anything... e.g., 'Why did you buy?' or 'What are the risks?'" />
+                    <button onclick="askQuestion()">Ask</button>
+                </div>
+                <div id="qaAnswers">
+                    <!-- Answers appear here -->
+                </div>
+
+                <div style="margin-top: 20px;">
+                    <h3 style="color: #667eea; margin-bottom: 10px;">Suggested Questions:</h3>
+                    <button onclick="askSuggested('Why did you make this decision?')" style="margin: 5px; padding: 8px 16px; background: #e8e9ff; color: #667eea; border: 1px solid #667eea; border-radius: 5px; cursor: pointer;">
+                        Why did you make this decision?
+                    </button>
+                    <button onclick="askSuggested('What were the top factors?')" style="margin: 5px; padding: 8px 16px; background: #e8e9ff; color: #667eea; border: 1px solid #667eea; border-radius: 5px; cursor: pointer;">
+                        What were the top factors?
+                    </button>
+                    <button onclick="askSuggested('Did all agents agree?')" style="margin: 5px; padding: 8px 16px; background: #e8e9ff; color: #667eea; border: 1px solid #667eea; border-radius: 5px; cursor: pointer;">
+                        Did all agents agree?
+                    </button>
+                    <button onclick="askSuggested('What risks did you identify?')" style="margin: 5px; padding: 8px 16px; background: #e8e9ff; color: #667eea; border: 1px solid #667eea; border-radius: 5px; cursor: pointer;">
+                        What risks did you identify?
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Sample data (in production, this would come from API)
+        const sampleDecision = {
+            decision_id: "d12345",
+            timestamp: "2024-01-15T14:32:18",
+            symbol: "AAPL",
+            decision: "buy",
+            confidence: 0.78,
+            natural_language_summary: "Decision: BUY AAPL with 78% confidence.\n\nKey factors:\n1. 📈 RSI: RSI at 45.0 indicates bullish momentum (weight: 20%)\n2. 📈 MACD: MACD signal suggests bullish trend (weight: 18%)\n3. 📊 Agent Consensus: Ensemble voted BUY with 78% confidence (weight: 30%)\n\nEnsemble consensus: 4/5 agents voted BUY (80% agreement)",
+            key_insights: [
+                "Very high confidence decision (78%) suggests strong conviction across multiple factors",
+                "4/5 agents agree - strong ensemble consensus",
+                "Primary driver: Agent Consensus (bullish signal)"
+            ],
+            risks_identified: [],
+            reasoning_factors: [
+                {
+                    factor_type: "technical_indicator",
+                    name: "RSI (Relative Strength Index)",
+                    value: 45.0,
+                    weight: 0.20,
+                    confidence: 0.85,
+                    influence: "bullish",
+                    explanation: "RSI at 45.0 indicates bullish momentum"
+                },
+                {
+                    factor_type: "technical_indicator",
+                    name: "MACD",
+                    value: 0.8,
+                    weight: 0.18,
+                    confidence: 0.80,
+                    influence: "bullish",
+                    explanation: "MACD signal suggests bullish trend"
+                },
+                {
+                    factor_type: "market_conditions",
+                    name: "Trading Volume",
+                    value: 50000000,
+                    weight: 0.10,
+                    confidence: 0.75,
+                    influence: "neutral",
+                    explanation: "Trading volume: 50,000,000 shares"
+                },
+                {
+                    factor_type: "ensemble_consensus",
+                    name: "Agent Consensus",
+                    value: "buy @ 78%",
+                    weight: 0.30,
+                    confidence: 0.78,
+                    influence: "bullish",
+                    explanation: "Ensemble voted BUY with 78% confidence"
+                }
+            ],
+            agent_contributions: [
+                {
+                    agent_id: "agent-1",
+                    agent_name: "bull_specialist",
+                    specialist_type: "bull_specialist",
+                    vote: "buy",
+                    confidence: 0.85,
+                    reasoning: "bull_specialist analysis suggests buy"
+                },
+                {
+                    agent_id: "agent-2",
+                    agent_name: "generalist",
+                    specialist_type: "generalist",
+                    vote: "buy",
+                    confidence: 0.75,
+                    reasoning: "generalist analysis suggests buy"
+                },
+                {
+                    agent_id: "agent-3",
+                    agent_name: "volatile_specialist",
+                    specialist_type: "volatile_specialist",
+                    vote: "hold",
+                    confidence: 0.65,
+                    reasoning: "volatile_specialist analysis suggests hold"
+                },
+                {
+                    agent_id: "agent-4",
+                    agent_name: "sideways_specialist",
+                    specialist_type: "sideways_specialist",
+                    vote: "buy",
+                    confidence: 0.80,
+                    reasoning: "sideways_specialist analysis suggests buy"
+                },
+                {
+                    agent_id: "agent-5",
+                    agent_name: "bear_specialist",
+                    specialist_type: "bear_specialist",
+                    vote: "buy",
+                    confidence: 0.70,
+                    reasoning: "bear_specialist analysis suggests buy"
+                }
+            ]
+        };
+
+        // Render decision
+        function renderDecision(decision) {
+            // Update header
+            document.getElementById('decisionAction').textContent = `${decision.decision.toUpperCase()} ${decision.symbol}`;
+            document.getElementById('decisionTime').textContent = new Date(decision.timestamp).toLocaleString();
+
+            const confidencePct = Math.round(decision.confidence * 100);
+            document.getElementById('confidencePercent').textContent = `${confidencePct}%`;
+            document.getElementById('confidenceBar').style.width = `${confidencePct}%`;
+            document.getElementById('confidenceBar').textContent = `${confidencePct}%`;
+
+            // Update summary
+            document.getElementById('nlSummary').textContent = decision.natural_language_summary;
+
+            // Render insights
+            const insightsHtml = decision.key_insights.map(insight =>
+                `<div class="insight">💡 ${insight}</div>`
+            ).join('');
+            document.getElementById('insights').innerHTML = insightsHtml;
+
+            // Render risks
+            const risksHtml = decision.risks_identified.map(risk =>
+                `<div class="risk">⚠️ ${risk}</div>`
+            ).join('');
+            document.getElementById('risks').innerHTML = risksHtml;
+
+            // Render reasoning factors
+            const factorsHtml = decision.reasoning_factors.map(factor => {
+                const influenceClass = `influence-${factor.influence}`;
+                const weightPct = Math.round(factor.weight * 100);
+                const emoji = {
+                    bullish: '📈',
+                    bearish: '📉',
+                    neutral: '➡️'
+                }[factor.influence] || '❓';
+
+                return `
+                    <div class="reasoning-factor">
+                        <div class="factor-header">
+                            <span class="factor-name">${emoji} ${factor.name}</span>
+                            <span class="factor-influence ${influenceClass}">${factor.influence.toUpperCase()}</span>
+                        </div>
+                        <div style="font-size: 0.9em; color: #666; margin-bottom: 8px;">
+                            ${factor.explanation}
+                        </div>
+                        <div style="display: flex; justify-content: space-between; font-size: 0.85em; color: #888;">
+                            <span>Weight: ${weightPct}%</span>
+                            <span>Confidence: ${Math.round(factor.confidence * 100)}%</span>
+                        </div>
+                        <div class="weight-bar">
+                            <div class="weight-fill" style="width: ${weightPct}%"></div>
+                        </div>
+                    </div>
+                `;
+            }).join('');
+            document.getElementById('reasoningFactors').innerHTML = factorsHtml;
+
+            // Render agent contributions
+            const agentsHtml = decision.agent_contributions.map(agent => {
+                const voteClass = `vote-${agent.vote}`;
+                const badgeClass = `vote-badge-${agent.vote}`;
+                const emoji = {
+                    buy: '✅',
+                    sell: '❌',
+                    hold: '⏸️'
+                }[agent.vote] || '❓';
+
+                return `
+                    <div class="agent-vote ${voteClass}">
+                        <div>
+                            <div style="font-weight: bold; margin-bottom: 5px;">
+                                ${emoji} ${agent.agent_name}
+                            </div>
+                            <div style="font-size: 0.9em; color: #666;">
+                                ${agent.reasoning}
+                            </div>
+                        </div>
+                        <div style="text-align: right;">
+                            <div class="vote-badge ${badgeClass}">${agent.vote.toUpperCase()}</div>
+                            <div style="font-size: 0.85em; color: #888; margin-top: 5px;">
+                                ${Math.round(agent.confidence * 100)}%
+                            </div>
+                        </div>
+                    </div>
+                `;
+            }).join('');
+            document.getElementById('agentContributions').innerHTML = agentsHtml;
+
+            // Render decision tree (simplified)
+            const treeHtml = `
+                <div class="tree-node tree-node-root">🎯 ${decision.decision.toUpperCase()} ${decision.symbol} (Confidence: ${Math.round(decision.confidence * 100)}%)</div>
+                ${decision.reasoning_factors.map(factor => `
+                    <div class="tree-node tree-node-branch">├─ ${factor.name} [${Math.round(factor.weight * 100)}%]</div>
+                    <div class="tree-node tree-node-leaf">│  └─ ${factor.explanation}</div>
+                `).join('')}
+                <div class="tree-node tree-node-branch">├─ Ensemble Consensus</div>
+                ${decision.agent_contributions.map(agent => `
+                    <div class="tree-node tree-node-leaf">│  └─ ${agent.agent_name}: ${agent.vote.toUpperCase()} (${Math.round(agent.confidence * 100)}%)</div>
+                `).join('')}
+            `;
+            document.getElementById('decisionTree').innerHTML = treeHtml;
+        }
+
+        // Ask question
+        function askQuestion() {
+            const question = document.getElementById('questionInput').value.trim();
+            if (!question) return;
+
+            // Simulate answer (in production, call API)
+            const answer = simulateAnswer(question);
+            displayAnswer(question, answer);
+
+            document.getElementById('questionInput').value = '';
+        }
+
+        function askSuggested(question) {
+            document.getElementById('questionInput').value = question;
+            askQuestion();
+        }
+
+        function simulateAnswer(question) {
+            const q = question.toLowerCase();
+
+            if (q.includes('why')) {
+                return sampleDecision.natural_language_summary;
+            } else if (q.includes('factor')) {
+                return `Top factors:\n1. RSI (Relative Strength Index): RSI at 45.0 indicates bullish momentum\n2. MACD: MACD signal suggests bullish trend\n3. Agent Consensus: Ensemble voted BUY with 78% confidence`;
+            } else if (q.includes('agree') || q.includes('consensus')) {
+                return `Agent votes (5 total):\n  BUY: 4 (80%)\n  HOLD: 1 (20%)`;
+            } else if (q.includes('risk')) {
+                return sampleDecision.risks_identified.length > 0
+                    ? "Risks identified:\n" + sampleDecision.risks_identified.join('\n')
+                    : "No significant risks identified.";
+            } else {
+                return sampleDecision.natural_language_summary;
+            }
+        }
+
+        function displayAnswer(question, answer) {
+            const answerHtml = `
+                <div class="qa-answer">
+                    <div style="font-weight: bold; margin-bottom: 8px;">❓ ${question}</div>
+                    <div style="white-space: pre-wrap;">💡 ${answer}</div>
+                </div>
+            `;
+            document.getElementById('qaAnswers').innerHTML = answerHtml + document.getElementById('qaAnswers').innerHTML;
+        }
+
+        // Button handlers
+        function makeNewDecision() {
+            alert('Creating new decision... (Feature coming soon!)');
+        }
+
+        function loadRecentDecisions() {
+            alert('Loading recent decisions... (Feature coming soon!)');
+        }
+
+        function compareEnsembles() {
+            alert('Comparing ensembles... (Feature coming soon!)');
+        }
+
+        // Enter key for questions
+        document.getElementById('questionInput').addEventListener('keypress', function(e) {
+            if (e.key === 'Enter') {
+                askQuestion();
+            }
+        });
+
+        // Initial render
+        renderDecision(sampleDecision);
+    </script>
+</body>
+</html>
