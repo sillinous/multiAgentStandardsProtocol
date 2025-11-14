@@ -118,6 +118,15 @@ from .conversation import (
     ConversationContext,
     ConversationHistory
 )
+from .risk_management import (
+    RiskMetrics,
+    RiskMetricsCalculator,
+    quick_risk_assessment,
+    PositionSize,
+    PositionSizingMethod,
+    PositionSizingCalculator,
+    calculate_optimal_position
+)
 
 __all__ = [
     # Personality System
@@ -232,5 +241,14 @@ __all__ = [
     'CommandResult',
     'ConversationalAgent',
     'ConversationContext',
-    'ConversationHistory'
+    'ConversationHistory',
+
+    # Risk Management
+    'RiskMetrics',
+    'RiskMetricsCalculator',
+    'quick_risk_assessment',
+    'PositionSize',
+    'PositionSizingMethod',
+    'PositionSizingCalculator',
+    'calculate_optimal_position'
 ]
