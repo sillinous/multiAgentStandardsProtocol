@@ -1,8 +1,13 @@
 """
-Factory Meta-Agent
+Factory Meta-Agent with Discovery Integration
 
 Creates specialized agents on-demand based on requirements.
 Enables dynamic agent generation for autonomous workflows.
+
+Enhanced with Agent Discovery Protocol (ADP):
+- Checks for existing agents before creating new ones
+- Registers new agents with discovery service
+- Enables capability-based agent reuse
 """
 
 import logging
@@ -12,6 +17,13 @@ from dataclasses import dataclass
 
 from ..a2a.protocol import AgentInfo, Capability
 from ..a2a.bus import A2AMessageBus, get_message_bus
+from ..protocols.discovery import (
+    get_discovery_service,
+    AgentDiscoveryService,
+    AgentCapability,
+    AgentMetadata,
+    AgentStatus
+)
 
 
 @dataclass
@@ -31,22 +43,34 @@ class FactoryMetaAgent:
     This meta-agent can dynamically create specialized agents based on
     requirements, enabling truly autonomous system extension.
 
+    Enhanced with Discovery Protocol:
+    - Checks for existing agents before creating new ones
+    - Registers new agents with discovery service
+    - Enables agent reuse and resource optimization
+
     Capabilities:
     - Create agents from specifications
-    - Register agents with A2A bus
+    - Register agents with A2A bus and discovery
     - Configure agent capabilities
     - Track created agents
+    - Find or create agents (smart reuse)
     """
 
-    def __init__(self, bus: Optional[A2AMessageBus] = None):
+    def __init__(
+        self,
+        bus: Optional[A2AMessageBus] = None,
+        discovery: Optional[AgentDiscoveryService] = None
+    ):
         """
         Initialize factory meta-agent
 
         Args:
             bus: A2A message bus (uses global if not provided)
+            discovery: Discovery service (uses global if not provided)
         """
         self.logger = logging.getLogger(__name__)
         self.bus = bus or get_message_bus()
+        self.discovery = discovery or get_discovery_service()
 
         # Factory's own agent info
         self.agent_info = AgentInfo(
@@ -58,6 +82,11 @@ class FactoryMetaAgent:
                     name="agent_creation",
                     version="1.0.0",
                     description="Creates specialized agents on-demand"
+                ),
+                Capability(
+                    name="agent_discovery",
+                    version="1.0.0",
+                    description="Discovers existing agents by capability"
                 )
             ],
             metadata={
@@ -76,6 +105,7 @@ class FactoryMetaAgent:
         self.bus.register_agent(self.agent_info)
 
         self.logger.info(f"✅ FactoryMetaAgent initialized: {self.agent_info.agent_id}")
+        self.logger.info(f"   Discovery integration: Enabled")
 
     def register_agent_type(
         self,
@@ -92,12 +122,17 @@ class FactoryMetaAgent:
         self.agent_registry[agent_type] = creation_func
         self.logger.info(f"📝 Registered agent type: {agent_type}")
 
-    async def create_agent(self, spec: AgentSpec) -> Optional[AgentInfo]:
+    async def create_agent(
+        self,
+        spec: AgentSpec,
+        register_with_discovery: bool = True
+    ) -> Optional[AgentInfo]:
         """
         Create a specialized agent from specification
 
         Args:
             spec: Agent specification
+            register_with_discovery: Register with discovery service
 
         Returns:
             AgentInfo for created agent, or None if creation failed
@@ -121,6 +156,10 @@ class FactoryMetaAgent:
                 # Track created agent
                 self.created_agents[agent_info.agent_id] = agent_info
 
+                # Register with discovery service
+                if register_with_discovery:
+                    await self._register_with_discovery(agent_info, spec)
+
                 self.logger.info(
                     f"✅ Created agent: {agent_info.name} ({agent_info.agent_id})"
                 )
@@ -133,6 +172,105 @@ class FactoryMetaAgent:
         except Exception as e:
             self.logger.error(f"❌ Error creating agent {spec.name}: {e}", exc_info=True)
             return None
+
+    async def find_or_create_agent(
+        self,
+        spec: AgentSpec,
+        reuse_existing: bool = True,
+        filters: Optional[Dict[str, Any]] = None
+    ) -> Optional[AgentInfo]:
+        """
+        Find existing agent or create new one
+
+        This is the smart method that checks discovery first!
+
+        Args:
+            spec: Agent specification
+            reuse_existing: If True, reuse existing agent if found
+            filters: Additional filters for discovery search
+
+        Returns:
+            AgentInfo for found or created agent
+        """
+        if reuse_existing:
+            # Try to find existing agent with required capabilities
+            self.logger.info(
+                f"🔍 Searching for existing agent with capabilities: {spec.capabilities}"
+            )
+
+            discovered = await self.discovery.find_agents(
+                required_capabilities=spec.capabilities,
+                filters=filters or {},
+                limit=1
+            )
+
+            if discovered:
+                agent = discovered[0]
+                self.logger.info(
+                    f"♻️  Found existing agent: {agent.name} ({agent.agent_id})"
+                )
+                self.logger.info(f"   Reusing instead of creating new agent!")
+
+                # Convert RegisteredAgent to AgentInfo for compatibility
+                # (In production, you'd have proper type conversion)
+                return self._registered_to_agent_info(agent)
+
+        # No existing agent found, create new one
+        self.logger.info(f"📦 No existing agent found, creating new agent...")
+        return await self.create_agent(spec)
+
+    def _registered_to_agent_info(self, registered_agent) -> AgentInfo:
+        """Convert RegisteredAgent to AgentInfo"""
+        # Convert capabilities
+        capabilities = [
+            Capability(
+                name=cap.name,
+                version=cap.version,
+                description=cap.description
+            )
+            for cap in registered_agent.capabilities
+        ]
+
+        return AgentInfo(
+            agent_id=registered_agent.agent_id,
+            agent_type=registered_agent.agent_type,
+            name=registered_agent.name,
+            capabilities=capabilities,
+            metadata=registered_agent.metadata.to_dict()
+        )
+
+    async def _register_with_discovery(self, agent_info: AgentInfo, spec: AgentSpec):
+        """Register newly created agent with discovery service"""
+        try:
+            capabilities = [
+                AgentCapability(
+                    name=cap.name,
+                    version=cap.version,
+                    description=cap.description
+                )
+                for cap in agent_info.capabilities
+            ]
+
+            metadata = AgentMetadata(
+                tags=[spec.agent_type, "factory_created"],
+                custom={
+                    "created_by": self.agent_info.agent_id,
+                    "spec_description": spec.description
+                }
+            )
+
+            await self.discovery.register_agent(
+                agent_id=agent_info.agent_id,
+                name=agent_info.name,
+                agent_type=agent_info.agent_type,
+                capabilities=capabilities,
+                metadata=metadata
+            )
+
+            self.logger.info(f"📝 Registered with discovery: {agent_info.name}")
+
+        except Exception as e:
+            self.logger.error(f"⚠️  Failed to register with discovery: {e}")
 
     def _create_generic_agent(self, spec: AgentSpec) -> AgentInfo:
         """Create a generic agent from specification"""
