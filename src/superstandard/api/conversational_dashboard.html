@@ -1,0 +1,929 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>🤖 Conversational Trading Dashboard - Agentic Forge</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+            background: linear-gradient(135deg, #0f0f23 0%, #1a1a2e 100%);
+            color: #e0e0e0;
+            height: 100vh;
+            overflow: hidden;
+        }
+
+        .dashboard {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            grid-template-rows: 60px 1fr 1fr;
+            height: 100vh;
+            gap: 12px;
+            padding: 12px;
+        }
+
+        /* Header */
+        .header {
+            grid-column: 1 / -1;
+            background: linear-gradient(135deg, #1e3a8a 0%, #3b82f6 100%);
+            border-radius: 12px;
+            padding: 0 24px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            box-shadow: 0 4px 20px rgba(59, 130, 246, 0.3);
+        }
+
+        .header h1 {
+            font-size: 24px;
+            font-weight: 700;
+            color: white;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .status-indicator {
+            display: flex;
+            align-items: center;
+            gap: 16px;
+        }
+
+        .status-dot {
+            width: 10px;
+            height: 10px;
+            border-radius: 50%;
+            background: #10b981;
+            animation: pulse 2s infinite;
+        }
+
+        @keyframes pulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.5; }
+        }
+
+        .status-text {
+            color: white;
+            font-size: 14px;
+        }
+
+        /* Panel Base */
+        .panel {
+            background: rgba(30, 30, 46, 0.95);
+            border-radius: 12px;
+            padding: 20px;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
+            border: 1px solid rgba(59, 130, 246, 0.2);
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+        }
+
+        .panel-header {
+            font-size: 18px;
+            font-weight: 600;
+            margin-bottom: 16px;
+            color: #60a5fa;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        /* Chat Panel */
+        .chat-panel {
+            grid-row: 2 / 4;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .chat-messages {
+            flex: 1;
+            overflow-y: auto;
+            margin-bottom: 16px;
+            padding-right: 8px;
+        }
+
+        .chat-message {
+            margin-bottom: 16px;
+            animation: slideIn 0.3s ease-out;
+        }
+
+        @keyframes slideIn {
+            from {
+                opacity: 0;
+                transform: translateY(10px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .message-user {
+            text-align: right;
+        }
+
+        .message-user .message-bubble {
+            background: linear-gradient(135deg, #3b82f6 0%, #2563eb 100%);
+            color: white;
+            display: inline-block;
+            padding: 12px 16px;
+            border-radius: 18px 18px 4px 18px;
+            max-width: 80%;
+            word-wrap: break-word;
+        }
+
+        .message-agent {
+            text-align: left;
+        }
+
+        .message-agent .message-bubble {
+            background: rgba(59, 130, 246, 0.15);
+            border: 1px solid rgba(59, 130, 246, 0.3);
+            color: #e0e0e0;
+            display: inline-block;
+            padding: 12px 16px;
+            border-radius: 18px 18px 18px 4px;
+            max-width: 80%;
+            word-wrap: break-word;
+            white-space: pre-wrap;
+        }
+
+        .message-label {
+            font-size: 11px;
+            color: #9ca3af;
+            margin-bottom: 4px;
+        }
+
+        .chat-input-container {
+            display: flex;
+            gap: 8px;
+        }
+
+        .chat-input {
+            flex: 1;
+            background: rgba(59, 130, 246, 0.1);
+            border: 1px solid rgba(59, 130, 246, 0.3);
+            border-radius: 24px;
+            padding: 12px 20px;
+            color: #e0e0e0;
+            font-size: 14px;
+            outline: none;
+            transition: all 0.3s;
+        }
+
+        .chat-input:focus {
+            border-color: #3b82f6;
+            background: rgba(59, 130, 246, 0.15);
+        }
+
+        .chat-send {
+            background: linear-gradient(135deg, #3b82f6 0%, #2563eb 100%);
+            border: none;
+            border-radius: 24px;
+            padding: 0 24px;
+            color: white;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+
+        .chat-send:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(59, 130, 246, 0.4);
+        }
+
+        .chat-send:active {
+            transform: translateY(0);
+        }
+
+        /* Portfolio Panel */
+        .portfolio-panel {
+            display: flex;
+            flex-direction: column;
+        }
+
+        .portfolio-summary {
+            margin-bottom: 16px;
+        }
+
+        .portfolio-stat {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 8px 0;
+            border-bottom: 1px solid rgba(59, 130, 246, 0.1);
+        }
+
+        .stat-label {
+            color: #9ca3af;
+            font-size: 13px;
+        }
+
+        .stat-value {
+            font-weight: 600;
+            font-size: 16px;
+        }
+
+        .stat-value.positive {
+            color: #10b981;
+        }
+
+        .stat-value.negative {
+            color: #ef4444;
+        }
+
+        .positions-list {
+            flex: 1;
+            overflow-y: auto;
+        }
+
+        .position-item {
+            background: rgba(59, 130, 246, 0.08);
+            border-radius: 8px;
+            padding: 12px;
+            margin-bottom: 8px;
+            border-left: 3px solid #3b82f6;
+        }
+
+        .position-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 6px;
+        }
+
+        .position-symbol {
+            font-weight: 700;
+            font-size: 15px;
+            color: #60a5fa;
+        }
+
+        .position-price {
+            font-weight: 600;
+        }
+
+        .position-details {
+            display: flex;
+            justify-content: space-between;
+            font-size: 12px;
+            color: #9ca3af;
+        }
+
+        /* Sentiment Panel */
+        .sentiment-panel {
+            display: flex;
+            flex-direction: column;
+        }
+
+        .sentiment-input {
+            display: flex;
+            gap: 8px;
+            margin-bottom: 16px;
+        }
+
+        .sentiment-symbol-input {
+            flex: 1;
+            background: rgba(59, 130, 246, 0.1);
+            border: 1px solid rgba(59, 130, 246, 0.3);
+            border-radius: 8px;
+            padding: 8px 12px;
+            color: #e0e0e0;
+            font-size: 14px;
+            outline: none;
+        }
+
+        .sentiment-fetch-btn {
+            background: linear-gradient(135deg, #8b5cf6 0%, #7c3aed 100%);
+            border: none;
+            border-radius: 8px;
+            padding: 8px 16px;
+            color: white;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+
+        .sentiment-fetch-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(139, 92, 246, 0.4);
+        }
+
+        .sentiment-display {
+            flex: 1;
+            overflow-y: auto;
+        }
+
+        .sentiment-item {
+            background: rgba(139, 92, 246, 0.1);
+            border-radius: 8px;
+            padding: 16px;
+            margin-bottom: 12px;
+        }
+
+        .sentiment-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 12px;
+        }
+
+        .sentiment-symbol {
+            font-weight: 700;
+            font-size: 18px;
+            color: #a78bfa;
+        }
+
+        .sentiment-score {
+            font-size: 24px;
+            font-weight: 700;
+        }
+
+        .sentiment-score.very-positive {
+            color: #10b981;
+        }
+
+        .sentiment-score.positive {
+            color: #34d399;
+        }
+
+        .sentiment-score.neutral {
+            color: #fbbf24;
+        }
+
+        .sentiment-score.negative {
+            color: #f87171;
+        }
+
+        .sentiment-score.very-negative {
+            color: #ef4444;
+        }
+
+        .sentiment-breakdown {
+            display: grid;
+            grid-template-columns: 1fr 1fr 1fr;
+            gap: 8px;
+            margin-bottom: 12px;
+        }
+
+        .sentiment-source {
+            background: rgba(139, 92, 246, 0.15);
+            border-radius: 6px;
+            padding: 8px;
+            text-align: center;
+        }
+
+        .source-label {
+            font-size: 11px;
+            color: #9ca3af;
+            margin-bottom: 4px;
+        }
+
+        .source-value {
+            font-weight: 600;
+            font-size: 14px;
+        }
+
+        .sentiment-keywords {
+            font-size: 12px;
+            color: #9ca3af;
+        }
+
+        .keyword-tag {
+            display: inline-block;
+            background: rgba(139, 92, 246, 0.2);
+            border-radius: 12px;
+            padding: 4px 8px;
+            margin: 2px;
+            font-size: 11px;
+        }
+
+        /* Decisions Panel */
+        .decisions-panel {
+            display: flex;
+            flex-direction: column;
+        }
+
+        .decisions-list {
+            flex: 1;
+            overflow-y: auto;
+        }
+
+        .decision-item {
+            background: rgba(16, 185, 129, 0.1);
+            border-radius: 8px;
+            padding: 16px;
+            margin-bottom: 12px;
+            border-left: 3px solid #10b981;
+        }
+
+        .decision-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 8px;
+        }
+
+        .decision-action {
+            font-weight: 700;
+            font-size: 16px;
+            color: #34d399;
+        }
+
+        .decision-confidence {
+            background: rgba(16, 185, 129, 0.2);
+            border-radius: 12px;
+            padding: 4px 12px;
+            font-size: 12px;
+            font-weight: 600;
+        }
+
+        .decision-details {
+            font-size: 13px;
+            color: #9ca3af;
+            margin-bottom: 8px;
+        }
+
+        .decision-factors {
+            font-size: 12px;
+            color: #d1d5db;
+        }
+
+        /* Scrollbar Styling */
+        ::-webkit-scrollbar {
+            width: 6px;
+        }
+
+        ::-webkit-scrollbar-track {
+            background: rgba(59, 130, 246, 0.05);
+            border-radius: 3px;
+        }
+
+        ::-webkit-scrollbar-thumb {
+            background: rgba(59, 130, 246, 0.3);
+            border-radius: 3px;
+        }
+
+        ::-webkit-scrollbar-thumb:hover {
+            background: rgba(59, 130, 246, 0.5);
+        }
+
+        /* Loading Indicator */
+        .loading {
+            display: inline-block;
+            width: 12px;
+            height: 12px;
+            border: 2px solid rgba(255, 255, 255, 0.3);
+            border-radius: 50%;
+            border-top-color: white;
+            animation: spin 0.8s linear infinite;
+        }
+
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+
+        /* Empty State */
+        .empty-state {
+            text-align: center;
+            color: #6b7280;
+            padding: 32px;
+            font-size: 14px;
+        }
+    </style>
+</head>
+<body>
+    <div class="dashboard">
+        <!-- Header -->
+        <div class="header">
+            <h1>
+                <span>🤖</span>
+                Conversational Trading Dashboard
+            </h1>
+            <div class="status-indicator">
+                <div class="status-dot" id="statusDot"></div>
+                <span class="status-text" id="statusText">Connecting...</span>
+            </div>
+        </div>
+
+        <!-- Chat Panel -->
+        <div class="panel chat-panel">
+            <div class="panel-header">💬 Chat with AI Trader</div>
+            <div class="chat-messages" id="chatMessages">
+                <div class="empty-state">
+                    Start a conversation! Try: "What's the sentiment on AAPL?" or "Buy 100 shares of TSLA"
+                </div>
+            </div>
+            <div class="chat-input-container">
+                <input
+                    type="text"
+                    class="chat-input"
+                    id="chatInput"
+                    placeholder="Type a message... (e.g., 'What's the sentiment on AAPL?')"
+                    autocomplete="off"
+                />
+                <button class="chat-send" id="chatSend">Send</button>
+            </div>
+        </div>
+
+        <!-- Portfolio Panel -->
+        <div class="panel portfolio-panel">
+            <div class="panel-header">📊 Live Portfolio</div>
+            <div class="portfolio-summary" id="portfolioSummary">
+                <div class="portfolio-stat">
+                    <span class="stat-label">Total Value</span>
+                    <span class="stat-value" id="totalValue">$0.00</span>
+                </div>
+                <div class="portfolio-stat">
+                    <span class="stat-label">Cash</span>
+                    <span class="stat-value" id="cash">$0.00</span>
+                </div>
+                <div class="portfolio-stat">
+                    <span class="stat-label">Total Return</span>
+                    <span class="stat-value" id="totalReturn">+$0.00 (0.0%)</span>
+                </div>
+            </div>
+            <div class="positions-list" id="positionsList">
+                <div class="empty-state">No positions yet</div>
+            </div>
+        </div>
+
+        <!-- Sentiment Panel -->
+        <div class="panel sentiment-panel">
+            <div class="panel-header">💭 Live Sentiment</div>
+            <div class="sentiment-input">
+                <input
+                    type="text"
+                    class="sentiment-symbol-input"
+                    id="sentimentSymbol"
+                    placeholder="Enter symbol (e.g., AAPL)"
+                    autocomplete="off"
+                />
+                <button class="sentiment-fetch-btn" id="sentimentFetch">Get Sentiment</button>
+            </div>
+            <div class="sentiment-display" id="sentimentDisplay">
+                <div class="empty-state">Enter a symbol to see sentiment analysis</div>
+            </div>
+        </div>
+
+        <!-- Decisions Panel -->
+        <div class="panel decisions-panel">
+            <div class="panel-header">🧠 Recent Decisions</div>
+            <div class="decisions-list" id="decisionsList">
+                <div class="empty-state">No decisions yet</div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // WebSocket connection
+        let ws = null;
+        let wsReconnectAttempts = 0;
+        const maxReconnectAttempts = 5;
+
+        // API base URL (adjust for your setup)
+        const API_BASE = window.location.origin;
+        const WS_BASE = API_BASE.replace('http', 'ws');
+
+        // Connect to WebSocket
+        function connectWebSocket() {
+            try {
+                ws = new WebSocket(`${WS_BASE}/ws/dashboard`);
+
+                ws.onopen = () => {
+                    console.log('✅ WebSocket connected');
+                    updateStatus(true, 'Connected');
+                    wsReconnectAttempts = 0;
+                    loadInitialData();
+                };
+
+                ws.onmessage = (event) => {
+                    const data = JSON.parse(event.data);
+                    handleDashboardEvent(data);
+                };
+
+                ws.onclose = () => {
+                    console.log('❌ WebSocket disconnected');
+                    updateStatus(false, 'Disconnected');
+
+                    // Attempt reconnect
+                    if (wsReconnectAttempts < maxReconnectAttempts) {
+                        wsReconnectAttempts++;
+                        setTimeout(() => {
+                            console.log(`🔄 Reconnecting (attempt ${wsReconnectAttempts})...`);
+                            connectWebSocket();
+                        }, 2000 * wsReconnectAttempts);
+                    }
+                };
+
+                ws.onerror = (error) => {
+                    console.error('WebSocket error:', error);
+                    updateStatus(false, 'Error');
+                };
+            } catch (error) {
+                console.error('Failed to connect WebSocket:', error);
+                updateStatus(false, 'Failed');
+            }
+        }
+
+        // Handle dashboard events
+        function handleDashboardEvent(event) {
+            console.log('📨 Event received:', event.event_type, event);
+
+            switch (event.event_type) {
+                case 'portfolio_update':
+                    updatePortfolio(event.data);
+                    break;
+                case 'sentiment_update':
+                    addSentimentToDisplay(event.data);
+                    break;
+                case 'chat_message':
+                    addChatMessage(event.data.user_message, event.data.agent_response);
+                    break;
+                case 'trade_executed':
+                    // Could show notification
+                    console.log('Trade executed:', event.data);
+                    break;
+                case 'decision_made':
+                    addDecision(event.data);
+                    break;
+            }
+        }
+
+        // Update connection status
+        function updateStatus(connected, text) {
+            const dot = document.getElementById('statusDot');
+            const statusText = document.getElementById('statusText');
+
+            dot.style.background = connected ? '#10b981' : '#ef4444';
+            statusText.textContent = text;
+        }
+
+        // Load initial data
+        async function loadInitialData() {
+            try {
+                // Load portfolio
+                const portfolioRes = await fetch(`${API_BASE}/api/portfolio`);
+                if (portfolioRes.ok) {
+                    const portfolio = await portfolioRes.json();
+                    updatePortfolio(portfolio);
+                }
+
+                // Load chat history
+                const chatRes = await fetch(`${API_BASE}/api/chat/history?limit=10`);
+                if (chatRes.ok) {
+                    const chatData = await chatRes.json();
+                    chatData.history.forEach(item => {
+                        addChatMessage(item.user_message, item.agent_response, false);
+                    });
+                }
+
+                // Load recent decisions
+                const decisionsRes = await fetch(`${API_BASE}/api/decisions?limit=10`);
+                if (decisionsRes.ok) {
+                    const decisionsData = await decisionsRes.json();
+                    decisionsData.decisions.forEach(addDecision);
+                }
+            } catch (error) {
+                console.error('Error loading initial data:', error);
+            }
+        }
+
+        // Update portfolio display
+        function updatePortfolio(data) {
+            document.getElementById('totalValue').textContent = `$${data.total_value.toFixed(2)}`;
+            document.getElementById('cash').textContent = `$${data.cash.toFixed(2)}`;
+
+            const returnElem = document.getElementById('totalReturn');
+            const returnSign = data.total_return >= 0 ? '+' : '';
+            returnElem.textContent = `${returnSign}$${data.total_return.toFixed(2)} (${data.total_return_pct.toFixed(1)}%)`;
+            returnElem.className = `stat-value ${data.total_return >= 0 ? 'positive' : 'negative'}`;
+
+            // Update positions
+            const positionsList = document.getElementById('positionsList');
+
+            if (!data.positions || data.positions.length === 0) {
+                positionsList.innerHTML = '<div class="empty-state">No positions yet</div>';
+                return;
+            }
+
+            positionsList.innerHTML = data.positions.map(pos => `
+                <div class="position-item">
+                    <div class="position-header">
+                        <span class="position-symbol">${pos.symbol}</span>
+                        <span class="position-price">$${pos.current_price?.toFixed(2) || '0.00'}</span>
+                    </div>
+                    <div class="position-details">
+                        <span>${pos.quantity} shares</span>
+                        <span class="${(pos.unrealized_pl || 0) >= 0 ? 'positive' : 'negative'}">
+                            ${(pos.unrealized_pl || 0) >= 0 ? '+' : ''}${((pos.unrealized_pl || 0) * 100).toFixed(1)}%
+                        </span>
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        // Send chat message
+        async function sendChatMessage() {
+            const input = document.getElementById('chatInput');
+            const message = input.value.trim();
+
+            if (!message) return;
+
+            // Clear input
+            input.value = '';
+
+            // Add user message to display
+            addChatMessage(message, null, true);
+
+            try {
+                // Send via REST API (WebSocket will broadcast response)
+                const response = await fetch(`${API_BASE}/api/chat`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ message })
+                });
+
+                if (!response.ok) {
+                    throw new Error('Chat request failed');
+                }
+
+                // Response will come via WebSocket
+            } catch (error) {
+                console.error('Error sending chat:', error);
+                addChatMessage(null, `Error: ${error.message}`, false);
+            }
+        }
+
+        // Add chat message to display
+        function addChatMessage(userMsg, agentMsg, scrollToBottom = true) {
+            const container = document.getElementById('chatMessages');
+
+            // Remove empty state
+            const emptyState = container.querySelector('.empty-state');
+            if (emptyState) {
+                emptyState.remove();
+            }
+
+            if (userMsg) {
+                const userDiv = document.createElement('div');
+                userDiv.className = 'chat-message message-user';
+                userDiv.innerHTML = `
+                    <div class="message-label">You</div>
+                    <div class="message-bubble">${escapeHtml(userMsg)}</div>
+                `;
+                container.appendChild(userDiv);
+            }
+
+            if (agentMsg) {
+                const agentDiv = document.createElement('div');
+                agentDiv.className = 'chat-message message-agent';
+                agentDiv.innerHTML = `
+                    <div class="message-label">🤖 AI Trader</div>
+                    <div class="message-bubble">${escapeHtml(agentMsg)}</div>
+                `;
+                container.appendChild(agentDiv);
+            }
+
+            if (scrollToBottom) {
+                container.scrollTop = container.scrollHeight;
+            }
+        }
+
+        // Fetch sentiment
+        async function fetchSentiment() {
+            const input = document.getElementById('sentimentSymbol');
+            const symbol = input.value.trim().toUpperCase();
+
+            if (!symbol) return;
+
+            try {
+                const response = await fetch(`${API_BASE}/api/sentiment/${symbol}`);
+
+                if (!response.ok) {
+                    throw new Error('Sentiment request failed');
+                }
+
+                const data = await response.json();
+                addSentimentToDisplay(data);
+            } catch (error) {
+                console.error('Error fetching sentiment:', error);
+            }
+        }
+
+        // Add sentiment to display
+        function addSentimentToDisplay(data) {
+            const container = document.getElementById('sentimentDisplay');
+
+            // Remove empty state
+            const emptyState = container.querySelector('.empty-state');
+            if (emptyState) {
+                emptyState.remove();
+            }
+
+            // Determine score class
+            let scoreClass = 'neutral';
+            if (data.overall_score > 0.5) scoreClass = 'very-positive';
+            else if (data.overall_score > 0.2) scoreClass = 'positive';
+            else if (data.overall_score < -0.5) scoreClass = 'very-negative';
+            else if (data.overall_score < -0.2) scoreClass = 'negative';
+
+            const sentimentDiv = document.createElement('div');
+            sentimentDiv.className = 'sentiment-item';
+            sentimentDiv.innerHTML = `
+                <div class="sentiment-header">
+                    <span class="sentiment-symbol">${data.symbol}</span>
+                    <span class="sentiment-score ${scoreClass}">${data.overall_score >= 0 ? '+' : ''}${data.overall_score.toFixed(2)}</span>
+                </div>
+                <div style="font-size: 13px; color: #9ca3af; margin-bottom: 12px;">
+                    ${data.overall_label} • Trend: ${data.trend.toUpperCase()}
+                </div>
+                <div class="sentiment-breakdown">
+                    ${data.news_score !== null ? `
+                        <div class="sentiment-source">
+                            <div class="source-label">📰 News</div>
+                            <div class="source-value">${data.news_score >= 0 ? '+' : ''}${data.news_score.toFixed(2)}</div>
+                        </div>
+                    ` : ''}
+                    ${data.twitter_score !== null ? `
+                        <div class="sentiment-source">
+                            <div class="source-label">🐦 Twitter</div>
+                            <div class="source-value">${data.twitter_score >= 0 ? '+' : ''}${data.twitter_score.toFixed(2)}</div>
+                        </div>
+                    ` : ''}
+                    ${data.reddit_score !== null ? `
+                        <div class="sentiment-source">
+                            <div class="source-label">📱 Reddit</div>
+                            <div class="source-value">${data.reddit_score >= 0 ? '+' : ''}${data.reddit_score.toFixed(2)}</div>
+                        </div>
+                    ` : ''}
+                </div>
+                ${data.keywords && data.keywords.length > 0 ? `
+                    <div class="sentiment-keywords">
+                        ${data.keywords.slice(0, 8).map(k => `<span class="keyword-tag">${k}</span>`).join('')}
+                    </div>
+                ` : ''}
+            `;
+
+            // Add to top
+            container.insertBefore(sentimentDiv, container.firstChild);
+        }
+
+        // Add decision to display
+        function addDecision(data) {
+            const container = document.getElementById('decisionsList');
+
+            // Remove empty state
+            const emptyState = container.querySelector('.empty-state');
+            if (emptyState) {
+                emptyState.remove();
+            }
+
+            const decisionDiv = document.createElement('div');
+            decisionDiv.className = 'decision-item';
+            decisionDiv.innerHTML = `
+                <div class="decision-header">
+                    <span class="decision-action">${data.action?.toUpperCase() || 'DECISION'} ${data.symbol || ''}</span>
+                    <span class="decision-confidence">${((data.confidence || 0) * 100).toFixed(0)}% confidence</span>
+                </div>
+                <div class="decision-details">
+                    ${data.explanation || 'Decision made based on market analysis'}
+                </div>
+                <div class="decision-factors">
+                    ${data.factors ? data.factors.slice(0, 3).join(' • ') : ''}
+                </div>
+            `;
+
+            // Add to top
+            container.insertBefore(decisionDiv, container.firstChild);
+        }
+
+        // Utility function to escape HTML
+        function escapeHtml(text) {
+            const div = document.createElement('div');
+            div.textContent = text;
+            return div.innerHTML;
+        }
+
+        // Event listeners
+        document.getElementById('chatSend').addEventListener('click', sendChatMessage);
+        document.getElementById('chatInput').addEventListener('keypress', (e) => {
+            if (e.key === 'Enter') sendChatMessage();
+        });
+
+        document.getElementById('sentimentFetch').addEventListener('click', fetchSentiment);
+        document.getElementById('sentimentSymbol').addEventListener('keypress', (e) => {
+            if (e.key === 'Enter') fetchSentiment();
+        });
+
+        // Initialize
+        connectWebSocket();
+    </script>
+</body>
+</html>
