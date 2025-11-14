@@ -63,10 +63,18 @@ jobs:
         python test_protocols.py
       continue-on-error: true
 
-    - name: Run Pytest (when tests exist)
+    - name: Run Pytest
       run: |
-        pytest tests/ -v --cov=superstandard --cov-report=xml --cov-report=term || echo "No tests yet"
-      continue-on-error: true
+        pytest tests/ -v --cov=src/superstandard --cov-report=xml --cov-report=term-missing -m "not requires_api_key"
+      continue-on-error: false
+
+    - name: Upload coverage reports
+      uses: codecov/codecov-action@v3
+      with:
+        file: ./coverage.xml
+        flags: unittests
+        name: py${{ matrix.python-version }}
+        fail_ci_if_error: false
 
   benchmark:
     name: Performance Benchmarks
