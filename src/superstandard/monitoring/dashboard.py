@@ -44,6 +44,8 @@ class EventType(Enum):
     SYSTEM_HEALTH_UPDATED = "system_health_updated"
     AGENT_REGISTERED = "agent_registered"
     METRICS_UPDATED = "metrics_updated"
+    REPUTATION_UPDATED = "reputation_updated"  # NEW: Reputation change event
+    TASK_OUTCOME_RECORDED = "task_outcome_recorded"  # NEW: Task execution outcome
 
 
 @dataclass
@@ -360,6 +362,68 @@ class DashboardState:
                 **kwargs
             },
             severity="info"
+        )
+
+        await self.broadcast_event(event)
+
+    async def reputation_updated(
+        self,
+        agent_id: str,
+        agent_name: str,
+        old_score: float,
+        new_score: float,
+        total_tasks: int,
+        trend: str,
+        **kwargs
+    ):
+        """Broadcast reputation update event."""
+        change = new_score - old_score
+        event = DashboardEvent(
+            event_id=str(uuid.uuid4()),
+            event_type=EventType.REPUTATION_UPDATED,
+            timestamp=datetime.utcnow().isoformat(),
+            data={
+                "agent_id": agent_id,
+                "agent_name": agent_name,
+                "old_score": old_score,
+                "new_score": new_score,
+                "change": change,
+                "total_tasks": total_tasks,
+                "trend": trend,
+                "description": f"{agent_name} reputation: {new_score:.1%} ({'+' if change >= 0 else ''}{change:.1%} change, {trend})",
+                **kwargs
+            },
+            severity="success" if change >= 0 else "warning"
+        )
+
+        await self.broadcast_event(event)
+
+    async def task_outcome_recorded(
+        self,
+        agent_id: str,
+        agent_name: str,
+        task_id: str,
+        success: bool,
+        quality_score: Optional[float] = None,
+        duration_ms: Optional[float] = None,
+        **kwargs
+    ):
+        """Broadcast task outcome recorded event."""
+        event = DashboardEvent(
+            event_id=str(uuid.uuid4()),
+            event_type=EventType.TASK_OUTCOME_RECORDED,
+            timestamp=datetime.utcnow().isoformat(),
+            data={
+                "agent_id": agent_id,
+                "agent_name": agent_name,
+                "task_id": task_id,
+                "success": success,
+                "quality_score": quality_score,
+                "duration_ms": duration_ms,
+                "description": f"{agent_name} {'✅ completed' if success else '❌ failed'} task {task_id}",
+                **kwargs
+            },
+            severity="success" if success else "error"
         )
 
         await self.broadcast_event(event)

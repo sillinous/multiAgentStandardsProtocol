@@ -6,13 +6,17 @@ discovery, and interaction in the Agentic Standards Protocol platform.
 
 Available Protocols:
 - Agent Discovery Protocol (ADP): Dynamic agent discovery by capability
-- More protocols coming soon...
+- Agent Reputation Protocol (ARP): Performance tracking and reputation scoring
 
 Usage:
     from src.superstandard.protocols.discovery import get_discovery_service
+    from src.superstandard.protocols.reputation import get_reputation_service
 
     discovery = get_discovery_service()
+    reputation = get_reputation_service()
+
     await discovery.start()
+    await reputation.start()
 """
 
 from .discovery import (
@@ -24,11 +28,28 @@ from .discovery import (
     get_discovery_service
 )
 
+from .reputation import (
+    ReputationDimension,
+    TaskOutcome,
+    DimensionScore,
+    AgentReputation,
+    ReputationService,
+    get_reputation_service
+)
+
 __all__ = [
+    # Discovery
     'AgentStatus',
     'AgentCapability',
     'AgentMetadata',
     'RegisteredAgent',
     'AgentDiscoveryService',
-    'get_discovery_service'
+    'get_discovery_service',
+    # Reputation
+    'ReputationDimension',
+    'TaskOutcome',
+    'DimensionScore',
+    'AgentReputation',
+    'ReputationService',
+    'get_reputation_service'
 ]
