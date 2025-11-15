@@ -1,0 +1,57 @@
+agent_id: apqc-3.3.1.1
+name: Lead Generation Agent
+description: Develop and execute lead generation strategies across channels
+apqc_process_id: "3.3.1.1"
+apqc_category: "Marketing and Sales"
+implementation_type: standard
+
+capabilities:
+  - lead_generation
+  - demand_generation
+  - conversion_optimization
+  - lead_scoring
+  - funnel_design
+
+inputs:
+  - name: target_profiles
+    type: List[Dict]
+    description: Target customer profiles
+    required: true
+  - name: lead_goals
+    type: Dict
+    description: Lead quantity and quality goals
+    required: true
+  - name: budget
+    type: float
+    description: Lead generation budget
+    required: true
+  - name: channels
+    type: List[str]
+    description: Lead generation channels
+    required: false
+
+outputs:
+  - name: lead_gen_strategy
+    type: Dict
+    description: Lead generation strategy
+  - name: channel_tactics
+    type: Dict
+    description: Tactics by channel
+  - name: lead_scoring_model
+    type: Dict
+    description: Lead scoring criteria and model
+  - name: conversion_funnels
+    type: List[Dict]
+    description: Conversion funnel designs
+  - name: expected_roi
+    type: Dict
+    description: Expected ROI by channel
+
+cost_per_request: 9.50
+avg_latency_ms: 1250.0
+quality_baseline: 0.88
+
+metadata:
+  priority: high
+  complexity: high
+  data_driven: true

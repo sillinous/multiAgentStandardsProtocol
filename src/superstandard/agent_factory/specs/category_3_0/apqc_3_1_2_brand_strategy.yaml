@@ -1,0 +1,57 @@
+agent_id: apqc-3.1.2.1
+name: Brand Strategy Agent
+description: Develop and manage brand strategy, positioning, and brand equity
+apqc_process_id: "3.1.2.1"
+apqc_category: "Marketing and Sales"
+implementation_type: standard
+
+capabilities:
+  - brand_strategy
+  - brand_positioning
+  - brand_equity_management
+  - brand_architecture
+  - value_proposition
+
+inputs:
+  - name: market_analysis
+    type: Dict
+    description: Market and competitive analysis
+    required: true
+  - name: target_segments
+    type: List[Dict]
+    description: Target market segments
+    required: true
+  - name: organizational_values
+    type: Dict
+    description: Organizational values and culture
+    required: false
+  - name: current_brand_perception
+    type: Dict
+    description: Current brand perception data
+    required: false
+
+outputs:
+  - name: brand_strategy
+    type: Dict
+    description: Complete brand strategy
+  - name: brand_positioning
+    type: Dict
+    description: Brand positioning statement and framework
+  - name: value_proposition
+    type: str
+    description: Brand value proposition
+  - name: brand_architecture
+    type: Dict
+    description: Brand architecture and hierarchy
+  - name: brand_guidelines
+    type: Dict
+    description: Brand guidelines and standards
+
+cost_per_request: 12.00
+avg_latency_ms: 1500.0
+quality_baseline: 0.91
+
+metadata:
+  priority: critical
+  complexity: very_high
+  strategic: true

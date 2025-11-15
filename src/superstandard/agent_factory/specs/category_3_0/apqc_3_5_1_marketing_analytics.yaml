@@ -1,0 +1,58 @@
+agent_id: apqc-3.5.1.1
+name: Marketing Analytics Agent
+description: Analyze marketing performance, ROI, and attribution across channels
+apqc_process_id: "3.5.1.1"
+apqc_category: "Marketing and Sales"
+implementation_type: standard
+
+capabilities:
+  - marketing_analytics
+  - roi_analysis
+  - attribution_modeling
+  - performance_tracking
+  - data_visualization
+
+inputs:
+  - name: campaign_data
+    type: Dict
+    description: Campaign performance data
+    required: true
+  - name: channel_data
+    type: Dict
+    description: Channel-level metrics
+    required: true
+  - name: cost_data
+    type: Dict
+    description: Marketing spend data
+    required: true
+  - name: conversion_data
+    type: Dict
+    description: Conversion and revenue data
+    required: false
+
+outputs:
+  - name: performance_report
+    type: Dict
+    description: Comprehensive performance report
+  - name: roi_analysis
+    type: Dict
+    description: ROI analysis by channel and campaign
+  - name: attribution_model
+    type: Dict
+    description: Multi-touch attribution model
+  - name: insights
+    type: List[Dict]
+    description: Key insights and findings
+  - name: optimization_recommendations
+    type: List[Dict]
+    description: Data-driven optimization recommendations
+
+cost_per_request: 7.50
+avg_latency_ms: 1000.0
+quality_baseline: 0.91
+
+metadata:
+  priority: high
+  complexity: high
+  data_intensive: true
+  automated: true

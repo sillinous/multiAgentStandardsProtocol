@@ -1,0 +1,58 @@
+agent_id: apqc-3.6.1.1
+name: Customer Acquisition Agent
+description: Develop and optimize customer acquisition strategies and programs
+apqc_process_id: "3.6.1.1"
+apqc_category: "Marketing and Sales"
+implementation_type: standard
+
+capabilities:
+  - acquisition_strategy
+  - channel_optimization
+  - cac_optimization
+  - growth_hacking
+  - conversion_rate_optimization
+
+inputs:
+  - name: target_segments
+    type: List[Dict]
+    description: Target customer segments
+    required: true
+  - name: acquisition_goals
+    type: Dict
+    description: Acquisition volume and cost goals
+    required: true
+  - name: current_performance
+    type: Dict
+    description: Current acquisition metrics
+    required: false
+  - name: competitive_landscape
+    type: Dict
+    description: Competitive acquisition strategies
+    required: false
+
+outputs:
+  - name: acquisition_strategy
+    type: Dict
+    description: Customer acquisition strategy
+  - name: channel_mix
+    type: Dict
+    description: Optimized channel mix
+  - name: cac_targets
+    type: Dict
+    description: Customer acquisition cost targets by channel
+  - name: growth_initiatives
+    type: List[Dict]
+    description: Growth initiatives and experiments
+  - name: conversion_optimization
+    type: Dict
+    description: Conversion optimization plan
+
+cost_per_request: 11.00
+avg_latency_ms: 1400.0
+quality_baseline: 0.90
+
+metadata:
+  priority: critical
+  complexity: very_high
+  strategic: true
+  data_driven: true

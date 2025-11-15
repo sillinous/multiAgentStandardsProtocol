@@ -1,0 +1,57 @@
+agent_id: apqc-3.7.1.1
+name: Digital Marketing Agent
+description: Plan and execute digital marketing campaigns across digital channels
+apqc_process_id: "3.7.1.1"
+apqc_category: "Marketing and Sales"
+implementation_type: standard
+
+capabilities:
+  - digital_marketing
+  - paid_advertising
+  - social_media_marketing
+  - email_marketing
+  - marketing_automation
+
+inputs:
+  - name: digital_goals
+    type: Dict
+    description: Digital marketing goals
+    required: true
+  - name: target_audience
+    type: Dict
+    description: Target audience profiles
+    required: true
+  - name: budget
+    type: float
+    description: Digital marketing budget
+    required: true
+  - name: brand_assets
+    type: Dict
+    description: Brand assets and guidelines
+    required: false
+
+outputs:
+  - name: digital_strategy
+    type: Dict
+    description: Comprehensive digital marketing strategy
+  - name: channel_plans
+    type: Dict
+    description: Detailed plans by digital channel
+  - name: creative_requirements
+    type: List[Dict]
+    description: Creative asset requirements
+  - name: automation_workflows
+    type: List[Dict]
+    description: Marketing automation workflows
+  - name: measurement_framework
+    type: Dict
+    description: Digital measurement framework
+
+cost_per_request: 9.50
+avg_latency_ms: 1250.0
+quality_baseline: 0.88
+
+metadata:
+  priority: high
+  complexity: high
+  real_time: true

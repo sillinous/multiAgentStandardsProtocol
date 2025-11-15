@@ -1,0 +1,57 @@
+agent_id: apqc-3.4.2.1
+name: Sales Enablement Agent
+description: Provide sales teams with tools, content, and training to improve effectiveness
+apqc_process_id: "3.4.2.1"
+apqc_category: "Marketing and Sales"
+implementation_type: standard
+
+capabilities:
+  - sales_enablement
+  - content_management
+  - training_development
+  - tool_optimization
+  - playbook_creation
+
+inputs:
+  - name: sales_challenges
+    type: List[Dict]
+    description: Current sales challenges and pain points
+    required: true
+  - name: product_portfolio
+    type: List[Dict]
+    description: Products and services to enable
+    required: true
+  - name: buyer_personas
+    type: List[Dict]
+    description: Buyer personas and journey
+    required: false
+  - name: existing_materials
+    type: List[Dict]
+    description: Existing sales materials
+    required: false
+
+outputs:
+  - name: enablement_strategy
+    type: Dict
+    description: Sales enablement strategy
+  - name: content_library
+    type: Dict
+    description: Organized sales content library
+  - name: sales_playbooks
+    type: List[Dict]
+    description: Sales playbooks by scenario
+  - name: training_plan
+    type: Dict
+    description: Sales training plan
+  - name: tool_recommendations
+    type: List[Dict]
+    description: Recommended tools and platforms
+
+cost_per_request: 10.50
+avg_latency_ms: 1350.0
+quality_baseline: 0.89
+
+metadata:
+  priority: high
+  complexity: high
+  requires_collaboration: true

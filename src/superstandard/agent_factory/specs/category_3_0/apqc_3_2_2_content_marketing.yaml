@@ -1,0 +1,57 @@
+agent_id: apqc-3.2.2.1
+name: Content Marketing Agent
+description: Develop and manage content marketing strategy and content creation
+apqc_process_id: "3.2.2.1"
+apqc_category: "Marketing and Sales"
+implementation_type: standard
+
+capabilities:
+  - content_strategy
+  - content_creation
+  - seo_optimization
+  - content_distribution
+  - editorial_planning
+
+inputs:
+  - name: target_audience
+    type: Dict
+    description: Target audience personas
+    required: true
+  - name: content_goals
+    type: List[str]
+    description: Content marketing goals
+    required: true
+  - name: brand_guidelines
+    type: Dict
+    description: Brand voice and guidelines
+    required: false
+  - name: existing_content
+    type: List[Dict]
+    description: Existing content inventory
+    required: false
+
+outputs:
+  - name: content_strategy
+    type: Dict
+    description: Content marketing strategy
+  - name: editorial_calendar
+    type: Dict
+    description: Content editorial calendar
+  - name: content_themes
+    type: List[Dict]
+    description: Content themes and topics
+  - name: distribution_plan
+    type: Dict
+    description: Content distribution plan
+  - name: performance_metrics
+    type: List[Dict]
+    description: Content performance metrics
+
+cost_per_request: 9.00
+avg_latency_ms: 1200.0
+quality_baseline: 0.87
+
+metadata:
+  priority: high
+  complexity: medium
+  creative: true

@@ -1,0 +1,53 @@
+agent_id: apqc-3.1.1.1
+name: Market Segmentation Agent
+description: Identify and analyze market segments to target with products and services
+apqc_process_id: "3.1.1.1"
+apqc_category: "Marketing and Sales"
+implementation_type: standard
+
+capabilities:
+  - market_segmentation
+  - customer_profiling
+  - segment_analysis
+  - targeting_strategy
+  - persona_development
+
+inputs:
+  - name: market_data
+    type: Dict
+    description: Market research and customer data
+    required: true
+  - name: segmentation_criteria
+    type: List[str]
+    description: Criteria for segmentation (demographic, behavioral, etc.)
+    required: false
+  - name: product_portfolio
+    type: List[Dict]
+    description: Products/services to segment for
+    required: false
+
+outputs:
+  - name: market_segments
+    type: List[Dict]
+    description: Identified market segments with profiles
+  - name: segment_attractiveness
+    type: Dict
+    description: Attractiveness score for each segment
+  - name: target_segments
+    type: List[Dict]
+    description: Recommended target segments
+  - name: personas
+    type: List[Dict]
+    description: Customer personas for each segment
+  - name: positioning_recommendations
+    type: Dict
+    description: Positioning recommendations by segment
+
+cost_per_request: 8.50
+avg_latency_ms: 1200.0
+quality_baseline: 0.88
+
+metadata:
+  priority: high
+  complexity: high
+  strategic: true

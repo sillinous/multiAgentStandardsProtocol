@@ -1,0 +1,57 @@
+agent_id: apqc-3.2.1.1
+name: Marketing Campaign Planning Agent
+description: Plan and design integrated marketing campaigns across channels
+apqc_process_id: "3.2.1.1"
+apqc_category: "Marketing and Sales"
+implementation_type: standard
+
+capabilities:
+  - campaign_planning
+  - channel_strategy
+  - messaging_development
+  - budget_allocation
+  - campaign_design
+
+inputs:
+  - name: campaign_objectives
+    type: Dict
+    description: Campaign objectives and goals
+    required: true
+  - name: target_audience
+    type: Dict
+    description: Target audience segments
+    required: true
+  - name: budget
+    type: float
+    description: Campaign budget
+    required: true
+  - name: available_channels
+    type: List[str]
+    description: Available marketing channels
+    required: false
+
+outputs:
+  - name: campaign_plan
+    type: Dict
+    description: Comprehensive campaign plan
+  - name: channel_strategy
+    type: Dict
+    description: Multi-channel marketing strategy
+  - name: messaging_framework
+    type: Dict
+    description: Campaign messaging framework
+  - name: budget_allocation
+    type: Dict
+    description: Budget allocation across channels
+  - name: campaign_timeline
+    type: Dict
+    description: Campaign execution timeline
+
+cost_per_request: 10.00
+avg_latency_ms: 1300.0
+quality_baseline: 0.89
+
+metadata:
+  priority: high
+  complexity: high
+  requires_approval: true

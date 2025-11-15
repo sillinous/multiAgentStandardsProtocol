@@ -1,0 +1,58 @@
+agent_id: apqc-3.4.1.1
+name: Sales Pipeline Management Agent
+description: Manage and optimize sales pipeline and opportunity progression
+apqc_process_id: "3.4.1.1"
+apqc_category: "Marketing and Sales"
+implementation_type: standard
+
+capabilities:
+  - pipeline_management
+  - opportunity_tracking
+  - sales_forecasting
+  - pipeline_analytics
+  - stage_optimization
+
+inputs:
+  - name: pipeline_data
+    type: Dict
+    description: Current pipeline data
+    required: true
+  - name: sales_targets
+    type: Dict
+    description: Sales targets and quotas
+    required: true
+  - name: pipeline_stages
+    type: List[Dict]
+    description: Pipeline stage definitions
+    required: false
+  - name: historical_data
+    type: Dict
+    description: Historical conversion data
+    required: false
+
+outputs:
+  - name: pipeline_health
+    type: Dict
+    description: Pipeline health assessment
+  - name: sales_forecast
+    type: Dict
+    description: Sales forecast by period
+  - name: bottleneck_analysis
+    type: Dict
+    description: Identified pipeline bottlenecks
+  - name: optimization_recommendations
+    type: List[Dict]
+    description: Pipeline optimization recommendations
+  - name: win_rate_analysis
+    type: Dict
+    description: Win rate analysis by stage
+
+cost_per_request: 8.00
+avg_latency_ms: 1100.0
+quality_baseline: 0.90
+
+metadata:
+  priority: high
+  complexity: medium
+  real_time: true
+  automated: true
