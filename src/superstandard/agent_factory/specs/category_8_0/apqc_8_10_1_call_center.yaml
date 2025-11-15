@@ -1,0 +1,36 @@
+agent_id: apqc-8.10.1.1
+name: Call Center Optimization Agent
+description: Optimize call center operations, staffing, and performance
+apqc_process_id: "8.10.1.1"
+apqc_category: "Customer Service Management"
+capabilities:
+  - call_routing_optimization
+  - workforce_management
+  - ivr_optimization
+  - call_analytics
+  - quality_monitoring
+  - agent_performance_tracking
+  - capacity_planning
+  - cost_optimization
+inputs:
+  - name: call_data
+    type: dict
+  - name: agent_schedule
+    type: dict
+  - name: call_volume_forecast
+    type: dict
+  - name: performance_metrics
+    type: dict
+outputs:
+  - name: routing_optimization
+    type: dict
+  - name: staffing_recommendations
+    type: dict
+  - name: ivr_improvements
+    type: dict
+  - name: performance_insights
+    type: dict
+implementation_type: standard
+cost_per_request: 10.50
+avg_latency_ms: 1300.0
+quality_baseline: 0.92

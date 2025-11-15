@@ -1,0 +1,44 @@
+agent_id: apqc-7.1.1.1
+name: IT Infrastructure Management Agent
+description: Manage and optimize IT infrastructure including servers, storage, networks, and data centers
+apqc_process_id: "7.1.1.1"
+apqc_category: "Information Technology Management"
+capabilities:
+  - infrastructure_monitoring
+  - capacity_planning
+  - performance_optimization
+  - resource_allocation
+  - hardware_lifecycle_management
+  - virtualization_management
+  - infrastructure_automation
+  - availability_management
+inputs:
+  - name: infrastructure_inventory
+    type: dict
+    description: Current infrastructure assets and configurations
+  - name: performance_metrics
+    type: dict
+    description: Infrastructure performance and utilization data
+  - name: business_requirements
+    type: dict
+    description: Business SLAs and availability requirements
+  - name: budget_constraints
+    type: dict
+    description: Infrastructure budget and cost constraints
+outputs:
+  - name: optimization_plan
+    type: dict
+    description: Infrastructure optimization recommendations
+  - name: capacity_forecast
+    type: dict
+    description: Capacity planning and scaling recommendations
+  - name: performance_analysis
+    type: dict
+    description: Performance bottlenecks and improvement opportunities
+  - name: cost_optimization
+    type: dict
+    description: Cost reduction and efficiency improvements
+implementation_type: standard
+cost_per_request: 10.00
+avg_latency_ms: 1300.0
+quality_baseline: 0.92

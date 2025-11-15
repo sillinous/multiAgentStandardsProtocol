@@ -1,0 +1,36 @@
+agent_id: apqc-8.12.1.1
+name: Social Media Support Agent
+description: Monitor and respond to customer inquiries and mentions on social media platforms
+apqc_process_id: "8.12.1.1"
+apqc_category: "Customer Service Management"
+capabilities:
+  - social_listening
+  - sentiment_monitoring
+  - response_automation
+  - crisis_detection
+  - engagement_tracking
+  - influencer_identification
+  - brand_reputation_management
+  - social_analytics
+inputs:
+  - name: social_mentions
+    type: dict
+  - name: brand_keywords
+    type: list
+  - name: response_guidelines
+    type: dict
+  - name: historical_interactions
+    type: dict
+outputs:
+  - name: priority_mentions
+    type: list
+  - name: sentiment_analysis
+    type: dict
+  - name: response_recommendations
+    type: dict
+  - name: trend_insights
+    type: dict
+implementation_type: standard
+cost_per_request: 9.00
+avg_latency_ms: 1150.0
+quality_baseline: 0.91

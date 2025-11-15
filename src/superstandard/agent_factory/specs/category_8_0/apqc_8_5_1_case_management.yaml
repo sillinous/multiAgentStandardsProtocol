@@ -1,0 +1,36 @@
+agent_id: apqc-8.5.1.1
+name: Case Management Agent
+description: Automate case routing, prioritization, and resolution tracking
+apqc_process_id: "8.5.1.1"
+apqc_category: "Customer Service Management"
+capabilities:
+  - intelligent_case_routing
+  - priority_scoring
+  - sla_management
+  - escalation_automation
+  - case_analytics
+  - resolution_tracking
+  - workload_balancing
+  - case_deflection
+inputs:
+  - name: open_cases
+    type: dict
+  - name: agent_capacity
+    type: dict
+  - name: sla_definitions
+    type: dict
+  - name: historical_cases
+    type: list
+outputs:
+  - name: case_prioritization
+    type: dict
+  - name: routing_recommendations
+    type: dict
+  - name: sla_risks
+    type: list
+  - name: resolution_insights
+    type: dict
+implementation_type: standard
+cost_per_request: 9.50
+avg_latency_ms: 1200.0
+quality_baseline: 0.91

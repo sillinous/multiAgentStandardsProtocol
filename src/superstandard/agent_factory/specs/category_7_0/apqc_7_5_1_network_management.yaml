@@ -1,0 +1,44 @@
+agent_id: apqc-7.5.1.1
+name: Network Management Agent
+description: Monitor network performance, optimize traffic, and ensure network availability and security
+apqc_process_id: "7.5.1.1"
+apqc_category: "Information Technology Management"
+capabilities:
+  - network_monitoring
+  - bandwidth_optimization
+  - network_topology_management
+  - traffic_analysis
+  - network_security
+  - performance_troubleshooting
+  - capacity_planning
+  - sd_wan_management
+inputs:
+  - name: network_topology
+    type: dict
+    description: Network architecture and device inventory
+  - name: traffic_data
+    type: dict
+    description: Network traffic patterns and bandwidth usage
+  - name: performance_metrics
+    type: dict
+    description: Network latency, packet loss, and availability data
+  - name: security_events
+    type: list
+    description: Network security alerts and anomalies
+outputs:
+  - name: performance_analysis
+    type: dict
+    description: Network performance assessment and bottlenecks
+  - name: optimization_plan
+    type: dict
+    description: Traffic optimization and QoS recommendations
+  - name: security_assessment
+    type: dict
+    description: Network security posture and vulnerabilities
+  - name: capacity_forecast
+    type: dict
+    description: Network capacity planning and upgrade recommendations
+implementation_type: standard
+cost_per_request: 9.50
+avg_latency_ms: 1200.0
+quality_baseline: 0.91

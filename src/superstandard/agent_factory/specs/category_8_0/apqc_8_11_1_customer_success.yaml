@@ -1,0 +1,36 @@
+agent_id: apqc-8.11.1.1
+name: Customer Success Management Agent
+description: Drive customer adoption, engagement, and value realization
+apqc_process_id: "8.11.1.1"
+apqc_category: "Customer Service Management"
+capabilities:
+  - health_score_tracking
+  - adoption_monitoring
+  - engagement_optimization
+  - value_realization
+  - upsell_identification
+  - churn_prevention
+  - success_planning
+  - milestone_tracking
+inputs:
+  - name: customer_usage
+    type: dict
+  - name: health_indicators
+    type: dict
+  - name: engagement_data
+    type: dict
+  - name: value_metrics
+    type: dict
+outputs:
+  - name: health_assessment
+    type: dict
+  - name: adoption_insights
+    type: dict
+  - name: intervention_recommendations
+    type: list
+  - name: expansion_opportunities
+    type: list
+implementation_type: standard
+cost_per_request: 10.00
+avg_latency_ms: 1250.0
+quality_baseline: 0.92

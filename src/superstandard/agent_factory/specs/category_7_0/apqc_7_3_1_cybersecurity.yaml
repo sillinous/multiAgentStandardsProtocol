@@ -1,0 +1,44 @@
+agent_id: apqc-7.3.1.1
+name: Cybersecurity Management Agent
+description: Monitor security threats, manage vulnerabilities, and ensure compliance with security policies
+apqc_process_id: "7.3.1.1"
+apqc_category: "Information Technology Management"
+capabilities:
+  - threat_detection
+  - vulnerability_assessment
+  - security_incident_response
+  - security_policy_enforcement
+  - penetration_testing_coordination
+  - security_compliance_monitoring
+  - risk_assessment
+  - security_awareness_training
+inputs:
+  - name: security_events
+    type: dict
+    description: Security logs, alerts, and incident data
+  - name: vulnerability_scans
+    type: dict
+    description: Vulnerability assessment results
+  - name: security_policies
+    type: dict
+    description: Organizational security policies and standards
+  - name: threat_intelligence
+    type: dict
+    description: External threat intelligence feeds
+outputs:
+  - name: threat_analysis
+    type: dict
+    description: Identified threats and severity assessment
+  - name: incident_response_plan
+    type: dict
+    description: Security incident response actions and priorities
+  - name: vulnerability_remediation
+    type: list
+    description: Prioritized vulnerability remediation plan
+  - name: compliance_status
+    type: dict
+    description: Security compliance assessment and gaps
+implementation_type: standard
+cost_per_request: 12.00
+avg_latency_ms: 1400.0
+quality_baseline: 0.94

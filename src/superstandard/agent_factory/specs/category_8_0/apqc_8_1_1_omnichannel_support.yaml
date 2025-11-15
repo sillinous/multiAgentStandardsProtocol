@@ -1,0 +1,44 @@
+agent_id: apqc-8.1.1.1
+name: Omnichannel Support Agent
+description: Provide unified customer support across all channels (phone, email, chat, social)
+apqc_process_id: "8.1.1.1"
+apqc_category: "Customer Service Management"
+capabilities:
+  - omnichannel_routing
+  - unified_customer_view
+  - channel_orchestration
+  - context_preservation
+  - cross_channel_analytics
+  - seamless_handoffs
+  - channel_optimization
+  - customer_journey_tracking
+inputs:
+  - name: customer_interactions
+    type: dict
+    description: Customer interactions across all channels
+  - name: channel_performance
+    type: dict
+    description: Performance metrics by channel
+  - name: customer_preferences
+    type: dict
+    description: Customer channel preferences and history
+  - name: support_capacity
+    type: dict
+    description: Support team capacity by channel
+outputs:
+  - name: routing_optimization
+    type: dict
+    description: Optimized routing strategy across channels
+  - name: unified_view
+    type: dict
+    description: Unified customer interaction history
+  - name: channel_insights
+    type: dict
+    description: Channel performance and optimization recommendations
+  - name: journey_analysis
+    type: dict
+    description: Customer journey mapping and pain points
+implementation_type: standard
+cost_per_request: 10.50
+avg_latency_ms: 1300.0
+quality_baseline: 0.92

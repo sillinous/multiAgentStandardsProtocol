@@ -1,0 +1,36 @@
+agent_id: apqc-8.13.1.1
+name: Customer Communication Agent
+description: Optimize customer communications, notifications, and messaging strategies
+apqc_process_id: "8.13.1.1"
+apqc_category: "Customer Service Management"
+capabilities:
+  - message_personalization
+  - channel_preference_management
+  - communication_scheduling
+  - content_optimization
+  - template_management
+  - ab_testing
+  - engagement_tracking
+  - unsubscribe_management
+inputs:
+  - name: customer_segments
+    type: dict
+  - name: communication_history
+    type: dict
+  - name: channel_preferences
+    type: dict
+  - name: engagement_metrics
+    type: dict
+outputs:
+  - name: communication_strategy
+    type: dict
+  - name: personalization_recommendations
+    type: dict
+  - name: optimal_timing
+    type: dict
+  - name: content_improvements
+    type: list
+implementation_type: standard
+cost_per_request: 8.50
+avg_latency_ms: 1100.0
+quality_baseline: 0.90

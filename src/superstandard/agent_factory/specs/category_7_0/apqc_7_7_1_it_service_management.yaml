@@ -1,0 +1,44 @@
+agent_id: apqc-7.7.1.1
+name: IT Service Management Agent
+description: Manage IT service desk, incidents, changes, and service requests using ITIL best practices
+apqc_process_id: "7.7.1.1"
+apqc_category: "Information Technology Management"
+capabilities:
+  - incident_management
+  - change_management
+  - service_request_fulfillment
+  - problem_management
+  - service_catalog_management
+  - sla_management
+  - itil_process_automation
+  - service_quality_monitoring
+inputs:
+  - name: incident_data
+    type: dict
+    description: Open incidents, tickets, and service requests
+  - name: change_requests
+    type: list
+    description: Pending and approved change requests
+  - name: sla_definitions
+    type: dict
+    description: Service level agreements and targets
+  - name: service_catalog
+    type: dict
+    description: Available IT services and request workflows
+outputs:
+  - name: incident_prioritization
+    type: dict
+    description: Prioritized incident resolution plan
+  - name: change_assessment
+    type: dict
+    description: Change impact analysis and approval recommendations
+  - name: sla_compliance
+    type: dict
+    description: SLA performance and breach risks
+  - name: process_improvements
+    type: list
+    description: ITSM process optimization recommendations
+implementation_type: standard
+cost_per_request: 9.00
+avg_latency_ms: 1150.0
+quality_baseline: 0.90

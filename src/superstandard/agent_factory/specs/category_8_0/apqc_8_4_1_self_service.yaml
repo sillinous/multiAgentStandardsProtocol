@@ -1,0 +1,36 @@
+agent_id: apqc-8.4.1.1
+name: Self-Service & Knowledge Management Agent
+description: Optimize self-service portals, knowledge bases, and FAQ systems
+apqc_process_id: "8.4.1.1"
+apqc_category: "Customer Service Management"
+capabilities:
+  - knowledge_base_optimization
+  - faq_management
+  - content_recommendation
+  - search_optimization
+  - chatbot_training
+  - self_service_analytics
+  - content_gap_identification
+  - usage_tracking
+inputs:
+  - name: knowledge_articles
+    type: list
+  - name: search_queries
+    type: dict
+  - name: usage_analytics
+    type: dict
+  - name: customer_questions
+    type: list
+outputs:
+  - name: content_optimization
+    type: dict
+  - name: gap_analysis
+    type: list
+  - name: search_improvements
+    type: dict
+  - name: deflection_metrics
+    type: dict
+implementation_type: standard
+cost_per_request: 8.50
+avg_latency_ms: 1100.0
+quality_baseline: 0.90

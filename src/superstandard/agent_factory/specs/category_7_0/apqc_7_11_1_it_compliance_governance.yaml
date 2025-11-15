@@ -1,0 +1,44 @@
+agent_id: apqc-7.11.1.1
+name: IT Compliance & Governance Agent
+description: Ensure IT compliance with regulations, manage governance frameworks, and audit IT processes
+apqc_process_id: "7.11.1.1"
+apqc_category: "Information Technology Management"
+capabilities:
+  - compliance_monitoring
+  - governance_framework_management
+  - policy_enforcement
+  - regulatory_compliance
+  - it_audit_management
+  - risk_management
+  - control_assessment
+  - compliance_reporting
+inputs:
+  - name: regulatory_requirements
+    type: dict
+    description: Applicable regulations (GDPR, HIPAA, SOX, PCI-DSS, etc.)
+  - name: governance_frameworks
+    type: dict
+    description: IT governance frameworks (COBIT, ITIL, ISO 27001, etc.)
+  - name: it_processes
+    type: dict
+    description: IT processes and control implementations
+  - name: audit_findings
+    type: list
+    description: Historical audit findings and remediation status
+outputs:
+  - name: compliance_status
+    type: dict
+    description: Compliance assessment across all regulations
+  - name: gap_analysis
+    type: dict
+    description: Identified compliance gaps and priorities
+  - name: remediation_plan
+    type: list
+    description: Remediation actions and timelines
+  - name: audit_readiness
+    type: dict
+    description: Audit readiness assessment and documentation status
+implementation_type: standard
+cost_per_request: 11.00
+avg_latency_ms: 1350.0
+quality_baseline: 0.93

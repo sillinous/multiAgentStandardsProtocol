@@ -1,0 +1,44 @@
+agent_id: apqc-7.8.1.1
+name: DevOps & CI/CD Management Agent
+description: Optimize development pipelines, automate deployments, and improve DevOps practices
+apqc_process_id: "7.8.1.1"
+apqc_category: "Information Technology Management"
+capabilities:
+  - ci_cd_pipeline_optimization
+  - deployment_automation
+  - infrastructure_as_code
+  - container_orchestration
+  - release_management
+  - build_optimization
+  - devops_metrics_tracking
+  - continuous_monitoring
+inputs:
+  - name: pipeline_data
+    type: dict
+    description: CI/CD pipeline configurations and performance
+  - name: deployment_history
+    type: dict
+    description: Historical deployment data and success rates
+  - name: infrastructure_config
+    type: dict
+    description: Infrastructure as Code templates and configurations
+  - name: application_requirements
+    type: dict
+    description: Application deployment and scaling requirements
+outputs:
+  - name: pipeline_optimization
+    type: dict
+    description: CI/CD pipeline improvements and best practices
+  - name: deployment_strategy
+    type: dict
+    description: Optimized deployment strategy and automation
+  - name: devops_metrics
+    type: dict
+    description: Key DevOps metrics (deployment frequency, lead time, MTTR)
+  - name: infrastructure_recommendations
+    type: list
+    description: Infrastructure as Code and containerization improvements
+implementation_type: standard
+cost_per_request: 11.50
+avg_latency_ms: 1400.0
+quality_baseline: 0.93

@@ -1,0 +1,36 @@
+agent_id: apqc-8.8.1.1
+name: Live Chat Management Agent
+description: Optimize live chat operations, bot performance, and agent productivity
+apqc_process_id: "8.8.1.1"
+apqc_category: "Customer Service Management"
+capabilities:
+  - chat_routing_optimization
+  - chatbot_training
+  - response_automation
+  - sentiment_detection
+  - proactive_chat_triggers
+  - agent_assist
+  - chat_analytics
+  - performance_optimization
+inputs:
+  - name: chat_transcripts
+    type: dict
+  - name: bot_performance
+    type: dict
+  - name: agent_metrics
+    type: dict
+  - name: customer_satisfaction
+    type: dict
+outputs:
+  - name: bot_optimization
+    type: dict
+  - name: routing_improvements
+    type: dict
+  - name: automation_opportunities
+    type: list
+  - name: performance_insights
+    type: dict
+implementation_type: standard
+cost_per_request: 9.50
+avg_latency_ms: 1200.0
+quality_baseline: 0.91

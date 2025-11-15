@@ -1,0 +1,44 @@
+agent_id: apqc-7.2.1.1
+name: Application Management Agent
+description: Manage enterprise applications, optimize performance, and ensure availability
+apqc_process_id: "7.2.1.1"
+apqc_category: "Information Technology Management"
+capabilities:
+  - application_monitoring
+  - performance_tuning
+  - application_deployment
+  - patch_management
+  - version_control
+  - application_lifecycle_management
+  - integration_management
+  - dependency_tracking
+inputs:
+  - name: application_portfolio
+    type: list
+    description: Inventory of enterprise applications
+  - name: performance_data
+    type: dict
+    description: Application performance metrics and logs
+  - name: deployment_requirements
+    type: dict
+    description: Deployment schedules and requirements
+  - name: integration_map
+    type: dict
+    description: Application dependencies and integrations
+outputs:
+  - name: health_assessment
+    type: dict
+    description: Application health and performance assessment
+  - name: deployment_plan
+    type: dict
+    description: Optimized deployment schedule and approach
+  - name: optimization_recommendations
+    type: list
+    description: Performance and efficiency improvements
+  - name: risk_analysis
+    type: dict
+    description: Application risks and mitigation strategies
+implementation_type: standard
+cost_per_request: 9.50
+avg_latency_ms: 1250.0
+quality_baseline: 0.91

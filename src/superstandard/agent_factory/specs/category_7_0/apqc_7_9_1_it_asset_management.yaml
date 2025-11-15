@@ -1,0 +1,44 @@
+agent_id: apqc-7.9.1.1
+name: IT Asset Management Agent
+description: Track IT assets, manage lifecycles, optimize software licenses, and ensure compliance
+apqc_process_id: "7.9.1.1"
+apqc_category: "Information Technology Management"
+capabilities:
+  - asset_inventory_management
+  - software_license_optimization
+  - hardware_lifecycle_tracking
+  - asset_utilization_analysis
+  - compliance_monitoring
+  - cost_optimization
+  - vendor_management
+  - asset_procurement_planning
+inputs:
+  - name: asset_inventory
+    type: dict
+    description: Complete IT asset inventory (hardware, software, licenses)
+  - name: usage_data
+    type: dict
+    description: Asset utilization and usage patterns
+  - name: license_agreements
+    type: dict
+    description: Software license terms and entitlements
+  - name: lifecycle_policies
+    type: dict
+    description: Asset lifecycle and replacement policies
+outputs:
+  - name: asset_health_report
+    type: dict
+    description: Asset health, age, and replacement recommendations
+  - name: license_optimization
+    type: dict
+    description: License optimization and cost savings opportunities
+  - name: compliance_status
+    type: dict
+    description: License compliance and audit readiness
+  - name: procurement_plan
+    type: dict
+    description: Asset procurement and replacement plan
+implementation_type: standard
+cost_per_request: 8.50
+avg_latency_ms: 1100.0
+quality_baseline: 0.90

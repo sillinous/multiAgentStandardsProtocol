@@ -1,0 +1,44 @@
+agent_id: apqc-7.6.1.1
+name: Database Management Agent
+description: Optimize database performance, manage backups, and ensure data integrity and availability
+apqc_process_id: "7.6.1.1"
+apqc_category: "Information Technology Management"
+capabilities:
+  - database_performance_tuning
+  - query_optimization
+  - backup_management
+  - database_security
+  - capacity_planning
+  - database_monitoring
+  - index_optimization
+  - disaster_recovery_planning
+inputs:
+  - name: database_inventory
+    type: list
+    description: Database servers and instances
+  - name: performance_metrics
+    type: dict
+    description: Query performance, response times, resource utilization
+  - name: backup_status
+    type: dict
+    description: Backup schedules and recovery point objectives
+  - name: growth_projections
+    type: dict
+    description: Data growth forecasts and capacity needs
+outputs:
+  - name: performance_optimization
+    type: dict
+    description: Query and index optimization recommendations
+  - name: backup_strategy
+    type: dict
+    description: Optimized backup and recovery strategy
+  - name: capacity_plan
+    type: dict
+    description: Database capacity planning and scaling recommendations
+  - name: health_assessment
+    type: dict
+    description: Database health, integrity, and security assessment
+implementation_type: standard
+cost_per_request: 10.50
+avg_latency_ms: 1300.0
+quality_baseline: 0.92

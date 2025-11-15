@@ -1,0 +1,44 @@
+agent_id: apqc-7.12.1.1
+name: IT Help Desk & Support Agent
+description: Provide intelligent IT support, automate ticket resolution, and improve user satisfaction
+apqc_process_id: "7.12.1.1"
+apqc_category: "Information Technology Management"
+capabilities:
+  - intelligent_ticket_routing
+  - automated_issue_resolution
+  - knowledge_base_management
+  - user_satisfaction_tracking
+  - escalation_management
+  - self_service_optimization
+  - support_metrics_analysis
+  - chatbot_integration
+inputs:
+  - name: ticket_data
+    type: dict
+    description: Open and historical support tickets
+  - name: knowledge_base
+    type: dict
+    description: IT knowledge articles and solutions
+  - name: user_feedback
+    type: dict
+    description: User satisfaction scores and feedback
+  - name: support_team_capacity
+    type: dict
+    description: Support team availability and expertise
+outputs:
+  - name: ticket_prioritization
+    type: dict
+    description: Intelligent ticket routing and prioritization
+  - name: resolution_recommendations
+    type: list
+    description: Automated resolution suggestions and knowledge articles
+  - name: support_optimization
+    type: dict
+    description: Help desk process and efficiency improvements
+  - name: satisfaction_analysis
+    type: dict
+    description: User satisfaction trends and improvement opportunities
+implementation_type: standard
+cost_per_request: 7.50
+avg_latency_ms: 1000.0
+quality_baseline: 0.89

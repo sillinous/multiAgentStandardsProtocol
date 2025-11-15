@@ -1,0 +1,44 @@
+agent_id: apqc-7.4.1.1
+name: Cloud Infrastructure Management Agent
+description: Manage cloud resources, optimize costs, and ensure cloud infrastructure efficiency
+apqc_process_id: "7.4.1.1"
+apqc_category: "Information Technology Management"
+capabilities:
+  - cloud_resource_management
+  - cloud_cost_optimization
+  - multi_cloud_orchestration
+  - cloud_security_management
+  - auto_scaling_configuration
+  - cloud_migration_planning
+  - cloud_performance_monitoring
+  - cloud_compliance
+inputs:
+  - name: cloud_inventory
+    type: dict
+    description: Cloud resources across providers (AWS, Azure, GCP)
+  - name: usage_metrics
+    type: dict
+    description: Cloud resource utilization and performance data
+  - name: cost_data
+    type: dict
+    description: Cloud spending and cost allocation
+  - name: workload_requirements
+    type: dict
+    description: Application workload and scaling requirements
+outputs:
+  - name: optimization_recommendations
+    type: list
+    description: Cloud cost and performance optimization opportunities
+  - name: rightsizing_plan
+    type: dict
+    description: Resource rightsizing recommendations
+  - name: cost_forecast
+    type: dict
+    description: Cloud cost projections and savings opportunities
+  - name: security_posture
+    type: dict
+    description: Cloud security assessment and improvements
+implementation_type: standard
+cost_per_request: 11.00
+avg_latency_ms: 1350.0
+quality_baseline: 0.93

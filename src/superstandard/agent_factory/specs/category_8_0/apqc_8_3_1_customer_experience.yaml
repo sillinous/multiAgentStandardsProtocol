@@ -1,0 +1,36 @@
+agent_id: apqc-8.3.1.1
+name: Customer Experience Management Agent
+description: Monitor and optimize end-to-end customer experience across all touchpoints
+apqc_process_id: "8.3.1.1"
+apqc_category: "Customer Service Management"
+capabilities:
+  - cx_measurement
+  - journey_mapping
+  - experience_optimization
+  - touchpoint_analysis
+  - emotion_analytics
+  - personalization
+  - cx_metrics_tracking
+  - experience_design
+inputs:
+  - name: customer_interactions
+    type: dict
+  - name: journey_data
+    type: dict
+  - name: satisfaction_scores
+    type: dict
+  - name: touchpoint_performance
+    type: dict
+outputs:
+  - name: cx_assessment
+    type: dict
+  - name: journey_insights
+    type: dict
+  - name: optimization_recommendations
+    type: list
+  - name: personalization_strategy
+    type: dict
+implementation_type: standard
+cost_per_request: 11.00
+avg_latency_ms: 1350.0
+quality_baseline: 0.93

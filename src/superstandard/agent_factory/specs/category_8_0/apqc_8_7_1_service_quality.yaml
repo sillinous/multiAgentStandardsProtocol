@@ -1,0 +1,36 @@
+agent_id: apqc-8.7.1.1
+name: Service Quality Management Agent
+description: Monitor service quality, identify gaps, and drive continuous improvement
+apqc_process_id: "8.7.1.1"
+apqc_category: "Customer Service Management"
+capabilities:
+  - quality_monitoring
+  - qa_scoring
+  - calibration_management
+  - coaching_insights
+  - performance_analytics
+  - compliance_checking
+  - best_practice_identification
+  - training_needs_analysis
+inputs:
+  - name: interaction_recordings
+    type: dict
+  - name: qa_scores
+    type: dict
+  - name: agent_performance
+    type: dict
+  - name: quality_standards
+    type: dict
+outputs:
+  - name: quality_assessment
+    type: dict
+  - name: agent_coaching_priorities
+    type: list
+  - name: compliance_status
+    type: dict
+  - name: training_recommendations
+    type: list
+implementation_type: standard
+cost_per_request: 10.00
+avg_latency_ms: 1250.0
+quality_baseline: 0.92

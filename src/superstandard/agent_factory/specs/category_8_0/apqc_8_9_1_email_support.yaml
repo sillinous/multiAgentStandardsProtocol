@@ -1,0 +1,36 @@
+agent_id: apqc-8.9.1.1
+name: Email Support Automation Agent
+description: Automate email support with intelligent routing, categorization, and response suggestions
+apqc_process_id: "8.9.1.1"
+apqc_category: "Customer Service Management"
+capabilities:
+  - email_categorization
+  - intelligent_routing
+  - response_suggestion
+  - sentiment_analysis
+  - priority_detection
+  - auto_response
+  - email_analytics
+  - template_optimization
+inputs:
+  - name: email_queue
+    type: list
+  - name: response_templates
+    type: dict
+  - name: routing_rules
+    type: dict
+  - name: historical_emails
+    type: dict
+outputs:
+  - name: categorization_results
+    type: dict
+  - name: routing_recommendations
+    type: dict
+  - name: suggested_responses
+    type: list
+  - name: template_improvements
+    type: dict
+implementation_type: standard
+cost_per_request: 8.00
+avg_latency_ms: 1050.0
+quality_baseline: 0.90

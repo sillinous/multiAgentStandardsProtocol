@@ -1,0 +1,36 @@
+agent_id: apqc-8.6.1.1
+name: Customer Satisfaction & NPS Agent
+description: Measure and improve customer satisfaction, NPS, and loyalty metrics
+apqc_process_id: "8.6.1.1"
+apqc_category: "Customer Service Management"
+capabilities:
+  - nps_tracking
+  - csat_measurement
+  - ces_monitoring
+  - loyalty_analytics
+  - churn_prediction
+  - satisfaction_drivers
+  - benchmark_analysis
+  - improvement_planning
+inputs:
+  - name: survey_responses
+    type: dict
+  - name: satisfaction_scores
+    type: dict
+  - name: customer_behavior
+    type: dict
+  - name: interaction_data
+    type: dict
+outputs:
+  - name: nps_analysis
+    type: dict
+  - name: satisfaction_trends
+    type: dict
+  - name: driver_analysis
+    type: dict
+  - name: improvement_recommendations
+    type: list
+implementation_type: standard
+cost_per_request: 9.00
+avg_latency_ms: 1150.0
+quality_baseline: 0.91

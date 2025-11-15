@@ -1,0 +1,36 @@
+agent_id: apqc-8.14.1.1
+name: Service Analytics & Insights Agent
+description: Analyze customer service data and provide actionable insights for improvement
+apqc_process_id: "8.14.1.1"
+apqc_category: "Customer Service Management"
+capabilities:
+  - service_metrics_tracking
+  - trend_analysis
+  - predictive_analytics
+  - root_cause_analysis
+  - dashboard_creation
+  - kpi_monitoring
+  - benchmark_analysis
+  - insight_generation
+inputs:
+  - name: service_data
+    type: dict
+  - name: performance_metrics
+    type: dict
+  - name: customer_feedback
+    type: dict
+  - name: operational_data
+    type: dict
+outputs:
+  - name: analytics_dashboard
+    type: dict
+  - name: trend_insights
+    type: dict
+  - name: predictive_forecasts
+    type: dict
+  - name: improvement_opportunities
+    type: list
+implementation_type: standard
+cost_per_request: 9.50
+avg_latency_ms: 1200.0
+quality_baseline: 0.91
