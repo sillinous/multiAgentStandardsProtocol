@@ -1,0 +1,56 @@
+agent_id: apqc-1.2.1.1
+name: Strategic Plan Development Agent
+description: Develop comprehensive strategic plans including vision, mission, objectives, and strategic initiatives
+apqc_process_id: "1.2.1.1"
+apqc_category: "Vision and Strategy"
+implementation_type: standard
+
+capabilities:
+  - strategic_planning
+  - vision_development
+  - objective_setting
+  - initiative_planning
+
+inputs:
+  - name: company_context
+    type: Dict
+    description: Company background, history, and current state
+    required: true
+  - name: market_analysis
+    type: Dict
+    description: External market analysis results
+    required: true
+  - name: stakeholder_input
+    type: List[Dict]
+    description: Input from key stakeholders
+    required: false
+  - name: planning_horizon
+    type: str
+    description: Strategic planning timeframe (e.g., "3 years", "5 years")
+    required: true
+
+outputs:
+  - name: vision_statement
+    type: str
+    description: Clear vision statement
+  - name: mission_statement
+    type: str
+    description: Mission statement
+  - name: strategic_objectives
+    type: List[Dict]
+    description: List of strategic objectives with KPIs
+  - name: strategic_initiatives
+    type: List[Dict]
+    description: Key initiatives to achieve objectives
+  - name: implementation_roadmap
+    type: Dict
+    description: High-level implementation timeline
+
+cost_per_request: 12.00
+avg_latency_ms: 1500.0
+quality_baseline: 0.92
+
+metadata:
+  priority: critical
+  complexity: very_high
+  requires_human_review: true

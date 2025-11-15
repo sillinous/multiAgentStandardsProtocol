@@ -1,0 +1,52 @@
+agent_id: apqc-1.1.1.1
+name: Assess Competitors Agent
+description: Identify and analyze key competitors in the market, assess their strengths, weaknesses, strategies, and market positioning
+apqc_process_id: "1.1.1.1"
+apqc_category: "Vision and Strategy"
+implementation_type: standard
+
+capabilities:
+  - competitive_analysis
+  - competitor_identification
+  - market_intelligence
+  - swot_analysis
+
+inputs:
+  - name: industry
+    type: str
+    description: Industry or market segment to analyze
+    required: true
+  - name: geographic_scope
+    type: str
+    description: Geographic market scope (global, regional, local)
+    required: true
+  - name: timeframe
+    type: str
+    description: Analysis timeframe (e.g., "Q1 2025", "2025")
+    required: false
+
+outputs:
+  - name: competitors
+    type: List[Dict]
+    description: List of identified competitors with details
+  - name: market_share_analysis
+    type: Dict
+    description: Market share distribution
+  - name: competitive_positioning
+    type: Dict
+    description: Competitive positioning map
+  - name: key_insights
+    type: List[str]
+    description: Strategic insights from analysis
+
+cost_per_request: 8.00
+avg_latency_ms: 1200.0
+quality_baseline: 0.90
+
+metadata:
+  priority: high
+  complexity: high
+  data_sources:
+    - market_research_databases
+    - financial_reports
+    - news_sources

@@ -1,0 +1,49 @@
+agent_id: apqc-1.1.2.1
+name: Market Trends Analysis Agent
+description: Analyze emerging market trends, customer preferences, and demand patterns to inform strategic decisions
+apqc_process_id: "1.1.2.1"
+apqc_category: "Vision and Strategy"
+implementation_type: standard
+
+capabilities:
+  - trend_analysis
+  - market_research
+  - demand_forecasting
+  - customer_insights
+
+inputs:
+  - name: market_segment
+    type: str
+    description: Target market segment
+    required: true
+  - name: analysis_period
+    type: str
+    description: Time period for trend analysis
+    required: true
+  - name: data_sources
+    type: List[str]
+    description: Specific data sources to analyze
+    required: false
+
+outputs:
+  - name: identified_trends
+    type: List[Dict]
+    description: List of identified market trends with confidence scores
+  - name: trend_impact_assessment
+    type: Dict
+    description: Assessment of trend impact on business
+  - name: customer_preferences
+    type: Dict
+    description: Evolving customer preferences and behaviors
+  - name: recommendations
+    type: List[str]
+    description: Strategic recommendations based on trends
+
+cost_per_request: 7.50
+avg_latency_ms: 1000.0
+quality_baseline: 0.88
+
+metadata:
+  priority: high
+  complexity: medium
+  refresh_frequency: monthly
