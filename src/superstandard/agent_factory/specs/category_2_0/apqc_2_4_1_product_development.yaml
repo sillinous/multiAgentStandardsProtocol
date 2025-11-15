@@ -1,0 +1,57 @@
+agent_id: apqc-2.4.1.1
+name: Product Development Agent
+description: Manage product development lifecycle from design to production-ready implementation
+apqc_process_id: "2.4.1.1"
+apqc_category: "Product and Service Development"
+implementation_type: standard
+
+capabilities:
+  - product_development
+  - development_planning
+  - sprint_management
+  - quality_assurance
+  - release_planning
+
+inputs:
+  - name: approved_design
+    type: Dict
+    description: Approved product design
+    required: true
+  - name: development_team
+    type: Dict
+    description: Development team information
+    required: true
+  - name: timeline
+    type: str
+    description: Development timeline and milestones
+    required: true
+  - name: quality_standards
+    type: Dict
+    description: Quality standards and requirements
+    required: false
+
+outputs:
+  - name: development_plan
+    type: Dict
+    description: Detailed development plan
+  - name: sprint_backlog
+    type: List[Dict]
+    description: Sprint backlog and tasks
+  - name: quality_metrics
+    type: Dict
+    description: Quality metrics and targets
+  - name: risk_assessment
+    type: Dict
+    description: Development risks and mitigation
+  - name: release_schedule
+    type: Dict
+    description: Release schedule and milestones
+
+cost_per_request: 12.00
+avg_latency_ms: 1600.0
+quality_baseline: 0.91
+
+metadata:
+  priority: critical
+  complexity: very_high
+  long_running: true

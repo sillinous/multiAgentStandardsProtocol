@@ -1,0 +1,57 @@
+agent_id: apqc-2.5.1.1
+name: Product Testing Agent
+description: Conduct comprehensive product testing including functional, integration, and performance testing
+apqc_process_id: "2.5.1.1"
+apqc_category: "Product and Service Development"
+implementation_type: standard
+
+capabilities:
+  - product_testing
+  - test_automation
+  - performance_testing
+  - security_testing
+  - test_reporting
+
+inputs:
+  - name: product_build
+    type: Dict
+    description: Product build to test
+    required: true
+  - name: test_requirements
+    type: Dict
+    description: Test requirements and acceptance criteria
+    required: true
+  - name: test_environment
+    type: Dict
+    description: Test environment configuration
+    required: false
+  - name: test_data
+    type: Dict
+    description: Test data sets
+    required: false
+
+outputs:
+  - name: test_results
+    type: Dict
+    description: Comprehensive test results
+  - name: defects_found
+    type: List[Dict]
+    description: Defects and issues found
+  - name: performance_metrics
+    type: Dict
+    description: Performance test metrics
+  - name: test_coverage
+    type: Dict
+    description: Test coverage analysis
+  - name: quality_report
+    type: str
+    description: Overall quality report
+
+cost_per_request: 11.00
+avg_latency_ms: 1800.0
+quality_baseline: 0.92
+
+metadata:
+  priority: critical
+  complexity: high
+  automated: true

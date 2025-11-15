@@ -1,0 +1,57 @@
+agent_id: apqc-2.6.1.1
+name: Product Launch Agent
+description: Plan and execute product launch including go-to-market strategy and launch activities
+apqc_process_id: "2.6.1.1"
+apqc_category: "Product and Service Development"
+implementation_type: standard
+
+capabilities:
+  - launch_planning
+  - go_to_market_strategy
+  - launch_execution
+  - stakeholder_coordination
+  - success_measurement
+
+inputs:
+  - name: product
+    type: Dict
+    description: Product ready for launch
+    required: true
+  - name: target_market
+    type: Dict
+    description: Target market and segments
+    required: true
+  - name: launch_timeline
+    type: str
+    description: Desired launch timeline
+    required: true
+  - name: budget
+    type: float
+    description: Launch budget
+    required: false
+
+outputs:
+  - name: launch_plan
+    type: Dict
+    description: Comprehensive launch plan
+  - name: go_to_market_strategy
+    type: Dict
+    description: Go-to-market strategy
+  - name: launch_checklist
+    type: List[Dict]
+    description: Launch readiness checklist
+  - name: success_metrics
+    type: Dict
+    description: Launch success metrics
+  - name: rollout_schedule
+    type: Dict
+    description: Launch rollout schedule
+
+cost_per_request: 13.00
+avg_latency_ms: 1700.0
+quality_baseline: 0.90
+
+metadata:
+  priority: critical
+  complexity: very_high
+  requires_coordination: true

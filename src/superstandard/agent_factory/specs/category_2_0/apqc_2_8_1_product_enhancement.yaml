@@ -1,0 +1,57 @@
+agent_id: apqc-2.8.1.1
+name: Product Enhancement Agent
+description: Identify and plan product enhancements based on feedback and market changes
+apqc_process_id: "2.8.1.1"
+apqc_category: "Product and Service Development"
+implementation_type: standard
+
+capabilities:
+  - enhancement_identification
+  - feature_prioritization
+  - roadmap_planning
+  - customer_feedback_integration
+  - competitive_analysis
+
+inputs:
+  - name: product_performance
+    type: Dict
+    description: Current product performance data
+    required: true
+  - name: customer_feedback
+    type: List[Dict]
+    description: Customer feedback and requests
+    required: true
+  - name: market_trends
+    type: Dict
+    description: Market trends and competitive landscape
+    required: false
+  - name: strategic_priorities
+    type: List[str]
+    description: Strategic priorities for enhancements
+    required: false
+
+outputs:
+  - name: enhancement_opportunities
+    type: List[Dict]
+    description: Identified enhancement opportunities
+  - name: prioritized_features
+    type: List[Dict]
+    description: Prioritized feature list
+  - name: product_roadmap
+    type: Dict
+    description: Updated product roadmap
+  - name: business_case
+    type: Dict
+    description: Business case for top enhancements
+  - name: implementation_plan
+    type: Dict
+    description: High-level implementation plan
+
+cost_per_request: 9.50
+avg_latency_ms: 1300.0
+quality_baseline: 0.89
+
+metadata:
+  priority: high
+  complexity: high
+  strategic: true

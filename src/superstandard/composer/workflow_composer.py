@@ -110,6 +110,19 @@ class WorkflowComposer:
             "monitor": ["performance_monitoring", "progress_tracking"],
             "kpi": ["kpi_design", "measurement_framework"],
             "measure": ["measurement_framework", "performance_tracking"],
+
+            # Product Development (Category 2.0)
+            "product": ["product_ideation", "product_design", "product_development"],
+            "ideation": ["product_ideation", "innovation_generation"],
+            "innovation": ["product_ideation", "innovation_generation"],
+            "requirements": ["requirements_elicitation", "requirements_documentation"],
+            "design": ["product_design", "architecture_design", "ux_design"],
+            "prototype": ["prototype_development", "rapid_prototyping", "mvp_creation"],
+            "testing": ["user_testing", "usability_testing", "product_testing"],
+            "launch": ["launch_planning", "go_to_market_strategy"],
+            "development": ["product_development", "development_planning"],
+            "enhancement": ["enhancement_identification", "feature_prioritization"],
+            "lifecycle": ["lifecycle_management", "portfolio_optimization"],
         }
 
         # Discover agents on initialization

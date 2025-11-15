@@ -1,0 +1,57 @@
+agent_id: apqc-2.2.1.1
+name: Product Design Agent
+description: Design product architecture, features, and user experience based on requirements
+apqc_process_id: "2.2.1.1"
+apqc_category: "Product and Service Development"
+implementation_type: standard
+
+capabilities:
+  - product_design
+  - architecture_design
+  - ux_design
+  - feature_specification
+  - design_documentation
+
+inputs:
+  - name: requirements
+    type: Dict
+    description: Product requirements document
+    required: true
+  - name: design_constraints
+    type: Dict
+    description: Design constraints (technical, budget, time)
+    required: false
+  - name: user_personas
+    type: List[Dict]
+    description: User personas and profiles
+    required: false
+  - name: brand_guidelines
+    type: Dict
+    description: Brand and design guidelines
+    required: false
+
+outputs:
+  - name: product_architecture
+    type: Dict
+    description: High-level product architecture
+  - name: feature_designs
+    type: List[Dict]
+    description: Detailed feature designs
+  - name: ux_wireframes
+    type: List[str]
+    description: UX wireframes and mockups
+  - name: technical_specifications
+    type: Dict
+    description: Technical specifications
+  - name: design_document
+    type: str
+    description: Complete design document
+
+cost_per_request: 11.00
+avg_latency_ms: 1400.0
+quality_baseline: 0.90
+
+metadata:
+  priority: critical
+  complexity: very_high
+  requires_review: true

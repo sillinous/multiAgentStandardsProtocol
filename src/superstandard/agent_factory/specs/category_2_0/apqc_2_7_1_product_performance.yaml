@@ -1,0 +1,58 @@
+agent_id: apqc-2.7.1.1
+name: Product Performance Monitoring Agent
+description: Monitor product performance, usage, and customer satisfaction post-launch
+apqc_process_id: "2.7.1.1"
+apqc_category: "Product and Service Development"
+implementation_type: standard
+
+capabilities:
+  - performance_monitoring
+  - usage_analytics
+  - customer_feedback_analysis
+  - kpi_tracking
+  - trend_identification
+
+inputs:
+  - name: product_id
+    type: str
+    description: Product identifier
+    required: true
+  - name: monitoring_period
+    type: str
+    description: Monitoring time period
+    required: true
+  - name: kpis
+    type: List[Dict]
+    description: KPIs to monitor
+    required: true
+  - name: baseline_metrics
+    type: Dict
+    description: Baseline metrics for comparison
+    required: false
+
+outputs:
+  - name: performance_metrics
+    type: Dict
+    description: Product performance metrics
+  - name: usage_statistics
+    type: Dict
+    description: Usage statistics and patterns
+  - name: customer_satisfaction
+    type: Dict
+    description: Customer satisfaction scores
+  - name: issues_identified
+    type: List[Dict]
+    description: Issues and problems identified
+  - name: optimization_recommendations
+    type: List[Dict]
+    description: Performance optimization recommendations
+
+cost_per_request: 7.50
+avg_latency_ms: 1000.0
+quality_baseline: 0.88
+
+metadata:
+  priority: high
+  complexity: medium
+  real_time: true
+  automated: true

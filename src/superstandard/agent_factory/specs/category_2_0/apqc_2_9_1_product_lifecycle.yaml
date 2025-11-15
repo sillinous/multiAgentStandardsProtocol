@@ -1,0 +1,57 @@
+agent_id: apqc-2.9.1.1
+name: Product Lifecycle Management Agent
+description: Manage complete product lifecycle from introduction through growth, maturity, and decline
+apqc_process_id: "2.9.1.1"
+apqc_category: "Product and Service Development"
+implementation_type: standard
+
+capabilities:
+  - lifecycle_management
+  - phase_analysis
+  - strategy_adjustment
+  - sunset_planning
+  - portfolio_optimization
+
+inputs:
+  - name: product_portfolio
+    type: List[Dict]
+    description: Current product portfolio
+    required: true
+  - name: lifecycle_data
+    type: Dict
+    description: Product lifecycle data and metrics
+    required: true
+  - name: market_conditions
+    type: Dict
+    description: Current market conditions
+    required: false
+  - name: business_objectives
+    type: List[str]
+    description: Business objectives
+    required: false
+
+outputs:
+  - name: lifecycle_analysis
+    type: Dict
+    description: Lifecycle analysis for each product
+  - name: phase_recommendations
+    type: Dict
+    description: Recommendations by lifecycle phase
+  - name: investment_allocation
+    type: Dict
+    description: Recommended investment allocation
+  - name: sunset_candidates
+    type: List[Dict]
+    description: Products recommended for sunset
+  - name: portfolio_strategy
+    type: Dict
+    description: Overall portfolio strategy
+
+cost_per_request: 10.50
+avg_latency_ms: 1400.0
+quality_baseline: 0.90
+
+metadata:
+  priority: high
+  complexity: very_high
+  strategic: true

@@ -1,0 +1,57 @@
+agent_id: apqc-2.1.2.1
+name: Requirements Gathering Agent
+description: Gather and document detailed product requirements from stakeholders and market analysis
+apqc_process_id: "2.1.2.1"
+apqc_category: "Product and Service Development"
+implementation_type: standard
+
+capabilities:
+  - requirements_elicitation
+  - stakeholder_interviews
+  - requirements_documentation
+  - use_case_development
+  - acceptance_criteria
+
+inputs:
+  - name: product_concept
+    type: Dict
+    description: Product concept to gather requirements for
+    required: true
+  - name: stakeholders
+    type: List[Dict]
+    description: List of stakeholders to interview
+    required: true
+  - name: market_data
+    type: Dict
+    description: Market research data
+    required: false
+  - name: existing_products
+    type: List[str]
+    description: Existing products for reference
+    required: false
+
+outputs:
+  - name: functional_requirements
+    type: List[Dict]
+    description: Detailed functional requirements
+  - name: non_functional_requirements
+    type: List[Dict]
+    description: Non-functional requirements (performance, security, etc.)
+  - name: use_cases
+    type: List[Dict]
+    description: Use cases and user stories
+  - name: acceptance_criteria
+    type: List[Dict]
+    description: Acceptance criteria for requirements
+  - name: requirements_document
+    type: str
+    description: Complete requirements document
+
+cost_per_request: 8.00
+avg_latency_ms: 1100.0
+quality_baseline: 0.89
+
+metadata:
+  priority: critical
+  complexity: high
+  requires_stakeholder_input: true

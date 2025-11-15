@@ -1,0 +1,57 @@
+agent_id: apqc-2.3.2.1
+name: User Testing Agent
+description: Conduct user testing sessions and gather feedback on prototypes and products
+apqc_process_id: "2.3.2.1"
+apqc_category: "Product and Service Development"
+implementation_type: standard
+
+capabilities:
+  - user_testing
+  - usability_testing
+  - feedback_collection
+  - test_planning
+  - results_analysis
+
+inputs:
+  - name: prototype
+    type: Dict
+    description: Prototype or product to test
+    required: true
+  - name: test_objectives
+    type: List[str]
+    description: Testing objectives
+    required: true
+  - name: user_segments
+    type: List[Dict]
+    description: User segments to test with
+    required: true
+  - name: test_scenarios
+    type: List[Dict]
+    description: Test scenarios and tasks
+    required: false
+
+outputs:
+  - name: test_results
+    type: Dict
+    description: Comprehensive test results
+  - name: user_feedback
+    type: List[Dict]
+    description: User feedback and quotes
+  - name: usability_issues
+    type: List[Dict]
+    description: Identified usability issues
+  - name: satisfaction_scores
+    type: Dict
+    description: User satisfaction scores
+  - name: recommendations
+    type: List[Dict]
+    description: Improvement recommendations
+
+cost_per_request: 10.00
+avg_latency_ms: 1500.0
+quality_baseline: 0.86
+
+metadata:
+  priority: high
+  complexity: medium
+  requires_users: true

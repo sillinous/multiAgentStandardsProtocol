@@ -1,0 +1,57 @@
+agent_id: apqc-2.3.1.1
+name: Prototype Development Agent
+description: Develop product prototypes and proof-of-concept implementations for validation
+apqc_process_id: "2.3.1.1"
+apqc_category: "Product and Service Development"
+implementation_type: standard
+
+capabilities:
+  - prototype_development
+  - rapid_prototyping
+  - mvp_creation
+  - proof_of_concept
+  - feasibility_testing
+
+inputs:
+  - name: design_specifications
+    type: Dict
+    description: Product design specifications
+    required: true
+  - name: prototype_scope
+    type: str
+    description: Scope of prototype (features to include)
+    required: true
+  - name: technology_stack
+    type: List[str]
+    description: Technology stack to use
+    required: false
+  - name: timeline
+    type: str
+    description: Development timeline
+    required: false
+
+outputs:
+  - name: prototype
+    type: Dict
+    description: Prototype implementation details
+  - name: demo_scenarios
+    type: List[Dict]
+    description: Demo scenarios for prototype
+  - name: technical_learnings
+    type: List[str]
+    description: Technical learnings and insights
+  - name: feasibility_assessment
+    type: Dict
+    description: Feasibility assessment results
+  - name: next_steps
+    type: List[str]
+    description: Recommended next steps
+
+cost_per_request: 15.00
+avg_latency_ms: 2000.0
+quality_baseline: 0.88
+
+metadata:
+  priority: high
+  complexity: very_high
+  hands_on: true

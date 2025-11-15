@@ -1,0 +1,54 @@
+agent_id: apqc-2.1.1.1
+name: Product Ideation Agent
+description: Generate and evaluate innovative product ideas based on market needs and organizational capabilities
+apqc_process_id: "2.1.1.1"
+apqc_category: "Product and Service Development"
+implementation_type: standard
+
+capabilities:
+  - product_ideation
+  - innovation_generation
+  - idea_evaluation
+  - brainstorming
+  - concept_development
+
+inputs:
+  - name: market_insights
+    type: Dict
+    description: Market research and customer insights
+    required: true
+  - name: organizational_capabilities
+    type: Dict
+    description: Current organizational capabilities
+    required: false
+  - name: strategic_direction
+    type: str
+    description: Strategic direction for innovation
+    required: false
+  - name: constraints
+    type: Dict
+    description: Constraints (budget, time, technology)
+    required: false
+
+outputs:
+  - name: product_ideas
+    type: List[Dict]
+    description: Generated product ideas with descriptions
+  - name: evaluation_scores
+    type: Dict
+    description: Evaluation scores for each idea
+  - name: recommendations
+    type: List[Dict]
+    description: Top recommended ideas for development
+  - name: innovation_opportunities
+    type: List[str]
+    description: Identified innovation opportunities
+
+cost_per_request: 9.00
+avg_latency_ms: 1200.0
+quality_baseline: 0.87
+
+metadata:
+  priority: high
+  complexity: high
+  creativity_required: true
