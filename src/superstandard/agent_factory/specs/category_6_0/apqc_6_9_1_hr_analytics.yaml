@@ -1,0 +1,44 @@
+agent_id: apqc-6.9.1.1
+name: HR Analytics & Insights Agent
+description: Analyze workforce data, generate HR insights, and provide predictive analytics for strategic decisions
+apqc_process_id: "6.9.1.1"
+apqc_category: "Human Capital Management"
+capabilities:
+  - workforce_analytics
+  - predictive_modeling
+  - hr_dashboard_creation
+  - trend_analysis
+  - attrition_prediction
+  - hiring_analytics
+  - productivity_analysis
+  - roi_measurement
+inputs:
+  - name: hr_data
+    type: dict
+    description: Comprehensive HR data (headcount, turnover, performance, etc.)
+  - name: business_metrics
+    type: dict
+    description: Business performance and financial data
+  - name: external_benchmarks
+    type: dict
+    description: Industry benchmarks and market data
+  - name: analysis_requirements
+    type: dict
+    description: Specific analytics questions and requirements
+outputs:
+  - name: analytics_insights
+    type: dict
+    description: Key insights and findings from data analysis
+  - name: predictive_models
+    type: dict
+    description: Predictive models for attrition, performance, etc.
+  - name: dashboards
+    type: dict
+    description: HR metrics dashboards and visualizations
+  - name: recommendations
+    type: list
+    description: Data-driven recommendations for HR strategy
+implementation_type: standard
+cost_per_request: 10.00
+avg_latency_ms: 1300.0
+quality_baseline: 0.92

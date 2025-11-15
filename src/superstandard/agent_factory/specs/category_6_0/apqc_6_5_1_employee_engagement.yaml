@@ -1,0 +1,44 @@
+agent_id: apqc-6.5.1.1
+name: Employee Engagement Agent
+description: Monitor and improve employee engagement, satisfaction, and workplace culture
+apqc_process_id: "6.5.1.1"
+apqc_category: "Human Capital Management"
+capabilities:
+  - engagement_survey_analysis
+  - sentiment_analysis
+  - engagement_driver_identification
+  - action_planning
+  - culture_assessment
+  - retention_risk_prediction
+  - engagement_trend_analysis
+  - intervention_recommendation
+inputs:
+  - name: survey_data
+    type: dict
+    description: Employee engagement survey responses
+  - name: feedback_data
+    type: list
+    description: Employee feedback, comments, and suggestions
+  - name: organizational_data
+    type: dict
+    description: Team structure, department, and organizational context
+  - name: historical_trends
+    type: dict
+    description: Historical engagement scores and patterns
+outputs:
+  - name: engagement_insights
+    type: dict
+    description: Engagement analysis by dimension and demographic
+  - name: risk_assessment
+    type: dict
+    description: Retention risk identification and priority employees
+  - name: action_recommendations
+    type: list
+    description: Prioritized recommendations to improve engagement
+  - name: culture_metrics
+    type: dict
+    description: Culture health indicators and trend analysis
+implementation_type: standard
+cost_per_request: 9.50
+avg_latency_ms: 1250.0
+quality_baseline: 0.91

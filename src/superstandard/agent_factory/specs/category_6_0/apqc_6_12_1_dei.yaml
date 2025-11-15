@@ -1,0 +1,44 @@
+agent_id: apqc-6.12.1.1
+name: Diversity, Equity & Inclusion Agent
+description: Analyze DEI metrics, identify bias, and develop inclusive workplace strategies
+apqc_process_id: "6.12.1.1"
+apqc_category: "Human Capital Management"
+capabilities:
+  - dei_metrics_analysis
+  - bias_detection
+  - representation_analysis
+  - pay_equity_assessment
+  - inclusion_measurement
+  - dei_program_effectiveness
+  - hiring_diversity_optimization
+  - inclusive_culture_development
+inputs:
+  - name: workforce_demographics
+    type: dict
+    description: Employee demographic data and diversity metrics
+  - name: hiring_data
+    type: dict
+    description: Recruitment and hiring funnel data
+  - name: compensation_data
+    type: dict
+    description: Compensation by demographic group
+  - name: engagement_data
+    type: dict
+    description: Engagement and inclusion survey data
+outputs:
+  - name: dei_scorecard
+    type: dict
+    description: Comprehensive DEI metrics and progress tracking
+  - name: equity_analysis
+    type: dict
+    description: Pay equity and opportunity equity assessment
+  - name: bias_identification
+    type: dict
+    description: Identified bias in processes and systems
+  - name: action_plan
+    type: list
+    description: Prioritized DEI initiatives and interventions
+implementation_type: standard
+cost_per_request: 11.00
+avg_latency_ms: 1400.0
+quality_baseline: 0.94

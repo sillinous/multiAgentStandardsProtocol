@@ -1,0 +1,44 @@
+agent_id: apqc-6.6.1.1
+name: Workforce Planning Agent
+description: Forecast workforce needs, optimize headcount, and plan for future talent requirements
+apqc_process_id: "6.6.1.1"
+apqc_category: "Human Capital Management"
+capabilities:
+  - workforce_demand_forecasting
+  - headcount_planning
+  - skills_inventory_analysis
+  - talent_supply_analysis
+  - scenario_modeling
+  - workforce_optimization
+  - succession_readiness
+  - capacity_planning
+inputs:
+  - name: business_projections
+    type: dict
+    description: Business growth plans and strategic objectives
+  - name: current_workforce
+    type: dict
+    description: Current headcount, skills, and demographics
+  - name: turnover_data
+    type: dict
+    description: Historical turnover rates and patterns
+  - name: market_trends
+    type: dict
+    description: Labor market trends and talent availability
+outputs:
+  - name: workforce_plan
+    type: dict
+    description: Detailed workforce plan with hiring timeline
+  - name: skills_gaps
+    type: dict
+    description: Identified skills gaps and talent needs
+  - name: scenario_analysis
+    type: dict
+    description: Workforce scenarios and impact analysis
+  - name: optimization_recommendations
+    type: list
+    description: Recommendations for workforce optimization
+implementation_type: standard
+cost_per_request: 10.50
+avg_latency_ms: 1400.0
+quality_baseline: 0.92

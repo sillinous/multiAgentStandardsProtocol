@@ -1,0 +1,44 @@
+agent_id: apqc-6.2.1.1
+name: Performance Management Agent
+description: Automate performance reviews, goal setting, continuous feedback, and performance improvement plans
+apqc_process_id: "6.2.1.1"
+apqc_category: "Human Capital Management"
+capabilities:
+  - performance_review_automation
+  - goal_setting
+  - okr_management
+  - continuous_feedback_tracking
+  - performance_improvement_plans
+  - 360_feedback_coordination
+  - performance_analytics
+  - calibration_support
+inputs:
+  - name: employee_data
+    type: dict
+    description: Employee information, role, and tenure
+  - name: performance_history
+    type: dict
+    description: Historical performance data and reviews
+  - name: goals_objectives
+    type: dict
+    description: Current goals, OKRs, and objectives
+  - name: feedback_data
+    type: list
+    description: Peer feedback, manager feedback, and self-assessments
+outputs:
+  - name: performance_assessment
+    type: dict
+    description: Comprehensive performance evaluation and rating
+  - name: development_plan
+    type: dict
+    description: Performance improvement and development recommendations
+  - name: goal_alignment
+    type: dict
+    description: Goal progress and alignment with company objectives
+  - name: calibration_insights
+    type: dict
+    description: Performance distribution and calibration recommendations
+implementation_type: standard
+cost_per_request: 10.00
+avg_latency_ms: 1250.0
+quality_baseline: 0.92

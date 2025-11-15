@@ -1,0 +1,44 @@
+agent_id: apqc-6.7.1.1
+name: Succession Planning Agent
+description: Identify critical roles, assess talent readiness, and develop succession pipelines
+apqc_process_id: "6.7.1.1"
+apqc_category: "Human Capital Management"
+capabilities:
+  - critical_role_identification
+  - talent_readiness_assessment
+  - succession_pipeline_development
+  - leadership_potential_evaluation
+  - development_gap_analysis
+  - succession_risk_assessment
+  - talent_pool_management
+  - succession_scenario_planning
+inputs:
+  - name: organizational_structure
+    type: dict
+    description: Org chart, critical roles, and reporting structure
+  - name: talent_assessments
+    type: dict
+    description: Performance data, potential ratings, and competencies
+  - name: readiness_criteria
+    type: dict
+    description: Criteria for succession readiness by role level
+  - name: development_programs
+    type: list
+    description: Available development programs and experiences
+outputs:
+  - name: succession_plan
+    type: dict
+    description: Succession plans for critical roles with ready/emerging talent
+  - name: talent_pipeline
+    type: dict
+    description: Talent pipeline analysis by role and readiness level
+  - name: risk_assessment
+    type: dict
+    description: Succession risk identification and mitigation strategies
+  - name: development_recommendations
+    type: list
+    description: Development actions to accelerate readiness
+implementation_type: standard
+cost_per_request: 11.50
+avg_latency_ms: 1450.0
+quality_baseline: 0.93

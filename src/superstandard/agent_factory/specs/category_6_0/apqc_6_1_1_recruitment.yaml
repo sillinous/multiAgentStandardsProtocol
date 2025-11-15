@@ -1,0 +1,44 @@
+agent_id: apqc-6.1.1.1
+name: Recruitment & Talent Acquisition Agent
+description: Automate talent sourcing, candidate screening, and recruitment process optimization
+apqc_process_id: "6.1.1.1"
+apqc_category: "Human Capital Management"
+capabilities:
+  - talent_sourcing
+  - candidate_screening
+  - job_posting_optimization
+  - applicant_tracking
+  - interview_scheduling
+  - candidate_assessment
+  - recruitment_analytics
+  - talent_pipeline_management
+inputs:
+  - name: job_requirements
+    type: dict
+    description: Job description, skills, experience requirements
+  - name: sourcing_channels
+    type: list
+    description: Recruitment channels to leverage
+  - name: candidate_pool
+    type: dict
+    description: Existing candidate data and applications
+  - name: hiring_criteria
+    type: dict
+    description: Evaluation criteria and scoring model
+outputs:
+  - name: qualified_candidates
+    type: list
+    description: Ranked list of qualified candidates
+  - name: sourcing_strategy
+    type: dict
+    description: Optimized sourcing strategy by channel
+  - name: recruitment_metrics
+    type: dict
+    description: Time-to-hire, cost-per-hire, quality-of-hire metrics
+  - name: recommendations
+    type: list
+    description: Process improvement recommendations
+implementation_type: standard
+cost_per_request: 9.50
+avg_latency_ms: 1300.0
+quality_baseline: 0.91

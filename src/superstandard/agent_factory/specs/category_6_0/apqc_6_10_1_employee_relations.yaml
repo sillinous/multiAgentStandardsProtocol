@@ -1,0 +1,44 @@
+agent_id: apqc-6.10.1.1
+name: Employee Relations Agent
+description: Manage employee relations issues, conflict resolution, and workplace policy compliance
+apqc_process_id: "6.10.1.1"
+apqc_category: "Human Capital Management"
+capabilities:
+  - issue_case_management
+  - conflict_resolution_support
+  - policy_compliance_monitoring
+  - investigation_management
+  - grievance_handling
+  - workplace_behavior_analysis
+  - resolution_tracking
+  - trend_identification
+inputs:
+  - name: case_data
+    type: dict
+    description: Employee relations cases and issues
+  - name: policy_framework
+    type: dict
+    description: Company policies and procedures
+  - name: historical_cases
+    type: list
+    description: Historical case data and resolutions
+  - name: organizational_context
+    type: dict
+    description: Team dynamics and organizational structure
+outputs:
+  - name: case_assessment
+    type: dict
+    description: Case analysis and severity assessment
+  - name: resolution_plan
+    type: dict
+    description: Recommended resolution approach and steps
+  - name: compliance_status
+    type: dict
+    description: Policy compliance assessment
+  - name: trend_analysis
+    type: dict
+    description: Patterns and trends in employee relations issues
+implementation_type: standard
+cost_per_request: 9.00
+avg_latency_ms: 1200.0
+quality_baseline: 0.91

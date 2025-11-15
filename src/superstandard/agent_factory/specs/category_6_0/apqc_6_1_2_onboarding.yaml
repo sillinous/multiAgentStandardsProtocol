@@ -1,0 +1,44 @@
+agent_id: apqc-6.1.2.1
+name: Onboarding & Orientation Agent
+description: Automate employee onboarding, orientation scheduling, and first-90-days experience optimization
+apqc_process_id: "6.1.2.1"
+apqc_category: "Human Capital Management"
+capabilities:
+  - onboarding_workflow_automation
+  - orientation_scheduling
+  - documentation_management
+  - training_coordination
+  - equipment_provisioning
+  - compliance_tracking
+  - onboarding_experience_optimization
+  - first_90_days_monitoring
+inputs:
+  - name: new_hire_data
+    type: dict
+    description: New employee information and start date
+  - name: role_requirements
+    type: dict
+    description: Role-specific onboarding requirements
+  - name: company_policies
+    type: dict
+    description: Policies, compliance requirements, and procedures
+  - name: resources_available
+    type: dict
+    description: Available resources, trainers, and equipment
+outputs:
+  - name: onboarding_plan
+    type: dict
+    description: Personalized onboarding schedule and checklist
+  - name: compliance_status
+    type: dict
+    description: Compliance checklist and completion status
+  - name: resource_allocation
+    type: dict
+    description: Equipment, access, and resource assignments
+  - name: experience_metrics
+    type: dict
+    description: Onboarding satisfaction and engagement scores
+implementation_type: standard
+cost_per_request: 8.00
+avg_latency_ms: 1100.0
+quality_baseline: 0.90

@@ -1,0 +1,44 @@
+agent_id: apqc-6.11.1.1
+name: Talent Retention Agent
+description: Identify retention risks, develop retention strategies, and reduce regrettable attrition
+apqc_process_id: "6.11.1.1"
+apqc_category: "Human Capital Management"
+capabilities:
+  - attrition_risk_prediction
+  - flight_risk_identification
+  - retention_strategy_development
+  - exit_interview_analysis
+  - retention_program_optimization
+  - stay_interview_insights
+  - retention_analytics
+  - intervention_recommendation
+inputs:
+  - name: employee_data
+    type: dict
+    description: Employee tenure, performance, engagement, compensation
+  - name: attrition_patterns
+    type: dict
+    description: Historical turnover data and patterns
+  - name: market_conditions
+    type: dict
+    description: Labor market conditions and competitive landscape
+  - name: retention_programs
+    type: list
+    description: Current retention initiatives and programs
+outputs:
+  - name: flight_risk_analysis
+    type: dict
+    description: Employees at risk of leaving with risk scores
+  - name: retention_strategy
+    type: dict
+    description: Personalized retention strategies by employee/segment
+  - name: root_cause_analysis
+    type: dict
+    description: Key drivers of attrition and retention
+  - name: program_recommendations
+    type: list
+    description: Retention program improvements and interventions
+implementation_type: standard
+cost_per_request: 10.50
+avg_latency_ms: 1350.0
+quality_baseline: 0.93

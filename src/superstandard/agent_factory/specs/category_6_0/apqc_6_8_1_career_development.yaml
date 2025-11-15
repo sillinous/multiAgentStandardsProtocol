@@ -1,0 +1,44 @@
+agent_id: apqc-6.8.1.1
+name: Career Development Agent
+description: Create personalized career paths, identify growth opportunities, and support career progression
+apqc_process_id: "6.8.1.1"
+apqc_category: "Human Capital Management"
+capabilities:
+  - career_path_mapping
+  - growth_opportunity_identification
+  - skills_development_planning
+  - internal_mobility_optimization
+  - career_counseling_support
+  - progression_analytics
+  - mentor_matching
+  - career_transition_planning
+inputs:
+  - name: employee_profile
+    type: dict
+    description: Skills, experience, performance, and aspirations
+  - name: career_frameworks
+    type: dict
+    description: Career ladders, progression criteria, and role requirements
+  - name: open_opportunities
+    type: list
+    description: Open positions and project opportunities
+  - name: development_resources
+    type: dict
+    description: Training programs, mentors, and development resources
+outputs:
+  - name: career_plan
+    type: dict
+    description: Personalized career development plan with milestones
+  - name: opportunities_matched
+    type: list
+    description: Matched internal opportunities and recommendations
+  - name: skills_roadmap
+    type: dict
+    description: Skills development roadmap for career goals
+  - name: progression_timeline
+    type: dict
+    description: Estimated timeline for career progression
+implementation_type: standard
+cost_per_request: 8.50
+avg_latency_ms: 1150.0
+quality_baseline: 0.90

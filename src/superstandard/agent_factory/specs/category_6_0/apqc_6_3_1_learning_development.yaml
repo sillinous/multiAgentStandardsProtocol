@@ -1,0 +1,44 @@
+agent_id: apqc-6.3.1.1
+name: Learning & Development Agent
+description: Automate training needs analysis, learning path creation, and skills development tracking
+apqc_process_id: "6.3.1.1"
+apqc_category: "Human Capital Management"
+capabilities:
+  - training_needs_analysis
+  - learning_path_design
+  - skills_gap_assessment
+  - training_program_recommendation
+  - learning_management
+  - certification_tracking
+  - development_analytics
+  - roi_measurement
+inputs:
+  - name: employee_skills
+    type: dict
+    description: Current skills, competencies, and certifications
+  - name: role_requirements
+    type: dict
+    description: Required skills and competencies by role
+  - name: career_goals
+    type: dict
+    description: Employee career aspirations and development goals
+  - name: available_programs
+    type: list
+    description: Available training programs and resources
+outputs:
+  - name: learning_plan
+    type: dict
+    description: Personalized learning and development plan
+  - name: skills_gap_analysis
+    type: dict
+    description: Identified skills gaps and priorities
+  - name: program_recommendations
+    type: list
+    description: Recommended training programs and courses
+  - name: development_metrics
+    type: dict
+    description: Learning progress, completion rates, and impact
+implementation_type: standard
+cost_per_request: 9.00
+avg_latency_ms: 1200.0
+quality_baseline: 0.91

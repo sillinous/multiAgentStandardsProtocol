@@ -1,0 +1,44 @@
+agent_id: apqc-6.4.1.1
+name: Compensation & Benefits Agent
+description: Automate compensation analysis, benefits optimization, and total rewards strategy
+apqc_process_id: "6.4.1.1"
+apqc_category: "Human Capital Management"
+capabilities:
+  - compensation_benchmarking
+  - salary_analysis
+  - benefits_optimization
+  - total_rewards_design
+  - pay_equity_analysis
+  - incentive_program_design
+  - benefits_enrollment_automation
+  - cost_analysis
+inputs:
+  - name: employee_compensation
+    type: dict
+    description: Current compensation data by employee and role
+  - name: market_data
+    type: dict
+    description: Market salary benchmarks and industry data
+  - name: benefits_programs
+    type: dict
+    description: Current benefits offerings and costs
+  - name: budget_constraints
+    type: dict
+    description: Compensation budget and constraints
+outputs:
+  - name: compensation_strategy
+    type: dict
+    description: Optimized compensation structure and recommendations
+  - name: pay_equity_report
+    type: dict
+    description: Pay equity analysis and gap identification
+  - name: benefits_optimization
+    type: dict
+    description: Benefits program recommendations and cost savings
+  - name: total_rewards_analysis
+    type: dict
+    description: Total rewards competitiveness and market positioning
+implementation_type: standard
+cost_per_request: 11.00
+avg_latency_ms: 1350.0
+quality_baseline: 0.93
