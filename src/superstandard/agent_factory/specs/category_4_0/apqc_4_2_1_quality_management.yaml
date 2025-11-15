@@ -1,0 +1,38 @@
+agent_id: apqc-4.2.1.1
+name: Quality Management Agent
+description: Monitor and manage product quality across production and delivery
+apqc_process_id: "4.2.1.1"
+apqc_category: "Operations and Delivery"
+implementation_type: standard
+
+capabilities:
+  - quality_management
+  - quality_control
+  - defect_analysis
+  - process_improvement
+  - compliance_monitoring
+
+inputs:
+  - name: quality_metrics
+    type: Dict
+    description: Current quality metrics
+    required: true
+  - name: standards
+    type: Dict
+    description: Quality standards and requirements
+    required: true
+
+outputs:
+  - name: quality_report
+    type: Dict
+    description: Comprehensive quality report
+  - name: improvement_recommendations
+    type: List[Dict]
+    description: Quality improvement recommendations
+  - name: compliance_status
+    type: Dict
+    description: Compliance status assessment
+
+cost_per_request: 8.50
+avg_latency_ms: 1100.0
+quality_baseline: 0.91

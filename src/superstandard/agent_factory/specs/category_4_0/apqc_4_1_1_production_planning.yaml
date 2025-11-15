@@ -1,0 +1,42 @@
+agent_id: apqc-4.1.1.1
+name: Production Planning Agent
+description: Plan and schedule production operations to meet demand efficiently
+apqc_process_id: "4.1.1.1"
+apqc_category: "Operations and Delivery"
+implementation_type: standard
+
+capabilities:
+  - production_planning
+  - capacity_planning
+  - demand_forecasting
+  - scheduling_optimization
+  - resource_allocation
+
+inputs:
+  - name: demand_forecast
+    type: Dict
+    description: Demand forecast data
+    required: true
+  - name: capacity_data
+    type: Dict
+    description: Production capacity information
+    required: true
+  - name: constraints
+    type: Dict
+    description: Production constraints
+    required: false
+
+outputs:
+  - name: production_plan
+    type: Dict
+    description: Optimized production plan
+  - name: resource_allocation
+    type: Dict
+    description: Resource allocation schedule
+  - name: capacity_utilization
+    type: Dict
+    description: Capacity utilization analysis
+
+cost_per_request: 9.00
+avg_latency_ms: 1200.0
+quality_baseline: 0.89

@@ -1,0 +1,38 @@
+agent_id: apqc-4.6.1.1
+name: Process Automation Agent
+description: Identify and implement process automation opportunities
+apqc_process_id: "4.6.1.1"
+apqc_category: "Operations and Delivery"
+implementation_type: standard
+
+capabilities:
+  - process_automation
+  - automation_identification
+  - workflow_optimization
+  - efficiency_analysis
+  - roi_calculation
+
+inputs:
+  - name: process_data
+    type: Dict
+    description: Current process data and metrics
+    required: true
+  - name: automation_goals
+    type: List[str]
+    description: Automation objectives
+    required: true
+
+outputs:
+  - name: automation_opportunities
+    type: List[Dict]
+    description: Identified automation opportunities
+  - name: implementation_plan
+    type: Dict
+    description: Automation implementation plan
+  - name: roi_analysis
+    type: Dict
+    description: ROI analysis for automation
+
+cost_per_request: 9.50
+avg_latency_ms: 1250.0
+quality_baseline: 0.89

@@ -1,0 +1,38 @@
+agent_id: apqc-4.5.1.1
+name: Delivery Optimization Agent
+description: Optimize delivery routes, timing, and logistics for customer satisfaction
+apqc_process_id: "4.5.1.1"
+apqc_category: "Operations and Delivery"
+implementation_type: standard
+
+capabilities:
+  - delivery_optimization
+  - route_planning
+  - logistics_coordination
+  - delivery_tracking
+  - customer_communication
+
+inputs:
+  - name: delivery_orders
+    type: List[Dict]
+    description: Pending delivery orders
+    required: true
+  - name: resources
+    type: Dict
+    description: Available delivery resources
+    required: true
+
+outputs:
+  - name: optimized_routes
+    type: List[Dict]
+    description: Optimized delivery routes
+  - name: delivery_schedule
+    type: Dict
+    description: Delivery schedule and timing
+  - name: efficiency_metrics
+    type: Dict
+    description: Delivery efficiency metrics
+
+cost_per_request: 8.00
+avg_latency_ms: 1100.0
+quality_baseline: 0.87

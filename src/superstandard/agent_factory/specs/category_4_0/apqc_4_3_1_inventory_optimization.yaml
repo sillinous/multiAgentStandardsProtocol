@@ -1,0 +1,38 @@
+agent_id: apqc-4.3.1.1
+name: Inventory Optimization Agent
+description: Optimize inventory levels to balance cost and service levels
+apqc_process_id: "4.3.1.1"
+apqc_category: "Operations and Delivery"
+implementation_type: standard
+
+capabilities:
+  - inventory_optimization
+  - stock_level_management
+  - reorder_point_calculation
+  - safety_stock_optimization
+  - inventory_analytics
+
+inputs:
+  - name: inventory_data
+    type: Dict
+    description: Current inventory levels and history
+    required: true
+  - name: demand_patterns
+    type: Dict
+    description: Demand patterns and forecasts
+    required: true
+
+outputs:
+  - name: optimal_inventory_levels
+    type: Dict
+    description: Optimized inventory levels
+  - name: reorder_recommendations
+    type: List[Dict]
+    description: Reorder recommendations
+  - name: cost_analysis
+    type: Dict
+    description: Inventory cost analysis
+
+cost_per_request: 7.50
+avg_latency_ms: 1000.0
+quality_baseline: 0.88

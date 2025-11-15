@@ -1,0 +1,38 @@
+agent_id: apqc-4.7.1.1
+name: Performance Analytics Agent
+description: Analyze operational performance and identify improvement opportunities
+apqc_process_id: "4.7.1.1"
+apqc_category: "Operations and Delivery"
+implementation_type: standard
+
+capabilities:
+  - performance_analytics
+  - kpi_tracking
+  - trend_analysis
+  - benchmarking
+  - insight_generation
+
+inputs:
+  - name: performance_data
+    type: Dict
+    description: Operational performance data
+    required: true
+  - name: kpis
+    type: List[Dict]
+    description: KPIs to track
+    required: true
+
+outputs:
+  - name: performance_report
+    type: Dict
+    description: Comprehensive performance report
+  - name: trends
+    type: Dict
+    description: Performance trends and patterns
+  - name: insights
+    type: List[Dict]
+    description: Key insights and findings
+
+cost_per_request: 7.00
+avg_latency_ms: 950.0
+quality_baseline: 0.90

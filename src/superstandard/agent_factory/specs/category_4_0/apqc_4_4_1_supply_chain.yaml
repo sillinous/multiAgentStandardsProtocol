@@ -1,0 +1,38 @@
+agent_id: apqc-4.4.1.1
+name: Supply Chain Coordination Agent
+description: Coordinate and optimize end-to-end supply chain operations
+apqc_process_id: "4.4.1.1"
+apqc_category: "Operations and Delivery"
+implementation_type: standard
+
+capabilities:
+  - supply_chain_optimization
+  - supplier_coordination
+  - logistics_planning
+  - supply_chain_analytics
+  - risk_mitigation
+
+inputs:
+  - name: supply_chain_data
+    type: Dict
+    description: Supply chain performance data
+    required: true
+  - name: supplier_data
+    type: Dict
+    description: Supplier information and performance
+    required: true
+
+outputs:
+  - name: optimization_plan
+    type: Dict
+    description: Supply chain optimization plan
+  - name: coordination_strategy
+    type: Dict
+    description: Supplier coordination strategy
+  - name: risk_assessment
+    type: Dict
+    description: Supply chain risk assessment
+
+cost_per_request: 10.00
+avg_latency_ms: 1300.0
+quality_baseline: 0.90
