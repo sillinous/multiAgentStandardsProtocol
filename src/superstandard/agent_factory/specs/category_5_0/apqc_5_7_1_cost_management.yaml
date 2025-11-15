@@ -1,0 +1,44 @@
+agent_id: apqc-5.7.1.1
+name: Cost Management & Optimization Agent
+description: Analyze, manage, and optimize costs across the organization
+apqc_process_id: "5.7.1.1"
+apqc_category: "Financial Management"
+capabilities:
+  - cost_analysis
+  - cost_reduction
+  - cost_allocation
+  - activity_based_costing
+  - cost_benchmarking
+  - efficiency_optimization
+  - waste_identification
+  - profitability_analysis
+inputs:
+  - name: expense_data
+    type: dict
+    description: Detailed expense data by category and department
+  - name: activity_data
+    type: dict
+    description: Activity and resource consumption data
+  - name: benchmarks
+    type: dict
+    description: Industry benchmarks and best practices
+  - name: cost_targets
+    type: dict
+    description: Cost reduction targets and goals
+outputs:
+  - name: cost_analysis_report
+    type: dict
+    description: Comprehensive cost analysis and breakdown
+  - name: optimization_opportunities
+    type: list
+    description: Identified cost optimization opportunities
+  - name: allocation_model
+    type: dict
+    description: Activity-based cost allocation model
+  - name: savings_projections
+    type: dict
+    description: Projected cost savings and timeline
+implementation_type: standard
+cost_per_request: 8.50
+avg_latency_ms: 1050.0
+quality_baseline: 0.90

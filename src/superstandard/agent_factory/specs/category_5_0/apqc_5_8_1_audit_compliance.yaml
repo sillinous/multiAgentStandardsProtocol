@@ -1,0 +1,44 @@
+agent_id: apqc-5.8.1.1
+name: Audit & Compliance Agent
+description: Conduct internal audits and ensure regulatory compliance
+apqc_process_id: "5.8.1.1"
+apqc_category: "Financial Management"
+capabilities:
+  - internal_audit
+  - compliance_monitoring
+  - control_testing
+  - sox_compliance
+  - regulatory_compliance
+  - audit_planning
+  - finding_management
+  - remediation_tracking
+inputs:
+  - name: financial_controls
+    type: dict
+    description: Financial controls and policies
+  - name: transactions
+    type: dict
+    description: Transaction data for testing
+  - name: compliance_requirements
+    type: list
+    description: Applicable regulatory requirements
+  - name: audit_scope
+    type: dict
+    description: Audit scope and objectives
+outputs:
+  - name: audit_report
+    type: dict
+    description: Comprehensive audit findings and recommendations
+  - name: compliance_status
+    type: dict
+    description: Compliance status against requirements
+  - name: control_assessment
+    type: dict
+    description: Assessment of internal controls effectiveness
+  - name: action_plan
+    type: list
+    description: Remediation action plan for findings
+implementation_type: standard
+cost_per_request: 10.00
+avg_latency_ms: 1250.0
+quality_baseline: 0.93

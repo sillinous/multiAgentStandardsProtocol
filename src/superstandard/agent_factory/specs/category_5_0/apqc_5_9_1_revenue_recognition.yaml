@@ -1,0 +1,44 @@
+agent_id: apqc-5.9.1.1
+name: Revenue Recognition Agent
+description: Manage revenue recognition in compliance with accounting standards
+apqc_process_id: "5.9.1.1"
+apqc_category: "Financial Management"
+capabilities:
+  - revenue_recognition
+  - asc_606_compliance
+  - contract_analysis
+  - performance_obligations
+  - revenue_forecasting
+  - deferred_revenue_management
+  - revenue_allocation
+  - recognition_timing
+inputs:
+  - name: contracts
+    type: list
+    description: Customer contracts and agreements
+  - name: deliverables
+    type: dict
+    description: Products/services delivered
+  - name: pricing_data
+    type: dict
+    description: Pricing and payment terms
+  - name: accounting_standards
+    type: str
+    description: Applicable accounting standards (ASC 606, IFRS 15, etc.)
+outputs:
+  - name: recognition_schedule
+    type: dict
+    description: Revenue recognition schedule and timing
+  - name: performance_obligations
+    type: list
+    description: Identified performance obligations
+  - name: allocation_model
+    type: dict
+    description: Revenue allocation across obligations
+  - name: compliance_documentation
+    type: dict
+    description: Documentation for compliance and audit
+implementation_type: standard
+cost_per_request: 9.50
+avg_latency_ms: 1200.0
+quality_baseline: 0.92

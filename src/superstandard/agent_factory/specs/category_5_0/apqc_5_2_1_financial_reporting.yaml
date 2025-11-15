@@ -1,0 +1,44 @@
+agent_id: apqc-5.2.1.1
+name: Financial Reporting Agent
+description: Generate accurate and compliant financial reports for stakeholders
+apqc_process_id: "5.2.1.1"
+apqc_category: "Financial Management"
+capabilities:
+  - financial_reporting
+  - compliance_reporting
+  - management_reporting
+  - stakeholder_reporting
+  - gaap_compliance
+  - ifrs_compliance
+  - dashboard_creation
+  - report_automation
+inputs:
+  - name: financial_data
+    type: dict
+    description: Raw financial data from accounting systems
+  - name: reporting_period
+    type: str
+    description: Reporting period (monthly, quarterly, annual)
+  - name: reporting_standards
+    type: str
+    description: Reporting standards to follow (GAAP, IFRS, etc.)
+  - name: stakeholder_requirements
+    type: dict
+    description: Specific stakeholder reporting requirements
+outputs:
+  - name: financial_statements
+    type: dict
+    description: Complete financial statements (P&L, Balance Sheet, Cash Flow)
+  - name: management_reports
+    type: dict
+    description: Management reports with KPIs and analysis
+  - name: compliance_documentation
+    type: dict
+    description: Compliance documentation and certifications
+  - name: visualizations
+    type: dict
+    description: Charts, graphs, and dashboards for reporting
+implementation_type: standard
+cost_per_request: 9.50
+avg_latency_ms: 1200.0
+quality_baseline: 0.94

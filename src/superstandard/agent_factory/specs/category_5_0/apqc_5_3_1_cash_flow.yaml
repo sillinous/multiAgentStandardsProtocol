@@ -1,0 +1,44 @@
+agent_id: apqc-5.3.1.1
+name: Cash Flow Management Agent
+description: Monitor and optimize cash flow to ensure liquidity and financial stability
+apqc_process_id: "5.3.1.1"
+apqc_category: "Financial Management"
+capabilities:
+  - cash_flow_forecasting
+  - liquidity_management
+  - working_capital_optimization
+  - cash_position_monitoring
+  - payment_scheduling
+  - collection_management
+  - cash_flow_analysis
+  - treasury_operations
+inputs:
+  - name: accounts_receivable
+    type: dict
+    description: Outstanding receivables and payment schedules
+  - name: accounts_payable
+    type: dict
+    description: Payables and payment obligations
+  - name: revenue_forecast
+    type: dict
+    description: Revenue forecasts and timing
+  - name: expense_schedule
+    type: dict
+    description: Planned expenses and payment schedule
+outputs:
+  - name: cash_flow_forecast
+    type: dict
+    description: Detailed cash flow projections
+  - name: liquidity_analysis
+    type: dict
+    description: Liquidity position and runway analysis
+  - name: optimization_recommendations
+    type: list
+    description: Recommendations for cash flow optimization
+  - name: risk_alerts
+    type: list
+    description: Cash flow risks and early warning signals
+implementation_type: standard
+cost_per_request: 9.00
+avg_latency_ms: 1100.0
+quality_baseline: 0.91

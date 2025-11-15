@@ -1,0 +1,44 @@
+agent_id: apqc-5.6.1.1
+name: Tax Planning & Compliance Agent
+description: Optimize tax strategy and ensure compliance with tax regulations
+apqc_process_id: "5.6.1.1"
+apqc_category: "Financial Management"
+capabilities:
+  - tax_planning
+  - tax_optimization
+  - tax_compliance
+  - tax_reporting
+  - tax_risk_assessment
+  - transfer_pricing
+  - tax_credits_identification
+  - regulatory_compliance
+inputs:
+  - name: financial_data
+    type: dict
+    description: Financial data for tax calculation
+  - name: business_structure
+    type: dict
+    description: Business structure and entities
+  - name: jurisdictions
+    type: list
+    description: Tax jurisdictions applicable
+  - name: tax_regulations
+    type: dict
+    description: Current tax regulations and changes
+outputs:
+  - name: tax_strategy
+    type: dict
+    description: Optimized tax strategy and planning
+  - name: tax_projections
+    type: dict
+    description: Tax liability projections
+  - name: compliance_checklist
+    type: list
+    description: Tax compliance requirements and deadlines
+  - name: optimization_opportunities
+    type: list
+    description: Identified tax savings opportunities
+implementation_type: standard
+cost_per_request: 12.00
+avg_latency_ms: 1500.0
+quality_baseline: 0.94

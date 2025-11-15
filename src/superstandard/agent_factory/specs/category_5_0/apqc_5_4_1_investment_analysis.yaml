@@ -1,0 +1,44 @@
+agent_id: apqc-5.4.1.1
+name: Investment Analysis Agent
+description: Analyze and evaluate investment opportunities with ROI and risk assessment
+apqc_process_id: "5.4.1.1"
+apqc_category: "Financial Management"
+capabilities:
+  - investment_analysis
+  - roi_calculation
+  - npv_analysis
+  - irr_calculation
+  - payback_analysis
+  - risk_assessment
+  - portfolio_optimization
+  - capital_budgeting
+inputs:
+  - name: investment_proposals
+    type: list
+    description: Investment opportunities for evaluation
+  - name: financial_constraints
+    type: dict
+    description: Available capital and constraints
+  - name: risk_tolerance
+    type: dict
+    description: Organization's risk tolerance parameters
+  - name: strategic_priorities
+    type: dict
+    description: Strategic priorities for investment alignment
+outputs:
+  - name: investment_analysis
+    type: dict
+    description: Detailed analysis of each investment opportunity
+  - name: roi_projections
+    type: dict
+    description: ROI projections and financial returns
+  - name: risk_profile
+    type: dict
+    description: Risk assessment and mitigation strategies
+  - name: recommendations
+    type: list
+    description: Prioritized investment recommendations
+implementation_type: standard
+cost_per_request: 10.50
+avg_latency_ms: 1350.0
+quality_baseline: 0.92

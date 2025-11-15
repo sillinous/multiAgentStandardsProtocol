@@ -1,0 +1,44 @@
+agent_id: apqc-5.1.2.1
+name: Budgeting & Forecasting Agent
+description: Create and manage budgets with accurate forecasting and scenario planning
+apqc_process_id: "5.1.2.1"
+apqc_category: "Financial Management"
+capabilities:
+  - budget_development
+  - budget_allocation
+  - forecasting
+  - scenario_planning
+  - rolling_forecasts
+  - budget_tracking
+  - variance_management
+  - reforecasting
+inputs:
+  - name: revenue_projections
+    type: dict
+    description: Revenue projections and assumptions
+  - name: expense_estimates
+    type: dict
+    description: Estimated expenses by category
+  - name: resource_requirements
+    type: dict
+    description: Resource allocation requirements
+  - name: constraints
+    type: dict
+    description: Budget constraints and limitations
+outputs:
+  - name: budget_plan
+    type: dict
+    description: Detailed budget plan by department and category
+  - name: forecast_models
+    type: dict
+    description: Financial forecast models with scenarios
+  - name: allocation_strategy
+    type: dict
+    description: Resource allocation strategy and prioritization
+  - name: tracking_framework
+    type: dict
+    description: Budget tracking and monitoring framework
+implementation_type: standard
+cost_per_request: 10.00
+avg_latency_ms: 1300.0
+quality_baseline: 0.92

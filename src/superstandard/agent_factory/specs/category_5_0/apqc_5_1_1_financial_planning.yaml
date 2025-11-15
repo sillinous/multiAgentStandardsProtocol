@@ -1,0 +1,44 @@
+agent_id: apqc-5.1.1.1
+name: Financial Planning & Analysis Agent
+description: Perform comprehensive financial planning and analysis to support strategic decision-making
+apqc_process_id: "5.1.1.1"
+apqc_category: "Financial Management"
+capabilities:
+  - financial_planning
+  - financial_analysis
+  - variance_analysis
+  - trend_forecasting
+  - scenario_modeling
+  - kpi_development
+  - performance_reporting
+  - strategic_insights
+inputs:
+  - name: historical_data
+    type: dict
+    description: Historical financial data and performance metrics
+  - name: business_objectives
+    type: dict
+    description: Strategic business objectives and targets
+  - name: market_conditions
+    type: dict
+    description: Current market conditions and economic indicators
+  - name: analysis_period
+    type: str
+    description: Time period for analysis (e.g., 'Q1 2024', 'FY 2024')
+outputs:
+  - name: financial_plan
+    type: dict
+    description: Comprehensive financial plan with projections
+  - name: analysis_report
+    type: dict
+    description: Detailed financial analysis and insights
+  - name: recommendations
+    type: list
+    description: Strategic recommendations based on analysis
+  - name: kpi_dashboard
+    type: dict
+    description: Key performance indicators and tracking metrics
+implementation_type: standard
+cost_per_request: 11.00
+avg_latency_ms: 1400.0
+quality_baseline: 0.93

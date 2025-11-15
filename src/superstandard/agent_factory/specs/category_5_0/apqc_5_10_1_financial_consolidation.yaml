@@ -1,0 +1,44 @@
+agent_id: apqc-5.10.1.1
+name: Financial Consolidation Agent
+description: Consolidate financial data across multiple entities and divisions
+apqc_process_id: "5.10.1.1"
+apqc_category: "Financial Management"
+capabilities:
+  - financial_consolidation
+  - intercompany_elimination
+  - currency_translation
+  - subsidiary_consolidation
+  - segment_reporting
+  - consolidation_automation
+  - variance_reconciliation
+  - group_reporting
+inputs:
+  - name: entity_financials
+    type: list
+    description: Financial data from all entities and subsidiaries
+  - name: intercompany_transactions
+    type: dict
+    description: Intercompany transactions for elimination
+  - name: ownership_structure
+    type: dict
+    description: Entity ownership and control structure
+  - name: reporting_currency
+    type: str
+    description: Reporting currency for consolidated financials
+outputs:
+  - name: consolidated_financials
+    type: dict
+    description: Consolidated financial statements
+  - name: elimination_entries
+    type: list
+    description: Intercompany elimination entries
+  - name: translation_adjustments
+    type: dict
+    description: Currency translation adjustments
+  - name: segment_reports
+    type: dict
+    description: Segment reporting and analysis
+implementation_type: standard
+cost_per_request: 11.00
+avg_latency_ms: 1400.0
+quality_baseline: 0.93

@@ -1,0 +1,44 @@
+agent_id: apqc-5.5.1.1
+name: Financial Risk Management Agent
+description: Identify, assess, and mitigate financial risks across the organization
+apqc_process_id: "5.5.1.1"
+apqc_category: "Financial Management"
+capabilities:
+  - risk_identification
+  - risk_assessment
+  - risk_mitigation
+  - credit_risk_analysis
+  - market_risk_analysis
+  - operational_risk_analysis
+  - compliance_risk
+  - risk_monitoring
+inputs:
+  - name: financial_exposure
+    type: dict
+    description: Current financial exposures and positions
+  - name: market_data
+    type: dict
+    description: Market conditions and volatility data
+  - name: operational_data
+    type: dict
+    description: Operational processes and controls
+  - name: risk_appetite
+    type: dict
+    description: Organization's risk appetite and thresholds
+outputs:
+  - name: risk_assessment
+    type: dict
+    description: Comprehensive risk assessment report
+  - name: risk_register
+    type: dict
+    description: Cataloged risks with severity and probability
+  - name: mitigation_strategies
+    type: list
+    description: Risk mitigation strategies and controls
+  - name: monitoring_framework
+    type: dict
+    description: Risk monitoring and reporting framework
+implementation_type: standard
+cost_per_request: 11.50
+avg_latency_ms: 1450.0
+quality_baseline: 0.93
