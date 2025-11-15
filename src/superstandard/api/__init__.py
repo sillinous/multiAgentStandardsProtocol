@@ -10,8 +10,14 @@ from .dashboard_api import (
     SentimentSnapshot,
     ConnectionManager
 )
+from .backtesting_api import (
+    create_backtesting_app,
+    BacktestRequest,
+    BacktestResults
+)
 
 __all__ = [
+    # Dashboard API
     'create_dashboard_app',
     'get_dashboard_state',
     'DashboardState',
@@ -19,5 +25,10 @@ __all__ = [
     'EventType',
     'PortfolioSnapshot',
     'SentimentSnapshot',
-    'ConnectionManager'
+    'ConnectionManager',
+
+    # Backtesting API
+    'create_backtesting_app',
+    'BacktestRequest',
+    'BacktestResults'
 ]
