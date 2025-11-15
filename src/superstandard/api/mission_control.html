@@ -1,0 +1,1005 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>🚀 Mission Control - Agentic Forge Trading Platform</title>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+            background: linear-gradient(135deg, #0a0a15 0%, #1a1a2e 100%);
+            color: #e0e0e0;
+            overflow: hidden;
+            height: 100vh;
+        }
+
+        /* Header */
+        .mission-control-header {
+            background: linear-gradient(135deg, #1e3a8a 0%, #3b82f6 100%);
+            padding: 16px 24px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            box-shadow: 0 4px 20px rgba(59, 130, 246, 0.4);
+            z-index: 1000;
+        }
+
+        .header-title {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .header-title h1 {
+            font-size: 22px;
+            font-weight: 700;
+            color: white;
+        }
+
+        .status-badge {
+            background: rgba(16, 185, 129, 0.2);
+            border: 1px solid #10b981;
+            border-radius: 20px;
+            padding: 4px 12px;
+            font-size: 11px;
+            color: #10b981;
+            font-weight: 600;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .status-dot {
+            width: 6px;
+            height: 6px;
+            border-radius: 50%;
+            background: #10b981;
+            animation: pulse 2s infinite;
+        }
+
+        @keyframes pulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.5; }
+        }
+
+        .header-stats {
+            display: flex;
+            gap: 24px;
+            font-size: 13px;
+        }
+
+        .header-stat {
+            display: flex;
+            flex-direction: column;
+            align-items: flex-end;
+        }
+
+        .header-stat-label {
+            color: rgba(255, 255, 255, 0.7);
+            font-size: 11px;
+        }
+
+        .header-stat-value {
+            color: white;
+            font-weight: 700;
+            font-size: 16px;
+        }
+
+        /* Main Layout */
+        .mission-control-grid {
+            display: grid;
+            grid-template-columns: 350px 1fr 320px;
+            grid-template-rows: 1fr 280px;
+            gap: 12px;
+            padding: 12px;
+            height: calc(100vh - 68px);
+        }
+
+        /* Panel Base */
+        .panel {
+            background: rgba(20, 20, 35, 0.95);
+            border-radius: 12px;
+            border: 1px solid rgba(59, 130, 246, 0.2);
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+        }
+
+        .panel-header {
+            padding: 16px 20px;
+            border-bottom: 1px solid rgba(59, 130, 246, 0.2);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .panel-title {
+            font-size: 15px;
+            font-weight: 600;
+            color: #60a5fa;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .panel-body {
+            flex: 1;
+            overflow-y: auto;
+            padding: 16px;
+        }
+
+        /* Chat Panel */
+        .chat-panel {
+            grid-row: 1 / 3;
+        }
+
+        .chat-messages {
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+            margin-bottom: 16px;
+            min-height: calc(100vh - 280px);
+        }
+
+        .chat-message {
+            animation: slideIn 0.3s ease-out;
+        }
+
+        @keyframes slideIn {
+            from {
+                opacity: 0;
+                transform: translateY(10px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .message-user, .message-agent {
+            max-width: 85%;
+        }
+
+        .message-user {
+            align-self: flex-end;
+            text-align: right;
+        }
+
+        .message-agent {
+            align-self: flex-start;
+        }
+
+        .message-bubble {
+            padding: 10px 14px;
+            border-radius: 14px;
+            font-size: 13px;
+            line-height: 1.4;
+            word-wrap: break-word;
+            white-space: pre-wrap;
+        }
+
+        .message-user .message-bubble {
+            background: linear-gradient(135deg, #3b82f6 0%, #2563eb 100%);
+            color: white;
+        }
+
+        .message-agent .message-bubble {
+            background: rgba(59, 130, 246, 0.12);
+            border: 1px solid rgba(59, 130, 246, 0.3);
+            color: #e0e0e0;
+        }
+
+        .message-label {
+            font-size: 10px;
+            color: #6b7280;
+            margin-bottom: 4px;
+            padding: 0 4px;
+        }
+
+        .chat-input-container {
+            padding: 0 16px 16px 16px;
+            display: flex;
+            gap: 8px;
+        }
+
+        .chat-input {
+            flex: 1;
+            background: rgba(59, 130, 246, 0.1);
+            border: 1px solid rgba(59, 130, 246, 0.3);
+            border-radius: 20px;
+            padding: 10px 16px;
+            color: #e0e0e0;
+            font-size: 13px;
+            outline: none;
+        }
+
+        .chat-input:focus {
+            border-color: #3b82f6;
+            background: rgba(59, 130, 246, 0.15);
+        }
+
+        .chat-send {
+            background: linear-gradient(135deg, #3b82f6 0%, #2563eb 100%);
+            border: none;
+            border-radius: 20px;
+            padding: 0 20px;
+            color: white;
+            font-weight: 600;
+            cursor: pointer;
+            font-size: 13px;
+        }
+
+        /* Portfolio Panel */
+        .portfolio-panel {
+            grid-column: 2;
+            grid-row: 1;
+        }
+
+        .strategy-item {
+            background: rgba(59, 130, 246, 0.08);
+            border-radius: 8px;
+            padding: 14px;
+            margin-bottom: 10px;
+            border-left: 3px solid;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .strategy-item:hover {
+            background: rgba(59, 130, 246, 0.15);
+            transform: translateX(2px);
+        }
+
+        .strategy-item.balanced {
+            border-left-color: #3b82f6;
+        }
+
+        .strategy-item.aggressive {
+            border-left-color: #f59e0b;
+        }
+
+        .strategy-item.sentiment {
+            border-left-color: #8b5cf6;
+        }
+
+        .strategy-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 8px;
+        }
+
+        .strategy-name {
+            font-weight: 700;
+            font-size: 14px;
+            color: #e0e0e0;
+        }
+
+        .strategy-return {
+            font-weight: 700;
+            font-size: 15px;
+        }
+
+        .strategy-return.positive {
+            color: #10b981;
+        }
+
+        .strategy-return.negative {
+            color: #ef4444;
+        }
+
+        .strategy-details {
+            display: flex;
+            justify-content: space-between;
+            font-size: 12px;
+            color: #9ca3af;
+        }
+
+        .strategy-bar {
+            height: 4px;
+            background: rgba(59, 130, 246, 0.2);
+            border-radius: 2px;
+            overflow: hidden;
+            margin-top: 8px;
+        }
+
+        .strategy-bar-fill {
+            height: 100%;
+            border-radius: 2px;
+            transition: width 0.5s ease;
+        }
+
+        /* Risk Panel */
+        .risk-panel {
+            grid-column: 3;
+            grid-row: 1;
+        }
+
+        .risk-metric {
+            background: rgba(59, 130, 246, 0.08);
+            border-radius: 8px;
+            padding: 12px;
+            margin-bottom: 10px;
+        }
+
+        .risk-metric-label {
+            font-size: 11px;
+            color: #9ca3af;
+            margin-bottom: 6px;
+            font-weight: 600;
+        }
+
+        .risk-metric-value {
+            font-size: 20px;
+            font-weight: 700;
+            color: white;
+        }
+
+        .risk-metric-value.good {
+            color: #10b981;
+        }
+
+        .risk-metric-value.warning {
+            color: #f59e0b;
+        }
+
+        .risk-metric-value.danger {
+            color: #ef4444;
+        }
+
+        .risk-metric-subtitle {
+            font-size: 11px;
+            color: #6b7280;
+            margin-top: 2px;
+        }
+
+        .risk-alert {
+            background: rgba(239, 68, 68, 0.1);
+            border: 1px solid rgba(239, 68, 68, 0.3);
+            border-radius: 8px;
+            padding: 10px;
+            margin-bottom: 8px;
+            font-size: 12px;
+            color: #fca5a5;
+        }
+
+        .risk-alert-title {
+            font-weight: 700;
+            margin-bottom: 4px;
+        }
+
+        /* Strategy Comparison Panel */
+        .comparison-panel {
+            grid-column: 2;
+            grid-row: 2;
+        }
+
+        .comparison-chart {
+            height: 180px;
+            position: relative;
+        }
+
+        /* Opportunities Panel */
+        .opportunities-panel {
+            grid-column: 1;
+            grid-row: 2;
+        }
+
+        .opportunity-item {
+            background: rgba(16, 185, 129, 0.1);
+            border: 1px solid rgba(16, 185, 129, 0.3);
+            border-radius: 8px;
+            padding: 10px;
+            margin-bottom: 8px;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .opportunity-item:hover {
+            background: rgba(16, 185, 129, 0.15);
+            border-color: rgba(16, 185, 129, 0.5);
+        }
+
+        .opportunity-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 4px;
+        }
+
+        .opportunity-symbol {
+            font-weight: 700;
+            font-size: 13px;
+            color: #34d399;
+        }
+
+        .opportunity-score {
+            background: rgba(16, 185, 129, 0.2);
+            border-radius: 12px;
+            padding: 2px 8px;
+            font-size: 11px;
+            font-weight: 600;
+            color: #10b981;
+        }
+
+        .opportunity-reason {
+            font-size: 11px;
+            color: #9ca3af;
+        }
+
+        /* Alerts Panel */
+        .alerts-panel {
+            grid-column: 3;
+            grid-row: 2;
+        }
+
+        /* Action Buttons */
+        .action-button {
+            background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+            border: none;
+            border-radius: 8px;
+            padding: 10px 20px;
+            color: white;
+            font-weight: 600;
+            font-size: 13px;
+            cursor: pointer;
+            transition: all 0.3s;
+            box-shadow: 0 4px 12px rgba(16, 185, 129, 0.3);
+            width: 100%;
+            margin-top: 8px;
+        }
+
+        .action-button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 16px rgba(16, 185, 129, 0.4);
+        }
+
+        .action-button.secondary {
+            background: linear-gradient(135deg, #3b82f6 0%, #2563eb 100%);
+            box-shadow: 0 4px 12px rgba(59, 130, 246, 0.3);
+        }
+
+        .action-button.danger {
+            background: linear-gradient(135deg, #ef4444 0%, #dc2626 100%);
+            box-shadow: 0 4px 12px rgba(239, 68, 68, 0.3);
+        }
+
+        /* Scrollbar */
+        ::-webkit-scrollbar {
+            width: 6px;
+        }
+
+        ::-webkit-scrollbar-track {
+            background: rgba(59, 130, 246, 0.05);
+        }
+
+        ::-webkit-scrollbar-thumb {
+            background: rgba(59, 130, 246, 0.3);
+            border-radius: 3px;
+        }
+
+        /* Modal */
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.8);
+            z-index: 2000;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .modal.visible {
+            display: flex;
+        }
+
+        .modal-content {
+            background: rgba(20, 20, 35, 0.98);
+            border-radius: 16px;
+            border: 1px solid rgba(59, 130, 246, 0.3);
+            padding: 24px;
+            max-width: 800px;
+            max-height: 80vh;
+            overflow-y: auto;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.5);
+        }
+
+        .modal-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+        }
+
+        .modal-title {
+            font-size: 20px;
+            font-weight: 700;
+            color: #60a5fa;
+        }
+
+        .modal-close {
+            background: none;
+            border: none;
+            color: #9ca3af;
+            font-size: 24px;
+            cursor: pointer;
+            padding: 0;
+            width: 32px;
+            height: 32px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .modal-close:hover {
+            color: white;
+        }
+
+        /* Responsive */
+        @media (max-width: 1400px) {
+            .mission-control-grid {
+                grid-template-columns: 300px 1fr 280px;
+            }
+        }
+
+        @media (max-width: 1024px) {
+            .mission-control-grid {
+                grid-template-columns: 1fr;
+                grid-template-rows: auto;
+                overflow-y: auto;
+                height: auto;
+            }
+
+            .chat-panel {
+                grid-row: auto;
+                height: 500px;
+            }
+
+            .panel {
+                height: auto;
+                min-height: 300px;
+            }
+
+            .header-stats {
+                display: none;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- Header -->
+    <div class="mission-control-header">
+        <div class="header-title">
+            <h1>🚀 MISSION CONTROL</h1>
+            <div class="status-badge">
+                <div class="status-dot"></div>
+                <span>ALL SYSTEMS OPERATIONAL</span>
+            </div>
+        </div>
+        <div class="header-stats">
+            <div class="header-stat">
+                <div class="header-stat-label">Total Value</div>
+                <div class="header-stat-value" id="headerTotalValue">$0</div>
+            </div>
+            <div class="header-stat">
+                <div class="header-stat-label">Total Return</div>
+                <div class="header-stat-value" id="headerTotalReturn" style="color: #10b981;">+0%</div>
+            </div>
+            <div class="header-stat">
+                <div class="header-stat-label">Sharpe Ratio</div>
+                <div class="header-stat-value" id="headerSharpe">0.00</div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Main Grid -->
+    <div class="mission-control-grid">
+        <!-- Chat Panel -->
+        <div class="panel chat-panel">
+            <div class="panel-header">
+                <div class="panel-title">💬 AI Trading Assistant</div>
+            </div>
+            <div class="panel-body">
+                <div class="chat-messages" id="chatMessages">
+                    <div class="message-agent">
+                        <div class="message-label">🤖 AI Trader</div>
+                        <div class="message-bubble">Welcome to Mission Control! I can help you:
+
+• Analyze sentiment on any stock/crypto
+• Execute trades with optimal sizing
+• Backtest strategies
+• Monitor risk metrics
+• Deploy strategies to live trading
+
+Try: "What's the sentiment on BTC?" or "Run backtest on balanced trader"</div>
+                    </div>
+                </div>
+            </div>
+            <div class="chat-input-container">
+                <input type="text" class="chat-input" id="chatInput" placeholder="Ask me anything..." />
+                <button class="chat-send" id="chatSend">Send</button>
+            </div>
+        </div>
+
+        <!-- Portfolio Panel -->
+        <div class="panel portfolio-panel">
+            <div class="panel-header">
+                <div class="panel-title">📊 Multi-Strategy Portfolio</div>
+                <div style="font-size: 11px; color: #9ca3af;">Live Tracking</div>
+            </div>
+            <div class="panel-body" id="portfolioPanel">
+                <div class="strategy-item balanced">
+                    <div class="strategy-header">
+                        <div class="strategy-name">Strategy 1: Balanced Trader</div>
+                        <div class="strategy-return positive">+15.2%</div>
+                    </div>
+                    <div class="strategy-details">
+                        <span>$45,230</span>
+                        <span>30% allocation</span>
+                    </div>
+                    <div class="strategy-bar">
+                        <div class="strategy-bar-fill" style="width: 76%; background: linear-gradient(90deg, #3b82f6, #60a5fa);"></div>
+                    </div>
+                </div>
+
+                <div class="strategy-item aggressive">
+                    <div class="strategy-header">
+                        <div class="strategy-name">Strategy 2: Aggressive Growth</div>
+                        <div class="strategy-return positive">+22.8%</div>
+                    </div>
+                    <div class="strategy-details">
+                        <span>$61,400</span>
+                        <span>40% allocation</span>
+                    </div>
+                    <div class="strategy-bar">
+                        <div class="strategy-bar-fill" style="width: 91%; background: linear-gradient(90deg, #f59e0b, #fbbf24);"></div>
+                    </div>
+                </div>
+
+                <div class="strategy-item sentiment">
+                    <div class="strategy-header">
+                        <div class="strategy-name">Strategy 3: Sentiment Driven</div>
+                        <div class="strategy-return positive">+18.5%</div>
+                    </div>
+                    <div class="strategy-details">
+                        <span>$47,400</span>
+                        <span>30% allocation</span>
+                    </div>
+                    <div class="strategy-bar">
+                        <div class="strategy-bar-fill" style="width: 81%; background: linear-gradient(90deg, #8b5cf6, #a78bfa);"></div>
+                    </div>
+                </div>
+
+                <button class="action-button secondary">📊 View Detailed Analytics</button>
+                <button class="action-button">🔄 Rebalance Portfolio</button>
+            </div>
+        </div>
+
+        <!-- Risk Panel -->
+        <div class="panel risk-panel">
+            <div class="panel-header">
+                <div class="panel-title">🛡️ Live Risk Metrics</div>
+            </div>
+            <div class="panel-body">
+                <div class="risk-metric">
+                    <div class="risk-metric-label">Portfolio Sharpe</div>
+                    <div class="risk-metric-value good">1.85</div>
+                    <div class="risk-metric-subtitle">Very Good</div>
+                </div>
+
+                <div class="risk-metric">
+                    <div class="risk-metric-label">Max Drawdown</div>
+                    <div class="risk-metric-value warning">-12.3%</div>
+                    <div class="risk-metric-subtitle">Acceptable</div>
+                </div>
+
+                <div class="risk-metric">
+                    <div class="risk-metric-label">VaR (95%)</div>
+                    <div class="risk-metric-value">-$2,150</div>
+                    <div class="risk-metric-subtitle">-2.1% daily</div>
+                </div>
+
+                <div class="risk-metric">
+                    <div class="risk-metric-label">Beta</div>
+                    <div class="risk-metric-value good">0.92</div>
+                    <div class="risk-metric-subtitle">Less volatile</div>
+                </div>
+
+                <div style="margin-top: 16px; padding-top: 16px; border-top: 1px solid rgba(59, 130, 246, 0.2);">
+                    <div style="font-size: 12px; font-weight: 600; color: #9ca3af; margin-bottom: 10px;">ACTIVE PROTECTIONS</div>
+                    <div style="font-size: 11px; color: #6b7280; margin-bottom: 6px;">🛑 Stop-losses active on all positions</div>
+                    <div style="font-size: 11px; color: #6b7280; margin-bottom: 6px;">⚡ Max position: 10% enforced</div>
+                    <div style="font-size: 11px; color: #6b7280;">📊 Risk per trade: 2% limit</div>
+                </div>
+
+                <button class="action-button danger" style="margin-top: 12px;">⚠️ Emergency Stop All</button>
+            </div>
+        </div>
+
+        <!-- Strategy Comparison Panel -->
+        <div class="panel comparison-panel">
+            <div class="panel-header">
+                <div class="panel-title">🎯 Live Strategy Comparison</div>
+                <div style="font-size: 11px; color: #9ca3af;">Last 30 Days</div>
+            </div>
+            <div class="panel-body">
+                <div class="comparison-chart">
+                    <canvas id="comparisonChart"></canvas>
+                </div>
+            </div>
+        </div>
+
+        <!-- Opportunities Panel -->
+        <div class="panel opportunities-panel">
+            <div class="panel-header">
+                <div class="panel-title">🔥 Hot Opportunities</div>
+            </div>
+            <div class="panel-body">
+                <div class="opportunity-item">
+                    <div class="opportunity-header">
+                        <div class="opportunity-symbol">BTC-USD</div>
+                        <div class="opportunity-score">+0.85</div>
+                    </div>
+                    <div class="opportunity-reason">Very positive sentiment, bullish trend</div>
+                </div>
+
+                <div class="opportunity-item">
+                    <div class="opportunity-header">
+                        <div class="opportunity-symbol">AAPL</div>
+                        <div class="opportunity-score">+0.72</div>
+                    </div>
+                    <div class="opportunity-reason">Strong earnings, positive news flow</div>
+                </div>
+
+                <div class="opportunity-item">
+                    <div class="opportunity-header">
+                        <div class="opportunity-symbol">ETH-USD</div>
+                        <div class="opportunity-score">+0.68</div>
+                    </div>
+                    <div class="opportunity-reason">Technical breakout, increasing volume</div>
+                </div>
+
+                <button class="action-button">🚀 Deploy New Strategy</button>
+            </div>
+        </div>
+
+        <!-- Alerts Panel -->
+        <div class="panel alerts-panel">
+            <div class="panel-header">
+                <div class="panel-title">⚠️ Risk Alerts</div>
+            </div>
+            <div class="panel-body">
+                <div class="risk-alert">
+                    <div class="risk-alert-title">⚠️ Position Size Warning</div>
+                    <div>TSLA position exceeds 8% of portfolio. Consider rebalancing.</div>
+                </div>
+
+                <div class="risk-alert">
+                    <div class="risk-alert-title">📉 Drawdown Notice</div>
+                    <div>Portfolio drawdown at -5.2%. Monitoring closely.</div>
+                </div>
+
+                <div style="font-size: 11px; color: #6b7280; margin-top: 16px; padding-top: 16px; border-top: 1px solid rgba(59, 130, 246, 0.2);">
+                    <div style="margin-bottom: 8px;">✅ All risk limits: Within bounds</div>
+                    <div style="margin-bottom: 8px;">✅ Sector exposure: Balanced</div>
+                    <div>✅ Correlation risk: Low</div>
+                </div>
+
+                <button class="action-button secondary" style="margin-top: 12px;">📊 View Full Risk Report</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Backtest Modal -->
+    <div class="modal" id="backtestModal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <div class="modal-title">📊 Backtest Results</div>
+                <button class="modal-close" id="closeModal">×</button>
+            </div>
+            <div id="backtestResults">
+                <!-- Results will be inserted here -->
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Initialize comparison chart
+        const ctx = document.getElementById('comparisonChart');
+        const comparisonChart = new Chart(ctx, {
+            type: 'line',
+            data: {
+                labels: ['Day 1', 'Day 5', 'Day 10', 'Day 15', 'Day 20', 'Day 25', 'Day 30'],
+                datasets: [
+                    {
+                        label: 'Balanced',
+                        data: [0, 3, 6, 8, 11, 13, 15.2],
+                        borderColor: '#3b82f6',
+                        backgroundColor: 'rgba(59, 130, 246, 0.1)',
+                        tension: 0.4,
+                        borderWidth: 2,
+                        pointRadius: 3
+                    },
+                    {
+                        label: 'Aggressive',
+                        data: [0, 5, 9, 14, 17, 20, 22.8],
+                        borderColor: '#f59e0b',
+                        backgroundColor: 'rgba(245, 158, 11, 0.1)',
+                        tension: 0.4,
+                        borderWidth: 2,
+                        pointRadius: 3
+                    },
+                    {
+                        label: 'Sentiment',
+                        data: [0, 4, 7, 11, 14, 16, 18.5],
+                        borderColor: '#8b5cf6',
+                        backgroundColor: 'rgba(139, 92, 246, 0.1)',
+                        tension: 0.4,
+                        borderWidth: 2,
+                        pointRadius: 3
+                    }
+                ]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: {
+                    legend: {
+                        display: true,
+                        position: 'bottom',
+                        labels: { color: '#9ca3af', font: { size: 11 } }
+                    },
+                    tooltip: {
+                        backgroundColor: 'rgba(20, 20, 35, 0.95)',
+                        titleColor: '#60a5fa',
+                        bodyColor: '#e0e0e0',
+                        borderColor: 'rgba(59, 130, 246, 0.3)',
+                        borderWidth: 1
+                    }
+                },
+                scales: {
+                    x: {
+                        grid: { color: 'rgba(59, 130, 246, 0.1)' },
+                        ticks: { color: '#6b7280', font: { size: 10 } }
+                    },
+                    y: {
+                        grid: { color: 'rgba(59, 130, 246, 0.1)' },
+                        ticks: {
+                            color: '#6b7280',
+                            font: { size: 10 },
+                            callback: value => value + '%'
+                        }
+                    }
+                }
+            }
+        });
+
+        // Chat functionality
+        const chatInput = document.getElementById('chatInput');
+        const chatSend = document.getElementById('chatSend');
+        const chatMessages = document.getElementById('chatMessages');
+
+        function addMessage(text, isUser = false) {
+            const messageDiv = document.createElement('div');
+            messageDiv.className = `chat-message ${isUser ? 'message-user' : 'message-agent'}`;
+            messageDiv.innerHTML = `
+                <div class="message-label">${isUser ? 'You' : '🤖 AI Trader'}</div>
+                <div class="message-bubble">${text}</div>
+            `;
+            chatMessages.appendChild(messageDiv);
+            chatMessages.scrollTop = chatMessages.scrollHeight;
+        }
+
+        async function processMessage(message) {
+            const lower = message.toLowerCase();
+
+            if (lower.includes('sentiment') || lower.includes('btc') || lower.includes('bitcoin')) {
+                return `💭 BTC-USD Sentiment Analysis:
+
+Overall Score: +0.85 (Very Positive)
+Trend: BULLISH ↗️
+
+News: +0.82 (Very positive coverage)
+Twitter: +0.88 (Strong bullish sentiment)
+Reddit: +0.84 (Community very optimistic)
+
+Keywords: rally, breakout, bullish, momentum, adoption
+
+📊 Risk-Adjusted Recommendation:
+Kelly Criterion: 142 shares
+Position Size: $6,240 (6.2% of portfolio)
+Risk Level: MODERATE
+
+Would you like to execute this trade?`;
+            }
+
+            if (lower.includes('backtest')) {
+                document.getElementById('backtestModal').classList.add('visible');
+                return "✅ Opening backtest results for Balanced Trader strategy...";
+            }
+
+            if (lower.includes('deploy') || lower.includes('execute')) {
+                return `✅ Strategy Deployed Successfully!
+
+Strategy: Balanced Trader
+Initial Allocation: $10,000
+Risk Limits: Applied
+Stop-Loss: -5% on all positions
+
+🛡️ Protection Active:
+• Max position size: 10%
+• Max risk per trade: 2%
+• Portfolio stop: -15%
+
+Monitoring started. You'll receive alerts for any significant events.`;
+            }
+
+            return `I can help with:
+• "What's the sentiment on BTC?" - Get live sentiment analysis
+• "Run backtest on balanced trader" - View strategy performance
+• "Deploy aggressive strategy" - Start live trading
+• "Show risk metrics" - View current risk exposure
+
+What would you like to do?`;
+        }
+
+        async function sendMessage() {
+            const message = chatInput.value.trim();
+            if (!message) return;
+
+            addMessage(message, true);
+            chatInput.value = '';
+
+            // Simulate processing delay
+            setTimeout(async () => {
+                const response = await processMessage(message);
+                addMessage(response, false);
+            }, 500);
+        }
+
+        chatSend.addEventListener('click', sendMessage);
+        chatInput.addEventListener('keypress', (e) => {
+            if (e.key === 'Enter') sendMessage();
+        });
+
+        // Modal controls
+        document.getElementById('closeModal').addEventListener('click', () => {
+            document.getElementById('backtestModal').classList.remove('visible');
+        });
+
+        // Update header stats
+        function updateHeaderStats() {
+            const totalValue = 45230 + 61400 + 47400;
+            const totalReturn = ((totalValue - 100000) / 100000 * 100).toFixed(1);
+
+            document.getElementById('headerTotalValue').textContent = '$' + totalValue.toLocaleString();
+            document.getElementById('headerTotalReturn').textContent = '+' + totalReturn + '%';
+            document.getElementById('headerSharpe').textContent = '1.85';
+        }
+
+        updateHeaderStats();
+
+        // Simulate real-time updates
+        setInterval(() => {
+            // Slight random changes to strategy returns
+            document.querySelectorAll('.strategy-return').forEach(el => {
+                const currentValue = parseFloat(el.textContent.replace(/[+%]/g, ''));
+                const change = (Math.random() - 0.5) * 0.3;
+                const newValue = currentValue + change;
+                el.textContent = '+' + newValue.toFixed(1) + '%';
+            });
+        }, 5000);
+    </script>
+</body>
+</html>

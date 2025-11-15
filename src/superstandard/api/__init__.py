@@ -15,6 +15,15 @@ from .backtesting_api import (
     BacktestRequest,
     BacktestResults
 )
+from .mission_control_api import (
+    create_mission_control_app,
+    StrategyState,
+    PortfolioState,
+    RiskMetrics,
+    Opportunity,
+    RiskAlert,
+    MissionControlState
+)
 
 __all__ = [
     # Dashboard API
@@ -30,5 +39,14 @@ __all__ = [
     # Backtesting API
     'create_backtesting_app',
     'BacktestRequest',
-    'BacktestResults'
+    'BacktestResults',
+
+    # Mission Control API
+    'create_mission_control_app',
+    'StrategyState',
+    'PortfolioState',
+    'RiskMetrics',
+    'Opportunity',
+    'RiskAlert',
+    'MissionControlState'
 ]
