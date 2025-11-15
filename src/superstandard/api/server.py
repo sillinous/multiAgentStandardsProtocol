@@ -591,13 +591,25 @@ async def anp_stats():
         for agent in state.network_registry.agents.values():
             all_capabilities.update(agent.capabilities)
 
+        # Calculate actual uptime percentage (100% since server is running)
+        uptime_seconds = (datetime.utcnow() - state.stats["server_start_time"]).total_seconds()
+        # Network uptime is 100% while server is running (no downtime tracking yet)
+        network_uptime_percent = 100.0
+
+        # Calculate actual heartbeat rate (heartbeats per minute)
+        heartbeat_rate = 0.0
+        if uptime_seconds > 0:
+            total_heartbeats = state.network_registry.stats.get("total_heartbeats", 0)
+            # Convert to heartbeats per minute
+            heartbeat_rate = (total_heartbeats / uptime_seconds) * 60
+
         return {
             "total_agents": total_agents,
             "healthy_agents": healthy_agents,
             "total_capabilities": len(all_capabilities),
             "discoveries_24h": state.stats["total_agents_registered"],  # Simplified
-            "heartbeat_rate": 0,  # TODO: Track actual heartbeat rate
-            "network_uptime": 99.9  # TODO: Calculate actual uptime
+            "heartbeat_rate": round(heartbeat_rate, 2),
+            "network_uptime": round(network_uptime_percent, 2)
         }
 
     except Exception as e:
