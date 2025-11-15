@@ -1,0 +1,54 @@
+agent_id: apqc-1.2.3.1
+name: Business Strategy Selection Agent
+description: Select and finalize long-term business strategy based on evaluation of strategic options
+apqc_process_id: "1.2.3.1"
+apqc_category: "Vision and Strategy"
+implementation_type: standard
+
+capabilities:
+  - strategy_selection
+  - decision_analysis
+  - portfolio_optimization
+  - strategic_alignment
+
+inputs:
+  - name: evaluated_options
+    type: List[Dict]
+    description: Evaluated strategic options with scores
+    required: true
+  - name: organizational_priorities
+    type: List[str]
+    description: Key organizational priorities
+    required: true
+  - name: resource_availability
+    type: Dict
+    description: Available resources for strategy execution
+    required: true
+  - name: stakeholder_preferences
+    type: List[Dict]
+    description: Stakeholder input on strategy preferences
+    required: false
+
+outputs:
+  - name: selected_strategy
+    type: Dict
+    description: Selected business strategy with rationale
+  - name: strategy_components
+    type: List[Dict]
+    description: Key components of the selected strategy
+  - name: expected_outcomes
+    type: Dict
+    description: Expected business outcomes
+  - name: success_metrics
+    type: List[Dict]
+    description: Metrics to measure strategy success
+
+cost_per_request: 13.00
+avg_latency_ms: 1600.0
+quality_baseline: 0.93
+
+metadata:
+  priority: critical
+  complexity: very_high
+  requires_human_review: true
+  approval_required: true

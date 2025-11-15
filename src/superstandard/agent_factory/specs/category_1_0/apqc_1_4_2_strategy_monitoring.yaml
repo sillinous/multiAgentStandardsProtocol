@@ -1,0 +1,57 @@
+agent_id: apqc-1.4.2.1
+name: Strategy Monitoring Agent
+description: Monitor strategy execution, track progress against goals, and identify deviations
+apqc_process_id: "1.4.2.1"
+apqc_category: "Vision and Strategy"
+implementation_type: standard
+
+capabilities:
+  - performance_monitoring
+  - progress_tracking
+  - variance_analysis
+  - dashboard_reporting
+
+inputs:
+  - name: strategic_kpis
+    type: List[Dict]
+    description: Strategic KPIs to monitor
+    required: true
+  - name: current_performance
+    type: Dict
+    description: Current performance data
+    required: true
+  - name: targets
+    type: Dict
+    description: Performance targets
+    required: true
+  - name: monitoring_frequency
+    type: str
+    description: Monitoring frequency
+    required: false
+
+outputs:
+  - name: performance_status
+    type: Dict
+    description: Current performance status vs targets
+  - name: variance_analysis
+    type: Dict
+    description: Analysis of variances from plan
+  - name: trend_analysis
+    type: Dict
+    description: Performance trend analysis
+  - name: alerts
+    type: List[Dict]
+    description: Performance alerts and warnings
+  - name: dashboard_data
+    type: Dict
+    description: Data for executive dashboard
+
+cost_per_request: 5.50
+avg_latency_ms: 800.0
+quality_baseline: 0.84
+
+metadata:
+  priority: high
+  complexity: medium
+  refresh_frequency: monthly
+  automated: true

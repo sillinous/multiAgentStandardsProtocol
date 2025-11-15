@@ -1,0 +1,56 @@
+agent_id: apqc-1.1.1.3
+name: Technology Trends Analysis Agent
+description: Analyze emerging technology trends and their potential impact on business strategy
+apqc_process_id: "1.1.1.3"
+apqc_category: "Vision and Strategy"
+implementation_type: standard
+
+capabilities:
+  - technology_analysis
+  - trend_forecasting
+  - disruption_assessment
+  - innovation_tracking
+
+inputs:
+  - name: industry
+    type: str
+    description: Industry context for analysis
+    required: true
+  - name: technology_domains
+    type: List[str]
+    description: Technology domains to analyze (AI, blockchain, IoT, etc.)
+    required: false
+  - name: time_horizon
+    type: str
+    description: Forecasting time horizon
+    required: false
+  - name: focus_areas
+    type: List[str]
+    description: Specific focus areas
+    required: false
+
+outputs:
+  - name: emerging_technologies
+    type: List[Dict]
+    description: Identified emerging technologies
+  - name: impact_assessment
+    type: Dict
+    description: Assessment of potential business impact
+  - name: adoption_timeline
+    type: Dict
+    description: Expected adoption timeline
+  - name: strategic_recommendations
+    type: List[str]
+    description: Recommendations for technology strategy
+  - name: disruption_risks
+    type: List[Dict]
+    description: Identified disruption risks
+
+cost_per_request: 7.00
+avg_latency_ms: 1000.0
+quality_baseline: 0.87
+
+metadata:
+  priority: high
+  complexity: medium
+  refresh_frequency: quarterly

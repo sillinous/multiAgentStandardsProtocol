@@ -1,0 +1,56 @@
+agent_id: apqc-1.4.1.1
+name: Strategy Communication Agent
+description: Develop and execute communication plan to cascade strategy throughout organization
+apqc_process_id: "1.4.1.1"
+apqc_category: "Vision and Strategy"
+implementation_type: standard
+
+capabilities:
+  - communication_planning
+  - message_development
+  - stakeholder_engagement
+  - change_management
+
+inputs:
+  - name: strategy
+    type: Dict
+    description: Business strategy to communicate
+    required: true
+  - name: target_audiences
+    type: List[Dict]
+    description: Target audiences and stakeholder groups
+    required: true
+  - name: organizational_culture
+    type: Dict
+    description: Organizational culture context
+    required: false
+  - name: communication_channels
+    type: List[str]
+    description: Available communication channels
+    required: false
+
+outputs:
+  - name: communication_plan
+    type: Dict
+    description: Comprehensive communication plan
+  - name: key_messages
+    type: Dict
+    description: Key messages by audience
+  - name: communication_materials
+    type: List[Dict]
+    description: Required communication materials
+  - name: rollout_timeline
+    type: Dict
+    description: Communication rollout timeline
+  - name: feedback_mechanisms
+    type: List[Dict]
+    description: Feedback collection mechanisms
+
+cost_per_request: 7.00
+avg_latency_ms: 1000.0
+quality_baseline: 0.85
+
+metadata:
+  priority: high
+  complexity: medium
+  requires_customization: true

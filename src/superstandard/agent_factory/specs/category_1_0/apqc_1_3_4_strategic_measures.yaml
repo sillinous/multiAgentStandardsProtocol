@@ -1,0 +1,53 @@
+agent_id: apqc-1.3.4.1
+name: Strategic Measures Agent
+description: Establish high-level strategic measures and KPIs to track strategy execution and success
+apqc_process_id: "1.3.4.1"
+apqc_category: "Vision and Strategy"
+implementation_type: standard
+
+capabilities:
+  - kpi_design
+  - measurement_framework
+  - balanced_scorecard
+  - performance_tracking
+
+inputs:
+  - name: strategic_objectives
+    type: List[Dict]
+    description: Strategic objectives to measure
+    required: true
+  - name: selected_initiatives
+    type: List[Dict]
+    description: Selected strategic initiatives
+    required: true
+  - name: measurement_preferences
+    type: Dict
+    description: Preferred measurement approaches
+    required: false
+  - name: reporting_frequency
+    type: str
+    description: Desired reporting frequency
+    required: false
+
+outputs:
+  - name: kpis
+    type: List[Dict]
+    description: Strategic KPIs with targets and thresholds
+  - name: measurement_framework
+    type: Dict
+    description: Complete measurement framework
+  - name: balanced_scorecard
+    type: Dict
+    description: Balanced scorecard structure
+  - name: reporting_plan
+    type: Dict
+    description: Reporting and monitoring plan
+
+cost_per_request: 8.50
+avg_latency_ms: 1100.0
+quality_baseline: 0.87
+
+metadata:
+  priority: high
+  complexity: medium
+  refresh_frequency: quarterly

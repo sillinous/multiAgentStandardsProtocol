@@ -1,0 +1,53 @@
+agent_id: apqc-1.2.4.1
+name: Functional Strategy Alignment Agent
+description: Coordinate and align functional and process strategies with overall business strategy
+apqc_process_id: "1.2.4.1"
+apqc_category: "Vision and Strategy"
+implementation_type: standard
+
+capabilities:
+  - strategy_alignment
+  - cross_functional_coordination
+  - cascading_objectives
+  - integration_planning
+
+inputs:
+  - name: business_strategy
+    type: Dict
+    description: Overall business strategy
+    required: true
+  - name: functional_areas
+    type: List[str]
+    description: Functional areas to align (finance, operations, HR, etc.)
+    required: true
+  - name: current_functional_strategies
+    type: Dict
+    description: Current functional strategies
+    required: false
+  - name: organizational_structure
+    type: Dict
+    description: Organizational structure information
+    required: true
+
+outputs:
+  - name: aligned_strategies
+    type: Dict
+    description: Aligned functional strategies by area
+  - name: alignment_gaps
+    type: List[Dict]
+    description: Identified alignment gaps
+  - name: coordination_mechanisms
+    type: List[Dict]
+    description: Recommended coordination mechanisms
+  - name: implementation_plan
+    type: Dict
+    description: Plan for implementing aligned strategies
+
+cost_per_request: 11.50
+avg_latency_ms: 1450.0
+quality_baseline: 0.91
+
+metadata:
+  priority: high
+  complexity: very_high
+  requires_coordination: true

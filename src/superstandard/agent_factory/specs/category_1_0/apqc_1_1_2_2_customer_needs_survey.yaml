@@ -1,0 +1,59 @@
+agent_id: apqc-1.1.2.2
+name: Customer Needs Survey Agent
+description: Survey and analyze customer needs, wants, and pain points to inform strategy
+apqc_process_id: "1.1.2.2"
+apqc_category: "Vision and Strategy"
+implementation_type: standard
+
+capabilities:
+  - customer_research
+  - needs_analysis
+  - survey_design
+  - insight_generation
+
+inputs:
+  - name: target_segments
+    type: List[str]
+    description: Target customer segments
+    required: true
+  - name: research_questions
+    type: List[str]
+    description: Key research questions
+    required: true
+  - name: survey_method
+    type: str
+    description: Survey methodology (online, phone, in-person, etc.)
+    required: false
+  - name: sample_size
+    type: int
+    description: Target sample size
+    required: false
+
+outputs:
+  - name: customer_needs
+    type: List[Dict]
+    description: Identified customer needs and wants
+  - name: pain_points
+    type: List[Dict]
+    description: Customer pain points and challenges
+  - name: preferences
+    type: Dict
+    description: Customer preferences and behaviors
+  - name: insights
+    type: List[str]
+    description: Key strategic insights
+  - name: opportunities
+    type: List[Dict]
+    description: Identified market opportunities
+
+cost_per_request: 6.50
+avg_latency_ms: 900.0
+quality_baseline: 0.86
+
+metadata:
+  priority: high
+  complexity: medium
+  data_sources:
+    - surveys
+    - interviews
+    - focus_groups

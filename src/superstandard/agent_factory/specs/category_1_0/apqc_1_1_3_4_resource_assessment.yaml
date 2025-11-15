@@ -1,0 +1,56 @@
+agent_id: apqc-1.1.3.4
+name: Resource Assessment Agent
+description: Assess organizational resources including financial, human, physical, and intangible assets
+apqc_process_id: "1.1.3.4"
+apqc_category: "Vision and Strategy"
+implementation_type: standard
+
+capabilities:
+  - resource_inventory
+  - asset_valuation
+  - capacity_analysis
+  - utilization_assessment
+
+inputs:
+  - name: financial_data
+    type: Dict
+    description: Financial resources and data
+    required: true
+  - name: human_resources
+    type: Dict
+    description: Human capital information
+    required: true
+  - name: physical_assets
+    type: Dict
+    description: Physical assets inventory
+    required: false
+  - name: intangible_assets
+    type: List[Dict]
+    description: Intangible assets (IP, brand, culture)
+    required: false
+
+outputs:
+  - name: resource_inventory
+    type: Dict
+    description: Comprehensive resource inventory
+  - name: capacity_assessment
+    type: Dict
+    description: Organizational capacity assessment
+  - name: utilization_analysis
+    type: Dict
+    description: Resource utilization analysis
+  - name: resource_constraints
+    type: List[Dict]
+    description: Identified resource constraints
+  - name: investment_recommendations
+    type: List[Dict]
+    description: Recommended resource investments
+
+cost_per_request: 7.50
+avg_latency_ms: 1050.0
+quality_baseline: 0.86
+
+metadata:
+  priority: medium
+  complexity: medium
+  data_intensive: true

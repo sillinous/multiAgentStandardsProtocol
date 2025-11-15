@@ -1,0 +1,56 @@
+agent_id: apqc-1.1.3.3
+name: Core Competencies Agent
+description: Identify and analyze organizational core competencies and distinctive capabilities
+apqc_process_id: "1.1.3.3"
+apqc_category: "Vision and Strategy"
+implementation_type: standard
+
+capabilities:
+  - competency_mapping
+  - capability_assessment
+  - competitive_advantage
+  - resource_based_view
+
+inputs:
+  - name: organizational_capabilities
+    type: List[Dict]
+    description: Current organizational capabilities
+    required: true
+  - name: performance_data
+    type: Dict
+    description: Performance metrics and results
+    required: true
+  - name: competitor_benchmarks
+    type: Dict
+    description: Competitor capability benchmarks
+    required: false
+  - name: strategic_goals
+    type: List[str]
+    description: Strategic goals for alignment
+    required: false
+
+outputs:
+  - name: core_competencies
+    type: List[Dict]
+    description: Identified core competencies
+  - name: distinctive_capabilities
+    type: List[Dict]
+    description: Distinctive organizational capabilities
+  - name: competency_gaps
+    type: List[Dict]
+    description: Identified capability gaps
+  - name: competitive_advantages
+    type: List[str]
+    description: Sources of competitive advantage
+  - name: development_priorities
+    type: List[Dict]
+    description: Priorities for capability development
+
+cost_per_request: 8.00
+avg_latency_ms: 1100.0
+quality_baseline: 0.88
+
+metadata:
+  priority: high
+  complexity: high
+  framework: resource_based_view

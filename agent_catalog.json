@@ -1,0 +1,826 @@
+{
+  "agents": [
+    {
+      "agent_id": "apqc-1.1.2.1",
+      "name": "Market Trends Analysis Agent",
+      "apqc_process": "1.1.2.1",
+      "apqc_category": "Vision and Strategy",
+      "capabilities": [
+        "trend_analysis",
+        "market_research",
+        "demand_forecasting",
+        "customer_insights"
+      ],
+      "cost_per_request": 7.5,
+      "avg_latency_ms": 1000.0,
+      "quality_baseline": 0.88,
+      "description": "",
+      "file_path": "/home/user/multiAgentStandardsProtocol/agents/generated/apqc-1.1.2.1_market_trends_analysis_agent.py",
+      "class_name": "Any",
+      "metadata": {
+        "agent_id": "apqc-1.1.2.1",
+        "name": "Market Trends Analysis Agent",
+        "apqc_process": "1.1.2.1",
+        "apqc_category": "Vision and Strategy",
+        "capabilities": [
+          "trend_analysis",
+          "market_research",
+          "demand_forecasting",
+          "customer_insights"
+        ],
+        "cost_per_request": 7.5,
+        "avg_latency_ms": 1000.0,
+        "quality_baseline": 0.88
+      }
+    },
+    {
+      "agent_id": "apqc-1.1.1.2",
+      "name": "Industry Analysis Agent",
+      "apqc_process": "1.1.1.2",
+      "apqc_category": "Vision and Strategy",
+      "capabilities": [
+        "industry_analysis",
+        "porter_five_forces",
+        "value_chain_analysis",
+        "industry_lifecycle"
+      ],
+      "cost_per_request": 8.5,
+      "avg_latency_ms": 1150.0,
+      "quality_baseline": 0.89,
+      "description": "",
+      "file_path": "/home/user/multiAgentStandardsProtocol/agents/generated/apqc-1.1.1.2_industry_analysis_agent.py",
+      "class_name": "Any",
+      "metadata": {
+        "agent_id": "apqc-1.1.1.2",
+        "name": "Industry Analysis Agent",
+        "apqc_process": "1.1.1.2",
+        "apqc_category": "Vision and Strategy",
+        "capabilities": [
+          "industry_analysis",
+          "porter_five_forces",
+          "value_chain_analysis",
+          "industry_lifecycle"
+        ],
+        "cost_per_request": 8.5,
+        "avg_latency_ms": 1150.0,
+        "quality_baseline": 0.89
+      }
+    },
+    {
+      "agent_id": "apqc-1.1.4.1",
+      "name": "Strategic Vision Agent",
+      "apqc_process": "1.1.4.1",
+      "apqc_category": "Vision and Strategy",
+      "capabilities": [
+        "vision_creation",
+        "future_state_definition",
+        "aspirational_goal_setting",
+        "stakeholder_alignment"
+      ],
+      "cost_per_request": 11.0,
+      "avg_latency_ms": 1400.0,
+      "quality_baseline": 0.91,
+      "description": "",
+      "file_path": "/home/user/multiAgentStandardsProtocol/agents/generated/apqc-1.1.4.1_strategic_vision_agent.py",
+      "class_name": "Any",
+      "metadata": {
+        "agent_id": "apqc-1.1.4.1",
+        "name": "Strategic Vision Agent",
+        "apqc_process": "1.1.4.1",
+        "apqc_category": "Vision and Strategy",
+        "capabilities": [
+          "vision_creation",
+          "future_state_definition",
+          "aspirational_goal_setting",
+          "stakeholder_alignment"
+        ],
+        "cost_per_request": 11.0,
+        "avg_latency_ms": 1400.0,
+        "quality_baseline": 0.91
+      }
+    },
+    {
+      "agent_id": "apqc-1.2.3.1",
+      "name": "Business Strategy Selection Agent",
+      "apqc_process": "1.2.3.1",
+      "apqc_category": "Vision and Strategy",
+      "capabilities": [
+        "strategy_selection",
+        "decision_analysis",
+        "portfolio_optimization",
+        "strategic_alignment"
+      ],
+      "cost_per_request": 13.0,
+      "avg_latency_ms": 1600.0,
+      "quality_baseline": 0.93,
+      "description": "",
+      "file_path": "/home/user/multiAgentStandardsProtocol/agents/generated/apqc-1.2.3.1_business_strategy_selection_agent.py",
+      "class_name": "Any",
+      "metadata": {
+        "agent_id": "apqc-1.2.3.1",
+        "name": "Business Strategy Selection Agent",
+        "apqc_process": "1.2.3.1",
+        "apqc_category": "Vision and Strategy",
+        "capabilities": [
+          "strategy_selection",
+          "decision_analysis",
+          "portfolio_optimization",
+          "strategic_alignment"
+        ],
+        "cost_per_request": 13.0,
+        "avg_latency_ms": 1600.0,
+        "quality_baseline": 0.93
+      }
+    },
+    {
+      "agent_id": "apqc-1.2.5.1",
+      "name": "Strategic Risk Analysis Agent",
+      "apqc_process": "1.2.5.1",
+      "apqc_category": "Vision and Strategy",
+      "capabilities": [
+        "risk_identification",
+        "risk_assessment",
+        "scenario_analysis",
+        "mitigation_planning"
+      ],
+      "cost_per_request": 9.5,
+      "avg_latency_ms": 1250.0,
+      "quality_baseline": 0.89,
+      "description": "",
+      "file_path": "/home/user/multiAgentStandardsProtocol/agents/generated/apqc-1.2.5.1_strategic_risk_analysis_agent.py",
+      "class_name": "Any",
+      "metadata": {
+        "agent_id": "apqc-1.2.5.1",
+        "name": "Strategic Risk Analysis Agent",
+        "apqc_process": "1.2.5.1",
+        "apqc_category": "Vision and Strategy",
+        "capabilities": [
+          "risk_identification",
+          "risk_assessment",
+          "scenario_analysis",
+          "mitigation_planning"
+        ],
+        "cost_per_request": 9.5,
+        "avg_latency_ms": 1250.0,
+        "quality_baseline": 0.89
+      }
+    },
+    {
+      "agent_id": "apqc-1.1.3.3",
+      "name": "Core Competencies Agent",
+      "apqc_process": "1.1.3.3",
+      "apqc_category": "Vision and Strategy",
+      "capabilities": [
+        "competency_mapping",
+        "capability_assessment",
+        "competitive_advantage",
+        "resource_based_view"
+      ],
+      "cost_per_request": 8.0,
+      "avg_latency_ms": 1100.0,
+      "quality_baseline": 0.88,
+      "description": "",
+      "file_path": "/home/user/multiAgentStandardsProtocol/agents/generated/apqc-1.1.3.3_core_competencies_agent.py",
+      "class_name": "Any",
+      "metadata": {
+        "agent_id": "apqc-1.1.3.3",
+        "name": "Core Competencies Agent",
+        "apqc_process": "1.1.3.3",
+        "apqc_category": "Vision and Strategy",
+        "capabilities": [
+          "competency_mapping",
+          "capability_assessment",
+          "competitive_advantage",
+          "resource_based_view"
+        ],
+        "cost_per_request": 8.0,
+        "avg_latency_ms": 1100.0,
+        "quality_baseline": 0.88
+      }
+    },
+    {
+      "agent_id": "apqc-1.4.2.1",
+      "name": "Strategy Monitoring Agent",
+      "apqc_process": "1.4.2.1",
+      "apqc_category": "Vision and Strategy",
+      "capabilities": [
+        "performance_monitoring",
+        "progress_tracking",
+        "variance_analysis",
+        "dashboard_reporting"
+      ],
+      "cost_per_request": 5.5,
+      "avg_latency_ms": 800.0,
+      "quality_baseline": 0.84,
+      "description": "",
+      "file_path": "/home/user/multiAgentStandardsProtocol/agents/generated/apqc-1.4.2.1_strategy_monitoring_agent.py",
+      "class_name": "Any",
+      "metadata": {
+        "agent_id": "apqc-1.4.2.1",
+        "name": "Strategy Monitoring Agent",
+        "apqc_process": "1.4.2.1",
+        "apqc_category": "Vision and Strategy",
+        "capabilities": [
+          "performance_monitoring",
+          "progress_tracking",
+          "variance_analysis",
+          "dashboard_reporting"
+        ],
+        "cost_per_request": 5.5,
+        "avg_latency_ms": 800.0,
+        "quality_baseline": 0.84
+      }
+    },
+    {
+      "agent_id": "apqc-1.4.1.1",
+      "name": "Strategy Communication Agent",
+      "apqc_process": "1.4.1.1",
+      "apqc_category": "Vision and Strategy",
+      "capabilities": [
+        "communication_planning",
+        "message_development",
+        "stakeholder_engagement",
+        "change_management"
+      ],
+      "cost_per_request": 7.0,
+      "avg_latency_ms": 1000.0,
+      "quality_baseline": 0.85,
+      "description": "",
+      "file_path": "/home/user/multiAgentStandardsProtocol/agents/generated/apqc-1.4.1.1_strategy_communication_agent.py",
+      "class_name": "Any",
+      "metadata": {
+        "agent_id": "apqc-1.4.1.1",
+        "name": "Strategy Communication Agent",
+        "apqc_process": "1.4.1.1",
+        "apqc_category": "Vision and Strategy",
+        "capabilities": [
+          "communication_planning",
+          "message_development",
+          "stakeholder_engagement",
+          "change_management"
+        ],
+        "cost_per_request": 7.0,
+        "avg_latency_ms": 1000.0,
+        "quality_baseline": 0.85
+      }
+    },
+    {
+      "agent_id": "apqc-1.3.1.1",
+      "name": "Strategic Initiatives Development Agent",
+      "apqc_process": "1.3.1.1",
+      "apqc_category": "Vision and Strategy",
+      "capabilities": [
+        "initiative_design",
+        "project_scoping",
+        "resource_planning",
+        "timeline_development"
+      ],
+      "cost_per_request": 10.0,
+      "avg_latency_ms": 1300.0,
+      "quality_baseline": 0.89,
+      "description": "",
+      "file_path": "/home/user/multiAgentStandardsProtocol/agents/generated/apqc-1.3.1.1_strategic_initiatives_development_agent.py",
+      "class_name": "Any",
+      "metadata": {
+        "agent_id": "apqc-1.3.1.1",
+        "name": "Strategic Initiatives Development Agent",
+        "apqc_process": "1.3.1.1",
+        "apqc_category": "Vision and Strategy",
+        "capabilities": [
+          "initiative_design",
+          "project_scoping",
+          "resource_planning",
+          "timeline_development"
+        ],
+        "cost_per_request": 10.0,
+        "avg_latency_ms": 1300.0,
+        "quality_baseline": 0.89
+      }
+    },
+    {
+      "agent_id": "apqc-1.2.2.1",
+      "name": "Strategic Options Evaluation Agent",
+      "apqc_process": "1.2.2.1",
+      "apqc_category": "Vision and Strategy",
+      "capabilities": [
+        "options_analysis",
+        "scenario_planning",
+        "risk_assessment",
+        "feasibility_analysis"
+      ],
+      "cost_per_request": 10.5,
+      "avg_latency_ms": 1350.0,
+      "quality_baseline": 0.9,
+      "description": "",
+      "file_path": "/home/user/multiAgentStandardsProtocol/agents/generated/apqc-1.2.2.1_strategic_options_evaluation_agent.py",
+      "class_name": "Any",
+      "metadata": {
+        "agent_id": "apqc-1.2.2.1",
+        "name": "Strategic Options Evaluation Agent",
+        "apqc_process": "1.2.2.1",
+        "apqc_category": "Vision and Strategy",
+        "capabilities": [
+          "options_analysis",
+          "scenario_planning",
+          "risk_assessment",
+          "feasibility_analysis"
+        ],
+        "cost_per_request": 10.5,
+        "avg_latency_ms": 1350.0,
+        "quality_baseline": 0.9
+      }
+    },
+    {
+      "agent_id": "apqc-1.1.5.1",
+      "name": "Stakeholder Analysis Agent",
+      "apqc_process": "1.1.5.1",
+      "apqc_category": "Vision and Strategy",
+      "capabilities": [
+        "stakeholder_mapping",
+        "influence_analysis",
+        "expectation_assessment",
+        "engagement_planning"
+      ],
+      "cost_per_request": 6.5,
+      "avg_latency_ms": 950.0,
+      "quality_baseline": 0.86,
+      "description": "",
+      "file_path": "/home/user/multiAgentStandardsProtocol/agents/generated/apqc-1.1.5.1_stakeholder_analysis_agent.py",
+      "class_name": "Any",
+      "metadata": {
+        "agent_id": "apqc-1.1.5.1",
+        "name": "Stakeholder Analysis Agent",
+        "apqc_process": "1.1.5.1",
+        "apqc_category": "Vision and Strategy",
+        "capabilities": [
+          "stakeholder_mapping",
+          "influence_analysis",
+          "expectation_assessment",
+          "engagement_planning"
+        ],
+        "cost_per_request": 6.5,
+        "avg_latency_ms": 950.0,
+        "quality_baseline": 0.86
+      }
+    },
+    {
+      "agent_id": "apqc-1.1.1.3",
+      "name": "Technology Trends Analysis Agent",
+      "apqc_process": "1.1.1.3",
+      "apqc_category": "Vision and Strategy",
+      "capabilities": [
+        "technology_analysis",
+        "trend_forecasting",
+        "disruption_assessment",
+        "innovation_tracking"
+      ],
+      "cost_per_request": 7.0,
+      "avg_latency_ms": 1000.0,
+      "quality_baseline": 0.87,
+      "description": "",
+      "file_path": "/home/user/multiAgentStandardsProtocol/agents/generated/apqc-1.1.1.3_technology_trends_analysis_agent.py",
+      "class_name": "Any",
+      "metadata": {
+        "agent_id": "apqc-1.1.1.3",
+        "name": "Technology Trends Analysis Agent",
+        "apqc_process": "1.1.1.3",
+        "apqc_category": "Vision and Strategy",
+        "capabilities": [
+          "technology_analysis",
+          "trend_forecasting",
+          "disruption_assessment",
+          "innovation_tracking"
+        ],
+        "cost_per_request": 7.0,
+        "avg_latency_ms": 1000.0,
+        "quality_baseline": 0.87
+      }
+    },
+    {
+      "agent_id": "apqc-1.1.1.1",
+      "name": "Assess Competitors Agent",
+      "apqc_process": "1.1.1.1",
+      "apqc_category": "Vision and Strategy",
+      "capabilities": [
+        "competitive_analysis",
+        "competitor_identification",
+        "market_intelligence",
+        "swot_analysis"
+      ],
+      "cost_per_request": 8.0,
+      "avg_latency_ms": 1200.0,
+      "quality_baseline": 0.9,
+      "description": "",
+      "file_path": "/home/user/multiAgentStandardsProtocol/agents/generated/apqc-1.1.1.1_assess_competitors_agent.py",
+      "class_name": "Any",
+      "metadata": {
+        "agent_id": "apqc-1.1.1.1",
+        "name": "Assess Competitors Agent",
+        "apqc_process": "1.1.1.1",
+        "apqc_category": "Vision and Strategy",
+        "capabilities": [
+          "competitive_analysis",
+          "competitor_identification",
+          "market_intelligence",
+          "swot_analysis"
+        ],
+        "cost_per_request": 8.0,
+        "avg_latency_ms": 1200.0,
+        "quality_baseline": 0.9
+      }
+    },
+    {
+      "agent_id": "apqc-1.2.4.1",
+      "name": "Functional Strategy Alignment Agent",
+      "apqc_process": "1.2.4.1",
+      "apqc_category": "Vision and Strategy",
+      "capabilities": [
+        "strategy_alignment",
+        "cross_functional_coordination",
+        "cascading_objectives",
+        "integration_planning"
+      ],
+      "cost_per_request": 11.5,
+      "avg_latency_ms": 1450.0,
+      "quality_baseline": 0.91,
+      "description": "",
+      "file_path": "/home/user/multiAgentStandardsProtocol/agents/generated/apqc-1.2.4.1_functional_strategy_alignment_agent.py",
+      "class_name": "Any",
+      "metadata": {
+        "agent_id": "apqc-1.2.4.1",
+        "name": "Functional Strategy Alignment Agent",
+        "apqc_process": "1.2.4.1",
+        "apqc_category": "Vision and Strategy",
+        "capabilities": [
+          "strategy_alignment",
+          "cross_functional_coordination",
+          "cascading_objectives",
+          "integration_planning"
+        ],
+        "cost_per_request": 11.5,
+        "avg_latency_ms": 1450.0,
+        "quality_baseline": 0.91
+      }
+    },
+    {
+      "agent_id": "apqc-1.3.3.1",
+      "name": "Strategic Initiatives Selection Agent",
+      "apqc_process": "1.3.3.1",
+      "apqc_category": "Vision and Strategy",
+      "capabilities": [
+        "initiative_selection",
+        "portfolio_optimization",
+        "prioritization",
+        "resource_allocation"
+      ],
+      "cost_per_request": 12.5,
+      "avg_latency_ms": 1500.0,
+      "quality_baseline": 0.92,
+      "description": "",
+      "file_path": "/home/user/multiAgentStandardsProtocol/agents/generated/apqc-1.3.3.1_strategic_initiatives_selection_agent.py",
+      "class_name": "Any",
+      "metadata": {
+        "agent_id": "apqc-1.3.3.1",
+        "name": "Strategic Initiatives Selection Agent",
+        "apqc_process": "1.3.3.1",
+        "apqc_category": "Vision and Strategy",
+        "capabilities": [
+          "initiative_selection",
+          "portfolio_optimization",
+          "prioritization",
+          "resource_allocation"
+        ],
+        "cost_per_request": 12.5,
+        "avg_latency_ms": 1500.0,
+        "quality_baseline": 0.92
+      }
+    },
+    {
+      "agent_id": "apqc-1.1.2.2",
+      "name": "Customer Needs Survey Agent",
+      "apqc_process": "1.1.2.2",
+      "apqc_category": "Vision and Strategy",
+      "capabilities": [
+        "customer_research",
+        "needs_analysis",
+        "survey_design",
+        "insight_generation"
+      ],
+      "cost_per_request": 6.5,
+      "avg_latency_ms": 900.0,
+      "quality_baseline": 0.86,
+      "description": "",
+      "file_path": "/home/user/multiAgentStandardsProtocol/agents/generated/apqc-1.1.2.2_customer_needs_survey_agent.py",
+      "class_name": "Any",
+      "metadata": {
+        "agent_id": "apqc-1.1.2.2",
+        "name": "Customer Needs Survey Agent",
+        "apqc_process": "1.1.2.2",
+        "apqc_category": "Vision and Strategy",
+        "capabilities": [
+          "customer_research",
+          "needs_analysis",
+          "survey_design",
+          "insight_generation"
+        ],
+        "cost_per_request": 6.5,
+        "avg_latency_ms": 900.0,
+        "quality_baseline": 0.86
+      }
+    },
+    {
+      "agent_id": "apqc-1.3.2.1",
+      "name": "Strategic Initiatives Evaluation Agent",
+      "apqc_process": "1.3.2.1",
+      "apqc_category": "Vision and Strategy",
+      "capabilities": [
+        "initiative_evaluation",
+        "impact_assessment",
+        "feasibility_analysis",
+        "portfolio_analysis"
+      ],
+      "cost_per_request": 9.0,
+      "avg_latency_ms": 1200.0,
+      "quality_baseline": 0.88,
+      "description": "",
+      "file_path": "/home/user/multiAgentStandardsProtocol/agents/generated/apqc-1.3.2.1_strategic_initiatives_evaluation_agent.py",
+      "class_name": "Any",
+      "metadata": {
+        "agent_id": "apqc-1.3.2.1",
+        "name": "Strategic Initiatives Evaluation Agent",
+        "apqc_process": "1.3.2.1",
+        "apqc_category": "Vision and Strategy",
+        "capabilities": [
+          "initiative_evaluation",
+          "impact_assessment",
+          "feasibility_analysis",
+          "portfolio_analysis"
+        ],
+        "cost_per_request": 9.0,
+        "avg_latency_ms": 1200.0,
+        "quality_baseline": 0.88
+      }
+    },
+    {
+      "agent_id": "apqc-1.1.3.4",
+      "name": "Resource Assessment Agent",
+      "apqc_process": "1.1.3.4",
+      "apqc_category": "Vision and Strategy",
+      "capabilities": [
+        "resource_inventory",
+        "asset_valuation",
+        "capacity_analysis",
+        "utilization_assessment"
+      ],
+      "cost_per_request": 7.5,
+      "avg_latency_ms": 1050.0,
+      "quality_baseline": 0.86,
+      "description": "",
+      "file_path": "/home/user/multiAgentStandardsProtocol/agents/generated/apqc-1.1.3.4_resource_assessment_agent.py",
+      "class_name": "Any",
+      "metadata": {
+        "agent_id": "apqc-1.1.3.4",
+        "name": "Resource Assessment Agent",
+        "apqc_process": "1.1.3.4",
+        "apqc_category": "Vision and Strategy",
+        "capabilities": [
+          "resource_inventory",
+          "asset_valuation",
+          "capacity_analysis",
+          "utilization_assessment"
+        ],
+        "cost_per_request": 7.5,
+        "avg_latency_ms": 1050.0,
+        "quality_baseline": 0.86
+      }
+    },
+    {
+      "agent_id": "apqc-1.3.4.1",
+      "name": "Strategic Measures Agent",
+      "apqc_process": "1.3.4.1",
+      "apqc_category": "Vision and Strategy",
+      "capabilities": [
+        "kpi_design",
+        "measurement_framework",
+        "balanced_scorecard",
+        "performance_tracking"
+      ],
+      "cost_per_request": 8.5,
+      "avg_latency_ms": 1100.0,
+      "quality_baseline": 0.87,
+      "description": "",
+      "file_path": "/home/user/multiAgentStandardsProtocol/agents/generated/apqc-1.3.4.1_strategic_measures_agent.py",
+      "class_name": "Any",
+      "metadata": {
+        "agent_id": "apqc-1.3.4.1",
+        "name": "Strategic Measures Agent",
+        "apqc_process": "1.3.4.1",
+        "apqc_category": "Vision and Strategy",
+        "capabilities": [
+          "kpi_design",
+          "measurement_framework",
+          "balanced_scorecard",
+          "performance_tracking"
+        ],
+        "cost_per_request": 8.5,
+        "avg_latency_ms": 1100.0,
+        "quality_baseline": 0.87
+      }
+    },
+    {
+      "agent_id": "apqc-1.2.1.1",
+      "name": "Strategic Plan Development Agent",
+      "apqc_process": "1.2.1.1",
+      "apqc_category": "Vision and Strategy",
+      "capabilities": [
+        "strategic_planning",
+        "vision_development",
+        "objective_setting",
+        "initiative_planning"
+      ],
+      "cost_per_request": 12.0,
+      "avg_latency_ms": 1500.0,
+      "quality_baseline": 0.92,
+      "description": "",
+      "file_path": "/home/user/multiAgentStandardsProtocol/agents/generated/apqc-1.2.1.1_strategic_plan_development_agent.py",
+      "class_name": "Any",
+      "metadata": {
+        "agent_id": "apqc-1.2.1.1",
+        "name": "Strategic Plan Development Agent",
+        "apqc_process": "1.2.1.1",
+        "apqc_category": "Vision and Strategy",
+        "capabilities": [
+          "strategic_planning",
+          "vision_development",
+          "objective_setting",
+          "initiative_planning"
+        ],
+        "cost_per_request": 12.0,
+        "avg_latency_ms": 1500.0,
+        "quality_baseline": 0.92
+      }
+    },
+    {
+      "agent_id": "apqc-1.1.3.2",
+      "name": "SWOT Analysis Agent",
+      "apqc_process": "1.1.3.2",
+      "apqc_category": "Vision and Strategy",
+      "capabilities": [
+        "swot_analysis",
+        "strategic_assessment",
+        "opportunity_identification",
+        "threat_analysis"
+      ],
+      "cost_per_request": 6.0,
+      "avg_latency_ms": 850.0,
+      "quality_baseline": 0.85,
+      "description": "",
+      "file_path": "/home/user/multiAgentStandardsProtocol/agents/generated/apqc-1.1.3.2_swot_analysis_agent.py",
+      "class_name": "Any",
+      "metadata": {
+        "agent_id": "apqc-1.1.3.2",
+        "name": "SWOT Analysis Agent",
+        "apqc_process": "1.1.3.2",
+        "apqc_category": "Vision and Strategy",
+        "capabilities": [
+          "swot_analysis",
+          "strategic_assessment",
+          "opportunity_identification",
+          "threat_analysis"
+        ],
+        "cost_per_request": 6.0,
+        "avg_latency_ms": 850.0,
+        "quality_baseline": 0.85
+      }
+    },
+    {
+      "agent_id": "apqc-1.1.3.1",
+      "name": "Internal Analysis Agent",
+      "apqc_process": "1.1.3.1",
+      "apqc_category": "Vision and Strategy",
+      "capabilities": [
+        "internal_analysis",
+        "resource_assessment",
+        "capability_mapping",
+        "organizational_analysis"
+      ],
+      "cost_per_request": 9.5,
+      "avg_latency_ms": 1300.0,
+      "quality_baseline": 0.89,
+      "description": "",
+      "file_path": "/home/user/multiAgentStandardsProtocol/agents/generated/apqc-1.1.3.1_internal_analysis_agent.py",
+      "class_name": "Any",
+      "metadata": {
+        "agent_id": "apqc-1.1.3.1",
+        "name": "Internal Analysis Agent",
+        "apqc_process": "1.1.3.1",
+        "apqc_category": "Vision and Strategy",
+        "capabilities": [
+          "internal_analysis",
+          "resource_assessment",
+          "capability_mapping",
+          "organizational_analysis"
+        ],
+        "cost_per_request": 9.5,
+        "avg_latency_ms": 1300.0,
+        "quality_baseline": 0.89
+      }
+    }
+  ],
+  "capabilities": [
+    "aspirational_goal_setting",
+    "asset_valuation",
+    "balanced_scorecard",
+    "capability_assessment",
+    "capability_mapping",
+    "capacity_analysis",
+    "cascading_objectives",
+    "change_management",
+    "communication_planning",
+    "competency_mapping",
+    "competitive_advantage",
+    "competitive_analysis",
+    "competitor_identification",
+    "cross_functional_coordination",
+    "customer_insights",
+    "customer_research",
+    "dashboard_reporting",
+    "decision_analysis",
+    "demand_forecasting",
+    "disruption_assessment",
+    "engagement_planning",
+    "expectation_assessment",
+    "feasibility_analysis",
+    "future_state_definition",
+    "impact_assessment",
+    "industry_analysis",
+    "industry_lifecycle",
+    "influence_analysis",
+    "initiative_design",
+    "initiative_evaluation",
+    "initiative_planning",
+    "initiative_selection",
+    "innovation_tracking",
+    "insight_generation",
+    "integration_planning",
+    "internal_analysis",
+    "kpi_design",
+    "market_intelligence",
+    "market_research",
+    "measurement_framework",
+    "message_development",
+    "mitigation_planning",
+    "needs_analysis",
+    "objective_setting",
+    "opportunity_identification",
+    "options_analysis",
+    "organizational_analysis",
+    "performance_monitoring",
+    "performance_tracking",
+    "porter_five_forces",
+    "portfolio_analysis",
+    "portfolio_optimization",
+    "prioritization",
+    "progress_tracking",
+    "project_scoping",
+    "resource_allocation",
+    "resource_assessment",
+    "resource_based_view",
+    "resource_inventory",
+    "resource_planning",
+    "risk_assessment",
+    "risk_identification",
+    "scenario_analysis",
+    "scenario_planning",
+    "stakeholder_alignment",
+    "stakeholder_engagement",
+    "stakeholder_mapping",
+    "strategic_alignment",
+    "strategic_assessment",
+    "strategic_planning",
+    "strategy_alignment",
+    "strategy_selection",
+    "survey_design",
+    "swot_analysis",
+    "technology_analysis",
+    "threat_analysis",
+    "timeline_development",
+    "trend_analysis",
+    "trend_forecasting",
+    "utilization_assessment",
+    "value_chain_analysis",
+    "variance_analysis",
+    "vision_creation",
+    "vision_development"
+  ],
+  "categories": [
+    "Vision and Strategy"
+  ],
+  "stats": {
+    "total_agents": 22,
+    "total_capabilities": 84,
+    "total_categories": 1,
+    "avg_cost": 8.863636363636363,
+    "avg_quality": 0.8840909090909093
+  }
+}

@@ -1,0 +1,56 @@
+agent_id: apqc-1.1.5.1
+name: Stakeholder Analysis Agent
+description: Identify and analyze key stakeholders, their interests, influence, and expectations
+apqc_process_id: "1.1.5.1"
+apqc_category: "Vision and Strategy"
+implementation_type: standard
+
+capabilities:
+  - stakeholder_mapping
+  - influence_analysis
+  - expectation_assessment
+  - engagement_planning
+
+inputs:
+  - name: organizational_context
+    type: Dict
+    description: Organizational context and structure
+    required: true
+  - name: strategic_initiative
+    type: str
+    description: Strategic initiative or context for analysis
+    required: false
+  - name: known_stakeholders
+    type: List[Dict]
+    description: Known stakeholder information
+    required: false
+  - name: analysis_scope
+    type: str
+    description: Scope of stakeholder analysis
+    required: false
+
+outputs:
+  - name: stakeholder_map
+    type: Dict
+    description: Comprehensive stakeholder mapping
+  - name: influence_assessment
+    type: Dict
+    description: Stakeholder influence and power assessment
+  - name: interests_expectations
+    type: Dict
+    description: Stakeholder interests and expectations
+  - name: engagement_strategy
+    type: Dict
+    description: Stakeholder engagement strategy
+  - name: risk_opportunities
+    type: List[Dict]
+    description: Stakeholder-related risks and opportunities
+
+cost_per_request: 6.50
+avg_latency_ms: 950.0
+quality_baseline: 0.86
+
+metadata:
+  priority: high
+  complexity: medium
+  requires_validation: true

@@ -1,0 +1,59 @@
+agent_id: apqc-1.1.3.2
+name: SWOT Analysis Agent
+description: Conduct comprehensive SWOT (Strengths, Weaknesses, Opportunities, Threats) analysis
+apqc_process_id: "1.1.3.2"
+apqc_category: "Vision and Strategy"
+implementation_type: standard
+
+capabilities:
+  - swot_analysis
+  - strategic_assessment
+  - opportunity_identification
+  - threat_analysis
+
+inputs:
+  - name: internal_data
+    type: Dict
+    description: Internal organizational data
+    required: true
+  - name: external_data
+    type: Dict
+    description: External market and competitive data
+    required: true
+  - name: analysis_context
+    type: str
+    description: Context for SWOT (new market, product launch, etc.)
+    required: false
+  - name: stakeholder_input
+    type: List[Dict]
+    description: Stakeholder perspectives
+    required: false
+
+outputs:
+  - name: strengths
+    type: List[Dict]
+    description: Identified strengths with evidence
+  - name: weaknesses
+    type: List[Dict]
+    description: Identified weaknesses with evidence
+  - name: opportunities
+    type: List[Dict]
+    description: Identified opportunities with potential
+  - name: threats
+    type: List[Dict]
+    description: Identified threats with severity
+  - name: strategic_insights
+    type: List[str]
+    description: Strategic insights from SWOT
+  - name: action_recommendations
+    type: List[Dict]
+    description: Recommended actions based on SWOT
+
+cost_per_request: 6.00
+avg_latency_ms: 850.0
+quality_baseline: 0.85
+
+metadata:
+  priority: high
+  complexity: medium
+  framework: swot

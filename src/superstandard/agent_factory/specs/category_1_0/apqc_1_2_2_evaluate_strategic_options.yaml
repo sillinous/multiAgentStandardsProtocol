@@ -1,0 +1,53 @@
+agent_id: apqc-1.2.2.1
+name: Strategic Options Evaluation Agent
+description: Evaluate and analyze multiple strategic options and alternatives for achieving business objectives
+apqc_process_id: "1.2.2.1"
+apqc_category: "Vision and Strategy"
+implementation_type: standard
+
+capabilities:
+  - options_analysis
+  - scenario_planning
+  - risk_assessment
+  - feasibility_analysis
+
+inputs:
+  - name: strategic_options
+    type: List[Dict]
+    description: List of strategic options to evaluate
+    required: true
+  - name: evaluation_criteria
+    type: List[str]
+    description: Criteria for evaluation (ROI, risk, feasibility, etc.)
+    required: true
+  - name: constraints
+    type: Dict
+    description: Resource and time constraints
+    required: false
+  - name: market_conditions
+    type: Dict
+    description: Current market conditions
+    required: true
+
+outputs:
+  - name: evaluated_options
+    type: List[Dict]
+    description: Options with evaluation scores
+  - name: risk_analysis
+    type: Dict
+    description: Risk assessment for each option
+  - name: recommendations
+    type: List[Dict]
+    description: Ranked recommendations
+  - name: implementation_complexity
+    type: Dict
+    description: Complexity assessment for each option
+
+cost_per_request: 10.50
+avg_latency_ms: 1350.0
+quality_baseline: 0.90
+
+metadata:
+  priority: high
+  complexity: very_high
+  requires_human_review: true

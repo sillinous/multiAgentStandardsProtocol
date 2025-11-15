@@ -1,0 +1,53 @@
+agent_id: apqc-1.3.3.1
+name: Strategic Initiatives Selection Agent
+description: Select and prioritize strategic initiatives for execution based on evaluation results
+apqc_process_id: "1.3.3.1"
+apqc_category: "Vision and Strategy"
+implementation_type: standard
+
+capabilities:
+  - initiative_selection
+  - portfolio_optimization
+  - prioritization
+  - resource_allocation
+
+inputs:
+  - name: evaluated_initiatives
+    type: List[Dict]
+    description: Evaluated initiatives with scores
+    required: true
+  - name: total_budget
+    type: float
+    description: Total available budget
+    required: true
+  - name: capacity_constraints
+    type: Dict
+    description: Organizational capacity constraints
+    required: true
+  - name: strategic_priorities
+    type: List[str]
+    description: Strategic priorities for selection
+    required: true
+
+outputs:
+  - name: selected_initiatives
+    type: List[Dict]
+    description: Selected initiatives with justification
+  - name: initiative_portfolio
+    type: Dict
+    description: Balanced portfolio of initiatives
+  - name: resource_allocation
+    type: Dict
+    description: Resource allocation across initiatives
+  - name: implementation_sequence
+    type: List[Dict]
+    description: Recommended implementation sequence
+
+cost_per_request: 12.50
+avg_latency_ms: 1500.0
+quality_baseline: 0.92
+
+metadata:
+  priority: critical
+  complexity: very_high
+  requires_approval: true

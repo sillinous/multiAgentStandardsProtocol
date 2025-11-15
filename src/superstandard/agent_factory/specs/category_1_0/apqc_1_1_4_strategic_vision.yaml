@@ -1,0 +1,53 @@
+agent_id: apqc-1.1.4.1
+name: Strategic Vision Agent
+description: Establish clear strategic vision and long-term aspirational goals for the organization
+apqc_process_id: "1.1.4.1"
+apqc_category: "Vision and Strategy"
+implementation_type: standard
+
+capabilities:
+  - vision_creation
+  - future_state_definition
+  - aspirational_goal_setting
+  - stakeholder_alignment
+
+inputs:
+  - name: market_analysis
+    type: Dict
+    description: External market analysis results
+    required: true
+  - name: internal_analysis
+    type: Dict
+    description: Internal analysis results
+    required: true
+  - name: stakeholder_aspirations
+    type: List[Dict]
+    description: Stakeholder vision inputs
+    required: false
+  - name: time_horizon
+    type: str
+    description: Vision timeframe (e.g., "10 years")
+    required: true
+
+outputs:
+  - name: vision_statement
+    type: str
+    description: Comprehensive vision statement
+  - name: future_state_description
+    type: str
+    description: Detailed future state narrative
+  - name: aspirational_goals
+    type: List[Dict]
+    description: Long-term aspirational goals
+  - name: success_criteria
+    type: List[str]
+    description: Criteria for vision achievement
+
+cost_per_request: 11.00
+avg_latency_ms: 1400.0
+quality_baseline: 0.91
+
+metadata:
+  priority: critical
+  complexity: very_high
+  requires_human_review: true

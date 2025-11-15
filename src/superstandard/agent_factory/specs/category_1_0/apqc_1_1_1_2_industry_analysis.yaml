@@ -1,0 +1,59 @@
+agent_id: apqc-1.1.1.2
+name: Industry Analysis Agent
+description: Analyze industry structure, dynamics, competitive forces, and attractiveness
+apqc_process_id: "1.1.1.2"
+apqc_category: "Vision and Strategy"
+implementation_type: standard
+
+capabilities:
+  - industry_analysis
+  - porter_five_forces
+  - value_chain_analysis
+  - industry_lifecycle
+
+inputs:
+  - name: industry
+    type: str
+    description: Industry to analyze
+    required: true
+  - name: geographic_scope
+    type: str
+    description: Geographic scope of analysis
+    required: true
+  - name: analysis_frameworks
+    type: List[str]
+    description: Frameworks to apply (Porter's 5 Forces, etc.)
+    required: false
+  - name: time_period
+    type: str
+    description: Time period for analysis
+    required: false
+
+outputs:
+  - name: industry_structure
+    type: Dict
+    description: Industry structure analysis
+  - name: competitive_forces
+    type: Dict
+    description: Five forces analysis results
+  - name: industry_trends
+    type: List[Dict]
+    description: Key industry trends
+  - name: attractiveness_score
+    type: float
+    description: Industry attractiveness score
+  - name: strategic_implications
+    type: List[str]
+    description: Strategic implications for business
+
+cost_per_request: 8.50
+avg_latency_ms: 1150.0
+quality_baseline: 0.89
+
+metadata:
+  priority: high
+  complexity: high
+  frameworks:
+    - porters_five_forces
+    - value_chain
+    - industry_lifecycle
