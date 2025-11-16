@@ -20,6 +20,10 @@ Cargo.lock
 # Testing
 .tarpaulin-report.html
 coverage/
+.coverage
+.coverage.*
+htmlcov/
+.pytest_cache/
 
 # Generated
 /docs/
