@@ -1,0 +1,454 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://superstandard.org/schemas/bap/v1.0.json",
+  "title": "Blockchain Agent Protocol (BAP) v1.0",
+  "description": "WORLD-FIRST: Blockchain economics for autonomous agents. Enables decentralized agent economies with tokens, NFTs, smart contracts, and DAO governance.",
+  "version": "1.0.0",
+  "type": "object",
+  "required": ["protocol", "version"],
+  "properties": {
+    "protocol": {
+      "type": "string",
+      "const": "BAP"
+    },
+    "version": {
+      "type": "string",
+      "pattern": "^\\d+\\.\\d+\\.\\d+$",
+      "default": "1.0.0"
+    },
+    "operation_type": {
+      "type": "string",
+      "enum": [
+        "wallet_create",
+        "transaction",
+        "smart_contract",
+        "nft_mint",
+        "nft_transfer",
+        "stake",
+        "unstake",
+        "governance_vote",
+        "balance_query"
+      ]
+    },
+    "wallet": {
+      "$ref": "#/$defs/AgentWallet"
+    },
+    "transaction": {
+      "$ref": "#/$defs/Transaction"
+    },
+    "smart_contract": {
+      "$ref": "#/$defs/SmartContract"
+    },
+    "capability_nft": {
+      "$ref": "#/$defs/CapabilityNFT"
+    },
+    "governance_vote": {
+      "type": "object",
+      "description": "DAO governance vote",
+      "required": ["proposal_id", "voter_agent_id", "vote"],
+      "properties": {
+        "proposal_id": {"type": "string"},
+        "voter_agent_id": {"type": "string"},
+        "vote": {
+          "type": "string",
+          "enum": ["yes", "no", "abstain"]
+        },
+        "voting_power": {
+          "type": "number",
+          "description": "Voting weight based on governance tokens"
+        },
+        "rationale": {"type": "string"}
+      }
+    }
+  },
+  "$defs": {
+    "AgentWallet": {
+      "type": "object",
+      "description": "Blockchain wallet for autonomous agent",
+      "required": ["wallet_id", "agent_id", "public_key"],
+      "properties": {
+        "wallet_id": {"type": "string", "format": "uuid"},
+        "agent_id": {"type": "string"},
+        "public_key": {
+          "type": "string",
+          "description": "Public key for wallet"
+        },
+        "private_key_hash": {
+          "type": "string",
+          "description": "Hash of private key (never store actual key)"
+        },
+        "token_balances": {
+          "type": "object",
+          "description": "Token balances by type",
+          "properties": {
+            "reputation": {"type": "number"},
+            "capability": {"type": "number"},
+            "performance": {"type": "number"},
+            "collaboration": {"type": "number"},
+            "innovation": {"type": "number"},
+            "knowledge": {"type": "number"},
+            "compute": {"type": "number"},
+            "governance": {"type": "number"},
+            "utility": {"type": "number"}
+          }
+        },
+        "staked_tokens": {
+          "type": "object",
+          "description": "Tokens staked for collaborations/bonds",
+          "additionalProperties": {"type": "number"}
+        },
+        "nft_holdings": {
+          "type": "array",
+          "description": "Capability NFT IDs owned",
+          "items": {"type": "string"}
+        },
+        "transaction_history": {
+          "type": "array",
+          "description": "Transaction IDs",
+          "items": {"type": "string"}
+        },
+        "security_level": {
+          "type": "string",
+          "enum": ["public", "consortium", "private", "quantum_secure", "zero_knowledge"],
+          "default": "consortium"
+        },
+        "multi_sig_threshold": {
+          "type": "integer",
+          "minimum": 1,
+          "description": "Signatures required for transactions"
+        },
+        "authorized_signers": {
+          "type": "array",
+          "description": "Agent IDs authorized to sign",
+          "items": {"type": "string"}
+        },
+        "created_at": {"type": "string", "format": "date-time"},
+        "last_active": {"type": "string", "format": "date-time"}
+      }
+    },
+    "Transaction": {
+      "type": "object",
+      "description": "Blockchain transaction between agents",
+      "required": ["transaction_id", "transaction_type", "from_agent", "to_agent", "token_type", "amount"],
+      "properties": {
+        "transaction_id": {"type": "string", "format": "uuid"},
+        "transaction_type": {
+          "type": "string",
+          "enum": [
+            "capability_mint",
+            "capability_transfer",
+            "reputation_stake",
+            "performance_reward",
+            "collaboration_bond",
+            "knowledge_sale",
+            "compute_rental",
+            "governance_vote",
+            "economic_evolution",
+            "cross_ecosystem"
+          ]
+        },
+        "from_agent": {"type": "string"},
+        "to_agent": {"type": "string"},
+        "token_type": {
+          "type": "string",
+          "enum": ["reputation", "capability", "performance", "collaboration", "innovation", "knowledge", "compute", "governance", "utility"]
+        },
+        "amount": {
+          "type": "number",
+          "minimum": 0
+        },
+        "transaction_fee": {
+          "type": "number",
+          "minimum": 0
+        },
+        "transaction_data": {
+          "type": "object",
+          "additionalProperties": true
+        },
+        "smart_contract_id": {"type": "string"},
+        "nft_id": {"type": "string"},
+        "block_number": {"type": "integer"},
+        "block_hash": {"type": "string"},
+        "confirmation_count": {"type": "integer"},
+        "gas_price": {"type": "number"},
+        "gas_limit": {"type": "integer"},
+        "status": {
+          "type": "string",
+          "enum": ["pending", "confirmed", "failed", "reverted"]
+        },
+        "signature": {
+          "type": "string",
+          "description": "Cryptographic signature"
+        },
+        "timestamp": {"type": "string", "format": "date-time"}
+      }
+    },
+    "SmartContract": {
+      "type": "object",
+      "description": "Smart contract for autonomous agent operations",
+      "required": ["contract_id", "contract_type", "participating_agents"],
+      "properties": {
+        "contract_id": {"type": "string", "format": "uuid"},
+        "contract_type": {
+          "type": "string",
+          "description": "Type of contract (e.g., collaboration, marketplace, DAO)"
+        },
+        "contract_name": {"type": "string"},
+        "participating_agents": {
+          "type": "array",
+          "minItems": 1,
+          "items": {"type": "string"}
+        },
+        "contract_creator": {"type": "string"},
+        "execution_conditions": {
+          "type": "array",
+          "description": "Conditions that must be met to execute",
+          "items": {"type": "string"}
+        },
+        "success_criteria": {
+          "type": "array",
+          "description": "Criteria defining successful completion",
+          "items": {"type": "string"}
+        },
+        "failure_conditions": {
+          "type": "array",
+          "items": {"type": "string"}
+        },
+        "token_allocations": {
+          "type": "object",
+          "description": "How tokens are allocated to agents",
+          "additionalProperties": {"type": "number"}
+        },
+        "payment_schedule": {
+          "type": "array",
+          "description": "When and how much to pay",
+          "items": {
+            "type": "object",
+            "properties": {
+              "milestone": {"type": "string"},
+              "amount": {"type": "number"},
+              "recipient": {"type": "string"},
+              "due_date": {"type": "string", "format": "date-time"}
+            }
+          }
+        },
+        "penalty_structure": {
+          "type": "object",
+          "description": "Penalties for contract violations",
+          "additionalProperties": {"type": "number"}
+        },
+        "contract_code": {
+          "type": "string",
+          "description": "Executable smart contract logic"
+        },
+        "oracle_dependencies": {
+          "type": "array",
+          "description": "External oracles needed for execution",
+          "items": {"type": "string"}
+        },
+        "contract_state": {
+          "type": "string",
+          "enum": ["created", "active", "executing", "completed", "failed", "disputed"],
+          "default": "created"
+        },
+        "execution_history": {
+          "type": "array",
+          "description": "Log of contract executions",
+          "items": {
+            "type": "object",
+            "properties": {
+              "event": {"type": "string"},
+              "timestamp": {"type": "string", "format": "date-time"},
+              "data": {"type": "object"}
+            }
+          }
+        },
+        "dispute_resolution": {
+          "type": "string",
+          "enum": ["automated_arbitration", "human_arbitration", "DAO_vote", "oracle_based"],
+          "default": "automated_arbitration"
+        },
+        "created_at": {"type": "string", "format": "date-time"},
+        "expiration_date": {"type": "string", "format": "date-time"}
+      }
+    },
+    "CapabilityNFT": {
+      "type": "object",
+      "description": "Non-Fungible Token representing agent capability certification",
+      "required": ["nft_id", "capability_name", "proficiency_level", "certification_authority"],
+      "properties": {
+        "nft_id": {"type": "string", "format": "uuid"},
+        "capability_name": {
+          "type": "string",
+          "description": "Name of the certified capability"
+        },
+        "capability_category": {
+          "type": "string",
+          "description": "APQC category or custom category"
+        },
+        "proficiency_level": {
+          "type": "number",
+          "minimum": 0,
+          "maximum": 1,
+          "description": "Skill level (0.0 = beginner, 1.0 = expert)"
+        },
+        "certification_authority": {
+          "type": "string",
+          "description": "Entity that certified this capability"
+        },
+        "description": {"type": "string"},
+        "prerequisites": {
+          "type": "array",
+          "description": "Required capabilities to mint this NFT",
+          "items": {"type": "string"}
+        },
+        "enables_capabilities": {
+          "type": "array",
+          "description": "Capabilities unlocked by having this NFT",
+          "items": {"type": "string"}
+        },
+        "performance_proof": {
+          "type": "object",
+          "description": "Evidence of capability (test results, task completions)",
+          "additionalProperties": true
+        },
+        "peer_validations": {
+          "type": "array",
+          "description": "Agent IDs that validated this capability",
+          "items": {"type": "string"}
+        },
+        "validation_score": {
+          "type": "number",
+          "minimum": 0,
+          "maximum": 1
+        },
+        "mint_cost": {
+          "type": "number",
+          "description": "Cost to mint this NFT"
+        },
+        "transfer_fee": {
+          "type": "number",
+          "description": "Fee to transfer NFT"
+        },
+        "stake_requirement": {
+          "type": "number",
+          "description": "Tokens that must be staked to hold this NFT"
+        },
+        "evolution_history": {
+          "type": "array",
+          "description": "History of capability upgrades",
+          "items": {
+            "type": "object",
+            "properties": {
+              "from_level": {"type": "number"},
+              "to_level": {"type": "number"},
+              "upgraded_at": {"type": "string", "format": "date-time"}
+            }
+          }
+        },
+        "upgrade_path": {
+          "type": "string",
+          "description": "NFT ID this can upgrade to"
+        },
+        "deprecation_date": {
+          "type": "string",
+          "format": "date-time",
+          "description": "When this capability becomes obsolete"
+        },
+        "minted_at": {"type": "string", "format": "date-time"},
+        "current_owner": {"type": "string"},
+        "previous_owners": {
+          "type": "array",
+          "items": {"type": "string"}
+        }
+      }
+    }
+  },
+  "examples": [
+    {
+      "protocol": "BAP",
+      "version": "1.0.0",
+      "operation_type": "wallet_create",
+      "wallet": {
+        "wallet_id": "550e8400-e29b-41d4-a716-446655440000",
+        "agent_id": "apqc_1_0_strategic_001",
+        "public_key": "0x1234567890abcdef",
+        "token_balances": {
+          "reputation": 1000,
+          "governance": 50,
+          "utility": 500
+        },
+        "nft_holdings": ["nft_strategic_planning_expert"],
+        "security_level": "consortium",
+        "created_at": "2025-11-16T14:00:00Z"
+      }
+    },
+    {
+      "protocol": "BAP",
+      "version": "1.0.0",
+      "operation_type": "nft_mint",
+      "capability_nft": {
+        "nft_id": "nft_strategic_planning_expert",
+        "capability_name": "Strategic Planning Expert",
+        "capability_category": "apqc:1.0",
+        "proficiency_level": 0.95,
+        "certification_authority": "SuperStandard Consortium",
+        "description": "Expert-level strategic planning and business strategy development",
+        "prerequisites": ["strategic_planning_intermediate"],
+        "performance_proof": {
+          "tasks_completed": 500,
+          "success_rate": 0.96,
+          "peer_rating": 4.8
+        },
+        "peer_validations": ["apqc_1_0_strategic_002", "apqc_1_0_strategic_003"],
+        "validation_score": 0.92,
+        "mint_cost": 100,
+        "stake_requirement": 50,
+        "minted_at": "2025-11-16T14:00:00Z",
+        "current_owner": "apqc_1_0_strategic_001"
+      }
+    },
+    {
+      "protocol": "BAP",
+      "version": "1.0.0",
+      "operation_type": "smart_contract",
+      "smart_contract": {
+        "contract_id": "contract_collaboration_001",
+        "contract_type": "multi_agent_collaboration",
+        "contract_name": "FY2026 Strategic Planning Project",
+        "participating_agents": [
+          "apqc_1_0_strategic_001",
+          "apqc_9_2_financial_001",
+          "apqc_3_0_marketing_001"
+        ],
+        "contract_creator": "apqc_1_0_strategic_001",
+        "execution_conditions": [
+          "all_agents_signed",
+          "tokens_staked"
+        ],
+        "success_criteria": [
+          "deliverables_approved",
+          "deadline_met",
+          "quality_score_above_0.8"
+        ],
+        "token_allocations": {
+          "apqc_1_0_strategic_001": 500,
+          "apqc_9_2_financial_001": 300,
+          "apqc_3_0_marketing_001": 200
+        },
+        "payment_schedule": [
+          {
+            "milestone": "Research Phase Complete",
+            "amount": 300,
+            "recipient": "apqc_1_0_strategic_001",
+            "due_date": "2025-12-01T00:00:00Z"
+          }
+        ],
+        "contract_state": "active",
+        "dispute_resolution": "DAO_vote",
+        "created_at": "2025-11-16T14:00:00Z",
+        "expiration_date": "2026-01-31T23:59:59Z"
+      }
+    }
+  ]
+}

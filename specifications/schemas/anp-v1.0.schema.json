@@ -1,0 +1,312 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://superstandard.org/schemas/anp/v1.0.json",
+  "title": "Agent Network Protocol (ANP) v1.0",
+  "description": "Agent discovery, registration, and network management. Enables agents to find each other, register capabilities, monitor health, and manage network topology.",
+  "version": "1.0.0",
+  "type": "object",
+  "required": ["protocol", "version"],
+  "properties": {
+    "protocol": {
+      "type": "string",
+      "const": "ANP"
+    },
+    "version": {
+      "type": "string",
+      "pattern": "^\\d+\\.\\d+\\.\\d+$",
+      "default": "1.0.0"
+    },
+    "action": {
+      "type": "string",
+      "enum": ["register", "deregister", "discover", "heartbeat", "query_topology"],
+      "description": "Action being performed"
+    },
+    "registration": {
+      "type": "object",
+      "description": "Agent registration request",
+      "required": ["agent_id", "agent_type", "capabilities", "endpoints"],
+      "properties": {
+        "agent_id": {
+          "type": "string",
+          "description": "Unique agent identifier"
+        },
+        "agent_name": {
+          "type": "string",
+          "description": "Human-readable agent name"
+        },
+        "agent_type": {
+          "type": "string",
+          "description": "Type/category of agent (e.g., analyzer, coordinator)"
+        },
+        "capabilities": {
+          "type": "array",
+          "description": "Agent capabilities (e.g., text-analysis, translation)",
+          "items": {"type": "string"}
+        },
+        "endpoints": {
+          "type": "object",
+          "description": "Communication endpoints",
+          "properties": {
+            "http": {"type": "string", "format": "uri"},
+            "websocket": {"type": "string", "format": "uri"},
+            "grpc": {"type": "string"},
+            "mqtt": {"type": "string"}
+          },
+          "additionalProperties": {"type": "string"}
+        },
+        "health_status": {
+          "type": "string",
+          "enum": ["healthy", "degraded", "unhealthy", "offline", "unknown"],
+          "default": "healthy"
+        },
+        "region": {
+          "type": "string",
+          "default": "default",
+          "description": "Geographic or logical region"
+        },
+        "tags": {
+          "type": "array",
+          "description": "Custom tags for filtering",
+          "items": {"type": "string"}
+        },
+        "load_score": {
+          "type": "number",
+          "minimum": 0,
+          "maximum": 1,
+          "description": "Current load (0.0 = idle, 1.0 = fully loaded)"
+        },
+        "metadata": {
+          "type": "object",
+          "additionalProperties": true
+        }
+      }
+    },
+    "deregistration": {
+      "type": "object",
+      "description": "Agent deregistration request",
+      "required": ["agent_id"],
+      "properties": {
+        "agent_id": {"type": "string"},
+        "reason": {
+          "type": "string",
+          "description": "Reason for deregistration"
+        }
+      }
+    },
+    "discovery_query": {
+      "type": "object",
+      "description": "Query for discovering agents",
+      "properties": {
+        "capabilities": {
+          "type": "array",
+          "description": "Required capabilities (AND logic)",
+          "items": {"type": "string"}
+        },
+        "agent_type": {
+          "type": "string",
+          "description": "Filter by agent type"
+        },
+        "health_status": {
+          "type": "string",
+          "enum": ["healthy", "degraded", "unhealthy", "offline"],
+          "description": "Filter by health status"
+        },
+        "tags": {
+          "type": "array",
+          "description": "Required tags (all must match)",
+          "items": {"type": "string"}
+        },
+        "region": {
+          "type": "string",
+          "description": "Filter by region"
+        },
+        "max_load": {
+          "type": "number",
+          "minimum": 0,
+          "maximum": 1,
+          "description": "Only return agents with load < this value"
+        },
+        "limit": {
+          "type": "integer",
+          "minimum": 1,
+          "default": 100,
+          "description": "Maximum number of results"
+        }
+      }
+    },
+    "discovery_response": {
+      "type": "object",
+      "description": "Discovery query results",
+      "properties": {
+        "agents": {
+          "type": "array",
+          "description": "Matching agents (sorted by load, least loaded first)",
+          "items": {"$ref": "#/$defs/AgentInfo"}
+        },
+        "count": {
+          "type": "integer",
+          "description": "Number of agents found"
+        }
+      }
+    },
+    "heartbeat": {
+      "type": "object",
+      "description": "Agent heartbeat/liveness check",
+      "required": ["agent_id"],
+      "properties": {
+        "agent_id": {"type": "string"},
+        "health_status": {
+          "type": "string",
+          "enum": ["healthy", "degraded", "unhealthy"]
+        },
+        "load_score": {
+          "type": "number",
+          "minimum": 0,
+          "maximum": 1
+        },
+        "metrics": {
+          "type": "object",
+          "description": "Additional health metrics",
+          "properties": {
+            "cpu_usage": {"type": "number", "minimum": 0, "maximum": 1},
+            "memory_usage": {"type": "number", "minimum": 0, "maximum": 1},
+            "active_tasks": {"type": "integer", "minimum": 0},
+            "queue_length": {"type": "integer", "minimum": 0}
+          }
+        }
+      }
+    },
+    "network_topology": {
+      "type": "object",
+      "description": "Network topology snapshot",
+      "properties": {
+        "total_agents": {"type": "integer", "minimum": 0},
+        "agents_by_type": {
+          "type": "object",
+          "additionalProperties": {"type": "integer"}
+        },
+        "agents_by_region": {
+          "type": "object",
+          "additionalProperties": {"type": "integer"}
+        },
+        "agents_by_status": {
+          "type": "object",
+          "additionalProperties": {"type": "integer"}
+        },
+        "capability_coverage": {
+          "type": "object",
+          "description": "How many agents have each capability",
+          "additionalProperties": {"type": "integer"}
+        },
+        "average_load": {
+          "type": "number",
+          "minimum": 0,
+          "maximum": 1
+        }
+      }
+    }
+  },
+  "$defs": {
+    "AgentInfo": {
+      "type": "object",
+      "description": "Complete agent information",
+      "required": ["agent_id", "agent_type", "capabilities", "endpoints"],
+      "properties": {
+        "agent_id": {"type": "string"},
+        "agent_name": {"type": "string"},
+        "agent_type": {"type": "string"},
+        "capabilities": {
+          "type": "array",
+          "items": {"type": "string"}
+        },
+        "endpoints": {
+          "type": "object",
+          "additionalProperties": {"type": "string"}
+        },
+        "health_status": {
+          "type": "string",
+          "enum": ["healthy", "degraded", "unhealthy", "offline", "unknown"]
+        },
+        "registered_at": {
+          "type": "string",
+          "format": "date-time"
+        },
+        "last_heartbeat": {
+          "type": "string",
+          "format": "date-time"
+        },
+        "heartbeat_count": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "load_score": {
+          "type": "number",
+          "minimum": 0,
+          "maximum": 1
+        },
+        "region": {"type": "string"},
+        "tags": {
+          "type": "array",
+          "items": {"type": "string"}
+        },
+        "version": {"type": "string"},
+        "metadata": {
+          "type": "object",
+          "additionalProperties": true
+        }
+      }
+    }
+  },
+  "examples": [
+    {
+      "protocol": "ANP",
+      "version": "1.0.0",
+      "action": "register",
+      "registration": {
+        "agent_id": "apqc_1_0_strategic_001",
+        "agent_name": "develop_business_strategy_strategic_agent",
+        "agent_type": "strategic",
+        "capabilities": ["strategic_planning", "analysis", "forecasting"],
+        "endpoints": {
+          "http": "https://agent001.superstandard.org:8443",
+          "websocket": "wss://agent001.superstandard.org:8444"
+        },
+        "health_status": "healthy",
+        "region": "us-east-1",
+        "tags": ["apqc:1.0", "production"],
+        "load_score": 0.3,
+        "metadata": {
+          "apqc_category": "1.0",
+          "apqc_process": "develop_business_strategy"
+        }
+      }
+    },
+    {
+      "protocol": "ANP",
+      "version": "1.0.0",
+      "action": "discover",
+      "discovery_query": {
+        "capabilities": ["strategic_planning"],
+        "health_status": "healthy",
+        "max_load": 0.7,
+        "limit": 10
+      }
+    },
+    {
+      "protocol": "ANP",
+      "version": "1.0.0",
+      "action": "heartbeat",
+      "heartbeat": {
+        "agent_id": "apqc_1_0_strategic_001",
+        "health_status": "healthy",
+        "load_score": 0.45,
+        "metrics": {
+          "cpu_usage": 0.32,
+          "memory_usage": 0.58,
+          "active_tasks": 3,
+          "queue_length": 5
+        }
+      }
+    }
+  ]
+}

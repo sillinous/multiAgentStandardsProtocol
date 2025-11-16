@@ -1,0 +1,658 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://superstandard.org/schemas/caip/v1.0.json",
+  "title": "Compliance Automation & Intelligence Protocol (CAIP) v1.0",
+  "description": "Automated compliance checking, regulatory intelligence, audit trail management, and policy enforcement. Supports GDPR, HIPAA, SOC2, ISO27001, and custom compliance frameworks.",
+  "version": "1.0.0",
+  "type": "object",
+  "required": ["protocol", "version"],
+  "properties": {
+    "protocol": {
+      "type": "string",
+      "const": "CAIP"
+    },
+    "version": {
+      "type": "string",
+      "pattern": "^\\d+\\.\\d+\\.\\d+$",
+      "default": "1.0.0"
+    },
+    "operation": {
+      "type": "string",
+      "enum": [
+        "compliance_check",
+        "policy_enforcement",
+        "audit_log",
+        "risk_assessment",
+        "remediation_plan",
+        "certification_status",
+        "regulatory_update"
+      ]
+    },
+    "compliance_check": {
+      "$ref": "#/$defs/ComplianceCheck"
+    },
+    "policy_enforcement": {
+      "$ref": "#/$defs/PolicyEnforcement"
+    },
+    "audit_log": {
+      "$ref": "#/$defs/AuditLog"
+    },
+    "risk_assessment": {
+      "$ref": "#/$defs/RiskAssessment"
+    },
+    "certification": {
+      "$ref": "#/$defs/Certification"
+    }
+  },
+  "$defs": {
+    "ComplianceCheck": {
+      "type": "object",
+      "description": "Compliance verification request/result",
+      "required": ["check_id", "framework", "scope"],
+      "properties": {
+        "check_id": {
+          "type": "string",
+          "format": "uuid"
+        },
+        "framework": {
+          "type": "array",
+          "description": "Compliance frameworks to check against",
+          "items": {
+            "type": "string",
+            "enum": [
+              "GDPR",
+              "HIPAA",
+              "SOC2",
+              "ISO27001",
+              "PCI_DSS",
+              "CCPA",
+              "NIST",
+              "FedRAMP",
+              "APQC",
+              "custom"
+            ]
+          }
+        },
+        "scope": {
+          "type": "object",
+          "description": "What to check",
+          "properties": {
+            "system_components": {
+              "type": "array",
+              "items": {"type": "string"}
+            },
+            "data_categories": {
+              "type": "array",
+              "description": "Types of data (PII, PHI, financial, etc.)",
+              "items": {"type": "string"}
+            },
+            "processes": {
+              "type": "array",
+              "description": "Business processes to audit",
+              "items": {"type": "string"}
+            },
+            "time_period": {
+              "type": "object",
+              "properties": {
+                "start_date": {"type": "string", "format": "date-time"},
+                "end_date": {"type": "string", "format": "date-time"}
+              }
+            }
+          }
+        },
+        "controls": {
+          "type": "array",
+          "description": "Specific controls to verify",
+          "items": {
+            "type": "object",
+            "properties": {
+              "control_id": {"type": "string"},
+              "control_name": {"type": "string"},
+              "control_category": {
+                "type": "string",
+                "enum": [
+                  "access_control",
+                  "data_protection",
+                  "encryption",
+                  "logging_monitoring",
+                  "incident_response",
+                  "business_continuity",
+                  "vendor_management",
+                  "training_awareness"
+                ]
+              },
+              "required_evidence": {
+                "type": "array",
+                "items": {"type": "string"}
+              }
+            }
+          }
+        },
+        "check_result": {
+          "type": "object",
+          "properties": {
+            "overall_status": {
+              "type": "string",
+              "enum": ["compliant", "non_compliant", "partial", "not_applicable"]
+            },
+            "compliance_score": {
+              "type": "number",
+              "minimum": 0,
+              "maximum": 100,
+              "description": "Overall compliance percentage"
+            },
+            "controls_passed": {"type": "integer"},
+            "controls_failed": {"type": "integer"},
+            "controls_not_applicable": {"type": "integer"},
+            "findings": {
+              "type": "array",
+              "items": {"$ref": "#/$defs/Finding"}
+            },
+            "gaps": {
+              "type": "array",
+              "description": "Compliance gaps identified",
+              "items": {
+                "type": "object",
+                "properties": {
+                  "gap_id": {"type": "string"},
+                  "control_id": {"type": "string"},
+                  "severity": {
+                    "type": "string",
+                    "enum": ["critical", "high", "medium", "low"]
+                  },
+                  "description": {"type": "string"},
+                  "impact": {"type": "string"},
+                  "remediation_required": {"type": "boolean"}
+                }
+              }
+            },
+            "evidence_collected": {
+              "type": "array",
+              "description": "Evidence supporting compliance",
+              "items": {
+                "type": "object",
+                "properties": {
+                  "evidence_id": {"type": "string"},
+                  "evidence_type": {
+                    "type": "string",
+                    "enum": ["document", "log", "screenshot", "configuration", "certificate"]
+                  },
+                  "description": {"type": "string"},
+                  "location": {"type": "string"},
+                  "timestamp": {"type": "string", "format": "date-time"}
+                }
+              }
+            }
+          }
+        },
+        "performed_by": {
+          "type": "string",
+          "description": "Agent ID performing check"
+        },
+        "performed_at": {
+          "type": "string",
+          "format": "date-time"
+        }
+      }
+    },
+    "PolicyEnforcement": {
+      "type": "object",
+      "description": "Policy enforcement action",
+      "required": ["policy_id", "action"],
+      "properties": {
+        "policy_id": {"type": "string"},
+        "policy_name": {"type": "string"},
+        "policy_category": {
+          "type": "string",
+          "enum": [
+            "data_governance",
+            "access_control",
+            "retention",
+            "privacy",
+            "security",
+            "operational"
+          ]
+        },
+        "enforcement_mode": {
+          "type": "string",
+          "enum": ["monitor", "warn", "block", "remediate"],
+          "default": "warn"
+        },
+        "action": {
+          "type": "string",
+          "description": "Action being evaluated/enforced"
+        },
+        "subject": {
+          "type": "object",
+          "description": "Who/what is performing the action",
+          "properties": {
+            "agent_id": {"type": "string"},
+            "user_id": {"type": "string"},
+            "system_component": {"type": "string"}
+          }
+        },
+        "object": {
+          "type": "object",
+          "description": "What is being acted upon",
+          "properties": {
+            "resource_type": {"type": "string"},
+            "resource_id": {"type": "string"},
+            "data_classification": {
+              "type": "string",
+              "enum": ["public", "internal", "confidential", "restricted"]
+            }
+          }
+        },
+        "decision": {
+          "type": "object",
+          "properties": {
+            "allowed": {"type": "boolean"},
+            "reason": {"type": "string"},
+            "violated_policies": {
+              "type": "array",
+              "items": {"type": "string"}
+            },
+            "required_conditions": {
+              "type": "array",
+              "description": "Conditions that must be met to allow",
+              "items": {"type": "string"}
+            }
+          }
+        },
+        "timestamp": {"type": "string", "format": "date-time"}
+      }
+    },
+    "AuditLog": {
+      "type": "object",
+      "description": "Immutable audit log entry",
+      "required": ["log_id", "event_type", "timestamp"],
+      "properties": {
+        "log_id": {
+          "type": "string",
+          "format": "uuid",
+          "description": "Unique log entry ID"
+        },
+        "event_type": {
+          "type": "string",
+          "description": "Type of event being logged"
+        },
+        "event_category": {
+          "type": "string",
+          "enum": [
+            "access",
+            "authentication",
+            "authorization",
+            "data_access",
+            "data_modification",
+            "configuration_change",
+            "policy_violation",
+            "security_event",
+            "compliance_event"
+          ]
+        },
+        "severity": {
+          "type": "string",
+          "enum": ["debug", "info", "warning", "error", "critical"],
+          "default": "info"
+        },
+        "actor": {
+          "type": "object",
+          "description": "Who performed the action",
+          "properties": {
+            "agent_id": {"type": "string"},
+            "user_id": {"type": "string"},
+            "ip_address": {"type": "string"},
+            "user_agent": {"type": "string"}
+          }
+        },
+        "action": {
+          "type": "string",
+          "description": "What action was performed"
+        },
+        "resource": {
+          "type": "object",
+          "description": "What was acted upon",
+          "properties": {
+            "resource_type": {"type": "string"},
+            "resource_id": {"type": "string"},
+            "resource_name": {"type": "string"}
+          }
+        },
+        "result": {
+          "type": "string",
+          "enum": ["success", "failure", "partial"],
+          "default": "success"
+        },
+        "details": {
+          "type": "object",
+          "description": "Additional event details",
+          "additionalProperties": true
+        },
+        "compliance_tags": {
+          "type": "array",
+          "description": "Compliance frameworks this log entry satisfies",
+          "items": {"type": "string"}
+        },
+        "retention_period": {
+          "type": "integer",
+          "description": "Days to retain this log entry"
+        },
+        "immutable": {
+          "type": "boolean",
+          "default": true,
+          "description": "Whether this log can be modified"
+        },
+        "chain_hash": {
+          "type": "string",
+          "description": "Hash linking to previous log entry (blockchain-style)"
+        },
+        "timestamp": {
+          "type": "string",
+          "format": "date-time"
+        }
+      }
+    },
+    "RiskAssessment": {
+      "type": "object",
+      "description": "Compliance risk assessment",
+      "required": ["assessment_id", "scope"],
+      "properties": {
+        "assessment_id": {"type": "string"},
+        "assessment_type": {
+          "type": "string",
+          "enum": ["initial", "periodic", "change-driven", "incident-driven"]
+        },
+        "scope": {
+          "type": "object",
+          "properties": {
+            "systems": {
+              "type": "array",
+              "items": {"type": "string"}
+            },
+            "data_assets": {
+              "type": "array",
+              "items": {"type": "string"}
+            },
+            "processes": {
+              "type": "array",
+              "items": {"type": "string"}
+            }
+          }
+        },
+        "threats": {
+          "type": "array",
+          "description": "Identified compliance threats",
+          "items": {
+            "type": "object",
+            "properties": {
+              "threat_id": {"type": "string"},
+              "threat_name": {"type": "string"},
+              "threat_category": {
+                "type": "string",
+                "enum": [
+                  "data_breach",
+                  "unauthorized_access",
+                  "data_loss",
+                  "regulatory_violation",
+                  "policy_violation",
+                  "audit_failure"
+                ]
+              },
+              "likelihood": {
+                "type": "string",
+                "enum": ["low", "medium", "high", "critical"]
+              },
+              "impact": {
+                "type": "string",
+                "enum": ["low", "medium", "high", "critical"]
+              },
+              "risk_score": {
+                "type": "number",
+                "minimum": 0,
+                "maximum": 100
+              }
+            }
+          }
+        },
+        "vulnerabilities": {
+          "type": "array",
+          "description": "Compliance vulnerabilities",
+          "items": {
+            "type": "object",
+            "properties": {
+              "vulnerability_id": {"type": "string"},
+              "description": {"type": "string"},
+              "affected_controls": {
+                "type": "array",
+                "items": {"type": "string"}
+              },
+              "severity": {
+                "type": "string",
+                "enum": ["low", "medium", "high", "critical"]
+              }
+            }
+          }
+        },
+        "overall_risk_level": {
+          "type": "string",
+          "enum": ["low", "medium", "high", "critical"]
+        },
+        "mitigation_recommendations": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "recommendation_id": {"type": "string"},
+              "title": {"type": "string"},
+              "description": {"type": "string"},
+              "priority": {
+                "type": "string",
+                "enum": ["low", "medium", "high", "critical"]
+              },
+              "estimated_effort": {"type": "string"},
+              "risk_reduction": {
+                "type": "number",
+                "description": "Percentage of risk reduced"
+              }
+            }
+          }
+        },
+        "assessed_by": {"type": "string"},
+        "assessed_at": {"type": "string", "format": "date-time"}
+      }
+    },
+    "Certification": {
+      "type": "object",
+      "description": "Compliance certification status",
+      "properties": {
+        "certification_id": {"type": "string"},
+        "framework": {
+          "type": "string",
+          "enum": ["GDPR", "HIPAA", "SOC2", "ISO27001", "PCI_DSS", "FedRAMP"]
+        },
+        "certification_level": {
+          "type": "string",
+          "description": "e.g., Type I, Type II, Level 1-4"
+        },
+        "status": {
+          "type": "string",
+          "enum": ["in_progress", "achieved", "maintained", "expired", "revoked"]
+        },
+        "audit_firm": {"type": "string"},
+        "issued_date": {"type": "string", "format": "date"},
+        "expiration_date": {"type": "string", "format": "date"},
+        "next_audit_date": {"type": "string", "format": "date"},
+        "scope": {
+          "type": "object",
+          "description": "What is covered by certification",
+          "additionalProperties": true
+        },
+        "certificate_url": {
+          "type": "string",
+          "format": "uri",
+          "description": "Public certificate/seal"
+        },
+        "readiness_score": {
+          "type": "number",
+          "minimum": 0,
+          "maximum": 100,
+          "description": "Current readiness for certification"
+        }
+      }
+    },
+    "Finding": {
+      "type": "object",
+      "description": "Compliance finding (violation or observation)",
+      "properties": {
+        "finding_id": {"type": "string"},
+        "finding_type": {
+          "type": "string",
+          "enum": ["violation", "deficiency", "observation", "best_practice"]
+        },
+        "severity": {
+          "type": "string",
+          "enum": ["critical", "high", "medium", "low", "info"]
+        },
+        "control_id": {
+          "type": "string",
+          "description": "Control this finding relates to"
+        },
+        "framework": {
+          "type": "string",
+          "description": "Compliance framework"
+        },
+        "title": {"type": "string"},
+        "description": {"type": "string"},
+        "evidence": {
+          "type": "array",
+          "description": "Evidence supporting the finding",
+          "items": {"type": "string"}
+        },
+        "remediation": {
+          "type": "object",
+          "properties": {
+            "required": {"type": "boolean"},
+            "deadline": {"type": "string", "format": "date-time"},
+            "responsible_party": {"type": "string"},
+            "steps": {
+              "type": "array",
+              "items": {"type": "string"}
+            },
+            "estimated_effort": {"type": "string"}
+          }
+        },
+        "status": {
+          "type": "string",
+          "enum": ["open", "in_remediation", "resolved", "accepted_risk", "false_positive"]
+        },
+        "identified_at": {"type": "string", "format": "date-time"},
+        "resolved_at": {"type": "string", "format": "date-time"}
+      }
+    }
+  },
+  "examples": [
+    {
+      "protocol": "CAIP",
+      "version": "1.0.0",
+      "operation": "compliance_check",
+      "compliance_check": {
+        "check_id": "check_550e8400",
+        "framework": ["GDPR", "SOC2"],
+        "scope": {
+          "system_components": ["user_api", "database", "logging_system"],
+          "data_categories": ["PII", "financial"],
+          "processes": ["user_registration", "data_deletion", "access_logs"]
+        },
+        "controls": [
+          {
+            "control_id": "GDPR_Art17",
+            "control_name": "Right to Erasure",
+            "control_category": "data_protection",
+            "required_evidence": ["deletion_logs", "data_retention_policy"]
+          }
+        ],
+        "check_result": {
+          "overall_status": "partial",
+          "compliance_score": 87.5,
+          "controls_passed": 14,
+          "controls_failed": 2,
+          "controls_not_applicable": 1,
+          "gaps": [
+            {
+              "gap_id": "gap_001",
+              "control_id": "GDPR_Art17",
+              "severity": "high",
+              "description": "User deletion process does not cascade to backup systems",
+              "impact": "Personal data may persist in backups beyond retention period",
+              "remediation_required": true
+            }
+          ]
+        },
+        "performed_by": "apqc_10_5_compliance_agent_001",
+        "performed_at": "2025-11-16T14:00:00Z"
+      }
+    },
+    {
+      "protocol": "CAIP",
+      "version": "1.0.0",
+      "operation": "audit_log",
+      "audit_log": {
+        "log_id": "log_550e8400-e29b-41d4-a716-446655440000",
+        "event_type": "data_access",
+        "event_category": "data_access",
+        "severity": "info",
+        "actor": {
+          "agent_id": "apqc_9_2_financial_001",
+          "user_id": "user_12345",
+          "ip_address": "192.168.1.100"
+        },
+        "action": "read_customer_financial_data",
+        "resource": {
+          "resource_type": "customer_record",
+          "resource_id": "cust_67890",
+          "resource_name": "Customer Financial Profile"
+        },
+        "result": "success",
+        "details": {
+          "records_accessed": 1,
+          "fields_accessed": ["balance", "transaction_history"],
+          "purpose": "credit_risk_assessment"
+        },
+        "compliance_tags": ["GDPR_Art30", "SOC2_CC6.1"],
+        "retention_period": 2555,
+        "immutable": true,
+        "timestamp": "2025-11-16T14:00:00Z"
+      }
+    },
+    {
+      "protocol": "CAIP",
+      "version": "1.0.0",
+      "operation": "policy_enforcement",
+      "policy_enforcement": {
+        "policy_id": "pol_data_classification",
+        "policy_name": "Confidential Data Access Policy",
+        "policy_category": "access_control",
+        "enforcement_mode": "block",
+        "action": "export_customer_data",
+        "subject": {
+          "agent_id": "apqc_3_0_marketing_002"
+        },
+        "object": {
+          "resource_type": "customer_database",
+          "resource_id": "db_customers_prod",
+          "data_classification": "confidential"
+        },
+        "decision": {
+          "allowed": false,
+          "reason": "Agent lacks required clearance for confidential data",
+          "violated_policies": ["data_classification_policy"],
+          "required_conditions": [
+            "confidential_data_access_certification",
+            "manager_approval"
+          ]
+        },
+        "timestamp": "2025-11-16T14:00:00Z"
+      }
+    }
+  ]
+}

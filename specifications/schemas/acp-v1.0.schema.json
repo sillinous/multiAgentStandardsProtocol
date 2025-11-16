@@ -1,0 +1,339 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://superstandard.org/schemas/acp/v1.0.json",
+  "title": "Agent Coordination Protocol (ACP) v1.0",
+  "description": "Multi-agent task coordination and orchestration. Supports multiple coordination patterns (swarm, pipeline, hierarchical, consensus), task management, state synchronization, and progress tracking.",
+  "version": "1.0.0",
+  "type": "object",
+  "required": ["protocol", "version"],
+  "properties": {
+    "protocol": {
+      "type": "string",
+      "const": "ACP"
+    },
+    "version": {
+      "type": "string",
+      "pattern": "^\\d+\\.\\d+\\.\\d+$",
+      "default": "1.0.0"
+    },
+    "action": {
+      "type": "string",
+      "enum": [
+        "create_coordination",
+        "start_coordination",
+        "pause_coordination",
+        "complete_coordination",
+        "join",
+        "leave",
+        "create_task",
+        "assign_task",
+        "update_task",
+        "update_state",
+        "query_progress"
+      ]
+    },
+    "coordination": {
+      "$ref": "#/$defs/Coordination"
+    },
+    "task": {
+      "$ref": "#/$defs/Task"
+    },
+    "participant": {
+      "$ref": "#/$defs/Participant"
+    },
+    "state_update": {
+      "type": "object",
+      "description": "Shared state synchronization",
+      "required": ["coordination_id", "updates"],
+      "properties": {
+        "coordination_id": {"type": "string"},
+        "agent_id": {"type": "string"},
+        "updates": {
+          "type": "object",
+          "additionalProperties": true,
+          "description": "State updates to merge into shared state"
+        }
+      }
+    },
+    "progress_query": {
+      "type": "object",
+      "required": ["coordination_id"],
+      "properties": {
+        "coordination_id": {"type": "string"}
+      }
+    },
+    "progress_response": {
+      "type": "object",
+      "properties": {
+        "total_tasks": {"type": "integer", "minimum": 0},
+        "completed_tasks": {"type": "integer", "minimum": 0},
+        "in_progress_tasks": {"type": "integer", "minimum": 0},
+        "pending_tasks": {"type": "integer", "minimum": 0},
+        "failed_tasks": {"type": "integer", "minimum": 0},
+        "progress_percentage": {
+          "type": "number",
+          "minimum": 0,
+          "maximum": 100
+        },
+        "participants": {"type": "integer", "minimum": 0},
+        "estimated_completion": {
+          "type": "string",
+          "format": "date-time",
+          "description": "Estimated completion time"
+        }
+      }
+    }
+  },
+  "$defs": {
+    "Coordination": {
+      "type": "object",
+      "description": "Coordination session",
+      "required": ["coordination_id", "coordinator_id", "coordination_type", "goal"],
+      "properties": {
+        "coordination_id": {
+          "type": "string",
+          "description": "Unique coordination identifier"
+        },
+        "coordinator_id": {
+          "type": "string",
+          "description": "Agent managing this coordination"
+        },
+        "coordination_type": {
+          "type": "string",
+          "enum": ["swarm", "pipeline", "hierarchical", "consensus", "auction", "collaborative"],
+          "description": "Coordination pattern"
+        },
+        "status": {
+          "type": "string",
+          "enum": ["initializing", "active", "paused", "completing", "completed", "failed", "cancelled"],
+          "default": "initializing"
+        },
+        "goal": {
+          "type": "string",
+          "description": "What this coordination aims to achieve"
+        },
+        "coordination_plan": {
+          "type": "object",
+          "description": "Coordination strategy and plan",
+          "additionalProperties": true
+        },
+        "participants": {
+          "type": "array",
+          "items": {"$ref": "#/$defs/Participant"}
+        },
+        "tasks": {
+          "type": "array",
+          "items": {"$ref": "#/$defs/Task"}
+        },
+        "shared_state": {
+          "type": "object",
+          "description": "Synchronized state across participants",
+          "additionalProperties": true
+        },
+        "created_at": {
+          "type": "string",
+          "format": "date-time"
+        },
+        "started_at": {
+          "type": "string",
+          "format": "date-time"
+        },
+        "completed_at": {
+          "type": "string",
+          "format": "date-time"
+        },
+        "metadata": {
+          "type": "object",
+          "additionalProperties": true
+        }
+      }
+    },
+    "Participant": {
+      "type": "object",
+      "description": "Agent participating in coordination",
+      "required": ["agent_id", "agent_type", "capabilities"],
+      "properties": {
+        "agent_id": {"type": "string"},
+        "agent_type": {"type": "string"},
+        "capabilities": {
+          "type": "array",
+          "items": {"type": "string"}
+        },
+        "role": {
+          "type": "string",
+          "enum": ["coordinator", "participant", "observer"],
+          "default": "participant"
+        },
+        "status": {
+          "type": "string",
+          "enum": ["active", "idle", "busy", "offline"],
+          "default": "active"
+        },
+        "joined_at": {
+          "type": "string",
+          "format": "date-time"
+        },
+        "last_activity": {
+          "type": "string",
+          "format": "date-time"
+        },
+        "assigned_tasks": {
+          "type": "array",
+          "description": "Task IDs currently assigned",
+          "items": {"type": "string"}
+        },
+        "completed_tasks": {
+          "type": "array",
+          "description": "Task IDs completed",
+          "items": {"type": "string"}
+        },
+        "metadata": {
+          "type": "object",
+          "additionalProperties": true
+        }
+      }
+    },
+    "Task": {
+      "type": "object",
+      "description": "Individual task in coordination",
+      "required": ["task_id", "task_type", "description"],
+      "properties": {
+        "task_id": {"type": "string"},
+        "task_type": {
+          "type": "string",
+          "description": "Type of task (e.g., data_processing, analysis)"
+        },
+        "description": {
+          "type": "string",
+          "description": "What needs to be done"
+        },
+        "assigned_to": {
+          "type": "string",
+          "description": "Agent ID assigned to this task"
+        },
+        "status": {
+          "type": "string",
+          "enum": ["pending", "assigned", "in_progress", "completed", "failed", "cancelled"],
+          "default": "pending"
+        },
+        "priority": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 10,
+          "default": 5,
+          "description": "1-10, higher = more important"
+        },
+        "dependencies": {
+          "type": "array",
+          "description": "Task IDs that must complete first",
+          "items": {"type": "string"}
+        },
+        "input_data": {
+          "type": "object",
+          "description": "Input data for the task",
+          "additionalProperties": true
+        },
+        "output_data": {
+          "type": "object",
+          "description": "Result/output from task execution",
+          "additionalProperties": true
+        },
+        "started_at": {
+          "type": "string",
+          "format": "date-time"
+        },
+        "completed_at": {
+          "type": "string",
+          "format": "date-time"
+        },
+        "estimated_duration": {
+          "type": "number",
+          "description": "Estimated duration in seconds"
+        },
+        "actual_duration": {
+          "type": "number",
+          "description": "Actual duration in seconds"
+        },
+        "metadata": {
+          "type": "object",
+          "additionalProperties": true
+        }
+      }
+    }
+  },
+  "examples": [
+    {
+      "protocol": "ACP",
+      "version": "1.0.0",
+      "action": "create_coordination",
+      "coordination": {
+        "coordination_id": "coord_abc123",
+        "coordinator_id": "apqc_1_0_strategic_001",
+        "coordination_type": "swarm",
+        "status": "initializing",
+        "goal": "Develop comprehensive FY2026 strategic plan",
+        "coordination_plan": {
+          "strategy": "divide_and_conquer",
+          "phases": ["research", "analysis", "synthesis", "validation"]
+        },
+        "participants": [
+          {
+            "agent_id": "apqc_1_0_strategic_001",
+            "agent_type": "strategic",
+            "capabilities": ["strategic_planning"],
+            "role": "coordinator"
+          }
+        ],
+        "tasks": [],
+        "shared_state": {},
+        "created_at": "2025-11-16T14:00:00Z",
+        "metadata": {
+          "apqc_process": "1.0"
+        }
+      }
+    },
+    {
+      "protocol": "ACP",
+      "version": "1.0.0",
+      "action": "create_task",
+      "task": {
+        "task_id": "task_xyz789",
+        "task_type": "market_analysis",
+        "description": "Analyze market trends for 2026",
+        "status": "pending",
+        "priority": 8,
+        "dependencies": [],
+        "input_data": {
+          "timeframe": "2026",
+          "sectors": ["technology", "manufacturing", "services"]
+        },
+        "output_data": {},
+        "metadata": {
+          "requires_capability": "analysis"
+        }
+      }
+    },
+    {
+      "protocol": "ACP",
+      "version": "1.0.0",
+      "action": "update_state",
+      "state_update": {
+        "coordination_id": "coord_abc123",
+        "agent_id": "apqc_3_0_marketing_002",
+        "updates": {
+          "market_trends_identified": 15,
+          "competitive_analysis_complete": true,
+          "recommendations_draft_ready": false
+        }
+      }
+    },
+    {
+      "protocol": "ACP",
+      "version": "1.0.0",
+      "action": "query_progress",
+      "progress_query": {
+        "coordination_id": "coord_abc123"
+      }
+    }
+  ]
+}
