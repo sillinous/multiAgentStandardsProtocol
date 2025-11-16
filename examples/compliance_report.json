@@ -1,0 +1,334 @@
+{
+  "protocol": "CAIP",
+  "version": "1.0.0",
+  "operation": "compliance_check",
+  "compliance_check": {
+    "check_id": "d203611d-04c2-425c-a95e-f041bc36a3b5",
+    "framework": [
+      "GDPR",
+      "SOC2",
+      "HIPAA"
+    ],
+    "scope": {
+      "system_components": [
+        "api",
+        "database",
+        "logging",
+        "monitoring"
+      ],
+      "data_categories": [
+        "PII",
+        "financial",
+        "healthcare"
+      ],
+      "processes": [
+        "data_processing",
+        "access_control",
+        "audit_logging"
+      ]
+    },
+    "controls": [
+      {
+        "control_id": "GDPR_Art17",
+        "control_name": "Right to Erasure",
+        "control_category": "data_protection",
+        "required_evidence": [
+          "deletion_logs",
+          "data_retention_policy"
+        ],
+        "description": "Ensure data subjects can exercise right to erasure",
+        "framework": "GDPR"
+      },
+      {
+        "control_id": "GDPR_Art30",
+        "control_name": "Records of Processing Activities",
+        "control_category": "logging_monitoring",
+        "required_evidence": [
+          "processing_records",
+          "data_flow_diagrams"
+        ],
+        "description": "Maintain records of all data processing activities",
+        "framework": "GDPR"
+      },
+      {
+        "control_id": "GDPR_Art32",
+        "control_name": "Security of Processing",
+        "control_category": "encryption",
+        "required_evidence": [
+          "encryption_policy",
+          "security_audit"
+        ],
+        "description": "Implement appropriate technical and organizational measures",
+        "framework": "GDPR"
+      },
+      {
+        "control_id": "GDPR_Art33",
+        "control_name": "Breach Notification",
+        "control_category": "incident_response",
+        "required_evidence": [
+          "incident_response_plan",
+          "breach_notification_procedures"
+        ],
+        "description": "Notify supervisory authority of data breaches within 72 hours",
+        "framework": "GDPR"
+      },
+      {
+        "control_id": "SOC2_CC6.1",
+        "control_name": "Logical and Physical Access Controls",
+        "control_category": "access_control",
+        "required_evidence": [
+          "access_logs",
+          "access_control_policy"
+        ],
+        "description": "Implement logical and physical access controls",
+        "framework": "SOC2"
+      },
+      {
+        "control_id": "SOC2_CC6.6",
+        "control_name": "Data Encryption",
+        "control_category": "encryption",
+        "required_evidence": [
+          "encryption_standards",
+          "key_management"
+        ],
+        "description": "Encrypt data in transit and at rest",
+        "framework": "SOC2"
+      },
+      {
+        "control_id": "SOC2_CC7.2",
+        "control_name": "System Monitoring",
+        "control_category": "logging_monitoring",
+        "required_evidence": [
+          "monitoring_logs",
+          "alerting_configuration"
+        ],
+        "description": "Monitor system components and alert on anomalies",
+        "framework": "SOC2"
+      },
+      {
+        "control_id": "SOC2_CC9.2",
+        "control_name": "Vendor Management",
+        "control_category": "vendor_management",
+        "required_evidence": [
+          "vendor_assessments",
+          "vendor_contracts"
+        ],
+        "description": "Assess and monitor third-party service providers",
+        "framework": "SOC2"
+      },
+      {
+        "control_id": "HIPAA_164.308",
+        "control_name": "Administrative Safeguards",
+        "control_category": "access_control",
+        "required_evidence": [
+          "security_policies",
+          "workforce_training_records"
+        ],
+        "description": "Implement administrative safeguards for PHI",
+        "framework": "HIPAA"
+      },
+      {
+        "control_id": "HIPAA_164.312",
+        "control_name": "Technical Safeguards",
+        "control_category": "encryption",
+        "required_evidence": [
+          "encryption_implementation",
+          "access_controls"
+        ],
+        "description": "Implement technical safeguards for PHI",
+        "framework": "HIPAA"
+      }
+    ],
+    "performed_by": "apqc_10_5_compliance_agent_001",
+    "performed_at": "2025-11-16T19:27:26.670367",
+    "check_result": {
+      "overall_status": "non_compliant",
+      "compliance_score": 60.0,
+      "controls_passed": 6,
+      "controls_failed": 4,
+      "controls_not_applicable": 0,
+      "findings": [
+        {
+          "finding_id": "b1e55eee-6db8-407e-9bc5-794e03f7c4c3",
+          "finding_type": "violation",
+          "severity": "high",
+          "control_id": "GDPR_Art30",
+          "framework": "GDPR",
+          "title": "Control GDPR_Art30 Failed",
+          "description": "Failed to verify Records of Processing Activities",
+          "status": "open",
+          "evidence": [],
+          "identified_at": "2025-11-16T19:27:26.670278",
+          "resolved_at": null,
+          "remediation": {
+            "required": true,
+            "steps": [
+              "Review Records of Processing Activities requirements",
+              "Implement missing controls",
+              "Collect required evidence"
+            ],
+            "responsible_party": null,
+            "deadline": null,
+            "estimated_effort": "2-4 weeks"
+          }
+        },
+        {
+          "finding_id": "a4426fda-236a-4316-b0dc-35498f5df209",
+          "finding_type": "violation",
+          "severity": "high",
+          "control_id": "GDPR_Art33",
+          "framework": "GDPR",
+          "title": "Control GDPR_Art33 Failed",
+          "description": "Failed to verify Breach Notification",
+          "status": "open",
+          "evidence": [],
+          "identified_at": "2025-11-16T19:27:26.670301",
+          "resolved_at": null,
+          "remediation": {
+            "required": true,
+            "steps": [
+              "Review Breach Notification requirements",
+              "Implement missing controls",
+              "Collect required evidence"
+            ],
+            "responsible_party": null,
+            "deadline": null,
+            "estimated_effort": "2-4 weeks"
+          }
+        },
+        {
+          "finding_id": "de81e3f9-ca90-4a09-bd8e-75830e16a96c",
+          "finding_type": "violation",
+          "severity": "high",
+          "control_id": "SOC2_CC9.2",
+          "framework": "SOC2",
+          "title": "Control SOC2_CC9.2 Failed",
+          "description": "Failed to verify Vendor Management",
+          "status": "open",
+          "evidence": [],
+          "identified_at": "2025-11-16T19:27:26.670340",
+          "resolved_at": null,
+          "remediation": {
+            "required": true,
+            "steps": [
+              "Review Vendor Management requirements",
+              "Implement missing controls",
+              "Collect required evidence"
+            ],
+            "responsible_party": null,
+            "deadline": null,
+            "estimated_effort": "2-4 weeks"
+          }
+        },
+        {
+          "finding_id": "57ab5788-0320-41f7-a969-3df5aec107da",
+          "finding_type": "violation",
+          "severity": "high",
+          "control_id": "HIPAA_164.312",
+          "framework": "HIPAA",
+          "title": "Control HIPAA_164.312 Failed",
+          "description": "Failed to verify Technical Safeguards",
+          "status": "open",
+          "evidence": [],
+          "identified_at": "2025-11-16T19:27:26.670358",
+          "resolved_at": null,
+          "remediation": {
+            "required": true,
+            "steps": [
+              "Review Technical Safeguards requirements",
+              "Implement missing controls",
+              "Collect required evidence"
+            ],
+            "responsible_party": null,
+            "deadline": null,
+            "estimated_effort": "2-4 weeks"
+          }
+        }
+      ],
+      "gaps": [
+        {
+          "gap_id": "dbb723ef-7554-49f1-a9e2-73f3ebe49bc7",
+          "control_id": "GDPR_Art30",
+          "severity": "high",
+          "description": "Gap in Records of Processing Activities",
+          "impact": "May lead to compliance violations",
+          "remediation_required": true
+        },
+        {
+          "gap_id": "ad36a8a4-5c73-4438-8048-42c3c72ae8c3",
+          "control_id": "GDPR_Art33",
+          "severity": "high",
+          "description": "Gap in Breach Notification",
+          "impact": "May lead to compliance violations",
+          "remediation_required": true
+        },
+        {
+          "gap_id": "121361ad-5996-4e49-8802-2d323f5e1315",
+          "control_id": "SOC2_CC9.2",
+          "severity": "high",
+          "description": "Gap in Vendor Management",
+          "impact": "May lead to compliance violations",
+          "remediation_required": true
+        },
+        {
+          "gap_id": "21740d43-5d50-4d6b-8d85-a87f2b9ad25e",
+          "control_id": "HIPAA_164.312",
+          "severity": "high",
+          "description": "Gap in Technical Safeguards",
+          "impact": "May lead to compliance violations",
+          "remediation_required": true
+        }
+      ],
+      "evidence_collected": [
+        {
+          "evidence_id": "83341c24-f4c4-40dc-b18e-23b3494c4396",
+          "evidence_type": "log",
+          "description": "Evidence for Right to Erasure",
+          "location": "/evidence/GDPR_Art17",
+          "timestamp": "2025-11-16T19:27:26.670263",
+          "control_id": "GDPR_Art17"
+        },
+        {
+          "evidence_id": "0635861a-b2eb-4f98-a348-e191512a27a2",
+          "evidence_type": "log",
+          "description": "Evidence for Security of Processing",
+          "location": "/evidence/GDPR_Art32",
+          "timestamp": "2025-11-16T19:27:26.670292",
+          "control_id": "GDPR_Art32"
+        },
+        {
+          "evidence_id": "88af0a80-37db-44a5-a33d-0b6fc574ccfa",
+          "evidence_type": "log",
+          "description": "Evidence for Logical and Physical Access Controls",
+          "location": "/evidence/SOC2_CC6.1",
+          "timestamp": "2025-11-16T19:27:26.670318",
+          "control_id": "SOC2_CC6.1"
+        },
+        {
+          "evidence_id": "26889122-8a36-4443-bbed-c235d1ad910c",
+          "evidence_type": "log",
+          "description": "Evidence for Data Encryption",
+          "location": "/evidence/SOC2_CC6.6",
+          "timestamp": "2025-11-16T19:27:26.670324",
+          "control_id": "SOC2_CC6.6"
+        },
+        {
+          "evidence_id": "1415aefc-7a45-4a56-8caa-c4176077bf4a",
+          "evidence_type": "log",
+          "description": "Evidence for System Monitoring",
+          "location": "/evidence/SOC2_CC7.2",
+          "timestamp": "2025-11-16T19:27:26.670330",
+          "control_id": "SOC2_CC7.2"
+        },
+        {
+          "evidence_id": "75504d5d-6a1a-4b07-b123-bd02e0ecc3af",
+          "evidence_type": "log",
+          "description": "Evidence for Administrative Safeguards",
+          "location": "/evidence/HIPAA_164.308",
+          "timestamp": "2025-11-16T19:27:26.670349",
+          "control_id": "HIPAA_164.308"
+        }
+      ]
+    }
+  }
+}

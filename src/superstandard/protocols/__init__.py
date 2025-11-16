@@ -1,4 +1,4 @@
-"""Protocol implementations (ANP, ACP, BAP, ADP, CIP, ASP, TAP)"""
+"""Protocol implementations (ANP, ACP, BAP, ADP, CIP, ASP, TAP, CAP)"""
 
 # Export protocols
 try:
@@ -54,6 +54,25 @@ try:
         AlternativeAction, WhatIfSimulation, TAPMessage,
         # Enums
         TemporalResolution, CausalityModel, OperationType, QueryType as TAPQueryType,
+    )
+except ImportError:
+    pass
+
+try:
+    from .cap_v1 import (
+        # Core functionality
+        CAPClient, CodeAnalyzer,
+        # Data models
+        AnalysisRequest, AnalysisResult, AnalysisTarget, AnalysisConfig,
+        CodeIssue, CodeLocation, SuggestedFix,
+        QualityMetrics, CyclomaticComplexity, TestCoverage, CodeDuplication, TechnicalDebt,
+        SecurityFindings, Vulnerability, VulnerabilityCount,
+        SecretDetection, SecurityHotspot, DependencyVulnerability,
+        Recommendation, AnalysisSummary,
+        # Enums
+        AnalysisType, TargetType, AnalysisDepth, Severity, IssueCategory, SecretType, OutputFormat,
+        # Convenience functions
+        analyze_file, analyze_code, create_analysis_request,
     )
 except ImportError:
     pass
