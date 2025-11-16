@@ -1,0 +1,275 @@
+# ============================================================================
+# APQC Real-Time Agent Monitoring Dashboard - Configuration
+# ============================================================================
+# Production-ready configuration for monitoring 118+ APQC agents
+# across 13 categories and 5 production workflows.
+#
+# Version: 1.0.0
+# Author: APQC Dashboard Team
+# Date: 2025-11-16
+# ============================================================================
+
+# Server Configuration
+server:
+  host: "0.0.0.0"              # Bind to all interfaces (use "127.0.0.1" for local only)
+  port: 8765                    # Dashboard server port
+  reload: false                 # Auto-reload on code changes (dev only)
+  workers: 1                    # Number of worker processes
+  log_level: "info"            # Logging level: debug, info, warning, error, critical
+  access_log: true             # Enable access logging
+
+# WebSocket Configuration
+websocket:
+  heartbeat_interval: 10       # Seconds between heartbeat messages
+  connection_timeout: 300      # Connection timeout in seconds (5 minutes)
+  max_connections: 1000        # Maximum concurrent WebSocket connections
+  ping_interval: 30            # Seconds between ping messages
+  ping_timeout: 10             # Timeout for ping response
+  message_queue_size: 1000     # Max queued messages per connection
+  compression: true            # Enable WebSocket compression
+
+# Monitoring Configuration
+monitoring:
+  # Refresh rates (in seconds)
+  agent_refresh_rate: 5        # Update agent status every 5 seconds
+  metrics_refresh_rate: 10     # Collect metrics every 10 seconds
+  workflow_refresh_rate: 15    # Update workflow status every 15 seconds
+  category_refresh_rate: 20    # Aggregate category metrics every 20 seconds
+
+  # Data retention
+  retention_days: 30           # Keep historical data for 30 days
+  metrics_retention_days: 90   # Keep metrics for 90 days
+  events_retention_days: 7     # Keep events for 7 days
+
+  # Sampling
+  metrics_sampling_rate: 1.0   # Sample 100% of metrics (0.0-1.0)
+  event_sampling_rate: 1.0     # Sample 100% of events (0.0-1.0)
+
+# Database Configuration
+database:
+  path: "./dashboard_data.db"  # SQLite database path
+  backup_enabled: true         # Enable automatic backups
+  backup_interval: 3600        # Backup every hour (seconds)
+  backup_path: "./backups"     # Backup directory
+  backup_retention: 7          # Keep backups for 7 days
+  pool_size: 10                # Connection pool size
+  max_overflow: 20             # Max overflow connections
+  echo: false                  # Log all SQL queries (debug only)
+
+# Alert Configuration
+alerts:
+  enabled: true                # Enable alerting system
+
+  # Thresholds
+  agent_down_threshold: 60              # Alert if agent down for 60 seconds
+  performance_degradation_threshold: 0.7 # Alert if performance drops below 70%
+  error_rate_threshold: 0.1             # Alert if error rate exceeds 10%
+  memory_threshold: 0.9                  # Alert if memory usage exceeds 90%
+  cpu_threshold: 0.85                    # Alert if CPU usage exceeds 85%
+  response_time_threshold: 5.0           # Alert if response time exceeds 5 seconds
+
+  # Notification channels
+  notifications:
+    console: true              # Log alerts to console
+    email: false               # Send email alerts (requires SMTP config)
+    slack: false               # Send Slack alerts (requires webhook)
+    webhook: false             # Send to custom webhook
+
+  # Alert throttling
+  throttle_duration: 300       # Don't repeat same alert within 5 minutes
+  max_alerts_per_hour: 100     # Maximum alerts per hour
+
+# Performance Configuration
+performance:
+  # Update batching
+  batch_updates: true          # Batch database updates
+  batch_size: 100              # Maximum batch size
+  batch_timeout: 5             # Flush batch after 5 seconds
+
+  # Caching
+  cache_enabled: true          # Enable in-memory caching
+  cache_ttl: 60                # Cache TTL in seconds
+  cache_max_size: 1000         # Maximum cached items
+
+  # Rate limiting
+  rate_limit_enabled: true     # Enable rate limiting
+  rate_limit_requests: 1000    # Requests per minute
+  rate_limit_burst: 100        # Burst size
+
+# Security Configuration
+security:
+  # CORS
+  cors_enabled: true           # Enable CORS
+  cors_origins:                # Allowed origins
+    - "*"                      # Allow all (restrict in production)
+  cors_credentials: true       # Allow credentials
+  cors_methods:                # Allowed methods
+    - GET
+    - POST
+    - PUT
+    - DELETE
+    - OPTIONS
+  cors_headers:                # Allowed headers
+    - "*"
+
+  # API Keys (optional)
+  api_key_enabled: false       # Require API key for endpoints
+  api_keys: []                 # List of valid API keys
+
+  # Rate limiting per IP
+  ip_rate_limit: 1000          # Requests per minute per IP
+  ip_ban_threshold: 10000      # Ban IP after this many requests
+
+# APQC Framework Configuration
+apqc:
+  # Auto-discovery
+  auto_discover: true          # Automatically discover APQC agents
+  discovery_interval: 300      # Re-discover agents every 5 minutes
+
+  # Categories (13 APQC categories)
+  categories:
+    - id: "1.0"
+      name: "Vision & Strategy"
+      color: "#3b82f6"
+      priority: 1
+    - id: "2.0"
+      name: "Products & Services"
+      color: "#8b5cf6"
+      priority: 2
+    - id: "3.0"
+      name: "Market & Sell"
+      color: "#ec4899"
+      priority: 3
+    - id: "4.0"
+      name: "Deliver Physical"
+      color: "#f59e0b"
+      priority: 4
+    - id: "5.0"
+      name: "Deliver Services"
+      color: "#10b981"
+      priority: 5
+    - id: "6.0"
+      name: "Customer Service"
+      color: "#14b8a6"
+      priority: 6
+    - id: "7.0"
+      name: "Human Capital"
+      color: "#6366f1"
+      priority: 7
+    - id: "8.0"
+      name: "Information Technology"
+      color: "#8b5cf6"
+      priority: 8
+    - id: "9.0"
+      name: "Financial Resources"
+      color: "#10b981"
+      priority: 9
+    - id: "10.0"
+      name: "Assets"
+      color: "#f59e0b"
+      priority: 10
+    - id: "11.0"
+      name: "Risk & Compliance"
+      color: "#ef4444"
+      priority: 11
+    - id: "12.0"
+      name: "External Relationships"
+      color: "#3b82f6"
+      priority: 12
+    - id: "13.0"
+      name: "Business Capabilities"
+      color: "#a855f7"
+      priority: 13
+
+  # Workflows
+  workflows:
+    - id: "financial_close"
+      name: "Financial Close Automation"
+      type: "financial"
+      categories: ["9.0"]
+    - id: "marketing_campaign"
+      name: "Marketing Campaign"
+      type: "marketing"
+      categories: ["3.0", "12.0"]
+    - id: "recruitment"
+      name: "AI Recruitment"
+      type: "recruitment"
+      categories: ["7.0"]
+    - id: "supply_chain"
+      name: "Supply Chain Optimization"
+      type: "supply_chain"
+      categories: ["4.0", "10.0"]
+    - id: "customer_support"
+      name: "Customer Support Automation"
+      type: "customer_support"
+      categories: ["6.0"]
+
+# Dashboard UI Configuration
+ui:
+  # Theme
+  theme: "dark"                # dark or light
+  primary_color: "#4f46e5"     # Primary accent color
+  secondary_color: "#7c3aed"   # Secondary accent color
+
+  # Layout
+  default_view: "overview"     # Default view: overview, categories, agents
+  items_per_page: 50           # Items per page in lists
+  auto_refresh: true           # Auto-refresh data
+  show_animations: true        # Enable UI animations
+
+  # Charts
+  chart_type: "line"           # Default chart type
+  chart_theme: "dark"          # Chart theme
+  show_legends: true           # Show chart legends
+  animate_charts: true         # Animate chart updates
+
+  # Grid
+  grid_columns: 4              # Number of grid columns
+  compact_mode: false          # Use compact card layout
+
+# Logging Configuration
+logging:
+  # Log levels
+  level: "info"                # Global log level
+  format: "json"               # json or text
+  timestamp_format: "%Y-%m-%d %H:%M:%S"
+
+  # Log files
+  file_logging: true           # Enable file logging
+  log_file: "./logs/dashboard.log"
+  max_file_size: 10485760      # 10 MB
+  backup_count: 5              # Keep 5 backup files
+
+  # Handlers
+  handlers:
+    console: true              # Log to console
+    file: true                 # Log to file
+    syslog: false              # Log to syslog
+
+# Feature Flags
+features:
+  enable_workflows: true       # Enable workflow monitoring
+  enable_metrics: true         # Enable metrics collection
+  enable_events: true          # Enable event tracking
+  enable_alerts: true          # Enable alerting
+  enable_analytics: true       # Enable analytics
+  enable_predictions: false    # Enable predictive analytics (experimental)
+  enable_ml_insights: false    # Enable ML-based insights (experimental)
+
+# Development/Debug
+debug:
+  enabled: false               # Enable debug mode
+  verbose_logging: false       # Verbose logging
+  profile_requests: false      # Profile API requests
+  show_sql: false              # Show SQL queries
+  mock_agents: true            # Use mock agents if APQC framework not available
+  mock_agent_count: 54         # Number of mock agents to create
+
+# Production Optimizations
+production:
+  minify_responses: true       # Minify JSON responses
+  gzip_compression: true       # Enable gzip compression
+  cache_static_files: true     # Cache static files
+  preload_data: true           # Preload data at startup
+  optimize_queries: true       # Optimize database queries
+  connection_pooling: true     # Use connection pooling

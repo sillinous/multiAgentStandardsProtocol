@@ -1,0 +1,13 @@
+# Additional requirements for APQC Admin Panel
+# Install with: pip install -r admin_requirements.txt
+
+# Encryption
+cryptography>=41.0.0
+
+# Password hashing
+passlib[bcrypt]>=1.7.4
+
+# Already in main requirements (verifying)
+fastapi>=0.104.0
+pydantic>=2.0.0
+pyyaml>=6.0
