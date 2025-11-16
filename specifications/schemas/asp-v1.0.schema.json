@@ -1,0 +1,482 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://superstandard.org/schemas/asp/v1.0.json",
+  "title": "Agent Semantic Protocol (ASP) v1.0",
+  "description": "Semantic interoperability layer enabling agents to understand each other's capabilities, data types, and domain concepts",
+  "version": "1.0.0",
+  "type": "object",
+  "required": ["protocol", "version", "semantic_declaration"],
+  "properties": {
+    "protocol": {
+      "type": "string",
+      "const": "ASP"
+    },
+    "version": {
+      "type": "string",
+      "pattern": "^\\d+\\.\\d+\\.\\d+$",
+      "default": "1.0.0"
+    },
+    "semantic_declaration": {
+      "type": "object",
+      "description": "Agent's semantic capabilities and understanding",
+      "required": ["agent_id", "ontologies", "capabilities"],
+      "properties": {
+        "agent_id": {
+          "type": "string",
+          "description": "Agent identifier"
+        },
+        "ontologies": {
+          "type": "array",
+          "description": "Ontologies this agent understands",
+          "items": {
+            "$ref": "#/$defs/OntologyReference"
+          }
+        },
+        "capabilities": {
+          "type": "array",
+          "description": "Semantic capability descriptions",
+          "items": {
+            "$ref": "#/$defs/SemanticCapability"
+          }
+        },
+        "schemas": {
+          "type": "array",
+          "description": "Data schemas this agent produces/consumes",
+          "items": {
+            "$ref": "#/$defs/SchemaReference"
+          }
+        },
+        "domain_knowledge": {
+          "type": "array",
+          "description": "Domain-specific knowledge areas",
+          "items": {
+            "$ref": "#/$defs/DomainKnowledge"
+          }
+        }
+      }
+    },
+    "semantic_query": {
+      "type": "object",
+      "description": "Query for semantic alignment or discovery",
+      "properties": {
+        "query_type": {
+          "type": "string",
+          "enum": ["capability_match", "schema_alignment", "ontology_mapping", "concept_resolution"]
+        },
+        "query": {
+          "type": "object",
+          "description": "Query-specific parameters"
+        }
+      }
+    },
+    "semantic_response": {
+      "type": "object",
+      "description": "Response to semantic query",
+      "properties": {
+        "matches": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/SemanticMatch"
+          }
+        },
+        "alignments": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/SemanticAlignment"
+          }
+        }
+      }
+    }
+  },
+  "$defs": {
+    "OntologyReference": {
+      "type": "object",
+      "required": ["ontology_id", "namespace"],
+      "properties": {
+        "ontology_id": {
+          "type": "string",
+          "description": "Unique ontology identifier",
+          "examples": ["apqc:7.0.1", "schema.org:latest", "fibo:2023-Q4"]
+        },
+        "namespace": {
+          "type": "string",
+          "format": "uri",
+          "description": "Ontology namespace URI",
+          "examples": ["https://apqc.org/ontology/7.0.1", "https://schema.org/"]
+        },
+        "version": {
+          "type": "string",
+          "description": "Ontology version"
+        },
+        "coverage": {
+          "type": "array",
+          "description": "Specific concepts/classes from this ontology",
+          "items": {
+            "type": "string"
+          },
+          "examples": [["FinancialAnalysis", "BudgetPlanning", "RevenueAccounting"]]
+        },
+        "extensions": {
+          "type": "object",
+          "description": "Custom extensions to the ontology",
+          "additionalProperties": true
+        }
+      }
+    },
+    "SemanticCapability": {
+      "type": "object",
+      "required": ["capability_id", "semantic_type"],
+      "properties": {
+        "capability_id": {
+          "type": "string",
+          "description": "Unique capability identifier"
+        },
+        "capability_name": {
+          "type": "string",
+          "description": "Human-readable capability name"
+        },
+        "semantic_type": {
+          "type": "string",
+          "format": "uri",
+          "description": "Semantic type from ontology",
+          "examples": [
+            "apqc:FinancialAnalysis",
+            "schema.org:AnalyzeAction",
+            "superstandard:StrategicPlanning"
+          ]
+        },
+        "inputs": {
+          "type": "array",
+          "description": "Semantic description of inputs",
+          "items": {
+            "$ref": "#/$defs/SemanticParameter"
+          }
+        },
+        "outputs": {
+          "type": "array",
+          "description": "Semantic description of outputs",
+          "items": {
+            "$ref": "#/$defs/SemanticParameter"
+          }
+        },
+        "preconditions": {
+          "type": "array",
+          "description": "Semantic preconditions (ontology concepts)",
+          "items": {
+            "type": "string",
+            "format": "uri"
+          }
+        },
+        "postconditions": {
+          "type": "array",
+          "description": "Semantic postconditions (guaranteed outcomes)",
+          "items": {
+            "type": "string",
+            "format": "uri"
+          }
+        },
+        "quality_of_service": {
+          "type": "object",
+          "description": "QoS characteristics",
+          "properties": {
+            "accuracy": {"type": "number", "minimum": 0, "maximum": 1},
+            "latency_ms": {"type": "integer"},
+            "throughput": {"type": "number"},
+            "reliability": {"type": "number", "minimum": 0, "maximum": 1}
+          }
+        }
+      }
+    },
+    "SemanticParameter": {
+      "type": "object",
+      "required": ["name", "semantic_type"],
+      "properties": {
+        "name": {
+          "type": "string",
+          "description": "Parameter name"
+        },
+        "semantic_type": {
+          "type": "string",
+          "format": "uri",
+          "description": "Semantic type from ontology",
+          "examples": [
+            "schema.org:MonetaryAmount",
+            "apqc:FinancialStatement",
+            "fibo:RevenueStream"
+          ]
+        },
+        "schema_ref": {
+          "type": "string",
+          "format": "uri",
+          "description": "Reference to JSON Schema for this parameter"
+        },
+        "unit": {
+          "type": "string",
+          "description": "Unit of measurement (for quantitative data)",
+          "examples": ["USD", "percentage", "count"]
+        },
+        "constraints": {
+          "type": "object",
+          "description": "Semantic constraints",
+          "properties": {
+            "range": {
+              "type": "object",
+              "properties": {
+                "min": {"type": "number"},
+                "max": {"type": "number"}
+              }
+            },
+            "enum": {
+              "type": "array",
+              "description": "Allowed values"
+            },
+            "pattern": {
+              "type": "string",
+              "description": "Regex pattern for strings"
+            }
+          }
+        },
+        "optional": {
+          "type": "boolean",
+          "default": false
+        }
+      }
+    },
+    "SchemaReference": {
+      "type": "object",
+      "required": ["schema_id", "schema_uri"],
+      "properties": {
+        "schema_id": {
+          "type": "string",
+          "description": "Unique schema identifier",
+          "examples": ["financial_statement_v1", "budget_report_v2"]
+        },
+        "schema_uri": {
+          "type": "string",
+          "format": "uri",
+          "description": "URI to JSON Schema definition"
+        },
+        "schema_type": {
+          "type": "string",
+          "enum": ["json-schema", "xsd", "protobuf", "avro", "custom"]
+        },
+        "semantic_mapping": {
+          "type": "object",
+          "description": "Mapping from schema fields to ontology concepts",
+          "additionalProperties": {
+            "type": "string",
+            "format": "uri"
+          },
+          "examples": [{
+            "revenue": "schema.org:totalRevenue",
+            "expenses": "schema.org:operatingExpense",
+            "netIncome": "fibo:NetIncome"
+          }]
+        }
+      }
+    },
+    "DomainKnowledge": {
+      "type": "object",
+      "required": ["domain", "proficiency"],
+      "properties": {
+        "domain": {
+          "type": "string",
+          "description": "Domain identifier",
+          "examples": [
+            "finance",
+            "healthcare",
+            "manufacturing",
+            "logistics",
+            "human_resources"
+          ]
+        },
+        "subdomain": {
+          "type": "string",
+          "description": "Specific subdomain",
+          "examples": ["treasury_operations", "revenue_accounting", "budgeting"]
+        },
+        "proficiency": {
+          "type": "string",
+          "enum": ["basic", "intermediate", "advanced", "expert"],
+          "description": "Level of domain knowledge"
+        },
+        "standards": {
+          "type": "array",
+          "description": "Domain standards understood",
+          "items": {
+            "type": "string"
+          },
+          "examples": [["GAAP", "IFRS", "SOX"]]
+        },
+        "regulations": {
+          "type": "array",
+          "description": "Regulatory frameworks understood",
+          "items": {
+            "type": "string"
+          },
+          "examples": [["GDPR", "HIPAA", "PCI-DSS"]]
+        }
+      }
+    },
+    "SemanticMatch": {
+      "type": "object",
+      "description": "Result of semantic matching",
+      "properties": {
+        "agent_id": {
+          "type": "string"
+        },
+        "capability_id": {
+          "type": "string"
+        },
+        "match_score": {
+          "type": "number",
+          "minimum": 0,
+          "maximum": 1,
+          "description": "Semantic similarity score (0-1)"
+        },
+        "match_type": {
+          "type": "string",
+          "enum": ["exact", "subsumption", "partial", "analogous"]
+        },
+        "confidence": {
+          "type": "number",
+          "minimum": 0,
+          "maximum": 1
+        }
+      }
+    },
+    "SemanticAlignment": {
+      "type": "object",
+      "description": "Alignment between different semantic representations",
+      "properties": {
+        "source_concept": {
+          "type": "string",
+          "format": "uri",
+          "description": "Source ontology concept"
+        },
+        "target_concept": {
+          "type": "string",
+          "format": "uri",
+          "description": "Target ontology concept"
+        },
+        "alignment_type": {
+          "type": "string",
+          "enum": ["equivalence", "subsumption", "overlap", "disjoint"],
+          "description": "Type of semantic relationship"
+        },
+        "confidence": {
+          "type": "number",
+          "minimum": 0,
+          "maximum": 1
+        },
+        "transformation": {
+          "type": "object",
+          "description": "Data transformation rules for alignment",
+          "properties": {
+            "transformation_type": {
+              "type": "string",
+              "enum": ["identity", "unit_conversion", "schema_mapping", "custom"]
+            },
+            "transformation_spec": {
+              "type": "object",
+              "description": "Transformation specification"
+            }
+          }
+        }
+      }
+    }
+  },
+  "examples": [
+    {
+      "protocol": "ASP",
+      "version": "1.0.0",
+      "semantic_declaration": {
+        "agent_id": "apqc_9_2_xyz123",
+        "ontologies": [
+          {
+            "ontology_id": "apqc:7.0.1",
+            "namespace": "https://apqc.org/ontology/7.0.1",
+            "version": "7.0.1",
+            "coverage": ["FinancialResourceManagement", "BudgetPlanning", "CostAccounting"]
+          },
+          {
+            "ontology_id": "schema.org:latest",
+            "namespace": "https://schema.org/",
+            "coverage": ["MonetaryAmount", "FinancialProduct", "Invoice"]
+          },
+          {
+            "ontology_id": "fibo:2023-Q4",
+            "namespace": "https://spec.edmcouncil.org/fibo/ontology/",
+            "coverage": ["AccountingStandard", "FinancialStatement", "RevenueRecognition"]
+          }
+        ],
+        "capabilities": [
+          {
+            "capability_id": "perform_budgeting",
+            "capability_name": "Perform Budget Planning and Analysis",
+            "semantic_type": "apqc:BudgetPlanning",
+            "inputs": [
+              {
+                "name": "timeframe",
+                "semantic_type": "schema.org:DateTime",
+                "schema_ref": "https://schemas.superstandard.org/timeframe/v1"
+              },
+              {
+                "name": "total_budget",
+                "semantic_type": "schema.org:MonetaryAmount",
+                "unit": "USD",
+                "constraints": {
+                  "range": {"min": 0}
+                }
+              },
+              {
+                "name": "initiatives",
+                "semantic_type": "apqc:StrategicInitiative",
+                "schema_ref": "https://schemas.superstandard.org/initiative/v1"
+              }
+            ],
+            "outputs": [
+              {
+                "name": "budget_allocation",
+                "semantic_type": "fibo:BudgetAllocation",
+                "schema_ref": "https://schemas.superstandard.org/budget_allocation/v1"
+              },
+              {
+                "name": "financial_forecast",
+                "semantic_type": "fibo:FinancialForecast",
+                "schema_ref": "https://schemas.superstandard.org/financial_forecast/v1"
+              }
+            ],
+            "quality_of_service": {
+              "accuracy": 0.95,
+              "latency_ms": 5000,
+              "reliability": 0.99
+            }
+          }
+        ],
+        "schemas": [
+          {
+            "schema_id": "budget_allocation_v1",
+            "schema_uri": "https://schemas.superstandard.org/budget_allocation/v1.json",
+            "schema_type": "json-schema",
+            "semantic_mapping": {
+              "total_amount": "schema.org:totalPrice",
+              "currency": "schema.org:priceCurrency",
+              "fiscal_year": "fibo:FiscalYear",
+              "line_items": "fibo:BudgetLineItem"
+            }
+          }
+        ],
+        "domain_knowledge": [
+          {
+            "domain": "finance",
+            "subdomain": "budgeting",
+            "proficiency": "expert",
+            "standards": ["GAAP", "IFRS"],
+            "regulations": ["SOX", "GDPR"]
+          }
+        ]
+      }
+    }
+  ]
+}

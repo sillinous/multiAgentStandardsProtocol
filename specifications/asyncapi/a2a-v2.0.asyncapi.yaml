@@ -1,0 +1,405 @@
+asyncapi: 3.0.0
+info:
+  title: Agent-to-Agent Protocol (A2A) AsyncAPI
+  version: 2.0.0
+  description: |
+    Asynchronous event-driven communication between agents in the SuperStandard ecosystem.
+    Supports message passing, event notifications, and request-response patterns.
+  contact:
+    name: SuperStandard Consortium
+    url: https://superstandard.org
+    email: standards@superstandard.org
+  license:
+    name: Apache 2.0
+    url: https://www.apache.org/licenses/LICENSE-2.0.html
+
+servers:
+  production:
+    host: bus.superstandard.org:443
+    protocol: wss
+    description: Production A2A message bus
+    security:
+      - bearer: []
+  development:
+    host: localhost:8080
+    protocol: ws
+    description: Local development server
+  mqtt:
+    host: mqtt.superstandard.org:8883
+    protocol: mqtt
+    description: MQTT broker for IoT agents
+    security:
+      - bearer: []
+
+channels:
+  agent.{agent_id}.inbox:
+    address: agent.{agent_id}.inbox
+    description: Personal inbox for direct messages to a specific agent
+    parameters:
+      agent_id:
+        description: Unique agent identifier (APQC ID or custom)
+        schema:
+          type: string
+    messages:
+      taskAssignment:
+        $ref: '#/components/messages/taskAssignment'
+      statusUpdate:
+        $ref: '#/components/messages/statusUpdate'
+      request:
+        $ref: '#/components/messages/request'
+      response:
+        $ref: '#/components/messages/response'
+      error:
+        $ref: '#/components/messages/error'
+
+  agent.broadcast:
+    address: agent.broadcast
+    description: Broadcast channel for system-wide announcements
+    messages:
+      systemEvent:
+        $ref: '#/components/messages/systemEvent'
+      heartbeat:
+        $ref: '#/components/messages/heartbeat'
+
+  agent.{category}.{operation}:
+    address: agent.{category}.{operation}
+    description: Topic-based routing for agent categories (APQC categories)
+    parameters:
+      category:
+        description: APQC category (e.g., 1.0, 9.0)
+        schema:
+          type: string
+          pattern: '^\d+\.\d+$'
+      operation:
+        description: Operation type (e.g., task_assignment, notification)
+        schema:
+          type: string
+    messages:
+      categoryMessage:
+        $ref: '#/components/messages/taskAssignment'
+
+  agent.discovery:
+    address: agent.discovery
+    description: Agent discovery and registration channel
+    messages:
+      registration:
+        $ref: '#/components/messages/agentRegistration'
+      deregistration:
+        $ref: '#/components/messages/agentDeregistration'
+      discoveryQuery:
+        $ref: '#/components/messages/discoveryQuery'
+
+operations:
+  sendTaskAssignment:
+    action: send
+    channel:
+      $ref: '#/channels/agent.{agent_id}.inbox'
+    summary: Send a task assignment to an agent
+    messages:
+      - $ref: '#/components/messages/taskAssignment'
+
+  receiveTaskAssignment:
+    action: receive
+    channel:
+      $ref: '#/channels/agent.{agent_id}.inbox'
+    summary: Receive a task assignment
+    messages:
+      - $ref: '#/components/messages/taskAssignment'
+
+  broadcastSystemEvent:
+    action: send
+    channel:
+      $ref: '#/channels/agent.broadcast'
+    summary: Broadcast system event to all agents
+    messages:
+      - $ref: '#/components/messages/systemEvent'
+
+  subscribeToCategory:
+    action: receive
+    channel:
+      $ref: '#/channels/agent.{category}.{operation}'
+    summary: Subscribe to messages for a specific APQC category
+    messages:
+      - $ref: '#/components/messages/categoryMessage'
+
+components:
+  messages:
+    taskAssignment:
+      name: taskAssignment
+      title: Task Assignment
+      summary: Assign a task to an agent
+      contentType: application/json
+      payload:
+        $ref: '#/components/schemas/a2aMessage'
+      examples:
+        - name: budgetingTask
+          summary: Budget allocation task
+          payload:
+            envelope:
+              protocol: A2A
+              version: 2.0.0
+              message_id: 550e8400-e29b-41d4-a716-446655440000
+              from_agent:
+                agent_id: apqc_1_0_strategic
+                agent_name: develop_business_strategy_strategic_agent
+                agent_type: strategic
+                capabilities: [analysis, strategic_planning]
+              to_agent:
+                agent_id: apqc_9_2_budgeting
+                agent_name: perform_budgeting_financial_agent
+                agent_type: financial
+              timestamp: '2025-11-16T10:00:00Z'
+              message_type: task_assignment
+              priority: high
+              ttl: 3600
+            payload:
+              content:
+                task: Create FY2026 budget allocation
+                requirements:
+                  timeframe: '2026-01-01 to 2026-12-31'
+                  total_budget: 5000000
+              metadata:
+                apqc_process: '9.2'
+                urgency: high
+
+    statusUpdate:
+      name: statusUpdate
+      title: Status Update
+      summary: Agent status update notification
+      contentType: application/json
+      payload:
+        $ref: '#/components/schemas/a2aMessage'
+
+    request:
+      name: request
+      title: Request Message
+      summary: Request information or action from another agent
+      contentType: application/json
+      payload:
+        $ref: '#/components/schemas/a2aMessage'
+
+    response:
+      name: response
+      title: Response Message
+      summary: Response to a previous request
+      contentType: application/json
+      payload:
+        $ref: '#/components/schemas/a2aMessage'
+
+    error:
+      name: error
+      title: Error Message
+      summary: Error notification from agent
+      contentType: application/json
+      payload:
+        $ref: '#/components/schemas/a2aMessage'
+
+    systemEvent:
+      name: systemEvent
+      title: System Event
+      summary: System-wide event broadcast
+      contentType: application/json
+      payload:
+        $ref: '#/components/schemas/a2aMessage'
+
+    heartbeat:
+      name: heartbeat
+      title: Heartbeat
+      summary: Agent heartbeat for liveness monitoring
+      contentType: application/json
+      payload:
+        type: object
+        properties:
+          agent_id:
+            type: string
+          timestamp:
+            type: string
+            format: date-time
+          status:
+            type: string
+            enum: [healthy, degraded, unhealthy]
+
+    agentRegistration:
+      name: agentRegistration
+      title: Agent Registration
+      summary: Register agent on the network
+      contentType: application/json
+      payload:
+        type: object
+        required: [agent_id, capabilities, endpoint]
+        properties:
+          agent_id:
+            type: string
+          agent_name:
+            type: string
+          agent_type:
+            type: string
+          capabilities:
+            type: array
+            items:
+              type: string
+          endpoint:
+            type: string
+            format: uri
+          protocols_supported:
+            type: array
+            items:
+              type: string
+              enum: [A2A, ANP, ACP, A2P, MCP, CAP, BAP, CAIP, ASP, TAP, ADP, CIP]
+
+    agentDeregistration:
+      name: agentDeregistration
+      title: Agent Deregistration
+      summary: Remove agent from network
+      contentType: application/json
+      payload:
+        type: object
+        properties:
+          agent_id:
+            type: string
+          reason:
+            type: string
+
+    discoveryQuery:
+      name: discoveryQuery
+      title: Discovery Query
+      summary: Query for agents with specific capabilities
+      contentType: application/json
+      payload:
+        type: object
+        properties:
+          query_id:
+            type: string
+          capabilities_required:
+            type: array
+            items:
+              type: string
+          category:
+            type: string
+            description: APQC category filter
+
+  schemas:
+    a2aMessage:
+      type: object
+      required: [envelope, payload]
+      properties:
+        envelope:
+          $ref: '#/components/schemas/envelope'
+        payload:
+          $ref: '#/components/schemas/payload'
+
+    envelope:
+      type: object
+      required: [protocol, version, message_id, from_agent, to_agent, timestamp, message_type]
+      properties:
+        protocol:
+          type: string
+          const: A2A
+        version:
+          type: string
+          pattern: '^\d+\.\d+\.\d+$'
+        message_id:
+          type: string
+          format: uuid
+        correlation_id:
+          type: string
+          format: uuid
+        from_agent:
+          $ref: '#/components/schemas/agentInfo'
+        to_agent:
+          $ref: '#/components/schemas/agentInfo'
+        timestamp:
+          type: string
+          format: date-time
+        message_type:
+          type: string
+          enum:
+            - task_assignment
+            - task_completed
+            - status_update
+            - request
+            - response
+            - error
+            - negotiation
+            - acknowledgment
+            - event
+            - notification
+            - heartbeat
+            - discovery
+        priority:
+          type: string
+          enum: [low, normal, high, critical]
+          default: normal
+        ttl:
+          type: integer
+          minimum: 0
+          default: 0
+        content_type:
+          type: string
+          default: application/json
+
+    agentInfo:
+      type: object
+      required: [agent_id, agent_name]
+      properties:
+        agent_id:
+          type: string
+        agent_name:
+          type: string
+        agent_type:
+          type: string
+        version:
+          type: string
+        capabilities:
+          type: array
+          items:
+            type: string
+        endpoint:
+          type: string
+          format: uri
+
+    payload:
+      type: object
+      required: [content]
+      properties:
+        content:
+          oneOf:
+            - type: object
+            - type: string
+            - type: array
+        metadata:
+          type: object
+          additionalProperties: true
+        context:
+          type: object
+          properties:
+            conversation_id:
+              type: string
+            turn_number:
+              type: integer
+            parent_task_id:
+              type: string
+            workspace_path:
+              type: string
+
+  securitySchemes:
+    bearer:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+      description: JWT authentication token
+    mtls:
+      type: X509
+      description: Mutual TLS authentication
+    apiKey:
+      type: apiKey
+      in: header
+      description: API key authentication
+
+tags:
+  - name: messaging
+    description: Core messaging operations
+  - name: discovery
+    description: Agent discovery and registration
+  - name: monitoring
+    description: Health and status monitoring

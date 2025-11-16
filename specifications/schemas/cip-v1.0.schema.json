@@ -1,0 +1,464 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://superstandard.org/schemas/cip/v1.0.json",
+  "title": "Collective Intelligence Protocol (CIP) v1.0",
+  "description": "WORLD-FIRST: Harness swarm intelligence and emergent behaviors. Enables agents to pool knowledge, make collective decisions, and achieve emergent problem-solving beyond individual capabilities.",
+  "version": "1.0.0",
+  "type": "object",
+  "required": ["protocol", "version"],
+  "properties": {
+    "protocol": {
+      "type": "string",
+      "const": "CIP"
+    },
+    "version": {
+      "type": "string",
+      "pattern": "^\\d+\\.\\d+\\.\\d+$",
+      "default": "1.0.0"
+    },
+    "collective_operation": {
+      "type": "object",
+      "description": "Collective intelligence operation",
+      "required": ["operation_type"],
+      "properties": {
+        "operation_type": {
+          "type": "string",
+          "enum": [
+            "knowledge_pooling",
+            "collective_decision",
+            "consensus_building",
+            "wisdom_of_crowds",
+            "emergent_pattern_detection",
+            "swarm_optimization",
+            "distributed_learning",
+            "stigmergy"
+          ]
+        },
+        "swarm_context": {
+          "$ref": "#/$defs/SwarmContext"
+        }
+      }
+    },
+    "knowledge_pooling": {
+      "type": "object",
+      "description": "Pool knowledge from multiple agents",
+      "properties": {
+        "topic": {
+          "type": "string",
+          "description": "Knowledge domain or question"
+        },
+        "participating_agents": {
+          "type": "array",
+          "description": "Agents contributing knowledge",
+          "items": {"type": "string"}
+        },
+        "pooling_strategy": {
+          "type": "string",
+          "enum": ["union", "intersection", "weighted_merge", "voting", "expert_selection"],
+          "default": "weighted_merge"
+        },
+        "confidence_threshold": {
+          "type": "number",
+          "minimum": 0,
+          "maximum": 1,
+          "default": 0.7,
+          "description": "Minimum confidence to include knowledge"
+        },
+        "conflict_resolution": {
+          "type": "string",
+          "enum": ["majority_vote", "highest_confidence", "expertise_weighted", "consensus"],
+          "default": "expertise_weighted"
+        }
+      }
+    },
+    "collective_decision": {
+      "type": "object",
+      "description": "Make a decision using collective intelligence",
+      "required": ["decision_question", "options"],
+      "properties": {
+        "decision_question": {
+          "type": "string",
+          "description": "The decision to be made"
+        },
+        "options": {
+          "type": "array",
+          "description": "Available choices",
+          "items": {
+            "type": "object",
+            "properties": {
+              "option_id": {"type": "string"},
+              "description": {"type": "string"},
+              "metadata": {"type": "object"}
+            }
+          }
+        },
+        "decision_method": {
+          "type": "string",
+          "enum": [
+            "simple_majority",
+            "weighted_voting",
+            "quadratic_voting",
+            "approval_voting",
+            "ranked_choice",
+            "consensus",
+            "prediction_market"
+          ],
+          "default": "weighted_voting"
+        },
+        "voting_weights": {
+          "type": "object",
+          "description": "How to weight each agent's vote",
+          "properties": {
+            "weight_by": {
+              "type": "string",
+              "enum": ["equal", "expertise", "performance", "reputation", "stake", "custom"]
+            },
+            "custom_weights": {
+              "type": "object",
+              "additionalProperties": {"type": "number"}
+            }
+          }
+        },
+        "quorum_required": {
+          "type": "number",
+          "minimum": 0,
+          "maximum": 1,
+          "description": "Minimum participation fraction (0-1)"
+        },
+        "deadline": {
+          "type": "string",
+          "format": "date-time",
+          "description": "Decision deadline"
+        }
+      }
+    },
+    "consensus_building": {
+      "type": "object",
+      "description": "Build consensus through iterative refinement",
+      "properties": {
+        "proposal": {
+          "type": "object",
+          "description": "Initial proposal"
+        },
+        "consensus_threshold": {
+          "type": "number",
+          "minimum": 0.5,
+          "maximum": 1,
+          "default": 0.8,
+          "description": "Required agreement level"
+        },
+        "max_iterations": {
+          "type": "integer",
+          "minimum": 1,
+          "default": 10,
+          "description": "Maximum refinement rounds"
+        },
+        "convergence_strategy": {
+          "type": "string",
+          "enum": ["median", "mean", "weighted_average", "delphi_method"],
+          "description": "How to converge opinions"
+        }
+      }
+    },
+    "wisdom_of_crowds": {
+      "type": "object",
+      "description": "Aggregate predictions or estimates from multiple agents",
+      "properties": {
+        "question": {
+          "type": "string",
+          "description": "Question to estimate/predict"
+        },
+        "estimates": {
+          "type": "array",
+          "description": "Individual agent estimates",
+          "items": {
+            "type": "object",
+            "properties": {
+              "agent_id": {"type": "string"},
+              "estimate": {"type": "number"},
+              "confidence": {"type": "number", "minimum": 0, "maximum": 1},
+              "reasoning": {"type": "string"}
+            }
+          }
+        },
+        "aggregation_method": {
+          "type": "string",
+          "enum": [
+            "mean",
+            "median",
+            "trimmed_mean",
+            "confidence_weighted",
+            "expertise_weighted",
+            "surprise_based"
+          ],
+          "default": "trimmed_mean"
+        },
+        "outlier_handling": {
+          "type": "object",
+          "properties": {
+            "method": {
+              "type": "string",
+              "enum": ["remove", "downweight", "keep"]
+            },
+            "threshold": {
+              "type": "number",
+              "description": "Standard deviations for outlier detection"
+            }
+          }
+        }
+      }
+    },
+    "emergent_pattern_detection": {
+      "type": "object",
+      "description": "Detect patterns that emerge from collective behavior",
+      "properties": {
+        "observation_window": {
+          "type": "object",
+          "properties": {
+            "start_time": {"type": "string", "format": "date-time"},
+            "end_time": {"type": "string", "format": "date-time"}
+          }
+        },
+        "pattern_types": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "enum": [
+              "clustering",
+              "synchronization",
+              "polarization",
+              "cascade",
+              "phase_transition",
+              "self-organization"
+            ]
+          }
+        },
+        "detection_algorithm": {
+          "type": "string",
+          "enum": ["graph_analysis", "time_series", "ml_clustering", "entropy_based"],
+          "default": "graph_analysis"
+        }
+      }
+    },
+    "swarm_optimization": {
+      "type": "object",
+      "description": "Optimize using swarm intelligence (PSO, ACO, etc.)",
+      "properties": {
+        "optimization_problem": {
+          "type": "object",
+          "properties": {
+            "objective_function": {"type": "string", "description": "Function to optimize"},
+            "constraints": {"type": "array", "items": {"type": "object"}},
+            "dimensions": {"type": "integer", "minimum": 1}
+          }
+        },
+        "algorithm": {
+          "type": "string",
+          "enum": [
+            "particle_swarm",
+            "ant_colony",
+            "bee_colony",
+            "firefly",
+            "bacterial_foraging",
+            "custom"
+          ],
+          "default": "particle_swarm"
+        },
+        "swarm_parameters": {
+          "type": "object",
+          "properties": {
+            "population_size": {"type": "integer", "minimum": 10},
+            "inertia_weight": {"type": "number"},
+            "cognitive_weight": {"type": "number"},
+            "social_weight": {"type": "number"},
+            "max_iterations": {"type": "integer"}
+          }
+        }
+      }
+    },
+    "stigmergy": {
+      "type": "object",
+      "description": "Indirect coordination through environmental marks",
+      "properties": {
+        "environment_id": {
+          "type": "string",
+          "description": "Shared environment for stigmergic communication"
+        },
+        "pheromone_type": {
+          "type": "string",
+          "description": "Type of mark/signal to deposit"
+        },
+        "intensity": {
+          "type": "number",
+          "minimum": 0,
+          "description": "Strength of the signal"
+        },
+        "evaporation_rate": {
+          "type": "number",
+          "minimum": 0,
+          "maximum": 1,
+          "description": "How quickly signals decay"
+        },
+        "location": {
+          "type": "object",
+          "description": "Where to deposit the mark",
+          "additionalProperties": true
+        }
+      }
+    },
+    "collective_response": {
+      "type": "object",
+      "description": "Result of collective intelligence operation",
+      "properties": {
+        "decision": {
+          "type": "object",
+          "description": "Collective decision result"
+        },
+        "knowledge": {
+          "type": "object",
+          "description": "Pooled knowledge"
+        },
+        "consensus_level": {
+          "type": "number",
+          "minimum": 0,
+          "maximum": 1,
+          "description": "Degree of agreement (0-1)"
+        },
+        "participating_agents": {
+          "type": "array",
+          "items": {"type": "string"}
+        },
+        "emergence_metrics": {
+          "$ref": "#/$defs/EmergenceMetrics"
+        }
+      }
+    }
+  },
+  "$defs": {
+    "SwarmContext": {
+      "type": "object",
+      "description": "Context for swarm operations",
+      "properties": {
+        "swarm_id": {
+          "type": "string",
+          "description": "Unique swarm identifier"
+        },
+        "swarm_size": {
+          "type": "integer",
+          "minimum": 2,
+          "description": "Number of agents in swarm"
+        },
+        "topology": {
+          "type": "string",
+          "enum": ["fully_connected", "ring", "star", "mesh", "hierarchical", "small_world"],
+          "default": "fully_connected",
+          "description": "Communication topology"
+        },
+        "coordination_pattern": {
+          "type": "string",
+          "enum": ["centralized", "decentralized", "hierarchical", "hybrid"]
+        }
+      }
+    },
+    "EmergenceMetrics": {
+      "type": "object",
+      "description": "Metrics measuring emergent properties",
+      "properties": {
+        "diversity_index": {
+          "type": "number",
+          "minimum": 0,
+          "maximum": 1,
+          "description": "Opinion/solution diversity (Shannon entropy normalized)"
+        },
+        "coherence_score": {
+          "type": "number",
+          "minimum": 0,
+          "maximum": 1,
+          "description": "How aligned the swarm is"
+        },
+        "adaptability": {
+          "type": "number",
+          "minimum": 0,
+          "maximum": 1,
+          "description": "Ability to adapt to changes"
+        },
+        "robustness": {
+          "type": "number",
+          "minimum": 0,
+          "maximum": 1,
+          "description": "Resilience to agent failures"
+        },
+        "synergy_factor": {
+          "type": "number",
+          "minimum": 0,
+          "description": "Collective performance / sum of individual performances"
+        },
+        "phase_transition_detected": {
+          "type": "boolean",
+          "description": "Whether sudden emergence was observed"
+        }
+      }
+    }
+  },
+  "examples": [
+    {
+      "protocol": "CIP",
+      "version": "1.0.0",
+      "collective_operation": {
+        "operation_type": "collective_decision",
+        "swarm_context": {
+          "swarm_id": "strategy_swarm_001",
+          "swarm_size": 15,
+          "topology": "fully_connected",
+          "coordination_pattern": "decentralized"
+        }
+      },
+      "collective_decision": {
+        "decision_question": "Which strategic initiative should receive priority funding in 2026?",
+        "options": [
+          {
+            "option_id": "digital_transformation",
+            "description": "Invest in AI and automation",
+            "metadata": {"estimated_cost": 3000000, "expected_roi": 2.5}
+          },
+          {
+            "option_id": "market_expansion",
+            "description": "Enter new geographic markets",
+            "metadata": {"estimated_cost": 2000000, "expected_roi": 1.8}
+          }
+        ],
+        "decision_method": "quadratic_voting",
+        "voting_weights": {
+          "weight_by": "expertise",
+          "custom_weights": {
+            "apqc_1_0_strategic": 1.5,
+            "apqc_9_2_financial": 1.3,
+            "apqc_3_0_marketing": 1.2
+          }
+        },
+        "quorum_required": 0.8,
+        "deadline": "2025-11-17T00:00:00Z"
+      }
+    },
+    {
+      "protocol": "CIP",
+      "version": "1.0.0",
+      "collective_operation": {
+        "operation_type": "wisdom_of_crowds"
+      },
+      "wisdom_of_crowds": {
+        "question": "What will be the company revenue in Q1 2026?",
+        "estimates": [
+          {"agent_id": "financial_agent_1", "estimate": 15000000, "confidence": 0.8, "reasoning": "Based on historical trends"},
+          {"agent_id": "sales_agent_2", "estimate": 16500000, "confidence": 0.7, "reasoning": "Pipeline analysis"},
+          {"agent_id": "market_agent_3", "estimate": 14200000, "confidence": 0.6, "reasoning": "Market conditions"}
+        ],
+        "aggregation_method": "confidence_weighted",
+        "outlier_handling": {
+          "method": "downweight",
+          "threshold": 2.0
+        }
+      }
+    }
+  ]
+}

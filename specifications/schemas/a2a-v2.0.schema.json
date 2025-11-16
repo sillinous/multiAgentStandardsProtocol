@@ -1,0 +1,331 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://superstandard.org/schemas/a2a/v2.0.json",
+  "title": "Agent-to-Agent Protocol (A2A) v2.0",
+  "description": "Formal specification for direct agent-to-agent communication in the SuperStandard ecosystem",
+  "version": "2.0.0",
+  "type": "object",
+  "required": ["envelope", "payload"],
+  "properties": {
+    "envelope": {
+      "type": "object",
+      "description": "Message routing and metadata container",
+      "required": ["protocol", "version", "message_id", "from_agent", "to_agent", "timestamp", "message_type"],
+      "properties": {
+        "protocol": {
+          "type": "string",
+          "const": "A2A",
+          "description": "Protocol identifier"
+        },
+        "version": {
+          "type": "string",
+          "pattern": "^\\d+\\.\\d+\\.\\d+$",
+          "description": "Semantic version of the A2A protocol",
+          "examples": ["2.0.0"]
+        },
+        "message_id": {
+          "type": "string",
+          "format": "uuid",
+          "description": "Unique message identifier (UUID v4)"
+        },
+        "correlation_id": {
+          "type": "string",
+          "format": "uuid",
+          "description": "Correlation ID for request-response patterns"
+        },
+        "from_agent": {
+          "$ref": "#/$defs/AgentInfo",
+          "description": "Sending agent information"
+        },
+        "to_agent": {
+          "$ref": "#/$defs/AgentInfo",
+          "description": "Recipient agent information"
+        },
+        "timestamp": {
+          "type": "string",
+          "format": "date-time",
+          "description": "Message creation timestamp (ISO 8601)"
+        },
+        "message_type": {
+          "type": "string",
+          "enum": [
+            "task_assignment",
+            "task_completed",
+            "status_update",
+            "request",
+            "response",
+            "error",
+            "negotiation",
+            "acknowledgment",
+            "event",
+            "notification",
+            "heartbeat",
+            "discovery"
+          ],
+          "description": "Type of message being sent"
+        },
+        "priority": {
+          "type": "string",
+          "enum": ["low", "normal", "high", "critical"],
+          "default": "normal",
+          "description": "Message priority for routing and processing"
+        },
+        "ttl": {
+          "type": "integer",
+          "minimum": 0,
+          "description": "Time-to-live in seconds (0 = no expiration)",
+          "default": 0
+        },
+        "expires_at": {
+          "type": "string",
+          "format": "date-time",
+          "description": "Expiration timestamp (calculated from timestamp + ttl)"
+        },
+        "reply_to": {
+          "type": "string",
+          "description": "Agent ID to send replies to (for routing)"
+        },
+        "content_type": {
+          "type": "string",
+          "description": "MIME type of payload content",
+          "default": "application/json",
+          "examples": ["application/json", "text/plain", "application/x-msgpack"]
+        },
+        "encoding": {
+          "type": "string",
+          "description": "Content encoding",
+          "enum": ["utf-8", "base64", "gzip"],
+          "default": "utf-8"
+        },
+        "security": {
+          "$ref": "#/$defs/SecurityMetadata",
+          "description": "Security and authentication metadata"
+        }
+      }
+    },
+    "payload": {
+      "type": "object",
+      "description": "Message content and data",
+      "required": ["content"],
+      "properties": {
+        "content": {
+          "description": "Main message content (type depends on message_type)",
+          "oneOf": [
+            {"type": "object"},
+            {"type": "string"},
+            {"type": "array"}
+          ]
+        },
+        "metadata": {
+          "type": "object",
+          "description": "Additional metadata specific to message type",
+          "additionalProperties": true
+        },
+        "context": {
+          "type": "object",
+          "description": "Execution context (MCP context, conversation state)",
+          "properties": {
+            "conversation_id": {"type": "string"},
+            "turn_number": {"type": "integer"},
+            "parent_task_id": {"type": "string"},
+            "workspace_path": {"type": "string"}
+          }
+        },
+        "attachments": {
+          "type": "array",
+          "description": "File or data attachments",
+          "items": {
+            "$ref": "#/$defs/Attachment"
+          }
+        }
+      }
+    }
+  },
+  "$defs": {
+    "AgentInfo": {
+      "type": "object",
+      "required": ["agent_id", "agent_name"],
+      "properties": {
+        "agent_id": {
+          "type": "string",
+          "description": "Unique agent identifier (APQC ID or custom ID)"
+        },
+        "agent_name": {
+          "type": "string",
+          "description": "Human-readable agent name"
+        },
+        "agent_type": {
+          "type": "string",
+          "description": "Agent classification",
+          "examples": ["strategic", "operational", "financial", "creative"]
+        },
+        "version": {
+          "type": "string",
+          "pattern": "^\\d+\\.\\d+\\.\\d+$",
+          "description": "Agent implementation version"
+        },
+        "capabilities": {
+          "type": "array",
+          "description": "List of agent capabilities",
+          "items": {
+            "type": "string"
+          },
+          "examples": [["analysis", "decision_making", "communication"]]
+        },
+        "endpoint": {
+          "type": "string",
+          "format": "uri",
+          "description": "Agent communication endpoint (optional for direct routing)"
+        }
+      }
+    },
+    "SecurityMetadata": {
+      "type": "object",
+      "description": "Security and authentication information",
+      "properties": {
+        "authentication": {
+          "type": "object",
+          "properties": {
+            "method": {
+              "type": "string",
+              "enum": ["bearer", "jwt", "mtls", "did", "none"],
+              "description": "Authentication method used"
+            },
+            "token": {
+              "type": "string",
+              "description": "Authentication token (if applicable)"
+            },
+            "did": {
+              "type": "string",
+              "description": "Decentralized Identifier (W3C DID)"
+            }
+          }
+        },
+        "encryption": {
+          "type": "object",
+          "properties": {
+            "algorithm": {
+              "type": "string",
+              "enum": ["none", "aes-256-gcm", "chacha20-poly1305", "quantum-resistant"],
+              "description": "Encryption algorithm"
+            },
+            "key_id": {
+              "type": "string",
+              "description": "Key identifier for encryption"
+            }
+          }
+        },
+        "signature": {
+          "type": "object",
+          "properties": {
+            "algorithm": {
+              "type": "string",
+              "enum": ["none", "ed25519", "ecdsa", "rsa-pss"],
+              "description": "Signature algorithm"
+            },
+            "signature": {
+              "type": "string",
+              "description": "Message signature (base64-encoded)"
+            },
+            "public_key": {
+              "type": "string",
+              "description": "Public key for signature verification"
+            }
+          }
+        }
+      }
+    },
+    "Attachment": {
+      "type": "object",
+      "required": ["filename", "content_type"],
+      "properties": {
+        "filename": {
+          "type": "string",
+          "description": "Attachment filename"
+        },
+        "content_type": {
+          "type": "string",
+          "description": "MIME type of attachment"
+        },
+        "size": {
+          "type": "integer",
+          "description": "Size in bytes"
+        },
+        "encoding": {
+          "type": "string",
+          "enum": ["base64", "binary"],
+          "default": "base64"
+        },
+        "data": {
+          "type": "string",
+          "description": "Attachment data (inline)"
+        },
+        "uri": {
+          "type": "string",
+          "format": "uri",
+          "description": "URI to attachment (alternative to inline data)"
+        },
+        "checksum": {
+          "type": "object",
+          "properties": {
+            "algorithm": {
+              "type": "string",
+              "enum": ["sha256", "sha512", "blake3"]
+            },
+            "value": {
+              "type": "string",
+              "description": "Checksum value (hex-encoded)"
+            }
+          }
+        }
+      }
+    }
+  },
+  "examples": [
+    {
+      "envelope": {
+        "protocol": "A2A",
+        "version": "2.0.0",
+        "message_id": "550e8400-e29b-41d4-a716-446655440000",
+        "correlation_id": "650e8400-e29b-41d4-a716-446655440000",
+        "from_agent": {
+          "agent_id": "apqc_1_0_aca9c9bf",
+          "agent_name": "develop_business_strategy_strategic_agent",
+          "agent_type": "strategic",
+          "version": "1.0.0",
+          "capabilities": ["analysis", "strategic_planning", "decision_making"]
+        },
+        "to_agent": {
+          "agent_id": "apqc_9_2_xyz123",
+          "agent_name": "perform_budgeting_financial_agent",
+          "agent_type": "financial"
+        },
+        "timestamp": "2025-11-16T10:30:00Z",
+        "message_type": "task_assignment",
+        "priority": "high",
+        "ttl": 3600,
+        "content_type": "application/json"
+      },
+      "payload": {
+        "content": {
+          "task": "Create FY2026 strategic initiative budget",
+          "requirements": {
+            "timeframe": "2026-01-01 to 2026-12-31",
+            "total_budget": 5000000,
+            "initiatives": ["digital_transformation", "market_expansion"]
+          }
+        },
+        "metadata": {
+          "apqc_process": "9.2",
+          "urgency": "high",
+          "stakeholders": ["CFO", "CTO"]
+        },
+        "context": {
+          "conversation_id": "conv_12345",
+          "turn_number": 3,
+          "parent_task_id": "task_strategic_planning_2026"
+        }
+      }
+    }
+  ]
+}

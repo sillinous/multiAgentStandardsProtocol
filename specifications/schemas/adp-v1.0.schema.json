@@ -1,0 +1,500 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://superstandard.org/schemas/adp/v1.0.json",
+  "title": "Agent DNA Protocol (ADP) v1.0",
+  "description": "WORLD-FIRST: Genetic algorithms for agent evolution. Agents can evolve, inherit traits, mutate, and crossbreed to improve performance over generations.",
+  "version": "1.0.0",
+  "type": "object",
+  "required": ["protocol", "version"],
+  "properties": {
+    "protocol": {
+      "type": "string",
+      "const": "ADP"
+    },
+    "version": {
+      "type": "string",
+      "pattern": "^\\d+\\.\\d+\\.\\d+$",
+      "default": "1.0.0"
+    },
+    "agent_genome": {
+      "type": "object",
+      "description": "Complete genetic code of an agent",
+      "required": ["genome_id", "generation", "chromosomes"],
+      "properties": {
+        "genome_id": {
+          "type": "string",
+          "format": "uuid",
+          "description": "Unique genome identifier"
+        },
+        "agent_id": {
+          "type": "string",
+          "description": "Agent this genome belongs to"
+        },
+        "generation": {
+          "type": "integer",
+          "minimum": 0,
+          "description": "Generation number (0 = original)"
+        },
+        "lineage": {
+          "type": "array",
+          "description": "Ancestor genomes",
+          "items": {
+            "type": "string",
+            "description": "Genome IDs of ancestors"
+          }
+        },
+        "chromosomes": {
+          "type": "array",
+          "description": "Collection of genes organized by function",
+          "items": {
+            "$ref": "#/$defs/Chromosome"
+          }
+        },
+        "fitness_score": {
+          "type": "number",
+          "minimum": 0,
+          "description": "Overall fitness (success rate, performance)"
+        },
+        "phenotype": {
+          "$ref": "#/$defs/Phenotype",
+          "description": "Expressed traits and behaviors"
+        },
+        "mutations": {
+          "type": "array",
+          "description": "History of mutations",
+          "items": {
+            "$ref": "#/$defs/Mutation"
+          }
+        }
+      }
+    },
+    "evolution_operation": {
+      "type": "object",
+      "description": "Evolutionary operation to perform",
+      "required": ["operation_type"],
+      "properties": {
+        "operation_type": {
+          "type": "string",
+          "enum": [
+            "mutate",
+            "crossover",
+            "selection",
+            "fitness_evaluation",
+            "speciation",
+            "extinction",
+            "phylogenetic_tree"
+          ]
+        },
+        "parameters": {
+          "type": "object",
+          "description": "Operation-specific parameters"
+        }
+      }
+    },
+    "mutation_request": {
+      "type": "object",
+      "description": "Request to mutate an agent's genome",
+      "properties": {
+        "genome_id": {
+          "type": "string"
+        },
+        "mutation_rate": {
+          "type": "number",
+          "minimum": 0,
+          "maximum": 1,
+          "default": 0.01,
+          "description": "Probability of mutation per gene"
+        },
+        "mutation_type": {
+          "type": "string",
+          "enum": ["point", "insertion", "deletion", "duplication", "inversion", "random"],
+          "description": "Type of mutation to apply"
+        },
+        "target_genes": {
+          "type": "array",
+          "description": "Specific genes to mutate (empty = random)",
+          "items": {"type": "string"}
+        }
+      }
+    },
+    "crossover_request": {
+      "type": "object",
+      "description": "Breed two agents to create offspring",
+      "required": ["parent1_genome_id", "parent2_genome_id"],
+      "properties": {
+        "parent1_genome_id": {
+          "type": "string",
+          "description": "First parent genome"
+        },
+        "parent2_genome_id": {
+          "type": "string",
+          "description": "Second parent genome"
+        },
+        "crossover_type": {
+          "type": "string",
+          "enum": ["single_point", "two_point", "uniform", "semantic"],
+          "default": "two_point"
+        },
+        "crossover_rate": {
+          "type": "number",
+          "minimum": 0,
+          "maximum": 1,
+          "default": 0.7
+        },
+        "preserve_traits": {
+          "type": "array",
+          "description": "Traits that must be preserved in offspring",
+          "items": {"type": "string"}
+        }
+      }
+    },
+    "selection_request": {
+      "type": "object",
+      "description": "Select agents for next generation",
+      "properties": {
+        "population": {
+          "type": "array",
+          "description": "Genome IDs of population",
+          "items": {"type": "string"}
+        },
+        "selection_method": {
+          "type": "string",
+          "enum": [
+            "roulette_wheel",
+            "tournament",
+            "rank_based",
+            "elitism",
+            "diversity_promoting"
+          ],
+          "default": "tournament"
+        },
+        "selection_pressure": {
+          "type": "number",
+          "minimum": 0,
+          "maximum": 1,
+          "default": 0.5,
+          "description": "How strongly to favor high fitness (0=random, 1=only best)"
+        },
+        "elitism_count": {
+          "type": "integer",
+          "minimum": 0,
+          "description": "Number of best individuals to preserve unchanged"
+        }
+      }
+    },
+    "fitness_evaluation": {
+      "type": "object",
+      "description": "Evaluate fitness of genome",
+      "properties": {
+        "genome_id": {
+          "type": "string"
+        },
+        "evaluation_metrics": {
+          "type": "array",
+          "description": "Metrics to evaluate",
+          "items": {
+            "type": "object",
+            "properties": {
+              "metric_name": {"type": "string"},
+              "weight": {"type": "number", "minimum": 0},
+              "target_value": {"type": "number"},
+              "optimization": {"type": "string", "enum": ["maximize", "minimize"]}
+            }
+          }
+        },
+        "environment": {
+          "type": "object",
+          "description": "Test environment for fitness evaluation",
+          "properties": {
+            "scenario": {"type": "string"},
+            "difficulty": {"type": "string", "enum": ["easy", "medium", "hard"]},
+            "iterations": {"type": "integer", "minimum": 1}
+          }
+        }
+      }
+    }
+  },
+  "$defs": {
+    "Chromosome": {
+      "type": "object",
+      "description": "Collection of related genes",
+      "required": ["chromosome_id", "chromosome_type", "genes"],
+      "properties": {
+        "chromosome_id": {
+          "type": "string",
+          "description": "Unique chromosome identifier"
+        },
+        "chromosome_type": {
+          "type": "string",
+          "enum": [
+            "behavioral",
+            "capability",
+            "performance",
+            "personality",
+            "learning",
+            "communication",
+            "custom"
+          ],
+          "description": "What aspect this chromosome controls"
+        },
+        "genes": {
+          "type": "array",
+          "description": "Individual genes in this chromosome",
+          "items": {
+            "$ref": "#/$defs/Gene"
+          }
+        },
+        "expression_level": {
+          "type": "number",
+          "minimum": 0,
+          "maximum": 1,
+          "description": "How strongly this chromosome is expressed (0=dormant, 1=full)"
+        }
+      }
+    },
+    "Gene": {
+      "type": "object",
+      "description": "Atomic unit of hereditary information",
+      "required": ["gene_id", "gene_type", "allele"],
+      "properties": {
+        "gene_id": {
+          "type": "string",
+          "description": "Unique gene identifier (e.g., 'learning_rate', 'temperature')"
+        },
+        "gene_type": {
+          "type": "string",
+          "enum": [
+            "numeric",
+            "categorical",
+            "boolean",
+            "array",
+            "object",
+            "strategy",
+            "algorithm"
+          ]
+        },
+        "allele": {
+          "description": "Gene value (specific variant)",
+          "oneOf": [
+            {"type": "number"},
+            {"type": "string"},
+            {"type": "boolean"},
+            {"type": "array"},
+            {"type": "object"}
+          ]
+        },
+        "dominance": {
+          "type": "string",
+          "enum": ["dominant", "recessive", "co-dominant"],
+          "description": "How this gene interacts with alternatives during crossover"
+        },
+        "mutation_probability": {
+          "type": "number",
+          "minimum": 0,
+          "maximum": 1,
+          "description": "Likelihood this gene will mutate"
+        },
+        "allowed_values": {
+          "type": "array",
+          "description": "Constrained set of allowed values (for categorical genes)"
+        },
+        "range": {
+          "type": "object",
+          "description": "Valid range (for numeric genes)",
+          "properties": {
+            "min": {"type": "number"},
+            "max": {"type": "number"}
+          }
+        },
+        "inherited_from": {
+          "type": "string",
+          "description": "Parent genome that contributed this gene"
+        }
+      }
+    },
+    "Phenotype": {
+      "type": "object",
+      "description": "Observable characteristics and behaviors (gene expression)",
+      "properties": {
+        "behavior_traits": {
+          "type": "object",
+          "description": "Behavioral characteristics",
+          "properties": {
+            "aggression": {"type": "number", "minimum": 0, "maximum": 1},
+            "cooperation": {"type": "number", "minimum": 0, "maximum": 1},
+            "creativity": {"type": "number", "minimum": 0, "maximum": 1},
+            "risk_tolerance": {"type": "number", "minimum": 0, "maximum": 1},
+            "learning_speed": {"type": "number", "minimum": 0, "maximum": 1}
+          }
+        },
+        "capability_traits": {
+          "type": "object",
+          "description": "Functional capabilities",
+          "properties": {
+            "analysis_depth": {"type": "string", "enum": ["shallow", "medium", "deep"]},
+            "decision_speed": {"type": "string", "enum": ["fast", "balanced", "deliberate"]},
+            "communication_style": {"type": "string", "enum": ["concise", "detailed", "adaptive"]}
+          }
+        },
+        "performance_traits": {
+          "type": "object",
+          "description": "Performance characteristics",
+          "properties": {
+            "accuracy": {"type": "number", "minimum": 0, "maximum": 1},
+            "speed": {"type": "number", "minimum": 0, "maximum": 1},
+            "resource_efficiency": {"type": "number", "minimum": 0, "maximum": 1},
+            "robustness": {"type": "number", "minimum": 0, "maximum": 1}
+          }
+        },
+        "specialization": {
+          "type": "array",
+          "description": "Specialized skills developed through evolution",
+          "items": {
+            "type": "object",
+            "properties": {
+              "skill": {"type": "string"},
+              "proficiency": {"type": "number", "minimum": 0, "maximum": 1}
+            }
+          }
+        }
+      }
+    },
+    "Mutation": {
+      "type": "object",
+      "description": "Record of a genetic mutation",
+      "properties": {
+        "mutation_id": {
+          "type": "string",
+          "format": "uuid"
+        },
+        "timestamp": {
+          "type": "string",
+          "format": "date-time"
+        },
+        "mutation_type": {
+          "type": "string",
+          "enum": ["point", "insertion", "deletion", "duplication", "inversion"]
+        },
+        "affected_gene": {
+          "type": "string",
+          "description": "Gene that was mutated"
+        },
+        "before_value": {
+          "description": "Value before mutation"
+        },
+        "after_value": {
+          "description": "Value after mutation"
+        },
+        "fitness_delta": {
+          "type": "number",
+          "description": "Change in fitness caused by mutation"
+        },
+        "beneficial": {
+          "type": "boolean",
+          "description": "Whether mutation improved fitness"
+        }
+      }
+    }
+  },
+  "examples": [
+    {
+      "protocol": "ADP",
+      "version": "1.0.0",
+      "agent_genome": {
+        "genome_id": "genome-550e8400-e29b-41d4-a716-446655440000",
+        "agent_id": "apqc_1_0_strategic_gen5",
+        "generation": 5,
+        "lineage": ["genome-gen0", "genome-gen1", "genome-gen3", "genome-gen4"],
+        "chromosomes": [
+          {
+            "chromosome_id": "chr_behavioral_001",
+            "chromosome_type": "behavioral",
+            "genes": [
+              {
+                "gene_id": "risk_tolerance",
+                "gene_type": "numeric",
+                "allele": 0.7,
+                "dominance": "dominant",
+                "mutation_probability": 0.05,
+                "range": {"min": 0, "max": 1},
+                "inherited_from": "parent1"
+              },
+              {
+                "gene_id": "collaboration_preference",
+                "gene_type": "categorical",
+                "allele": "high",
+                "dominance": "co-dominant",
+                "allowed_values": ["low", "medium", "high"],
+                "inherited_from": "parent2"
+              }
+            ],
+            "expression_level": 0.95
+          },
+          {
+            "chromosome_id": "chr_performance_001",
+            "chromosome_type": "performance",
+            "genes": [
+              {
+                "gene_id": "learning_rate",
+                "gene_type": "numeric",
+                "allele": 0.001,
+                "range": {"min": 0.0001, "max": 0.1},
+                "mutation_probability": 0.1
+              },
+              {
+                "gene_id": "temperature",
+                "gene_type": "numeric",
+                "allele": 0.7,
+                "range": {"min": 0, "max": 2},
+                "mutation_probability": 0.05
+              }
+            ],
+            "expression_level": 1.0
+          }
+        ],
+        "fitness_score": 0.87,
+        "phenotype": {
+          "behavior_traits": {
+            "aggression": 0.3,
+            "cooperation": 0.8,
+            "creativity": 0.75,
+            "risk_tolerance": 0.7,
+            "learning_speed": 0.65
+          },
+          "performance_traits": {
+            "accuracy": 0.92,
+            "speed": 0.78,
+            "resource_efficiency": 0.85,
+            "robustness": 0.88
+          }
+        },
+        "mutations": [
+          {
+            "mutation_id": "mut-001",
+            "timestamp": "2025-11-15T10:00:00Z",
+            "mutation_type": "point",
+            "affected_gene": "learning_rate",
+            "before_value": 0.0005,
+            "after_value": 0.001,
+            "fitness_delta": 0.05,
+            "beneficial": true
+          }
+        ]
+      }
+    },
+    {
+      "protocol": "ADP",
+      "version": "1.0.0",
+      "evolution_operation": {
+        "operation_type": "crossover"
+      },
+      "crossover_request": {
+        "parent1_genome_id": "genome-parent1-uuid",
+        "parent2_genome_id": "genome-parent2-uuid",
+        "crossover_type": "two_point",
+        "crossover_rate": 0.8,
+        "preserve_traits": ["apqc_compliance", "protocol_support"]
+      }
+    }
+  ]
+}

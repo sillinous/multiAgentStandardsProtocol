@@ -1,0 +1,347 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://superstandard.org/schemas/tap/v1.0.json",
+  "title": "Temporal Agent Protocol (TAP) v1.0",
+  "description": "WORLD-FIRST: Protocol enabling agents to reason about time, causality, and temporal dependencies. Supports time-travel debugging, temporal queries, and causal inference.",
+  "version": "1.0.0",
+  "type": "object",
+  "required": ["protocol", "version", "temporal_operation"],
+  "properties": {
+    "protocol": {
+      "type": "string",
+      "const": "TAP"
+    },
+    "version": {
+      "type": "string",
+      "pattern": "^\\d+\\.\\d+\\.\\d+$",
+      "default": "1.0.0"
+    },
+    "temporal_operation": {
+      "type": "object",
+      "description": "Temporal operation to perform",
+      "required": ["operation_type"],
+      "properties": {
+        "operation_type": {
+          "type": "string",
+          "enum": [
+            "temporal_query",
+            "causal_inference",
+            "timeline_fork",
+            "timeline_merge",
+            "replay",
+            "what_if_simulation",
+            "temporal_constraint",
+            "time_travel",
+            "causality_check"
+          ]
+        },
+        "temporal_context": {
+          "$ref": "#/$defs/TemporalContext"
+        },
+        "parameters": {
+          "type": "object",
+          "description": "Operation-specific parameters"
+        }
+      }
+    },
+    "temporal_query": {
+      "type": "object",
+      "description": "Query the timeline for historical states or events",
+      "properties": {
+        "query_time": {
+          "type": "string",
+          "format": "date-time",
+          "description": "Point in time to query"
+        },
+        "time_range": {
+          "$ref": "#/$defs/TimeRange"
+        },
+        "entity_id": {
+          "type": "string",
+          "description": "Entity to query (agent, task, data)"
+        },
+        "query_type": {
+          "type": "string",
+          "enum": ["state_at_time", "events_in_range", "state_changes", "causal_chain"]
+        }
+      }
+    },
+    "causal_inference": {
+      "type": "object",
+      "description": "Infer causal relationships between events",
+      "properties": {
+        "effect_event": {
+          "$ref": "#/$defs/TemporalEvent"
+        },
+        "potential_causes": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/TemporalEvent"
+          }
+        },
+        "causality_model": {
+          "type": "string",
+          "enum": ["correlation", "granger", "structural", "counterfactual"],
+          "default": "correlation"
+        },
+        "confidence_threshold": {
+          "type": "number",
+          "minimum": 0,
+          "maximum": 1,
+          "default": 0.8
+        }
+      }
+    },
+    "what_if_simulation": {
+      "type": "object",
+      "description": "Simulate alternative timelines (counterfactual reasoning)",
+      "properties": {
+        "fork_point": {
+          "type": "string",
+          "format": "date-time",
+          "description": "When to fork the timeline"
+        },
+        "alternative_action": {
+          "type": "object",
+          "description": "What action to take instead",
+          "properties": {
+            "agent_id": {"type": "string"},
+            "action": {"type": "object"},
+            "parameters": {"type": "object"}
+          }
+        },
+        "simulation_horizon": {
+          "type": "integer",
+          "description": "How far forward to simulate (seconds)"
+        },
+        "comparison_metrics": {
+          "type": "array",
+          "description": "Metrics to compare between timelines",
+          "items": {"type": "string"}
+        }
+      }
+    },
+    "timeline_management": {
+      "type": "object",
+      "description": "Manage multiple timelines and their relationships",
+      "properties": {
+        "operation": {
+          "type": "string",
+          "enum": ["create_timeline", "fork_timeline", "merge_timelines", "delete_timeline", "switch_timeline"]
+        },
+        "timeline_id": {
+          "type": "string",
+          "description": "Primary timeline ID"
+        },
+        "parent_timeline_id": {
+          "type": "string",
+          "description": "Parent timeline (for forks)"
+        },
+        "merge_strategy": {
+          "type": "string",
+          "enum": ["latest_wins", "manual_resolution", "automatic_merge", "abort_on_conflict"],
+          "description": "How to resolve conflicts during merge"
+        }
+      }
+    },
+    "temporal_response": {
+      "type": "object",
+      "description": "Response to temporal operation",
+      "properties": {
+        "success": {"type": "boolean"},
+        "timeline_id": {"type": "string"},
+        "results": {
+          "type": "object",
+          "description": "Operation-specific results"
+        },
+        "temporal_metadata": {
+          "$ref": "#/$defs/TemporalMetadata"
+        }
+      }
+    }
+  },
+  "$defs": {
+    "TemporalContext": {
+      "type": "object",
+      "description": "Context for temporal operations",
+      "properties": {
+        "current_time": {
+          "type": "string",
+          "format": "date-time",
+          "description": "Current time in the timeline"
+        },
+        "timeline_id": {
+          "type": "string",
+          "description": "Which timeline we're operating in",
+          "default": "main"
+        },
+        "causality_graph_id": {
+          "type": "string",
+          "description": "Reference to causality graph"
+        },
+        "temporal_resolution": {
+          "type": "string",
+          "enum": ["millisecond", "second", "minute", "hour", "day"],
+          "default": "second",
+          "description": "Time granularity for operations"
+        }
+      }
+    },
+    "TimeRange": {
+      "type": "object",
+      "properties": {
+        "start_time": {
+          "type": "string",
+          "format": "date-time"
+        },
+        "end_time": {
+          "type": "string",
+          "format": "date-time"
+        },
+        "inclusive": {
+          "type": "boolean",
+          "default": true
+        }
+      }
+    },
+    "TemporalEvent": {
+      "type": "object",
+      "description": "An event in time with causality metadata",
+      "required": ["event_id", "timestamp"],
+      "properties": {
+        "event_id": {
+          "type": "string",
+          "description": "Unique event identifier"
+        },
+        "timestamp": {
+          "type": "string",
+          "format": "date-time",
+          "description": "When the event occurred"
+        },
+        "event_type": {
+          "type": "string",
+          "description": "Type of event"
+        },
+        "agent_id": {
+          "type": "string",
+          "description": "Agent that triggered the event"
+        },
+        "data": {
+          "type": "object",
+          "description": "Event data"
+        },
+        "causes": {
+          "type": "array",
+          "description": "Events that caused this event",
+          "items": {
+            "type": "string",
+            "description": "Event IDs of causal predecessors"
+          }
+        },
+        "effects": {
+          "type": "array",
+          "description": "Events caused by this event",
+          "items": {
+            "type": "string"
+          }
+        },
+        "causal_strength": {
+          "type": "number",
+          "minimum": 0,
+          "maximum": 1,
+          "description": "Strength of causal relationship (0-1)"
+        }
+      }
+    },
+    "TemporalMetadata": {
+      "type": "object",
+      "description": "Metadata about temporal operations",
+      "properties": {
+        "operation_timestamp": {
+          "type": "string",
+          "format": "date-time"
+        },
+        "timeline_state": {
+          "type": "string",
+          "enum": ["stable", "forked", "merging", "conflicted"],
+          "description": "Current state of the timeline"
+        },
+        "checkpoint_id": {
+          "type": "string",
+          "description": "Checkpoint for rollback"
+        },
+        "version": {
+          "type": "integer",
+          "description": "Timeline version number"
+        },
+        "divergence_points": {
+          "type": "array",
+          "description": "Points where timeline diverges from parent",
+          "items": {
+            "type": "object",
+            "properties": {
+              "timestamp": {"type": "string", "format": "date-time"},
+              "reason": {"type": "string"}
+            }
+          }
+        }
+      }
+    }
+  },
+  "examples": [
+    {
+      "protocol": "TAP",
+      "version": "1.0.0",
+      "temporal_operation": {
+        "operation_type": "what_if_simulation",
+        "temporal_context": {
+          "current_time": "2025-11-16T15:00:00Z",
+          "timeline_id": "main",
+          "temporal_resolution": "second"
+        }
+      },
+      "what_if_simulation": {
+        "fork_point": "2025-11-16T10:00:00Z",
+        "alternative_action": {
+          "agent_id": "apqc_9_2_budgeting",
+          "action": "allocate_budget",
+          "parameters": {
+            "digital_transformation": 3000000,
+            "market_expansion": 2000000
+          }
+        },
+        "simulation_horizon": 3600,
+        "comparison_metrics": ["roi", "risk_score", "timeline_completion"]
+      }
+    },
+    {
+      "protocol": "TAP",
+      "version": "1.0.0",
+      "temporal_operation": {
+        "operation_type": "causal_inference"
+      },
+      "causal_inference": {
+        "effect_event": {
+          "event_id": "revenue_spike_nov_16",
+          "timestamp": "2025-11-16T14:30:00Z",
+          "event_type": "revenue_increase",
+          "data": {"revenue_increase": 150000}
+        },
+        "potential_causes": [
+          {
+            "event_id": "marketing_campaign_launch",
+            "timestamp": "2025-11-15T08:00:00Z",
+            "event_type": "campaign_start"
+          },
+          {
+            "event_id": "competitor_outage",
+            "timestamp": "2025-11-16T10:00:00Z",
+            "event_type": "external_event"
+          }
+        ],
+        "causality_model": "granger",
+        "confidence_threshold": 0.85
+      }
+    }
+  ]
+}
