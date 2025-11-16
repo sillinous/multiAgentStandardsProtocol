@@ -1,0 +1,290 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Visual Workflow Designer - APQC Agent Orchestration</title>
+
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+            background-color: #0f1419;
+            color: #e0e0e0;
+            overflow: hidden;
+        }
+
+        #root {
+            width: 100vw;
+            height: 100vh;
+        }
+
+        /* Loading Screen */
+        .loading-screen {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: linear-gradient(135deg, #0f1419 0%, #16213e 100%);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 9999;
+        }
+
+        .loading-content {
+            text-align: center;
+        }
+
+        .loading-spinner {
+            width: 60px;
+            height: 60px;
+            border: 4px solid #2d2d44;
+            border-top-color: #00d4ff;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+            margin: 0 auto 20px;
+        }
+
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+
+        .loading-text {
+            color: #00d4ff;
+            font-size: 18px;
+            font-weight: 600;
+            margin-bottom: 10px;
+        }
+
+        .loading-subtext {
+            color: #888;
+            font-size: 14px;
+        }
+
+        /* Scrollbar Styling */
+        ::-webkit-scrollbar {
+            width: 12px;
+            height: 12px;
+        }
+
+        ::-webkit-scrollbar-track {
+            background: #0f1419;
+        }
+
+        ::-webkit-scrollbar-thumb {
+            background: #2d2d44;
+            border-radius: 6px;
+        }
+
+        ::-webkit-scrollbar-thumb:hover {
+            background: #3d3d54;
+        }
+
+        /* Error Screen */
+        .error-screen {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background-color: #0f1419;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+        }
+
+        .error-content {
+            text-align: center;
+            max-width: 600px;
+        }
+
+        .error-icon {
+            font-size: 64px;
+            margin-bottom: 20px;
+        }
+
+        .error-title {
+            color: #ff4444;
+            font-size: 24px;
+            font-weight: 600;
+            margin-bottom: 10px;
+        }
+
+        .error-message {
+            color: #aaa;
+            font-size: 16px;
+            line-height: 1.6;
+            margin-bottom: 30px;
+        }
+
+        .error-button {
+            padding: 12px 24px;
+            background-color: #00d4ff;
+            border: none;
+            border-radius: 8px;
+            color: #0f1419;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .error-button:hover {
+            background-color: #00e4ff;
+            transform: translateY(-2px);
+        }
+    </style>
+</head>
+<body>
+    <!-- Loading Screen -->
+    <div id="loading" class="loading-screen">
+        <div class="loading-content">
+            <div class="loading-spinner"></div>
+            <div class="loading-text">Loading Workflow Designer</div>
+            <div class="loading-subtext">Initializing visual workflow orchestration...</div>
+        </div>
+    </div>
+
+    <!-- React Root -->
+    <div id="root"></div>
+
+    <!-- React & Babel -->
+    <script crossorigin src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
+    <script crossorigin src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
+    <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+
+    <!-- Load Components -->
+    <script type="text/babel" src="workflow_designer.tsx"></script>
+    <script type="text/babel" src="workflow_templates.tsx"></script>
+
+    <!-- Main App -->
+    <script type="text/babel">
+        const { useState, useEffect } = React;
+
+        function App() {
+            const [loading, setLoading] = useState(true);
+            const [error, setError] = useState(null);
+            const [showTemplates, setShowTemplates] = useState(false);
+
+            useEffect(() => {
+                // Check if components are loaded
+                const checkLoaded = setInterval(() => {
+                    if (window.WorkflowDesigner && window.WorkflowTemplates) {
+                        clearInterval(checkLoaded);
+                        setTimeout(() => {
+                            setLoading(false);
+                            document.getElementById('loading').style.display = 'none';
+                        }, 500);
+                    }
+                }, 100);
+
+                // Timeout after 10 seconds
+                setTimeout(() => {
+                    if (loading) {
+                        clearInterval(checkLoaded);
+                        setError('Failed to load workflow designer components. Please refresh the page.');
+                        setLoading(false);
+                        document.getElementById('loading').style.display = 'none';
+                    }
+                }, 10000);
+
+                return () => clearInterval(checkLoaded);
+            }, [loading]);
+
+            if (error) {
+                return (
+                    <div className="error-screen">
+                        <div className="error-content">
+                            <div className="error-icon">⚠️</div>
+                            <h1 className="error-title">Loading Error</h1>
+                            <p className="error-message">{error}</p>
+                            <button
+                                className="error-button"
+                                onClick={() => window.location.reload()}
+                            >
+                                Reload Page
+                            </button>
+                        </div>
+                    </div>
+                );
+            }
+
+            if (loading) {
+                return null;
+            }
+
+            if (showTemplates) {
+                return (
+                    <window.WorkflowTemplates
+                        onSelectTemplate={(template) => {
+                            console.log('Template selected:', template);
+                            setShowTemplates(false);
+                        }}
+                        onClose={() => setShowTemplates(false)}
+                    />
+                );
+            }
+
+            return <window.WorkflowDesigner />;
+        }
+
+        // Render App
+        const root = ReactDOM.createRoot(document.getElementById('root'));
+        root.render(<App />);
+
+        // Add keyboard shortcuts
+        document.addEventListener('keydown', (e) => {
+            // Ctrl/Cmd + S to save
+            if ((e.ctrlKey || e.metaKey) && e.key === 's') {
+                e.preventDefault();
+                console.log('Save shortcut triggered');
+            }
+
+            // Ctrl/Cmd + T to show templates
+            if ((e.ctrlKey || e.metaKey) && e.key === 't') {
+                e.preventDefault();
+                console.log('Templates shortcut triggered');
+            }
+
+            // Escape to deselect
+            if (e.key === 'Escape') {
+                console.log('Deselect shortcut triggered');
+            }
+        });
+
+        // Log startup info
+        console.log(`
+╔══════════════════════════════════════════════════════════════╗
+║                                                              ║
+║       🎯 Visual Workflow Designer - APQC Edition             ║
+║                                                              ║
+║  Drag-and-drop agent composition for enterprise workflows   ║
+║                                                              ║
+║  Features:                                                   ║
+║  • 118+ APQC agents across 13 categories                    ║
+║  • Visual workflow creation                                  ║
+║  • 10+ pre-built templates                                   ║
+║  • Real-time execution monitoring                            ║
+║  • Export/Import capabilities                                ║
+║                                                              ║
+║  Keyboard Shortcuts:                                         ║
+║  • Ctrl/Cmd + S: Save workflow                               ║
+║  • Ctrl/Cmd + T: Show templates                              ║
+║  • Escape: Deselect node                                     ║
+║                                                              ║
+║  Version: 1.0.0                                              ║
+║  API: http://localhost:8765                                  ║
+║                                                              ║
+╚══════════════════════════════════════════════════════════════╝
+        `);
+    </script>
+</body>
+</html>

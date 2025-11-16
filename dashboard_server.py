@@ -817,6 +817,192 @@ async def get_summary_metrics():
 
 
 # ============================================================================
+# Workflow API Endpoints
+# ============================================================================
+
+# Import workflow engine
+try:
+    from workflow_engine import (
+        WorkflowManager,
+        WorkflowDefinition,
+        WorkflowTemplateLibrary
+    )
+    workflow_manager = WorkflowManager()
+    WORKFLOW_ENGINE_AVAILABLE = True
+    logger.info("✅ Workflow engine loaded successfully")
+except ImportError as e:
+    WORKFLOW_ENGINE_AVAILABLE = False
+    workflow_manager = None
+    logger.warning(f"⚠️ Workflow engine not available: {e}")
+
+
+@app.get("/api/workflows")
+async def get_workflows():
+    """Get all workflows"""
+    if not WORKFLOW_ENGINE_AVAILABLE or not workflow_manager:
+        return {"workflows": [], "count": 0}
+
+    workflows = workflow_manager.list_workflows()
+    return {
+        "workflows": [w.dict() for w in workflows],
+        "count": len(workflows)
+    }
+
+
+@app.get("/api/workflows/{workflow_id}")
+async def get_workflow(workflow_id: str):
+    """Get specific workflow"""
+    if not WORKFLOW_ENGINE_AVAILABLE or not workflow_manager:
+        raise HTTPException(status_code=503, detail="Workflow engine not available")
+
+    workflow = workflow_manager.get_workflow(workflow_id)
+    if not workflow:
+        raise HTTPException(status_code=404, detail="Workflow not found")
+
+    return workflow.dict()
+
+
+@app.post("/api/workflows")
+async def create_workflow(workflow_data: Dict[str, Any]):
+    """Create new workflow"""
+    if not WORKFLOW_ENGINE_AVAILABLE or not workflow_manager:
+        raise HTTPException(status_code=503, detail="Workflow engine not available")
+
+    try:
+        workflow = WorkflowDefinition(**workflow_data)
+        workflow_id = workflow_manager.create_workflow(workflow)
+        return {
+            "status": "created",
+            "workflow_id": workflow_id,
+            "message": "Workflow created successfully"
+        }
+    except Exception as e:
+        raise HTTPException(status_code=400, detail=str(e))
+
+
+@app.put("/api/workflows/{workflow_id}")
+async def update_workflow(workflow_id: str, workflow_data: Dict[str, Any]):
+    """Update existing workflow"""
+    if not WORKFLOW_ENGINE_AVAILABLE or not workflow_manager:
+        raise HTTPException(status_code=503, detail="Workflow engine not available")
+
+    try:
+        workflow_data['id'] = workflow_id
+        workflow = WorkflowDefinition(**workflow_data)
+        workflow_manager.update_workflow(workflow)
+        return {
+            "status": "updated",
+            "workflow_id": workflow_id,
+            "message": "Workflow updated successfully"
+        }
+    except Exception as e:
+        raise HTTPException(status_code=400, detail=str(e))
+
+
+@app.delete("/api/workflows/{workflow_id}")
+async def delete_workflow(workflow_id: str):
+    """Delete workflow"""
+    if not WORKFLOW_ENGINE_AVAILABLE or not workflow_manager:
+        raise HTTPException(status_code=503, detail="Workflow engine not available")
+
+    workflow_manager.delete_workflow(workflow_id)
+    return {
+        "status": "deleted",
+        "workflow_id": workflow_id,
+        "message": "Workflow deleted successfully"
+    }
+
+
+@app.post("/api/workflows/{workflow_id}/execute")
+async def execute_workflow(workflow_id: str, inputs: Dict[str, Any] = None):
+    """Execute workflow"""
+    if not WORKFLOW_ENGINE_AVAILABLE or not workflow_manager:
+        raise HTTPException(status_code=503, detail="Workflow engine not available")
+
+    try:
+        execution = await workflow_manager.execute_workflow(workflow_id, inputs or {})
+        return {
+            "status": "executed",
+            "execution_id": execution.id,
+            "execution": execution.dict()
+        }
+    except Exception as e:
+        raise HTTPException(status_code=400, detail=str(e))
+
+
+@app.get("/api/workflows/executions/{execution_id}")
+async def get_execution(execution_id: str):
+    """Get workflow execution status"""
+    if not WORKFLOW_ENGINE_AVAILABLE or not workflow_manager:
+        raise HTTPException(status_code=503, detail="Workflow engine not available")
+
+    execution = workflow_manager.get_execution(execution_id)
+    if not execution:
+        raise HTTPException(status_code=404, detail="Execution not found")
+
+    return execution.dict()
+
+
+@app.get("/api/workflow-templates")
+async def get_workflow_templates():
+    """Get all workflow templates"""
+    if not WORKFLOW_ENGINE_AVAILABLE or not workflow_manager:
+        return {"templates": [], "count": 0}
+
+    templates = workflow_manager.template_library.list_templates()
+    return {
+        "templates": [t.dict() for t in templates],
+        "count": len(templates)
+    }
+
+
+@app.get("/api/workflow-templates/{template_id}")
+async def get_workflow_template(template_id: str):
+    """Get specific workflow template"""
+    if not WORKFLOW_ENGINE_AVAILABLE or not workflow_manager:
+        raise HTTPException(status_code=503, detail="Workflow engine not available")
+
+    template = workflow_manager.template_library.get_template(template_id)
+    if not template:
+        raise HTTPException(status_code=404, detail="Template not found")
+
+    return template.dict()
+
+
+@app.post("/api/workflows/import")
+async def import_workflow(data: str, format: str = "json"):
+    """Import workflow from JSON/YAML"""
+    if not WORKFLOW_ENGINE_AVAILABLE or not workflow_manager:
+        raise HTTPException(status_code=503, detail="Workflow engine not available")
+
+    try:
+        workflow_id = workflow_manager.import_workflow(data, format)
+        return {
+            "status": "imported",
+            "workflow_id": workflow_id,
+            "message": "Workflow imported successfully"
+        }
+    except Exception as e:
+        raise HTTPException(status_code=400, detail=str(e))
+
+
+@app.get("/api/workflows/{workflow_id}/export")
+async def export_workflow(workflow_id: str, format: str = "json"):
+    """Export workflow to JSON/YAML"""
+    if not WORKFLOW_ENGINE_AVAILABLE or not workflow_manager:
+        raise HTTPException(status_code=503, detail="Workflow engine not available")
+
+    try:
+        data = workflow_manager.export_workflow(workflow_id, format)
+        return JSONResponse(
+            content=data,
+            media_type=f"application/{format}"
+        )
+    except Exception as e:
+        raise HTTPException(status_code=400, detail=str(e))
+
+
+# ============================================================================
 # WebSocket Endpoint
 # ============================================================================
 

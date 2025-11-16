@@ -1,0 +1,121 @@
+{
+  "id": "demo_simple_workflow",
+  "name": "Demo: Simple Financial Analysis",
+  "description": "A simple workflow demonstrating agent orchestration",
+  "version": "1.0.0",
+  "nodes": [
+    {
+      "id": "node_1",
+      "type": "agent",
+      "label": "Financial Data Collection",
+      "position": {
+        "x": 100.0,
+        "y": 100.0
+      },
+      "agent_id": "expert_9_4",
+      "agent_name": "Manage Accounting and Financial Reporting",
+      "category_id": "9.0",
+      "category_name": "Financial Resources",
+      "config": {},
+      "inputs": {},
+      "outputs": {},
+      "timeout": 300,
+      "retry_count": 3,
+      "retry_delay": 5,
+      "conditions": [],
+      "description": "Collects financial data from various sources",
+      "tags": [],
+      "metadata": {}
+    },
+    {
+      "id": "node_2",
+      "type": "agent",
+      "label": "Financial Analysis",
+      "position": {
+        "x": 400.0,
+        "y": 100.0
+      },
+      "agent_id": "expert_9_2",
+      "agent_name": "Manage Financial Planning and Budgeting",
+      "category_id": "9.0",
+      "category_name": "Financial Resources",
+      "config": {},
+      "inputs": {},
+      "outputs": {},
+      "timeout": 300,
+      "retry_count": 3,
+      "retry_delay": 5,
+      "conditions": [],
+      "description": "Analyzes collected financial data",
+      "tags": [],
+      "metadata": {}
+    },
+    {
+      "id": "node_3",
+      "type": "output",
+      "label": "Analysis Report",
+      "position": {
+        "x": 700.0,
+        "y": 100.0
+      },
+      "agent_id": null,
+      "agent_name": null,
+      "category_id": null,
+      "category_name": null,
+      "config": {},
+      "inputs": {},
+      "outputs": {},
+      "timeout": 300,
+      "retry_count": 3,
+      "retry_delay": 5,
+      "conditions": [],
+      "description": "Final analysis report output",
+      "tags": [],
+      "metadata": {}
+    }
+  ],
+  "edges": [
+    {
+      "id": "edge_1",
+      "source": "node_1",
+      "target": "node_2",
+      "source_handle": null,
+      "target_handle": null,
+      "type": "data_flow",
+      "label": "Financial Data",
+      "transform": null,
+      "filter": null,
+      "metadata": {}
+    },
+    {
+      "id": "edge_2",
+      "source": "node_2",
+      "target": "node_3",
+      "source_handle": null,
+      "target_handle": null,
+      "type": "data_flow",
+      "label": "Analysis Results",
+      "transform": null,
+      "filter": null,
+      "metadata": {}
+    }
+  ],
+  "trigger": "manual",
+  "trigger_config": {},
+  "timeout": 3600,
+  "max_retries": 3,
+  "error_handling": "stop",
+  "author": "system",
+  "created_at": "2025-11-16 22:25:24.013747",
+  "updated_at": "2025-11-16 22:25:24.013748",
+  "tags": [
+    "finance",
+    "analysis",
+    "demo"
+  ],
+  "category": "general",
+  "is_template": false,
+  "execution_count": 0,
+  "last_execution": null,
+  "success_rate": 0.0
+}

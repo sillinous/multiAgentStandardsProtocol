@@ -1,0 +1,194 @@
+{
+  "id": "financial_marketing_roi",
+  "name": "Financial Close + Marketing ROI Analysis",
+  "description": "Combines financial closing processes with marketing ROI analysis for comprehensive performance review",
+  "version": "1.0.0",
+  "nodes": [
+    {
+      "id": "node_1",
+      "type": "agent",
+      "label": "Financial Data Collection",
+      "position": {
+        "x": 100.0,
+        "y": 100.0
+      },
+      "agent_id": "expert_9_4",
+      "agent_name": "Manage Accounting and Financial Reporting",
+      "category_id": "9.0",
+      "category_name": "Financial Resources",
+      "config": {},
+      "inputs": {},
+      "outputs": {},
+      "timeout": 300,
+      "retry_count": 3,
+      "retry_delay": 5,
+      "conditions": [],
+      "description": "",
+      "tags": [],
+      "metadata": {}
+    },
+    {
+      "id": "node_2",
+      "type": "agent",
+      "label": "Marketing Spend Analysis",
+      "position": {
+        "x": 100.0,
+        "y": 250.0
+      },
+      "agent_id": "expert_3_3",
+      "agent_name": "Develop and Manage Marketing Plans",
+      "category_id": "3.0",
+      "category_name": "Market & Sell",
+      "config": {},
+      "inputs": {},
+      "outputs": {},
+      "timeout": 300,
+      "retry_count": 3,
+      "retry_delay": 5,
+      "conditions": [],
+      "description": "",
+      "tags": [],
+      "metadata": {}
+    },
+    {
+      "id": "node_3",
+      "type": "aggregator",
+      "label": "Combine Financial & Marketing Data",
+      "position": {
+        "x": 350.0,
+        "y": 175.0
+      },
+      "agent_id": null,
+      "agent_name": null,
+      "category_id": null,
+      "category_name": null,
+      "config": {
+        "type": "merge"
+      },
+      "inputs": {},
+      "outputs": {},
+      "timeout": 300,
+      "retry_count": 3,
+      "retry_delay": 5,
+      "conditions": [],
+      "description": "",
+      "tags": [],
+      "metadata": {}
+    },
+    {
+      "id": "node_4",
+      "type": "agent",
+      "label": "ROI Calculation",
+      "position": {
+        "x": 600.0,
+        "y": 175.0
+      },
+      "agent_id": "expert_9_2",
+      "agent_name": "Manage Financial Planning and Budgeting",
+      "category_id": "9.0",
+      "category_name": "Financial Resources",
+      "config": {},
+      "inputs": {},
+      "outputs": {},
+      "timeout": 300,
+      "retry_count": 3,
+      "retry_delay": 5,
+      "conditions": [],
+      "description": "",
+      "tags": [],
+      "metadata": {}
+    },
+    {
+      "id": "node_5",
+      "type": "output",
+      "label": "ROI Report",
+      "position": {
+        "x": 850.0,
+        "y": 175.0
+      },
+      "agent_id": null,
+      "agent_name": null,
+      "category_id": null,
+      "category_name": null,
+      "config": {},
+      "inputs": {},
+      "outputs": {},
+      "timeout": 300,
+      "retry_count": 3,
+      "retry_delay": 5,
+      "conditions": [],
+      "description": "",
+      "tags": [],
+      "metadata": {}
+    }
+  ],
+  "edges": [
+    {
+      "id": "edge_1",
+      "source": "node_1",
+      "target": "node_3",
+      "source_handle": null,
+      "target_handle": null,
+      "type": "data_flow",
+      "label": null,
+      "transform": null,
+      "filter": null,
+      "metadata": {}
+    },
+    {
+      "id": "edge_2",
+      "source": "node_2",
+      "target": "node_3",
+      "source_handle": null,
+      "target_handle": null,
+      "type": "data_flow",
+      "label": null,
+      "transform": null,
+      "filter": null,
+      "metadata": {}
+    },
+    {
+      "id": "edge_3",
+      "source": "node_3",
+      "target": "node_4",
+      "source_handle": null,
+      "target_handle": null,
+      "type": "data_flow",
+      "label": null,
+      "transform": null,
+      "filter": null,
+      "metadata": {}
+    },
+    {
+      "id": "edge_4",
+      "source": "node_4",
+      "target": "node_5",
+      "source_handle": null,
+      "target_handle": null,
+      "type": "data_flow",
+      "label": null,
+      "transform": null,
+      "filter": null,
+      "metadata": {}
+    }
+  ],
+  "trigger": "manual",
+  "trigger_config": {},
+  "timeout": 3600,
+  "max_retries": 3,
+  "error_handling": "stop",
+  "author": "system",
+  "created_at": "2025-11-16 22:25:24.016947",
+  "updated_at": "2025-11-16 22:25:24.016949",
+  "tags": [
+    "finance",
+    "marketing",
+    "roi",
+    "analysis"
+  ],
+  "category": "Finance & Marketing",
+  "is_template": true,
+  "execution_count": 0,
+  "last_execution": null,
+  "success_rate": 0.0
+}
