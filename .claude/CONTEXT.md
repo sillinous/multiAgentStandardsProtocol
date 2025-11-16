@@ -226,6 +226,8 @@ The **gold standard** for integratable, self-evolving, autonomous multi-agent sy
 
 ### **Key Files to Know**:
 - `.claude/CONTEXT.md` - **THIS FILE** - Read first always
+- **`APQC_PCF_TRACKING.md`** - ⚠️ **CRITICAL** - Complete APQC implementation status (READ BEFORE ANY APQC WORK)
+- **`APQC_PCF_TRACKING.json`** - Machine-readable APQC tracking data
 - `.claude/AGENT_AUDIT_REPORT.md` - Comprehensive audit of Python project
 - `.claude/SESSION_LOG.md` - Session-by-session progress
 - `.claude/QUICK_REFERENCE.md` - 30-second context load
@@ -296,23 +298,70 @@ multiAgentStandardsProtocol/
 
 ---
 
+## 📊 APQC PROCESS CLASSIFICATION FRAMEWORK (PCF) TRACKING
+
+**⚠️ CRITICAL: Before working on ANY APQC agent, READ `APQC_PCF_TRACKING.md` FIRST!**
+
+### **APQC Implementation Status** (As of 2025-11-16):
+- **113 APQC process implementations** across the codebase (Level 3+)
+- **30 out of 54 Level 2 processes** have templates (56% coverage)
+- **24 Level 2 processes** still need templates (44% gap)
+- **⚠️ CRITICAL FINDING**: ALL existing templates have PLACEHOLDER logic only
+- **0 processes** have real business logic implemented
+- **0 processes** are production-ready
+
+### **Categories with Best Coverage**:
+- ✅ **3.0 Market & Sell**: 100% (13 agents)
+- ✅ **6.0 Customer Service**: 100% (7 agents)
+- ✅ **7.0 Human Capital**: 100% (11 agents)
+- ✅ **8.0 IT Management**: 100% (12 agents)
+
+### **Critical Gaps** (MUST IMPLEMENT):
+- 🔴 **Category 11.0 Risk & Compliance**: Only 25% coverage - ZERO templates!
+- 🔴 **Category 2.0 Products & Services**: Only 33% coverage
+- 🔴 **Business Logic**: 0% of templates have real implementations
+
+### **APQC Tracking Files**:
+1. **`APQC_PCF_TRACKING.md`** - Human-readable comprehensive table (READ THIS!)
+2. **`APQC_PCF_TRACKING.json`** - Machine-readable tracking data
+3. **Status fields tracked**: Template exists, Business logic, Testing, Protocols, Deployment, Overall status
+
+### **When Working on APQC Agents**:
+1. ✅ Check `APQC_PCF_TRACKING.md` for current status
+2. ✅ Update tracking file after any changes
+3. ✅ Follow the prioritized implementation roadmap
+4. ✅ Focus on business logic, not just templates
+5. ✅ Commit tracking file updates with your changes
+
+---
+
 ## 🎯 CURRENT SESSION STATE
 
-**Last Major Discussion** (2025-11-05):
+**Latest Session** (2025-11-16):
+- ✅ Completed comprehensive APQC framework analysis
+- ✅ Mapped all 113 existing APQC implementations
+- ✅ Identified 24 critical gaps in coverage
+- ✅ Created APQC_PCF_TRACKING.md and .json for ongoing tracking
+- ✅ Established tracking system for all future APQC work
+
+**Previous Session** (2025-11-05):
 - Discovered we were in wrong project initially
 - Conducted audit of Python project (366+ agents, mostly incomplete)
 - Found multiAgentStandardsProtocol (Rust) - THE correct project
 - Identified consolidation question: Rust vs Python vs Polyglot
 - Copied context files to correct location
 
-**Critical Question**: How to consolidate agents from multiple projects?
+**Critical Questions**:
+1. How to consolidate agents from multiple projects?
+2. Should we implement business logic in existing templates before creating new ones?
 
 **Next Steps**:
-1. ✅ Save context to correct project (multiAgentStandardsProtocol)
-2. Decide consolidation approach (Rust/Python/Polyglot)
-3. Map all agents across all projects
-4. Design migration strategy
-5. Execute consolidation
+1. ✅ APQC tracking system created
+2. Decide: Implement business logic vs create missing templates?
+3. Decide consolidation approach (Rust/Python/Polyglot)
+4. Map all agents across all projects
+5. Design migration strategy
+6. Execute consolidation
 
 ---
 
