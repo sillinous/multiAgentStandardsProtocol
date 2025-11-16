@@ -1,0 +1,538 @@
+# Financial Close Automation Configuration
+# =========================================
+# Configuration for APQC Category 9 Financial Close Workflow
+# Supports multiple company sizes and accounting systems
+
+# Company Profile
+company:
+  name: "TechCorp Industries"
+  size: "medium"  # small, medium, large, enterprise
+  industry: "technology"
+  fiscal_year_end: "12-31"
+  currency: "USD"
+  time_zone: "America/New_York"
+
+# Accounting System Integration
+accounting_system: "QUICKBOOKS"  # QUICKBOOKS, NETSUITE, SAP, ORACLE, SAGE, XERO
+
+# Accounting system credentials (use environment variables in production)
+accounting_credentials:
+  # QuickBooks
+  quickbooks:
+    client_id: "${QUICKBOOKS_CLIENT_ID}"
+    client_secret: "${QUICKBOOKS_CLIENT_SECRET}"
+    realm_id: "${QUICKBOOKS_REALM_ID}"
+    refresh_token: "${QUICKBOOKS_REFRESH_TOKEN}"
+    environment: "production"  # sandbox or production
+    base_url: "https://quickbooks.api.intuit.com"
+
+  # NetSuite
+  netsuite:
+    account_id: "${NETSUITE_ACCOUNT_ID}"
+    consumer_key: "${NETSUITE_CONSUMER_KEY}"
+    consumer_secret: "${NETSUITE_CONSUMER_SECRET}"
+    token_id: "${NETSUITE_TOKEN_ID}"
+    token_secret: "${NETSUITE_TOKEN_SECRET}"
+    base_url: "https://${NETSUITE_ACCOUNT_ID}.suitetalk.api.netsuite.com"
+
+  # SAP
+  sap:
+    username: "${SAP_USERNAME}"
+    password: "${SAP_PASSWORD}"
+    client: "${SAP_CLIENT}"
+    system_id: "${SAP_SYSTEM_ID}"
+    host: "${SAP_HOST}"
+    port: 443
+
+  # Oracle Cloud
+  oracle:
+    username: "${ORACLE_USERNAME}"
+    password: "${ORACLE_PASSWORD}"
+    instance_url: "${ORACLE_INSTANCE_URL}"
+
+  # Sage Intacct
+  sage:
+    company_id: "${SAGE_COMPANY_ID}"
+    user_id: "${SAGE_USER_ID}"
+    password: "${SAGE_PASSWORD}"
+    sender_id: "${SAGE_SENDER_ID}"
+
+  # Xero
+  xero:
+    client_id: "${XERO_CLIENT_ID}"
+    client_secret: "${XERO_CLIENT_SECRET}"
+    tenant_id: "${XERO_TENANT_ID}"
+    access_token: "${XERO_ACCESS_TOKEN}"
+
+# Chart of Accounts Mapping
+# Map standard account types to company-specific account codes
+chart_of_accounts:
+  assets:
+    cash: "1000"
+    accounts_receivable: "1200"
+    inventory: "1500"
+    prepaid_expenses: "1600"
+    fixed_assets: "1700"
+    accumulated_depreciation: "1750"
+    intangible_assets: "1800"
+
+  liabilities:
+    accounts_payable: "2000"
+    accrued_expenses: "2100"
+    deferred_revenue: "2200"
+    short_term_debt: "2300"
+    long_term_debt: "2500"
+
+  equity:
+    common_stock: "3000"
+    retained_earnings: "3500"
+    current_year_earnings: "3900"
+
+  revenue:
+    product_revenue: "4000"
+    service_revenue: "4100"
+    other_revenue: "4900"
+
+  expenses:
+    cost_of_goods_sold: "5000"
+    operating_expenses: "6000"
+    salaries_and_wages: "6100"
+    rent: "6200"
+    utilities: "6300"
+    insurance: "6400"
+    depreciation: "6500"
+    interest_expense: "7000"
+    tax_expense: "8000"
+
+# Financial Close Workflow Configuration
+workflow:
+  # Close schedule
+  close_day: 5  # Business day of month to complete close
+  cutoff_time: "17:00"  # Time zone specified in company settings
+
+  # Phases and timing
+  phases:
+    preparation:
+      enabled: true
+      auto_start: true
+
+    transactional_processing:
+      enabled: true
+      parallel_processing: true
+
+    reconciliation:
+      enabled: true
+      required_accounts:
+        - "1000"  # Cash
+        - "1200"  # AR
+        - "2000"  # AP
+      tolerance_amount: 10.00
+
+    adjusting_entries:
+      enabled: true
+      auto_post: false  # Require manual review
+
+    financial_reporting:
+      enabled: true
+      statements:
+        - "balance_sheet"
+        - "income_statement"
+        - "cash_flow"
+        - "statement_of_changes_in_equity"
+
+    approval:
+      enabled: true
+
+    finalization:
+      enabled: true
+      lock_period: true  # Lock accounting period after close
+
+# Approval Workflow
+approval_workflow:
+  enabled: true
+
+  # Approval levels
+  levels:
+    - level: 1
+      role: "Staff Accountant"
+      required: false
+
+    - level: 2
+      role: "Senior Accountant"
+      required: true
+
+    - level: 3
+      role: "Controller"
+      required: true
+      authority_limit: 50000  # Can approve adjustments up to $50K
+
+    - level: 4
+      role: "CFO"
+      required: true
+      authority_limit: null  # Unlimited approval authority
+
+  # Auto-approval rules
+  auto_approve:
+    enabled: true
+    conditions:
+      - type: "amount_under"
+        threshold: 1000.00
+        requires_documentation: false
+
+      - type: "recurring_entry"
+        match_previous: true
+        variance_tolerance: 0.05  # 5%
+
+  # Notification settings
+  notifications:
+    email_enabled: true
+    slack_enabled: false
+    teams_enabled: false
+
+# Variance Analysis Configuration
+variance_analysis:
+  enabled: true
+
+  # Variance thresholds
+  thresholds:
+    percentage: 5.0  # Flag variances > 5%
+    absolute_amount: 5000.00  # Flag variances > $5,000
+
+  # Analysis types
+  analyses:
+    budget_vs_actual:
+      enabled: true
+
+    prior_period:
+      enabled: true
+      periods_to_compare: 3
+
+    forecast_vs_actual:
+      enabled: false
+
+  # Investigation workflow
+  investigation:
+    auto_assign: true
+    due_days: 3
+    escalation_enabled: true
+
+# Reconciliation Settings
+reconciliation:
+  # Bank reconciliation
+  bank:
+    enabled: true
+    auto_match_tolerance: 1.00
+    aging_days: 30
+
+  # Intercompany reconciliation
+  intercompany:
+    enabled: false  # Enable for multi-entity companies
+
+  # Sub-ledger reconciliation
+  subledger:
+    accounts_receivable:
+      enabled: true
+      aging_buckets: [30, 60, 90, 120]
+
+    accounts_payable:
+      enabled: true
+      aging_buckets: [30, 60, 90, 120]
+
+    inventory:
+      enabled: true
+      valuation_method: "FIFO"  # FIFO, LIFO, Average
+
+    fixed_assets:
+      enabled: true
+      depreciation_frequency: "monthly"
+
+# Journal Entry Configuration
+journal_entries:
+  # Standard recurring entries
+  recurring:
+    - entry_id: "REC-001"
+      description: "Monthly depreciation"
+      frequency: "monthly"
+      accounts:
+        debit: "6500"
+        credit: "1750"
+      calculation: "from_fixed_asset_schedule"
+
+    - entry_id: "REC-002"
+      description: "Prepaid insurance amortization"
+      frequency: "monthly"
+      accounts:
+        debit: "6400"
+        credit: "1600"
+      amount: 2500.00
+
+  # Accrual entries
+  accruals:
+    enabled: true
+    auto_reverse: true
+    reverse_day: 1  # First day of next period
+
+  # Entry validation
+  validation:
+    require_balanced: true
+    require_description: true
+    require_reference: true
+    require_approval: true
+
+# Tax Configuration
+tax:
+  jurisdiction: "US"
+
+  # Sales tax
+  sales_tax:
+    enabled: true
+    rates:
+      default: 0.075
+
+  # Income tax
+  income_tax:
+    enabled: true
+    rate: 0.21  # Federal corporate rate
+
+  # Deferred tax
+  deferred_tax:
+    enabled: false
+
+# Fixed Assets Configuration
+fixed_assets:
+  # Depreciation settings
+  depreciation:
+    default_method: "straight_line"  # straight_line, declining_balance, units_of_production
+
+    methods:
+      straight_line:
+        enabled: true
+
+      declining_balance:
+        enabled: true
+        rate: 2.0  # Double declining
+
+      units_of_production:
+        enabled: false
+
+  # Capitalization threshold
+  capitalization_threshold: 5000.00
+
+  # Asset categories and useful lives
+  categories:
+    - name: "Buildings"
+      useful_life_years: 39
+      method: "straight_line"
+
+    - name: "Machinery and Equipment"
+      useful_life_years: 7
+      method: "declining_balance"
+
+    - name: "Furniture and Fixtures"
+      useful_life_years: 7
+      method: "straight_line"
+
+    - name: "Vehicles"
+      useful_life_years: 5
+      method: "declining_balance"
+
+    - name: "Computer Equipment"
+      useful_life_years: 3
+      method: "straight_line"
+
+# Treasury and Cash Management
+treasury:
+  # Cash flow forecasting
+  cash_flow_forecast:
+    enabled: true
+    forecast_periods: 12  # months
+
+  # Bank account monitoring
+  bank_accounts:
+    - account_code: "1000"
+      account_name: "Operating Account"
+      bank: "Chase"
+      minimum_balance: 50000.00
+
+  # Investment management
+  investments:
+    enabled: false
+
+# Payroll Configuration
+payroll:
+  provider: "internal"  # internal, ADP, Paychex, Gusto
+
+  frequency: "semi_monthly"  # weekly, bi_weekly, semi_monthly, monthly
+
+  # Payroll accounts
+  accounts:
+    salaries_expense: "6100"
+    payroll_taxes_expense: "6110"
+    benefits_expense: "6120"
+    payroll_liability: "2150"
+
+# Revenue Recognition
+revenue:
+  method: "point_in_time"  # point_in_time, over_time
+
+  # ASC 606 compliance (for US companies)
+  asc_606_enabled: true
+
+  # Deferred revenue
+  deferred_revenue:
+    enabled: true
+    recognition_schedule: "monthly"
+
+# Reporting Configuration
+reporting:
+  # Financial statements
+  statements:
+    balance_sheet:
+      enabled: true
+      format: "classified"  # classified or report
+
+    income_statement:
+      enabled: true
+      format: "multi_step"  # single_step or multi_step
+
+    cash_flow:
+      enabled: true
+      method: "indirect"  # direct or indirect
+
+    statement_of_changes_in_equity:
+      enabled: true
+
+  # Output formats
+  output_formats:
+    - "pdf"
+    - "excel"
+    - "json"
+
+  # Distribution
+  distribution:
+    email:
+      enabled: true
+      recipients:
+        - "controller@company.com"
+        - "cfo@company.com"
+        - "board@company.com"
+
+    cloud_storage:
+      enabled: false
+      provider: "s3"  # s3, azure, gcp
+      bucket: "financial-reports"
+
+# Performance and Optimization
+performance:
+  # Parallel processing
+  parallel_processing:
+    enabled: true
+    max_workers: 5
+
+  # Caching
+  cache:
+    enabled: true
+    ttl_seconds: 3600
+
+  # Retry logic
+  retry_attempts: 3
+  retry_delay_seconds: 5
+  retry_backoff: "exponential"  # linear or exponential
+
+# Monitoring and Alerts
+monitoring:
+  # Logging
+  logging:
+    level: "INFO"  # DEBUG, INFO, WARNING, ERROR
+    output: "both"  # console, file, both
+    retention_days: 90
+
+  # Metrics
+  metrics:
+    enabled: true
+    collect_interval_seconds: 60
+
+  # Alerts
+  alerts:
+    enabled: true
+
+    conditions:
+      - type: "variance_threshold_exceeded"
+        threshold: 10.0
+        severity: "warning"
+
+      - type: "reconciliation_failed"
+        severity: "error"
+
+      - type: "approval_pending_too_long"
+        threshold_hours: 24
+        severity: "warning"
+
+      - type: "close_duration_exceeded"
+        threshold_hours: 24
+        severity: "error"
+
+# Compliance and Audit
+compliance:
+  # SOX compliance
+  sox_controls:
+    enabled: false
+
+  # Audit trail
+  audit_trail:
+    enabled: true
+    retention_years: 7
+
+  # Data retention
+  data_retention:
+    financial_records_years: 7
+    supporting_documents_years: 7
+
+# Company Size Specific Settings
+company_size_overrides:
+  small:
+    workflow:
+      phases:
+        approval:
+          levels:
+            - role: "Owner"
+              required: true
+
+  medium:
+    # Use default settings
+
+  large:
+    workflow:
+      phases:
+        approval:
+          levels:
+            - role: "Senior Accountant"
+              required: true
+            - role: "Controller"
+              required: true
+            - role: "VP Finance"
+              required: true
+            - role: "CFO"
+              required: true
+
+  enterprise:
+    workflow:
+      phases:
+        reconciliation:
+          tolerance_amount: 100.00
+        approval:
+          levels:
+            - role: "Staff Accountant"
+              required: true
+            - role: "Senior Accountant"
+              required: true
+            - role: "Accounting Manager"
+              required: true
+            - role: "Controller"
+              required: true
+            - role: "VP Finance"
+              required: true
+            - role: "CFO"
+              required: true
+            - role: "Audit Committee"
+              required: true

@@ -1,0 +1,553 @@
+# Supply Chain Optimization Configuration
+# APQC Category 4.0 - Deliver Physical Products
+# Version: 1.0.0
+
+# ==============================================================================
+# Product Catalog
+# ==============================================================================
+products:
+  - sku: "PROD-001"
+    name: "Industrial Widget A"
+    category: "Manufacturing Components"
+    unit_cost: 45.50
+    selling_price: 89.99
+    lead_time_days: 14
+    min_order_quantity: 100
+    safety_stock_days: 7
+    demand_variability: 0.15
+    shelf_life_days: null
+    weight_kg: 2.5
+    volume_m3: 0.003
+
+  - sku: "PROD-002"
+    name: "Electronic Module B"
+    category: "Electronics"
+    unit_cost: 125.00
+    selling_price: 249.99
+    lead_time_days: 21
+    min_order_quantity: 50
+    safety_stock_days: 10
+    demand_variability: 0.25
+    shelf_life_days: 730
+    weight_kg: 0.8
+    volume_m3: 0.001
+
+  - sku: "PROD-003"
+    name: "Precision Assembly C"
+    category: "Precision Parts"
+    unit_cost: 78.25
+    selling_price: 159.99
+    lead_time_days: 18
+    min_order_quantity: 75
+    safety_stock_days: 10
+    demand_variability: 0.18
+    shelf_life_days: null
+    weight_kg: 1.2
+    volume_m3: 0.002
+
+  - sku: "PROD-004"
+    name: "Hydraulic Component D"
+    category: "Hydraulics"
+    unit_cost: 210.00
+    selling_price: 425.00
+    lead_time_days: 28
+    min_order_quantity: 25
+    safety_stock_days: 14
+    demand_variability: 0.30
+    shelf_life_days: null
+    weight_kg: 5.5
+    volume_m3: 0.008
+
+  - sku: "PROD-005"
+    name: "Control System E"
+    category: "Control Systems"
+    unit_cost: 650.00
+    selling_price: 1299.99
+    lead_time_days: 35
+    min_order_quantity: 10
+    safety_stock_days: 14
+    demand_variability: 0.35
+    shelf_life_days: 1095
+    weight_kg: 3.2
+    volume_m3: 0.005
+
+# ==============================================================================
+# Supplier Database
+# ==============================================================================
+suppliers:
+  - supplier_id: "SUP-001"
+    name: "Global Manufacturing Solutions Inc."
+    tier: "strategic"
+    reliability_score: 0.98
+    quality_score: 0.97
+    lead_time_days: 14
+    minimum_order_value: 5000.00
+    payment_terms: "net_45"
+    certifications:
+      - "ISO9001:2015"
+      - "ISO14001:2015"
+      - "AS9100D"
+    capacity_units_per_month: 50000
+
+  - supplier_id: "SUP-002"
+    name: "Pacific Electronics Corp."
+    tier: "strategic"
+    reliability_score: 0.96
+    quality_score: 0.98
+    lead_time_days: 21
+    minimum_order_value: 10000.00
+    payment_terms: "net_30"
+    certifications:
+      - "ISO9001:2015"
+      - "IPC-A-610"
+      - "RoHS"
+    capacity_units_per_month: 30000
+
+  - supplier_id: "SUP-003"
+    name: "Precision Parts Manufacturing Ltd."
+    tier: "preferred"
+    reliability_score: 0.94
+    quality_score: 0.95
+    lead_time_days: 18
+    minimum_order_value: 7500.00
+    payment_terms: "net_60"
+    certifications:
+      - "ISO9001:2015"
+      - "ISO/TS16949"
+    capacity_units_per_month: 40000
+
+  - supplier_id: "SUP-004"
+    name: "Hydraulic Systems International"
+    tier: "preferred"
+    reliability_score: 0.92
+    quality_score: 0.94
+    lead_time_days: 28
+    minimum_order_value: 15000.00
+    payment_terms: "net_45"
+    certifications:
+      - "ISO9001:2015"
+      - "ISO4413"
+    capacity_units_per_month: 20000
+
+  - supplier_id: "SUP-005"
+    name: "Advanced Controls Systems"
+    tier: "approved"
+    reliability_score: 0.90
+    quality_score: 0.92
+    lead_time_days: 35
+    minimum_order_value: 20000.00
+    payment_terms: "net_30"
+    certifications:
+      - "ISO9001:2015"
+      - "IEC61508"
+      - "UL508"
+    capacity_units_per_month: 15000
+
+  - supplier_id: "SUP-006"
+    name: "Regional Component Suppliers"
+    tier: "approved"
+    reliability_score: 0.88
+    quality_score: 0.90
+    lead_time_days: 14
+    minimum_order_value: 3000.00
+    payment_terms: "net_45"
+    certifications:
+      - "ISO9001:2015"
+    capacity_units_per_month: 25000
+
+# ==============================================================================
+# Inventory Policies
+# ==============================================================================
+inventory_policies:
+  # Ordering costs
+  ordering_cost: 150.00  # Cost per purchase order
+
+  # Holding cost rate (% of unit cost per year)
+  holding_cost_rate: 0.25  # 25% per year
+
+  # Service level targets by category
+  service_levels:
+    critical: 0.995
+    high: 0.98
+    medium: 0.95
+    low: 0.90
+
+  # Inventory review periods
+  review_periods:
+    daily: ["PROD-001", "PROD-002"]
+    weekly: ["PROD-003", "PROD-004"]
+    monthly: ["PROD-005"]
+
+  # ABC Classification
+  abc_classification:
+    A_items:  # 80% of value, 20% of items
+      - "PROD-005"
+      - "PROD-004"
+    B_items:  # 15% of value, 30% of items
+      - "PROD-002"
+      - "PROD-003"
+    C_items:  # 5% of value, 50% of items
+      - "PROD-001"
+
+  # Safety stock methods
+  safety_stock_method: "statistical"  # Options: statistical, time-based, forecast-based
+
+  # Constraints
+  constraints:
+    - "warehouse_capacity"
+    - "cash_flow"
+    - "supplier_reliability"
+    - "lead_time_variability"
+
+# ==============================================================================
+# Production Configuration
+# ==============================================================================
+production:
+  # Production lines
+  production_lines:
+    - id: "LINE-A"
+      name: "Assembly Line A"
+      capacity: 150  # Units per hour
+      available_hours: 160  # Per month
+      efficiency: 0.85
+      products:
+        - "PROD-001"
+        - "PROD-003"
+
+    - id: "LINE-B"
+      name: "Assembly Line B"
+      capacity: 100  # Units per hour
+      available_hours: 160
+      efficiency: 0.82
+      products:
+        - "PROD-002"
+        - "PROD-005"
+
+    - id: "LINE-C"
+      name: "Heavy Assembly Line C"
+      capacity: 60   # Units per hour
+      available_hours: 140
+      efficiency: 0.88
+      products:
+        - "PROD-004"
+
+  # Production scheduling parameters
+  scheduling:
+    planning_horizon_days: 30
+    batch_size_minimum: 50
+    changeover_time_hours: 2
+    optimization_method: "minimize_makespan"
+    constraints:
+      - "capacity"
+      - "material_availability"
+      - "labor"
+      - "due_dates"
+      - "setup_times"
+
+  # Quality control
+  quality_control:
+    inspection_rate: 0.10  # 10% inspection
+    acceptance_quality_level: 0.015  # 1.5% defect rate
+    control_charts: true
+    six_sigma_target: 3.4  # Defects per million
+
+# ==============================================================================
+# Logistics Network
+# ==============================================================================
+logistics:
+  # Distribution centers
+  distribution_centers:
+    - id: "DC-001"
+      name: "Central Distribution Center"
+      location: "Chicago, IL"
+      capacity_m3: 50000
+      throughput_units_per_day: 10000
+      operating_hours: 24
+
+    - id: "DC-002"
+      name: "East Coast Distribution Center"
+      location: "Newark, NJ"
+      capacity_m3: 35000
+      throughput_units_per_day: 7500
+      operating_hours: 20
+
+    - id: "DC-003"
+      name: "West Coast Distribution Center"
+      location: "Los Angeles, CA"
+      capacity_m3: 40000
+      throughput_units_per_day: 8500
+      operating_hours: 22
+
+  # Warehouses
+  warehouses:
+    - id: "WH-001"
+      location: "Chicago, IL"
+      type: "primary"
+      capacity_m3: 25000
+      current_utilization: 0.75
+      automated: true
+
+    - id: "WH-002"
+      location: "Dallas, TX"
+      type: "regional"
+      capacity_m3: 15000
+      current_utilization: 0.68
+      automated: false
+
+    - id: "WH-003"
+      location: "Atlanta, GA"
+      type: "regional"
+      capacity_m3: 18000
+      current_utilization: 0.72
+      automated: true
+
+  # Fleet configuration
+  fleet:
+    - vehicle_type: "Class 8 Truck"
+      count: 25
+      capacity_kg: 20000
+      capacity_m3: 80
+      range_km: 800
+      cost_per_km: 2.50
+
+    - vehicle_type: "Sprinter Van"
+      count: 15
+      capacity_kg: 3500
+      capacity_m3: 15
+      range_km: 400
+      cost_per_km: 1.50
+
+    - vehicle_type: "Box Truck"
+      count: 20
+      capacity_kg: 10000
+      capacity_m3: 45
+      range_km: 600
+      cost_per_km: 2.00
+
+  # Transportation modes
+  transportation_modes:
+    - mode: "ground"
+      cost_per_km: 2.00
+      average_speed_kmh: 80
+      reliability: 0.95
+
+    - mode: "air"
+      cost_per_km: 8.00
+      average_speed_kmh: 600
+      reliability: 0.98
+
+    - mode: "rail"
+      cost_per_km: 1.20
+      average_speed_kmh: 60
+      reliability: 0.92
+
+  # Route optimization parameters
+  routing:
+    max_stops_per_route: 15
+    max_route_duration_hours: 10
+    driver_max_hours: 11  # DOT regulations
+    optimization_method: "clarke_wright"  # Options: clarke_wright, nearest_neighbor, genetic
+    constraints:
+      - "capacity"
+      - "time_windows"
+      - "driver_hours"
+      - "vehicle_compatibility"
+
+# ==============================================================================
+# Demand Forecasting Configuration
+# ==============================================================================
+demand_factors:
+  # Economic indicators
+  economic:
+    gdp_growth_rate: 0.025
+    inflation_rate: 0.032
+    unemployment_rate: 0.038
+
+  # Seasonality patterns
+  seasonality:
+    monthly_indices: [1.0, 0.9, 0.95, 1.05, 1.1, 1.15, 1.2, 1.15, 1.1, 1.05, 1.0, 0.95]
+    holiday_effects:
+      - period: "Q4"
+        multiplier: 1.3
+
+  # Market trends
+  market_trends:
+    industry_growth_rate: 0.08
+    market_share: 0.15
+    competitive_intensity: "high"
+
+  # Promotional calendar
+  promotions:
+    - name: "Spring Sale"
+      start_month: 3
+      duration_months: 1
+      demand_lift: 1.25
+
+    - name: "Summer Campaign"
+      start_month: 6
+      duration_months: 2
+      demand_lift: 1.15
+
+    - name: "Year-End Clearance"
+      start_month: 11
+      duration_months: 2
+      demand_lift: 1.40
+
+  # Forecast methods
+  methods:
+    primary: "ensemble"  # Options: time_series, machine_learning, ensemble
+    backup: "exponential_smoothing"
+    confidence_interval: 0.95
+    forecast_horizon_months: 12
+
+# ==============================================================================
+# ERP/WMS Integration Configuration
+# ==============================================================================
+erp_integration:
+  # SAP Configuration
+  sap:
+    enabled: true
+    system_id: "PRD"
+    client: "100"
+    modules:
+      - "MM"  # Materials Management
+      - "PP"  # Production Planning
+      - "SD"  # Sales and Distribution
+      - "WM"  # Warehouse Management
+    api_endpoint: "https://sap.company.com/api/v1"
+    batch_interval_minutes: 15
+
+  # Oracle ERP Configuration
+  oracle:
+    enabled: false
+    instance: "PROD"
+    modules:
+      - "SCM"  # Supply Chain Management
+      - "MFG"  # Manufacturing
+    api_endpoint: "https://oracle.company.com/api/v1"
+
+  # Microsoft Dynamics 365 Configuration
+  dynamics:
+    enabled: false
+    environment: "production"
+    modules:
+      - "Supply Chain Management"
+      - "Finance and Operations"
+    api_endpoint: "https://dynamics.company.com/api/data/v9.1"
+
+  # WMS Integration
+  wms:
+    provider: "Manhattan"  # Options: Manhattan, Blue Yonder, SAP EWM
+    api_endpoint: "https://wms.company.com/api/v2"
+    real_time_sync: true
+    batch_sync_interval_minutes: 5
+
+  # TMS Integration
+  tms:
+    provider: "Oracle Transportation Management"
+    api_endpoint: "https://tms.company.com/api/v1"
+    real_time_tracking: true
+
+# ==============================================================================
+# Performance Metrics & KPIs
+# ==============================================================================
+kpis:
+  # Inventory metrics
+  inventory:
+    turnover_target: 12.0
+    days_outstanding_target: 30
+    accuracy_target: 0.995
+    obsolescence_rate_max: 0.02
+
+  # Service metrics
+  service:
+    fill_rate_target: 0.97
+    on_time_delivery_target: 0.95
+    perfect_order_rate_target: 0.92
+    order_cycle_time_days_max: 7
+
+  # Cost metrics
+  cost:
+    logistics_cost_percentage_max: 0.08  # 8% of revenue
+    inventory_carrying_cost_percentage_max: 0.25
+    procurement_cost_reduction_target: 0.05  # 5% annual reduction
+
+  # Quality metrics
+  quality:
+    supplier_quality_target: 0.95
+    return_rate_max: 0.03
+    damage_rate_max: 0.01
+
+  # Cash flow metrics
+  cash_flow:
+    cash_to_cash_cycle_days_target: 45
+    days_payable_outstanding_target: 45
+    days_sales_outstanding_target: 30
+
+# ==============================================================================
+# Optimization Parameters
+# ==============================================================================
+optimization:
+  # Global optimization settings
+  global:
+    objective: "minimize_total_cost"  # Options: minimize_total_cost, maximize_service_level, balanced
+    time_limit_seconds: 300
+    solution_quality: "optimal"  # Options: optimal, near_optimal, heuristic
+
+  # Solver settings
+  solver:
+    method: "mixed_integer_programming"
+    tolerance: 0.01
+    max_iterations: 10000
+
+  # Multi-objective weights
+  multi_objective_weights:
+    cost: 0.50
+    service_level: 0.30
+    sustainability: 0.10
+    risk: 0.10
+
+# ==============================================================================
+# Risk Management
+# ==============================================================================
+risk_management:
+  # Supply risk
+  supply_risk:
+    single_source_risk_threshold: 0.30  # Max 30% from single supplier
+    geographic_concentration_max: 0.50
+    supplier_financial_health_monitoring: true
+
+  # Demand risk
+  demand_risk:
+    forecast_error_acceptable: 0.15  # 15% MAPE
+    demand_volatility_monitoring: true
+    scenario_planning_enabled: true
+
+  # Operational risk
+  operational_risk:
+    capacity_buffer: 0.15  # 15% excess capacity
+    safety_stock_coverage_days: 14
+    backup_suppliers_required: 2
+
+# ==============================================================================
+# Sustainability Metrics
+# ==============================================================================
+sustainability:
+  # Carbon footprint tracking
+  carbon:
+    total_emissions_tracking: true
+    emissions_reduction_target: 0.20  # 20% reduction over 5 years
+    scope_1_2_3_reporting: true
+
+  # Circular economy
+  circular_economy:
+    recycling_rate_target: 0.75
+    remanufacturing_enabled: true
+    packaging_optimization: true
+
+  # Supplier sustainability
+  supplier_sustainability:
+    sustainability_score_weight: 0.10
+    certifications_required:
+      - "ISO14001"
+      - "Carbon Neutral Certified"

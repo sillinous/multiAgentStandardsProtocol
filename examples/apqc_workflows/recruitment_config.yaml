@@ -1,0 +1,729 @@
+# AI-Powered Recruitment System Configuration
+# Production-ready configuration for APQC Category 7.0 recruitment automation
+
+# ============================================================================
+# ATS Integration
+# ============================================================================
+ats:
+  provider: greenhouse  # Options: greenhouse, lever, workday, bamboohr, ashby
+  api_key: ${ATS_API_KEY}
+  base_url: https://api.greenhouse.io/v1
+  webhook_url: https://your-company.com/webhooks/ats
+  sync_enabled: true
+  sync_interval_minutes: 15
+
+  # Field mappings
+  field_mappings:
+    requisition_id: job_id
+    candidate_id: application_id
+    stage: current_stage
+
+  # Webhook events to subscribe
+  webhook_events:
+    - candidate.created
+    - candidate.stage_changed
+    - offer.created
+    - hire.created
+
+# ============================================================================
+# AI Screening Configuration
+# ============================================================================
+ai_screening:
+  enabled: true
+
+  # Scoring weights
+  scoring_weights:
+    skills_match: 0.40
+    experience_match: 0.30
+    culture_fit: 0.30
+
+  # Thresholds
+  thresholds:
+    min_match_score: 0.70
+    auto_reject_threshold: 0.50
+    auto_advance_threshold: 0.85
+
+  # AI models
+  models:
+    resume_parser:
+      provider: openai
+      model: gpt-4
+      temperature: 0.3
+
+    skills_matcher:
+      provider: openai
+      model: gpt-4
+      use_embeddings: true
+
+    culture_fit:
+      provider: custom
+      model: culture_fit_model_v2
+
+  # Features
+  features:
+    use_skills_matching: true
+    use_experience_matching: true
+    use_culture_fit: true
+    use_behavioral_prediction: true
+    use_job_hopping_analysis: true
+
+# ============================================================================
+# Job Templates
+# ============================================================================
+job_templates:
+
+  # Software Engineering
+  software_engineer_senior:
+    title: Senior Software Engineer
+    department: engineering
+    level: senior
+
+    required_skills:
+      - Python
+      - Kubernetes
+      - AWS
+      - Microservices
+      - REST APIs
+
+    preferred_skills:
+      - Machine Learning
+      - Terraform
+      - Go
+      - GraphQL
+      - Docker
+
+    experience_range:
+      min_years: 5
+      max_years: 10
+
+    education:
+      - Bachelor's in Computer Science
+      - Bachelor's in related field
+      - Equivalent experience
+
+    certifications:
+      preferred:
+        - AWS Certified Solutions Architect
+        - Certified Kubernetes Administrator
+
+    compensation:
+      salary_min: 140000
+      salary_max: 200000
+      currency: USD
+      equity: true
+      bonus_percentage: 0.15
+
+    interview_workflow: technical_senior
+
+  # Data Science
+  data_scientist_senior:
+    title: Senior Data Scientist
+    department: data_science
+    level: senior
+
+    required_skills:
+      - Python
+      - Machine Learning
+      - SQL
+      - Statistics
+      - TensorFlow or PyTorch
+
+    preferred_skills:
+      - Deep Learning
+      - MLOps
+      - Spark
+      - Cloud platforms
+
+    experience_range:
+      min_years: 5
+      max_years: 10
+
+    compensation:
+      salary_min: 150000
+      salary_max: 220000
+      currency: USD
+      equity: true
+      bonus_percentage: 0.20
+
+    interview_workflow: data_science_senior
+
+  # Product Manager
+  product_manager:
+    title: Senior Product Manager
+    department: product
+    level: senior
+
+    required_skills:
+      - Product Strategy
+      - User Research
+      - Data Analysis
+      - Stakeholder Management
+      - Agile/Scrum
+
+    preferred_skills:
+      - SQL
+      - Technical Background
+      - B2B SaaS Experience
+
+    experience_range:
+      min_years: 5
+      max_years: 10
+
+    compensation:
+      salary_min: 145000
+      salary_max: 210000
+      currency: USD
+      equity: true
+      bonus_percentage: 0.15
+
+    interview_workflow: product_senior
+
+# ============================================================================
+# Interview Workflows
+# ============================================================================
+interview_workflows:
+
+  technical_senior:
+    stages:
+      - stage: phone_screen
+        duration_minutes: 30
+        interviewers: [recruiter]
+        scorecard:
+          - Communication Skills
+          - Role Understanding
+          - Salary Expectations
+          - Availability
+
+      - stage: technical_deep_dive
+        duration_minutes: 60
+        interviewers: [tech_lead, senior_engineer]
+        scorecard:
+          - Coding Skills
+          - Problem Solving
+          - Code Quality
+          - Technical Knowledge
+
+      - stage: system_design
+        duration_minutes: 60
+        interviewers: [architect, engineering_manager]
+        scorecard:
+          - System Design
+          - Scalability Thinking
+          - Trade-off Analysis
+          - Communication
+
+      - stage: behavioral
+        duration_minutes: 45
+        interviewers: [hiring_manager]
+        scorecard:
+          - Leadership
+          - Collaboration
+          - Conflict Resolution
+          - Culture Fit
+
+      - stage: executive
+        duration_minutes: 30
+        interviewers: [director, vp_engineering]
+        scorecard:
+          - Strategic Thinking
+          - Long-term Vision
+          - Executive Presence
+
+  data_science_senior:
+    stages:
+      - stage: phone_screen
+        duration_minutes: 30
+        interviewers: [recruiter]
+
+      - stage: technical_case_study
+        duration_minutes: 90
+        interviewers: [lead_data_scientist, ml_engineer]
+        scorecard:
+          - Statistical Knowledge
+          - ML Expertise
+          - Business Acumen
+          - Code Quality
+
+      - stage: presentation
+        duration_minutes: 60
+        interviewers: [data_science_team]
+        scorecard:
+          - Communication
+          - Storytelling
+          - Technical Depth
+
+      - stage: behavioral
+        duration_minutes: 45
+        interviewers: [hiring_manager]
+
+  product_senior:
+    stages:
+      - stage: phone_screen
+        duration_minutes: 30
+        interviewers: [recruiter]
+
+      - stage: product_case_study
+        duration_minutes: 60
+        interviewers: [senior_pm, product_lead]
+        scorecard:
+          - Product Thinking
+          - User Empathy
+          - Prioritization
+          - Metrics Orientation
+
+      - stage: cross_functional
+        duration_minutes: 45
+        interviewers: [engineering_lead, design_lead]
+        scorecard:
+          - Cross-functional Collaboration
+          - Technical Understanding
+          - Design Thinking
+
+      - stage: executive
+        duration_minutes: 30
+        interviewers: [vp_product, ceo]
+
+# ============================================================================
+# Screening Criteria
+# ============================================================================
+screening_criteria:
+
+  # Auto-reject criteria
+  auto_reject:
+    - missing_required_skills_count_threshold: 3
+    - experience_years_below_minimum: true
+    - salary_expectations_above_max: 1.20  # 20% above max
+    - location_mismatch: true
+    - authorization_to_work: false
+
+  # Auto-advance criteria
+  auto_advance:
+    - ai_match_score_threshold: 0.85
+    - all_required_skills_present: true
+    - top_tier_company_experience: true
+    - employee_referral: true
+
+  # Red flags
+  red_flags:
+    - job_hopping:
+        threshold_years: 1.0
+        consecutive_jobs: 3
+    - employment_gap:
+        threshold_months: 12
+        require_explanation: true
+    - salary_jump:
+        threshold_percentage: 0.50
+    - title_inflation: true
+
+# ============================================================================
+# Scoring Models
+# ============================================================================
+scoring_models:
+
+  # Skills matching model
+  skills_matching:
+    required_skills_weight: 1.0
+    preferred_skills_weight: 0.5
+    adjacent_skills_weight: 0.3
+
+    skill_levels:
+      expert: 1.0
+      advanced: 0.8
+      intermediate: 0.6
+      beginner: 0.4
+
+    recency_decay:
+      enabled: true
+      half_life_years: 3
+
+  # Experience matching model
+  experience_matching:
+    years_in_range_score: 1.0
+    years_below_min_penalty: -0.2
+    years_above_max_bonus: 0.1
+
+    company_tier_bonus:
+      tier_1_faang: 0.15
+      tier_2_unicorn: 0.10
+      tier_3_established: 0.05
+      tier_4_startup: 0.02
+
+    industry_relevance:
+      exact_match: 1.0
+      adjacent: 0.7
+      transferable: 0.5
+
+  # Culture fit model
+  culture_fit:
+    company_values_alignment: 0.40
+    work_style_match: 0.30
+    growth_mindset: 0.20
+    team_collaboration: 0.10
+
+    values:
+      - innovation
+      - customer_focus
+      - ownership
+      - transparency
+      - continuous_learning
+
+  # Quality of hire prediction
+  quality_of_hire:
+    factors:
+      - resume_quality: 0.15
+      - interview_scores: 0.35
+      - assessment_scores: 0.25
+      - reference_checks: 0.15
+      - culture_fit: 0.10
+
+    success_indicators:
+      - performance_rating_threshold: 4.0
+      - retention_90day: true
+      - manager_satisfaction: 4.5
+
+# ============================================================================
+# Diversity & Inclusion
+# ============================================================================
+diversity:
+  enabled: true
+
+  # Goals
+  goals:
+    overall_diversity_rate: 0.40
+    underrepresented_groups_rate: 0.30
+    gender_balance: 0.50
+
+  # Sourcing
+  sourcing:
+    diverse_job_boards:
+      - diversityworking
+      - fairygodboss
+      - outprofessionals
+      - hiretechladies
+
+    partnerships:
+      - code2040
+      - colorstack
+      - techqueria
+      - outintech
+
+  # Bias mitigation
+  bias_mitigation:
+    blind_resume_review: true
+    diverse_interview_panels: true
+    structured_interviews: true
+    calibration_sessions: true
+
+  # Tracking
+  tracking:
+    eeoc_categories: true
+    self_identification: voluntary
+    adverse_impact_monitoring: true
+    four_fifths_rule_check: true
+
+# ============================================================================
+# Assessment Tools
+# ============================================================================
+assessment_tools:
+
+  # Technical assessments
+  technical:
+    provider: hackerrank
+    api_key: ${HACKERRANK_API_KEY}
+
+    assessments:
+      coding_challenge:
+        duration_minutes: 90
+        difficulty: medium
+        languages: [python, javascript, java, go]
+
+      system_design:
+        duration_minutes: 60
+        open_ended: true
+
+  # Cognitive assessments
+  cognitive:
+    provider: criteria_corp
+    api_key: ${CRITERIA_API_KEY}
+
+    tests:
+      - CCAT  # Cognitive aptitude
+      - CBST  # Business skills
+
+  # Personality assessments
+  personality:
+    provider: predictive_index
+    api_key: ${PI_API_KEY}
+
+    assessments:
+      - behavioral_assessment
+      - cognitive_assessment
+
+# ============================================================================
+# Background Checks
+# ============================================================================
+background_checks:
+  provider: checkr
+  api_key: ${CHECKR_API_KEY}
+
+  packages:
+    standard:
+      - criminal_records
+      - employment_verification
+      - education_verification
+
+    comprehensive:
+      - criminal_records
+      - employment_verification
+      - education_verification
+      - credit_check
+      - reference_checks
+
+  timing: post_offer
+  auto_initiate: true
+
+# ============================================================================
+# Offer Management
+# ============================================================================
+offer_management:
+
+  # Compensation calculation
+  compensation:
+    market_data_source: radford
+    positioning: p60  # 60th percentile
+
+    components:
+      base_salary:
+        weight: 0.60
+
+      equity:
+        weight: 0.25
+        vesting_years: 4
+        cliff_years: 1
+
+      bonus:
+        weight: 0.15
+
+    adjustments:
+      high_performer_bonus: 0.10
+      competing_offer_match: true
+      geographic_multiplier: true
+
+  # Approval workflow
+  approval_workflow:
+    levels:
+      - role: hiring_manager
+        threshold: 150000
+
+      - role: department_head
+        threshold: 200000
+
+      - role: cfo
+        threshold: 250000
+
+  # Offer letter
+  offer_letter:
+    template: standard_offer_template_v2
+    auto_generate: true
+    e_signature: docusign
+    expiration_days: 7
+
+# ============================================================================
+# Onboarding
+# ============================================================================
+onboarding:
+
+  # Pre-boarding (before start date)
+  pre_boarding:
+    timeline_days: 14
+
+    tasks:
+      - send_welcome_email
+      - send_offer_letter
+      - collect_paperwork
+      - background_check
+      - equipment_order
+      - account_setup
+      - schedule_first_day
+
+  # Week 1
+  week_1:
+    - company_orientation
+    - team_introductions
+    - manager_1on1
+    - it_setup
+    - benefits_enrollment
+    - compliance_training
+
+  # Week 2-4
+  week_2_4:
+    - role_training
+    - product_training
+    - stakeholder_meetings
+    - first_project_assignment
+
+  # 30-60-90 day plan
+  milestones:
+    day_30:
+      - manager_checkin
+      - peer_feedback
+      - goals_review
+
+    day_60:
+      - project_review
+      - skills_assessment
+
+    day_90:
+      - performance_review
+      - promotion_discussion
+      - retention_conversation
+
+# ============================================================================
+# Analytics & Reporting
+# ============================================================================
+analytics:
+
+  # Metrics tracked
+  metrics:
+    - time_to_hire
+    - cost_per_hire
+    - quality_of_hire
+    - source_effectiveness
+    - conversion_rates
+    - diversity_metrics
+    - offer_acceptance_rate
+    - recruiter_productivity
+
+  # Dashboards
+  dashboards:
+    - executive_summary
+    - recruiter_performance
+    - diversity_tracking
+    - pipeline_health
+
+  # Reporting
+  reporting:
+    frequency: weekly
+    recipients:
+      - recruiting_team
+      - hiring_managers
+      - hr_leadership
+
+  # Benchmarking
+  benchmarking:
+    industry_comparison: true
+    competitor_analysis: true
+    historical_trends: true
+
+# ============================================================================
+# Compliance
+# ============================================================================
+compliance:
+
+  # EEOC
+  eeoc:
+    enabled: true
+    tracking: true
+    reporting: annual
+
+  # GDPR
+  gdpr:
+    enabled: true
+    consent_required: true
+    data_retention_days: 2555  # 7 years
+    right_to_erasure: true
+    data_portability: true
+
+  # CCPA
+  ccpa:
+    enabled: true
+    privacy_notice: true
+    opt_out_available: true
+
+  # OFCCP
+  ofccp:
+    enabled: true
+    affirmative_action_plan: true
+    reporting: annual
+
+  # Data security
+  data_security:
+    encryption_at_rest: true
+    encryption_in_transit: true
+    access_controls: rbac
+    audit_logging: true
+    soc2_compliant: true
+
+# ============================================================================
+# Notifications
+# ============================================================================
+notifications:
+
+  # Email templates
+  email_templates:
+    candidate_application_received:
+      subject: "Application Received - {job_title}"
+      template: application_received_v2
+
+    candidate_rejected:
+      subject: "Update on Your Application"
+      template: rejection_email_v2
+
+    interview_scheduled:
+      subject: "Interview Scheduled - {job_title}"
+      template: interview_invitation_v2
+
+    offer_extended:
+      subject: "Congratulations! Offer from {company_name}"
+      template: offer_letter_v2
+
+  # SMS notifications
+  sms:
+    enabled: true
+    provider: twilio
+
+  # Slack notifications
+  slack:
+    enabled: true
+    webhook_url: ${SLACK_WEBHOOK_URL}
+    channels:
+      - recruiting
+      - hiring_managers
+
+# ============================================================================
+# Integration Settings
+# ============================================================================
+integrations:
+
+  # Calendar
+  calendar:
+    provider: google_calendar
+    api_key: ${GOOGLE_CALENDAR_API_KEY}
+    auto_schedule: true
+    buffer_hours: 24
+
+  # Video conferencing
+  video:
+    provider: zoom
+    api_key: ${ZOOM_API_KEY}
+    auto_generate_links: true
+
+  # HRIS
+  hris:
+    provider: workday
+    api_key: ${WORKDAY_API_KEY}
+    sync_enabled: true
+
+  # Job boards
+  job_boards:
+    linkedin:
+      enabled: true
+      api_key: ${LINKEDIN_API_KEY}
+
+    indeed:
+      enabled: true
+      api_key: ${INDEED_API_KEY}
+
+    glassdoor:
+      enabled: true
+      api_key: ${GLASSDOOR_API_KEY}

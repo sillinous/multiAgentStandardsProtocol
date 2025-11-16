@@ -1,0 +1,592 @@
+# ============================================================================
+# Marketing Campaign Automation Configuration
+# ============================================================================
+#
+# This configuration file defines templates, channel settings, budget
+# allocations, and target metrics for the autonomous marketing campaign manager.
+#
+# Version: 1.0.0
+# Date: 2025-11-16
+# ============================================================================
+
+# ============================================================================
+# Campaign Defaults
+# ============================================================================
+campaign_defaults:
+  budget: 50000  # Default campaign budget in USD
+  duration_days: 90  # Default campaign duration
+  target_roi: 3.0  # Target return on investment (3x)
+  target_ctr: 0.05  # Target click-through rate (5%)
+  target_conversion_rate: 0.05  # Target conversion rate (5%)
+  optimization_frequency: 300  # Optimization check interval in seconds (5 min)
+  ab_test_duration: 7  # A/B test duration in days
+
+# ============================================================================
+# Channel Configurations
+# ============================================================================
+channels:
+  email:
+    enabled: true
+    budget_allocation: 0.25  # 25% of total budget
+    target_reach: 50000
+    target_ctr: 0.08  # Email typically has higher CTR
+    target_conversion_rate: 0.06
+    platforms:
+      - name: "sendgrid"
+        api_endpoint: "https://api.sendgrid.com/v3"
+        rate_limit: 10000  # emails per hour
+      - name: "mailchimp"
+        api_endpoint: "https://api.mailchimp.com/3.0"
+        rate_limit: 5000
+    content_types:
+      - newsletter
+      - promotional
+      - educational
+      - transactional
+    personalization:
+      - subject_line
+      - greeting
+      - content_blocks
+      - cta_button
+
+  social_media:
+    enabled: true
+    budget_allocation: 0.30  # 30% of total budget
+    target_reach: 100000
+    target_ctr: 0.04
+    target_conversion_rate: 0.03
+    platforms:
+      - name: "linkedin_ads"
+        api_endpoint: "https://api.linkedin.com/v2"
+        targeting:
+          - job_title
+          - company_size
+          - industry
+          - seniority
+      - name: "facebook_ads"
+        api_endpoint: "https://graph.facebook.com/v12.0"
+        targeting:
+          - demographics
+          - interests
+          - behaviors
+      - name: "twitter_ads"
+        api_endpoint: "https://ads-api.twitter.com/11"
+        targeting:
+          - keywords
+          - interests
+          - followers
+    content_types:
+      - image_ads
+      - video_ads
+      - carousel_ads
+      - sponsored_content
+
+  paid_search:
+    enabled: true
+    budget_allocation: 0.25  # 25% of total budget
+    target_reach: 75000
+    target_ctr: 0.06
+    target_conversion_rate: 0.07
+    platforms:
+      - name: "google_ads"
+        api_endpoint: "https://googleads.googleapis.com/v13"
+        campaign_types:
+          - search
+          - display
+          - shopping
+        bidding_strategies:
+          - maximize_conversions
+          - target_cpa
+          - target_roas
+      - name: "bing_ads"
+        api_endpoint: "https://api.bingads.microsoft.com/v13"
+    keywords:
+      match_types:
+        - exact
+        - phrase
+        - broad
+      quality_score_threshold: 7
+
+  display_ads:
+    enabled: true
+    budget_allocation: 0.10  # 10% of total budget
+    target_reach: 200000
+    target_ctr: 0.02
+    target_conversion_rate: 0.02
+    platforms:
+      - name: "google_display_network"
+        api_endpoint: "https://googleads.googleapis.com/v13"
+      - name: "programmatic"
+        api_endpoint: "https://api.programmatic.com/v1"
+
+  content_marketing:
+    enabled: true
+    budget_allocation: 0.10  # 10% of total budget
+    target_reach: 30000
+    target_ctr: 0.10
+    target_conversion_rate: 0.08
+    content_types:
+      - blog_posts
+      - whitepapers
+      - case_studies
+      - webinars
+      - ebooks
+    distribution:
+      - organic_search
+      - social_sharing
+      - email_nurture
+
+# ============================================================================
+# Campaign Templates
+# ============================================================================
+campaign_templates:
+  product_launch:
+    name: "Product Launch Campaign"
+    description: "Comprehensive product launch across all channels"
+    duration_days: 90
+    phases:
+      - name: "Awareness"
+        duration_days: 30
+        budget_allocation: 0.40
+        channels: [social_media, display_ads, content_marketing]
+        objectives:
+          - brand_awareness
+          - thought_leadership
+      - name: "Consideration"
+        duration_days: 30
+        budget_allocation: 0.35
+        channels: [email, content_marketing, paid_search]
+        objectives:
+          - lead_generation
+          - engagement
+      - name: "Conversion"
+        duration_days: 30
+        budget_allocation: 0.25
+        channels: [email, paid_search, social_media]
+        objectives:
+          - conversions
+          - revenue
+
+  demand_generation:
+    name: "Demand Generation Campaign"
+    description: "Lead generation focused campaign"
+    duration_days: 60
+    budget_allocation_by_channel:
+      email: 0.30
+      paid_search: 0.35
+      content_marketing: 0.20
+      social_media: 0.15
+    kpis:
+      - leads: 1000
+      - mql_conversion_rate: 0.30
+      - sql_conversion_rate: 0.15
+
+  brand_awareness:
+    name: "Brand Awareness Campaign"
+    description: "Build brand recognition and reach"
+    duration_days: 120
+    budget_allocation_by_channel:
+      social_media: 0.40
+      display_ads: 0.30
+      content_marketing: 0.20
+      email: 0.10
+    kpis:
+      - impressions: 1000000
+      - reach: 500000
+      - brand_lift: 0.25
+
+  customer_retention:
+    name: "Customer Retention Campaign"
+    description: "Re-engage and retain existing customers"
+    duration_days: 60
+    budget_allocation_by_channel:
+      email: 0.50
+      content_marketing: 0.30
+      social_media: 0.20
+    kpis:
+      - engagement_rate: 0.35
+      - repeat_purchase_rate: 0.25
+      - churn_reduction: 0.15
+
+# ============================================================================
+# Customer Segmentation
+# ============================================================================
+customer_segmentation:
+  methods:
+    - rfm_analysis  # Recency, Frequency, Monetary
+    - behavioral_segmentation
+    - demographic_segmentation
+    - firmographic_segmentation
+    - predictive_modeling
+
+  segments:
+    champions:
+      rfm_scores: [5, 5, 5]
+      characteristics:
+        - high_value
+        - high_engagement
+        - brand_advocates
+      marketing_approach: exclusive_offers
+      recommended_channels: [email, events, social_media]
+
+    loyal_customers:
+      rfm_scores: [4-5, 4-5, 3-5]
+      characteristics:
+        - consistent_purchases
+        - reliable_engagement
+      marketing_approach: loyalty_programs
+      recommended_channels: [email, content_marketing]
+
+    potential_loyalists:
+      rfm_scores: [4-5, 1-3, 1-3]
+      characteristics:
+        - recent_customers
+        - high_potential
+      marketing_approach: nurture_campaigns
+      recommended_channels: [email, social_media, webinar]
+
+    at_risk:
+      rfm_scores: [1-2, 3-5, 3-5]
+      characteristics:
+        - declining_engagement
+        - previously_valuable
+      marketing_approach: win_back_campaigns
+      recommended_channels: [email, paid_search]
+
+    hibernating:
+      rfm_scores: [1-2, 1-2, 1-5]
+      characteristics:
+        - inactive
+        - not_engaged
+      marketing_approach: reactivation_campaigns
+      recommended_channels: [email, display_ads]
+
+# ============================================================================
+# Lead Scoring Configuration
+# ============================================================================
+lead_scoring:
+  model_weights:
+    demographic_fit: 0.25
+    behavioral_engagement: 0.35
+    firmographic_match: 0.20
+    intent_signals: 0.20
+
+  target_industries:
+    - technology
+    - finance
+    - healthcare
+    - manufacturing
+    - retail
+    - professional_services
+
+  target_job_titles:
+    - C-Level: 100
+    - VP: 80
+    - Director: 60
+    - Manager: 40
+    - Individual Contributor: 20
+
+  behavioral_scoring:
+    email_open: 2
+    email_click: 5
+    page_view: 1
+    content_download: 10
+    webinar_attendance: 15
+    demo_request: 40
+    pricing_page_view: 15
+    trial_signup: 50
+
+  firmographic_scoring:
+    company_size:
+      enterprise_5000_plus: 30
+      mid_market_500_5000: 25
+      small_business_50_500: 15
+      startup_under_50: 5
+    revenue:
+      over_100m: 30
+      50m_100m: 25
+      10m_50m: 20
+      under_10m: 10
+
+  qualification_thresholds:
+    hot: 80  # Sales-ready leads
+    warm: 60  # Qualified leads
+    cold: 40  # Nurture leads
+    minimum: 40  # Disqualify below this
+
+# ============================================================================
+# A/B Testing Configuration
+# ============================================================================
+ab_testing:
+  enabled: true
+  min_sample_size: 1000  # Minimum visitors per variant
+  confidence_threshold: 0.95  # 95% statistical confidence
+  max_variants: 5
+  test_duration_days: 7
+
+  test_elements:
+    email:
+      - subject_line
+      - from_name
+      - content_layout
+      - cta_button
+      - send_time
+    landing_page:
+      - headline
+      - hero_image
+      - form_fields
+      - cta_copy
+      - color_scheme
+    ads:
+      - ad_copy
+      - creative
+      - targeting
+      - bidding_strategy
+
+  winning_criteria:
+    primary_metric: conversion_rate
+    secondary_metrics:
+      - ctr
+      - engagement_rate
+      - revenue_per_visitor
+
+# ============================================================================
+# CRM Integration
+# ============================================================================
+crm:
+  type: "salesforce"  # Options: salesforce, hubspot, pipedrive, dynamics
+  sync_enabled: true
+  sync_interval: 300  # seconds (5 minutes)
+  sync_direction: "bidirectional"  # Options: to_crm, from_crm, bidirectional
+
+  field_mapping:
+    lead:
+      email: "Email"
+      first_name: "FirstName"
+      last_name: "LastName"
+      company: "Company"
+      job_title: "Title"
+      phone: "Phone"
+      lead_score: "Lead_Score__c"
+      lead_source: "LeadSource"
+      campaign: "Campaign__c"
+    opportunity:
+      amount: "Amount"
+      stage: "StageName"
+      probability: "Probability"
+      close_date: "CloseDate"
+
+  lead_status_mapping:
+    new: "New"
+    qualified: "Qualified"
+    nurturing: "Nurturing"
+    sales_ready: "Sales Ready"
+    converted: "Converted"
+    lost: "Disqualified"
+
+  automation_rules:
+    - condition: "score >= 80"
+      action: "create_opportunity"
+      assign_to: "sales_team"
+    - condition: "status == 'sales_ready'"
+      action: "notify_sales_rep"
+      priority: "high"
+    - condition: "engagement > 10 && score < 60"
+      action: "add_to_nurture_campaign"
+
+# ============================================================================
+# Performance Targets and KPIs
+# ============================================================================
+performance_targets:
+  campaign_metrics:
+    ctr: 0.05  # 5% click-through rate
+    conversion_rate: 0.05  # 5% conversion rate
+    roi: 3.0  # 3x return on investment
+    cpl: 50  # $50 cost per lead
+    cac: 250  # $250 customer acquisition cost
+
+  lead_metrics:
+    mql_conversion_rate: 0.30  # 30% of leads become MQLs
+    sql_conversion_rate: 0.15  # 15% of MQLs become SQLs
+    win_rate: 0.25  # 25% of SQLs convert to customers
+
+  engagement_metrics:
+    email_open_rate: 0.25  # 25% email open rate
+    email_click_rate: 0.08  # 8% email click rate
+    landing_page_conversion: 0.10  # 10% landing page conversion
+    webinar_attendance: 0.40  # 40% registration to attendance
+
+  efficiency_metrics:
+    campaign_setup_time: 2  # hours (vs 80 hours manually)
+    time_to_optimize: 5  # minutes (vs hours manually)
+    lead_response_time: 5  # minutes (vs hours manually)
+
+# ============================================================================
+# Optimization Rules
+# ============================================================================
+optimization_rules:
+  auto_optimize: true
+  optimization_frequency: 300  # seconds (5 minutes)
+
+  triggers:
+    - metric: "roi"
+      threshold: 2.0
+      operator: "less_than"
+      action: "reallocate_budget"
+      adjustment: "shift_to_high_performers"
+
+    - metric: "ctr"
+      threshold: 0.03
+      operator: "less_than"
+      action: "refresh_creatives"
+      adjustment: "test_new_variants"
+
+    - metric: "conversion_rate"
+      threshold: 0.04
+      operator: "less_than"
+      action: "optimize_landing_pages"
+      adjustment: "ab_test_variants"
+
+    - metric: "cpl"
+      threshold: 75
+      operator: "greater_than"
+      action: "refine_targeting"
+      adjustment: "narrow_audience"
+
+  budget_reallocation:
+    enabled: true
+    frequency: "daily"
+    method: "performance_based"
+    max_shift_percentage: 0.20  # Max 20% shift per optimization
+
+  audience_optimization:
+    enabled: true
+    lookback_period: 7  # days
+    expand_winning_audiences: true
+    pause_low_performers: true
+    performance_threshold: 0.5  # Pause if 50% below average
+
+# ============================================================================
+# Reporting and Analytics
+# ============================================================================
+reporting:
+  dashboards:
+    - name: "Executive Dashboard"
+      metrics:
+        - total_spend
+        - total_revenue
+        - roi
+        - leads_generated
+        - conversion_rate
+      frequency: "daily"
+
+    - name: "Campaign Performance"
+      metrics:
+        - impressions
+        - clicks
+        - ctr
+        - conversions
+        - cpl
+        - cac
+      frequency: "hourly"
+      dimensions:
+        - channel
+        - campaign
+        - segment
+
+    - name: "Channel Performance"
+      metrics:
+        - spend_by_channel
+        - roi_by_channel
+        - conversions_by_channel
+      frequency: "daily"
+
+  alerts:
+    - name: "Low ROI Alert"
+      condition: "roi < 2.0"
+      frequency: "hourly"
+      recipients: ["marketing_manager", "cmo"]
+
+    - name: "High CPL Alert"
+      condition: "cpl > 75"
+      frequency: "hourly"
+      recipients: ["campaign_manager"]
+
+    - name: "Hot Lead Alert"
+      condition: "lead_score >= 80"
+      frequency: "real_time"
+      recipients: ["sales_team"]
+
+# ============================================================================
+# Platform Integrations
+# ============================================================================
+integrations:
+  marketing_automation:
+    - platform: "marketo"
+      api_endpoint: "https://xxx.mktorest.com/rest"
+      enabled: true
+    - platform: "pardot"
+      api_endpoint: "https://pi.pardot.com/api"
+      enabled: false
+
+  analytics:
+    - platform: "google_analytics"
+      tracking_id: "UA-XXXXXXXX-X"
+      enabled: true
+    - platform: "mixpanel"
+      api_endpoint: "https://api.mixpanel.com"
+      enabled: true
+
+  data_warehouses:
+    - platform: "snowflake"
+      enabled: true
+      sync_frequency: 3600  # hourly
+    - platform: "bigquery"
+      enabled: true
+
+  bi_tools:
+    - platform: "tableau"
+      enabled: true
+    - platform: "looker"
+      enabled: true
+
+# ============================================================================
+# Budget Management
+# ============================================================================
+budget_management:
+  budget_pacing:
+    strategy: "even"  # Options: even, frontload, backload, accelerated
+    daily_cap_enabled: true
+
+  cost_controls:
+    daily_budget_alert_threshold: 0.90  # Alert at 90% of daily budget
+    campaign_budget_alert_threshold: 0.85  # Alert at 85% of campaign budget
+    auto_pause_at_budget: true
+
+  billing:
+    currency: "USD"
+    billing_cycle: "monthly"
+    payment_terms: "net_30"
+
+# ============================================================================
+# Compliance and Privacy
+# ============================================================================
+compliance:
+  gdpr:
+    enabled: true
+    consent_tracking: true
+    right_to_be_forgotten: true
+
+  ccpa:
+    enabled: true
+    opt_out_enabled: true
+
+  can_spam:
+    enabled: true
+    unsubscribe_link: true
+    physical_address: true
+
+  data_retention:
+    lead_data: 730  # days (2 years)
+    engagement_data: 365  # days (1 year)
+    campaign_data: 1095  # days (3 years)
