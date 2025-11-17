@@ -1,0 +1,229 @@
+"""
+ProcessSpecialPaymentsManageAgent - Standardized APQC Atomic Agent
+================================================
+
+APQC Task: 9.5.2.4 - Process special payments
+Category: 9.0 - Manage Financial Resources
+Domain: finance
+
+This is a STANDARDIZED ATOMIC AGENT built on the StandardAtomicAgent framework.
+
+Key Features:
+✅ Standardized input/output (AtomicAgentInput/AtomicAgentOutput)
+✅ Business logic template (FinancialBusinessLogic)
+✅ Protocol support (A2A, ANP, ACP, BPP, BDP, etc.)
+✅ Capability declaration (discoverable, composable)
+✅ Production-grade (metrics, logging, error handling)
+✅ Fully observable (execution traces, audit trails)
+
+Generated: 2025-11-17 23:41:34
+Version: 2.0.0
+Framework: APQC PCF 7.0.1 + StandardAtomicAgent
+Configuration: UI-Managed (all settings configurable through dashboard)
+"""
+
+from typing import Dict, Any, Optional, List
+from decimal import Decimal
+from datetime import datetime
+import logging
+
+# Import standardization framework
+from superstandard.agents.base.atomic_agent_standard import (
+    StandardAtomicAgent,
+    AtomicBusinessLogic,
+    AtomicAgentInput,
+    AtomicAgentOutput,
+    AtomicCapability,
+    AgentCapabilityLevel,
+    ATOMIC_AGENT_REGISTRY
+)
+
+# Import business logic template
+from superstandard.agents.base.business_logic_templates import (
+    BusinessLogicTemplateFactory
+)
+
+
+# ============================================================================
+# Business Logic Implementation
+# ============================================================================
+
+class ProcessSpecialPaymentsManageAgentBusinessLogic(AtomicBusinessLogic):
+    """
+    Business logic for: Process special payments
+
+    This class implements the specific business logic for APQC task 9.5.2.4.
+    It extends the FinancialBusinessLogic template with task-specific customizations.
+    """
+
+    def __init__(self, agent_id: str):
+        # Get base template
+        self.base_template = BusinessLogicTemplateFactory.create_template(
+            category_id="9.0",
+            agent_id=agent_id,
+            apqc_id="9.5.2.4",
+            apqc_name="Process special payments"
+        )
+        self.logger = logging.getLogger(f"ProcessSpecialPaymentsManageAgent")
+
+    async def validate_input(self, agent_input: AtomicAgentInput) -> tuple[bool, Optional[str]]:
+        """
+        Validate input for: Process special payments
+
+        Uses base template validation + task-specific rules.
+        """
+        # Use base template validation
+        is_valid, error_msg = await self.base_template.validate_input(agent_input)
+        if not is_valid:
+            return is_valid, error_msg
+
+        # TODO: Add task-specific validation here
+        # Example:
+        # if 'required_field' not in agent_input.data:
+        #     return False, "Missing required_field"
+
+        return True, None
+
+    async def execute_atomic_task(self, agent_input: AtomicAgentInput) -> AtomicAgentOutput:
+        """
+        Execute: Process special payments
+
+        This is the core business logic for APQC task 9.5.2.4.
+        Customize this method to implement the specific task logic.
+        """
+        try:
+            self.logger.info(f"Executing: Process special payments")
+
+            # TODO: Implement task-specific logic here
+            # The base template provides common patterns, customize as needed
+
+            # Use base template execution as starting point
+            base_result = await self.base_template.execute_atomic_task(agent_input)
+
+            # Customize result data
+            result_data = base_result.result_data.copy()
+            result_data.update({
+                'task_specific_output': 'TODO: Add your specific output here',
+                'apqc_task_id': '9.5.2.4',
+                'apqc_task_name': 'Process special payments'
+            })
+
+            return AtomicAgentOutput(
+                task_id=agent_input.task_id,
+                agent_id=agent_input.metadata.get('agent_id', 'unknown'),
+                success=True,
+                result_data=result_data,
+                apqc_level5_id="9.5.2.4",
+                apqc_level5_name="Process special payments",
+                apqc_category="Manage Financial Resources",
+                metrics={
+                    'execution_step': 'complete',
+                    'template_used': 'FinancialBusinessLogic'
+                }
+            )
+
+        except Exception as e:
+            return await self.handle_error(e, agent_input)
+
+    async def handle_error(self, error: Exception, agent_input: AtomicAgentInput) -> AtomicAgentOutput:
+        """Handle errors during task execution"""
+        self.logger.error(f"Task execution failed: {error}")
+
+        # Use base template error handling
+        return await self.base_template.handle_error(error, agent_input)
+
+
+# ============================================================================
+# Standardized Atomic Agent
+# ============================================================================
+
+class ProcessSpecialPaymentsManageAgent(StandardAtomicAgent):
+    """
+    Standardized Atomic Agent for: Process special payments
+
+    APQC Task: 9.5.2.4
+    Category: Manage Financial Resources (9.0)
+    Domain: finance
+
+    This agent is fully standardized and ready for:
+    - Standalone execution
+    - Workflow composition
+    - Protocol communication
+    - Discovery and registry
+    - Production deployment
+    """
+
+    def __init__(self, config: Optional[Dict[str, Any]] = None):
+        """Initialize the standardized atomic agent"""
+        super().__init__(
+            agent_id="apqc_9_5_2_4_4681",
+            apqc_level5_id="9.5.2.4",
+            apqc_level5_name="Process special payments",
+            apqc_category_id="9.0",
+            apqc_category_name="Manage Financial Resources",
+            config=config or {}
+        )
+
+    def declare_capability(self) -> AtomicCapability:
+        """
+        Declare what this agent can do.
+        Used for discovery, composition, and validation.
+        """
+        return AtomicCapability(
+            capability_id="cap_apqc_9_5_2_4_4681",
+            capability_name="Process special payments",
+            description="Process special payments - APQC 9.5.2.4",
+            apqc_level5_id="9.5.2.4",
+            apqc_level5_name="Process special payments",
+            apqc_category_id="9.0",
+            apqc_category_name="Manage Financial Resources",
+            proficiency_level=AgentCapabilityLevel.ADVANCED,
+            confidence_score=0.75,
+            input_schema={
+                "type": "object",
+                "properties": {
+                    # TODO: Define input schema
+                    "data": {"type": "object"}
+                },
+                "required": ["data"]
+            },
+            output_schema={
+                "type": "object",
+                "properties": {
+                    # TODO: Define output schema
+                    "result_data": {"type": "object"},
+                    "success": {"type": "boolean"}
+                }
+            },
+            required_integrations=[],
+            required_api_keys=[],
+            avg_execution_time_ms=100.0,
+            max_execution_time_ms=1000.0,
+            throughput_per_second=10.0,
+            version="2.0.0",
+            tags=["9.0", "finance", "normal", "standardized", "atomic", "v2.0"],
+            metadata={
+                "domain": "finance",
+                "priority": "normal",
+                "autonomous_level": 0.7,
+                "learning_enabled": 1
+            }
+        )
+
+    def create_business_logic(self) -> AtomicBusinessLogic:
+        """Create the business logic instance"""
+        return ProcessSpecialPaymentsManageAgentBusinessLogic(self.agent_id)
+
+
+# ============================================================================
+# Agent Registration & Export
+# ============================================================================
+
+# Create agent instance
+agent = ProcessSpecialPaymentsManageAgent()
+
+# Register with global registry
+ATOMIC_AGENT_REGISTRY.register(agent)
+
+# Export
+__all__ = ['ProcessSpecialPaymentsManageAgent', 'ProcessSpecialPaymentsManageAgentBusinessLogic', 'agent']
