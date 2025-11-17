@@ -59,6 +59,9 @@ class DashboardAgent:
         self.pid_dir = self.project_root / ".agent_pids"
         self.pid_dir.mkdir(exist_ok=True)
 
+        # Python command (will be detected in check_python)
+        self.python_cmd = "python3"  # Default for Linux/Mac
+
         # Define managed servers
         self.servers = [
             ServerInfo(
@@ -77,6 +80,12 @@ class DashboardAgent:
                 pid_file=str(self.pid_dir / "apqc_factory.pid")
             )
         ]
+
+    def update_server_commands(self):
+        """Update server commands with detected Python command"""
+        self.servers[0].command = [self.python_cmd, "-m", "uvicorn", "src.superstandard.api.server:app",
+                                   "--host", "0.0.0.0", "--port", "8080"]
+        self.servers[1].command = [self.python_cmd, "apqc_factory_server.py"]
 
     def log(self, message: str, level: str = "INFO"):
         """Log a message with timestamp"""
@@ -124,18 +133,24 @@ class DashboardAgent:
     def check_python(self) -> bool:
         """Verify Python installation"""
         self.log("Checking Python installation...", "AGENT")
-        try:
-            result = subprocess.run(
-                ["python", "--version"],
-                capture_output=True,
-                text=True
-            )
-            version = result.stdout.strip()
-            self.log(f"Found {version}", "SUCCESS")
-            return True
-        except FileNotFoundError:
-            self.log("Python not found! Please install Python 3.8+", "ERROR")
-            return False
+        # Try python3 first (Linux/Mac), then python (Windows)
+        for cmd in ["python3", "python"]:
+            try:
+                result = subprocess.run(
+                    [cmd, "--version"],
+                    capture_output=True,
+                    text=True
+                )
+                version = result.stdout.strip()
+                self.log(f"Found {version} (using '{cmd}')", "SUCCESS")
+                # Store which command works for later use
+                self.python_cmd = cmd
+                return True
+            except FileNotFoundError:
+                continue
+
+        self.log("Python not found! Please install Python 3.8+", "ERROR")
+        return False
 
     def check_git(self) -> bool:
         """Verify Git installation"""
@@ -201,8 +216,9 @@ class DashboardAgent:
 
         self.log(f"Installing: {', '.join(packages)}", "INFO")
 
+        # Use python -m pip for better compatibility
         success, output = self.run_command(
-            ["pip", "install"] + packages,
+            [self.python_cmd, "-m", "pip", "install"] + packages,
             capture_output=True
         )
 
@@ -226,7 +242,7 @@ class DashboardAgent:
 
         self.log("Running initialization...", "INFO")
         success, output = self.run_command(
-            ["python", "apqc_agent_factory.py", "--init"],
+            [self.python_cmd, "apqc_agent_factory.py", "--init"],
             capture_output=True
         )
 
@@ -418,6 +434,9 @@ class DashboardAgent:
         if not self.check_python():
             return False
 
+        # Update server commands with detected Python command
+        self.update_server_commands()
+
         if not self.check_git():
             return False
 
@@ -444,6 +463,11 @@ class DashboardAgent:
         self.log("=" * 70, "INFO")
         self.log("🤖 Starting APQC Dashboard Services", "AGENT")
         self.log("=" * 70, "INFO")
+
+        # Detect Python command if not already done
+        if not hasattr(self, 'python_cmd') or self.python_cmd == "python3":
+            self.check_python()
+            self.update_server_commands()
 
         all_started = True
         for server in self.servers:
