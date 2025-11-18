@@ -59,6 +59,15 @@ class AgentState(Enum):
     ARCHIVED = "archived"
 
 
+class ExecutionStatus(Enum):
+    """Execution status for agent task results"""
+    SUCCESS = "success"
+    FAILED = "failed"
+    PARTIAL = "partial"
+    PENDING = "pending"
+    CANCELLED = "cancelled"
+
+
 # ============================================================================
 # Input/Output Standards
 # ============================================================================
@@ -125,10 +134,12 @@ class AtomicAgentOutput:
 
     # Execution result
     success: bool
+    status: ExecutionStatus = ExecutionStatus.SUCCESS
     result_data: Dict[str, Any] = field(default_factory=dict)
 
     # Error information (if failed)
     error: Optional[str] = None
+    error_message: Optional[str] = None  # Alias for error
     error_details: Dict[str, Any] = field(default_factory=dict)
 
     # Execution metadata
@@ -156,8 +167,10 @@ class AtomicAgentOutput:
             'task_id': self.task_id,
             'agent_id': self.agent_id,
             'success': self.success,
+            'status': self.status.value if isinstance(self.status, ExecutionStatus) else self.status,
             'result_data': self.result_data,
             'error': self.error,
+            'error_message': self.error_message,
             'error_details': self.error_details,
             'execution_time_ms': self.execution_time_ms,
             'retry_count': self.retry_count,
@@ -617,11 +630,15 @@ ATOMIC_AGENT_REGISTRY = AtomicAgentRegistry()
 # Exports
 # ============================================================================
 
+# Alias for backward compatibility with generated agents
+AtomicAgentStandard = StandardAtomicAgent
+
 __all__ = [
     # Enums
     'AgentCapabilityLevel',
     'ExecutionMode',
     'AgentState',
+    'ExecutionStatus',
 
     # Data structures
     'AtomicAgentInput',
@@ -631,6 +648,7 @@ __all__ = [
     # Base classes
     'AtomicBusinessLogic',
     'StandardAtomicAgent',
+    'AtomicAgentStandard',  # Alias
 
     # Registry
     'AtomicAgentRegistry',
