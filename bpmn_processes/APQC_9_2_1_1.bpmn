@@ -1,0 +1,23 @@
+<?xml version='1.0' encoding='utf-8'?>
+<bpmn:definitions xmlns:bpmn="http://www.omg.org/spec/BPMN/20100524/MODEL" id="Definitions_9_2_1_1" targetNamespace="http://apqc.org/process/9.2.1.1" exporter="APQC Agentic Platform" exporterVersion="2.0.0">
+  <bpmn:process id="Process_9_2_1_1" name="9.2.1.1 - Process Invoices" isExecutable="true">
+    <bpmn:documentation>APQC Process: Invoice Processing with 3-way matching</bpmn:documentation>
+    <bpmn:startEvent id="Start_1" name="Start">
+      <bpmn:outgoing>Flow1</bpmn:outgoing>
+    </bpmn:startEvent>
+    <bpmn:serviceTask id="Task_Validate" name="Invoice Validation">
+      <bpmn:incoming>Flow1</bpmn:incoming>
+      <bpmn:outgoing>Flow2</bpmn:outgoing>
+    </bpmn:serviceTask>
+    <bpmn:serviceTask id="Task_Match" name="3-Way Match">
+      <bpmn:incoming>Flow2</bpmn:incoming>
+      <bpmn:outgoing>Flow3</bpmn:outgoing>
+    </bpmn:serviceTask>
+    <bpmn:endEvent id="End_1" name="End">
+      <bpmn:incoming>Flow3</bpmn:incoming>
+    </bpmn:endEvent>
+    <bpmn:sequenceFlow id="Flow1" sourceRef="Start_1" targetRef="Task_Validate" />
+    <bpmn:sequenceFlow id="Flow2" sourceRef="Task_Validate" targetRef="Task_Match" />
+    <bpmn:sequenceFlow id="Flow3" sourceRef="Task_Match" targetRef="End_1" />
+  </bpmn:process>
+</bpmn:definitions>
