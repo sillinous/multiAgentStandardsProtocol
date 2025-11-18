@@ -5,23 +5,23 @@ Level 2 ProcessGroup: 2.0 - Composite APQC Agent
 APQC Level 2: 2.0
 Category: Develop and Manage Products and Services (2.0)
 
-This is a COMPOSITE AGENT that orchestrates 28 child agents.
+This is a COMPOSITE AGENT that orchestrates 48 child agents.
 
 Orchestration Pattern: Sequential Workflow
 Standards: A2A, ANP, ACP, BPP, BDP, BRP, BMP, BCP, BIP
 
 Child Agents:
-  - 2.3.1.4: Plan distribution channels
-  - 2.1.1.2: Establish product development objectives
-  - 2.1.2.4: Manage product transitions
-  - 2.2.3.4: Launch production
-  - 2.2.2.3: Refine product based on testing
-  - 2.3.2.3: Support sales channels
-  - 2.3.2.4: Track customer adoption
-  - 2.2.2.1: Conduct alpha/beta testing
   - 2.2.1.2: Create detailed design specifications
-  - 2.3.1.1: Develop go-to-market strategy
-  ... and 18 more
+  - 2.2.1.4: Test prototypes
+  - 2.4.1.2: Execute prototypes
+  - 2.3.2.2: Monitor launch performance
+  - 2.2.2.5: Review requirements
+  - 2.2.1.1: Develop product concepts
+  - 2.1.2.5: Review designs
+  - 2.1.1.3: Define product/service roadmap
+  - 2.3.1.4: Plan distribution channels
+  - 2.1.1.5: Review features
+  ... and 38 more
 
 Generated: 2025-11-18
 Version: 3.0.0
@@ -44,41 +44,61 @@ class CompositeAgent_2_0:
     """
     Composite Agent for APQC Level 2: 2.0
 
-    Orchestrates 28 child agents in a coordinated workflow.
+    Orchestrates 48 child agents in a coordinated workflow.
     """
 
     def __init__(self):
         self.apqc_id = "2.0"
         self.level = 2
         self.child_agent_ids = [
-        "2.3.1.4",
-        "2.1.1.2",
-        "2.1.2.4",
-        "2.2.3.4",
-        "2.2.2.3",
-        "2.3.2.3",
-        "2.3.2.4",
-        "2.2.2.1",
         "2.2.1.2",
-        "2.3.1.1",
-        "2.2.3.2",
-        "2.1.2.2",
-        "2.1.1.3",
-        "2.2.1.3",
-        "2.3.2.1",
-        "2.3.1.3",
-        "2.2.1.1",
-        "2.2.2.2",
-        "2.2.1.5",
-        "2.2.2.4",
-        "2.1.2.3",
-        "2.2.3.1",
-        "2.3.1.2",
-        "2.2.3.3",
-        "2.3.2.2",
-        "2.1.2.1",
         "2.2.1.4",
-        "2.1.1.1"
+        "2.4.1.2",
+        "2.3.2.2",
+        "2.2.2.5",
+        "2.2.1.1",
+        "2.1.2.5",
+        "2.1.1.3",
+        "2.3.1.4",
+        "2.1.1.5",
+        "2.2.3.2",
+        "2.2.3.1",
+        "2.3.2.3",
+        "2.2.2.2",
+        "2.2.2.3",
+        "2.3.1.6",
+        "2.2.1.6",
+        "2.4.1.1",
+        "2.1.1.1",
+        "2.2.2.4",
+        "2.2.3.5",
+        "2.3.2.5",
+        "2.4.2.2",
+        "2.4.2.1",
+        "2.2.3.6",
+        "2.1.1.4",
+        "2.2.3.3",
+        "2.3.2.4",
+        "2.2.1.3",
+        "2.3.1.3",
+        "2.2.2.1",
+        "2.1.2.2",
+        "2.3.2.6",
+        "2.2.1.7",
+        "2.4.1.3",
+        "2.1.1.2",
+        "2.2.2.6",
+        "2.3.1.1",
+        "2.2.1.5",
+        "2.3.2.1",
+        "2.1.2.6",
+        "2.2.3.4",
+        "2.1.2.4",
+        "2.1.2.1",
+        "2.4.1.4",
+        "2.3.1.2",
+        "2.3.1.5",
+        "2.1.2.3"
 ]
         self.logger = logging.getLogger(f"CompositeAgent_2_0")
 

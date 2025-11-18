@@ -12,13 +12,13 @@ Standards: A2A, ANP, ACP, BPP, BDP, BRP, BMP, BCP, BIP
 
 Child Agents:
   - 4.5.1.4: Select 3PL partners
-  - 4.5.2.3: Allocate inventory
-  - 4.5.2.2: Validate orders
-  - 4.5.2.1: Receive orders
-  - 4.5.1.3: Optimize transportation
   - 4.5.2.4: Confirm orders
-  - 4.5.1.2: Design distribution network
+  - 4.5.2.2: Validate orders
   - 4.5.1.1: Determine service levels
+  - 4.5.2.1: Receive orders
+  - 4.5.2.3: Allocate inventory
+  - 4.5.1.3: Optimize transportation
+  - 4.5.1.2: Design distribution network
 
 
 Generated: 2025-11-18
@@ -50,13 +50,13 @@ class CompositeAgent_4_5:
         self.level = 3
         self.child_agent_ids = [
         "4.5.1.4",
-        "4.5.2.3",
-        "4.5.2.2",
-        "4.5.2.1",
-        "4.5.1.3",
         "4.5.2.4",
-        "4.5.1.2",
-        "4.5.1.1"
+        "4.5.2.2",
+        "4.5.1.1",
+        "4.5.2.1",
+        "4.5.2.3",
+        "4.5.1.3",
+        "4.5.1.2"
 ]
         self.logger = logging.getLogger(f"CompositeAgent_4_5")
 

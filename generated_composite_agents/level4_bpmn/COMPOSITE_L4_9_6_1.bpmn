@@ -7,34 +7,34 @@ Manage Financial Resources
 APQC ID: 9.6.1
 
 Orchestrates 4 child agents:
-  1. 9.6.1.2: Validate invoices
-  2. 9.6.1.4: Route for approval
-  3. 9.6.1.1: Receive invoices
-  4. 9.6.1.3: Match to purchase orders
+  1. 9.6.1.4: Route for approval
+  2. 9.6.1.3: Match to purchase orders
+  3. 9.6.1.2: Validate invoices
+  4. 9.6.1.1: Receive invoices
 
 
 Orchestration Pattern: Sequential Workflow (Pipeline)
 Standards: BPMN 2.0, A2A Protocol
 
-Generated: 2025-11-18T00:44:42.558874
+Generated: 2025-11-18T01:11:36.688402
 Status: Production Ready
 </bpmn:documentation>
     <bpmn:startEvent id="Start_L4_9_6_1" name="Start Composite">
       <bpmn:outgoing>Flow_start_to_child1</bpmn:outgoing>
     </bpmn:startEvent>
-    <bpmn:callActivity id="CallActivity_L4_child1" name="9.6.1.2: Validate invoices" calledElement="Process_9_6_1_2">
+    <bpmn:callActivity id="CallActivity_L4_child1" name="9.6.1.4: Route for approval" calledElement="Process_9_6_1_4">
       <bpmn:incoming>Flow_start_to_child1</bpmn:incoming>
       <bpmn:outgoing>Flow_child1_to_child2</bpmn:outgoing>
     </bpmn:callActivity>
-    <bpmn:callActivity id="CallActivity_L4_child2" name="9.6.1.4: Route for approval" calledElement="Process_9_6_1_4">
+    <bpmn:callActivity id="CallActivity_L4_child2" name="9.6.1.3: Match to purchase orders" calledElement="Process_9_6_1_3">
       <bpmn:incoming>Flow_child1_to_child2</bpmn:incoming>
       <bpmn:outgoing>Flow_child2_to_child3</bpmn:outgoing>
     </bpmn:callActivity>
-    <bpmn:callActivity id="CallActivity_L4_child3" name="9.6.1.1: Receive invoices" calledElement="Process_9_6_1_1">
+    <bpmn:callActivity id="CallActivity_L4_child3" name="9.6.1.2: Validate invoices" calledElement="Process_9_6_1_2">
       <bpmn:incoming>Flow_child2_to_child3</bpmn:incoming>
       <bpmn:outgoing>Flow_child3_to_child4</bpmn:outgoing>
     </bpmn:callActivity>
-    <bpmn:callActivity id="CallActivity_L4_child4" name="9.6.1.3: Match to purchase orders" calledElement="Process_9_6_1_3">
+    <bpmn:callActivity id="CallActivity_L4_child4" name="9.6.1.1: Receive invoices" calledElement="Process_9_6_1_1">
       <bpmn:incoming>Flow_child3_to_child4</bpmn:incoming>
       <bpmn:outgoing>Flow_child4_to_end</bpmn:outgoing>
     </bpmn:callActivity>

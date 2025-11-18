@@ -5,16 +5,18 @@ Level 4 Activity: 12.2.1 - Composite APQC Agent
 APQC Level 4: 12.2.1
 Category: Manage External Relationships (12.0)
 
-This is a COMPOSITE AGENT that orchestrates 4 child agents.
+This is a COMPOSITE AGENT that orchestrates 6 child agents.
 
 Orchestration Pattern: Sequential Workflow
 Standards: A2A, ANP, ACP, BPP, BDP, BRP, BMP, BCP, BIP
 
 Child Agents:
-  - 12.2.1.2: Engage with regulators
-  - 12.2.1.3: Advocate policy positions
   - 12.2.1.1: Monitor legislation
+  - 12.2.1.5: Review performance
+  - 12.2.1.3: Advocate policy positions
   - 12.2.1.4: Ensure compliance
+  - 12.2.1.6: Optimize performance
+  - 12.2.1.2: Engage with regulators
 
 
 Generated: 2025-11-18
@@ -38,17 +40,19 @@ class CompositeAgent_12_2_1:
     """
     Composite Agent for APQC Level 4: 12.2.1
 
-    Orchestrates 4 child agents in a coordinated workflow.
+    Orchestrates 6 child agents in a coordinated workflow.
     """
 
     def __init__(self):
         self.apqc_id = "12.2.1"
         self.level = 4
         self.child_agent_ids = [
-        "12.2.1.2",
-        "12.2.1.3",
         "12.2.1.1",
-        "12.2.1.4"
+        "12.2.1.5",
+        "12.2.1.3",
+        "12.2.1.4",
+        "12.2.1.6",
+        "12.2.1.2"
 ]
         self.logger = logging.getLogger(f"CompositeAgent_12_2_1")
 

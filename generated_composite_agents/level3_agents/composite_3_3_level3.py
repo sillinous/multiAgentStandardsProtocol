@@ -5,23 +5,23 @@ Level 3 Process: 3.3 - Composite APQC Agent
 APQC Level 3: 3.3
 Category: Market and Sell Products and Services (3.0)
 
-This is a COMPOSITE AGENT that orchestrates 12 child agents.
+This is a COMPOSITE AGENT that orchestrates 18 child agents.
 
 Orchestration Pattern: Sequential Workflow
 Standards: A2A, ANP, ACP, BPP, BDP, BRP, BMP, BCP, BIP
 
 Child Agents:
-  - 3.3.3.3: Optimize campaigns
-  - 3.3.1.2: Set marketing budgets
-  - 3.3.3.4: Measure ROI
-  - 3.3.2.3: Develop creative assets
-  - 3.3.1.4: Define success metrics
+  - 3.3.3.6: Optimize campaigns
+  - 3.3.1.5: Review sales
+  - 3.3.2.5: Review marketing
+  - 3.3.3.5: Review campaigns
+  - 3.3.2.6: Optimize marketing
+  - 3.3.1.6: Optimize sales
   - 3.3.1.1: Define marketing objectives
-  - 3.3.3.2: Monitor campaign performance
-  - 3.3.1.3: Allocate resources
-  - 3.3.2.1: Develop campaign strategy
-  - 3.3.3.1: Launch campaigns
-  ... and 2 more
+  - 3.3.3.3: Optimize campaigns
+  - 3.3.2.4: Define campaign metrics
+  - 3.3.2.2: Create campaign messaging
+  ... and 8 more
 
 Generated: 2025-11-18
 Version: 3.0.0
@@ -44,25 +44,31 @@ class CompositeAgent_3_3:
     """
     Composite Agent for APQC Level 3: 3.3
 
-    Orchestrates 12 child agents in a coordinated workflow.
+    Orchestrates 18 child agents in a coordinated workflow.
     """
 
     def __init__(self):
         self.apqc_id = "3.3"
         self.level = 3
         self.child_agent_ids = [
-        "3.3.3.3",
-        "3.3.1.2",
-        "3.3.3.4",
-        "3.3.2.3",
-        "3.3.1.4",
+        "3.3.3.6",
+        "3.3.1.5",
+        "3.3.2.5",
+        "3.3.3.5",
+        "3.3.2.6",
+        "3.3.1.6",
         "3.3.1.1",
-        "3.3.3.2",
-        "3.3.1.3",
-        "3.3.2.1",
-        "3.3.3.1",
+        "3.3.3.3",
+        "3.3.2.4",
         "3.3.2.2",
-        "3.3.2.4"
+        "3.3.1.4",
+        "3.3.2.3",
+        "3.3.3.1",
+        "3.3.3.2",
+        "3.3.1.2",
+        "3.3.2.1",
+        "3.3.3.4",
+        "3.3.1.3"
 ]
         self.logger = logging.getLogger(f"CompositeAgent_3_3")
 

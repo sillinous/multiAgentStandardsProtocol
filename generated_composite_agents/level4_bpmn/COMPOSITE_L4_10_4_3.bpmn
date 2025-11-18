@@ -8,15 +8,15 @@ APQC ID: 10.4.3
 
 Orchestrates 4 child agents:
   1. 10.4.3.4: Report environmental performance
-  2. 10.4.3.3: Manage waste
+  2. 10.4.3.1: Monitor environmental impacts
   3. 10.4.3.2: Manage emissions
-  4. 10.4.3.1: Monitor environmental impacts
+  4. 10.4.3.3: Manage waste
 
 
 Orchestration Pattern: Sequential Workflow (Pipeline)
 Standards: BPMN 2.0, A2A Protocol
 
-Generated: 2025-11-18T00:44:42.436569
+Generated: 2025-11-18T01:11:36.588113
 Status: Production Ready
 </bpmn:documentation>
     <bpmn:startEvent id="Start_L4_10_4_3" name="Start Composite">
@@ -26,7 +26,7 @@ Status: Production Ready
       <bpmn:incoming>Flow_start_to_child1</bpmn:incoming>
       <bpmn:outgoing>Flow_child1_to_child2</bpmn:outgoing>
     </bpmn:callActivity>
-    <bpmn:callActivity id="CallActivity_L4_child2" name="10.4.3.3: Manage waste" calledElement="Process_10_4_3_3">
+    <bpmn:callActivity id="CallActivity_L4_child2" name="10.4.3.1: Monitor environmental impacts" calledElement="Process_10_4_3_1">
       <bpmn:incoming>Flow_child1_to_child2</bpmn:incoming>
       <bpmn:outgoing>Flow_child2_to_child3</bpmn:outgoing>
     </bpmn:callActivity>
@@ -34,7 +34,7 @@ Status: Production Ready
       <bpmn:incoming>Flow_child2_to_child3</bpmn:incoming>
       <bpmn:outgoing>Flow_child3_to_child4</bpmn:outgoing>
     </bpmn:callActivity>
-    <bpmn:callActivity id="CallActivity_L4_child4" name="10.4.3.1: Monitor environmental impacts" calledElement="Process_10_4_3_1">
+    <bpmn:callActivity id="CallActivity_L4_child4" name="10.4.3.3: Manage waste" calledElement="Process_10_4_3_3">
       <bpmn:incoming>Flow_child3_to_child4</bpmn:incoming>
       <bpmn:outgoing>Flow_child4_to_end</bpmn:outgoing>
     </bpmn:callActivity>

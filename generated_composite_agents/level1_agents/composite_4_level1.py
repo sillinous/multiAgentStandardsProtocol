@@ -5,23 +5,23 @@ Level 1 Category: 4 - Composite APQC Agent
 APQC Level 1: 4
 Category: Deliver Physical Products (4.0)
 
-This is a COMPOSITE AGENT that orchestrates 60 child agents.
+This is a COMPOSITE AGENT that orchestrates 82 child agents.
 
 Orchestration Pattern: Sequential Workflow
 Standards: A2A, ANP, ACP, BPP, BDP, BRP, BMP, BCP, BIP
 
 Child Agents:
-  - 4.1.3.4: Plan production
-  - 4.3.1.2: Sequence production
-  - 4.2.4.2: Develop strategic suppliers
-  - 4.4.3.3: Track shipments
-  - 4.2.4.4: Certify suppliers
-  - 4.2.3.1: Generate purchase requisitions
-  - 4.1.1.1: Define supply chain objectives
-  - 4.3.3.2: Manage raw materials
-  - 4.2.1.3: Define sourcing strategy
-  - 4.1.2.3: Balance supply and demand
-  ... and 50 more
+  - 4.3.1.6: Optimize deliveries
+  - 4.2.4.6: Optimize orders
+  - 4.1.2.6: Optimize logistics
+  - 4.4.1.5: Review warehouse
+  - 4.1.2.5: Review logistics
+  - 4.3.2.5: Review warehouse
+  - 4.1.1.5: Review inventory
+  - 4.2.1.6: Optimize logistics
+  - 4.1.1.6: Optimize inventory
+  - 4.1.3.5: Review deliveries
+  ... and 72 more
 
 Generated: 2025-11-18
 Version: 3.0.0
@@ -44,73 +44,95 @@ class CompositeAgent_4:
     """
     Composite Agent for APQC Level 1: 4
 
-    Orchestrates 60 child agents in a coordinated workflow.
+    Orchestrates 82 child agents in a coordinated workflow.
     """
 
     def __init__(self):
         self.apqc_id = "4"
         self.level = 1
         self.child_agent_ids = [
-        "4.1.3.4",
-        "4.3.1.2",
-        "4.2.4.2",
-        "4.4.3.3",
-        "4.2.4.4",
-        "4.2.3.1",
-        "4.1.1.1",
-        "4.3.3.2",
-        "4.2.1.3",
-        "4.1.2.3",
-        "4.1.2.2",
-        "4.4.1.3",
-        "4.1.3.2",
-        "4.4.3.4",
-        "4.2.2.1",
-        "4.2.4.1",
-        "4.3.1.4",
-        "4.2.1.2",
-        "4.2.4.3",
-        "4.2.2.4",
-        "4.1.1.4",
-        "4.2.3.2",
-        "4.1.1.2",
-        "4.3.1.1",
-        "4.3.2.3",
-        "4.3.2.1",
-        "4.1.2.1",
-        "4.5.1.4",
-        "4.5.2.3",
-        "4.4.3.2",
-        "4.4.1.1",
-        "4.5.2.2",
-        "4.1.1.3",
-        "4.3.3.1",
-        "4.4.1.4",
-        "4.2.1.4",
-        "4.2.1.1",
-        "4.1.3.1",
-        "4.3.3.3",
-        "4.3.2.2",
-        "4.5.2.1",
-        "4.4.1.2",
-        "4.2.2.2",
-        "4.4.2.4",
-        "4.1.3.3",
-        "4.4.2.2",
-        "4.2.2.3",
-        "4.3.3.4",
-        "4.4.2.3",
-        "4.4.3.1",
-        "4.5.1.3",
+        "4.3.1.6",
+        "4.2.4.6",
+        "4.1.2.6",
+        "4.4.1.5",
+        "4.1.2.5",
+        "4.3.2.5",
+        "4.1.1.5",
+        "4.2.1.6",
+        "4.1.1.6",
+        "4.1.3.5",
+        "4.3.1.5",
+        "4.3.3.5",
+        "4.2.3.6",
+        "4.1.3.6",
+        "4.2.4.5",
+        "4.2.2.5",
+        "4.3.2.6",
+        "4.3.3.6",
+        "4.4.1.6",
+        "4.2.1.5",
+        "4.2.3.5",
+        "4.2.2.6",
         "4.2.3.4",
-        "4.3.1.3",
+        "4.2.1.2",
+        "4.5.1.4",
+        "4.3.1.4",
+        "4.2.4.2",
+        "4.3.3.4",
+        "4.3.3.2",
+        "4.1.2.3",
         "4.5.2.4",
-        "4.3.2.4",
+        "4.5.2.2",
+        "4.4.2.2",
+        "4.4.1.2",
+        "4.1.1.4",
+        "4.1.3.4",
+        "4.2.2.4",
+        "4.3.1.3",
+        "4.2.4.1",
+        "4.1.1.2",
+        "4.3.3.3",
+        "4.4.3.4",
+        "4.2.1.3",
+        "4.3.2.1",
+        "4.5.1.1",
+        "4.2.4.4",
+        "4.2.2.1",
+        "4.1.1.1",
         "4.2.3.3",
-        "4.5.1.2",
-        "4.1.2.4",
+        "4.2.3.2",
+        "4.2.2.3",
+        "4.4.2.4",
+        "4.1.3.1",
+        "4.4.3.3",
+        "4.1.3.3",
+        "4.4.2.3",
+        "4.3.1.2",
+        "4.3.2.4",
+        "4.3.2.3",
+        "4.2.2.2",
+        "4.3.3.1",
+        "4.2.3.1",
+        "4.1.3.2",
+        "4.5.2.1",
+        "4.4.1.1",
         "4.4.2.1",
-        "4.5.1.1"
+        "4.4.1.3",
+        "4.1.2.2",
+        "4.4.1.4",
+        "4.2.1.1",
+        "4.3.2.2",
+        "4.4.3.1",
+        "4.2.4.3",
+        "4.5.2.3",
+        "4.1.2.4",
+        "4.3.1.1",
+        "4.1.1.3",
+        "4.1.2.1",
+        "4.4.3.2",
+        "4.2.1.4",
+        "4.5.1.3",
+        "4.5.1.2"
 ]
         self.logger = logging.getLogger(f"CompositeAgent_4")
 

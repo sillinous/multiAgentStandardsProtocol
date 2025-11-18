@@ -5,23 +5,23 @@ Level 3 Process: 6.4 - Composite APQC Agent
 APQC Level 3: 6.4
 Category: Manage Customer Service (6.0)
 
-This is a COMPOSITE AGENT that orchestrates 12 child agents.
+This is a COMPOSITE AGENT that orchestrates 16 child agents.
 
 Orchestration Pattern: Sequential Workflow
 Standards: A2A, ANP, ACP, BPP, BDP, BRP, BMP, BCP, BIP
 
 Child Agents:
-  - 6.4.2.4: Recommend solution
-  - 6.4.2.2: Diagnose root cause
-  - 6.4.2.3: Identify resolution options
-  - 6.4.1.2: Assess severity
-  - 6.4.3.1: Implement solution
-  - 6.4.1.3: Assign to resolver
-  - 6.4.1.1: Log issue
-  - 6.4.3.4: Close issue ticket
-  - 6.4.2.1: Gather information
+  - 6.4.2.6: Optimize inquiries
   - 6.4.3.2: Validate resolution
-  ... and 2 more
+  - 6.4.2.2: Diagnose root cause
+  - 6.4.3.3: Confirm with customer
+  - 6.4.2.1: Gather information
+  - 6.4.1.2: Assess severity
+  - 6.4.1.5: Review support
+  - 6.4.1.4: Set resolution timeframe
+  - 6.4.1.3: Assign to resolver
+  - 6.4.3.4: Close issue ticket
+  ... and 6 more
 
 Generated: 2025-11-18
 Version: 3.0.0
@@ -44,25 +44,29 @@ class CompositeAgent_6_4:
     """
     Composite Agent for APQC Level 3: 6.4
 
-    Orchestrates 12 child agents in a coordinated workflow.
+    Orchestrates 16 child agents in a coordinated workflow.
     """
 
     def __init__(self):
         self.apqc_id = "6.4"
         self.level = 3
         self.child_agent_ids = [
-        "6.4.2.4",
-        "6.4.2.2",
-        "6.4.2.3",
-        "6.4.1.2",
-        "6.4.3.1",
-        "6.4.1.3",
-        "6.4.1.1",
-        "6.4.3.4",
-        "6.4.2.1",
+        "6.4.2.6",
         "6.4.3.2",
+        "6.4.2.2",
+        "6.4.3.3",
+        "6.4.2.1",
+        "6.4.1.2",
+        "6.4.1.5",
         "6.4.1.4",
-        "6.4.3.3"
+        "6.4.1.3",
+        "6.4.3.4",
+        "6.4.3.1",
+        "6.4.1.6",
+        "6.4.2.5",
+        "6.4.2.4",
+        "6.4.2.3",
+        "6.4.1.1"
 ]
         self.logger = logging.getLogger(f"CompositeAgent_6_4")
 

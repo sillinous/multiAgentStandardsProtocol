@@ -5,23 +5,23 @@ Level 3 Process: 8.5 - Composite APQC Agent
 APQC Level 3: 8.5
 Category: Manage Information Technology (8.0)
 
-This is a COMPOSITE AGENT that orchestrates 12 child agents.
+This is a COMPOSITE AGENT that orchestrates 16 child agents.
 
 Orchestration Pattern: Sequential Workflow
 Standards: A2A, ANP, ACP, BPP, BDP, BRP, BMP, BCP, BIP
 
 Child Agents:
+  - 8.5.2.6: Optimize infrastructure
+  - 8.5.2.5: Review infrastructure
   - 8.5.1.3: Manage storage
-  - 8.5.3.4: Support operations
-  - 8.5.1.4: Manage cloud services
-  - 8.5.2.3: Respond to incidents
-  - 8.5.1.2: Manage networks
-  - 8.5.3.2: Perform maintenance
-  - 8.5.3.1: Monitor systems
+  - 8.5.1.1: Manage servers
+  - 8.5.1.5: Review systems
   - 8.5.2.1: Implement security controls
   - 8.5.2.2: Monitor security threats
+  - 8.5.1.6: Optimize systems
+  - 8.5.2.3: Respond to incidents
   - 8.5.3.3: Manage backups
-  ... and 2 more
+  ... and 6 more
 
 Generated: 2025-11-18
 Version: 3.0.0
@@ -44,25 +44,29 @@ class CompositeAgent_8_5:
     """
     Composite Agent for APQC Level 3: 8.5
 
-    Orchestrates 12 child agents in a coordinated workflow.
+    Orchestrates 16 child agents in a coordinated workflow.
     """
 
     def __init__(self):
         self.apqc_id = "8.5"
         self.level = 3
         self.child_agent_ids = [
+        "8.5.2.6",
+        "8.5.2.5",
         "8.5.1.3",
-        "8.5.3.4",
-        "8.5.1.4",
-        "8.5.2.3",
-        "8.5.1.2",
-        "8.5.3.2",
-        "8.5.3.1",
+        "8.5.1.1",
+        "8.5.1.5",
         "8.5.2.1",
         "8.5.2.2",
+        "8.5.1.6",
+        "8.5.2.3",
         "8.5.3.3",
         "8.5.2.4",
-        "8.5.1.1"
+        "8.5.1.4",
+        "8.5.3.1",
+        "8.5.3.2",
+        "8.5.1.2",
+        "8.5.3.4"
 ]
         self.logger = logging.getLogger(f"CompositeAgent_8_5")
 

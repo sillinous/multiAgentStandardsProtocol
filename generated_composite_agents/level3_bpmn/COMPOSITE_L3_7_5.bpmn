@@ -7,74 +7,74 @@ Manage Human Capital
 APQC ID: 7.5
 
 Orchestrates 12 child agents:
-  1. 7.5.1.1: Identify redeployment opportunities
-  2. 7.5.3.1: Document performance issues
-  3. 7.5.2.2: Conduct exit process
-  4. 7.5.3.2: Conduct termination process
-  5. 7.5.3.3: Complete exit procedures
-  6. 7.5.2.1: Plan for retirements
-  7. 7.5.1.3: Transition employees
-  8. 7.5.1.2: Match employees to roles
-  9. 7.5.1.4: Support integration
-  10. 7.5.2.3: Transfer knowledge
-  11. 7.5.2.4: Process retirement benefits
-  12. 7.5.3.4: Manage offboarding
+  1. 7.5.2.2: Conduct exit process
+  2. 7.5.1.3: Transition employees
+  3. 7.5.3.1: Document performance issues
+  4. 7.5.3.4: Manage offboarding
+  5. 7.5.3.2: Conduct termination process
+  6. 7.5.3.3: Complete exit procedures
+  7. 7.5.2.4: Process retirement benefits
+  8. 7.5.2.1: Plan for retirements
+  9. 7.5.1.1: Identify redeployment opportunities
+  10. 7.5.1.4: Support integration
+  11. 7.5.2.3: Transfer knowledge
+  12. 7.5.1.2: Match employees to roles
 
 
 Orchestration Pattern: Sequential Workflow (Pipeline)
 Standards: BPMN 2.0, A2A Protocol
 
-Generated: 2025-11-18T00:44:42.615923
+Generated: 2025-11-18T01:11:36.742813
 Status: Production Ready
 </bpmn:documentation>
     <bpmn:startEvent id="Start_L3_7_5" name="Start Composite">
       <bpmn:outgoing>Flow_start_to_child1</bpmn:outgoing>
     </bpmn:startEvent>
-    <bpmn:callActivity id="CallActivity_L3_child1" name="7.5.1.1: Identify redeployment opportun..." calledElement="Process_7_5_1_1">
+    <bpmn:callActivity id="CallActivity_L3_child1" name="7.5.2.2: Conduct exit process" calledElement="Process_7_5_2_2">
       <bpmn:incoming>Flow_start_to_child1</bpmn:incoming>
       <bpmn:outgoing>Flow_child1_to_child2</bpmn:outgoing>
     </bpmn:callActivity>
-    <bpmn:callActivity id="CallActivity_L3_child2" name="7.5.3.1: Document performance issues" calledElement="Process_7_5_3_1">
+    <bpmn:callActivity id="CallActivity_L3_child2" name="7.5.1.3: Transition employees" calledElement="Process_7_5_1_3">
       <bpmn:incoming>Flow_child1_to_child2</bpmn:incoming>
       <bpmn:outgoing>Flow_child2_to_child3</bpmn:outgoing>
     </bpmn:callActivity>
-    <bpmn:callActivity id="CallActivity_L3_child3" name="7.5.2.2: Conduct exit process" calledElement="Process_7_5_2_2">
+    <bpmn:callActivity id="CallActivity_L3_child3" name="7.5.3.1: Document performance issues" calledElement="Process_7_5_3_1">
       <bpmn:incoming>Flow_child2_to_child3</bpmn:incoming>
       <bpmn:outgoing>Flow_child3_to_child4</bpmn:outgoing>
     </bpmn:callActivity>
-    <bpmn:callActivity id="CallActivity_L3_child4" name="7.5.3.2: Conduct termination process" calledElement="Process_7_5_3_2">
+    <bpmn:callActivity id="CallActivity_L3_child4" name="7.5.3.4: Manage offboarding" calledElement="Process_7_5_3_4">
       <bpmn:incoming>Flow_child3_to_child4</bpmn:incoming>
       <bpmn:outgoing>Flow_child4_to_child5</bpmn:outgoing>
     </bpmn:callActivity>
-    <bpmn:callActivity id="CallActivity_L3_child5" name="7.5.3.3: Complete exit procedures" calledElement="Process_7_5_3_3">
+    <bpmn:callActivity id="CallActivity_L3_child5" name="7.5.3.2: Conduct termination process" calledElement="Process_7_5_3_2">
       <bpmn:incoming>Flow_child4_to_child5</bpmn:incoming>
       <bpmn:outgoing>Flow_child5_to_child6</bpmn:outgoing>
     </bpmn:callActivity>
-    <bpmn:callActivity id="CallActivity_L3_child6" name="7.5.2.1: Plan for retirements" calledElement="Process_7_5_2_1">
+    <bpmn:callActivity id="CallActivity_L3_child6" name="7.5.3.3: Complete exit procedures" calledElement="Process_7_5_3_3">
       <bpmn:incoming>Flow_child5_to_child6</bpmn:incoming>
       <bpmn:outgoing>Flow_child6_to_child7</bpmn:outgoing>
     </bpmn:callActivity>
-    <bpmn:callActivity id="CallActivity_L3_child7" name="7.5.1.3: Transition employees" calledElement="Process_7_5_1_3">
+    <bpmn:callActivity id="CallActivity_L3_child7" name="7.5.2.4: Process retirement benefits" calledElement="Process_7_5_2_4">
       <bpmn:incoming>Flow_child6_to_child7</bpmn:incoming>
       <bpmn:outgoing>Flow_child7_to_child8</bpmn:outgoing>
     </bpmn:callActivity>
-    <bpmn:callActivity id="CallActivity_L3_child8" name="7.5.1.2: Match employees to roles" calledElement="Process_7_5_1_2">
+    <bpmn:callActivity id="CallActivity_L3_child8" name="7.5.2.1: Plan for retirements" calledElement="Process_7_5_2_1">
       <bpmn:incoming>Flow_child7_to_child8</bpmn:incoming>
       <bpmn:outgoing>Flow_child8_to_child9</bpmn:outgoing>
     </bpmn:callActivity>
-    <bpmn:callActivity id="CallActivity_L3_child9" name="7.5.1.4: Support integration" calledElement="Process_7_5_1_4">
+    <bpmn:callActivity id="CallActivity_L3_child9" name="7.5.1.1: Identify redeployment opportun..." calledElement="Process_7_5_1_1">
       <bpmn:incoming>Flow_child8_to_child9</bpmn:incoming>
       <bpmn:outgoing>Flow_child9_to_child10</bpmn:outgoing>
     </bpmn:callActivity>
-    <bpmn:callActivity id="CallActivity_L3_child10" name="7.5.2.3: Transfer knowledge" calledElement="Process_7_5_2_3">
+    <bpmn:callActivity id="CallActivity_L3_child10" name="7.5.1.4: Support integration" calledElement="Process_7_5_1_4">
       <bpmn:incoming>Flow_child9_to_child10</bpmn:incoming>
       <bpmn:outgoing>Flow_child10_to_child11</bpmn:outgoing>
     </bpmn:callActivity>
-    <bpmn:callActivity id="CallActivity_L3_child11" name="7.5.2.4: Process retirement benefits" calledElement="Process_7_5_2_4">
+    <bpmn:callActivity id="CallActivity_L3_child11" name="7.5.2.3: Transfer knowledge" calledElement="Process_7_5_2_3">
       <bpmn:incoming>Flow_child10_to_child11</bpmn:incoming>
       <bpmn:outgoing>Flow_child11_to_child12</bpmn:outgoing>
     </bpmn:callActivity>
-    <bpmn:callActivity id="CallActivity_L3_child12" name="7.5.3.4: Manage offboarding" calledElement="Process_7_5_3_4">
+    <bpmn:callActivity id="CallActivity_L3_child12" name="7.5.1.2: Match employees to roles" calledElement="Process_7_5_1_2">
       <bpmn:incoming>Flow_child11_to_child12</bpmn:incoming>
       <bpmn:outgoing>Flow_child12_to_end</bpmn:outgoing>
     </bpmn:callActivity>

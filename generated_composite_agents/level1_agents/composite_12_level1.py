@@ -5,23 +5,23 @@ Level 1 Category: 12 - Composite APQC Agent
 APQC Level 1: 12
 Category: Manage External Relationships (12.0)
 
-This is a COMPOSITE AGENT that orchestrates 36 child agents.
+This is a COMPOSITE AGENT that orchestrates 54 child agents.
 
 Orchestration Pattern: Sequential Workflow
 Standards: A2A, ANP, ACP, BPP, BDP, BRP, BMP, BCP, BIP
 
 Child Agents:
-  - 12.4.2.3: Execute contracts
-  - 12.4.1.1: Assess partnership needs
-  - 12.4.3.3: Resolve partnership issues
-  - 12.4.3.2: Measure partnership value
-  - 12.4.2.2: Structure partnerships
-  - 12.3.2.4: Manage crisis communications
+  - 12.4.1.4: Select partners
   - 12.4.2.1: Negotiate agreements
-  - 12.4.3.1: Monitor partnership activities
-  - 12.2.2.2: Support community initiatives
+  - 12.3.1.1: Define communication objectives
   - 12.1.2.2: Conduct earnings calls
-  ... and 26 more
+  - 12.4.1.1: Assess partnership needs
+  - 12.3.1.2: Identify target audiences
+  - 12.1.1.1: Communicate with investors
+  - 12.1.2.1: Prepare earnings releases
+  - 12.2.1.1: Monitor legislation
+  - 12.3.2.6: Optimize stakeholders
+  ... and 44 more
 
 Generated: 2025-11-18
 Version: 3.0.0
@@ -44,49 +44,67 @@ class CompositeAgent_12:
     """
     Composite Agent for APQC Level 1: 12
 
-    Orchestrates 36 child agents in a coordinated workflow.
+    Orchestrates 54 child agents in a coordinated workflow.
     """
 
     def __init__(self):
         self.apqc_id = "12"
         self.level = 1
         self.child_agent_ids = [
-        "12.4.2.3",
-        "12.4.1.1",
-        "12.4.3.3",
-        "12.4.3.2",
-        "12.4.2.2",
-        "12.3.2.4",
-        "12.4.2.1",
-        "12.4.3.1",
-        "12.2.2.2",
-        "12.1.2.2",
-        "12.3.1.2",
-        "12.3.1.3",
-        "12.1.2.3",
-        "12.3.1.4",
-        "12.4.2.4",
-        "12.3.1.1",
-        "12.2.2.4",
-        "12.3.2.2",
-        "12.1.1.3",
-        "12.2.1.2",
-        "12.1.1.1",
-        "12.3.2.3",
-        "12.4.1.2",
-        "12.1.2.1",
-        "12.3.2.1",
-        "12.1.1.2",
         "12.4.1.4",
-        "12.1.2.4",
-        "12.2.1.3",
-        "12.1.1.4",
+        "12.4.2.1",
+        "12.3.1.1",
+        "12.1.2.2",
+        "12.4.1.1",
+        "12.3.1.2",
+        "12.1.1.1",
+        "12.1.2.1",
         "12.2.1.1",
-        "12.2.2.1",
+        "12.3.2.6",
+        "12.1.1.6",
+        "12.3.2.3",
+        "12.3.1.6",
+        "12.4.2.6",
+        "12.4.3.5",
+        "12.3.1.5",
+        "12.4.2.5",
+        "12.4.3.3",
+        "12.2.2.2",
+        "12.3.1.3",
+        "12.1.2.4",
+        "12.2.2.6",
+        "12.3.1.4",
+        "12.2.2.3",
+        "12.2.1.5",
+        "12.2.2.4",
+        "12.4.1.6",
+        "12.1.2.6",
         "12.4.1.3",
+        "12.1.1.4",
+        "12.4.3.6",
+        "12.4.3.2",
+        "12.2.1.3",
+        "12.3.2.1",
+        "12.3.2.2",
+        "12.4.1.2",
         "12.2.1.4",
+        "12.2.2.1",
+        "12.4.3.1",
+        "12.3.2.4",
+        "12.1.1.5",
+        "12.2.1.6",
+        "12.1.2.3",
+        "12.4.1.5",
+        "12.4.2.4",
+        "12.2.1.2",
+        "12.1.1.3",
+        "12.2.2.5",
+        "12.4.2.3",
+        "12.1.1.2",
+        "12.1.2.5",
         "12.4.3.4",
-        "12.2.2.3"
+        "12.3.2.5",
+        "12.4.2.2"
 ]
         self.logger = logging.getLogger(f"CompositeAgent_12")
 

@@ -6,72 +6,102 @@ Level 3 Composite Process
 Manage Financial Resources
 APQC ID: 9.2
 
-Orchestrates 11 child agents:
-  1. 9.2.2.2: Apply payments
-  2. 9.2.3.1: Apply revenue recognition rules
-  3. 9.2.2.1: Record receipts
-  4. 9.2.3.4: Report revenue
-  5. 9.2.2.4: Manage collections
-  6. 9.2.1.4: Resolve billing issues
-  7. 9.2.1.3: Track invoice status
-  8. 9.2.3.3: Recognize revenue
-  9. 9.2.1.1: Generate invoices
-  10. 9.2.3.2: Defer revenue
-  11. 9.2.1.2: Send invoices
+Orchestrates 17 child agents:
+  1. 9.2.1.6: Optimize compliance
+  2. 9.2.3.5: Review controls
+  3. 9.2.1.2: Send invoices
+  4. 9.2.3.2: Defer revenue
+  5. 9.2.2.5: Review audits
+  6. 9.2.3.1: Apply revenue recognition rules
+  7. 9.2.1.4: Resolve billing issues
+  8. 9.2.3.6: Optimize controls
+  9. 9.2.2.1: Record receipts
+  10. 9.2.2.4: Manage collections
+  11. 9.2.3.4: Report revenue
+  12. 9.2.1.1: Generate invoices
+  13. 9.2.2.6: Optimize audits
+  14. 9.2.2.2: Apply payments
+  15. 9.2.1.5: Review compliance
+  16. 9.2.3.3: Recognize revenue
+  17. 9.2.1.3: Track invoice status
 
 
 Orchestration Pattern: Sequential Workflow (Pipeline)
 Standards: BPMN 2.0, A2A Protocol
 
-Generated: 2025-11-18T00:44:42.623981
+Generated: 2025-11-18T01:11:36.751320
 Status: Production Ready
 </bpmn:documentation>
     <bpmn:startEvent id="Start_L3_9_2" name="Start Composite">
       <bpmn:outgoing>Flow_start_to_child1</bpmn:outgoing>
     </bpmn:startEvent>
-    <bpmn:callActivity id="CallActivity_L3_child1" name="9.2.2.2: Apply payments" calledElement="Process_9_2_2_2">
+    <bpmn:callActivity id="CallActivity_L3_child1" name="9.2.1.6: Optimize compliance" calledElement="Process_9_2_1_6">
       <bpmn:incoming>Flow_start_to_child1</bpmn:incoming>
       <bpmn:outgoing>Flow_child1_to_child2</bpmn:outgoing>
     </bpmn:callActivity>
-    <bpmn:callActivity id="CallActivity_L3_child2" name="9.2.3.1: Apply revenue recognition rule..." calledElement="Process_9_2_3_1">
+    <bpmn:callActivity id="CallActivity_L3_child2" name="9.2.3.5: Review controls" calledElement="Process_9_2_3_5">
       <bpmn:incoming>Flow_child1_to_child2</bpmn:incoming>
       <bpmn:outgoing>Flow_child2_to_child3</bpmn:outgoing>
     </bpmn:callActivity>
-    <bpmn:callActivity id="CallActivity_L3_child3" name="9.2.2.1: Record receipts" calledElement="Process_9_2_2_1">
+    <bpmn:callActivity id="CallActivity_L3_child3" name="9.2.1.2: Send invoices" calledElement="Process_9_2_1_2">
       <bpmn:incoming>Flow_child2_to_child3</bpmn:incoming>
       <bpmn:outgoing>Flow_child3_to_child4</bpmn:outgoing>
     </bpmn:callActivity>
-    <bpmn:callActivity id="CallActivity_L3_child4" name="9.2.3.4: Report revenue" calledElement="Process_9_2_3_4">
+    <bpmn:callActivity id="CallActivity_L3_child4" name="9.2.3.2: Defer revenue" calledElement="Process_9_2_3_2">
       <bpmn:incoming>Flow_child3_to_child4</bpmn:incoming>
       <bpmn:outgoing>Flow_child4_to_child5</bpmn:outgoing>
     </bpmn:callActivity>
-    <bpmn:callActivity id="CallActivity_L3_child5" name="9.2.2.4: Manage collections" calledElement="Process_9_2_2_4">
+    <bpmn:callActivity id="CallActivity_L3_child5" name="9.2.2.5: Review audits" calledElement="Process_9_2_2_5">
       <bpmn:incoming>Flow_child4_to_child5</bpmn:incoming>
       <bpmn:outgoing>Flow_child5_to_child6</bpmn:outgoing>
     </bpmn:callActivity>
-    <bpmn:callActivity id="CallActivity_L3_child6" name="9.2.1.4: Resolve billing issues" calledElement="Process_9_2_1_4">
+    <bpmn:callActivity id="CallActivity_L3_child6" name="9.2.3.1: Apply revenue recognition rule..." calledElement="Process_9_2_3_1">
       <bpmn:incoming>Flow_child5_to_child6</bpmn:incoming>
       <bpmn:outgoing>Flow_child6_to_child7</bpmn:outgoing>
     </bpmn:callActivity>
-    <bpmn:callActivity id="CallActivity_L3_child7" name="9.2.1.3: Track invoice status" calledElement="Process_9_2_1_3">
+    <bpmn:callActivity id="CallActivity_L3_child7" name="9.2.1.4: Resolve billing issues" calledElement="Process_9_2_1_4">
       <bpmn:incoming>Flow_child6_to_child7</bpmn:incoming>
       <bpmn:outgoing>Flow_child7_to_child8</bpmn:outgoing>
     </bpmn:callActivity>
-    <bpmn:callActivity id="CallActivity_L3_child8" name="9.2.3.3: Recognize revenue" calledElement="Process_9_2_3_3">
+    <bpmn:callActivity id="CallActivity_L3_child8" name="9.2.3.6: Optimize controls" calledElement="Process_9_2_3_6">
       <bpmn:incoming>Flow_child7_to_child8</bpmn:incoming>
       <bpmn:outgoing>Flow_child8_to_child9</bpmn:outgoing>
     </bpmn:callActivity>
-    <bpmn:callActivity id="CallActivity_L3_child9" name="9.2.1.1: Generate invoices" calledElement="Process_9_2_1_1">
+    <bpmn:callActivity id="CallActivity_L3_child9" name="9.2.2.1: Record receipts" calledElement="Process_9_2_2_1">
       <bpmn:incoming>Flow_child8_to_child9</bpmn:incoming>
       <bpmn:outgoing>Flow_child9_to_child10</bpmn:outgoing>
     </bpmn:callActivity>
-    <bpmn:callActivity id="CallActivity_L3_child10" name="9.2.3.2: Defer revenue" calledElement="Process_9_2_3_2">
+    <bpmn:callActivity id="CallActivity_L3_child10" name="9.2.2.4: Manage collections" calledElement="Process_9_2_2_4">
       <bpmn:incoming>Flow_child9_to_child10</bpmn:incoming>
       <bpmn:outgoing>Flow_child10_to_child11</bpmn:outgoing>
     </bpmn:callActivity>
-    <bpmn:callActivity id="CallActivity_L3_child11" name="9.2.1.2: Send invoices" calledElement="Process_9_2_1_2">
+    <bpmn:callActivity id="CallActivity_L3_child11" name="9.2.3.4: Report revenue" calledElement="Process_9_2_3_4">
       <bpmn:incoming>Flow_child10_to_child11</bpmn:incoming>
-      <bpmn:outgoing>Flow_child11_to_end</bpmn:outgoing>
+      <bpmn:outgoing>Flow_child11_to_child12</bpmn:outgoing>
+    </bpmn:callActivity>
+    <bpmn:callActivity id="CallActivity_L3_child12" name="9.2.1.1: Generate invoices" calledElement="Process_9_2_1_1">
+      <bpmn:incoming>Flow_child11_to_child12</bpmn:incoming>
+      <bpmn:outgoing>Flow_child12_to_child13</bpmn:outgoing>
+    </bpmn:callActivity>
+    <bpmn:callActivity id="CallActivity_L3_child13" name="9.2.2.6: Optimize audits" calledElement="Process_9_2_2_6">
+      <bpmn:incoming>Flow_child12_to_child13</bpmn:incoming>
+      <bpmn:outgoing>Flow_child13_to_child14</bpmn:outgoing>
+    </bpmn:callActivity>
+    <bpmn:callActivity id="CallActivity_L3_child14" name="9.2.2.2: Apply payments" calledElement="Process_9_2_2_2">
+      <bpmn:incoming>Flow_child13_to_child14</bpmn:incoming>
+      <bpmn:outgoing>Flow_child14_to_child15</bpmn:outgoing>
+    </bpmn:callActivity>
+    <bpmn:callActivity id="CallActivity_L3_child15" name="9.2.1.5: Review compliance" calledElement="Process_9_2_1_5">
+      <bpmn:incoming>Flow_child14_to_child15</bpmn:incoming>
+      <bpmn:outgoing>Flow_child15_to_child16</bpmn:outgoing>
+    </bpmn:callActivity>
+    <bpmn:callActivity id="CallActivity_L3_child16" name="9.2.3.3: Recognize revenue" calledElement="Process_9_2_3_3">
+      <bpmn:incoming>Flow_child15_to_child16</bpmn:incoming>
+      <bpmn:outgoing>Flow_child16_to_child17</bpmn:outgoing>
+    </bpmn:callActivity>
+    <bpmn:callActivity id="CallActivity_L3_child17" name="9.2.1.3: Track invoice status" calledElement="Process_9_2_1_3">
+      <bpmn:incoming>Flow_child16_to_child17</bpmn:incoming>
+      <bpmn:outgoing>Flow_child17_to_end</bpmn:outgoing>
     </bpmn:callActivity>
     <bpmn:sequenceFlow id="Flow_start_to_child1" sourceRef="Start_L3_9_2" targetRef="CallActivity_L3_child1" />
     <bpmn:sequenceFlow id="Flow_child1_to_child2" sourceRef="CallActivity_L3_child1" targetRef="CallActivity_L3_child2" />
@@ -84,9 +114,15 @@ Status: Production Ready
     <bpmn:sequenceFlow id="Flow_child8_to_child9" sourceRef="CallActivity_L3_child8" targetRef="CallActivity_L3_child9" />
     <bpmn:sequenceFlow id="Flow_child9_to_child10" sourceRef="CallActivity_L3_child9" targetRef="CallActivity_L3_child10" />
     <bpmn:sequenceFlow id="Flow_child10_to_child11" sourceRef="CallActivity_L3_child10" targetRef="CallActivity_L3_child11" />
-    <bpmn:sequenceFlow id="Flow_child11_to_end" sourceRef="CallActivity_L3_child11" targetRef="End_L3_9_2" />
+    <bpmn:sequenceFlow id="Flow_child11_to_child12" sourceRef="CallActivity_L3_child11" targetRef="CallActivity_L3_child12" />
+    <bpmn:sequenceFlow id="Flow_child12_to_child13" sourceRef="CallActivity_L3_child12" targetRef="CallActivity_L3_child13" />
+    <bpmn:sequenceFlow id="Flow_child13_to_child14" sourceRef="CallActivity_L3_child13" targetRef="CallActivity_L3_child14" />
+    <bpmn:sequenceFlow id="Flow_child14_to_child15" sourceRef="CallActivity_L3_child14" targetRef="CallActivity_L3_child15" />
+    <bpmn:sequenceFlow id="Flow_child15_to_child16" sourceRef="CallActivity_L3_child15" targetRef="CallActivity_L3_child16" />
+    <bpmn:sequenceFlow id="Flow_child16_to_child17" sourceRef="CallActivity_L3_child16" targetRef="CallActivity_L3_child17" />
+    <bpmn:sequenceFlow id="Flow_child17_to_end" sourceRef="CallActivity_L3_child17" targetRef="End_L3_9_2" />
     <bpmn:endEvent id="End_L3_9_2" name="Composite Complete">
-      <bpmn:incoming>Flow_child11_to_end</bpmn:incoming>
+      <bpmn:incoming>Flow_child17_to_end</bpmn:incoming>
     </bpmn:endEvent>
   </bpmn:process>
   <bpmndi:BPMNDiagram id="Diagram_L3_9_2">
@@ -127,8 +163,26 @@ Status: Production Ready
       <bpmndi:BPMNShape id="Shape_CallActivity_L3_child11" bpmnElement="CallActivity_L3_child11">
         <dc:Bounds x="100" y="1130" width="150" height="80" />
       </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Shape_CallActivity_L3_child12" bpmnElement="CallActivity_L3_child12">
+        <dc:Bounds x="100" y="1230" width="150" height="80" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Shape_CallActivity_L3_child13" bpmnElement="CallActivity_L3_child13">
+        <dc:Bounds x="100" y="1330" width="150" height="80" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Shape_CallActivity_L3_child14" bpmnElement="CallActivity_L3_child14">
+        <dc:Bounds x="100" y="1430" width="150" height="80" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Shape_CallActivity_L3_child15" bpmnElement="CallActivity_L3_child15">
+        <dc:Bounds x="100" y="1530" width="150" height="80" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Shape_CallActivity_L3_child16" bpmnElement="CallActivity_L3_child16">
+        <dc:Bounds x="100" y="1630" width="150" height="80" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Shape_CallActivity_L3_child17" bpmnElement="CallActivity_L3_child17">
+        <dc:Bounds x="100" y="1730" width="150" height="80" />
+      </bpmndi:BPMNShape>
       <bpmndi:BPMNShape id="Shape_End_L3_9_2" bpmnElement="End_L3_9_2">
-        <dc:Bounds x="150" y="1230" width="36" height="36" />
+        <dc:Bounds x="150" y="1830" width="36" height="36" />
       </bpmndi:BPMNShape>
     </bpmndi:BPMNPlane>
   </bpmndi:BPMNDiagram>

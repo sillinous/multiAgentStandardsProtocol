@@ -6,23 +6,25 @@ Level 4 Composite Process
 Manage Customer Service
 APQC ID: 6.3.1
 
-Orchestrates 4 child agents:
-  1. 6.3.1.4: Prioritize inquiry
+Orchestrates 6 child agents:
+  1. 6.3.1.3: Route to appropriate agent
   2. 6.3.1.1: Log inquiry
-  3. 6.3.1.2: Categorize inquiry
-  4. 6.3.1.3: Route to appropriate agent
+  3. 6.3.1.5: Review satisfaction
+  4. 6.3.1.6: Optimize satisfaction
+  5. 6.3.1.2: Categorize inquiry
+  6. 6.3.1.4: Prioritize inquiry
 
 
 Orchestration Pattern: Sequential Workflow (Pipeline)
 Standards: BPMN 2.0, A2A Protocol
 
-Generated: 2025-11-18T00:44:42.513078
+Generated: 2025-11-18T01:11:36.650357
 Status: Production Ready
 </bpmn:documentation>
     <bpmn:startEvent id="Start_L4_6_3_1" name="Start Composite">
       <bpmn:outgoing>Flow_start_to_child1</bpmn:outgoing>
     </bpmn:startEvent>
-    <bpmn:callActivity id="CallActivity_L4_child1" name="6.3.1.4: Prioritize inquiry" calledElement="Process_6_3_1_4">
+    <bpmn:callActivity id="CallActivity_L4_child1" name="6.3.1.3: Route to appropriate agent" calledElement="Process_6_3_1_3">
       <bpmn:incoming>Flow_start_to_child1</bpmn:incoming>
       <bpmn:outgoing>Flow_child1_to_child2</bpmn:outgoing>
     </bpmn:callActivity>
@@ -30,21 +32,31 @@ Status: Production Ready
       <bpmn:incoming>Flow_child1_to_child2</bpmn:incoming>
       <bpmn:outgoing>Flow_child2_to_child3</bpmn:outgoing>
     </bpmn:callActivity>
-    <bpmn:callActivity id="CallActivity_L4_child3" name="6.3.1.2: Categorize inquiry" calledElement="Process_6_3_1_2">
+    <bpmn:callActivity id="CallActivity_L4_child3" name="6.3.1.5: Review satisfaction" calledElement="Process_6_3_1_5">
       <bpmn:incoming>Flow_child2_to_child3</bpmn:incoming>
       <bpmn:outgoing>Flow_child3_to_child4</bpmn:outgoing>
     </bpmn:callActivity>
-    <bpmn:callActivity id="CallActivity_L4_child4" name="6.3.1.3: Route to appropriate agent" calledElement="Process_6_3_1_3">
+    <bpmn:callActivity id="CallActivity_L4_child4" name="6.3.1.6: Optimize satisfaction" calledElement="Process_6_3_1_6">
       <bpmn:incoming>Flow_child3_to_child4</bpmn:incoming>
-      <bpmn:outgoing>Flow_child4_to_end</bpmn:outgoing>
+      <bpmn:outgoing>Flow_child4_to_child5</bpmn:outgoing>
+    </bpmn:callActivity>
+    <bpmn:callActivity id="CallActivity_L4_child5" name="6.3.1.2: Categorize inquiry" calledElement="Process_6_3_1_2">
+      <bpmn:incoming>Flow_child4_to_child5</bpmn:incoming>
+      <bpmn:outgoing>Flow_child5_to_child6</bpmn:outgoing>
+    </bpmn:callActivity>
+    <bpmn:callActivity id="CallActivity_L4_child6" name="6.3.1.4: Prioritize inquiry" calledElement="Process_6_3_1_4">
+      <bpmn:incoming>Flow_child5_to_child6</bpmn:incoming>
+      <bpmn:outgoing>Flow_child6_to_end</bpmn:outgoing>
     </bpmn:callActivity>
     <bpmn:sequenceFlow id="Flow_start_to_child1" sourceRef="Start_L4_6_3_1" targetRef="CallActivity_L4_child1" />
     <bpmn:sequenceFlow id="Flow_child1_to_child2" sourceRef="CallActivity_L4_child1" targetRef="CallActivity_L4_child2" />
     <bpmn:sequenceFlow id="Flow_child2_to_child3" sourceRef="CallActivity_L4_child2" targetRef="CallActivity_L4_child3" />
     <bpmn:sequenceFlow id="Flow_child3_to_child4" sourceRef="CallActivity_L4_child3" targetRef="CallActivity_L4_child4" />
-    <bpmn:sequenceFlow id="Flow_child4_to_end" sourceRef="CallActivity_L4_child4" targetRef="End_L4_6_3_1" />
+    <bpmn:sequenceFlow id="Flow_child4_to_child5" sourceRef="CallActivity_L4_child4" targetRef="CallActivity_L4_child5" />
+    <bpmn:sequenceFlow id="Flow_child5_to_child6" sourceRef="CallActivity_L4_child5" targetRef="CallActivity_L4_child6" />
+    <bpmn:sequenceFlow id="Flow_child6_to_end" sourceRef="CallActivity_L4_child6" targetRef="End_L4_6_3_1" />
     <bpmn:endEvent id="End_L4_6_3_1" name="Composite Complete">
-      <bpmn:incoming>Flow_child4_to_end</bpmn:incoming>
+      <bpmn:incoming>Flow_child6_to_end</bpmn:incoming>
     </bpmn:endEvent>
   </bpmn:process>
   <bpmndi:BPMNDiagram id="Diagram_L4_6_3_1">
@@ -64,8 +76,14 @@ Status: Production Ready
       <bpmndi:BPMNShape id="Shape_CallActivity_L4_child4" bpmnElement="CallActivity_L4_child4">
         <dc:Bounds x="100" y="430" width="150" height="80" />
       </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Shape_CallActivity_L4_child5" bpmnElement="CallActivity_L4_child5">
+        <dc:Bounds x="100" y="530" width="150" height="80" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Shape_CallActivity_L4_child6" bpmnElement="CallActivity_L4_child6">
+        <dc:Bounds x="100" y="630" width="150" height="80" />
+      </bpmndi:BPMNShape>
       <bpmndi:BPMNShape id="Shape_End_L4_6_3_1" bpmnElement="End_L4_6_3_1">
-        <dc:Bounds x="150" y="530" width="36" height="36" />
+        <dc:Bounds x="150" y="730" width="36" height="36" />
       </bpmndi:BPMNShape>
     </bpmndi:BPMNPlane>
   </bpmndi:BPMNDiagram>

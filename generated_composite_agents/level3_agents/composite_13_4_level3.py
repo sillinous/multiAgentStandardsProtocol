@@ -5,23 +5,23 @@ Level 3 Process: 13.4 - Composite APQC Agent
 APQC Level 3: 13.4
 Category: Develop and Manage Business Capabilities (13.0)
 
-This is a COMPOSITE AGENT that orchestrates 12 child agents.
+This is a COMPOSITE AGENT that orchestrates 16 child agents.
 
 Orchestration Pattern: Sequential Workflow
 Standards: A2A, ANP, ACP, BPP, BDP, BRP, BMP, BCP, BIP
 
 Child Agents:
-  - 13.4.2.3: Organize knowledge
-  - 13.4.2.1: Capture explicit knowledge
-  - 13.4.3.2: Review and approve content
-  - 13.4.1.4: Define knowledge processes
+  - 13.4.2.4: Facilitate knowledge sharing
   - 13.4.1.3: Establish knowledge repositories
-  - 13.4.1.1: Define knowledge objectives
-  - 13.4.3.4: Maintain content
-  - 13.4.2.2: Capture tacit knowledge
-  - 13.4.1.2: Identify critical knowledge
   - 13.4.3.1: Create content
-  ... and 2 more
+  - 13.4.2.1: Capture explicit knowledge
+  - 13.4.2.5: Review capabilities
+  - 13.4.1.4: Define knowledge processes
+  - 13.4.3.2: Review and approve content
+  - 13.4.1.2: Identify critical knowledge
+  - 13.4.3.4: Maintain content
+  - 13.4.1.6: Optimize governance
+  ... and 6 more
 
 Generated: 2025-11-18
 Version: 3.0.0
@@ -44,25 +44,29 @@ class CompositeAgent_13_4:
     """
     Composite Agent for APQC Level 3: 13.4
 
-    Orchestrates 12 child agents in a coordinated workflow.
+    Orchestrates 16 child agents in a coordinated workflow.
     """
 
     def __init__(self):
         self.apqc_id = "13.4"
         self.level = 3
         self.child_agent_ids = [
-        "13.4.2.3",
-        "13.4.2.1",
-        "13.4.3.2",
-        "13.4.1.4",
+        "13.4.2.4",
         "13.4.1.3",
-        "13.4.1.1",
-        "13.4.3.4",
-        "13.4.2.2",
-        "13.4.1.2",
         "13.4.3.1",
+        "13.4.2.1",
+        "13.4.2.5",
+        "13.4.1.4",
+        "13.4.3.2",
+        "13.4.1.2",
+        "13.4.3.4",
+        "13.4.1.6",
         "13.4.3.3",
-        "13.4.2.4"
+        "13.4.2.2",
+        "13.4.1.5",
+        "13.4.1.1",
+        "13.4.2.6",
+        "13.4.2.3"
 ]
         self.logger = logging.getLogger(f"CompositeAgent_13_4")
 

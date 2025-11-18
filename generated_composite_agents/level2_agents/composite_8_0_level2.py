@@ -5,23 +5,23 @@ Level 2 ProcessGroup: 8.0 - Composite APQC Agent
 APQC Level 2: 8.0
 Category: Manage Information Technology (8.0)
 
-This is a COMPOSITE AGENT that orchestrates 48 child agents.
+This is a COMPOSITE AGENT that orchestrates 70 child agents.
 
 Orchestration Pattern: Sequential Workflow
 Standards: A2A, ANP, ACP, BPP, BDP, BRP, BMP, BCP, BIP
 
 Child Agents:
-  - 8.4.1.1: Gather requirements
-  - 8.5.1.3: Manage storage
-  - 8.3.2.4: Support business applications
-  - 8.5.3.4: Support operations
-  - 8.2.1.3: Address concerns
-  - 8.1.3.1: Inventory IT assets
-  - 8.2.1.2: Gather feedback
-  - 8.1.3.2: Assess portfolio value
-  - 8.4.2.1: Plan deployment
-  - 8.5.1.4: Manage cloud services
-  ... and 38 more
+  - 8.4.1.3: Build solutions
+  - 8.5.2.6: Optimize infrastructure
+  - 8.1.3.4: Prioritize investments
+  - 8.1.1.4: Develop IT roadmap
+  - 8.1.2.5: Review security
+  - 8.2.1.5: Review security
+  - 8.4.2.2: Execute deployment
+  - 8.3.2.1: Maintain system availability
+  - 8.3.1.5: Review data
+  - 8.1.3.6: Optimize data
+  ... and 60 more
 
 Generated: 2025-11-18
 Version: 3.0.0
@@ -44,61 +44,83 @@ class CompositeAgent_8_0:
     """
     Composite Agent for APQC Level 2: 8.0
 
-    Orchestrates 48 child agents in a coordinated workflow.
+    Orchestrates 70 child agents in a coordinated workflow.
     """
 
     def __init__(self):
         self.apqc_id = "8.0"
         self.level = 2
         self.child_agent_ids = [
-        "8.4.1.1",
-        "8.5.1.3",
-        "8.3.2.4",
-        "8.5.3.4",
-        "8.2.1.3",
-        "8.1.3.1",
-        "8.2.1.2",
-        "8.1.3.2",
-        "8.4.2.1",
-        "8.5.1.4",
-        "8.3.1.3",
-        "8.1.3.4",
-        "8.2.2.4",
-        "8.1.1.3",
-        "8.4.2.3",
-        "8.1.1.1",
-        "8.1.2.4",
-        "8.4.1.4",
-        "8.5.2.3",
-        "8.5.1.2",
-        "8.5.3.2",
-        "8.1.1.4",
-        "8.4.1.2",
-        "8.3.2.1",
-        "8.1.2.1",
-        "8.5.3.1",
-        "8.5.2.1",
-        "8.1.2.3",
-        "8.1.3.3",
-        "8.2.1.4",
-        "8.3.2.2",
-        "8.4.2.4",
-        "8.4.2.2",
-        "8.1.2.2",
-        "8.1.1.2",
-        "8.5.2.2",
         "8.4.1.3",
-        "8.2.2.2",
+        "8.5.2.6",
+        "8.1.3.4",
+        "8.1.1.4",
+        "8.1.2.5",
+        "8.2.1.5",
+        "8.4.2.2",
+        "8.3.2.1",
+        "8.3.1.5",
+        "8.1.3.6",
+        "8.1.2.4",
+        "8.2.1.4",
+        "8.2.2.6",
+        "8.2.2.3",
+        "8.3.1.3",
+        "8.5.2.5",
+        "8.5.1.3",
+        "8.5.1.1",
+        "8.2.2.5",
+        "8.5.1.5",
+        "8.4.1.2",
+        "8.4.1.4",
+        "8.2.2.1",
+        "8.1.3.3",
+        "8.1.1.6",
+        "8.3.1.6",
+        "8.3.1.4",
+        "8.3.2.2",
+        "8.5.2.1",
+        "8.1.2.1",
+        "8.4.2.1",
+        "8.1.2.6",
+        "8.2.1.6",
+        "8.4.1.5",
+        "8.1.3.2",
+        "8.1.3.1",
+        "8.2.1.1",
+        "8.5.2.2",
+        "8.1.1.1",
+        "8.3.2.5",
+        "8.1.3.5",
+        "8.3.2.3",
+        "8.4.2.6",
+        "8.5.1.6",
+        "8.1.2.2",
+        "8.3.2.6",
+        "8.1.2.3",
+        "8.4.2.3",
+        "8.5.2.3",
         "8.5.3.3",
         "8.5.2.4",
-        "8.3.2.3",
-        "8.5.1.1",
+        "8.1.1.3",
+        "8.1.1.2",
+        "8.3.1.2",
+        "8.2.2.4",
+        "8.5.1.4",
+        "8.5.3.1",
+        "8.4.1.1",
+        "8.4.1.6",
+        "8.1.1.5",
+        "8.5.3.2",
+        "8.5.1.2",
+        "8.3.2.4",
+        "8.2.2.2",
+        "8.4.2.4",
+        "8.2.1.3",
+        "8.5.3.4",
         "8.3.1.1",
-        "8.2.2.3",
-        "8.2.1.1",
-        "8.2.2.1",
-        "8.3.1.4",
-        "8.3.1.2"
+        "8.4.2.5",
+        "8.2.1.2"
 ]
         self.logger = logging.getLogger(f"CompositeAgent_8_0")
 

@@ -12,9 +12,9 @@ Standards: A2A, ANP, ACP, BPP, BDP, BRP, BMP, BCP, BIP
 
 Child Agents:
   - 9.8.1.4: Close accounting period
-  - 9.8.1.1: Perform close activities
-  - 9.8.1.3: Reconcile accounts
   - 9.8.1.2: Record adjustments
+  - 9.8.1.3: Reconcile accounts
+  - 9.8.1.1: Perform close activities
 
 
 Generated: 2025-11-18
@@ -46,9 +46,9 @@ class CompositeAgent_9_8_1:
         self.level = 4
         self.child_agent_ids = [
         "9.8.1.4",
-        "9.8.1.1",
+        "9.8.1.2",
         "9.8.1.3",
-        "9.8.1.2"
+        "9.8.1.1"
 ]
         self.logger = logging.getLogger(f"CompositeAgent_9_8_1")
 

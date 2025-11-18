@@ -6,235 +6,235 @@ Level 2 Composite Process
 Manage Human Capital
 APQC ID: 7.0
 
-Orchestrates 65 child agents:
-  1. 7.3.1.1: Assess development needs
-  2. 7.2.1.3: Create job descriptions
-  3. 7.4.3.2: Identify recognition opportunities
-  4. 7.3.2.2: Assess competencies
-  5. 7.4.3.3: Deliver recognition
-  6. 7.4.3.1: Design recognition programs
-  7. 7.4.2.4: Administer payroll
-  8. 7.4.2.1: Design compensation structure
-  9. 7.2.4.2: Complete paperwork
-  10. 7.5.1.1: Identify redeployment opportunities
-  11. 7.2.3.4: Perform background checks
-  12. 7.2.3.5: Make hiring decisions
-  13. 7.5.3.1: Document performance issues
-  14. 7.4.1.3: Provide feedback
-  15. 7.3.1.3: Provide training
-  16. 7.1.2.1: Create HR policies
-  17. 7.5.2.2: Conduct exit process
-  18. 7.4.3.4: Track recognition
-  19. 7.2.3.3: Conduct interviews
-  20. 7.2.1.2: Define job requirements
-  ... and 45 more
+Orchestrates 88 child agents:
+  1. 7.1.2.3: Communicate policies
+  2. 7.3.1.1: Assess development needs
+  3. 7.2.4.1: Extend offers
+  4. 7.2.3.6: Optimize training
+  5. 7.1.3.3: Develop workforce plans
+  6. 7.3.3.1: Conduct career discussions
+  7. 7.4.2.5: Review workforce
+  8. 7.2.3.3: Conduct interviews
+  9. 7.3.3.4: Support career transitions
+  10. 7.4.1.6: Optimize training
+  11. 7.3.2.4: Certify competencies
+  12. 7.3.3.5: Review workforce
+  13. 7.1.2.2: Ensure regulatory compliance
+  14. 7.2.4.4: Assign to role
+  15. 7.3.3.6: Optimize workforce
+  16. 7.5.2.2: Conduct exit process
+  17. 7.1.2.1: Create HR policies
+  18. 7.2.4.2: Complete paperwork
+  19. 7.5.1.3: Transition employees
+  20. 7.5.3.1: Document performance issues
+  ... and 68 more
 
 Orchestration Pattern: Sequential Workflow (Pipeline)
 Standards: BPMN 2.0, A2A Protocol
 
-Generated: 2025-11-18T00:44:42.651130
+Generated: 2025-11-18T01:11:36.775141
 Status: Production Ready
 </bpmn:documentation>
     <bpmn:startEvent id="Start_L2_7_0" name="Start Composite">
       <bpmn:outgoing>Flow_start_to_child1</bpmn:outgoing>
     </bpmn:startEvent>
-    <bpmn:callActivity id="CallActivity_L2_child1" name="7.3.1.1: Assess development needs" calledElement="Process_7_3_1_1">
+    <bpmn:callActivity id="CallActivity_L2_child1" name="7.1.2.3: Communicate policies" calledElement="Process_7_1_2_3">
       <bpmn:incoming>Flow_start_to_child1</bpmn:incoming>
       <bpmn:outgoing>Flow_child1_to_child2</bpmn:outgoing>
     </bpmn:callActivity>
-    <bpmn:callActivity id="CallActivity_L2_child2" name="7.2.1.3: Create job descriptions" calledElement="Process_7_2_1_3">
+    <bpmn:callActivity id="CallActivity_L2_child2" name="7.3.1.1: Assess development needs" calledElement="Process_7_3_1_1">
       <bpmn:incoming>Flow_child1_to_child2</bpmn:incoming>
       <bpmn:outgoing>Flow_child2_to_child3</bpmn:outgoing>
     </bpmn:callActivity>
-    <bpmn:callActivity id="CallActivity_L2_child3" name="7.4.3.2: Identify recognition opportuni..." calledElement="Process_7_4_3_2">
+    <bpmn:callActivity id="CallActivity_L2_child3" name="7.2.4.1: Extend offers" calledElement="Process_7_2_4_1">
       <bpmn:incoming>Flow_child2_to_child3</bpmn:incoming>
       <bpmn:outgoing>Flow_child3_to_child4</bpmn:outgoing>
     </bpmn:callActivity>
-    <bpmn:callActivity id="CallActivity_L2_child4" name="7.3.2.2: Assess competencies" calledElement="Process_7_3_2_2">
+    <bpmn:callActivity id="CallActivity_L2_child4" name="7.2.3.6: Optimize training" calledElement="Process_7_2_3_6">
       <bpmn:incoming>Flow_child3_to_child4</bpmn:incoming>
       <bpmn:outgoing>Flow_child4_to_child5</bpmn:outgoing>
     </bpmn:callActivity>
-    <bpmn:callActivity id="CallActivity_L2_child5" name="7.4.3.3: Deliver recognition" calledElement="Process_7_4_3_3">
+    <bpmn:callActivity id="CallActivity_L2_child5" name="7.1.3.3: Develop workforce plans" calledElement="Process_7_1_3_3">
       <bpmn:incoming>Flow_child4_to_child5</bpmn:incoming>
       <bpmn:outgoing>Flow_child5_to_child6</bpmn:outgoing>
     </bpmn:callActivity>
-    <bpmn:callActivity id="CallActivity_L2_child6" name="7.4.3.1: Design recognition programs" calledElement="Process_7_4_3_1">
+    <bpmn:callActivity id="CallActivity_L2_child6" name="7.3.3.1: Conduct career discussions" calledElement="Process_7_3_3_1">
       <bpmn:incoming>Flow_child5_to_child6</bpmn:incoming>
       <bpmn:outgoing>Flow_child6_to_child7</bpmn:outgoing>
     </bpmn:callActivity>
-    <bpmn:callActivity id="CallActivity_L2_child7" name="7.4.2.4: Administer payroll" calledElement="Process_7_4_2_4">
+    <bpmn:callActivity id="CallActivity_L2_child7" name="7.4.2.5: Review workforce" calledElement="Process_7_4_2_5">
       <bpmn:incoming>Flow_child6_to_child7</bpmn:incoming>
       <bpmn:outgoing>Flow_child7_to_child8</bpmn:outgoing>
     </bpmn:callActivity>
-    <bpmn:callActivity id="CallActivity_L2_child8" name="7.4.2.1: Design compensation structure" calledElement="Process_7_4_2_1">
+    <bpmn:callActivity id="CallActivity_L2_child8" name="7.2.3.3: Conduct interviews" calledElement="Process_7_2_3_3">
       <bpmn:incoming>Flow_child7_to_child8</bpmn:incoming>
       <bpmn:outgoing>Flow_child8_to_child9</bpmn:outgoing>
     </bpmn:callActivity>
-    <bpmn:callActivity id="CallActivity_L2_child9" name="7.2.4.2: Complete paperwork" calledElement="Process_7_2_4_2">
+    <bpmn:callActivity id="CallActivity_L2_child9" name="7.3.3.4: Support career transitions" calledElement="Process_7_3_3_4">
       <bpmn:incoming>Flow_child8_to_child9</bpmn:incoming>
       <bpmn:outgoing>Flow_child9_to_child10</bpmn:outgoing>
     </bpmn:callActivity>
-    <bpmn:callActivity id="CallActivity_L2_child10" name="7.5.1.1: Identify redeployment opportun..." calledElement="Process_7_5_1_1">
+    <bpmn:callActivity id="CallActivity_L2_child10" name="7.4.1.6: Optimize training" calledElement="Process_7_4_1_6">
       <bpmn:incoming>Flow_child9_to_child10</bpmn:incoming>
       <bpmn:outgoing>Flow_child10_to_child11</bpmn:outgoing>
     </bpmn:callActivity>
-    <bpmn:callActivity id="CallActivity_L2_child11" name="7.2.3.4: Perform background checks" calledElement="Process_7_2_3_4">
+    <bpmn:callActivity id="CallActivity_L2_child11" name="7.3.2.4: Certify competencies" calledElement="Process_7_3_2_4">
       <bpmn:incoming>Flow_child10_to_child11</bpmn:incoming>
       <bpmn:outgoing>Flow_child11_to_child12</bpmn:outgoing>
     </bpmn:callActivity>
-    <bpmn:callActivity id="CallActivity_L2_child12" name="7.2.3.5: Make hiring decisions" calledElement="Process_7_2_3_5">
+    <bpmn:callActivity id="CallActivity_L2_child12" name="7.3.3.5: Review workforce" calledElement="Process_7_3_3_5">
       <bpmn:incoming>Flow_child11_to_child12</bpmn:incoming>
       <bpmn:outgoing>Flow_child12_to_child13</bpmn:outgoing>
     </bpmn:callActivity>
-    <bpmn:callActivity id="CallActivity_L2_child13" name="7.5.3.1: Document performance issues" calledElement="Process_7_5_3_1">
+    <bpmn:callActivity id="CallActivity_L2_child13" name="7.1.2.2: Ensure regulatory compliance" calledElement="Process_7_1_2_2">
       <bpmn:incoming>Flow_child12_to_child13</bpmn:incoming>
       <bpmn:outgoing>Flow_child13_to_child14</bpmn:outgoing>
     </bpmn:callActivity>
-    <bpmn:callActivity id="CallActivity_L2_child14" name="7.4.1.3: Provide feedback" calledElement="Process_7_4_1_3">
+    <bpmn:callActivity id="CallActivity_L2_child14" name="7.2.4.4: Assign to role" calledElement="Process_7_2_4_4">
       <bpmn:incoming>Flow_child13_to_child14</bpmn:incoming>
       <bpmn:outgoing>Flow_child14_to_child15</bpmn:outgoing>
     </bpmn:callActivity>
-    <bpmn:callActivity id="CallActivity_L2_child15" name="7.3.1.3: Provide training" calledElement="Process_7_3_1_3">
+    <bpmn:callActivity id="CallActivity_L2_child15" name="7.3.3.6: Optimize workforce" calledElement="Process_7_3_3_6">
       <bpmn:incoming>Flow_child14_to_child15</bpmn:incoming>
       <bpmn:outgoing>Flow_child15_to_child16</bpmn:outgoing>
     </bpmn:callActivity>
-    <bpmn:callActivity id="CallActivity_L2_child16" name="7.1.2.1: Create HR policies" calledElement="Process_7_1_2_1">
+    <bpmn:callActivity id="CallActivity_L2_child16" name="7.5.2.2: Conduct exit process" calledElement="Process_7_5_2_2">
       <bpmn:incoming>Flow_child15_to_child16</bpmn:incoming>
       <bpmn:outgoing>Flow_child16_to_child17</bpmn:outgoing>
     </bpmn:callActivity>
-    <bpmn:callActivity id="CallActivity_L2_child17" name="7.5.2.2: Conduct exit process" calledElement="Process_7_5_2_2">
+    <bpmn:callActivity id="CallActivity_L2_child17" name="7.1.2.1: Create HR policies" calledElement="Process_7_1_2_1">
       <bpmn:incoming>Flow_child16_to_child17</bpmn:incoming>
       <bpmn:outgoing>Flow_child17_to_child18</bpmn:outgoing>
     </bpmn:callActivity>
-    <bpmn:callActivity id="CallActivity_L2_child18" name="7.4.3.4: Track recognition" calledElement="Process_7_4_3_4">
+    <bpmn:callActivity id="CallActivity_L2_child18" name="7.2.4.2: Complete paperwork" calledElement="Process_7_2_4_2">
       <bpmn:incoming>Flow_child17_to_child18</bpmn:incoming>
       <bpmn:outgoing>Flow_child18_to_child19</bpmn:outgoing>
     </bpmn:callActivity>
-    <bpmn:callActivity id="CallActivity_L2_child19" name="7.2.3.3: Conduct interviews" calledElement="Process_7_2_3_3">
+    <bpmn:callActivity id="CallActivity_L2_child19" name="7.5.1.3: Transition employees" calledElement="Process_7_5_1_3">
       <bpmn:incoming>Flow_child18_to_child19</bpmn:incoming>
       <bpmn:outgoing>Flow_child19_to_child20</bpmn:outgoing>
     </bpmn:callActivity>
-    <bpmn:callActivity id="CallActivity_L2_child20" name="7.2.1.2: Define job requirements" calledElement="Process_7_2_1_2">
+    <bpmn:callActivity id="CallActivity_L2_child20" name="7.5.3.1: Document performance issues" calledElement="Process_7_5_3_1">
       <bpmn:incoming>Flow_child19_to_child20</bpmn:incoming>
       <bpmn:outgoing>Flow_child20_to_child21</bpmn:outgoing>
     </bpmn:callActivity>
-    <bpmn:callActivity id="CallActivity_L2_child21" name="7.4.1.1: Set performance goals" calledElement="Process_7_4_1_1">
+    <bpmn:callActivity id="CallActivity_L2_child21" name="7.2.2.2: Source candidates" calledElement="Process_7_2_2_2">
       <bpmn:incoming>Flow_child20_to_child21</bpmn:incoming>
       <bpmn:outgoing>Flow_child21_to_child22</bpmn:outgoing>
     </bpmn:callActivity>
-    <bpmn:callActivity id="CallActivity_L2_child22" name="7.4.2.3: Make compensation decisions" calledElement="Process_7_4_2_3">
+    <bpmn:callActivity id="CallActivity_L2_child22" name="7.1.3.2: Analyze workforce gaps" calledElement="Process_7_1_3_2">
       <bpmn:incoming>Flow_child21_to_child22</bpmn:incoming>
       <bpmn:outgoing>Flow_child22_to_child23</bpmn:outgoing>
     </bpmn:callActivity>
-    <bpmn:callActivity id="CallActivity_L2_child23" name="7.3.1.2: Create development plans" calledElement="Process_7_3_1_2">
+    <bpmn:callActivity id="CallActivity_L2_child23" name="7.5.3.4: Manage offboarding" calledElement="Process_7_5_3_4">
       <bpmn:incoming>Flow_child22_to_child23</bpmn:incoming>
       <bpmn:outgoing>Flow_child23_to_child24</bpmn:outgoing>
     </bpmn:callActivity>
-    <bpmn:callActivity id="CallActivity_L2_child24" name="7.3.3.4: Support career transitions" calledElement="Process_7_3_3_4">
+    <bpmn:callActivity id="CallActivity_L2_child24" name="7.2.1.6: Optimize compensation" calledElement="Process_7_2_1_6">
       <bpmn:incoming>Flow_child23_to_child24</bpmn:incoming>
       <bpmn:outgoing>Flow_child24_to_child25</bpmn:outgoing>
     </bpmn:callActivity>
-    <bpmn:callActivity id="CallActivity_L2_child25" name="7.1.2.3: Communicate policies" calledElement="Process_7_1_2_3">
+    <bpmn:callActivity id="CallActivity_L2_child25" name="7.2.3.4: Perform background checks" calledElement="Process_7_2_3_4">
       <bpmn:incoming>Flow_child24_to_child25</bpmn:incoming>
       <bpmn:outgoing>Flow_child25_to_child26</bpmn:outgoing>
     </bpmn:callActivity>
-    <bpmn:callActivity id="CallActivity_L2_child26" name="7.2.2.1: Post job openings" calledElement="Process_7_2_2_1">
+    <bpmn:callActivity id="CallActivity_L2_child26" name="7.4.1.1: Set performance goals" calledElement="Process_7_4_1_1">
       <bpmn:incoming>Flow_child25_to_child26</bpmn:incoming>
       <bpmn:outgoing>Flow_child26_to_child27</bpmn:outgoing>
     </bpmn:callActivity>
-    <bpmn:callActivity id="CallActivity_L2_child27" name="7.4.1.4: Conduct performance reviews" calledElement="Process_7_4_1_4">
+    <bpmn:callActivity id="CallActivity_L2_child27" name="7.2.2.3: Build talent pipeline" calledElement="Process_7_2_2_3">
       <bpmn:incoming>Flow_child26_to_child27</bpmn:incoming>
       <bpmn:outgoing>Flow_child27_to_child28</bpmn:outgoing>
     </bpmn:callActivity>
-    <bpmn:callActivity id="CallActivity_L2_child28" name="7.2.3.2: Conduct phone screens" calledElement="Process_7_2_3_2">
+    <bpmn:callActivity id="CallActivity_L2_child28" name="7.4.3.2: Identify recognition opportuni..." calledElement="Process_7_4_3_2">
       <bpmn:incoming>Flow_child27_to_child28</bpmn:incoming>
       <bpmn:outgoing>Flow_child28_to_child29</bpmn:outgoing>
     </bpmn:callActivity>
-    <bpmn:callActivity id="CallActivity_L2_child29" name="7.2.2.3: Build talent pipeline" calledElement="Process_7_2_2_3">
+    <bpmn:callActivity id="CallActivity_L2_child29" name="7.2.3.5: Make hiring decisions" calledElement="Process_7_2_3_5">
       <bpmn:incoming>Flow_child28_to_child29</bpmn:incoming>
       <bpmn:outgoing>Flow_child29_to_child30</bpmn:outgoing>
     </bpmn:callActivity>
-    <bpmn:callActivity id="CallActivity_L2_child30" name="7.3.3.3: Create career plans" calledElement="Process_7_3_3_3">
+    <bpmn:callActivity id="CallActivity_L2_child30" name="7.4.3.1: Design recognition programs" calledElement="Process_7_4_3_1">
       <bpmn:incoming>Flow_child29_to_child30</bpmn:incoming>
       <bpmn:outgoing>Flow_child30_to_child31</bpmn:outgoing>
     </bpmn:callActivity>
-    <bpmn:callActivity id="CallActivity_L2_child31" name="7.2.2.2: Source candidates" calledElement="Process_7_2_2_2">
+    <bpmn:callActivity id="CallActivity_L2_child31" name="7.5.3.2: Conduct termination process" calledElement="Process_7_5_3_2">
       <bpmn:incoming>Flow_child30_to_child31</bpmn:incoming>
       <bpmn:outgoing>Flow_child31_to_child32</bpmn:outgoing>
     </bpmn:callActivity>
-    <bpmn:callActivity id="CallActivity_L2_child32" name="7.1.1.1: Align HR with business strateg..." calledElement="Process_7_1_1_1">
+    <bpmn:callActivity id="CallActivity_L2_child32" name="7.4.2.1: Design compensation structure" calledElement="Process_7_4_2_1">
       <bpmn:incoming>Flow_child31_to_child32</bpmn:incoming>
       <bpmn:outgoing>Flow_child32_to_child33</bpmn:outgoing>
     </bpmn:callActivity>
-    <bpmn:callActivity id="CallActivity_L2_child33" name="7.3.3.2: Identify career paths" calledElement="Process_7_3_3_2">
+    <bpmn:callActivity id="CallActivity_L2_child33" name="7.2.2.4: Engage passive candidates" calledElement="Process_7_2_2_4">
       <bpmn:incoming>Flow_child32_to_child33</bpmn:incoming>
       <bpmn:outgoing>Flow_child33_to_child34</bpmn:outgoing>
     </bpmn:callActivity>
-    <bpmn:callActivity id="CallActivity_L2_child34" name="7.1.1.4: Develop HR roadmap" calledElement="Process_7_1_1_4">
+    <bpmn:callActivity id="CallActivity_L2_child34" name="7.4.1.3: Provide feedback" calledElement="Process_7_4_1_3">
       <bpmn:incoming>Flow_child33_to_child34</bpmn:incoming>
       <bpmn:outgoing>Flow_child34_to_child35</bpmn:outgoing>
     </bpmn:callActivity>
-    <bpmn:callActivity id="CallActivity_L2_child35" name="7.1.1.3: Assess HR capabilities" calledElement="Process_7_1_1_3">
+    <bpmn:callActivity id="CallActivity_L2_child35" name="7.3.3.3: Create career plans" calledElement="Process_7_3_3_3">
       <bpmn:incoming>Flow_child34_to_child35</bpmn:incoming>
       <bpmn:outgoing>Flow_child35_to_child36</bpmn:outgoing>
     </bpmn:callActivity>
-    <bpmn:callActivity id="CallActivity_L2_child36" name="7.5.3.2: Conduct termination process" calledElement="Process_7_5_3_2">
+    <bpmn:callActivity id="CallActivity_L2_child36" name="7.1.1.4: Develop HR roadmap" calledElement="Process_7_1_1_4">
       <bpmn:incoming>Flow_child35_to_child36</bpmn:incoming>
       <bpmn:outgoing>Flow_child36_to_child37</bpmn:outgoing>
     </bpmn:callActivity>
-    <bpmn:callActivity id="CallActivity_L2_child37" name="7.1.3.2: Analyze workforce gaps" calledElement="Process_7_1_3_2">
+    <bpmn:callActivity id="CallActivity_L2_child37" name="7.4.1.2: Monitor performance" calledElement="Process_7_4_1_2">
       <bpmn:incoming>Flow_child36_to_child37</bpmn:incoming>
       <bpmn:outgoing>Flow_child37_to_child38</bpmn:outgoing>
     </bpmn:callActivity>
-    <bpmn:callActivity id="CallActivity_L2_child38" name="7.5.3.3: Complete exit procedures" calledElement="Process_7_5_3_3">
+    <bpmn:callActivity id="CallActivity_L2_child38" name="7.2.1.3: Create job descriptions" calledElement="Process_7_2_1_3">
       <bpmn:incoming>Flow_child37_to_child38</bpmn:incoming>
       <bpmn:outgoing>Flow_child38_to_child39</bpmn:outgoing>
     </bpmn:callActivity>
-    <bpmn:callActivity id="CallActivity_L2_child39" name="7.1.1.2: Define HR objectives" calledElement="Process_7_1_1_2">
+    <bpmn:callActivity id="CallActivity_L2_child39" name="7.4.2.4: Administer payroll" calledElement="Process_7_4_2_4">
       <bpmn:incoming>Flow_child38_to_child39</bpmn:incoming>
       <bpmn:outgoing>Flow_child39_to_child40</bpmn:outgoing>
     </bpmn:callActivity>
-    <bpmn:callActivity id="CallActivity_L2_child40" name="7.5.2.1: Plan for retirements" calledElement="Process_7_5_2_1">
+    <bpmn:callActivity id="CallActivity_L2_child40" name="7.4.3.3: Deliver recognition" calledElement="Process_7_4_3_3">
       <bpmn:incoming>Flow_child39_to_child40</bpmn:incoming>
       <bpmn:outgoing>Flow_child40_to_child41</bpmn:outgoing>
     </bpmn:callActivity>
-    <bpmn:callActivity id="CallActivity_L2_child41" name="7.2.1.1: Identify hiring needs" calledElement="Process_7_2_1_1">
+    <bpmn:callActivity id="CallActivity_L2_child41" name="7.1.2.6: Optimize compensation" calledElement="Process_7_1_2_6">
       <bpmn:incoming>Flow_child40_to_child41</bpmn:incoming>
       <bpmn:outgoing>Flow_child41_to_child42</bpmn:outgoing>
     </bpmn:callActivity>
-    <bpmn:callActivity id="CallActivity_L2_child42" name="7.3.2.1: Define competency models" calledElement="Process_7_3_2_1">
+    <bpmn:callActivity id="CallActivity_L2_child42" name="7.3.2.2: Assess competencies" calledElement="Process_7_3_2_2">
       <bpmn:incoming>Flow_child41_to_child42</bpmn:incoming>
       <bpmn:outgoing>Flow_child42_to_child43</bpmn:outgoing>
     </bpmn:callActivity>
-    <bpmn:callActivity id="CallActivity_L2_child43" name="7.3.1.4: Track development progress" calledElement="Process_7_3_1_4">
+    <bpmn:callActivity id="CallActivity_L2_child43" name="7.2.1.4: Establish hiring criteria" calledElement="Process_7_2_1_4">
       <bpmn:incoming>Flow_child42_to_child43</bpmn:incoming>
       <bpmn:outgoing>Flow_child43_to_child44</bpmn:outgoing>
     </bpmn:callActivity>
-    <bpmn:callActivity id="CallActivity_L2_child44" name="7.2.4.1: Extend offers" calledElement="Process_7_2_4_1">
+    <bpmn:callActivity id="CallActivity_L2_child44" name="7.3.3.2: Identify career paths" calledElement="Process_7_3_3_2">
       <bpmn:incoming>Flow_child43_to_child44</bpmn:incoming>
       <bpmn:outgoing>Flow_child44_to_child45</bpmn:outgoing>
     </bpmn:callActivity>
-    <bpmn:callActivity id="CallActivity_L2_child45" name="7.1.3.3: Develop workforce plans" calledElement="Process_7_1_3_3">
+    <bpmn:callActivity id="CallActivity_L2_child45" name="7.1.1.3: Assess HR capabilities" calledElement="Process_7_1_1_3">
       <bpmn:incoming>Flow_child44_to_child45</bpmn:incoming>
       <bpmn:outgoing>Flow_child45_to_child46</bpmn:outgoing>
     </bpmn:callActivity>
-    <bpmn:callActivity id="CallActivity_L2_child46" name="7.2.4.4: Assign to role" calledElement="Process_7_2_4_4">
+    <bpmn:callActivity id="CallActivity_L2_child46" name="7.5.3.3: Complete exit procedures" calledElement="Process_7_5_3_3">
       <bpmn:incoming>Flow_child45_to_child46</bpmn:incoming>
       <bpmn:outgoing>Flow_child46_to_child47</bpmn:outgoing>
     </bpmn:callActivity>
-    <bpmn:callActivity id="CallActivity_L2_child47" name="7.1.3.4: Monitor workforce metrics" calledElement="Process_7_1_3_4">
+    <bpmn:callActivity id="CallActivity_L2_child47" name="7.2.1.1: Identify hiring needs" calledElement="Process_7_2_1_1">
       <bpmn:incoming>Flow_child46_to_child47</bpmn:incoming>
       <bpmn:outgoing>Flow_child47_to_child48</bpmn:outgoing>
     </bpmn:callActivity>
-    <bpmn:callActivity id="CallActivity_L2_child48" name="7.2.4.3: Conduct orientation" calledElement="Process_7_2_4_3">
+    <bpmn:callActivity id="CallActivity_L2_child48" name="7.3.1.3: Provide training" calledElement="Process_7_3_1_3">
       <bpmn:incoming>Flow_child47_to_child48</bpmn:incoming>
       <bpmn:outgoing>Flow_child48_to_child49</bpmn:outgoing>
     </bpmn:callActivity>
-    <bpmn:callActivity id="CallActivity_L2_child49" name="7.4.1.2: Monitor performance" calledElement="Process_7_4_1_2">
+    <bpmn:callActivity id="CallActivity_L2_child49" name="7.5.2.4: Process retirement benefits" calledElement="Process_7_5_2_4">
       <bpmn:incoming>Flow_child48_to_child49</bpmn:incoming>
       <bpmn:outgoing>Flow_child49_to_child50</bpmn:outgoing>
     </bpmn:callActivity>
-    <bpmn:callActivity id="CallActivity_L2_child50" name="7.2.1.4: Establish hiring criteria" calledElement="Process_7_2_1_4">
+    <bpmn:callActivity id="CallActivity_L2_child50" name="7.2.4.6: Optimize workforce" calledElement="Process_7_2_4_6">
       <bpmn:incoming>Flow_child49_to_child50</bpmn:incoming>
       <bpmn:outgoing>Flow_child50_to_end</bpmn:outgoing>
     </bpmn:callActivity>

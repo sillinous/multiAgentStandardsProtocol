@@ -5,15 +5,17 @@ Level 4 Activity: 2.1.1 - Composite APQC Agent
 APQC Level 4: 2.1.1
 Category: Develop and Manage Products and Services (2.0)
 
-This is a COMPOSITE AGENT that orchestrates 3 child agents.
+This is a COMPOSITE AGENT that orchestrates 5 child agents.
 
 Orchestration Pattern: Sequential Workflow
 Standards: A2A, ANP, ACP, BPP, BDP, BRP, BMP, BCP, BIP
 
 Child Agents:
-  - 2.1.1.2: Establish product development objectives
   - 2.1.1.3: Define product/service roadmap
+  - 2.1.1.5: Review features
   - 2.1.1.1: Define market opportunities
+  - 2.1.1.4: Analyze features
+  - 2.1.1.2: Establish product development objectives
 
 
 Generated: 2025-11-18
@@ -37,16 +39,18 @@ class CompositeAgent_2_1_1:
     """
     Composite Agent for APQC Level 4: 2.1.1
 
-    Orchestrates 3 child agents in a coordinated workflow.
+    Orchestrates 5 child agents in a coordinated workflow.
     """
 
     def __init__(self):
         self.apqc_id = "2.1.1"
         self.level = 4
         self.child_agent_ids = [
-        "2.1.1.2",
         "2.1.1.3",
-        "2.1.1.1"
+        "2.1.1.5",
+        "2.1.1.1",
+        "2.1.1.4",
+        "2.1.1.2"
 ]
         self.logger = logging.getLogger(f"CompositeAgent_2_1_1")
 

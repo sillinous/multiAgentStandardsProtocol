@@ -5,23 +5,23 @@ Level 1 Category: 5 - Composite APQC Agent
 APQC Level 1: 5
 Category: Deliver Services (5.0)
 
-This is a COMPOSITE AGENT that orchestrates 24 child agents.
+This is a COMPOSITE AGENT that orchestrates 42 child agents.
 
 Orchestration Pattern: Sequential Workflow
 Standards: A2A, ANP, ACP, BPP, BDP, BRP, BMP, BCP, BIP
 
 Child Agents:
-  - 5.2.3.3: Obtain customer acknowledgment
-  - 5.1.2.2: Plan resource capacity
-  - 5.2.1.4: Confirm resource availability
-  - 5.2.3.4: Complete service records
-  - 5.1.1.3: Identify improvement opportunities
-  - 5.1.1.4: Develop service roadmap
+  - 5.1.1.5: Review delivery
+  - 5.2.2.3: Allocate equipment/tools
+  - 5.2.1.2: Define service specifications
   - 5.2.2.4: Confirm schedules
+  - 5.2.2.6: Optimize feedback
   - 5.1.2.1: Forecast service demand
-  - 5.2.4.2: Track service metrics
-  - 5.2.4.4: Implement improvements
-  ... and 14 more
+  - 5.3.1.1: Plan feedback
+  - 5.2.1.4: Confirm resource availability
+  - 5.1.1.6: Optimize delivery
+  - 5.2.4.6: Optimize services
+  ... and 32 more
 
 Generated: 2025-11-18
 Version: 3.0.0
@@ -44,37 +44,55 @@ class CompositeAgent_5:
     """
     Composite Agent for APQC Level 1: 5
 
-    Orchestrates 24 child agents in a coordinated workflow.
+    Orchestrates 42 child agents in a coordinated workflow.
     """
 
     def __init__(self):
         self.apqc_id = "5"
         self.level = 1
         self.child_agent_ids = [
-        "5.2.3.3",
-        "5.1.2.2",
-        "5.2.1.4",
-        "5.2.3.4",
-        "5.1.1.3",
-        "5.1.1.4",
-        "5.2.2.4",
-        "5.1.2.1",
-        "5.2.4.2",
-        "5.2.4.4",
-        "5.2.4.1",
+        "5.1.1.5",
         "5.2.2.3",
-        "5.2.2.1",
         "5.2.1.2",
-        "5.2.4.3",
-        "5.2.1.3",
-        "5.2.3.1",
-        "5.1.2.3",
-        "5.1.1.2",
-        "5.2.1.1",
-        "5.2.2.2",
+        "5.2.2.4",
+        "5.2.2.6",
+        "5.1.2.1",
+        "5.3.1.1",
+        "5.2.1.4",
+        "5.1.1.6",
+        "5.2.4.6",
+        "5.2.2.5",
+        "5.3.1.3",
+        "5.1.1.4",
+        "5.2.4.4",
+        "5.1.2.2",
+        "5.3.1.2",
         "5.1.2.4",
+        "5.3.2.2",
+        "5.3.1.4",
+        "5.2.1.3",
+        "5.2.1.6",
+        "5.2.2.1",
         "5.2.3.2",
-        "5.1.1.1"
+        "5.2.2.2",
+        "5.3.2.1",
+        "5.2.4.1",
+        "5.1.2.6",
+        "5.2.1.5",
+        "5.1.1.1",
+        "5.1.2.5",
+        "5.2.3.5",
+        "5.2.3.3",
+        "5.2.3.4",
+        "5.1.1.2",
+        "5.2.3.6",
+        "5.1.1.3",
+        "5.2.3.1",
+        "5.2.4.5",
+        "5.2.4.2",
+        "5.2.1.1",
+        "5.2.4.3",
+        "5.1.2.3"
 ]
         self.logger = logging.getLogger(f"CompositeAgent_5")
 

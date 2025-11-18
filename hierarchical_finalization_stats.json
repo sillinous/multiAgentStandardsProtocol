@@ -1,16 +1,16 @@
 {
   "level_4": {
     "level": 4,
-    "total_composites": 152,
-    "agents_generated": 152,
-    "bpmn_generated": 152,
+    "total_composites": 158,
+    "agents_generated": 158,
+    "bpmn_generated": 158,
     "by_category": {}
   },
   "level_3": {
     "level": 3,
-    "total_composites": 56,
-    "agents_generated": 56,
-    "bpmn_generated": 56,
+    "total_composites": 59,
+    "agents_generated": 59,
+    "bpmn_generated": 59,
     "by_category": {}
   },
   "level_2": {

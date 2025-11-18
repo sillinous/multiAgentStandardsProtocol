@@ -5,16 +5,18 @@ Level 4 Activity: 4.3.3 - Composite APQC Agent
 APQC Level 4: 4.3.3
 Category: Deliver Physical Products (4.0)
 
-This is a COMPOSITE AGENT that orchestrates 4 child agents.
+This is a COMPOSITE AGENT that orchestrates 6 child agents.
 
 Orchestration Pattern: Sequential Workflow
 Standards: A2A, ANP, ACP, BPP, BDP, BRP, BMP, BCP, BIP
 
 Child Agents:
-  - 4.3.3.2: Manage raw materials
-  - 4.3.3.1: Track work-in-process
-  - 4.3.3.3: Control finished goods
+  - 4.3.3.5: Review orders
+  - 4.3.3.6: Optimize orders
   - 4.3.3.4: Optimize inventory levels
+  - 4.3.3.2: Manage raw materials
+  - 4.3.3.3: Control finished goods
+  - 4.3.3.1: Track work-in-process
 
 
 Generated: 2025-11-18
@@ -38,17 +40,19 @@ class CompositeAgent_4_3_3:
     """
     Composite Agent for APQC Level 4: 4.3.3
 
-    Orchestrates 4 child agents in a coordinated workflow.
+    Orchestrates 6 child agents in a coordinated workflow.
     """
 
     def __init__(self):
         self.apqc_id = "4.3.3"
         self.level = 4
         self.child_agent_ids = [
+        "4.3.3.5",
+        "4.3.3.6",
+        "4.3.3.4",
         "4.3.3.2",
-        "4.3.3.1",
         "4.3.3.3",
-        "4.3.3.4"
+        "4.3.3.1"
 ]
         self.logger = logging.getLogger(f"CompositeAgent_4_3_3")
 

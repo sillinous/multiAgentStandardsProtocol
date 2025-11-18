@@ -5,23 +5,23 @@ Level 3 Process: 9.1 - Composite APQC Agent
 APQC Level 3: 9.1
 Category: Manage Financial Resources (9.0)
 
-This is a COMPOSITE AGENT that orchestrates 16 child agents.
+This is a COMPOSITE AGENT that orchestrates 24 child agents.
 
 Orchestration Pattern: Sequential Workflow
 Standards: A2A, ANP, ACP, BPP, BDP, BRP, BMP, BCP, BIP
 
 Child Agents:
+  - 9.1.2.6: Optimize compliance
+  - 9.1.4.3: Report to management
   - 9.1.2.3: Consolidate budgets
-  - 9.1.2.1: Develop budget guidelines
-  - 9.1.1.3: Set financial targets
-  - 9.1.3.1: Track costs
-  - 9.1.2.4: Approve budgets
-  - 9.1.4.2: Analyze financial performance
   - 9.1.1.2: Create financial plans
+  - 9.1.4.1: Prepare financial reports
   - 9.1.4.4: Support decision-making
-  - 9.1.3.2: Allocate costs
-  - 9.1.1.1: Develop financial strategy
-  ... and 6 more
+  - 9.1.3.6: Optimize audits
+  - 9.1.1.3: Set financial targets
+  - 9.1.2.2: Create departmental budgets
+  - 9.1.1.5: Review reporting
+  ... and 14 more
 
 Generated: 2025-11-18
 Version: 3.0.0
@@ -44,29 +44,37 @@ class CompositeAgent_9_1:
     """
     Composite Agent for APQC Level 3: 9.1
 
-    Orchestrates 16 child agents in a coordinated workflow.
+    Orchestrates 24 child agents in a coordinated workflow.
     """
 
     def __init__(self):
         self.apqc_id = "9.1"
         self.level = 3
         self.child_agent_ids = [
-        "9.1.2.3",
-        "9.1.2.1",
-        "9.1.1.3",
-        "9.1.3.1",
-        "9.1.2.4",
-        "9.1.4.2",
-        "9.1.1.2",
-        "9.1.4.4",
-        "9.1.3.2",
-        "9.1.1.1",
-        "9.1.3.4",
+        "9.1.2.6",
         "9.1.4.3",
+        "9.1.2.3",
+        "9.1.1.2",
         "9.1.4.1",
+        "9.1.4.4",
+        "9.1.3.6",
+        "9.1.1.3",
+        "9.1.2.2",
+        "9.1.1.5",
+        "9.1.2.1",
+        "9.1.3.2",
+        "9.1.2.4",
+        "9.1.2.5",
+        "9.1.3.1",
+        "9.1.1.6",
+        "9.1.4.6",
         "9.1.1.4",
-        "9.1.3.3",
-        "9.1.2.2"
+        "9.1.4.2",
+        "9.1.3.5",
+        "9.1.1.1",
+        "9.1.4.5",
+        "9.1.3.4",
+        "9.1.3.3"
 ]
         self.logger = logging.getLogger(f"CompositeAgent_9_1")
 

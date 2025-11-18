@@ -5,23 +5,23 @@ Level 3 Process: 4.4 - Composite APQC Agent
 APQC Level 3: 4.4
 Category: Deliver Physical Products (4.0)
 
-This is a COMPOSITE AGENT that orchestrates 12 child agents.
+This is a COMPOSITE AGENT that orchestrates 14 child agents.
 
 Orchestration Pattern: Sequential Workflow
 Standards: A2A, ANP, ACP, BPP, BDP, BRP, BMP, BCP, BIP
 
 Child Agents:
-  - 4.4.3.3: Track shipments
-  - 4.4.1.3: Prepare shipments
-  - 4.4.3.4: Manage carriers
-  - 4.4.3.2: Schedule deliveries
-  - 4.4.1.1: Plan shipments
-  - 4.4.1.4: Ship products
-  - 4.4.1.2: Select carriers
-  - 4.4.2.4: Ship orders
+  - 4.4.1.5: Review warehouse
+  - 4.4.1.6: Optimize warehouse
   - 4.4.2.2: Store inventory
+  - 4.4.1.2: Select carriers
+  - 4.4.3.4: Manage carriers
+  - 4.4.2.4: Ship orders
+  - 4.4.3.3: Track shipments
   - 4.4.2.3: Pick and pack orders
-  ... and 2 more
+  - 4.4.1.1: Plan shipments
+  - 4.4.2.1: Receive goods
+  ... and 4 more
 
 Generated: 2025-11-18
 Version: 3.0.0
@@ -44,25 +44,27 @@ class CompositeAgent_4_4:
     """
     Composite Agent for APQC Level 3: 4.4
 
-    Orchestrates 12 child agents in a coordinated workflow.
+    Orchestrates 14 child agents in a coordinated workflow.
     """
 
     def __init__(self):
         self.apqc_id = "4.4"
         self.level = 3
         self.child_agent_ids = [
-        "4.4.3.3",
-        "4.4.1.3",
-        "4.4.3.4",
-        "4.4.3.2",
-        "4.4.1.1",
-        "4.4.1.4",
-        "4.4.1.2",
-        "4.4.2.4",
+        "4.4.1.5",
+        "4.4.1.6",
         "4.4.2.2",
+        "4.4.1.2",
+        "4.4.3.4",
+        "4.4.2.4",
+        "4.4.3.3",
         "4.4.2.3",
+        "4.4.1.1",
+        "4.4.2.1",
+        "4.4.1.3",
+        "4.4.1.4",
         "4.4.3.1",
-        "4.4.2.1"
+        "4.4.3.2"
 ]
         self.logger = logging.getLogger(f"CompositeAgent_4_4")
 

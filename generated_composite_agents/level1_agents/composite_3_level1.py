@@ -5,23 +5,23 @@ Level 1 Category: 3 - Composite APQC Agent
 APQC Level 1: 3
 Category: Market and Sell Products and Services (3.0)
 
-This is a COMPOSITE AGENT that orchestrates 49 child agents.
+This is a COMPOSITE AGENT that orchestrates 68 child agents.
 
 Orchestration Pattern: Sequential Workflow
 Standards: A2A, ANP, ACP, BPP, BDP, BRP, BMP, BCP, BIP
 
 Child Agents:
-  - 3.2.1.1: Define value proposition
-  - 3.4.3.4: Close deals
-  - 3.2.3.1: Evaluate channel options
-  - 3.2.3.3: Define channel programs
-  - 3.4.4.3: Identify upsell/cross-sell opportunities
-  - 3.4.1.1: Identify potential customers
-  - 3.4.4.2: Manage relationships
-  - 3.3.3.3: Optimize campaigns
-  - 3.4.4.1: Onboard customers
-  - 3.3.1.2: Set marketing budgets
-  ... and 39 more
+  - 3.3.3.6: Optimize campaigns
+  - 3.4.1.6: Optimize marketing
+  - 3.2.3.6: Optimize marketing
+  - 3.1.1.7: Document prospects
+  - 3.3.1.5: Review sales
+  - 3.4.1.5: Review marketing
+  - 3.2.1.6: Optimize opportunities
+  - 3.2.2.5: Review sales
+  - 3.1.2.5: Review opportunities
+  - 3.4.2.5: Review campaigns
+  ... and 58 more
 
 Generated: 2025-11-18
 Version: 3.0.0
@@ -44,62 +44,81 @@ class CompositeAgent_3:
     """
     Composite Agent for APQC Level 1: 3
 
-    Orchestrates 49 child agents in a coordinated workflow.
+    Orchestrates 68 child agents in a coordinated workflow.
     """
 
     def __init__(self):
         self.apqc_id = "3"
         self.level = 1
         self.child_agent_ids = [
-        "3.2.1.1",
+        "3.3.3.6",
+        "3.4.1.6",
+        "3.2.3.6",
+        "3.1.1.7",
+        "3.3.1.5",
+        "3.4.1.5",
+        "3.2.1.6",
+        "3.2.2.5",
+        "3.1.2.5",
+        "3.4.2.5",
+        "3.2.3.5",
+        "3.2.1.5",
+        "3.2.2.6",
+        "3.3.2.5",
+        "3.3.3.5",
+        "3.1.2.6",
+        "3.3.2.6",
+        "3.3.1.6",
+        "3.1.1.6",
         "3.4.3.4",
+        "3.1.2.4",
+        "3.1.1.3",
+        "3.3.1.1",
+        "3.3.3.3",
+        "3.3.2.4",
+        "3.4.1.1",
+        "3.1.2.2",
+        "3.2.3.4",
+        "3.3.2.2",
+        "3.2.3.2",
+        "3.1.1.1",
         "3.2.3.1",
         "3.2.3.3",
-        "3.4.4.3",
-        "3.4.1.1",
-        "3.4.4.2",
-        "3.3.3.3",
-        "3.4.4.1",
-        "3.3.1.2",
-        "3.3.3.4",
-        "3.2.1.2",
-        "3.2.2.1",
-        "3.4.1.3",
-        "3.1.2.2",
-        "3.1.1.1",
-        "3.3.2.3",
-        "3.2.3.4",
-        "3.2.3.2",
-        "3.4.3.3",
-        "3.1.2.1",
-        "3.2.2.3",
-        "3.1.1.3",
         "3.3.1.4",
-        "3.4.1.2",
-        "3.4.1.4",
+        "3.2.1.1",
         "3.4.2.2",
-        "3.4.2.3",
-        "3.1.2.3",
-        "3.1.1.5",
-        "3.2.2.2",
-        "3.2.1.4",
-        "3.4.4.4",
-        "3.4.3.1",
-        "3.2.2.4",
-        "3.3.1.1",
         "3.2.1.3",
-        "3.3.3.2",
-        "3.3.1.3",
-        "3.3.2.1",
-        "3.4.3.2",
-        "3.1.2.4",
+        "3.4.4.4",
+        "3.1.1.5",
         "3.1.1.4",
+        "3.4.1.4",
+        "3.4.2.3",
+        "3.2.2.2",
+        "3.4.4.1",
+        "3.1.2.1",
+        "3.3.2.3",
         "3.3.3.1",
+        "3.4.3.3",
         "3.4.2.4",
+        "3.2.1.2",
+        "3.3.3.2",
+        "3.4.3.1",
+        "3.4.3.2",
+        "3.4.1.3",
+        "3.3.1.2",
+        "3.2.2.3",
+        "3.4.4.2",
+        "3.1.2.3",
         "3.1.1.2",
-        "3.3.2.2",
-        "3.3.2.4",
-        "3.4.2.1"
+        "3.4.2.1",
+        "3.3.2.1",
+        "3.3.3.4",
+        "3.2.1.4",
+        "3.4.4.3",
+        "3.2.2.1",
+        "3.3.1.3",
+        "3.2.2.4",
+        "3.4.1.2"
 ]
         self.logger = logging.getLogger(f"CompositeAgent_3")
 

@@ -1,0 +1,82 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<bpmn:definitions xmlns:bpmn="http://www.omg.org/spec/BPMN/20100524/MODEL"
+                  xmlns:bpmndi="http://www.omg.org/spec/BPMN/20100524/DI"
+                  xmlns:dc="http://www.omg.org/spec/DD/20100524/DC"
+                  xmlns:di="http://www.omg.org/spec/DD/20100524/DI"
+                  id="Definitions_9_2_3_6"
+                  targetNamespace="http://agentic.apqc.org/bpmn">
+
+  <bpmn:process id="Process_9_2_3_6" name="APQC 9.2.3.6: Optimize controls" isExecutable="true">
+
+    <!-- Start Event -->
+    <bpmn:startEvent id="StartEvent" name="Start">
+      <bpmn:outgoing>Flow_1</bpmn:outgoing>
+    </bpmn:startEvent>
+
+    <!-- Workflow Tasks -->
+
+    <bpmn:task id="Task_9_2_3_6_step_1" name="Step 1: Identify financial requirement">
+      <bpmn:incoming>Flow_1</bpmn:incoming>
+      <bpmn:outgoing>Flow_2</bpmn:outgoing>
+    </bpmn:task>
+    <bpmn:task id="Task_9_2_3_6_step_2" name="Step 2: Gather financial data">
+      <bpmn:incoming>Flow_2</bpmn:incoming>
+      <bpmn:outgoing>Flow_3</bpmn:outgoing>
+    </bpmn:task>
+    <bpmn:task id="Task_9_2_3_6_step_3" name="Step 3: Validate data accuracy">
+      <bpmn:incoming>Flow_3</bpmn:incoming>
+      <bpmn:outgoing>Flow_4</bpmn:outgoing>
+    </bpmn:task>
+    <bpmn:task id="Task_9_2_3_6_step_4" name="Step 4: Perform calculations">
+      <bpmn:incoming>Flow_4</bpmn:incoming>
+      <bpmn:outgoing>Flow_5</bpmn:outgoing>
+    </bpmn:task>
+    <bpmn:task id="Task_9_2_3_6_step_5" name="Step 5: Apply accounting standards">
+      <bpmn:incoming>Flow_5</bpmn:incoming>
+      <bpmn:outgoing>Flow_6</bpmn:outgoing>
+    </bpmn:task>
+    <bpmn:task id="Task_9_2_3_6_step_6" name="Step 6: Record transactions">
+      <bpmn:incoming>Flow_6</bpmn:incoming>
+      <bpmn:outgoing>Flow_7</bpmn:outgoing>
+    </bpmn:task>
+    <bpmn:task id="Task_9_2_3_6_step_7" name="Step 7: Reconcile accounts">
+      <bpmn:incoming>Flow_7</bpmn:incoming>
+      <bpmn:outgoing>Flow_8</bpmn:outgoing>
+    </bpmn:task>
+    <bpmn:task id="Task_9_2_3_6_step_8" name="Step 8: Report results">
+      <bpmn:incoming>Flow_8</bpmn:incoming>
+      <bpmn:outgoing>Flow_9</bpmn:outgoing>
+    </bpmn:task>
+    <bpmn:task id="Task_9_2_3_6_step_9" name="Step 9: Ensure compliance">
+      <bpmn:incoming>Flow_9</bpmn:incoming>
+      <bpmn:outgoing>Flow_10</bpmn:outgoing>
+    </bpmn:task>
+
+    <!-- End Event -->
+    <bpmn:endEvent id="EndEvent" name="End">
+      <bpmn:incoming>Flow_10</bpmn:incoming>
+    </bpmn:endEvent>
+
+    <!-- Sequence Flows -->
+
+    <bpmn:sequenceFlow id="Flow_1" sourceRef="StartEvent" targetRef="Task_9_2_3_6_step_1" />
+    <bpmn:sequenceFlow id="Flow_2" sourceRef="Task_9_2_3_6_step_1" targetRef="Task_9_2_3_6_step_2" />
+    <bpmn:sequenceFlow id="Flow_3" sourceRef="Task_9_2_3_6_step_2" targetRef="Task_9_2_3_6_step_3" />
+    <bpmn:sequenceFlow id="Flow_4" sourceRef="Task_9_2_3_6_step_3" targetRef="Task_9_2_3_6_step_4" />
+    <bpmn:sequenceFlow id="Flow_5" sourceRef="Task_9_2_3_6_step_4" targetRef="Task_9_2_3_6_step_5" />
+    <bpmn:sequenceFlow id="Flow_6" sourceRef="Task_9_2_3_6_step_5" targetRef="Task_9_2_3_6_step_6" />
+    <bpmn:sequenceFlow id="Flow_7" sourceRef="Task_9_2_3_6_step_6" targetRef="Task_9_2_3_6_step_7" />
+    <bpmn:sequenceFlow id="Flow_8" sourceRef="Task_9_2_3_6_step_7" targetRef="Task_9_2_3_6_step_8" />
+    <bpmn:sequenceFlow id="Flow_9" sourceRef="Task_9_2_3_6_step_8" targetRef="Task_9_2_3_6_step_9" />
+    <bpmn:sequenceFlow id="Flow_10" sourceRef="Task_9_2_3_6_step_9" targetRef="EndEvent" />
+
+  </bpmn:process>
+
+  <!-- Diagram Metadata -->
+  <bpmndi:BPMNDiagram id="BPMNDiagram_9_2_3_6">
+    <bpmndi:BPMNPlane id="BPMNPlane_9_2_3_6" bpmnElement="Process_9_2_3_6">
+      <!-- Visual layout information would go here -->
+    </bpmndi:BPMNPlane>
+  </bpmndi:BPMNDiagram>
+
+</bpmn:definitions>

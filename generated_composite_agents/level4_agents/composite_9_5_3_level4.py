@@ -11,10 +11,10 @@ Orchestration Pattern: Sequential Workflow
 Standards: A2A, ANP, ACP, BPP, BDP, BRP, BMP, BCP, BIP
 
 Child Agents:
-  - 9.5.3.1: Generate paychecks
   - 9.5.3.4: Remit taxes and deductions
-  - 9.5.3.2: Execute direct deposits
   - 9.5.3.3: Distribute pay statements
+  - 9.5.3.1: Generate paychecks
+  - 9.5.3.2: Execute direct deposits
 
 
 Generated: 2025-11-18
@@ -45,10 +45,10 @@ class CompositeAgent_9_5_3:
         self.apqc_id = "9.5.3"
         self.level = 4
         self.child_agent_ids = [
-        "9.5.3.1",
         "9.5.3.4",
-        "9.5.3.2",
-        "9.5.3.3"
+        "9.5.3.3",
+        "9.5.3.1",
+        "9.5.3.2"
 ]
         self.logger = logging.getLogger(f"CompositeAgent_9_5_3")
 

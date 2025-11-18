@@ -5,23 +5,23 @@ Level 3 Process: 7.1 - Composite APQC Agent
 APQC Level 3: 7.1
 Category: Manage Human Capital (7.0)
 
-This is a COMPOSITE AGENT that orchestrates 12 child agents.
+This is a COMPOSITE AGENT that orchestrates 18 child agents.
 
 Orchestration Pattern: Sequential Workflow
 Standards: A2A, ANP, ACP, BPP, BDP, BRP, BMP, BCP, BIP
 
 Child Agents:
-  - 7.1.2.1: Create HR policies
   - 7.1.2.3: Communicate policies
-  - 7.1.1.1: Align HR with business strategy
-  - 7.1.1.4: Develop HR roadmap
-  - 7.1.1.3: Assess HR capabilities
-  - 7.1.3.2: Analyze workforce gaps
-  - 7.1.1.2: Define HR objectives
   - 7.1.3.3: Develop workforce plans
-  - 7.1.3.4: Monitor workforce metrics
-  - 7.1.2.4: Monitor policy adherence
-  ... and 2 more
+  - 7.1.2.2: Ensure regulatory compliance
+  - 7.1.2.1: Create HR policies
+  - 7.1.3.2: Analyze workforce gaps
+  - 7.1.1.4: Develop HR roadmap
+  - 7.1.2.6: Optimize compensation
+  - 7.1.1.3: Assess HR capabilities
+  - 7.1.1.5: Review performance
+  - 7.1.1.2: Define HR objectives
+  ... and 8 more
 
 Generated: 2025-11-18
 Version: 3.0.0
@@ -44,25 +44,31 @@ class CompositeAgent_7_1:
     """
     Composite Agent for APQC Level 3: 7.1
 
-    Orchestrates 12 child agents in a coordinated workflow.
+    Orchestrates 18 child agents in a coordinated workflow.
     """
 
     def __init__(self):
         self.apqc_id = "7.1"
         self.level = 3
         self.child_agent_ids = [
-        "7.1.2.1",
         "7.1.2.3",
-        "7.1.1.1",
-        "7.1.1.4",
-        "7.1.1.3",
-        "7.1.3.2",
-        "7.1.1.2",
         "7.1.3.3",
-        "7.1.3.4",
+        "7.1.2.2",
+        "7.1.2.1",
+        "7.1.3.2",
+        "7.1.1.4",
+        "7.1.2.6",
+        "7.1.1.3",
+        "7.1.1.5",
+        "7.1.1.2",
+        "7.1.3.5",
+        "7.1.3.6",
+        "7.1.1.6",
+        "7.1.2.5",
         "7.1.2.4",
         "7.1.3.1",
-        "7.1.2.2"
+        "7.1.3.4",
+        "7.1.1.1"
 ]
         self.logger = logging.getLogger(f"CompositeAgent_7_1")
 

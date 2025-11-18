@@ -5,23 +5,23 @@ Level 2 ProcessGroup: 7.0 - Composite APQC Agent
 APQC Level 2: 7.0
 Category: Manage Human Capital (7.0)
 
-This is a COMPOSITE AGENT that orchestrates 65 child agents.
+This is a COMPOSITE AGENT that orchestrates 88 child agents.
 
 Orchestration Pattern: Sequential Workflow
 Standards: A2A, ANP, ACP, BPP, BDP, BRP, BMP, BCP, BIP
 
 Child Agents:
+  - 7.1.2.3: Communicate policies
   - 7.3.1.1: Assess development needs
-  - 7.2.1.3: Create job descriptions
-  - 7.4.3.2: Identify recognition opportunities
-  - 7.3.2.2: Assess competencies
-  - 7.4.3.3: Deliver recognition
-  - 7.4.3.1: Design recognition programs
-  - 7.4.2.4: Administer payroll
-  - 7.4.2.1: Design compensation structure
-  - 7.2.4.2: Complete paperwork
-  - 7.5.1.1: Identify redeployment opportunities
-  ... and 55 more
+  - 7.2.4.1: Extend offers
+  - 7.2.3.6: Optimize training
+  - 7.1.3.3: Develop workforce plans
+  - 7.3.3.1: Conduct career discussions
+  - 7.4.2.5: Review workforce
+  - 7.2.3.3: Conduct interviews
+  - 7.3.3.4: Support career transitions
+  - 7.4.1.6: Optimize training
+  ... and 78 more
 
 Generated: 2025-11-18
 Version: 3.0.0
@@ -44,78 +44,101 @@ class CompositeAgent_7_0:
     """
     Composite Agent for APQC Level 2: 7.0
 
-    Orchestrates 65 child agents in a coordinated workflow.
+    Orchestrates 88 child agents in a coordinated workflow.
     """
 
     def __init__(self):
         self.apqc_id = "7.0"
         self.level = 2
         self.child_agent_ids = [
-        "7.3.1.1",
-        "7.2.1.3",
-        "7.4.3.2",
-        "7.3.2.2",
-        "7.4.3.3",
-        "7.4.3.1",
-        "7.4.2.4",
-        "7.4.2.1",
-        "7.2.4.2",
-        "7.5.1.1",
-        "7.2.3.4",
-        "7.2.3.5",
-        "7.5.3.1",
-        "7.4.1.3",
-        "7.3.1.3",
-        "7.1.2.1",
-        "7.5.2.2",
-        "7.4.3.4",
-        "7.2.3.3",
-        "7.2.1.2",
-        "7.4.1.1",
-        "7.4.2.3",
-        "7.3.1.2",
-        "7.3.3.4",
         "7.1.2.3",
-        "7.2.2.1",
-        "7.4.1.4",
-        "7.2.3.2",
-        "7.2.2.3",
-        "7.3.3.3",
+        "7.3.1.1",
+        "7.2.4.1",
+        "7.2.3.6",
+        "7.1.3.3",
+        "7.3.3.1",
+        "7.4.2.5",
+        "7.2.3.3",
+        "7.3.3.4",
+        "7.4.1.6",
+        "7.3.2.4",
+        "7.3.3.5",
+        "7.1.2.2",
+        "7.2.4.4",
+        "7.3.3.6",
+        "7.5.2.2",
+        "7.1.2.1",
+        "7.2.4.2",
+        "7.5.1.3",
+        "7.5.3.1",
         "7.2.2.2",
-        "7.1.1.1",
-        "7.3.3.2",
-        "7.1.1.4",
-        "7.1.1.3",
-        "7.5.3.2",
         "7.1.3.2",
+        "7.5.3.4",
+        "7.2.1.6",
+        "7.2.3.4",
+        "7.4.1.1",
+        "7.2.2.3",
+        "7.4.3.2",
+        "7.2.3.5",
+        "7.4.3.1",
+        "7.5.3.2",
+        "7.4.2.1",
+        "7.2.2.4",
+        "7.4.1.3",
+        "7.3.3.3",
+        "7.1.1.4",
+        "7.4.1.2",
+        "7.2.1.3",
+        "7.4.2.4",
+        "7.4.3.3",
+        "7.1.2.6",
+        "7.3.2.2",
+        "7.2.1.4",
+        "7.3.3.2",
+        "7.1.1.3",
         "7.5.3.3",
+        "7.2.1.1",
+        "7.3.1.3",
+        "7.5.2.4",
+        "7.2.4.6",
+        "7.1.1.5",
+        "7.3.1.5",
         "7.1.1.2",
         "7.5.2.1",
-        "7.2.1.1",
-        "7.3.2.1",
-        "7.3.1.4",
-        "7.2.4.1",
-        "7.1.3.3",
-        "7.2.4.4",
-        "7.1.3.4",
-        "7.2.4.3",
-        "7.4.1.2",
-        "7.2.1.4",
-        "7.5.1.3",
-        "7.5.1.2",
-        "7.5.1.4",
-        "7.3.2.4",
-        "7.1.2.4",
-        "7.5.2.3",
-        "7.5.2.4",
-        "7.2.2.4",
-        "7.2.3.1",
-        "7.1.3.1",
-        "7.1.2.2",
+        "7.1.3.5",
+        "7.2.4.5",
+        "7.2.3.7",
+        "7.1.3.6",
+        "7.3.1.6",
+        "7.3.1.2",
+        "7.4.2.3",
+        "7.5.1.1",
         "7.4.2.2",
-        "7.5.3.4",
+        "7.1.1.6",
         "7.3.2.3",
-        "7.3.3.1"
+        "7.3.2.1",
+        "7.2.3.1",
+        "7.4.1.5",
+        "7.4.3.4",
+        "7.5.1.4",
+        "7.2.1.5",
+        "7.2.4.3",
+        "7.1.2.5",
+        "7.2.2.1",
+        "7.2.1.2",
+        "7.5.2.3",
+        "7.2.2.6",
+        "7.2.2.5",
+        "7.2.3.2",
+        "7.3.1.4",
+        "7.5.1.2",
+        "7.1.2.4",
+        "7.1.3.1",
+        "7.1.3.4",
+        "7.3.2.6",
+        "7.3.2.5",
+        "7.1.1.1",
+        "7.4.1.4"
 ]
         self.logger = logging.getLogger(f"CompositeAgent_7_0")
 

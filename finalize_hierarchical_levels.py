@@ -80,21 +80,35 @@ def scan_level5_agents(base_dir: str = "generated_agents_v2") -> List[AgentRefer
                     with open(file_path, 'r', encoding='utf-8') as f:
                         content = f.read()
 
-                    # Extract APQC ID
-                    apqc_match = re.search(r'APQC Task:\s+([\d.]+)\s+-\s+(.+)', content)
+                    # Extract APQC ID - handle both "APQC Task: X.X.X.X - Name" and "APQC Task: X.X.X.X\nName: ..."
+                    apqc_match = re.search(r'APQC Task:\s+([\d.]+)(?:\s+-\s+(.+))?', content)
                     if not apqc_match:
                         continue
 
                     apqc_id = apqc_match.group(1)
-                    apqc_name = apqc_match.group(2).strip()
+                    apqc_name = apqc_match.group(2).strip() if apqc_match.group(2) else None
 
-                    # Extract category
-                    category_match = re.search(r'Category:\s+([\d.]+)\s+-\s+(.+)', content)
+                    # If no name in APQC Task line, look for "Name:" line
+                    if not apqc_name:
+                        name_match = re.search(r'Name:\s+(.+)', content)
+                        if name_match:
+                            apqc_name = name_match.group(1).strip()
+                        else:
+                            apqc_name = "Unknown Task"
+
+                    # Extract category - handle both formats
+                    category_match = re.search(r'Category:\s+(?:(\d+(?:\.\d+)?)\s+-\s+)?(.+?)(?:\n|$)', content)
                     if not category_match:
                         continue
 
-                    category_id = category_match.group(1)
-                    category_name = category_match.group(2).strip()
+                    # Category could be just name or "X.X - Name"
+                    if category_match.group(1):
+                        category_id = category_match.group(1)
+                        category_name = category_match.group(2).strip()
+                    else:
+                        # Just category name, extract ID from APQC ID
+                        category_name = category_match.group(2).strip()
+                        category_id = apqc_id.split('.')[0] + '.0'
 
                     parsed = parse_apqc_id(apqc_id)
 

@@ -5,23 +5,23 @@ Level 3 Process: 3.4 - Composite APQC Agent
 APQC Level 3: 3.4
 Category: Market and Sell Products and Services (3.0)
 
-This is a COMPOSITE AGENT that orchestrates 16 child agents.
+This is a COMPOSITE AGENT that orchestrates 19 child agents.
 
 Orchestration Pattern: Sequential Workflow
 Standards: A2A, ANP, ACP, BPP, BDP, BRP, BMP, BCP, BIP
 
 Child Agents:
+  - 3.4.1.6: Optimize marketing
+  - 3.4.1.5: Review marketing
+  - 3.4.2.5: Review campaigns
   - 3.4.3.4: Close deals
-  - 3.4.4.3: Identify upsell/cross-sell opportunities
   - 3.4.1.1: Identify potential customers
-  - 3.4.4.2: Manage relationships
-  - 3.4.4.1: Onboard customers
-  - 3.4.1.3: Prioritize leads
-  - 3.4.3.3: Finalize contracts
-  - 3.4.1.2: Qualify leads
-  - 3.4.1.4: Distribute leads to sales
   - 3.4.2.2: Develop solutions
-  ... and 6 more
+  - 3.4.4.4: Ensure customer success
+  - 3.4.1.4: Distribute leads to sales
+  - 3.4.2.3: Create proposals
+  - 3.4.4.1: Onboard customers
+  ... and 9 more
 
 Generated: 2025-11-18
 Version: 3.0.0
@@ -44,29 +44,32 @@ class CompositeAgent_3_4:
     """
     Composite Agent for APQC Level 3: 3.4
 
-    Orchestrates 16 child agents in a coordinated workflow.
+    Orchestrates 19 child agents in a coordinated workflow.
     """
 
     def __init__(self):
         self.apqc_id = "3.4"
         self.level = 3
         self.child_agent_ids = [
+        "3.4.1.6",
+        "3.4.1.5",
+        "3.4.2.5",
         "3.4.3.4",
-        "3.4.4.3",
         "3.4.1.1",
-        "3.4.4.2",
-        "3.4.4.1",
-        "3.4.1.3",
-        "3.4.3.3",
-        "3.4.1.2",
-        "3.4.1.4",
         "3.4.2.2",
-        "3.4.2.3",
         "3.4.4.4",
+        "3.4.1.4",
+        "3.4.2.3",
+        "3.4.4.1",
+        "3.4.3.3",
+        "3.4.2.4",
         "3.4.3.1",
         "3.4.3.2",
-        "3.4.2.4",
-        "3.4.2.1"
+        "3.4.1.3",
+        "3.4.4.2",
+        "3.4.2.1",
+        "3.4.4.3",
+        "3.4.1.2"
 ]
         self.logger = logging.getLogger(f"CompositeAgent_3_4")
 

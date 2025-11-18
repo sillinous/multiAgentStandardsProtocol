@@ -5,16 +5,18 @@ Level 4 Activity: 8.5.1 - Composite APQC Agent
 APQC Level 4: 8.5.1
 Category: Manage Information Technology (8.0)
 
-This is a COMPOSITE AGENT that orchestrates 4 child agents.
+This is a COMPOSITE AGENT that orchestrates 6 child agents.
 
 Orchestration Pattern: Sequential Workflow
 Standards: A2A, ANP, ACP, BPP, BDP, BRP, BMP, BCP, BIP
 
 Child Agents:
   - 8.5.1.3: Manage storage
+  - 8.5.1.1: Manage servers
+  - 8.5.1.5: Review systems
+  - 8.5.1.6: Optimize systems
   - 8.5.1.4: Manage cloud services
   - 8.5.1.2: Manage networks
-  - 8.5.1.1: Manage servers
 
 
 Generated: 2025-11-18
@@ -38,7 +40,7 @@ class CompositeAgent_8_5_1:
     """
     Composite Agent for APQC Level 4: 8.5.1
 
-    Orchestrates 4 child agents in a coordinated workflow.
+    Orchestrates 6 child agents in a coordinated workflow.
     """
 
     def __init__(self):
@@ -46,9 +48,11 @@ class CompositeAgent_8_5_1:
         self.level = 4
         self.child_agent_ids = [
         "8.5.1.3",
+        "8.5.1.1",
+        "8.5.1.5",
+        "8.5.1.6",
         "8.5.1.4",
-        "8.5.1.2",
-        "8.5.1.1"
+        "8.5.1.2"
 ]
         self.logger = logging.getLogger(f"CompositeAgent_8_5_1")
 

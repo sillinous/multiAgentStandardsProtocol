@@ -11,14 +11,14 @@ Orchestration Pattern: Sequential Workflow
 Standards: A2A, ANP, ACP, BPP, BDP, BRP, BMP, BCP, BIP
 
 Child Agents:
-  - 9.8.2.2: Eliminate intercompany transactions
-  - 9.8.2.4: Report consolidated financials
   - 9.8.1.4: Close accounting period
-  - 9.8.1.1: Perform close activities
-  - 9.8.1.3: Reconcile accounts
+  - 9.8.2.2: Eliminate intercompany transactions
   - 9.8.2.3: Consolidate results
-  - 9.8.2.1: Collect subsidiary data
+  - 9.8.2.4: Report consolidated financials
   - 9.8.1.2: Record adjustments
+  - 9.8.1.3: Reconcile accounts
+  - 9.8.2.1: Collect subsidiary data
+  - 9.8.1.1: Perform close activities
 
 
 Generated: 2025-11-18
@@ -49,14 +49,14 @@ class CompositeAgent_9_8:
         self.apqc_id = "9.8"
         self.level = 3
         self.child_agent_ids = [
-        "9.8.2.2",
-        "9.8.2.4",
         "9.8.1.4",
-        "9.8.1.1",
-        "9.8.1.3",
+        "9.8.2.2",
         "9.8.2.3",
+        "9.8.2.4",
+        "9.8.1.2",
+        "9.8.1.3",
         "9.8.2.1",
-        "9.8.1.2"
+        "9.8.1.1"
 ]
         self.logger = logging.getLogger(f"CompositeAgent_9_8")
 

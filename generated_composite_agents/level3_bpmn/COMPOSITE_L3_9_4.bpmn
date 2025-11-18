@@ -6,77 +6,107 @@ Level 3 Composite Process
 Manage Financial Resources
 APQC ID: 9.4
 
-Orchestrates 12 child agents:
-  1. 9.4.1.3: Record acquisitions
-  2. 9.4.1.1: Evaluate capital requests
-  3. 9.4.3.1: Identify disposal candidates
-  4. 9.4.2.2: Calculate depreciation
-  5. 9.4.2.3: Maintain asset records
-  6. 9.4.2.1: Track assets
-  7. 9.4.3.2: Approve disposals
-  8. 9.4.3.4: Record disposal transactions
-  9. 9.4.1.4: Capitalize assets
-  10. 9.4.2.4: Perform impairment tests
-  11. 9.4.1.2: Approve purchases
+Orchestrates 18 child agents:
+  1. 9.4.3.5: Review transactions
+  2. 9.4.2.5: Review budgets
+  3. 9.4.1.5: Review controls
+  4. 9.4.1.4: Capitalize assets
+  5. 9.4.1.3: Record acquisitions
+  6. 9.4.3.4: Record disposal transactions
+  7. 9.4.1.2: Approve purchases
+  8. 9.4.2.4: Perform impairment tests
+  9. 9.4.1.6: Optimize controls
+  10. 9.4.2.3: Maintain asset records
+  11. 9.4.2.6: Optimize budgets
   12. 9.4.3.3: Execute disposals
+  13. 9.4.3.2: Approve disposals
+  14. 9.4.1.1: Evaluate capital requests
+  15. 9.4.3.1: Identify disposal candidates
+  16. 9.4.3.6: Optimize transactions
+  17. 9.4.2.1: Track assets
+  18. 9.4.2.2: Calculate depreciation
 
 
 Orchestration Pattern: Sequential Workflow (Pipeline)
 Standards: BPMN 2.0, A2A Protocol
 
-Generated: 2025-11-18T00:44:42.626614
+Generated: 2025-11-18T01:11:36.753921
 Status: Production Ready
 </bpmn:documentation>
     <bpmn:startEvent id="Start_L3_9_4" name="Start Composite">
       <bpmn:outgoing>Flow_start_to_child1</bpmn:outgoing>
     </bpmn:startEvent>
-    <bpmn:callActivity id="CallActivity_L3_child1" name="9.4.1.3: Record acquisitions" calledElement="Process_9_4_1_3">
+    <bpmn:callActivity id="CallActivity_L3_child1" name="9.4.3.5: Review transactions" calledElement="Process_9_4_3_5">
       <bpmn:incoming>Flow_start_to_child1</bpmn:incoming>
       <bpmn:outgoing>Flow_child1_to_child2</bpmn:outgoing>
     </bpmn:callActivity>
-    <bpmn:callActivity id="CallActivity_L3_child2" name="9.4.1.1: Evaluate capital requests" calledElement="Process_9_4_1_1">
+    <bpmn:callActivity id="CallActivity_L3_child2" name="9.4.2.5: Review budgets" calledElement="Process_9_4_2_5">
       <bpmn:incoming>Flow_child1_to_child2</bpmn:incoming>
       <bpmn:outgoing>Flow_child2_to_child3</bpmn:outgoing>
     </bpmn:callActivity>
-    <bpmn:callActivity id="CallActivity_L3_child3" name="9.4.3.1: Identify disposal candidates" calledElement="Process_9_4_3_1">
+    <bpmn:callActivity id="CallActivity_L3_child3" name="9.4.1.5: Review controls" calledElement="Process_9_4_1_5">
       <bpmn:incoming>Flow_child2_to_child3</bpmn:incoming>
       <bpmn:outgoing>Flow_child3_to_child4</bpmn:outgoing>
     </bpmn:callActivity>
-    <bpmn:callActivity id="CallActivity_L3_child4" name="9.4.2.2: Calculate depreciation" calledElement="Process_9_4_2_2">
+    <bpmn:callActivity id="CallActivity_L3_child4" name="9.4.1.4: Capitalize assets" calledElement="Process_9_4_1_4">
       <bpmn:incoming>Flow_child3_to_child4</bpmn:incoming>
       <bpmn:outgoing>Flow_child4_to_child5</bpmn:outgoing>
     </bpmn:callActivity>
-    <bpmn:callActivity id="CallActivity_L3_child5" name="9.4.2.3: Maintain asset records" calledElement="Process_9_4_2_3">
+    <bpmn:callActivity id="CallActivity_L3_child5" name="9.4.1.3: Record acquisitions" calledElement="Process_9_4_1_3">
       <bpmn:incoming>Flow_child4_to_child5</bpmn:incoming>
       <bpmn:outgoing>Flow_child5_to_child6</bpmn:outgoing>
     </bpmn:callActivity>
-    <bpmn:callActivity id="CallActivity_L3_child6" name="9.4.2.1: Track assets" calledElement="Process_9_4_2_1">
+    <bpmn:callActivity id="CallActivity_L3_child6" name="9.4.3.4: Record disposal transactions" calledElement="Process_9_4_3_4">
       <bpmn:incoming>Flow_child5_to_child6</bpmn:incoming>
       <bpmn:outgoing>Flow_child6_to_child7</bpmn:outgoing>
     </bpmn:callActivity>
-    <bpmn:callActivity id="CallActivity_L3_child7" name="9.4.3.2: Approve disposals" calledElement="Process_9_4_3_2">
+    <bpmn:callActivity id="CallActivity_L3_child7" name="9.4.1.2: Approve purchases" calledElement="Process_9_4_1_2">
       <bpmn:incoming>Flow_child6_to_child7</bpmn:incoming>
       <bpmn:outgoing>Flow_child7_to_child8</bpmn:outgoing>
     </bpmn:callActivity>
-    <bpmn:callActivity id="CallActivity_L3_child8" name="9.4.3.4: Record disposal transactions" calledElement="Process_9_4_3_4">
+    <bpmn:callActivity id="CallActivity_L3_child8" name="9.4.2.4: Perform impairment tests" calledElement="Process_9_4_2_4">
       <bpmn:incoming>Flow_child7_to_child8</bpmn:incoming>
       <bpmn:outgoing>Flow_child8_to_child9</bpmn:outgoing>
     </bpmn:callActivity>
-    <bpmn:callActivity id="CallActivity_L3_child9" name="9.4.1.4: Capitalize assets" calledElement="Process_9_4_1_4">
+    <bpmn:callActivity id="CallActivity_L3_child9" name="9.4.1.6: Optimize controls" calledElement="Process_9_4_1_6">
       <bpmn:incoming>Flow_child8_to_child9</bpmn:incoming>
       <bpmn:outgoing>Flow_child9_to_child10</bpmn:outgoing>
     </bpmn:callActivity>
-    <bpmn:callActivity id="CallActivity_L3_child10" name="9.4.2.4: Perform impairment tests" calledElement="Process_9_4_2_4">
+    <bpmn:callActivity id="CallActivity_L3_child10" name="9.4.2.3: Maintain asset records" calledElement="Process_9_4_2_3">
       <bpmn:incoming>Flow_child9_to_child10</bpmn:incoming>
       <bpmn:outgoing>Flow_child10_to_child11</bpmn:outgoing>
     </bpmn:callActivity>
-    <bpmn:callActivity id="CallActivity_L3_child11" name="9.4.1.2: Approve purchases" calledElement="Process_9_4_1_2">
+    <bpmn:callActivity id="CallActivity_L3_child11" name="9.4.2.6: Optimize budgets" calledElement="Process_9_4_2_6">
       <bpmn:incoming>Flow_child10_to_child11</bpmn:incoming>
       <bpmn:outgoing>Flow_child11_to_child12</bpmn:outgoing>
     </bpmn:callActivity>
     <bpmn:callActivity id="CallActivity_L3_child12" name="9.4.3.3: Execute disposals" calledElement="Process_9_4_3_3">
       <bpmn:incoming>Flow_child11_to_child12</bpmn:incoming>
-      <bpmn:outgoing>Flow_child12_to_end</bpmn:outgoing>
+      <bpmn:outgoing>Flow_child12_to_child13</bpmn:outgoing>
+    </bpmn:callActivity>
+    <bpmn:callActivity id="CallActivity_L3_child13" name="9.4.3.2: Approve disposals" calledElement="Process_9_4_3_2">
+      <bpmn:incoming>Flow_child12_to_child13</bpmn:incoming>
+      <bpmn:outgoing>Flow_child13_to_child14</bpmn:outgoing>
+    </bpmn:callActivity>
+    <bpmn:callActivity id="CallActivity_L3_child14" name="9.4.1.1: Evaluate capital requests" calledElement="Process_9_4_1_1">
+      <bpmn:incoming>Flow_child13_to_child14</bpmn:incoming>
+      <bpmn:outgoing>Flow_child14_to_child15</bpmn:outgoing>
+    </bpmn:callActivity>
+    <bpmn:callActivity id="CallActivity_L3_child15" name="9.4.3.1: Identify disposal candidates" calledElement="Process_9_4_3_1">
+      <bpmn:incoming>Flow_child14_to_child15</bpmn:incoming>
+      <bpmn:outgoing>Flow_child15_to_child16</bpmn:outgoing>
+    </bpmn:callActivity>
+    <bpmn:callActivity id="CallActivity_L3_child16" name="9.4.3.6: Optimize transactions" calledElement="Process_9_4_3_6">
+      <bpmn:incoming>Flow_child15_to_child16</bpmn:incoming>
+      <bpmn:outgoing>Flow_child16_to_child17</bpmn:outgoing>
+    </bpmn:callActivity>
+    <bpmn:callActivity id="CallActivity_L3_child17" name="9.4.2.1: Track assets" calledElement="Process_9_4_2_1">
+      <bpmn:incoming>Flow_child16_to_child17</bpmn:incoming>
+      <bpmn:outgoing>Flow_child17_to_child18</bpmn:outgoing>
+    </bpmn:callActivity>
+    <bpmn:callActivity id="CallActivity_L3_child18" name="9.4.2.2: Calculate depreciation" calledElement="Process_9_4_2_2">
+      <bpmn:incoming>Flow_child17_to_child18</bpmn:incoming>
+      <bpmn:outgoing>Flow_child18_to_end</bpmn:outgoing>
     </bpmn:callActivity>
     <bpmn:sequenceFlow id="Flow_start_to_child1" sourceRef="Start_L3_9_4" targetRef="CallActivity_L3_child1" />
     <bpmn:sequenceFlow id="Flow_child1_to_child2" sourceRef="CallActivity_L3_child1" targetRef="CallActivity_L3_child2" />
@@ -90,9 +120,15 @@ Status: Production Ready
     <bpmn:sequenceFlow id="Flow_child9_to_child10" sourceRef="CallActivity_L3_child9" targetRef="CallActivity_L3_child10" />
     <bpmn:sequenceFlow id="Flow_child10_to_child11" sourceRef="CallActivity_L3_child10" targetRef="CallActivity_L3_child11" />
     <bpmn:sequenceFlow id="Flow_child11_to_child12" sourceRef="CallActivity_L3_child11" targetRef="CallActivity_L3_child12" />
-    <bpmn:sequenceFlow id="Flow_child12_to_end" sourceRef="CallActivity_L3_child12" targetRef="End_L3_9_4" />
+    <bpmn:sequenceFlow id="Flow_child12_to_child13" sourceRef="CallActivity_L3_child12" targetRef="CallActivity_L3_child13" />
+    <bpmn:sequenceFlow id="Flow_child13_to_child14" sourceRef="CallActivity_L3_child13" targetRef="CallActivity_L3_child14" />
+    <bpmn:sequenceFlow id="Flow_child14_to_child15" sourceRef="CallActivity_L3_child14" targetRef="CallActivity_L3_child15" />
+    <bpmn:sequenceFlow id="Flow_child15_to_child16" sourceRef="CallActivity_L3_child15" targetRef="CallActivity_L3_child16" />
+    <bpmn:sequenceFlow id="Flow_child16_to_child17" sourceRef="CallActivity_L3_child16" targetRef="CallActivity_L3_child17" />
+    <bpmn:sequenceFlow id="Flow_child17_to_child18" sourceRef="CallActivity_L3_child17" targetRef="CallActivity_L3_child18" />
+    <bpmn:sequenceFlow id="Flow_child18_to_end" sourceRef="CallActivity_L3_child18" targetRef="End_L3_9_4" />
     <bpmn:endEvent id="End_L3_9_4" name="Composite Complete">
-      <bpmn:incoming>Flow_child12_to_end</bpmn:incoming>
+      <bpmn:incoming>Flow_child18_to_end</bpmn:incoming>
     </bpmn:endEvent>
   </bpmn:process>
   <bpmndi:BPMNDiagram id="Diagram_L3_9_4">
@@ -136,8 +172,26 @@ Status: Production Ready
       <bpmndi:BPMNShape id="Shape_CallActivity_L3_child12" bpmnElement="CallActivity_L3_child12">
         <dc:Bounds x="100" y="1230" width="150" height="80" />
       </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Shape_CallActivity_L3_child13" bpmnElement="CallActivity_L3_child13">
+        <dc:Bounds x="100" y="1330" width="150" height="80" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Shape_CallActivity_L3_child14" bpmnElement="CallActivity_L3_child14">
+        <dc:Bounds x="100" y="1430" width="150" height="80" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Shape_CallActivity_L3_child15" bpmnElement="CallActivity_L3_child15">
+        <dc:Bounds x="100" y="1530" width="150" height="80" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Shape_CallActivity_L3_child16" bpmnElement="CallActivity_L3_child16">
+        <dc:Bounds x="100" y="1630" width="150" height="80" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Shape_CallActivity_L3_child17" bpmnElement="CallActivity_L3_child17">
+        <dc:Bounds x="100" y="1730" width="150" height="80" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Shape_CallActivity_L3_child18" bpmnElement="CallActivity_L3_child18">
+        <dc:Bounds x="100" y="1830" width="150" height="80" />
+      </bpmndi:BPMNShape>
       <bpmndi:BPMNShape id="Shape_End_L3_9_4" bpmnElement="End_L3_9_4">
-        <dc:Bounds x="150" y="1330" width="36" height="36" />
+        <dc:Bounds x="150" y="1930" width="36" height="36" />
       </bpmndi:BPMNShape>
     </bpmndi:BPMNPlane>
   </bpmndi:BPMNDiagram>

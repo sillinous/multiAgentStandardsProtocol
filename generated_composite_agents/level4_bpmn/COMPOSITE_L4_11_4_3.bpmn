@@ -7,34 +7,34 @@ Manage Enterprise Risk, Compliance, and Governance
 APQC ID: 11.4.3
 
 Orchestrates 4 child agents:
-  1. 11.4.3.4: Close audit findings
-  2. 11.4.3.1: Track remediation plans
-  3. 11.4.3.2: Verify corrective actions
-  4. 11.4.3.3: Re-audit if needed
+  1. 11.4.3.3: Re-audit if needed
+  2. 11.4.3.4: Close audit findings
+  3. 11.4.3.1: Track remediation plans
+  4. 11.4.3.2: Verify corrective actions
 
 
 Orchestration Pattern: Sequential Workflow (Pipeline)
 Standards: BPMN 2.0, A2A Protocol
 
-Generated: 2025-11-18T00:44:42.447462
+Generated: 2025-11-18T01:11:36.596218
 Status: Production Ready
 </bpmn:documentation>
     <bpmn:startEvent id="Start_L4_11_4_3" name="Start Composite">
       <bpmn:outgoing>Flow_start_to_child1</bpmn:outgoing>
     </bpmn:startEvent>
-    <bpmn:callActivity id="CallActivity_L4_child1" name="11.4.3.4: Close audit findings" calledElement="Process_11_4_3_4">
+    <bpmn:callActivity id="CallActivity_L4_child1" name="11.4.3.3: Re-audit if needed" calledElement="Process_11_4_3_3">
       <bpmn:incoming>Flow_start_to_child1</bpmn:incoming>
       <bpmn:outgoing>Flow_child1_to_child2</bpmn:outgoing>
     </bpmn:callActivity>
-    <bpmn:callActivity id="CallActivity_L4_child2" name="11.4.3.1: Track remediation plans" calledElement="Process_11_4_3_1">
+    <bpmn:callActivity id="CallActivity_L4_child2" name="11.4.3.4: Close audit findings" calledElement="Process_11_4_3_4">
       <bpmn:incoming>Flow_child1_to_child2</bpmn:incoming>
       <bpmn:outgoing>Flow_child2_to_child3</bpmn:outgoing>
     </bpmn:callActivity>
-    <bpmn:callActivity id="CallActivity_L4_child3" name="11.4.3.2: Verify corrective actions" calledElement="Process_11_4_3_2">
+    <bpmn:callActivity id="CallActivity_L4_child3" name="11.4.3.1: Track remediation plans" calledElement="Process_11_4_3_1">
       <bpmn:incoming>Flow_child2_to_child3</bpmn:incoming>
       <bpmn:outgoing>Flow_child3_to_child4</bpmn:outgoing>
     </bpmn:callActivity>
-    <bpmn:callActivity id="CallActivity_L4_child4" name="11.4.3.3: Re-audit if needed" calledElement="Process_11_4_3_3">
+    <bpmn:callActivity id="CallActivity_L4_child4" name="11.4.3.2: Verify corrective actions" calledElement="Process_11_4_3_2">
       <bpmn:incoming>Flow_child3_to_child4</bpmn:incoming>
       <bpmn:outgoing>Flow_child4_to_end</bpmn:outgoing>
     </bpmn:callActivity>

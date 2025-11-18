@@ -6,77 +6,107 @@ Level 3 Composite Process
 Deliver Physical Products
 APQC ID: 4.3
 
-Orchestrates 12 child agents:
-  1. 4.3.1.2: Sequence production
-  2. 4.3.3.2: Manage raw materials
-  3. 4.3.1.4: Manage capacity
-  4. 4.3.1.1: Create production plan
-  5. 4.3.2.3: Monitor production
-  6. 4.3.2.1: Issue work orders
-  7. 4.3.3.1: Track work-in-process
-  8. 4.3.3.3: Control finished goods
-  9. 4.3.2.2: Execute production runs
-  10. 4.3.3.4: Optimize inventory levels
-  11. 4.3.1.3: Allocate resources
-  12. 4.3.2.4: Perform quality checks
+Orchestrates 18 child agents:
+  1. 4.3.1.6: Optimize deliveries
+  2. 4.3.2.5: Review warehouse
+  3. 4.3.1.5: Review deliveries
+  4. 4.3.3.5: Review orders
+  5. 4.3.2.6: Optimize warehouse
+  6. 4.3.3.6: Optimize orders
+  7. 4.3.1.4: Manage capacity
+  8. 4.3.3.4: Optimize inventory levels
+  9. 4.3.3.2: Manage raw materials
+  10. 4.3.1.3: Allocate resources
+  11. 4.3.3.3: Control finished goods
+  12. 4.3.2.1: Issue work orders
+  13. 4.3.1.2: Sequence production
+  14. 4.3.2.4: Perform quality checks
+  15. 4.3.2.3: Monitor production
+  16. 4.3.3.1: Track work-in-process
+  17. 4.3.2.2: Execute production runs
+  18. 4.3.1.1: Create production plan
 
 
 Orchestration Pattern: Sequential Workflow (Pipeline)
 Standards: BPMN 2.0, A2A Protocol
 
-Generated: 2025-11-18T00:44:42.600334
+Generated: 2025-11-18T01:11:36.725881
 Status: Production Ready
 </bpmn:documentation>
     <bpmn:startEvent id="Start_L3_4_3" name="Start Composite">
       <bpmn:outgoing>Flow_start_to_child1</bpmn:outgoing>
     </bpmn:startEvent>
-    <bpmn:callActivity id="CallActivity_L3_child1" name="4.3.1.2: Sequence production" calledElement="Process_4_3_1_2">
+    <bpmn:callActivity id="CallActivity_L3_child1" name="4.3.1.6: Optimize deliveries" calledElement="Process_4_3_1_6">
       <bpmn:incoming>Flow_start_to_child1</bpmn:incoming>
       <bpmn:outgoing>Flow_child1_to_child2</bpmn:outgoing>
     </bpmn:callActivity>
-    <bpmn:callActivity id="CallActivity_L3_child2" name="4.3.3.2: Manage raw materials" calledElement="Process_4_3_3_2">
+    <bpmn:callActivity id="CallActivity_L3_child2" name="4.3.2.5: Review warehouse" calledElement="Process_4_3_2_5">
       <bpmn:incoming>Flow_child1_to_child2</bpmn:incoming>
       <bpmn:outgoing>Flow_child2_to_child3</bpmn:outgoing>
     </bpmn:callActivity>
-    <bpmn:callActivity id="CallActivity_L3_child3" name="4.3.1.4: Manage capacity" calledElement="Process_4_3_1_4">
+    <bpmn:callActivity id="CallActivity_L3_child3" name="4.3.1.5: Review deliveries" calledElement="Process_4_3_1_5">
       <bpmn:incoming>Flow_child2_to_child3</bpmn:incoming>
       <bpmn:outgoing>Flow_child3_to_child4</bpmn:outgoing>
     </bpmn:callActivity>
-    <bpmn:callActivity id="CallActivity_L3_child4" name="4.3.1.1: Create production plan" calledElement="Process_4_3_1_1">
+    <bpmn:callActivity id="CallActivity_L3_child4" name="4.3.3.5: Review orders" calledElement="Process_4_3_3_5">
       <bpmn:incoming>Flow_child3_to_child4</bpmn:incoming>
       <bpmn:outgoing>Flow_child4_to_child5</bpmn:outgoing>
     </bpmn:callActivity>
-    <bpmn:callActivity id="CallActivity_L3_child5" name="4.3.2.3: Monitor production" calledElement="Process_4_3_2_3">
+    <bpmn:callActivity id="CallActivity_L3_child5" name="4.3.2.6: Optimize warehouse" calledElement="Process_4_3_2_6">
       <bpmn:incoming>Flow_child4_to_child5</bpmn:incoming>
       <bpmn:outgoing>Flow_child5_to_child6</bpmn:outgoing>
     </bpmn:callActivity>
-    <bpmn:callActivity id="CallActivity_L3_child6" name="4.3.2.1: Issue work orders" calledElement="Process_4_3_2_1">
+    <bpmn:callActivity id="CallActivity_L3_child6" name="4.3.3.6: Optimize orders" calledElement="Process_4_3_3_6">
       <bpmn:incoming>Flow_child5_to_child6</bpmn:incoming>
       <bpmn:outgoing>Flow_child6_to_child7</bpmn:outgoing>
     </bpmn:callActivity>
-    <bpmn:callActivity id="CallActivity_L3_child7" name="4.3.3.1: Track work-in-process" calledElement="Process_4_3_3_1">
+    <bpmn:callActivity id="CallActivity_L3_child7" name="4.3.1.4: Manage capacity" calledElement="Process_4_3_1_4">
       <bpmn:incoming>Flow_child6_to_child7</bpmn:incoming>
       <bpmn:outgoing>Flow_child7_to_child8</bpmn:outgoing>
     </bpmn:callActivity>
-    <bpmn:callActivity id="CallActivity_L3_child8" name="4.3.3.3: Control finished goods" calledElement="Process_4_3_3_3">
+    <bpmn:callActivity id="CallActivity_L3_child8" name="4.3.3.4: Optimize inventory levels" calledElement="Process_4_3_3_4">
       <bpmn:incoming>Flow_child7_to_child8</bpmn:incoming>
       <bpmn:outgoing>Flow_child8_to_child9</bpmn:outgoing>
     </bpmn:callActivity>
-    <bpmn:callActivity id="CallActivity_L3_child9" name="4.3.2.2: Execute production runs" calledElement="Process_4_3_2_2">
+    <bpmn:callActivity id="CallActivity_L3_child9" name="4.3.3.2: Manage raw materials" calledElement="Process_4_3_3_2">
       <bpmn:incoming>Flow_child8_to_child9</bpmn:incoming>
       <bpmn:outgoing>Flow_child9_to_child10</bpmn:outgoing>
     </bpmn:callActivity>
-    <bpmn:callActivity id="CallActivity_L3_child10" name="4.3.3.4: Optimize inventory levels" calledElement="Process_4_3_3_4">
+    <bpmn:callActivity id="CallActivity_L3_child10" name="4.3.1.3: Allocate resources" calledElement="Process_4_3_1_3">
       <bpmn:incoming>Flow_child9_to_child10</bpmn:incoming>
       <bpmn:outgoing>Flow_child10_to_child11</bpmn:outgoing>
     </bpmn:callActivity>
-    <bpmn:callActivity id="CallActivity_L3_child11" name="4.3.1.3: Allocate resources" calledElement="Process_4_3_1_3">
+    <bpmn:callActivity id="CallActivity_L3_child11" name="4.3.3.3: Control finished goods" calledElement="Process_4_3_3_3">
       <bpmn:incoming>Flow_child10_to_child11</bpmn:incoming>
       <bpmn:outgoing>Flow_child11_to_child12</bpmn:outgoing>
     </bpmn:callActivity>
-    <bpmn:callActivity id="CallActivity_L3_child12" name="4.3.2.4: Perform quality checks" calledElement="Process_4_3_2_4">
+    <bpmn:callActivity id="CallActivity_L3_child12" name="4.3.2.1: Issue work orders" calledElement="Process_4_3_2_1">
       <bpmn:incoming>Flow_child11_to_child12</bpmn:incoming>
-      <bpmn:outgoing>Flow_child12_to_end</bpmn:outgoing>
+      <bpmn:outgoing>Flow_child12_to_child13</bpmn:outgoing>
+    </bpmn:callActivity>
+    <bpmn:callActivity id="CallActivity_L3_child13" name="4.3.1.2: Sequence production" calledElement="Process_4_3_1_2">
+      <bpmn:incoming>Flow_child12_to_child13</bpmn:incoming>
+      <bpmn:outgoing>Flow_child13_to_child14</bpmn:outgoing>
+    </bpmn:callActivity>
+    <bpmn:callActivity id="CallActivity_L3_child14" name="4.3.2.4: Perform quality checks" calledElement="Process_4_3_2_4">
+      <bpmn:incoming>Flow_child13_to_child14</bpmn:incoming>
+      <bpmn:outgoing>Flow_child14_to_child15</bpmn:outgoing>
+    </bpmn:callActivity>
+    <bpmn:callActivity id="CallActivity_L3_child15" name="4.3.2.3: Monitor production" calledElement="Process_4_3_2_3">
+      <bpmn:incoming>Flow_child14_to_child15</bpmn:incoming>
+      <bpmn:outgoing>Flow_child15_to_child16</bpmn:outgoing>
+    </bpmn:callActivity>
+    <bpmn:callActivity id="CallActivity_L3_child16" name="4.3.3.1: Track work-in-process" calledElement="Process_4_3_3_1">
+      <bpmn:incoming>Flow_child15_to_child16</bpmn:incoming>
+      <bpmn:outgoing>Flow_child16_to_child17</bpmn:outgoing>
+    </bpmn:callActivity>
+    <bpmn:callActivity id="CallActivity_L3_child17" name="4.3.2.2: Execute production runs" calledElement="Process_4_3_2_2">
+      <bpmn:incoming>Flow_child16_to_child17</bpmn:incoming>
+      <bpmn:outgoing>Flow_child17_to_child18</bpmn:outgoing>
+    </bpmn:callActivity>
+    <bpmn:callActivity id="CallActivity_L3_child18" name="4.3.1.1: Create production plan" calledElement="Process_4_3_1_1">
+      <bpmn:incoming>Flow_child17_to_child18</bpmn:incoming>
+      <bpmn:outgoing>Flow_child18_to_end</bpmn:outgoing>
     </bpmn:callActivity>
     <bpmn:sequenceFlow id="Flow_start_to_child1" sourceRef="Start_L3_4_3" targetRef="CallActivity_L3_child1" />
     <bpmn:sequenceFlow id="Flow_child1_to_child2" sourceRef="CallActivity_L3_child1" targetRef="CallActivity_L3_child2" />
@@ -90,9 +120,15 @@ Status: Production Ready
     <bpmn:sequenceFlow id="Flow_child9_to_child10" sourceRef="CallActivity_L3_child9" targetRef="CallActivity_L3_child10" />
     <bpmn:sequenceFlow id="Flow_child10_to_child11" sourceRef="CallActivity_L3_child10" targetRef="CallActivity_L3_child11" />
     <bpmn:sequenceFlow id="Flow_child11_to_child12" sourceRef="CallActivity_L3_child11" targetRef="CallActivity_L3_child12" />
-    <bpmn:sequenceFlow id="Flow_child12_to_end" sourceRef="CallActivity_L3_child12" targetRef="End_L3_4_3" />
+    <bpmn:sequenceFlow id="Flow_child12_to_child13" sourceRef="CallActivity_L3_child12" targetRef="CallActivity_L3_child13" />
+    <bpmn:sequenceFlow id="Flow_child13_to_child14" sourceRef="CallActivity_L3_child13" targetRef="CallActivity_L3_child14" />
+    <bpmn:sequenceFlow id="Flow_child14_to_child15" sourceRef="CallActivity_L3_child14" targetRef="CallActivity_L3_child15" />
+    <bpmn:sequenceFlow id="Flow_child15_to_child16" sourceRef="CallActivity_L3_child15" targetRef="CallActivity_L3_child16" />
+    <bpmn:sequenceFlow id="Flow_child16_to_child17" sourceRef="CallActivity_L3_child16" targetRef="CallActivity_L3_child17" />
+    <bpmn:sequenceFlow id="Flow_child17_to_child18" sourceRef="CallActivity_L3_child17" targetRef="CallActivity_L3_child18" />
+    <bpmn:sequenceFlow id="Flow_child18_to_end" sourceRef="CallActivity_L3_child18" targetRef="End_L3_4_3" />
     <bpmn:endEvent id="End_L3_4_3" name="Composite Complete">
-      <bpmn:incoming>Flow_child12_to_end</bpmn:incoming>
+      <bpmn:incoming>Flow_child18_to_end</bpmn:incoming>
     </bpmn:endEvent>
   </bpmn:process>
   <bpmndi:BPMNDiagram id="Diagram_L3_4_3">
@@ -136,8 +172,26 @@ Status: Production Ready
       <bpmndi:BPMNShape id="Shape_CallActivity_L3_child12" bpmnElement="CallActivity_L3_child12">
         <dc:Bounds x="100" y="1230" width="150" height="80" />
       </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Shape_CallActivity_L3_child13" bpmnElement="CallActivity_L3_child13">
+        <dc:Bounds x="100" y="1330" width="150" height="80" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Shape_CallActivity_L3_child14" bpmnElement="CallActivity_L3_child14">
+        <dc:Bounds x="100" y="1430" width="150" height="80" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Shape_CallActivity_L3_child15" bpmnElement="CallActivity_L3_child15">
+        <dc:Bounds x="100" y="1530" width="150" height="80" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Shape_CallActivity_L3_child16" bpmnElement="CallActivity_L3_child16">
+        <dc:Bounds x="100" y="1630" width="150" height="80" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Shape_CallActivity_L3_child17" bpmnElement="CallActivity_L3_child17">
+        <dc:Bounds x="100" y="1730" width="150" height="80" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Shape_CallActivity_L3_child18" bpmnElement="CallActivity_L3_child18">
+        <dc:Bounds x="100" y="1830" width="150" height="80" />
+      </bpmndi:BPMNShape>
       <bpmndi:BPMNShape id="Shape_End_L3_4_3" bpmnElement="End_L3_4_3">
-        <dc:Bounds x="150" y="1330" width="36" height="36" />
+        <dc:Bounds x="150" y="1930" width="36" height="36" />
       </bpmndi:BPMNShape>
     </bpmndi:BPMNPlane>
   </bpmndi:BPMNDiagram>

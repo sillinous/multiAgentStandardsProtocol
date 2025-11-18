@@ -5,23 +5,23 @@ Level 3 Process: 7.2 - Composite APQC Agent
 APQC Level 3: 7.2
 Category: Manage Human Capital (7.0)
 
-This is a COMPOSITE AGENT that orchestrates 17 child agents.
+This is a COMPOSITE AGENT that orchestrates 25 child agents.
 
 Orchestration Pattern: Sequential Workflow
 Standards: A2A, ANP, ACP, BPP, BDP, BRP, BMP, BCP, BIP
 
 Child Agents:
-  - 7.2.1.3: Create job descriptions
-  - 7.2.4.2: Complete paperwork
-  - 7.2.3.4: Perform background checks
-  - 7.2.3.5: Make hiring decisions
+  - 7.2.4.1: Extend offers
+  - 7.2.3.6: Optimize training
   - 7.2.3.3: Conduct interviews
-  - 7.2.1.2: Define job requirements
-  - 7.2.2.1: Post job openings
-  - 7.2.3.2: Conduct phone screens
-  - 7.2.2.3: Build talent pipeline
+  - 7.2.4.4: Assign to role
+  - 7.2.4.2: Complete paperwork
   - 7.2.2.2: Source candidates
-  ... and 7 more
+  - 7.2.1.6: Optimize compensation
+  - 7.2.3.4: Perform background checks
+  - 7.2.2.3: Build talent pipeline
+  - 7.2.3.5: Make hiring decisions
+  ... and 15 more
 
 Generated: 2025-11-18
 Version: 3.0.0
@@ -44,30 +44,38 @@ class CompositeAgent_7_2:
     """
     Composite Agent for APQC Level 3: 7.2
 
-    Orchestrates 17 child agents in a coordinated workflow.
+    Orchestrates 25 child agents in a coordinated workflow.
     """
 
     def __init__(self):
         self.apqc_id = "7.2"
         self.level = 3
         self.child_agent_ids = [
-        "7.2.1.3",
-        "7.2.4.2",
-        "7.2.3.4",
-        "7.2.3.5",
-        "7.2.3.3",
-        "7.2.1.2",
-        "7.2.2.1",
-        "7.2.3.2",
-        "7.2.2.3",
-        "7.2.2.2",
-        "7.2.1.1",
         "7.2.4.1",
+        "7.2.3.6",
+        "7.2.3.3",
         "7.2.4.4",
-        "7.2.4.3",
-        "7.2.1.4",
+        "7.2.4.2",
+        "7.2.2.2",
+        "7.2.1.6",
+        "7.2.3.4",
+        "7.2.2.3",
+        "7.2.3.5",
         "7.2.2.4",
-        "7.2.3.1"
+        "7.2.1.3",
+        "7.2.1.4",
+        "7.2.1.1",
+        "7.2.4.6",
+        "7.2.4.5",
+        "7.2.3.7",
+        "7.2.3.1",
+        "7.2.1.5",
+        "7.2.4.3",
+        "7.2.2.1",
+        "7.2.1.2",
+        "7.2.2.6",
+        "7.2.2.5",
+        "7.2.3.2"
 ]
         self.logger = logging.getLogger(f"CompositeAgent_7_2")
 

@@ -5,16 +5,18 @@ Level 4 Activity: 1.3.1 - Composite APQC Agent
 APQC Level 4: 1.3.1
 Category: Develop Vision and Strategy (1.0)
 
-This is a COMPOSITE AGENT that orchestrates 4 child agents.
+This is a COMPOSITE AGENT that orchestrates 6 child agents.
 
 Orchestration Pattern: Sequential Workflow
 Standards: A2A, ANP, ACP, BPP, BDP, BRP, BMP, BCP, BIP
 
 Child Agents:
+  - 1.3.1.5: Review performance
+  - 1.3.1.6: Optimize performance
+  - 1.3.1.4: Develop implementation roadmap
+  - 1.3.1.3: Prioritize strategic initiatives
   - 1.3.1.2: Assess feasibility of initiatives
   - 1.3.1.1: Develop business case for initiatives
-  - 1.3.1.3: Prioritize strategic initiatives
-  - 1.3.1.4: Develop implementation roadmap
 
 
 Generated: 2025-11-18
@@ -38,17 +40,19 @@ class CompositeAgent_1_3_1:
     """
     Composite Agent for APQC Level 4: 1.3.1
 
-    Orchestrates 4 child agents in a coordinated workflow.
+    Orchestrates 6 child agents in a coordinated workflow.
     """
 
     def __init__(self):
         self.apqc_id = "1.3.1"
         self.level = 4
         self.child_agent_ids = [
-        "1.3.1.2",
-        "1.3.1.1",
+        "1.3.1.5",
+        "1.3.1.6",
+        "1.3.1.4",
         "1.3.1.3",
-        "1.3.1.4"
+        "1.3.1.2",
+        "1.3.1.1"
 ]
         self.logger = logging.getLogger(f"CompositeAgent_1_3_1")
 

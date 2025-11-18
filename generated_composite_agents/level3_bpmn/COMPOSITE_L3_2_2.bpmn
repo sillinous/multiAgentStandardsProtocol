@@ -6,44 +6,50 @@ Level 3 Composite Process
 Develop and Manage Products and Services
 APQC ID: 2.2
 
-Orchestrates 13 child agents:
-  1. 2.2.3.4: Launch production
-  2. 2.2.2.3: Refine product based on testing
-  3. 2.2.2.1: Conduct alpha/beta testing
-  4. 2.2.1.2: Create detailed design specifications
+Orchestrates 19 child agents:
+  1. 2.2.1.2: Create detailed design specifications
+  2. 2.2.1.4: Test prototypes
+  3. 2.2.2.5: Review requirements
+  4. 2.2.1.1: Develop product concepts
   5. 2.2.3.2: Develop production process
-  6. 2.2.1.3: Build prototypes
-  7. 2.2.1.1: Develop product concepts
-  8. 2.2.2.2: Gather customer feedback
-  9. 2.2.1.5: Conduct pilot production
+  6. 2.2.3.1: Define manufacturing requirements
+  7. 2.2.2.2: Gather customer feedback
+  8. 2.2.2.3: Refine product based on testing
+  9. 2.2.1.6: Optimize designs
   10. 2.2.2.4: Finalize product design
-  11. 2.2.3.1: Define manufacturing requirements
-  12. 2.2.3.3: Train production team
-  13. 2.2.1.4: Test prototypes
+  11. 2.2.3.5: Review prototypes
+  12. 2.2.3.6: Optimize prototypes
+  13. 2.2.3.3: Train production team
+  14. 2.2.1.3: Build prototypes
+  15. 2.2.2.1: Conduct alpha/beta testing
+  16. 2.2.1.7: Document designs
+  17. 2.2.2.6: Optimize requirements
+  18. 2.2.1.5: Conduct pilot production
+  19. 2.2.3.4: Launch production
 
 
 Orchestration Pattern: Sequential Workflow (Pipeline)
 Standards: BPMN 2.0, A2A Protocol
 
-Generated: 2025-11-18T00:44:42.589704
+Generated: 2025-11-18T01:11:36.714308
 Status: Production Ready
 </bpmn:documentation>
     <bpmn:startEvent id="Start_L3_2_2" name="Start Composite">
       <bpmn:outgoing>Flow_start_to_child1</bpmn:outgoing>
     </bpmn:startEvent>
-    <bpmn:callActivity id="CallActivity_L3_child1" name="2.2.3.4: Launch production" calledElement="Process_2_2_3_4">
+    <bpmn:callActivity id="CallActivity_L3_child1" name="2.2.1.2: Create detailed design specifi..." calledElement="Process_2_2_1_2">
       <bpmn:incoming>Flow_start_to_child1</bpmn:incoming>
       <bpmn:outgoing>Flow_child1_to_child2</bpmn:outgoing>
     </bpmn:callActivity>
-    <bpmn:callActivity id="CallActivity_L3_child2" name="2.2.2.3: Refine product based on testin..." calledElement="Process_2_2_2_3">
+    <bpmn:callActivity id="CallActivity_L3_child2" name="2.2.1.4: Test prototypes" calledElement="Process_2_2_1_4">
       <bpmn:incoming>Flow_child1_to_child2</bpmn:incoming>
       <bpmn:outgoing>Flow_child2_to_child3</bpmn:outgoing>
     </bpmn:callActivity>
-    <bpmn:callActivity id="CallActivity_L3_child3" name="2.2.2.1: Conduct alpha/beta testing" calledElement="Process_2_2_2_1">
+    <bpmn:callActivity id="CallActivity_L3_child3" name="2.2.2.5: Review requirements" calledElement="Process_2_2_2_5">
       <bpmn:incoming>Flow_child2_to_child3</bpmn:incoming>
       <bpmn:outgoing>Flow_child3_to_child4</bpmn:outgoing>
     </bpmn:callActivity>
-    <bpmn:callActivity id="CallActivity_L3_child4" name="2.2.1.2: Create detailed design specifi..." calledElement="Process_2_2_1_2">
+    <bpmn:callActivity id="CallActivity_L3_child4" name="2.2.1.1: Develop product concepts" calledElement="Process_2_2_1_1">
       <bpmn:incoming>Flow_child3_to_child4</bpmn:incoming>
       <bpmn:outgoing>Flow_child4_to_child5</bpmn:outgoing>
     </bpmn:callActivity>
@@ -51,19 +57,19 @@ Status: Production Ready
       <bpmn:incoming>Flow_child4_to_child5</bpmn:incoming>
       <bpmn:outgoing>Flow_child5_to_child6</bpmn:outgoing>
     </bpmn:callActivity>
-    <bpmn:callActivity id="CallActivity_L3_child6" name="2.2.1.3: Build prototypes" calledElement="Process_2_2_1_3">
+    <bpmn:callActivity id="CallActivity_L3_child6" name="2.2.3.1: Define manufacturing requireme..." calledElement="Process_2_2_3_1">
       <bpmn:incoming>Flow_child5_to_child6</bpmn:incoming>
       <bpmn:outgoing>Flow_child6_to_child7</bpmn:outgoing>
     </bpmn:callActivity>
-    <bpmn:callActivity id="CallActivity_L3_child7" name="2.2.1.1: Develop product concepts" calledElement="Process_2_2_1_1">
+    <bpmn:callActivity id="CallActivity_L3_child7" name="2.2.2.2: Gather customer feedback" calledElement="Process_2_2_2_2">
       <bpmn:incoming>Flow_child6_to_child7</bpmn:incoming>
       <bpmn:outgoing>Flow_child7_to_child8</bpmn:outgoing>
     </bpmn:callActivity>
-    <bpmn:callActivity id="CallActivity_L3_child8" name="2.2.2.2: Gather customer feedback" calledElement="Process_2_2_2_2">
+    <bpmn:callActivity id="CallActivity_L3_child8" name="2.2.2.3: Refine product based on testin..." calledElement="Process_2_2_2_3">
       <bpmn:incoming>Flow_child7_to_child8</bpmn:incoming>
       <bpmn:outgoing>Flow_child8_to_child9</bpmn:outgoing>
     </bpmn:callActivity>
-    <bpmn:callActivity id="CallActivity_L3_child9" name="2.2.1.5: Conduct pilot production" calledElement="Process_2_2_1_5">
+    <bpmn:callActivity id="CallActivity_L3_child9" name="2.2.1.6: Optimize designs" calledElement="Process_2_2_1_6">
       <bpmn:incoming>Flow_child8_to_child9</bpmn:incoming>
       <bpmn:outgoing>Flow_child9_to_child10</bpmn:outgoing>
     </bpmn:callActivity>
@@ -71,17 +77,41 @@ Status: Production Ready
       <bpmn:incoming>Flow_child9_to_child10</bpmn:incoming>
       <bpmn:outgoing>Flow_child10_to_child11</bpmn:outgoing>
     </bpmn:callActivity>
-    <bpmn:callActivity id="CallActivity_L3_child11" name="2.2.3.1: Define manufacturing requireme..." calledElement="Process_2_2_3_1">
+    <bpmn:callActivity id="CallActivity_L3_child11" name="2.2.3.5: Review prototypes" calledElement="Process_2_2_3_5">
       <bpmn:incoming>Flow_child10_to_child11</bpmn:incoming>
       <bpmn:outgoing>Flow_child11_to_child12</bpmn:outgoing>
     </bpmn:callActivity>
-    <bpmn:callActivity id="CallActivity_L3_child12" name="2.2.3.3: Train production team" calledElement="Process_2_2_3_3">
+    <bpmn:callActivity id="CallActivity_L3_child12" name="2.2.3.6: Optimize prototypes" calledElement="Process_2_2_3_6">
       <bpmn:incoming>Flow_child11_to_child12</bpmn:incoming>
       <bpmn:outgoing>Flow_child12_to_child13</bpmn:outgoing>
     </bpmn:callActivity>
-    <bpmn:callActivity id="CallActivity_L3_child13" name="2.2.1.4: Test prototypes" calledElement="Process_2_2_1_4">
+    <bpmn:callActivity id="CallActivity_L3_child13" name="2.2.3.3: Train production team" calledElement="Process_2_2_3_3">
       <bpmn:incoming>Flow_child12_to_child13</bpmn:incoming>
-      <bpmn:outgoing>Flow_child13_to_end</bpmn:outgoing>
+      <bpmn:outgoing>Flow_child13_to_child14</bpmn:outgoing>
+    </bpmn:callActivity>
+    <bpmn:callActivity id="CallActivity_L3_child14" name="2.2.1.3: Build prototypes" calledElement="Process_2_2_1_3">
+      <bpmn:incoming>Flow_child13_to_child14</bpmn:incoming>
+      <bpmn:outgoing>Flow_child14_to_child15</bpmn:outgoing>
+    </bpmn:callActivity>
+    <bpmn:callActivity id="CallActivity_L3_child15" name="2.2.2.1: Conduct alpha/beta testing" calledElement="Process_2_2_2_1">
+      <bpmn:incoming>Flow_child14_to_child15</bpmn:incoming>
+      <bpmn:outgoing>Flow_child15_to_child16</bpmn:outgoing>
+    </bpmn:callActivity>
+    <bpmn:callActivity id="CallActivity_L3_child16" name="2.2.1.7: Document designs" calledElement="Process_2_2_1_7">
+      <bpmn:incoming>Flow_child15_to_child16</bpmn:incoming>
+      <bpmn:outgoing>Flow_child16_to_child17</bpmn:outgoing>
+    </bpmn:callActivity>
+    <bpmn:callActivity id="CallActivity_L3_child17" name="2.2.2.6: Optimize requirements" calledElement="Process_2_2_2_6">
+      <bpmn:incoming>Flow_child16_to_child17</bpmn:incoming>
+      <bpmn:outgoing>Flow_child17_to_child18</bpmn:outgoing>
+    </bpmn:callActivity>
+    <bpmn:callActivity id="CallActivity_L3_child18" name="2.2.1.5: Conduct pilot production" calledElement="Process_2_2_1_5">
+      <bpmn:incoming>Flow_child17_to_child18</bpmn:incoming>
+      <bpmn:outgoing>Flow_child18_to_child19</bpmn:outgoing>
+    </bpmn:callActivity>
+    <bpmn:callActivity id="CallActivity_L3_child19" name="2.2.3.4: Launch production" calledElement="Process_2_2_3_4">
+      <bpmn:incoming>Flow_child18_to_child19</bpmn:incoming>
+      <bpmn:outgoing>Flow_child19_to_end</bpmn:outgoing>
     </bpmn:callActivity>
     <bpmn:sequenceFlow id="Flow_start_to_child1" sourceRef="Start_L3_2_2" targetRef="CallActivity_L3_child1" />
     <bpmn:sequenceFlow id="Flow_child1_to_child2" sourceRef="CallActivity_L3_child1" targetRef="CallActivity_L3_child2" />
@@ -96,9 +126,15 @@ Status: Production Ready
     <bpmn:sequenceFlow id="Flow_child10_to_child11" sourceRef="CallActivity_L3_child10" targetRef="CallActivity_L3_child11" />
     <bpmn:sequenceFlow id="Flow_child11_to_child12" sourceRef="CallActivity_L3_child11" targetRef="CallActivity_L3_child12" />
     <bpmn:sequenceFlow id="Flow_child12_to_child13" sourceRef="CallActivity_L3_child12" targetRef="CallActivity_L3_child13" />
-    <bpmn:sequenceFlow id="Flow_child13_to_end" sourceRef="CallActivity_L3_child13" targetRef="End_L3_2_2" />
+    <bpmn:sequenceFlow id="Flow_child13_to_child14" sourceRef="CallActivity_L3_child13" targetRef="CallActivity_L3_child14" />
+    <bpmn:sequenceFlow id="Flow_child14_to_child15" sourceRef="CallActivity_L3_child14" targetRef="CallActivity_L3_child15" />
+    <bpmn:sequenceFlow id="Flow_child15_to_child16" sourceRef="CallActivity_L3_child15" targetRef="CallActivity_L3_child16" />
+    <bpmn:sequenceFlow id="Flow_child16_to_child17" sourceRef="CallActivity_L3_child16" targetRef="CallActivity_L3_child17" />
+    <bpmn:sequenceFlow id="Flow_child17_to_child18" sourceRef="CallActivity_L3_child17" targetRef="CallActivity_L3_child18" />
+    <bpmn:sequenceFlow id="Flow_child18_to_child19" sourceRef="CallActivity_L3_child18" targetRef="CallActivity_L3_child19" />
+    <bpmn:sequenceFlow id="Flow_child19_to_end" sourceRef="CallActivity_L3_child19" targetRef="End_L3_2_2" />
     <bpmn:endEvent id="End_L3_2_2" name="Composite Complete">
-      <bpmn:incoming>Flow_child13_to_end</bpmn:incoming>
+      <bpmn:incoming>Flow_child19_to_end</bpmn:incoming>
     </bpmn:endEvent>
   </bpmn:process>
   <bpmndi:BPMNDiagram id="Diagram_L3_2_2">
@@ -145,8 +181,26 @@ Status: Production Ready
       <bpmndi:BPMNShape id="Shape_CallActivity_L3_child13" bpmnElement="CallActivity_L3_child13">
         <dc:Bounds x="100" y="1330" width="150" height="80" />
       </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Shape_CallActivity_L3_child14" bpmnElement="CallActivity_L3_child14">
+        <dc:Bounds x="100" y="1430" width="150" height="80" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Shape_CallActivity_L3_child15" bpmnElement="CallActivity_L3_child15">
+        <dc:Bounds x="100" y="1530" width="150" height="80" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Shape_CallActivity_L3_child16" bpmnElement="CallActivity_L3_child16">
+        <dc:Bounds x="100" y="1630" width="150" height="80" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Shape_CallActivity_L3_child17" bpmnElement="CallActivity_L3_child17">
+        <dc:Bounds x="100" y="1730" width="150" height="80" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Shape_CallActivity_L3_child18" bpmnElement="CallActivity_L3_child18">
+        <dc:Bounds x="100" y="1830" width="150" height="80" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Shape_CallActivity_L3_child19" bpmnElement="CallActivity_L3_child19">
+        <dc:Bounds x="100" y="1930" width="150" height="80" />
+      </bpmndi:BPMNShape>
       <bpmndi:BPMNShape id="Shape_End_L3_2_2" bpmnElement="End_L3_2_2">
-        <dc:Bounds x="150" y="1430" width="36" height="36" />
+        <dc:Bounds x="150" y="2030" width="36" height="36" />
       </bpmndi:BPMNShape>
     </bpmndi:BPMNPlane>
   </bpmndi:BPMNDiagram>

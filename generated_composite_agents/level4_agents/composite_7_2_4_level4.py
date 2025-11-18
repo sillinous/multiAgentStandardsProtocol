@@ -5,15 +5,17 @@ Level 4 Activity: 7.2.4 - Composite APQC Agent
 APQC Level 4: 7.2.4
 Category: Manage Human Capital (7.0)
 
-This is a COMPOSITE AGENT that orchestrates 4 child agents.
+This is a COMPOSITE AGENT that orchestrates 6 child agents.
 
 Orchestration Pattern: Sequential Workflow
 Standards: A2A, ANP, ACP, BPP, BDP, BRP, BMP, BCP, BIP
 
 Child Agents:
-  - 7.2.4.2: Complete paperwork
   - 7.2.4.1: Extend offers
   - 7.2.4.4: Assign to role
+  - 7.2.4.2: Complete paperwork
+  - 7.2.4.6: Optimize workforce
+  - 7.2.4.5: Review workforce
   - 7.2.4.3: Conduct orientation
 
 
@@ -38,16 +40,18 @@ class CompositeAgent_7_2_4:
     """
     Composite Agent for APQC Level 4: 7.2.4
 
-    Orchestrates 4 child agents in a coordinated workflow.
+    Orchestrates 6 child agents in a coordinated workflow.
     """
 
     def __init__(self):
         self.apqc_id = "7.2.4"
         self.level = 4
         self.child_agent_ids = [
-        "7.2.4.2",
         "7.2.4.1",
         "7.2.4.4",
+        "7.2.4.2",
+        "7.2.4.6",
+        "7.2.4.5",
         "7.2.4.3"
 ]
         self.logger = logging.getLogger(f"CompositeAgent_7_2_4")

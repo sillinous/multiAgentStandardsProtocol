@@ -5,23 +5,23 @@ Level 3 Process: 12.4 - Composite APQC Agent
 APQC Level 3: 12.4
 Category: Manage External Relationships (12.0)
 
-This is a COMPOSITE AGENT that orchestrates 12 child agents.
+This is a COMPOSITE AGENT that orchestrates 18 child agents.
 
 Orchestration Pattern: Sequential Workflow
 Standards: A2A, ANP, ACP, BPP, BDP, BRP, BMP, BCP, BIP
 
 Child Agents:
-  - 12.4.2.3: Execute contracts
-  - 12.4.1.1: Assess partnership needs
-  - 12.4.3.3: Resolve partnership issues
-  - 12.4.3.2: Measure partnership value
-  - 12.4.2.2: Structure partnerships
-  - 12.4.2.1: Negotiate agreements
-  - 12.4.3.1: Monitor partnership activities
-  - 12.4.2.4: Launch partnerships
-  - 12.4.1.2: Identify potential partners
   - 12.4.1.4: Select partners
-  ... and 2 more
+  - 12.4.2.1: Negotiate agreements
+  - 12.4.1.1: Assess partnership needs
+  - 12.4.2.6: Optimize partners
+  - 12.4.3.5: Review relationships
+  - 12.4.2.5: Review partners
+  - 12.4.3.3: Resolve partnership issues
+  - 12.4.1.6: Optimize stakeholders
+  - 12.4.1.3: Evaluate partners
+  - 12.4.3.6: Optimize relationships
+  ... and 8 more
 
 Generated: 2025-11-18
 Version: 3.0.0
@@ -44,25 +44,31 @@ class CompositeAgent_12_4:
     """
     Composite Agent for APQC Level 3: 12.4
 
-    Orchestrates 12 child agents in a coordinated workflow.
+    Orchestrates 18 child agents in a coordinated workflow.
     """
 
     def __init__(self):
         self.apqc_id = "12.4"
         self.level = 3
         self.child_agent_ids = [
-        "12.4.2.3",
-        "12.4.1.1",
-        "12.4.3.3",
-        "12.4.3.2",
-        "12.4.2.2",
-        "12.4.2.1",
-        "12.4.3.1",
-        "12.4.2.4",
-        "12.4.1.2",
         "12.4.1.4",
+        "12.4.2.1",
+        "12.4.1.1",
+        "12.4.2.6",
+        "12.4.3.5",
+        "12.4.2.5",
+        "12.4.3.3",
+        "12.4.1.6",
         "12.4.1.3",
-        "12.4.3.4"
+        "12.4.3.6",
+        "12.4.3.2",
+        "12.4.1.2",
+        "12.4.3.1",
+        "12.4.1.5",
+        "12.4.2.4",
+        "12.4.2.3",
+        "12.4.3.4",
+        "12.4.2.2"
 ]
         self.logger = logging.getLogger(f"CompositeAgent_12_4")
 

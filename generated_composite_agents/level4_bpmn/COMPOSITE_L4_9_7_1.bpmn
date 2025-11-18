@@ -8,15 +8,15 @@ APQC ID: 9.7.1
 
 Orchestrates 4 child agents:
   1. 9.7.1.3: Invest excess cash
-  2. 9.7.1.1: Forecast cash flows
-  3. 9.7.1.4: Manage banking relationships
-  4. 9.7.1.2: Monitor cash position
+  2. 9.7.1.2: Monitor cash position
+  3. 9.7.1.1: Forecast cash flows
+  4. 9.7.1.4: Manage banking relationships
 
 
 Orchestration Pattern: Sequential Workflow (Pipeline)
 Standards: BPMN 2.0, A2A Protocol
 
-Generated: 2025-11-18T00:44:42.560673
+Generated: 2025-11-18T01:11:36.689788
 Status: Production Ready
 </bpmn:documentation>
     <bpmn:startEvent id="Start_L4_9_7_1" name="Start Composite">
@@ -26,15 +26,15 @@ Status: Production Ready
       <bpmn:incoming>Flow_start_to_child1</bpmn:incoming>
       <bpmn:outgoing>Flow_child1_to_child2</bpmn:outgoing>
     </bpmn:callActivity>
-    <bpmn:callActivity id="CallActivity_L4_child2" name="9.7.1.1: Forecast cash flows" calledElement="Process_9_7_1_1">
+    <bpmn:callActivity id="CallActivity_L4_child2" name="9.7.1.2: Monitor cash position" calledElement="Process_9_7_1_2">
       <bpmn:incoming>Flow_child1_to_child2</bpmn:incoming>
       <bpmn:outgoing>Flow_child2_to_child3</bpmn:outgoing>
     </bpmn:callActivity>
-    <bpmn:callActivity id="CallActivity_L4_child3" name="9.7.1.4: Manage banking relationships" calledElement="Process_9_7_1_4">
+    <bpmn:callActivity id="CallActivity_L4_child3" name="9.7.1.1: Forecast cash flows" calledElement="Process_9_7_1_1">
       <bpmn:incoming>Flow_child2_to_child3</bpmn:incoming>
       <bpmn:outgoing>Flow_child3_to_child4</bpmn:outgoing>
     </bpmn:callActivity>
-    <bpmn:callActivity id="CallActivity_L4_child4" name="9.7.1.2: Monitor cash position" calledElement="Process_9_7_1_2">
+    <bpmn:callActivity id="CallActivity_L4_child4" name="9.7.1.4: Manage banking relationships" calledElement="Process_9_7_1_4">
       <bpmn:incoming>Flow_child3_to_child4</bpmn:incoming>
       <bpmn:outgoing>Flow_child4_to_end</bpmn:outgoing>
     </bpmn:callActivity>

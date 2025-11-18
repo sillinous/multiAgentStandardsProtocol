@@ -5,23 +5,23 @@ Level 3 Process: 4.2 - Composite APQC Agent
 APQC Level 3: 4.2
 Category: Deliver Physical Products (4.0)
 
-This is a COMPOSITE AGENT that orchestrates 16 child agents.
+This is a COMPOSITE AGENT that orchestrates 24 child agents.
 
 Orchestration Pattern: Sequential Workflow
 Standards: A2A, ANP, ACP, BPP, BDP, BRP, BMP, BCP, BIP
 
 Child Agents:
-  - 4.2.4.2: Develop strategic suppliers
-  - 4.2.4.4: Certify suppliers
-  - 4.2.3.1: Generate purchase requisitions
-  - 4.2.1.3: Define sourcing strategy
-  - 4.2.2.1: Identify potential suppliers
-  - 4.2.4.1: Monitor supplier performance
+  - 4.2.4.6: Optimize orders
+  - 4.2.1.6: Optimize logistics
+  - 4.2.3.6: Optimize warehouse
+  - 4.2.4.5: Review orders
+  - 4.2.2.5: Review deliveries
+  - 4.2.1.5: Review logistics
+  - 4.2.3.5: Review warehouse
+  - 4.2.2.6: Optimize deliveries
+  - 4.2.3.4: Expedite orders
   - 4.2.1.2: Identify sourcing opportunities
-  - 4.2.4.3: Resolve supplier issues
-  - 4.2.2.4: Select suppliers
-  - 4.2.3.2: Create purchase orders
-  ... and 6 more
+  ... and 14 more
 
 Generated: 2025-11-18
 Version: 3.0.0
@@ -44,29 +44,37 @@ class CompositeAgent_4_2:
     """
     Composite Agent for APQC Level 3: 4.2
 
-    Orchestrates 16 child agents in a coordinated workflow.
+    Orchestrates 24 child agents in a coordinated workflow.
     """
 
     def __init__(self):
         self.apqc_id = "4.2"
         self.level = 3
         self.child_agent_ids = [
-        "4.2.4.2",
-        "4.2.4.4",
-        "4.2.3.1",
-        "4.2.1.3",
-        "4.2.2.1",
-        "4.2.4.1",
-        "4.2.1.2",
-        "4.2.4.3",
-        "4.2.2.4",
-        "4.2.3.2",
-        "4.2.1.4",
-        "4.2.1.1",
-        "4.2.2.2",
-        "4.2.2.3",
+        "4.2.4.6",
+        "4.2.1.6",
+        "4.2.3.6",
+        "4.2.4.5",
+        "4.2.2.5",
+        "4.2.1.5",
+        "4.2.3.5",
+        "4.2.2.6",
         "4.2.3.4",
-        "4.2.3.3"
+        "4.2.1.2",
+        "4.2.4.2",
+        "4.2.2.4",
+        "4.2.4.1",
+        "4.2.1.3",
+        "4.2.4.4",
+        "4.2.2.1",
+        "4.2.3.3",
+        "4.2.3.2",
+        "4.2.2.3",
+        "4.2.2.2",
+        "4.2.3.1",
+        "4.2.1.1",
+        "4.2.4.3",
+        "4.2.1.4"
 ]
         self.logger = logging.getLogger(f"CompositeAgent_4_2")
 

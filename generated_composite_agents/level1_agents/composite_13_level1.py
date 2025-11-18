@@ -5,23 +5,23 @@ Level 1 Category: 13 - Composite APQC Agent
 APQC Level 1: 13
 Category: Develop and Manage Business Capabilities (13.0)
 
-This is a COMPOSITE AGENT that orchestrates 48 child agents.
+This is a COMPOSITE AGENT that orchestrates 66 child agents.
 
 Orchestration Pattern: Sequential Workflow
 Standards: A2A, ANP, ACP, BPP, BDP, BRP, BMP, BCP, BIP
 
 Child Agents:
-  - 13.4.2.3: Organize knowledge
-  - 13.3.2.1: Plan quality activities
+  - 13.2.2.5: Review improvement
+  - 13.5.1.2: Identify analytics use cases
+  - 13.2.3.5: Review governance
+  - 13.2.3.1: Track adoption metrics
+  - 13.4.2.4: Facilitate knowledge sharing
+  - 13.4.1.3: Establish knowledge repositories
+  - 13.4.3.1: Create content
   - 13.1.1.3: Document processes
-  - 13.3.1.2: Set quality objectives
-  - 13.1.2.1: Identify improvement opportunities
-  - 13.4.2.1: Capture explicit knowledge
-  - 13.4.3.2: Review and approve content
-  - 13.2.2.2: Train affected stakeholders
-  - 13.1.2.2: Design improved processes
-  - 13.2.3.4: Sustain improvements
-  ... and 38 more
+  - 13.3.2.4: Drive quality improvements
+  - 13.3.2.3: Monitor quality metrics
+  ... and 56 more
 
 Generated: 2025-11-18
 Version: 3.0.0
@@ -44,61 +44,79 @@ class CompositeAgent_13:
     """
     Composite Agent for APQC Level 1: 13
 
-    Orchestrates 48 child agents in a coordinated workflow.
+    Orchestrates 66 child agents in a coordinated workflow.
     """
 
     def __init__(self):
         self.apqc_id = "13"
         self.level = 1
         self.child_agent_ids = [
-        "13.4.2.3",
-        "13.3.2.1",
+        "13.2.2.5",
+        "13.5.1.2",
+        "13.2.3.5",
+        "13.2.3.1",
+        "13.4.2.4",
+        "13.4.1.3",
+        "13.4.3.1",
         "13.1.1.3",
-        "13.3.1.2",
+        "13.3.2.4",
+        "13.3.2.3",
+        "13.1.1.6",
         "13.1.2.1",
         "13.4.2.1",
-        "13.4.3.2",
-        "13.2.2.2",
-        "13.1.2.2",
-        "13.2.3.4",
-        "13.5.1.4",
-        "13.4.1.4",
-        "13.3.2.3",
-        "13.5.1.2",
-        "13.2.2.4",
-        "13.4.1.3",
-        "13.4.1.1",
-        "13.3.2.4",
-        "13.2.1.4",
-        "13.4.3.4",
-        "13.1.1.1",
-        "13.1.1.2",
-        "13.2.1.3",
-        "13.5.2.1",
-        "13.5.1.1",
-        "13.4.2.2",
-        "13.4.1.2",
-        "13.3.1.3",
-        "13.3.1.1",
-        "13.2.2.1",
-        "13.2.2.3",
-        "13.2.3.2",
-        "13.2.1.1",
-        "13.1.2.3",
-        "13.2.3.3",
-        "13.2.1.2",
-        "13.5.2.4",
-        "13.3.1.4",
-        "13.2.3.1",
-        "13.1.2.4",
-        "13.5.2.2",
-        "13.4.3.1",
-        "13.5.1.3",
-        "13.5.2.3",
-        "13.4.3.3",
-        "13.4.2.4",
         "13.3.2.2",
-        "13.1.1.4"
+        "13.2.3.6",
+        "13.2.1.6",
+        "13.1.1.2",
+        "13.2.1.1",
+        "13.3.2.5",
+        "13.4.2.5",
+        "13.3.1.6",
+        "13.2.2.3",
+        "13.1.1.4",
+        "13.2.3.3",
+        "13.5.2.2",
+        "13.3.2.6",
+        "13.2.3.2",
+        "13.1.2.3",
+        "13.4.1.4",
+        "13.2.2.6",
+        "13.5.2.3",
+        "13.4.3.2",
+        "13.4.1.2",
+        "13.5.1.4",
+        "13.1.2.5",
+        "13.2.2.4",
+        "13.4.3.4",
+        "13.1.2.6",
+        "13.2.1.3",
+        "13.4.1.6",
+        "13.3.1.2",
+        "13.2.3.4",
+        "13.5.2.1",
+        "13.1.2.2",
+        "13.1.1.1",
+        "13.3.1.5",
+        "13.3.1.4",
+        "13.3.2.1",
+        "13.5.1.3",
+        "13.3.1.1",
+        "13.5.2.4",
+        "13.2.1.2",
+        "13.5.1.1",
+        "13.2.2.1",
+        "13.2.1.5",
+        "13.1.1.5",
+        "13.4.3.3",
+        "13.4.2.2",
+        "13.2.2.2",
+        "13.4.1.5",
+        "13.4.1.1",
+        "13.4.2.6",
+        "13.1.2.4",
+        "13.4.2.3",
+        "13.2.1.4",
+        "13.3.1.3"
 ]
         self.logger = logging.getLogger(f"CompositeAgent_13")
 

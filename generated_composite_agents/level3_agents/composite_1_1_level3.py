@@ -5,23 +5,23 @@ Level 3 Process: 1.1 - Composite APQC Agent
 APQC Level 3: 1.1
 Category: Develop Vision and Strategy (1.0)
 
-This is a COMPOSITE AGENT that orchestrates 20 child agents.
+This is a COMPOSITE AGENT that orchestrates 28 child agents.
 
 Orchestration Pattern: Sequential Workflow
 Standards: A2A, ANP, ACP, BPP, BDP, BRP, BMP, BCP, BIP
 
 Child Agents:
-  - 1.1.4.2: Communicate vision to stakeholders
-  - 1.1.3.3: Assess core competencies
-  - 1.1.1.6: Identify social and cultural changes
+  - 1.1.3.6: Identify organizational advantages/disadvantages
   - 1.1.2.3: Identify market segments and target customers
-  - 1.1.3.5: Assess competitive position
-  - 1.1.1.3: Identify political and regulatory issues
-  - 1.1.4.4: Define guiding principles/values
+  - 1.1.4.6: Optimize objectives
+  - 1.1.4.2: Communicate vision to stakeholders
+  - 1.1.1.8: Report goals
   - 1.1.1.7: Understand ecological concerns
-  - 1.1.3.4: Determine core processes
-  - 1.1.2.2: Capture and assess customer needs
-  ... and 10 more
+  - 1.1.4.3: Create mission statement
+  - 1.1.1.2: Identify economic trends
+  - 1.1.1.3: Identify political and regulatory issues
+  - 1.1.1.9: Plan goals
+  ... and 18 more
 
 Generated: 2025-11-18
 Version: 3.0.0
@@ -44,33 +44,41 @@ class CompositeAgent_1_1:
     """
     Composite Agent for APQC Level 3: 1.1
 
-    Orchestrates 20 child agents in a coordinated workflow.
+    Orchestrates 28 child agents in a coordinated workflow.
     """
 
     def __init__(self):
         self.apqc_id = "1.1"
         self.level = 3
         self.child_agent_ids = [
-        "1.1.4.2",
-        "1.1.3.3",
-        "1.1.1.6",
-        "1.1.2.3",
-        "1.1.3.5",
-        "1.1.1.3",
-        "1.1.4.4",
-        "1.1.1.7",
-        "1.1.3.4",
-        "1.1.2.2",
-        "1.1.1.2",
-        "1.1.4.3",
-        "1.1.1.1",
-        "1.1.4.1",
         "1.1.3.6",
-        "1.1.3.2",
+        "1.1.2.3",
+        "1.1.4.6",
+        "1.1.4.2",
+        "1.1.1.8",
+        "1.1.1.7",
+        "1.1.4.3",
+        "1.1.1.2",
+        "1.1.1.3",
+        "1.1.1.9",
+        "1.1.2.1",
+        "1.1.2.2",
+        "1.1.1.1",
+        "1.1.4.5",
         "1.1.1.5",
-        "1.1.3.1",
+        "1.1.3.7",
+        "1.1.1.6",
+        "1.1.3.8",
+        "1.1.3.5",
+        "1.1.4.1",
+        "1.1.3.2",
         "1.1.1.4",
-        "1.1.2.1"
+        "1.1.3.3",
+        "1.1.3.1",
+        "1.1.2.5",
+        "1.1.3.4",
+        "1.1.2.4",
+        "1.1.4.4"
 ]
         self.logger = logging.getLogger(f"CompositeAgent_1_1")
 

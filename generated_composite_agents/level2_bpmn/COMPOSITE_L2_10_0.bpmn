@@ -6,213 +6,237 @@ Level 2 Composite Process
 Acquire, Construct, and Manage Assets
 APQC ID: 10.0
 
-Orchestrates 44 child agents:
-  1. 10.1.3.1: Procure construction services
-  2. 10.3.1.1: Track asset utilization
-  3. 10.3.2.1: Assess asset value
-  4. 10.1.1.3: Approve capital funding
-  5. 10.3.2.2: Identify improvement opportunities
-  6. 10.1.2.1: Define requirements
-  7. 10.4.2.1: Conduct risk assessments
-  8. 10.3.1.2: Monitor asset condition
-  9. 10.4.3.4: Report environmental performance
-  10. 10.3.1.4: Analyze asset performance
-  11. 10.3.2.3: Prioritize investments
-  12. 10.4.3.3: Manage waste
-  13. 10.4.1.1: Define EHS objectives
-  14. 10.2.1.2: Establish maintenance policies
-  15. 10.4.1.3: Ensure regulatory compliance
-  16. 10.2.3.4: Restore operations
-  17. 10.2.1.1: Define maintenance objectives
-  18. 10.4.2.4: Monitor safety performance
-  19. 10.4.3.2: Manage emissions
-  20. 10.1.1.4: Assemble project team
-  ... and 24 more
+Orchestrates 62 child agents:
+  1. 10.3.2.1: Assess asset value
+  2. 10.2.1.3: Plan maintenance resources
+  3. 10.4.1.3: Ensure regulatory compliance
+  4. 10.3.2.5: Review lifecycle
+  5. 10.1.2.1: Define requirements
+  6. 10.1.3.1: Procure construction services
+  7. 10.1.2.5: Review maintenance
+  8. 10.2.3.6: Optimize lifecycle
+  9. 10.2.3.4: Restore operations
+  10. 10.1.1.3: Approve capital funding
+  11. 10.3.1.1: Track asset utilization
+  12. 10.1.2.6: Optimize maintenance
+  13. 10.4.3.4: Report environmental performance
+  14. 10.2.1.1: Define maintenance objectives
+  15. 10.2.2.4: Track maintenance history
+  16. 10.2.2.5: Review projects
+  17. 10.3.2.2: Identify improvement opportunities
+  18. 10.4.3.1: Monitor environmental impacts
+  19. 10.3.1.4: Analyze asset performance
+  20. 10.3.2.4: Execute improvements
+  ... and 42 more
 
 Orchestration Pattern: Sequential Workflow (Pipeline)
 Standards: BPMN 2.0, A2A Protocol
 
-Generated: 2025-11-18T00:44:42.634325
+Generated: 2025-11-18T01:11:36.760753
 Status: Production Ready
 </bpmn:documentation>
     <bpmn:startEvent id="Start_L2_10_0" name="Start Composite">
       <bpmn:outgoing>Flow_start_to_child1</bpmn:outgoing>
     </bpmn:startEvent>
-    <bpmn:callActivity id="CallActivity_L2_child1" name="10.1.3.1: Procure construction services" calledElement="Process_10_1_3_1">
+    <bpmn:callActivity id="CallActivity_L2_child1" name="10.3.2.1: Assess asset value" calledElement="Process_10_3_2_1">
       <bpmn:incoming>Flow_start_to_child1</bpmn:incoming>
       <bpmn:outgoing>Flow_child1_to_child2</bpmn:outgoing>
     </bpmn:callActivity>
-    <bpmn:callActivity id="CallActivity_L2_child2" name="10.3.1.1: Track asset utilization" calledElement="Process_10_3_1_1">
+    <bpmn:callActivity id="CallActivity_L2_child2" name="10.2.1.3: Plan maintenance resources" calledElement="Process_10_2_1_3">
       <bpmn:incoming>Flow_child1_to_child2</bpmn:incoming>
       <bpmn:outgoing>Flow_child2_to_child3</bpmn:outgoing>
     </bpmn:callActivity>
-    <bpmn:callActivity id="CallActivity_L2_child3" name="10.3.2.1: Assess asset value" calledElement="Process_10_3_2_1">
+    <bpmn:callActivity id="CallActivity_L2_child3" name="10.4.1.3: Ensure regulatory compliance" calledElement="Process_10_4_1_3">
       <bpmn:incoming>Flow_child2_to_child3</bpmn:incoming>
       <bpmn:outgoing>Flow_child3_to_child4</bpmn:outgoing>
     </bpmn:callActivity>
-    <bpmn:callActivity id="CallActivity_L2_child4" name="10.1.1.3: Approve capital funding" calledElement="Process_10_1_1_3">
+    <bpmn:callActivity id="CallActivity_L2_child4" name="10.3.2.5: Review lifecycle" calledElement="Process_10_3_2_5">
       <bpmn:incoming>Flow_child3_to_child4</bpmn:incoming>
       <bpmn:outgoing>Flow_child4_to_child5</bpmn:outgoing>
     </bpmn:callActivity>
-    <bpmn:callActivity id="CallActivity_L2_child5" name="10.3.2.2: Identify improvement opportuni..." calledElement="Process_10_3_2_2">
+    <bpmn:callActivity id="CallActivity_L2_child5" name="10.1.2.1: Define requirements" calledElement="Process_10_1_2_1">
       <bpmn:incoming>Flow_child4_to_child5</bpmn:incoming>
       <bpmn:outgoing>Flow_child5_to_child6</bpmn:outgoing>
     </bpmn:callActivity>
-    <bpmn:callActivity id="CallActivity_L2_child6" name="10.1.2.1: Define requirements" calledElement="Process_10_1_2_1">
+    <bpmn:callActivity id="CallActivity_L2_child6" name="10.1.3.1: Procure construction services" calledElement="Process_10_1_3_1">
       <bpmn:incoming>Flow_child5_to_child6</bpmn:incoming>
       <bpmn:outgoing>Flow_child6_to_child7</bpmn:outgoing>
     </bpmn:callActivity>
-    <bpmn:callActivity id="CallActivity_L2_child7" name="10.4.2.1: Conduct risk assessments" calledElement="Process_10_4_2_1">
+    <bpmn:callActivity id="CallActivity_L2_child7" name="10.1.2.5: Review maintenance" calledElement="Process_10_1_2_5">
       <bpmn:incoming>Flow_child6_to_child7</bpmn:incoming>
       <bpmn:outgoing>Flow_child7_to_child8</bpmn:outgoing>
     </bpmn:callActivity>
-    <bpmn:callActivity id="CallActivity_L2_child8" name="10.3.1.2: Monitor asset condition" calledElement="Process_10_3_1_2">
+    <bpmn:callActivity id="CallActivity_L2_child8" name="10.2.3.6: Optimize lifecycle" calledElement="Process_10_2_3_6">
       <bpmn:incoming>Flow_child7_to_child8</bpmn:incoming>
       <bpmn:outgoing>Flow_child8_to_child9</bpmn:outgoing>
     </bpmn:callActivity>
-    <bpmn:callActivity id="CallActivity_L2_child9" name="10.4.3.4: Report environmental performan..." calledElement="Process_10_4_3_4">
+    <bpmn:callActivity id="CallActivity_L2_child9" name="10.2.3.4: Restore operations" calledElement="Process_10_2_3_4">
       <bpmn:incoming>Flow_child8_to_child9</bpmn:incoming>
       <bpmn:outgoing>Flow_child9_to_child10</bpmn:outgoing>
     </bpmn:callActivity>
-    <bpmn:callActivity id="CallActivity_L2_child10" name="10.3.1.4: Analyze asset performance" calledElement="Process_10_3_1_4">
+    <bpmn:callActivity id="CallActivity_L2_child10" name="10.1.1.3: Approve capital funding" calledElement="Process_10_1_1_3">
       <bpmn:incoming>Flow_child9_to_child10</bpmn:incoming>
       <bpmn:outgoing>Flow_child10_to_child11</bpmn:outgoing>
     </bpmn:callActivity>
-    <bpmn:callActivity id="CallActivity_L2_child11" name="10.3.2.3: Prioritize investments" calledElement="Process_10_3_2_3">
+    <bpmn:callActivity id="CallActivity_L2_child11" name="10.3.1.1: Track asset utilization" calledElement="Process_10_3_1_1">
       <bpmn:incoming>Flow_child10_to_child11</bpmn:incoming>
       <bpmn:outgoing>Flow_child11_to_child12</bpmn:outgoing>
     </bpmn:callActivity>
-    <bpmn:callActivity id="CallActivity_L2_child12" name="10.4.3.3: Manage waste" calledElement="Process_10_4_3_3">
+    <bpmn:callActivity id="CallActivity_L2_child12" name="10.1.2.6: Optimize maintenance" calledElement="Process_10_1_2_6">
       <bpmn:incoming>Flow_child11_to_child12</bpmn:incoming>
       <bpmn:outgoing>Flow_child12_to_child13</bpmn:outgoing>
     </bpmn:callActivity>
-    <bpmn:callActivity id="CallActivity_L2_child13" name="10.4.1.1: Define EHS objectives" calledElement="Process_10_4_1_1">
+    <bpmn:callActivity id="CallActivity_L2_child13" name="10.4.3.4: Report environmental performan..." calledElement="Process_10_4_3_4">
       <bpmn:incoming>Flow_child12_to_child13</bpmn:incoming>
       <bpmn:outgoing>Flow_child13_to_child14</bpmn:outgoing>
     </bpmn:callActivity>
-    <bpmn:callActivity id="CallActivity_L2_child14" name="10.2.1.2: Establish maintenance policies" calledElement="Process_10_2_1_2">
+    <bpmn:callActivity id="CallActivity_L2_child14" name="10.2.1.1: Define maintenance objectives" calledElement="Process_10_2_1_1">
       <bpmn:incoming>Flow_child13_to_child14</bpmn:incoming>
       <bpmn:outgoing>Flow_child14_to_child15</bpmn:outgoing>
     </bpmn:callActivity>
-    <bpmn:callActivity id="CallActivity_L2_child15" name="10.4.1.3: Ensure regulatory compliance" calledElement="Process_10_4_1_3">
+    <bpmn:callActivity id="CallActivity_L2_child15" name="10.2.2.4: Track maintenance history" calledElement="Process_10_2_2_4">
       <bpmn:incoming>Flow_child14_to_child15</bpmn:incoming>
       <bpmn:outgoing>Flow_child15_to_child16</bpmn:outgoing>
     </bpmn:callActivity>
-    <bpmn:callActivity id="CallActivity_L2_child16" name="10.2.3.4: Restore operations" calledElement="Process_10_2_3_4">
+    <bpmn:callActivity id="CallActivity_L2_child16" name="10.2.2.5: Review projects" calledElement="Process_10_2_2_5">
       <bpmn:incoming>Flow_child15_to_child16</bpmn:incoming>
       <bpmn:outgoing>Flow_child16_to_child17</bpmn:outgoing>
     </bpmn:callActivity>
-    <bpmn:callActivity id="CallActivity_L2_child17" name="10.2.1.1: Define maintenance objectives" calledElement="Process_10_2_1_1">
+    <bpmn:callActivity id="CallActivity_L2_child17" name="10.3.2.2: Identify improvement opportuni..." calledElement="Process_10_3_2_2">
       <bpmn:incoming>Flow_child16_to_child17</bpmn:incoming>
       <bpmn:outgoing>Flow_child17_to_child18</bpmn:outgoing>
     </bpmn:callActivity>
-    <bpmn:callActivity id="CallActivity_L2_child18" name="10.4.2.4: Monitor safety performance" calledElement="Process_10_4_2_4">
+    <bpmn:callActivity id="CallActivity_L2_child18" name="10.4.3.1: Monitor environmental impacts" calledElement="Process_10_4_3_1">
       <bpmn:incoming>Flow_child17_to_child18</bpmn:incoming>
       <bpmn:outgoing>Flow_child18_to_child19</bpmn:outgoing>
     </bpmn:callActivity>
-    <bpmn:callActivity id="CallActivity_L2_child19" name="10.4.3.2: Manage emissions" calledElement="Process_10_4_3_2">
+    <bpmn:callActivity id="CallActivity_L2_child19" name="10.3.1.4: Analyze asset performance" calledElement="Process_10_3_1_4">
       <bpmn:incoming>Flow_child18_to_child19</bpmn:incoming>
       <bpmn:outgoing>Flow_child19_to_child20</bpmn:outgoing>
     </bpmn:callActivity>
-    <bpmn:callActivity id="CallActivity_L2_child20" name="10.1.1.4: Assemble project team" calledElement="Process_10_1_1_4">
+    <bpmn:callActivity id="CallActivity_L2_child20" name="10.3.2.4: Execute improvements" calledElement="Process_10_3_2_4">
       <bpmn:incoming>Flow_child19_to_child20</bpmn:incoming>
       <bpmn:outgoing>Flow_child20_to_child21</bpmn:outgoing>
     </bpmn:callActivity>
-    <bpmn:callActivity id="CallActivity_L2_child21" name="10.2.3.2: Diagnose problems" calledElement="Process_10_2_3_2">
+    <bpmn:callActivity id="CallActivity_L2_child21" name="10.3.1.5: Review projects" calledElement="Process_10_3_1_5">
       <bpmn:incoming>Flow_child20_to_child21</bpmn:incoming>
       <bpmn:outgoing>Flow_child21_to_child22</bpmn:outgoing>
     </bpmn:callActivity>
-    <bpmn:callActivity id="CallActivity_L2_child22" name="10.2.2.3: Document maintenance" calledElement="Process_10_2_2_3">
+    <bpmn:callActivity id="CallActivity_L2_child22" name="10.4.3.2: Manage emissions" calledElement="Process_10_4_3_2">
       <bpmn:incoming>Flow_child21_to_child22</bpmn:incoming>
       <bpmn:outgoing>Flow_child22_to_child23</bpmn:outgoing>
     </bpmn:callActivity>
-    <bpmn:callActivity id="CallActivity_L2_child23" name="10.1.2.3: Review and approve designs" calledElement="Process_10_1_2_3">
+    <bpmn:callActivity id="CallActivity_L2_child23" name="10.4.2.1: Conduct risk assessments" calledElement="Process_10_4_2_1">
       <bpmn:incoming>Flow_child22_to_child23</bpmn:incoming>
       <bpmn:outgoing>Flow_child23_to_child24</bpmn:outgoing>
     </bpmn:callActivity>
-    <bpmn:callActivity id="CallActivity_L2_child24" name="10.2.1.4: Set maintenance budgets" calledElement="Process_10_2_1_4">
+    <bpmn:callActivity id="CallActivity_L2_child24" name="10.1.3.4: Complete construction" calledElement="Process_10_1_3_4">
       <bpmn:incoming>Flow_child23_to_child24</bpmn:incoming>
       <bpmn:outgoing>Flow_child24_to_child25</bpmn:outgoing>
     </bpmn:callActivity>
-    <bpmn:callActivity id="CallActivity_L2_child25" name="10.2.2.4: Track maintenance history" calledElement="Process_10_2_2_4">
+    <bpmn:callActivity id="CallActivity_L2_child25" name="10.4.1.5: Review lifecycle" calledElement="Process_10_4_1_5">
       <bpmn:incoming>Flow_child24_to_child25</bpmn:incoming>
       <bpmn:outgoing>Flow_child25_to_child26</bpmn:outgoing>
     </bpmn:callActivity>
-    <bpmn:callActivity id="CallActivity_L2_child26" name="10.1.3.3: Monitor progress" calledElement="Process_10_1_3_3">
+    <bpmn:callActivity id="CallActivity_L2_child26" name="10.3.1.3: Measure asset reliability" calledElement="Process_10_3_1_3">
       <bpmn:incoming>Flow_child25_to_child26</bpmn:incoming>
       <bpmn:outgoing>Flow_child26_to_child27</bpmn:outgoing>
     </bpmn:callActivity>
-    <bpmn:callActivity id="CallActivity_L2_child27" name="10.4.2.3: Train employees" calledElement="Process_10_4_2_3">
+    <bpmn:callActivity id="CallActivity_L2_child27" name="10.2.3.3: Repair assets" calledElement="Process_10_2_3_3">
       <bpmn:incoming>Flow_child26_to_child27</bpmn:incoming>
       <bpmn:outgoing>Flow_child27_to_child28</bpmn:outgoing>
     </bpmn:callActivity>
-    <bpmn:callActivity id="CallActivity_L2_child28" name="10.2.3.1: Report breakdowns" calledElement="Process_10_2_3_1">
+    <bpmn:callActivity id="CallActivity_L2_child28" name="10.1.1.4: Assemble project team" calledElement="Process_10_1_1_4">
       <bpmn:incoming>Flow_child27_to_child28</bpmn:incoming>
       <bpmn:outgoing>Flow_child28_to_child29</bpmn:outgoing>
     </bpmn:callActivity>
-    <bpmn:callActivity id="CallActivity_L2_child29" name="10.2.2.1: Schedule maintenance" calledElement="Process_10_2_2_1">
+    <bpmn:callActivity id="CallActivity_L2_child29" name="10.1.3.5: Review projects" calledElement="Process_10_1_3_5">
       <bpmn:incoming>Flow_child28_to_child29</bpmn:incoming>
       <bpmn:outgoing>Flow_child29_to_child30</bpmn:outgoing>
     </bpmn:callActivity>
-    <bpmn:callActivity id="CallActivity_L2_child30" name="10.1.3.4: Complete construction" calledElement="Process_10_1_3_4">
+    <bpmn:callActivity id="CallActivity_L2_child30" name="10.4.3.3: Manage waste" calledElement="Process_10_4_3_3">
       <bpmn:incoming>Flow_child29_to_child30</bpmn:incoming>
       <bpmn:outgoing>Flow_child30_to_child31</bpmn:outgoing>
     </bpmn:callActivity>
-    <bpmn:callActivity id="CallActivity_L2_child31" name="10.3.1.3: Measure asset reliability" calledElement="Process_10_3_1_3">
+    <bpmn:callActivity id="CallActivity_L2_child31" name="10.3.1.6: Optimize projects" calledElement="Process_10_3_1_6">
       <bpmn:incoming>Flow_child30_to_child31</bpmn:incoming>
       <bpmn:outgoing>Flow_child31_to_child32</bpmn:outgoing>
     </bpmn:callActivity>
-    <bpmn:callActivity id="CallActivity_L2_child32" name="10.4.3.1: Monitor environmental impacts" calledElement="Process_10_4_3_1">
+    <bpmn:callActivity id="CallActivity_L2_child32" name="10.2.3.1: Report breakdowns" calledElement="Process_10_2_3_1">
       <bpmn:incoming>Flow_child31_to_child32</bpmn:incoming>
       <bpmn:outgoing>Flow_child32_to_child33</bpmn:outgoing>
     </bpmn:callActivity>
-    <bpmn:callActivity id="CallActivity_L2_child33" name="10.3.2.4: Execute improvements" calledElement="Process_10_3_2_4">
+    <bpmn:callActivity id="CallActivity_L2_child33" name="10.4.2.2: Implement safety controls" calledElement="Process_10_4_2_2">
       <bpmn:incoming>Flow_child32_to_child33</bpmn:incoming>
       <bpmn:outgoing>Flow_child33_to_child34</bpmn:outgoing>
     </bpmn:callActivity>
-    <bpmn:callActivity id="CallActivity_L2_child34" name="10.2.2.2: Execute maintenance" calledElement="Process_10_2_2_2">
+    <bpmn:callActivity id="CallActivity_L2_child34" name="10.2.2.1: Schedule maintenance" calledElement="Process_10_2_2_1">
       <bpmn:incoming>Flow_child33_to_child34</bpmn:incoming>
       <bpmn:outgoing>Flow_child34_to_child35</bpmn:outgoing>
     </bpmn:callActivity>
-    <bpmn:callActivity id="CallActivity_L2_child35" name="10.2.1.3: Plan maintenance resources" calledElement="Process_10_2_1_3">
+    <bpmn:callActivity id="CallActivity_L2_child35" name="10.2.2.6: Optimize projects" calledElement="Process_10_2_2_6">
       <bpmn:incoming>Flow_child34_to_child35</bpmn:incoming>
       <bpmn:outgoing>Flow_child35_to_child36</bpmn:outgoing>
     </bpmn:callActivity>
-    <bpmn:callActivity id="CallActivity_L2_child36" name="10.1.1.1: Identify project needs" calledElement="Process_10_1_1_1">
+    <bpmn:callActivity id="CallActivity_L2_child36" name="10.2.3.2: Diagnose problems" calledElement="Process_10_2_3_2">
       <bpmn:incoming>Flow_child35_to_child36</bpmn:incoming>
       <bpmn:outgoing>Flow_child36_to_child37</bpmn:outgoing>
     </bpmn:callActivity>
-    <bpmn:callActivity id="CallActivity_L2_child37" name="10.4.1.2: Establish EHS policies" calledElement="Process_10_4_1_2">
+    <bpmn:callActivity id="CallActivity_L2_child37" name="10.3.2.6: Optimize lifecycle" calledElement="Process_10_3_2_6">
       <bpmn:incoming>Flow_child36_to_child37</bpmn:incoming>
       <bpmn:outgoing>Flow_child37_to_child38</bpmn:outgoing>
     </bpmn:callActivity>
-    <bpmn:callActivity id="CallActivity_L2_child38" name="10.4.1.4: Set EHS targets" calledElement="Process_10_4_1_4">
+    <bpmn:callActivity id="CallActivity_L2_child38" name="10.2.1.2: Establish maintenance policies" calledElement="Process_10_2_1_2">
       <bpmn:incoming>Flow_child37_to_child38</bpmn:incoming>
       <bpmn:outgoing>Flow_child38_to_child39</bpmn:outgoing>
     </bpmn:callActivity>
-    <bpmn:callActivity id="CallActivity_L2_child39" name="10.1.2.2: Create design specifications" calledElement="Process_10_1_2_2">
+    <bpmn:callActivity id="CallActivity_L2_child39" name="10.4.2.3: Train employees" calledElement="Process_10_4_2_3">
       <bpmn:incoming>Flow_child38_to_child39</bpmn:incoming>
       <bpmn:outgoing>Flow_child39_to_child40</bpmn:outgoing>
     </bpmn:callActivity>
-    <bpmn:callActivity id="CallActivity_L2_child40" name="10.1.2.4: Obtain permits" calledElement="Process_10_1_2_4">
+    <bpmn:callActivity id="CallActivity_L2_child40" name="10.2.3.5: Review lifecycle" calledElement="Process_10_2_3_5">
       <bpmn:incoming>Flow_child39_to_child40</bpmn:incoming>
       <bpmn:outgoing>Flow_child40_to_child41</bpmn:outgoing>
     </bpmn:callActivity>
-    <bpmn:callActivity id="CallActivity_L2_child41" name="10.1.1.2: Develop business case" calledElement="Process_10_1_1_2">
+    <bpmn:callActivity id="CallActivity_L2_child41" name="10.1.3.6: Optimize projects" calledElement="Process_10_1_3_6">
       <bpmn:incoming>Flow_child40_to_child41</bpmn:incoming>
       <bpmn:outgoing>Flow_child41_to_child42</bpmn:outgoing>
     </bpmn:callActivity>
-    <bpmn:callActivity id="CallActivity_L2_child42" name="10.2.3.3: Repair assets" calledElement="Process_10_2_3_3">
+    <bpmn:callActivity id="CallActivity_L2_child42" name="10.3.2.3: Prioritize investments" calledElement="Process_10_3_2_3">
       <bpmn:incoming>Flow_child41_to_child42</bpmn:incoming>
       <bpmn:outgoing>Flow_child42_to_child43</bpmn:outgoing>
     </bpmn:callActivity>
-    <bpmn:callActivity id="CallActivity_L2_child43" name="10.4.2.2: Implement safety controls" calledElement="Process_10_4_2_2">
+    <bpmn:callActivity id="CallActivity_L2_child43" name="10.4.1.2: Establish EHS policies" calledElement="Process_10_4_1_2">
       <bpmn:incoming>Flow_child42_to_child43</bpmn:incoming>
       <bpmn:outgoing>Flow_child43_to_child44</bpmn:outgoing>
     </bpmn:callActivity>
-    <bpmn:callActivity id="CallActivity_L2_child44" name="10.1.3.2: Execute construction" calledElement="Process_10_1_3_2">
+    <bpmn:callActivity id="CallActivity_L2_child44" name="10.2.1.4: Set maintenance budgets" calledElement="Process_10_2_1_4">
       <bpmn:incoming>Flow_child43_to_child44</bpmn:incoming>
-      <bpmn:outgoing>Flow_child44_to_end</bpmn:outgoing>
+      <bpmn:outgoing>Flow_child44_to_child45</bpmn:outgoing>
+    </bpmn:callActivity>
+    <bpmn:callActivity id="CallActivity_L2_child45" name="10.2.1.6: Optimize maintenance" calledElement="Process_10_2_1_6">
+      <bpmn:incoming>Flow_child44_to_child45</bpmn:incoming>
+      <bpmn:outgoing>Flow_child45_to_child46</bpmn:outgoing>
+    </bpmn:callActivity>
+    <bpmn:callActivity id="CallActivity_L2_child46" name="10.2.2.2: Execute maintenance" calledElement="Process_10_2_2_2">
+      <bpmn:incoming>Flow_child45_to_child46</bpmn:incoming>
+      <bpmn:outgoing>Flow_child46_to_child47</bpmn:outgoing>
+    </bpmn:callActivity>
+    <bpmn:callActivity id="CallActivity_L2_child47" name="10.4.1.1: Define EHS objectives" calledElement="Process_10_4_1_1">
+      <bpmn:incoming>Flow_child46_to_child47</bpmn:incoming>
+      <bpmn:outgoing>Flow_child47_to_child48</bpmn:outgoing>
+    </bpmn:callActivity>
+    <bpmn:callActivity id="CallActivity_L2_child48" name="10.3.1.2: Monitor asset condition" calledElement="Process_10_3_1_2">
+      <bpmn:incoming>Flow_child47_to_child48</bpmn:incoming>
+      <bpmn:outgoing>Flow_child48_to_child49</bpmn:outgoing>
+    </bpmn:callActivity>
+    <bpmn:callActivity id="CallActivity_L2_child49" name="10.1.1.6: Optimize equipment" calledElement="Process_10_1_1_6">
+      <bpmn:incoming>Flow_child48_to_child49</bpmn:incoming>
+      <bpmn:outgoing>Flow_child49_to_child50</bpmn:outgoing>
+    </bpmn:callActivity>
+    <bpmn:callActivity id="CallActivity_L2_child50" name="10.4.1.6: Optimize lifecycle" calledElement="Process_10_4_1_6">
+      <bpmn:incoming>Flow_child49_to_child50</bpmn:incoming>
+      <bpmn:outgoing>Flow_child50_to_end</bpmn:outgoing>
     </bpmn:callActivity>
     <bpmn:sequenceFlow id="Flow_start_to_child1" sourceRef="Start_L2_10_0" targetRef="CallActivity_L2_child1" />
     <bpmn:sequenceFlow id="Flow_child1_to_child2" sourceRef="CallActivity_L2_child1" targetRef="CallActivity_L2_child2" />
@@ -258,9 +282,15 @@ Status: Production Ready
     <bpmn:sequenceFlow id="Flow_child41_to_child42" sourceRef="CallActivity_L2_child41" targetRef="CallActivity_L2_child42" />
     <bpmn:sequenceFlow id="Flow_child42_to_child43" sourceRef="CallActivity_L2_child42" targetRef="CallActivity_L2_child43" />
     <bpmn:sequenceFlow id="Flow_child43_to_child44" sourceRef="CallActivity_L2_child43" targetRef="CallActivity_L2_child44" />
-    <bpmn:sequenceFlow id="Flow_child44_to_end" sourceRef="CallActivity_L2_child44" targetRef="End_L2_10_0" />
+    <bpmn:sequenceFlow id="Flow_child44_to_child45" sourceRef="CallActivity_L2_child44" targetRef="CallActivity_L2_child45" />
+    <bpmn:sequenceFlow id="Flow_child45_to_child46" sourceRef="CallActivity_L2_child45" targetRef="CallActivity_L2_child46" />
+    <bpmn:sequenceFlow id="Flow_child46_to_child47" sourceRef="CallActivity_L2_child46" targetRef="CallActivity_L2_child47" />
+    <bpmn:sequenceFlow id="Flow_child47_to_child48" sourceRef="CallActivity_L2_child47" targetRef="CallActivity_L2_child48" />
+    <bpmn:sequenceFlow id="Flow_child48_to_child49" sourceRef="CallActivity_L2_child48" targetRef="CallActivity_L2_child49" />
+    <bpmn:sequenceFlow id="Flow_child49_to_child50" sourceRef="CallActivity_L2_child49" targetRef="CallActivity_L2_child50" />
+    <bpmn:sequenceFlow id="Flow_child50_to_end" sourceRef="CallActivity_L2_child50" targetRef="End_L2_10_0" />
     <bpmn:endEvent id="End_L2_10_0" name="Composite Complete">
-      <bpmn:incoming>Flow_child44_to_end</bpmn:incoming>
+      <bpmn:incoming>Flow_child50_to_end</bpmn:incoming>
     </bpmn:endEvent>
   </bpmn:process>
   <bpmndi:BPMNDiagram id="Diagram_L2_10_0">

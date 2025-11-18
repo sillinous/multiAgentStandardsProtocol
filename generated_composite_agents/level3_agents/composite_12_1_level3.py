@@ -5,21 +5,23 @@ Level 3 Process: 12.1 - Composite APQC Agent
 APQC Level 3: 12.1
 Category: Manage External Relationships (12.0)
 
-This is a COMPOSITE AGENT that orchestrates 8 child agents.
+This is a COMPOSITE AGENT that orchestrates 12 child agents.
 
 Orchestration Pattern: Sequential Workflow
 Standards: A2A, ANP, ACP, BPP, BDP, BRP, BMP, BCP, BIP
 
 Child Agents:
   - 12.1.2.2: Conduct earnings calls
-  - 12.1.2.3: File regulatory reports
-  - 12.1.1.3: Organize investor events
   - 12.1.1.1: Communicate with investors
   - 12.1.2.1: Prepare earnings releases
-  - 12.1.1.2: Respond to investor inquiries
+  - 12.1.1.6: Optimize contracts
   - 12.1.2.4: Publish annual reports
+  - 12.1.2.6: Optimize performance
   - 12.1.1.4: Maintain investor database
-
+  - 12.1.1.5: Review contracts
+  - 12.1.2.3: File regulatory reports
+  - 12.1.1.3: Organize investor events
+  ... and 2 more
 
 Generated: 2025-11-18
 Version: 3.0.0
@@ -42,7 +44,7 @@ class CompositeAgent_12_1:
     """
     Composite Agent for APQC Level 3: 12.1
 
-    Orchestrates 8 child agents in a coordinated workflow.
+    Orchestrates 12 child agents in a coordinated workflow.
     """
 
     def __init__(self):
@@ -50,13 +52,17 @@ class CompositeAgent_12_1:
         self.level = 3
         self.child_agent_ids = [
         "12.1.2.2",
-        "12.1.2.3",
-        "12.1.1.3",
         "12.1.1.1",
         "12.1.2.1",
-        "12.1.1.2",
+        "12.1.1.6",
         "12.1.2.4",
-        "12.1.1.4"
+        "12.1.2.6",
+        "12.1.1.4",
+        "12.1.1.5",
+        "12.1.2.3",
+        "12.1.1.3",
+        "12.1.1.2",
+        "12.1.2.5"
 ]
         self.logger = logging.getLogger(f"CompositeAgent_12_1")
 

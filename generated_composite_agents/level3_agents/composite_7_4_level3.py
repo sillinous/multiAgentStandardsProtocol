@@ -5,23 +5,23 @@ Level 3 Process: 7.4 - Composite APQC Agent
 APQC Level 3: 7.4
 Category: Manage Human Capital (7.0)
 
-This is a COMPOSITE AGENT that orchestrates 12 child agents.
+This is a COMPOSITE AGENT that orchestrates 15 child agents.
 
 Orchestration Pattern: Sequential Workflow
 Standards: A2A, ANP, ACP, BPP, BDP, BRP, BMP, BCP, BIP
 
 Child Agents:
+  - 7.4.2.5: Review workforce
+  - 7.4.1.6: Optimize training
+  - 7.4.1.1: Set performance goals
   - 7.4.3.2: Identify recognition opportunities
-  - 7.4.3.3: Deliver recognition
   - 7.4.3.1: Design recognition programs
-  - 7.4.2.4: Administer payroll
   - 7.4.2.1: Design compensation structure
   - 7.4.1.3: Provide feedback
-  - 7.4.3.4: Track recognition
-  - 7.4.1.1: Set performance goals
-  - 7.4.2.3: Make compensation decisions
-  - 7.4.1.4: Conduct performance reviews
-  ... and 2 more
+  - 7.4.1.2: Monitor performance
+  - 7.4.2.4: Administer payroll
+  - 7.4.3.3: Deliver recognition
+  ... and 5 more
 
 Generated: 2025-11-18
 Version: 3.0.0
@@ -44,25 +44,28 @@ class CompositeAgent_7_4:
     """
     Composite Agent for APQC Level 3: 7.4
 
-    Orchestrates 12 child agents in a coordinated workflow.
+    Orchestrates 15 child agents in a coordinated workflow.
     """
 
     def __init__(self):
         self.apqc_id = "7.4"
         self.level = 3
         self.child_agent_ids = [
+        "7.4.2.5",
+        "7.4.1.6",
+        "7.4.1.1",
         "7.4.3.2",
-        "7.4.3.3",
         "7.4.3.1",
-        "7.4.2.4",
         "7.4.2.1",
         "7.4.1.3",
-        "7.4.3.4",
-        "7.4.1.1",
-        "7.4.2.3",
-        "7.4.1.4",
         "7.4.1.2",
-        "7.4.2.2"
+        "7.4.2.4",
+        "7.4.3.3",
+        "7.4.2.3",
+        "7.4.2.2",
+        "7.4.1.5",
+        "7.4.3.4",
+        "7.4.1.4"
 ]
         self.logger = logging.getLogger(f"CompositeAgent_7_4")
 
