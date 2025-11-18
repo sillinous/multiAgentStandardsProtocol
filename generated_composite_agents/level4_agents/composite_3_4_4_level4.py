@@ -11,10 +11,10 @@ Orchestration Pattern: Sequential Workflow
 Standards: A2A, ANP, ACP, BPP, BDP, BRP, BMP, BCP, BIP
 
 Child Agents:
-  - 3.4.4.4: Ensure customer success
-  - 3.4.4.1: Onboard customers
-  - 3.4.4.2: Manage relationships
   - 3.4.4.3: Identify upsell/cross-sell opportunities
+  - 3.4.4.4: Ensure customer success
+  - 3.4.4.2: Manage relationships
+  - 3.4.4.1: Onboard customers
 
 
 Generated: 2025-11-18
@@ -45,10 +45,10 @@ class CompositeAgent_3_4_4:
         self.apqc_id = "3.4.4"
         self.level = 4
         self.child_agent_ids = [
+        "3.4.4.3",
         "3.4.4.4",
-        "3.4.4.1",
         "3.4.4.2",
-        "3.4.4.3"
+        "3.4.4.1"
 ]
         self.logger = logging.getLogger(f"CompositeAgent_3_4_4")
 

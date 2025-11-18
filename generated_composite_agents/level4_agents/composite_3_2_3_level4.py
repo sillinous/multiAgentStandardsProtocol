@@ -16,8 +16,8 @@ Child Agents:
   - 3.2.3.8: Report marketing
   - 3.2.3.7: Document marketing
   - 3.2.3.4: Manage channel partners
-  - 3.2.3.2: Select distribution channels
   - 3.2.3.1: Evaluate channel options
+  - 3.2.3.2: Select distribution channels
   - 3.2.3.3: Define channel programs
 
 
@@ -54,8 +54,8 @@ class CompositeAgent_3_2_3:
         "3.2.3.8",
         "3.2.3.7",
         "3.2.3.4",
-        "3.2.3.2",
         "3.2.3.1",
+        "3.2.3.2",
         "3.2.3.3"
 ]
         self.logger = logging.getLogger(f"CompositeAgent_3_2_3")

@@ -11,14 +11,14 @@ Orchestration Pattern: Sequential Workflow
 Standards: A2A, ANP, ACP, BPP, BDP, BRP, BMP, BCP, BIP
 
 Child Agents:
-  - 9.2.1.6: Optimize compliance
-  - 9.2.1.2: Send invoices
-  - 9.2.1.4: Resolve billing issues
-  - 9.2.1.1: Generate invoices
   - 9.2.1.7: Document compliance
   - 9.2.1.8: Report compliance
-  - 9.2.1.5: Review compliance
+  - 9.2.1.2: Send invoices
+  - 9.2.1.4: Resolve billing issues
   - 9.2.1.3: Track invoice status
+  - 9.2.1.1: Generate invoices
+  - 9.2.1.6: Optimize compliance
+  - 9.2.1.5: Review compliance
 
 
 Generated: 2025-11-18
@@ -49,14 +49,14 @@ class CompositeAgent_9_2_1:
         self.apqc_id = "9.2.1"
         self.level = 4
         self.child_agent_ids = [
-        "9.2.1.6",
-        "9.2.1.2",
-        "9.2.1.4",
-        "9.2.1.1",
         "9.2.1.7",
         "9.2.1.8",
-        "9.2.1.5",
-        "9.2.1.3"
+        "9.2.1.2",
+        "9.2.1.4",
+        "9.2.1.3",
+        "9.2.1.1",
+        "9.2.1.6",
+        "9.2.1.5"
 ]
         self.logger = logging.getLogger(f"CompositeAgent_9_2_1")
 

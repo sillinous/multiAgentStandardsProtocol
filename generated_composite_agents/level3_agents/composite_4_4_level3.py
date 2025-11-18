@@ -11,16 +11,16 @@ Orchestration Pattern: Sequential Workflow
 Standards: A2A, ANP, ACP, BPP, BDP, BRP, BMP, BCP, BIP
 
 Child Agents:
-  - 4.4.1.5: Review warehouse
   - 4.4.1.6: Optimize warehouse
-  - 4.4.2.2: Store inventory
-  - 4.4.1.2: Select carriers
-  - 4.4.3.4: Manage carriers
-  - 4.4.2.4: Ship orders
-  - 4.4.3.3: Track shipments
+  - 4.4.1.5: Review warehouse
   - 4.4.2.3: Pick and pack orders
-  - 4.4.1.1: Plan shipments
-  - 4.4.2.1: Receive goods
+  - 4.4.3.1: Plan routes
+  - 4.4.1.3: Prepare shipments
+  - 4.4.1.4: Ship products
+  - 4.4.3.4: Manage carriers
+  - 4.4.2.2: Store inventory
+  - 4.4.2.4: Ship orders
+  - 4.4.3.2: Schedule deliveries
   ... and 4 more
 
 Generated: 2025-11-18
@@ -51,20 +51,20 @@ class CompositeAgent_4_4:
         self.apqc_id = "4.4"
         self.level = 3
         self.child_agent_ids = [
-        "4.4.1.5",
         "4.4.1.6",
-        "4.4.2.2",
-        "4.4.1.2",
-        "4.4.3.4",
-        "4.4.2.4",
-        "4.4.3.3",
+        "4.4.1.5",
         "4.4.2.3",
-        "4.4.1.1",
-        "4.4.2.1",
+        "4.4.3.1",
         "4.4.1.3",
         "4.4.1.4",
-        "4.4.3.1",
-        "4.4.3.2"
+        "4.4.3.4",
+        "4.4.2.2",
+        "4.4.2.4",
+        "4.4.3.2",
+        "4.4.1.1",
+        "4.4.2.1",
+        "4.4.3.3",
+        "4.4.1.2"
 ]
         self.logger = logging.getLogger(f"CompositeAgent_4_4")
 

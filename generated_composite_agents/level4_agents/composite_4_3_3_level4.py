@@ -13,8 +13,8 @@ Standards: A2A, ANP, ACP, BPP, BDP, BRP, BMP, BCP, BIP
 Child Agents:
   - 4.3.3.5: Review orders
   - 4.3.3.6: Optimize orders
-  - 4.3.3.4: Optimize inventory levels
   - 4.3.3.2: Manage raw materials
+  - 4.3.3.4: Optimize inventory levels
   - 4.3.3.3: Control finished goods
   - 4.3.3.1: Track work-in-process
 
@@ -49,8 +49,8 @@ class CompositeAgent_4_3_3:
         self.child_agent_ids = [
         "4.3.3.5",
         "4.3.3.6",
-        "4.3.3.4",
         "4.3.3.2",
+        "4.3.3.4",
         "4.3.3.3",
         "4.3.3.1"
 ]

@@ -11,13 +11,13 @@ Orchestration Pattern: Sequential Workflow
 Standards: A2A, ANP, ACP, BPP, BDP, BRP, BMP, BCP, BIP
 
 Child Agents:
-  - 4.2.2.8: Report deliveries
-  - 4.2.2.5: Review deliveries
   - 4.2.2.6: Optimize deliveries
+  - 4.2.2.5: Review deliveries
+  - 4.2.2.8: Report deliveries
   - 4.2.2.7: Document deliveries
   - 4.2.2.4: Select suppliers
-  - 4.2.2.1: Identify potential suppliers
   - 4.2.2.3: Negotiate contracts
+  - 4.2.2.1: Identify potential suppliers
   - 4.2.2.2: Evaluate suppliers
 
 
@@ -49,13 +49,13 @@ class CompositeAgent_4_2_2:
         self.apqc_id = "4.2.2"
         self.level = 4
         self.child_agent_ids = [
-        "4.2.2.8",
-        "4.2.2.5",
         "4.2.2.6",
+        "4.2.2.5",
+        "4.2.2.8",
         "4.2.2.7",
         "4.2.2.4",
-        "4.2.2.1",
         "4.2.2.3",
+        "4.2.2.1",
         "4.2.2.2"
 ]
         self.logger = logging.getLogger(f"CompositeAgent_4_2_2")

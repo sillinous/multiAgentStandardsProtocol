@@ -11,14 +11,14 @@ Orchestration Pattern: Sequential Workflow
 Standards: A2A, ANP, ACP, BPP, BDP, BRP, BMP, BCP, BIP
 
 Child Agents:
-  - 3.1.2.8: Report opportunities
-  - 3.1.2.5: Review opportunities
   - 3.1.2.7: Document opportunities
+  - 3.1.2.8: Report opportunities
   - 3.1.2.6: Optimize opportunities
-  - 3.1.2.4: Define target markets
-  - 3.1.2.2: Evaluate competitive position
+  - 3.1.2.5: Review opportunities
   - 3.1.2.1: Assess market attractiveness
   - 3.1.2.3: Prioritize markets
+  - 3.1.2.4: Define target markets
+  - 3.1.2.2: Evaluate competitive position
 
 
 Generated: 2025-11-18
@@ -49,14 +49,14 @@ class CompositeAgent_3_1_2:
         self.apqc_id = "3.1.2"
         self.level = 4
         self.child_agent_ids = [
-        "3.1.2.8",
-        "3.1.2.5",
         "3.1.2.7",
+        "3.1.2.8",
         "3.1.2.6",
-        "3.1.2.4",
-        "3.1.2.2",
+        "3.1.2.5",
         "3.1.2.1",
-        "3.1.2.3"
+        "3.1.2.3",
+        "3.1.2.4",
+        "3.1.2.2"
 ]
         self.logger = logging.getLogger(f"CompositeAgent_3_1_2")
 

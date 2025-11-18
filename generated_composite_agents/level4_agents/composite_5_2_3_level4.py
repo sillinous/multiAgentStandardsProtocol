@@ -12,13 +12,13 @@ Standards: A2A, ANP, ACP, BPP, BDP, BRP, BMP, BCP, BIP
 
 Child Agents:
   - 5.2.3.7: Document resources
-  - 5.2.3.2: Document service activities
-  - 5.2.3.8: Report resources
-  - 5.2.3.5: Review resources
-  - 5.2.3.3: Obtain customer acknowledgment
-  - 5.2.3.4: Complete service records
-  - 5.2.3.6: Optimize resources
   - 5.2.3.1: Perform service delivery
+  - 5.2.3.3: Obtain customer acknowledgment
+  - 5.2.3.8: Report resources
+  - 5.2.3.2: Document service activities
+  - 5.2.3.6: Optimize resources
+  - 5.2.3.5: Review resources
+  - 5.2.3.4: Complete service records
 
 
 Generated: 2025-11-18
@@ -50,13 +50,13 @@ class CompositeAgent_5_2_3:
         self.level = 4
         self.child_agent_ids = [
         "5.2.3.7",
-        "5.2.3.2",
-        "5.2.3.8",
-        "5.2.3.5",
+        "5.2.3.1",
         "5.2.3.3",
-        "5.2.3.4",
+        "5.2.3.8",
+        "5.2.3.2",
         "5.2.3.6",
-        "5.2.3.1"
+        "5.2.3.5",
+        "5.2.3.4"
 ]
         self.logger = logging.getLogger(f"CompositeAgent_5_2_3")
 

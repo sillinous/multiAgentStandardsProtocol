@@ -11,8 +11,8 @@ Orchestration Pattern: Sequential Workflow
 Standards: A2A, ANP, ACP, BPP, BDP, BRP, BMP, BCP, BIP
 
 Child Agents:
-  - 9.8.2.2: Eliminate intercompany transactions
   - 9.8.2.3: Consolidate results
+  - 9.8.2.2: Eliminate intercompany transactions
   - 9.8.2.4: Report consolidated financials
   - 9.8.2.1: Collect subsidiary data
 
@@ -45,8 +45,8 @@ class CompositeAgent_9_8_2:
         self.apqc_id = "9.8.2"
         self.level = 4
         self.child_agent_ids = [
-        "9.8.2.2",
         "9.8.2.3",
+        "9.8.2.2",
         "9.8.2.4",
         "9.8.2.1"
 ]

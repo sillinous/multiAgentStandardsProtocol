@@ -11,12 +11,12 @@ Orchestration Pattern: Sequential Workflow
 Standards: A2A, ANP, ACP, BPP, BDP, BRP, BMP, BCP, BIP
 
 Child Agents:
-  - 7.4.1.6: Optimize training
-  - 7.4.1.1: Set performance goals
-  - 7.4.1.3: Provide feedback
   - 7.4.1.2: Monitor performance
-  - 7.4.1.5: Review training
+  - 7.4.1.1: Set performance goals
+  - 7.4.1.6: Optimize training
   - 7.4.1.4: Conduct performance reviews
+  - 7.4.1.3: Provide feedback
+  - 7.4.1.5: Review training
 
 
 Generated: 2025-11-18
@@ -47,12 +47,12 @@ class CompositeAgent_7_4_1:
         self.apqc_id = "7.4.1"
         self.level = 4
         self.child_agent_ids = [
-        "7.4.1.6",
-        "7.4.1.1",
-        "7.4.1.3",
         "7.4.1.2",
-        "7.4.1.5",
-        "7.4.1.4"
+        "7.4.1.1",
+        "7.4.1.6",
+        "7.4.1.4",
+        "7.4.1.3",
+        "7.4.1.5"
 ]
         self.logger = logging.getLogger(f"CompositeAgent_7_4_1")
 

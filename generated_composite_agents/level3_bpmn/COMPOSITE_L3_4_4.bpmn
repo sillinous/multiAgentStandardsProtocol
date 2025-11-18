@@ -7,84 +7,84 @@ Deliver Physical Products
 APQC ID: 4.4
 
 Orchestrates 14 child agents:
-  1. 4.4.1.5: Review warehouse
-  2. 4.4.1.6: Optimize warehouse
-  3. 4.4.2.2: Store inventory
-  4. 4.4.1.2: Select carriers
-  5. 4.4.3.4: Manage carriers
-  6. 4.4.2.4: Ship orders
-  7. 4.4.3.3: Track shipments
-  8. 4.4.2.3: Pick and pack orders
-  9. 4.4.1.1: Plan shipments
-  10. 4.4.2.1: Receive goods
-  11. 4.4.1.3: Prepare shipments
-  12. 4.4.1.4: Ship products
-  13. 4.4.3.1: Plan routes
-  14. 4.4.3.2: Schedule deliveries
+  1. 4.4.1.6: Optimize warehouse
+  2. 4.4.1.5: Review warehouse
+  3. 4.4.2.3: Pick and pack orders
+  4. 4.4.3.1: Plan routes
+  5. 4.4.1.3: Prepare shipments
+  6. 4.4.1.4: Ship products
+  7. 4.4.3.4: Manage carriers
+  8. 4.4.2.2: Store inventory
+  9. 4.4.2.4: Ship orders
+  10. 4.4.3.2: Schedule deliveries
+  11. 4.4.1.1: Plan shipments
+  12. 4.4.2.1: Receive goods
+  13. 4.4.3.3: Track shipments
+  14. 4.4.1.2: Select carriers
 
 
 Orchestration Pattern: Sequential Workflow (Pipeline)
 Standards: BPMN 2.0, A2A Protocol
 
-Generated: 2025-11-18T01:19:11.492373
+Generated: 2025-11-18T01:38:33.564433
 Status: Production Ready
 </bpmn:documentation>
     <bpmn:startEvent id="Start_L3_4_4" name="Start Composite">
       <bpmn:outgoing>Flow_start_to_child1</bpmn:outgoing>
     </bpmn:startEvent>
-    <bpmn:callActivity id="CallActivity_L3_child1" name="4.4.1.5: Review warehouse" calledElement="Process_4_4_1_5">
+    <bpmn:callActivity id="CallActivity_L3_child1" name="4.4.1.6: Optimize warehouse" calledElement="Process_4_4_1_6">
       <bpmn:incoming>Flow_start_to_child1</bpmn:incoming>
       <bpmn:outgoing>Flow_child1_to_child2</bpmn:outgoing>
     </bpmn:callActivity>
-    <bpmn:callActivity id="CallActivity_L3_child2" name="4.4.1.6: Optimize warehouse" calledElement="Process_4_4_1_6">
+    <bpmn:callActivity id="CallActivity_L3_child2" name="4.4.1.5: Review warehouse" calledElement="Process_4_4_1_5">
       <bpmn:incoming>Flow_child1_to_child2</bpmn:incoming>
       <bpmn:outgoing>Flow_child2_to_child3</bpmn:outgoing>
     </bpmn:callActivity>
-    <bpmn:callActivity id="CallActivity_L3_child3" name="4.4.2.2: Store inventory" calledElement="Process_4_4_2_2">
+    <bpmn:callActivity id="CallActivity_L3_child3" name="4.4.2.3: Pick and pack orders" calledElement="Process_4_4_2_3">
       <bpmn:incoming>Flow_child2_to_child3</bpmn:incoming>
       <bpmn:outgoing>Flow_child3_to_child4</bpmn:outgoing>
     </bpmn:callActivity>
-    <bpmn:callActivity id="CallActivity_L3_child4" name="4.4.1.2: Select carriers" calledElement="Process_4_4_1_2">
+    <bpmn:callActivity id="CallActivity_L3_child4" name="4.4.3.1: Plan routes" calledElement="Process_4_4_3_1">
       <bpmn:incoming>Flow_child3_to_child4</bpmn:incoming>
       <bpmn:outgoing>Flow_child4_to_child5</bpmn:outgoing>
     </bpmn:callActivity>
-    <bpmn:callActivity id="CallActivity_L3_child5" name="4.4.3.4: Manage carriers" calledElement="Process_4_4_3_4">
+    <bpmn:callActivity id="CallActivity_L3_child5" name="4.4.1.3: Prepare shipments" calledElement="Process_4_4_1_3">
       <bpmn:incoming>Flow_child4_to_child5</bpmn:incoming>
       <bpmn:outgoing>Flow_child5_to_child6</bpmn:outgoing>
     </bpmn:callActivity>
-    <bpmn:callActivity id="CallActivity_L3_child6" name="4.4.2.4: Ship orders" calledElement="Process_4_4_2_4">
+    <bpmn:callActivity id="CallActivity_L3_child6" name="4.4.1.4: Ship products" calledElement="Process_4_4_1_4">
       <bpmn:incoming>Flow_child5_to_child6</bpmn:incoming>
       <bpmn:outgoing>Flow_child6_to_child7</bpmn:outgoing>
     </bpmn:callActivity>
-    <bpmn:callActivity id="CallActivity_L3_child7" name="4.4.3.3: Track shipments" calledElement="Process_4_4_3_3">
+    <bpmn:callActivity id="CallActivity_L3_child7" name="4.4.3.4: Manage carriers" calledElement="Process_4_4_3_4">
       <bpmn:incoming>Flow_child6_to_child7</bpmn:incoming>
       <bpmn:outgoing>Flow_child7_to_child8</bpmn:outgoing>
     </bpmn:callActivity>
-    <bpmn:callActivity id="CallActivity_L3_child8" name="4.4.2.3: Pick and pack orders" calledElement="Process_4_4_2_3">
+    <bpmn:callActivity id="CallActivity_L3_child8" name="4.4.2.2: Store inventory" calledElement="Process_4_4_2_2">
       <bpmn:incoming>Flow_child7_to_child8</bpmn:incoming>
       <bpmn:outgoing>Flow_child8_to_child9</bpmn:outgoing>
     </bpmn:callActivity>
-    <bpmn:callActivity id="CallActivity_L3_child9" name="4.4.1.1: Plan shipments" calledElement="Process_4_4_1_1">
+    <bpmn:callActivity id="CallActivity_L3_child9" name="4.4.2.4: Ship orders" calledElement="Process_4_4_2_4">
       <bpmn:incoming>Flow_child8_to_child9</bpmn:incoming>
       <bpmn:outgoing>Flow_child9_to_child10</bpmn:outgoing>
     </bpmn:callActivity>
-    <bpmn:callActivity id="CallActivity_L3_child10" name="4.4.2.1: Receive goods" calledElement="Process_4_4_2_1">
+    <bpmn:callActivity id="CallActivity_L3_child10" name="4.4.3.2: Schedule deliveries" calledElement="Process_4_4_3_2">
       <bpmn:incoming>Flow_child9_to_child10</bpmn:incoming>
       <bpmn:outgoing>Flow_child10_to_child11</bpmn:outgoing>
     </bpmn:callActivity>
-    <bpmn:callActivity id="CallActivity_L3_child11" name="4.4.1.3: Prepare shipments" calledElement="Process_4_4_1_3">
+    <bpmn:callActivity id="CallActivity_L3_child11" name="4.4.1.1: Plan shipments" calledElement="Process_4_4_1_1">
       <bpmn:incoming>Flow_child10_to_child11</bpmn:incoming>
       <bpmn:outgoing>Flow_child11_to_child12</bpmn:outgoing>
     </bpmn:callActivity>
-    <bpmn:callActivity id="CallActivity_L3_child12" name="4.4.1.4: Ship products" calledElement="Process_4_4_1_4">
+    <bpmn:callActivity id="CallActivity_L3_child12" name="4.4.2.1: Receive goods" calledElement="Process_4_4_2_1">
       <bpmn:incoming>Flow_child11_to_child12</bpmn:incoming>
       <bpmn:outgoing>Flow_child12_to_child13</bpmn:outgoing>
     </bpmn:callActivity>
-    <bpmn:callActivity id="CallActivity_L3_child13" name="4.4.3.1: Plan routes" calledElement="Process_4_4_3_1">
+    <bpmn:callActivity id="CallActivity_L3_child13" name="4.4.3.3: Track shipments" calledElement="Process_4_4_3_3">
       <bpmn:incoming>Flow_child12_to_child13</bpmn:incoming>
       <bpmn:outgoing>Flow_child13_to_child14</bpmn:outgoing>
     </bpmn:callActivity>
-    <bpmn:callActivity id="CallActivity_L3_child14" name="4.4.3.2: Schedule deliveries" calledElement="Process_4_4_3_2">
+    <bpmn:callActivity id="CallActivity_L3_child14" name="4.4.1.2: Select carriers" calledElement="Process_4_4_1_2">
       <bpmn:incoming>Flow_child13_to_child14</bpmn:incoming>
       <bpmn:outgoing>Flow_child14_to_end</bpmn:outgoing>
     </bpmn:callActivity>

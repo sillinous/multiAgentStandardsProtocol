@@ -11,14 +11,14 @@ Orchestration Pattern: Sequential Workflow
 Standards: A2A, ANP, ACP, BPP, BDP, BRP, BMP, BCP, BIP
 
 Child Agents:
-  - 8.1.2.5: Review security
-  - 8.1.2.8: Report security
   - 8.1.2.4: Monitor IT risks
-  - 8.1.2.7: Document security
+  - 8.1.2.5: Review security
   - 8.1.2.1: Establish IT governance model
+  - 8.1.2.8: Report security
+  - 8.1.2.3: Manage IT compliance
+  - 8.1.2.7: Document security
   - 8.1.2.6: Optimize security
   - 8.1.2.2: Define IT policies
-  - 8.1.2.3: Manage IT compliance
 
 
 Generated: 2025-11-18
@@ -49,14 +49,14 @@ class CompositeAgent_8_1_2:
         self.apqc_id = "8.1.2"
         self.level = 4
         self.child_agent_ids = [
-        "8.1.2.5",
-        "8.1.2.8",
         "8.1.2.4",
-        "8.1.2.7",
+        "8.1.2.5",
         "8.1.2.1",
+        "8.1.2.8",
+        "8.1.2.3",
+        "8.1.2.7",
         "8.1.2.6",
-        "8.1.2.2",
-        "8.1.2.3"
+        "8.1.2.2"
 ]
         self.logger = logging.getLogger(f"CompositeAgent_8_1_2")
 

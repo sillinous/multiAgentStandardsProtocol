@@ -30,7 +30,7 @@ CATEGORY_CONFIGS = {
     "1": {
         "name": "Develop Vision and Strategy",
         "folder": "strategy",
-        "target_count": 90,  # Expand to 90 for 100% coverage
+        "target_count": 92,  # FINAL: 100% coverage
         "authoritative_sources": ["ISO 9001", "Balanced Scorecard", "Porter's Five Forces", "SWOT Analysis"],
         "common_steps": [
             "Gather relevant data and stakeholder input",
@@ -46,7 +46,7 @@ CATEGORY_CONFIGS = {
     "2": {
         "name": "Develop and Manage Products and Services",
         "folder": "product_management",
-        "target_count": 60,  # Expand to 60 for 100% coverage
+        "target_count": 61,  # FINAL: 100% coverage
         "authoritative_sources": ["ISO 9001", "Stage-Gate®", "Agile/Scrum", "Lean Startup"],
         "common_steps": [
             "Identify market opportunity",
@@ -62,7 +62,7 @@ CATEGORY_CONFIGS = {
     "3": {
         "name": "Market and Sell Products and Services",
         "folder": "sales_marketing",
-        "target_count": 85,  # Expand to 85 for 100% coverage
+        "target_count": 87,  # FINAL: 100% coverage
         "authoritative_sources": ["BANT Framework", "Miller Heiman", "Challenger Sale", "HubSpot Methodology"],
         "common_steps": [
             "Identify target audience",
@@ -78,7 +78,7 @@ CATEGORY_CONFIGS = {
     "4": {
         "name": "Deliver Physical Products",
         "folder": "supply_chain",
-        "target_count": 100,  # Expand to 100 for 100% coverage
+        "target_count": 101,  # FINAL: 100% coverage
         "authoritative_sources": ["SCOR Model", "ISO 28000", "DOT Regulations", "Six Sigma"],
         "common_steps": [
             "Receive order",
@@ -94,7 +94,7 @@ CATEGORY_CONFIGS = {
     "5": {
         "name": "Deliver Services",
         "folder": "service_delivery",
-        "target_count": 55,  # Expand to 55 for 100% coverage
+        "target_count": 56,  # FINAL: 100% coverage
         "authoritative_sources": ["ITIL v4", "ISO 20000", "Service Profit Chain"],
         "common_steps": [
             "Receive service request",
@@ -110,7 +110,7 @@ CATEGORY_CONFIGS = {
     "6": {
         "name": "Manage Customer Service",
         "folder": "customer_service",
-        "target_count": 65,  # Expand to 65 for 100% coverage
+        "target_count": 67,  # FINAL: 100% coverage
         "authoritative_sources": ["COPC Standards", "ISO 18295", "Net Promoter Score"],
         "common_steps": [
             "Receive customer inquiry",
@@ -126,7 +126,7 @@ CATEGORY_CONFIGS = {
     "7": {
         "name": "Manage Human Capital",
         "folder": "human_resources",
-        "target_count": 105,  # Expand to 105 for 100% coverage
+        "target_count": 107,  # FINAL: 100% coverage
         "authoritative_sources": ["FLSA", "FICA", "IRS Publication 15", "ERISA", "ADA", "SHRM Guidelines"],
         "common_steps": [
             "Identify HR need",
@@ -142,7 +142,7 @@ CATEGORY_CONFIGS = {
     "8": {
         "name": "Manage Information Technology",
         "folder": "information_technology",
-        "target_count": 88,  # Expand to 88 for 100% coverage
+        "target_count": 89,  # FINAL: 100% coverage
         "authoritative_sources": ["ITIL v4", "COBIT", "ISO/IEC 27001", "NIST Cybersecurity Framework"],
         "common_steps": [
             "Assess IT requirement",
@@ -158,7 +158,7 @@ CATEGORY_CONFIGS = {
     "9": {
         "name": "Manage Financial Resources",
         "folder": "finance",
-        "target_count": 140,  # Expand to 140 for 100% coverage
+        "target_count": 142,  # FINAL: 100% coverage
         "authoritative_sources": ["GAAP", "IFRS", "SOX Section 404", "COSO Framework"],
         "common_steps": [
             "Identify financial requirement",
@@ -175,7 +175,7 @@ CATEGORY_CONFIGS = {
     "10": {
         "name": "Acquire, Construct, and Manage Assets",
         "folder": "asset_management",
-        "target_count": 75,  # Expand to 75 for 100% coverage
+        "target_count": 76,  # FINAL: 100% coverage
         "authoritative_sources": ["ISO 55000", "FASB ASC 360", "Sarbanes-Oxley"],
         "common_steps": [
             "Identify asset requirement",
@@ -191,7 +191,7 @@ CATEGORY_CONFIGS = {
     "11": {
         "name": "Manage Enterprise Risk and Compliance",
         "folder": "risk_compliance",
-        "target_count": 70,  # Expand to 70 for 100% coverage
+        "target_count": 71,  # FINAL: 100% coverage
         "authoritative_sources": ["ISO 31000", "COSO ERM", "SOX", "GDPR", "HIPAA"],
         "common_steps": [
             "Identify risk or compliance requirement",
@@ -207,7 +207,7 @@ CATEGORY_CONFIGS = {
     "12": {
         "name": "Manage External Relationships",
         "folder": "external_relations",
-        "target_count": 68,  # Expand to 68 for 100% coverage
+        "target_count": 68,  # FINAL: 100% coverage (no change needed)
         "authoritative_sources": ["ISO 44001", "Stakeholder Theory", "Partnership Frameworks"],
         "common_steps": [
             "Identify relationship opportunity",
@@ -223,7 +223,7 @@ CATEGORY_CONFIGS = {
     "13": {
         "name": "Develop and Manage Business Capabilities",
         "folder": "business_capabilities",
-        "target_count": 82,  # Expand to 82 for 100% coverage
+        "target_count": 83,  # FINAL: 100% coverage
         "authoritative_sources": ["TOGAF", "Business Capability Modeling", "ISO 9001"],
         "common_steps": [
             "Identify capability gap",

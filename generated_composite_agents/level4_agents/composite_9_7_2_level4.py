@@ -11,10 +11,10 @@ Orchestration Pattern: Sequential Workflow
 Standards: A2A, ANP, ACP, BPP, BDP, BRP, BMP, BCP, BIP
 
 Child Agents:
-  - 9.7.2.3: Service debt
-  - 9.7.2.1: Secure financing
-  - 9.7.2.4: Manage investor relations
   - 9.7.2.2: Manage debt portfolio
+  - 9.7.2.1: Secure financing
+  - 9.7.2.3: Service debt
+  - 9.7.2.4: Manage investor relations
 
 
 Generated: 2025-11-18
@@ -45,10 +45,10 @@ class CompositeAgent_9_7_2:
         self.apqc_id = "9.7.2"
         self.level = 4
         self.child_agent_ids = [
-        "9.7.2.3",
+        "9.7.2.2",
         "9.7.2.1",
-        "9.7.2.4",
-        "9.7.2.2"
+        "9.7.2.3",
+        "9.7.2.4"
 ]
         self.logger = logging.getLogger(f"CompositeAgent_9_7_2")
 

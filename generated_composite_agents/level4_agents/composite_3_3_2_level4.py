@@ -11,14 +11,14 @@ Orchestration Pattern: Sequential Workflow
 Standards: A2A, ANP, ACP, BPP, BDP, BRP, BMP, BCP, BIP
 
 Child Agents:
-  - 3.3.2.8: Report marketing
   - 3.3.2.5: Review marketing
   - 3.3.2.7: Document marketing
+  - 3.3.2.8: Report marketing
   - 3.3.2.6: Optimize marketing
-  - 3.3.2.4: Define campaign metrics
-  - 3.3.2.2: Create campaign messaging
   - 3.3.2.3: Develop creative assets
+  - 3.3.2.2: Create campaign messaging
   - 3.3.2.1: Develop campaign strategy
+  - 3.3.2.4: Define campaign metrics
 
 
 Generated: 2025-11-18
@@ -49,14 +49,14 @@ class CompositeAgent_3_3_2:
         self.apqc_id = "3.3.2"
         self.level = 4
         self.child_agent_ids = [
-        "3.3.2.8",
         "3.3.2.5",
         "3.3.2.7",
+        "3.3.2.8",
         "3.3.2.6",
-        "3.3.2.4",
-        "3.3.2.2",
         "3.3.2.3",
-        "3.3.2.1"
+        "3.3.2.2",
+        "3.3.2.1",
+        "3.3.2.4"
 ]
         self.logger = logging.getLogger(f"CompositeAgent_3_3_2")
 

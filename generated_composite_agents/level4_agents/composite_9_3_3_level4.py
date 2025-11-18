@@ -11,14 +11,14 @@ Orchestration Pattern: Sequential Workflow
 Standards: A2A, ANP, ACP, BPP, BDP, BRP, BMP, BCP, BIP
 
 Child Agents:
-  - 9.3.3.5: Review budgets
-  - 9.3.3.6: Optimize budgets
   - 9.3.3.1: Prepare regulatory filings
   - 9.3.3.4: Report to stakeholders
   - 9.3.3.3: File tax returns
   - 9.3.3.7: Document budgets
-  - 9.3.3.8: Report budgets
   - 9.3.3.2: Coordinate audits
+  - 9.3.3.8: Report budgets
+  - 9.3.3.5: Review budgets
+  - 9.3.3.6: Optimize budgets
 
 
 Generated: 2025-11-18
@@ -49,14 +49,14 @@ class CompositeAgent_9_3_3:
         self.apqc_id = "9.3.3"
         self.level = 4
         self.child_agent_ids = [
-        "9.3.3.5",
-        "9.3.3.6",
         "9.3.3.1",
         "9.3.3.4",
         "9.3.3.3",
         "9.3.3.7",
+        "9.3.3.2",
         "9.3.3.8",
-        "9.3.3.2"
+        "9.3.3.5",
+        "9.3.3.6"
 ]
         self.logger = logging.getLogger(f"CompositeAgent_9_3_3")
 

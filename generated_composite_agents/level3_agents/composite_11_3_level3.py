@@ -11,16 +11,16 @@ Orchestration Pattern: Sequential Workflow
 Standards: A2A, ANP, ACP, BPP, BDP, BRP, BMP, BCP, BIP
 
 Child Agents:
-  - 11.3.2.4: Track action items
   - 11.3.1.3: Define roles and responsibilities
-  - 11.3.1.8: Report policies
-  - 11.3.1.7: Document policies
-  - 11.3.1.1: Define governance structure
-  - 11.3.1.6: Optimize policies
-  - 11.3.1.5: Review policies
-  - 11.3.1.2: Establish board committees
-  - 11.3.1.4: Create governance policies
   - 11.3.2.2: Coordinate board meetings
+  - 11.3.1.1: Define governance structure
+  - 11.3.1.4: Create governance policies
+  - 11.3.1.8: Report policies
+  - 11.3.2.1: Prepare board materials
+  - 11.3.1.5: Review policies
+  - 11.3.2.6: Optimize regulations
+  - 11.3.2.3: Document board decisions
+  - 11.3.1.6: Optimize policies
   ... and 4 more
 
 Generated: 2025-11-18
@@ -51,20 +51,20 @@ class CompositeAgent_11_3:
         self.apqc_id = "11.3"
         self.level = 3
         self.child_agent_ids = [
-        "11.3.2.4",
         "11.3.1.3",
-        "11.3.1.8",
-        "11.3.1.7",
-        "11.3.1.1",
-        "11.3.1.6",
-        "11.3.1.5",
-        "11.3.1.2",
-        "11.3.1.4",
         "11.3.2.2",
-        "11.3.2.5",
+        "11.3.1.1",
+        "11.3.1.4",
+        "11.3.1.8",
         "11.3.2.1",
+        "11.3.1.5",
         "11.3.2.6",
-        "11.3.2.3"
+        "11.3.2.3",
+        "11.3.1.6",
+        "11.3.1.7",
+        "11.3.2.5",
+        "11.3.1.2",
+        "11.3.2.4"
 ]
         self.logger = logging.getLogger(f"CompositeAgent_11_3")
 

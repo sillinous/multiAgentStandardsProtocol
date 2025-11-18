@@ -11,15 +11,15 @@ Orchestration Pattern: Sequential Workflow
 Standards: A2A, ANP, ACP, BPP, BDP, BRP, BMP, BCP, BIP
 
 Child Agents:
-  - 7.2.3.6: Optimize training
+  - 7.2.3.7: Document training
   - 7.2.3.3: Conduct interviews
+  - 7.2.3.1: Review applications
   - 7.2.3.8: Report training
   - 7.2.3.4: Perform background checks
-  - 7.2.3.5: Make hiring decisions
   - 7.2.3.9: Plan training
-  - 7.2.3.7: Document training
-  - 7.2.3.1: Review applications
+  - 7.2.3.6: Optimize training
   - 7.2.3.2: Conduct phone screens
+  - 7.2.3.5: Make hiring decisions
 
 
 Generated: 2025-11-18
@@ -50,15 +50,15 @@ class CompositeAgent_7_2_3:
         self.apqc_id = "7.2.3"
         self.level = 4
         self.child_agent_ids = [
-        "7.2.3.6",
+        "7.2.3.7",
         "7.2.3.3",
+        "7.2.3.1",
         "7.2.3.8",
         "7.2.3.4",
-        "7.2.3.5",
         "7.2.3.9",
-        "7.2.3.7",
-        "7.2.3.1",
-        "7.2.3.2"
+        "7.2.3.6",
+        "7.2.3.2",
+        "7.2.3.5"
 ]
         self.logger = logging.getLogger(f"CompositeAgent_7_2_3")
 

@@ -11,14 +11,14 @@ Orchestration Pattern: Sequential Workflow
 Standards: A2A, ANP, ACP, BPP, BDP, BRP, BMP, BCP, BIP
 
 Child Agents:
-  - 4.1.2.6: Optimize logistics
-  - 4.1.2.7: Document logistics
-  - 4.1.2.8: Report logistics
   - 4.1.2.5: Review logistics
-  - 4.1.2.3: Balance supply and demand
-  - 4.1.2.2: Optimize facility locations
+  - 4.1.2.6: Optimize logistics
+  - 4.1.2.8: Report logistics
+  - 4.1.2.7: Document logistics
   - 4.1.2.4: Configure distribution network
+  - 4.1.2.3: Balance supply and demand
   - 4.1.2.1: Design supply chain network
+  - 4.1.2.2: Optimize facility locations
 
 
 Generated: 2025-11-18
@@ -49,14 +49,14 @@ class CompositeAgent_4_1_2:
         self.apqc_id = "4.1.2"
         self.level = 4
         self.child_agent_ids = [
-        "4.1.2.6",
-        "4.1.2.7",
-        "4.1.2.8",
         "4.1.2.5",
-        "4.1.2.3",
-        "4.1.2.2",
+        "4.1.2.6",
+        "4.1.2.8",
+        "4.1.2.7",
         "4.1.2.4",
-        "4.1.2.1"
+        "4.1.2.3",
+        "4.1.2.1",
+        "4.1.2.2"
 ]
         self.logger = logging.getLogger(f"CompositeAgent_4_1_2")
 

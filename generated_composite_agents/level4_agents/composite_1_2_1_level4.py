@@ -14,10 +14,10 @@ Child Agents:
   - 1.2.1.4: Analyze initiatives
   - 1.2.1.6: Optimize initiatives
   - 1.2.1.7: Document initiatives
-  - 1.2.1.5: Review initiatives
-  - 1.2.1.1: Define current business
   - 1.2.1.2: Form strategic vision
   - 1.2.1.3: Evaluate growth and investment options
+  - 1.2.1.1: Define current business
+  - 1.2.1.5: Review initiatives
 
 
 Generated: 2025-11-18
@@ -51,10 +51,10 @@ class CompositeAgent_1_2_1:
         "1.2.1.4",
         "1.2.1.6",
         "1.2.1.7",
-        "1.2.1.5",
-        "1.2.1.1",
         "1.2.1.2",
-        "1.2.1.3"
+        "1.2.1.3",
+        "1.2.1.1",
+        "1.2.1.5"
 ]
         self.logger = logging.getLogger(f"CompositeAgent_1_2_1")
 

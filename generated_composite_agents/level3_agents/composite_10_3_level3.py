@@ -11,16 +11,16 @@ Orchestration Pattern: Sequential Workflow
 Standards: A2A, ANP, ACP, BPP, BDP, BRP, BMP, BCP, BIP
 
 Child Agents:
+  - 10.3.2.4: Execute improvements
   - 10.3.2.1: Assess asset value
   - 10.3.2.5: Review lifecycle
   - 10.3.1.1: Track asset utilization
-  - 10.3.2.2: Identify improvement opportunities
-  - 10.3.1.4: Analyze asset performance
-  - 10.3.2.4: Execute improvements
-  - 10.3.1.5: Review projects
+  - 10.3.2.6: Optimize lifecycle
   - 10.3.1.7: Document projects
+  - 10.3.1.4: Analyze asset performance
+  - 10.3.2.3: Prioritize investments
+  - 10.3.1.2: Monitor asset condition
   - 10.3.1.3: Measure asset reliability
-  - 10.3.1.6: Optimize projects
   ... and 3 more
 
 Generated: 2025-11-18
@@ -51,19 +51,19 @@ class CompositeAgent_10_3:
         self.apqc_id = "10.3"
         self.level = 3
         self.child_agent_ids = [
+        "10.3.2.4",
         "10.3.2.1",
         "10.3.2.5",
         "10.3.1.1",
-        "10.3.2.2",
-        "10.3.1.4",
-        "10.3.2.4",
-        "10.3.1.5",
-        "10.3.1.7",
-        "10.3.1.3",
-        "10.3.1.6",
         "10.3.2.6",
+        "10.3.1.7",
+        "10.3.1.4",
         "10.3.2.3",
-        "10.3.1.2"
+        "10.3.1.2",
+        "10.3.1.3",
+        "10.3.1.5",
+        "10.3.1.6",
+        "10.3.2.2"
 ]
         self.logger = logging.getLogger(f"CompositeAgent_10_3")
 

@@ -7,26 +7,26 @@ Deliver Physical Products
 APQC ID: 4.2.4
 
 Orchestrates 8 child agents:
-  1. 4.2.4.6: Optimize orders
+  1. 4.2.4.8: Report orders
   2. 4.2.4.5: Review orders
-  3. 4.2.4.8: Report orders
+  3. 4.2.4.6: Optimize orders
   4. 4.2.4.7: Document orders
   5. 4.2.4.2: Develop strategic suppliers
   6. 4.2.4.1: Monitor supplier performance
-  7. 4.2.4.4: Certify suppliers
-  8. 4.2.4.3: Resolve supplier issues
+  7. 4.2.4.3: Resolve supplier issues
+  8. 4.2.4.4: Certify suppliers
 
 
 Orchestration Pattern: Sequential Workflow (Pipeline)
 Standards: BPMN 2.0, A2A Protocol
 
-Generated: 2025-11-18T01:19:11.372872
+Generated: 2025-11-18T01:38:33.431761
 Status: Production Ready
 </bpmn:documentation>
     <bpmn:startEvent id="Start_L4_4_2_4" name="Start Composite">
       <bpmn:outgoing>Flow_start_to_child1</bpmn:outgoing>
     </bpmn:startEvent>
-    <bpmn:callActivity id="CallActivity_L4_child1" name="4.2.4.6: Optimize orders" calledElement="Process_4_2_4_6">
+    <bpmn:callActivity id="CallActivity_L4_child1" name="4.2.4.8: Report orders" calledElement="Process_4_2_4_8">
       <bpmn:incoming>Flow_start_to_child1</bpmn:incoming>
       <bpmn:outgoing>Flow_child1_to_child2</bpmn:outgoing>
     </bpmn:callActivity>
@@ -34,7 +34,7 @@ Status: Production Ready
       <bpmn:incoming>Flow_child1_to_child2</bpmn:incoming>
       <bpmn:outgoing>Flow_child2_to_child3</bpmn:outgoing>
     </bpmn:callActivity>
-    <bpmn:callActivity id="CallActivity_L4_child3" name="4.2.4.8: Report orders" calledElement="Process_4_2_4_8">
+    <bpmn:callActivity id="CallActivity_L4_child3" name="4.2.4.6: Optimize orders" calledElement="Process_4_2_4_6">
       <bpmn:incoming>Flow_child2_to_child3</bpmn:incoming>
       <bpmn:outgoing>Flow_child3_to_child4</bpmn:outgoing>
     </bpmn:callActivity>
@@ -50,11 +50,11 @@ Status: Production Ready
       <bpmn:incoming>Flow_child5_to_child6</bpmn:incoming>
       <bpmn:outgoing>Flow_child6_to_child7</bpmn:outgoing>
     </bpmn:callActivity>
-    <bpmn:callActivity id="CallActivity_L4_child7" name="4.2.4.4: Certify suppliers" calledElement="Process_4_2_4_4">
+    <bpmn:callActivity id="CallActivity_L4_child7" name="4.2.4.3: Resolve supplier issues" calledElement="Process_4_2_4_3">
       <bpmn:incoming>Flow_child6_to_child7</bpmn:incoming>
       <bpmn:outgoing>Flow_child7_to_child8</bpmn:outgoing>
     </bpmn:callActivity>
-    <bpmn:callActivity id="CallActivity_L4_child8" name="4.2.4.3: Resolve supplier issues" calledElement="Process_4_2_4_3">
+    <bpmn:callActivity id="CallActivity_L4_child8" name="4.2.4.4: Certify suppliers" calledElement="Process_4_2_4_4">
       <bpmn:incoming>Flow_child7_to_child8</bpmn:incoming>
       <bpmn:outgoing>Flow_child8_to_end</bpmn:outgoing>
     </bpmn:callActivity>

@@ -11,8 +11,8 @@ Orchestration Pattern: Sequential Workflow
 Standards: A2A, ANP, ACP, BPP, BDP, BRP, BMP, BCP, BIP
 
 Child Agents:
-  - 2.4.2.2: Execute products
   - 2.4.2.1: Plan products
+  - 2.4.2.2: Execute products
 
 
 Generated: 2025-11-18
@@ -43,8 +43,8 @@ class CompositeAgent_2_4_2:
         self.apqc_id = "2.4.2"
         self.level = 4
         self.child_agent_ids = [
-        "2.4.2.2",
-        "2.4.2.1"
+        "2.4.2.1",
+        "2.4.2.2"
 ]
         self.logger = logging.getLogger(f"CompositeAgent_2_4_2")
 

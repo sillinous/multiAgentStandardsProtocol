@@ -11,10 +11,10 @@ Orchestration Pattern: Sequential Workflow
 Standards: A2A, ANP, ACP, BPP, BDP, BRP, BMP, BCP, BIP
 
 Child Agents:
-  - 9.6.1.4: Route for approval
-  - 9.6.1.3: Match to purchase orders
   - 9.6.1.2: Validate invoices
   - 9.6.1.1: Receive invoices
+  - 9.6.1.4: Route for approval
+  - 9.6.1.3: Match to purchase orders
 
 
 Generated: 2025-11-18
@@ -45,10 +45,10 @@ class CompositeAgent_9_6_1:
         self.apqc_id = "9.6.1"
         self.level = 4
         self.child_agent_ids = [
-        "9.6.1.4",
-        "9.6.1.3",
         "9.6.1.2",
-        "9.6.1.1"
+        "9.6.1.1",
+        "9.6.1.4",
+        "9.6.1.3"
 ]
         self.logger = logging.getLogger(f"CompositeAgent_9_6_1")
 

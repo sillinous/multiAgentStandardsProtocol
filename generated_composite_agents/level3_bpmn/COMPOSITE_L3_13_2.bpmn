@@ -7,130 +7,130 @@ Develop and Manage Business Capabilities
 APQC ID: 13.2
 
 Orchestrates 24 child agents:
-  1. 13.2.2.5: Review improvement
-  2. 13.2.3.5: Review governance
-  3. 13.2.3.1: Track adoption metrics
-  4. 13.2.1.8: Report innovation
-  5. 13.2.3.6: Optimize governance
-  6. 13.2.1.6: Optimize innovation
-  7. 13.2.1.1: Assess change readiness
-  8. 13.2.3.8: Report governance
-  9. 13.2.2.3: Implement changes
-  10. 13.2.3.3: Reinforce changes
-  11. 13.2.3.2: Address resistance
-  12. 13.2.2.6: Optimize improvement
-  13. 13.2.2.4: Support transition
-  14. 13.2.1.3: Develop change plans
-  15. 13.2.3.4: Sustain improvements
-  16. 13.2.2.8: Report improvement
-  17. 13.2.1.7: Document innovation
-  18. 13.2.1.2: Define change strategy
-  19. 13.2.3.7: Document governance
-  20. 13.2.2.1: Communicate change
+  1. 13.2.2.6: Optimize improvement
+  2. 13.2.1.7: Document innovation
+  3. 13.2.1.5: Review innovation
+  4. 13.2.1.6: Optimize innovation
+  5. 13.2.3.7: Document governance
+  6. 13.2.2.4: Support transition
+  7. 13.2.3.1: Track adoption metrics
+  8. 13.2.2.5: Review improvement
+  9. 13.2.1.8: Report innovation
+  10. 13.2.1.3: Develop change plans
+  11. 13.2.3.3: Reinforce changes
+  12. 13.2.1.1: Assess change readiness
+  13. 13.2.3.2: Address resistance
+  14. 13.2.2.3: Implement changes
+  15. 13.2.1.4: Secure change resources
+  16. 13.2.3.5: Review governance
+  17. 13.2.3.6: Optimize governance
+  18. 13.2.2.2: Train affected stakeholders
+  19. 13.2.2.7: Document improvement
+  20. 13.2.2.8: Report improvement
   ... and 4 more
 
 Orchestration Pattern: Sequential Workflow (Pipeline)
 Standards: BPMN 2.0, A2A Protocol
 
-Generated: 2025-11-18T01:19:11.471780
+Generated: 2025-11-18T01:38:33.541213
 Status: Production Ready
 </bpmn:documentation>
     <bpmn:startEvent id="Start_L3_13_2" name="Start Composite">
       <bpmn:outgoing>Flow_start_to_child1</bpmn:outgoing>
     </bpmn:startEvent>
-    <bpmn:callActivity id="CallActivity_L3_child1" name="13.2.2.5: Review improvement" calledElement="Process_13_2_2_5">
+    <bpmn:callActivity id="CallActivity_L3_child1" name="13.2.2.6: Optimize improvement" calledElement="Process_13_2_2_6">
       <bpmn:incoming>Flow_start_to_child1</bpmn:incoming>
       <bpmn:outgoing>Flow_child1_to_child2</bpmn:outgoing>
     </bpmn:callActivity>
-    <bpmn:callActivity id="CallActivity_L3_child2" name="13.2.3.5: Review governance" calledElement="Process_13_2_3_5">
+    <bpmn:callActivity id="CallActivity_L3_child2" name="13.2.1.7: Document innovation" calledElement="Process_13_2_1_7">
       <bpmn:incoming>Flow_child1_to_child2</bpmn:incoming>
       <bpmn:outgoing>Flow_child2_to_child3</bpmn:outgoing>
     </bpmn:callActivity>
-    <bpmn:callActivity id="CallActivity_L3_child3" name="13.2.3.1: Track adoption metrics" calledElement="Process_13_2_3_1">
+    <bpmn:callActivity id="CallActivity_L3_child3" name="13.2.1.5: Review innovation" calledElement="Process_13_2_1_5">
       <bpmn:incoming>Flow_child2_to_child3</bpmn:incoming>
       <bpmn:outgoing>Flow_child3_to_child4</bpmn:outgoing>
     </bpmn:callActivity>
-    <bpmn:callActivity id="CallActivity_L3_child4" name="13.2.1.8: Report innovation" calledElement="Process_13_2_1_8">
+    <bpmn:callActivity id="CallActivity_L3_child4" name="13.2.1.6: Optimize innovation" calledElement="Process_13_2_1_6">
       <bpmn:incoming>Flow_child3_to_child4</bpmn:incoming>
       <bpmn:outgoing>Flow_child4_to_child5</bpmn:outgoing>
     </bpmn:callActivity>
-    <bpmn:callActivity id="CallActivity_L3_child5" name="13.2.3.6: Optimize governance" calledElement="Process_13_2_3_6">
+    <bpmn:callActivity id="CallActivity_L3_child5" name="13.2.3.7: Document governance" calledElement="Process_13_2_3_7">
       <bpmn:incoming>Flow_child4_to_child5</bpmn:incoming>
       <bpmn:outgoing>Flow_child5_to_child6</bpmn:outgoing>
     </bpmn:callActivity>
-    <bpmn:callActivity id="CallActivity_L3_child6" name="13.2.1.6: Optimize innovation" calledElement="Process_13_2_1_6">
+    <bpmn:callActivity id="CallActivity_L3_child6" name="13.2.2.4: Support transition" calledElement="Process_13_2_2_4">
       <bpmn:incoming>Flow_child5_to_child6</bpmn:incoming>
       <bpmn:outgoing>Flow_child6_to_child7</bpmn:outgoing>
     </bpmn:callActivity>
-    <bpmn:callActivity id="CallActivity_L3_child7" name="13.2.1.1: Assess change readiness" calledElement="Process_13_2_1_1">
+    <bpmn:callActivity id="CallActivity_L3_child7" name="13.2.3.1: Track adoption metrics" calledElement="Process_13_2_3_1">
       <bpmn:incoming>Flow_child6_to_child7</bpmn:incoming>
       <bpmn:outgoing>Flow_child7_to_child8</bpmn:outgoing>
     </bpmn:callActivity>
-    <bpmn:callActivity id="CallActivity_L3_child8" name="13.2.3.8: Report governance" calledElement="Process_13_2_3_8">
+    <bpmn:callActivity id="CallActivity_L3_child8" name="13.2.2.5: Review improvement" calledElement="Process_13_2_2_5">
       <bpmn:incoming>Flow_child7_to_child8</bpmn:incoming>
       <bpmn:outgoing>Flow_child8_to_child9</bpmn:outgoing>
     </bpmn:callActivity>
-    <bpmn:callActivity id="CallActivity_L3_child9" name="13.2.2.3: Implement changes" calledElement="Process_13_2_2_3">
+    <bpmn:callActivity id="CallActivity_L3_child9" name="13.2.1.8: Report innovation" calledElement="Process_13_2_1_8">
       <bpmn:incoming>Flow_child8_to_child9</bpmn:incoming>
       <bpmn:outgoing>Flow_child9_to_child10</bpmn:outgoing>
     </bpmn:callActivity>
-    <bpmn:callActivity id="CallActivity_L3_child10" name="13.2.3.3: Reinforce changes" calledElement="Process_13_2_3_3">
+    <bpmn:callActivity id="CallActivity_L3_child10" name="13.2.1.3: Develop change plans" calledElement="Process_13_2_1_3">
       <bpmn:incoming>Flow_child9_to_child10</bpmn:incoming>
       <bpmn:outgoing>Flow_child10_to_child11</bpmn:outgoing>
     </bpmn:callActivity>
-    <bpmn:callActivity id="CallActivity_L3_child11" name="13.2.3.2: Address resistance" calledElement="Process_13_2_3_2">
+    <bpmn:callActivity id="CallActivity_L3_child11" name="13.2.3.3: Reinforce changes" calledElement="Process_13_2_3_3">
       <bpmn:incoming>Flow_child10_to_child11</bpmn:incoming>
       <bpmn:outgoing>Flow_child11_to_child12</bpmn:outgoing>
     </bpmn:callActivity>
-    <bpmn:callActivity id="CallActivity_L3_child12" name="13.2.2.6: Optimize improvement" calledElement="Process_13_2_2_6">
+    <bpmn:callActivity id="CallActivity_L3_child12" name="13.2.1.1: Assess change readiness" calledElement="Process_13_2_1_1">
       <bpmn:incoming>Flow_child11_to_child12</bpmn:incoming>
       <bpmn:outgoing>Flow_child12_to_child13</bpmn:outgoing>
     </bpmn:callActivity>
-    <bpmn:callActivity id="CallActivity_L3_child13" name="13.2.2.4: Support transition" calledElement="Process_13_2_2_4">
+    <bpmn:callActivity id="CallActivity_L3_child13" name="13.2.3.2: Address resistance" calledElement="Process_13_2_3_2">
       <bpmn:incoming>Flow_child12_to_child13</bpmn:incoming>
       <bpmn:outgoing>Flow_child13_to_child14</bpmn:outgoing>
     </bpmn:callActivity>
-    <bpmn:callActivity id="CallActivity_L3_child14" name="13.2.1.3: Develop change plans" calledElement="Process_13_2_1_3">
+    <bpmn:callActivity id="CallActivity_L3_child14" name="13.2.2.3: Implement changes" calledElement="Process_13_2_2_3">
       <bpmn:incoming>Flow_child13_to_child14</bpmn:incoming>
       <bpmn:outgoing>Flow_child14_to_child15</bpmn:outgoing>
     </bpmn:callActivity>
-    <bpmn:callActivity id="CallActivity_L3_child15" name="13.2.3.4: Sustain improvements" calledElement="Process_13_2_3_4">
+    <bpmn:callActivity id="CallActivity_L3_child15" name="13.2.1.4: Secure change resources" calledElement="Process_13_2_1_4">
       <bpmn:incoming>Flow_child14_to_child15</bpmn:incoming>
       <bpmn:outgoing>Flow_child15_to_child16</bpmn:outgoing>
     </bpmn:callActivity>
-    <bpmn:callActivity id="CallActivity_L3_child16" name="13.2.2.8: Report improvement" calledElement="Process_13_2_2_8">
+    <bpmn:callActivity id="CallActivity_L3_child16" name="13.2.3.5: Review governance" calledElement="Process_13_2_3_5">
       <bpmn:incoming>Flow_child15_to_child16</bpmn:incoming>
       <bpmn:outgoing>Flow_child16_to_child17</bpmn:outgoing>
     </bpmn:callActivity>
-    <bpmn:callActivity id="CallActivity_L3_child17" name="13.2.1.7: Document innovation" calledElement="Process_13_2_1_7">
+    <bpmn:callActivity id="CallActivity_L3_child17" name="13.2.3.6: Optimize governance" calledElement="Process_13_2_3_6">
       <bpmn:incoming>Flow_child16_to_child17</bpmn:incoming>
       <bpmn:outgoing>Flow_child17_to_child18</bpmn:outgoing>
     </bpmn:callActivity>
-    <bpmn:callActivity id="CallActivity_L3_child18" name="13.2.1.2: Define change strategy" calledElement="Process_13_2_1_2">
+    <bpmn:callActivity id="CallActivity_L3_child18" name="13.2.2.2: Train affected stakeholders" calledElement="Process_13_2_2_2">
       <bpmn:incoming>Flow_child17_to_child18</bpmn:incoming>
       <bpmn:outgoing>Flow_child18_to_child19</bpmn:outgoing>
     </bpmn:callActivity>
-    <bpmn:callActivity id="CallActivity_L3_child19" name="13.2.3.7: Document governance" calledElement="Process_13_2_3_7">
+    <bpmn:callActivity id="CallActivity_L3_child19" name="13.2.2.7: Document improvement" calledElement="Process_13_2_2_7">
       <bpmn:incoming>Flow_child18_to_child19</bpmn:incoming>
       <bpmn:outgoing>Flow_child19_to_child20</bpmn:outgoing>
     </bpmn:callActivity>
-    <bpmn:callActivity id="CallActivity_L3_child20" name="13.2.2.1: Communicate change" calledElement="Process_13_2_2_1">
+    <bpmn:callActivity id="CallActivity_L3_child20" name="13.2.2.8: Report improvement" calledElement="Process_13_2_2_8">
       <bpmn:incoming>Flow_child19_to_child20</bpmn:incoming>
       <bpmn:outgoing>Flow_child20_to_child21</bpmn:outgoing>
     </bpmn:callActivity>
-    <bpmn:callActivity id="CallActivity_L3_child21" name="13.2.1.5: Review innovation" calledElement="Process_13_2_1_5">
+    <bpmn:callActivity id="CallActivity_L3_child21" name="13.2.3.4: Sustain improvements" calledElement="Process_13_2_3_4">
       <bpmn:incoming>Flow_child20_to_child21</bpmn:incoming>
       <bpmn:outgoing>Flow_child21_to_child22</bpmn:outgoing>
     </bpmn:callActivity>
-    <bpmn:callActivity id="CallActivity_L3_child22" name="13.2.2.2: Train affected stakeholders" calledElement="Process_13_2_2_2">
+    <bpmn:callActivity id="CallActivity_L3_child22" name="13.2.2.1: Communicate change" calledElement="Process_13_2_2_1">
       <bpmn:incoming>Flow_child21_to_child22</bpmn:incoming>
       <bpmn:outgoing>Flow_child22_to_child23</bpmn:outgoing>
     </bpmn:callActivity>
-    <bpmn:callActivity id="CallActivity_L3_child23" name="13.2.1.4: Secure change resources" calledElement="Process_13_2_1_4">
+    <bpmn:callActivity id="CallActivity_L3_child23" name="13.2.1.2: Define change strategy" calledElement="Process_13_2_1_2">
       <bpmn:incoming>Flow_child22_to_child23</bpmn:incoming>
       <bpmn:outgoing>Flow_child23_to_child24</bpmn:outgoing>
     </bpmn:callActivity>
-    <bpmn:callActivity id="CallActivity_L3_child24" name="13.2.2.7: Document improvement" calledElement="Process_13_2_2_7">
+    <bpmn:callActivity id="CallActivity_L3_child24" name="13.2.3.8: Report governance" calledElement="Process_13_2_3_8">
       <bpmn:incoming>Flow_child23_to_child24</bpmn:incoming>
       <bpmn:outgoing>Flow_child24_to_end</bpmn:outgoing>
     </bpmn:callActivity>

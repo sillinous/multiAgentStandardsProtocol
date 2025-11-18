@@ -11,16 +11,16 @@ Orchestration Pattern: Sequential Workflow
 Standards: A2A, ANP, ACP, BPP, BDP, BRP, BMP, BCP, BIP
 
 Child Agents:
-  - 3.4.1.6: Optimize marketing
-  - 3.4.1.5: Review marketing
-  - 3.4.2.5: Review campaigns
   - 3.4.1.7: Document marketing
-  - 3.4.3.4: Close deals
+  - 3.4.2.5: Review campaigns
+  - 3.4.1.5: Review marketing
+  - 3.4.1.6: Optimize marketing
+  - 3.4.3.1: Negotiate terms
+  - 3.4.1.3: Prioritize leads
+  - 3.4.4.3: Identify upsell/cross-sell opportunities
   - 3.4.1.1: Identify potential customers
-  - 3.4.2.2: Develop solutions
-  - 3.4.4.4: Ensure customer success
-  - 3.4.1.4: Distribute leads to sales
-  - 3.4.2.3: Create proposals
+  - 3.4.1.2: Qualify leads
+  - 3.4.2.1: Understand customer needs
   ... and 10 more
 
 Generated: 2025-11-18
@@ -51,26 +51,26 @@ class CompositeAgent_3_4:
         self.apqc_id = "3.4"
         self.level = 3
         self.child_agent_ids = [
-        "3.4.1.6",
-        "3.4.1.5",
-        "3.4.2.5",
         "3.4.1.7",
-        "3.4.3.4",
-        "3.4.1.1",
-        "3.4.2.2",
-        "3.4.4.4",
-        "3.4.1.4",
-        "3.4.2.3",
-        "3.4.4.1",
-        "3.4.3.3",
-        "3.4.2.4",
+        "3.4.2.5",
+        "3.4.1.5",
+        "3.4.1.6",
         "3.4.3.1",
-        "3.4.3.2",
         "3.4.1.3",
-        "3.4.4.2",
-        "3.4.2.1",
         "3.4.4.3",
-        "3.4.1.2"
+        "3.4.1.1",
+        "3.4.1.2",
+        "3.4.2.1",
+        "3.4.3.3",
+        "3.4.4.4",
+        "3.4.4.2",
+        "3.4.1.4",
+        "3.4.4.1",
+        "3.4.2.2",
+        "3.4.3.2",
+        "3.4.2.4",
+        "3.4.2.3",
+        "3.4.3.4"
 ]
         self.logger = logging.getLogger(f"CompositeAgent_3_4")
 

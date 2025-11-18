@@ -11,14 +11,14 @@ Orchestration Pattern: Sequential Workflow
 Standards: A2A, ANP, ACP, BPP, BDP, BRP, BMP, BCP, BIP
 
 Child Agents:
-  - 12.3.2.7: Document stakeholders
+  - 12.3.2.4: Manage crisis communications
   - 12.3.2.6: Optimize stakeholders
   - 12.3.2.3: Handle media inquiries
   - 12.3.2.8: Report stakeholders
-  - 12.3.2.1: Manage media relations
-  - 12.3.2.2: Issue press releases
-  - 12.3.2.4: Manage crisis communications
   - 12.3.2.5: Review stakeholders
+  - 12.3.2.1: Manage media relations
+  - 12.3.2.7: Document stakeholders
+  - 12.3.2.2: Issue press releases
 
 
 Generated: 2025-11-18
@@ -49,14 +49,14 @@ class CompositeAgent_12_3_2:
         self.apqc_id = "12.3.2"
         self.level = 4
         self.child_agent_ids = [
-        "12.3.2.7",
+        "12.3.2.4",
         "12.3.2.6",
         "12.3.2.3",
         "12.3.2.8",
+        "12.3.2.5",
         "12.3.2.1",
-        "12.3.2.2",
-        "12.3.2.4",
-        "12.3.2.5"
+        "12.3.2.7",
+        "12.3.2.2"
 ]
         self.logger = logging.getLogger(f"CompositeAgent_12_3_2")
 

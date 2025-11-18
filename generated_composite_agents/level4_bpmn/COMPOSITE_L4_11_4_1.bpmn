@@ -9,16 +9,16 @@ APQC ID: 11.4.1
 Orchestrates 6 child agents:
   1. 11.4.1.4: Approve audit plan
   2. 11.4.1.2: Create audit plan
-  3. 11.4.1.5: Review regulations
+  3. 11.4.1.1: Assess audit risks
   4. 11.4.1.6: Optimize regulations
   5. 11.4.1.3: Allocate audit resources
-  6. 11.4.1.1: Assess audit risks
+  6. 11.4.1.5: Review regulations
 
 
 Orchestration Pattern: Sequential Workflow (Pipeline)
 Standards: BPMN 2.0, A2A Protocol
 
-Generated: 2025-11-18T01:19:11.322285
+Generated: 2025-11-18T01:38:33.370207
 Status: Production Ready
 </bpmn:documentation>
     <bpmn:startEvent id="Start_L4_11_4_1" name="Start Composite">
@@ -32,7 +32,7 @@ Status: Production Ready
       <bpmn:incoming>Flow_child1_to_child2</bpmn:incoming>
       <bpmn:outgoing>Flow_child2_to_child3</bpmn:outgoing>
     </bpmn:callActivity>
-    <bpmn:callActivity id="CallActivity_L4_child3" name="11.4.1.5: Review regulations" calledElement="Process_11_4_1_5">
+    <bpmn:callActivity id="CallActivity_L4_child3" name="11.4.1.1: Assess audit risks" calledElement="Process_11_4_1_1">
       <bpmn:incoming>Flow_child2_to_child3</bpmn:incoming>
       <bpmn:outgoing>Flow_child3_to_child4</bpmn:outgoing>
     </bpmn:callActivity>
@@ -44,7 +44,7 @@ Status: Production Ready
       <bpmn:incoming>Flow_child4_to_child5</bpmn:incoming>
       <bpmn:outgoing>Flow_child5_to_child6</bpmn:outgoing>
     </bpmn:callActivity>
-    <bpmn:callActivity id="CallActivity_L4_child6" name="11.4.1.1: Assess audit risks" calledElement="Process_11_4_1_1">
+    <bpmn:callActivity id="CallActivity_L4_child6" name="11.4.1.5: Review regulations" calledElement="Process_11_4_1_5">
       <bpmn:incoming>Flow_child5_to_child6</bpmn:incoming>
       <bpmn:outgoing>Flow_child6_to_end</bpmn:outgoing>
     </bpmn:callActivity>

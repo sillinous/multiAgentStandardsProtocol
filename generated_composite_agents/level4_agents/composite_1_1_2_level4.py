@@ -11,13 +11,13 @@ Orchestration Pattern: Sequential Workflow
 Standards: A2A, ANP, ACP, BPP, BDP, BRP, BMP, BCP, BIP
 
 Child Agents:
+  - 1.1.2.2: Capture and assess customer needs
+  - 1.1.2.1: Conduct qualitative/quantitative assessments
   - 1.1.2.3: Identify market segments and target customers
   - 1.1.2.6: Optimize initiatives
-  - 1.1.2.1: Conduct qualitative/quantitative assessments
-  - 1.1.2.2: Capture and assess customer needs
+  - 1.1.2.7: Document initiatives
   - 1.1.2.5: Review initiatives
   - 1.1.2.4: Analyze initiatives
-  - 1.1.2.7: Document initiatives
 
 
 Generated: 2025-11-18
@@ -48,13 +48,13 @@ class CompositeAgent_1_1_2:
         self.apqc_id = "1.1.2"
         self.level = 4
         self.child_agent_ids = [
+        "1.1.2.2",
+        "1.1.2.1",
         "1.1.2.3",
         "1.1.2.6",
-        "1.1.2.1",
-        "1.1.2.2",
+        "1.1.2.7",
         "1.1.2.5",
-        "1.1.2.4",
-        "1.1.2.7"
+        "1.1.2.4"
 ]
         self.logger = logging.getLogger(f"CompositeAgent_1_1_2")
 

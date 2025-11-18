@@ -11,16 +11,16 @@ Orchestration Pattern: Sequential Workflow
 Standards: A2A, ANP, ACP, BPP, BDP, BRP, BMP, BCP, BIP
 
 Child Agents:
-  - 13.4.2.4: Facilitate knowledge sharing
-  - 13.4.1.3: Establish knowledge repositories
+  - 13.4.1.5: Review governance
   - 13.4.1.8: Report governance
-  - 13.4.3.1: Create content
-  - 13.4.2.1: Capture explicit knowledge
-  - 13.4.2.5: Review capabilities
-  - 13.4.1.4: Define knowledge processes
-  - 13.4.3.2: Review and approve content
-  - 13.4.1.2: Identify critical knowledge
   - 13.4.3.4: Maintain content
+  - 13.4.1.4: Define knowledge processes
+  - 13.4.1.2: Identify critical knowledge
+  - 13.4.3.3: Publish content
+  - 13.4.2.5: Review capabilities
+  - 13.4.1.3: Establish knowledge repositories
+  - 13.4.2.6: Optimize capabilities
+  - 13.4.1.1: Define knowledge objectives
   ... and 8 more
 
 Generated: 2025-11-18
@@ -51,23 +51,23 @@ class CompositeAgent_13_4:
         self.apqc_id = "13.4"
         self.level = 3
         self.child_agent_ids = [
-        "13.4.2.4",
-        "13.4.1.3",
-        "13.4.1.8",
-        "13.4.3.1",
-        "13.4.2.1",
-        "13.4.2.5",
-        "13.4.1.4",
-        "13.4.3.2",
-        "13.4.1.2",
-        "13.4.3.4",
-        "13.4.1.7",
-        "13.4.1.6",
-        "13.4.3.3",
-        "13.4.2.2",
         "13.4.1.5",
-        "13.4.1.1",
+        "13.4.1.8",
+        "13.4.3.4",
+        "13.4.1.4",
+        "13.4.1.2",
+        "13.4.3.3",
+        "13.4.2.5",
+        "13.4.1.3",
         "13.4.2.6",
+        "13.4.1.1",
+        "13.4.2.1",
+        "13.4.2.4",
+        "13.4.1.6",
+        "13.4.1.7",
+        "13.4.3.2",
+        "13.4.3.1",
+        "13.4.2.2",
         "13.4.2.3"
 ]
         self.logger = logging.getLogger(f"CompositeAgent_13_4")

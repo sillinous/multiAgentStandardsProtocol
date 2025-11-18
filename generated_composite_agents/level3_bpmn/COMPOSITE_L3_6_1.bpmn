@@ -6,43 +6,45 @@ Level 3 Composite Process
 Manage Customer Service
 APQC ID: 6.1
 
-Orchestrates 16 child agents:
-  1. 6.1.1.5: Review tickets
-  2. 6.1.2.1: Define service channels
-  3. 6.1.2.4: Create service policies
+Orchestrates 18 child agents:
+  1. 6.1.2.4: Create service policies
+  2. 6.1.2.2: Establish service processes
+  3. 6.1.2.1: Define service channels
   4. 6.1.1.1: Define service vision
-  5. 6.1.1.7: Document tickets
-  6. 6.1.1.4: Set service objectives
-  7. 6.1.1.6: Optimize tickets
+  5. 6.1.1.9: Plan tickets
+  6. 6.1.1.10: Execute tickets
+  7. 6.1.1.4: Set service objectives
   8. 6.1.2.5: Review resolutions
-  9. 6.1.2.3: Design customer journey
-  10. 6.1.2.2: Establish service processes
-  11. 6.1.2.6: Optimize resolutions
-  12. 6.1.2.7: Document resolutions
-  13. 6.1.1.2: Establish service standards
-  14. 6.1.1.3: Design service model
-  15. 6.1.1.8: Report tickets
-  16. 6.1.2.8: Report resolutions
+  9. 6.1.2.6: Optimize resolutions
+  10. 6.1.1.5: Review tickets
+  11. 6.1.1.6: Optimize tickets
+  12. 6.1.1.3: Design service model
+  13. 6.1.2.7: Document resolutions
+  14. 6.1.1.7: Document tickets
+  15. 6.1.2.8: Report resolutions
+  16. 6.1.1.2: Establish service standards
+  17. 6.1.2.3: Design customer journey
+  18. 6.1.1.8: Report tickets
 
 
 Orchestration Pattern: Sequential Workflow (Pipeline)
 Standards: BPMN 2.0, A2A Protocol
 
-Generated: 2025-11-18T01:19:11.498222
+Generated: 2025-11-18T01:38:33.570945
 Status: Production Ready
 </bpmn:documentation>
     <bpmn:startEvent id="Start_L3_6_1" name="Start Composite">
       <bpmn:outgoing>Flow_start_to_child1</bpmn:outgoing>
     </bpmn:startEvent>
-    <bpmn:callActivity id="CallActivity_L3_child1" name="6.1.1.5: Review tickets" calledElement="Process_6_1_1_5">
+    <bpmn:callActivity id="CallActivity_L3_child1" name="6.1.2.4: Create service policies" calledElement="Process_6_1_2_4">
       <bpmn:incoming>Flow_start_to_child1</bpmn:incoming>
       <bpmn:outgoing>Flow_child1_to_child2</bpmn:outgoing>
     </bpmn:callActivity>
-    <bpmn:callActivity id="CallActivity_L3_child2" name="6.1.2.1: Define service channels" calledElement="Process_6_1_2_1">
+    <bpmn:callActivity id="CallActivity_L3_child2" name="6.1.2.2: Establish service processes" calledElement="Process_6_1_2_2">
       <bpmn:incoming>Flow_child1_to_child2</bpmn:incoming>
       <bpmn:outgoing>Flow_child2_to_child3</bpmn:outgoing>
     </bpmn:callActivity>
-    <bpmn:callActivity id="CallActivity_L3_child3" name="6.1.2.4: Create service policies" calledElement="Process_6_1_2_4">
+    <bpmn:callActivity id="CallActivity_L3_child3" name="6.1.2.1: Define service channels" calledElement="Process_6_1_2_1">
       <bpmn:incoming>Flow_child2_to_child3</bpmn:incoming>
       <bpmn:outgoing>Flow_child3_to_child4</bpmn:outgoing>
     </bpmn:callActivity>
@@ -50,15 +52,15 @@ Status: Production Ready
       <bpmn:incoming>Flow_child3_to_child4</bpmn:incoming>
       <bpmn:outgoing>Flow_child4_to_child5</bpmn:outgoing>
     </bpmn:callActivity>
-    <bpmn:callActivity id="CallActivity_L3_child5" name="6.1.1.7: Document tickets" calledElement="Process_6_1_1_7">
+    <bpmn:callActivity id="CallActivity_L3_child5" name="6.1.1.9: Plan tickets" calledElement="Process_6_1_1_9">
       <bpmn:incoming>Flow_child4_to_child5</bpmn:incoming>
       <bpmn:outgoing>Flow_child5_to_child6</bpmn:outgoing>
     </bpmn:callActivity>
-    <bpmn:callActivity id="CallActivity_L3_child6" name="6.1.1.4: Set service objectives" calledElement="Process_6_1_1_4">
+    <bpmn:callActivity id="CallActivity_L3_child6" name="6.1.1.10: Execute tickets" calledElement="Process_6_1_1_10">
       <bpmn:incoming>Flow_child5_to_child6</bpmn:incoming>
       <bpmn:outgoing>Flow_child6_to_child7</bpmn:outgoing>
     </bpmn:callActivity>
-    <bpmn:callActivity id="CallActivity_L3_child7" name="6.1.1.6: Optimize tickets" calledElement="Process_6_1_1_6">
+    <bpmn:callActivity id="CallActivity_L3_child7" name="6.1.1.4: Set service objectives" calledElement="Process_6_1_1_4">
       <bpmn:incoming>Flow_child6_to_child7</bpmn:incoming>
       <bpmn:outgoing>Flow_child7_to_child8</bpmn:outgoing>
     </bpmn:callActivity>
@@ -66,37 +68,45 @@ Status: Production Ready
       <bpmn:incoming>Flow_child7_to_child8</bpmn:incoming>
       <bpmn:outgoing>Flow_child8_to_child9</bpmn:outgoing>
     </bpmn:callActivity>
-    <bpmn:callActivity id="CallActivity_L3_child9" name="6.1.2.3: Design customer journey" calledElement="Process_6_1_2_3">
+    <bpmn:callActivity id="CallActivity_L3_child9" name="6.1.2.6: Optimize resolutions" calledElement="Process_6_1_2_6">
       <bpmn:incoming>Flow_child8_to_child9</bpmn:incoming>
       <bpmn:outgoing>Flow_child9_to_child10</bpmn:outgoing>
     </bpmn:callActivity>
-    <bpmn:callActivity id="CallActivity_L3_child10" name="6.1.2.2: Establish service processes" calledElement="Process_6_1_2_2">
+    <bpmn:callActivity id="CallActivity_L3_child10" name="6.1.1.5: Review tickets" calledElement="Process_6_1_1_5">
       <bpmn:incoming>Flow_child9_to_child10</bpmn:incoming>
       <bpmn:outgoing>Flow_child10_to_child11</bpmn:outgoing>
     </bpmn:callActivity>
-    <bpmn:callActivity id="CallActivity_L3_child11" name="6.1.2.6: Optimize resolutions" calledElement="Process_6_1_2_6">
+    <bpmn:callActivity id="CallActivity_L3_child11" name="6.1.1.6: Optimize tickets" calledElement="Process_6_1_1_6">
       <bpmn:incoming>Flow_child10_to_child11</bpmn:incoming>
       <bpmn:outgoing>Flow_child11_to_child12</bpmn:outgoing>
     </bpmn:callActivity>
-    <bpmn:callActivity id="CallActivity_L3_child12" name="6.1.2.7: Document resolutions" calledElement="Process_6_1_2_7">
+    <bpmn:callActivity id="CallActivity_L3_child12" name="6.1.1.3: Design service model" calledElement="Process_6_1_1_3">
       <bpmn:incoming>Flow_child11_to_child12</bpmn:incoming>
       <bpmn:outgoing>Flow_child12_to_child13</bpmn:outgoing>
     </bpmn:callActivity>
-    <bpmn:callActivity id="CallActivity_L3_child13" name="6.1.1.2: Establish service standards" calledElement="Process_6_1_1_2">
+    <bpmn:callActivity id="CallActivity_L3_child13" name="6.1.2.7: Document resolutions" calledElement="Process_6_1_2_7">
       <bpmn:incoming>Flow_child12_to_child13</bpmn:incoming>
       <bpmn:outgoing>Flow_child13_to_child14</bpmn:outgoing>
     </bpmn:callActivity>
-    <bpmn:callActivity id="CallActivity_L3_child14" name="6.1.1.3: Design service model" calledElement="Process_6_1_1_3">
+    <bpmn:callActivity id="CallActivity_L3_child14" name="6.1.1.7: Document tickets" calledElement="Process_6_1_1_7">
       <bpmn:incoming>Flow_child13_to_child14</bpmn:incoming>
       <bpmn:outgoing>Flow_child14_to_child15</bpmn:outgoing>
     </bpmn:callActivity>
-    <bpmn:callActivity id="CallActivity_L3_child15" name="6.1.1.8: Report tickets" calledElement="Process_6_1_1_8">
+    <bpmn:callActivity id="CallActivity_L3_child15" name="6.1.2.8: Report resolutions" calledElement="Process_6_1_2_8">
       <bpmn:incoming>Flow_child14_to_child15</bpmn:incoming>
       <bpmn:outgoing>Flow_child15_to_child16</bpmn:outgoing>
     </bpmn:callActivity>
-    <bpmn:callActivity id="CallActivity_L3_child16" name="6.1.2.8: Report resolutions" calledElement="Process_6_1_2_8">
+    <bpmn:callActivity id="CallActivity_L3_child16" name="6.1.1.2: Establish service standards" calledElement="Process_6_1_1_2">
       <bpmn:incoming>Flow_child15_to_child16</bpmn:incoming>
-      <bpmn:outgoing>Flow_child16_to_end</bpmn:outgoing>
+      <bpmn:outgoing>Flow_child16_to_child17</bpmn:outgoing>
+    </bpmn:callActivity>
+    <bpmn:callActivity id="CallActivity_L3_child17" name="6.1.2.3: Design customer journey" calledElement="Process_6_1_2_3">
+      <bpmn:incoming>Flow_child16_to_child17</bpmn:incoming>
+      <bpmn:outgoing>Flow_child17_to_child18</bpmn:outgoing>
+    </bpmn:callActivity>
+    <bpmn:callActivity id="CallActivity_L3_child18" name="6.1.1.8: Report tickets" calledElement="Process_6_1_1_8">
+      <bpmn:incoming>Flow_child17_to_child18</bpmn:incoming>
+      <bpmn:outgoing>Flow_child18_to_end</bpmn:outgoing>
     </bpmn:callActivity>
     <bpmn:sequenceFlow id="Flow_start_to_child1" sourceRef="Start_L3_6_1" targetRef="CallActivity_L3_child1" />
     <bpmn:sequenceFlow id="Flow_child1_to_child2" sourceRef="CallActivity_L3_child1" targetRef="CallActivity_L3_child2" />
@@ -114,9 +124,11 @@ Status: Production Ready
     <bpmn:sequenceFlow id="Flow_child13_to_child14" sourceRef="CallActivity_L3_child13" targetRef="CallActivity_L3_child14" />
     <bpmn:sequenceFlow id="Flow_child14_to_child15" sourceRef="CallActivity_L3_child14" targetRef="CallActivity_L3_child15" />
     <bpmn:sequenceFlow id="Flow_child15_to_child16" sourceRef="CallActivity_L3_child15" targetRef="CallActivity_L3_child16" />
-    <bpmn:sequenceFlow id="Flow_child16_to_end" sourceRef="CallActivity_L3_child16" targetRef="End_L3_6_1" />
+    <bpmn:sequenceFlow id="Flow_child16_to_child17" sourceRef="CallActivity_L3_child16" targetRef="CallActivity_L3_child17" />
+    <bpmn:sequenceFlow id="Flow_child17_to_child18" sourceRef="CallActivity_L3_child17" targetRef="CallActivity_L3_child18" />
+    <bpmn:sequenceFlow id="Flow_child18_to_end" sourceRef="CallActivity_L3_child18" targetRef="End_L3_6_1" />
     <bpmn:endEvent id="End_L3_6_1" name="Composite Complete">
-      <bpmn:incoming>Flow_child16_to_end</bpmn:incoming>
+      <bpmn:incoming>Flow_child18_to_end</bpmn:incoming>
     </bpmn:endEvent>
   </bpmn:process>
   <bpmndi:BPMNDiagram id="Diagram_L3_6_1">
@@ -172,8 +184,14 @@ Status: Production Ready
       <bpmndi:BPMNShape id="Shape_CallActivity_L3_child16" bpmnElement="CallActivity_L3_child16">
         <dc:Bounds x="100" y="1630" width="150" height="80" />
       </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Shape_CallActivity_L3_child17" bpmnElement="CallActivity_L3_child17">
+        <dc:Bounds x="100" y="1730" width="150" height="80" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Shape_CallActivity_L3_child18" bpmnElement="CallActivity_L3_child18">
+        <dc:Bounds x="100" y="1830" width="150" height="80" />
+      </bpmndi:BPMNShape>
       <bpmndi:BPMNShape id="Shape_End_L3_6_1" bpmnElement="End_L3_6_1">
-        <dc:Bounds x="150" y="1730" width="36" height="36" />
+        <dc:Bounds x="150" y="1930" width="36" height="36" />
       </bpmndi:BPMNShape>
     </bpmndi:BPMNPlane>
   </bpmndi:BPMNDiagram>

@@ -11,14 +11,14 @@ Orchestration Pattern: Sequential Workflow
 Standards: A2A, ANP, ACP, BPP, BDP, BRP, BMP, BCP, BIP
 
 Child Agents:
-  - 13.1.2.1: Identify improvement opportunities
-  - 13.1.2.8: Report innovation
-  - 13.1.2.7: Document innovation
-  - 13.1.2.3: Implement process changes
-  - 13.1.2.5: Review innovation
-  - 13.1.2.6: Optimize innovation
   - 13.1.2.2: Design improved processes
+  - 13.1.2.6: Optimize innovation
+  - 13.1.2.1: Identify improvement opportunities
   - 13.1.2.4: Monitor process performance
+  - 13.1.2.7: Document innovation
+  - 13.1.2.8: Report innovation
+  - 13.1.2.5: Review innovation
+  - 13.1.2.3: Implement process changes
 
 
 Generated: 2025-11-18
@@ -49,14 +49,14 @@ class CompositeAgent_13_1_2:
         self.apqc_id = "13.1.2"
         self.level = 4
         self.child_agent_ids = [
-        "13.1.2.1",
-        "13.1.2.8",
-        "13.1.2.7",
-        "13.1.2.3",
-        "13.1.2.5",
-        "13.1.2.6",
         "13.1.2.2",
-        "13.1.2.4"
+        "13.1.2.6",
+        "13.1.2.1",
+        "13.1.2.4",
+        "13.1.2.7",
+        "13.1.2.8",
+        "13.1.2.5",
+        "13.1.2.3"
 ]
         self.logger = logging.getLogger(f"CompositeAgent_13_1_2")
 

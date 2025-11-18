@@ -12,10 +12,10 @@ Standards: A2A, ANP, ACP, BPP, BDP, BRP, BMP, BCP, BIP
 
 Child Agents:
   - 3.4.2.5: Review campaigns
-  - 3.4.2.2: Develop solutions
-  - 3.4.2.3: Create proposals
-  - 3.4.2.4: Present solutions
   - 3.4.2.1: Understand customer needs
+  - 3.4.2.2: Develop solutions
+  - 3.4.2.4: Present solutions
+  - 3.4.2.3: Create proposals
 
 
 Generated: 2025-11-18
@@ -47,10 +47,10 @@ class CompositeAgent_3_4_2:
         self.level = 4
         self.child_agent_ids = [
         "3.4.2.5",
+        "3.4.2.1",
         "3.4.2.2",
-        "3.4.2.3",
         "3.4.2.4",
-        "3.4.2.1"
+        "3.4.2.3"
 ]
         self.logger = logging.getLogger(f"CompositeAgent_3_4_2")
 

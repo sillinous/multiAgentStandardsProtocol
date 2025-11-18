@@ -12,9 +12,9 @@ Standards: A2A, ANP, ACP, BPP, BDP, BRP, BMP, BCP, BIP
 
 Child Agents:
   - 10.4.2.1: Conduct risk assessments
-  - 10.4.2.2: Implement safety controls
-  - 10.4.2.3: Train employees
   - 10.4.2.4: Monitor safety performance
+  - 10.4.2.3: Train employees
+  - 10.4.2.2: Implement safety controls
 
 
 Generated: 2025-11-18
@@ -46,9 +46,9 @@ class CompositeAgent_10_4_2:
         self.level = 4
         self.child_agent_ids = [
         "10.4.2.1",
-        "10.4.2.2",
+        "10.4.2.4",
         "10.4.2.3",
-        "10.4.2.4"
+        "10.4.2.2"
 ]
         self.logger = logging.getLogger(f"CompositeAgent_10_4_2")
 

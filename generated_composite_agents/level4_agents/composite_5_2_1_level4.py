@@ -11,14 +11,14 @@ Orchestration Pattern: Sequential Workflow
 Standards: A2A, ANP, ACP, BPP, BDP, BRP, BMP, BCP, BIP
 
 Child Agents:
-  - 5.2.1.2: Define service specifications
-  - 5.2.1.4: Confirm resource availability
-  - 5.2.1.3: Establish service level agreements
-  - 5.2.1.6: Optimize quality
-  - 5.2.1.7: Document quality
   - 5.2.1.8: Report quality
   - 5.2.1.5: Review quality
+  - 5.2.1.2: Define service specifications
   - 5.2.1.1: Understand customer needs
+  - 5.2.1.4: Confirm resource availability
+  - 5.2.1.7: Document quality
+  - 5.2.1.3: Establish service level agreements
+  - 5.2.1.6: Optimize quality
 
 
 Generated: 2025-11-18
@@ -49,14 +49,14 @@ class CompositeAgent_5_2_1:
         self.apqc_id = "5.2.1"
         self.level = 4
         self.child_agent_ids = [
-        "5.2.1.2",
-        "5.2.1.4",
-        "5.2.1.3",
-        "5.2.1.6",
-        "5.2.1.7",
         "5.2.1.8",
         "5.2.1.5",
-        "5.2.1.1"
+        "5.2.1.2",
+        "5.2.1.1",
+        "5.2.1.4",
+        "5.2.1.7",
+        "5.2.1.3",
+        "5.2.1.6"
 ]
         self.logger = logging.getLogger(f"CompositeAgent_5_2_1")
 

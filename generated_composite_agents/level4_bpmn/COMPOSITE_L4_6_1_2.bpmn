@@ -7,54 +7,54 @@ Manage Customer Service
 APQC ID: 6.1.2
 
 Orchestrates 8 child agents:
-  1. 6.1.2.1: Define service channels
-  2. 6.1.2.4: Create service policies
-  3. 6.1.2.5: Review resolutions
-  4. 6.1.2.3: Design customer journey
-  5. 6.1.2.2: Establish service processes
-  6. 6.1.2.6: Optimize resolutions
-  7. 6.1.2.7: Document resolutions
-  8. 6.1.2.8: Report resolutions
+  1. 6.1.2.4: Create service policies
+  2. 6.1.2.2: Establish service processes
+  3. 6.1.2.1: Define service channels
+  4. 6.1.2.5: Review resolutions
+  5. 6.1.2.6: Optimize resolutions
+  6. 6.1.2.7: Document resolutions
+  7. 6.1.2.8: Report resolutions
+  8. 6.1.2.3: Design customer journey
 
 
 Orchestration Pattern: Sequential Workflow (Pipeline)
 Standards: BPMN 2.0, A2A Protocol
 
-Generated: 2025-11-18T01:19:11.389360
+Generated: 2025-11-18T01:38:33.451448
 Status: Production Ready
 </bpmn:documentation>
     <bpmn:startEvent id="Start_L4_6_1_2" name="Start Composite">
       <bpmn:outgoing>Flow_start_to_child1</bpmn:outgoing>
     </bpmn:startEvent>
-    <bpmn:callActivity id="CallActivity_L4_child1" name="6.1.2.1: Define service channels" calledElement="Process_6_1_2_1">
+    <bpmn:callActivity id="CallActivity_L4_child1" name="6.1.2.4: Create service policies" calledElement="Process_6_1_2_4">
       <bpmn:incoming>Flow_start_to_child1</bpmn:incoming>
       <bpmn:outgoing>Flow_child1_to_child2</bpmn:outgoing>
     </bpmn:callActivity>
-    <bpmn:callActivity id="CallActivity_L4_child2" name="6.1.2.4: Create service policies" calledElement="Process_6_1_2_4">
+    <bpmn:callActivity id="CallActivity_L4_child2" name="6.1.2.2: Establish service processes" calledElement="Process_6_1_2_2">
       <bpmn:incoming>Flow_child1_to_child2</bpmn:incoming>
       <bpmn:outgoing>Flow_child2_to_child3</bpmn:outgoing>
     </bpmn:callActivity>
-    <bpmn:callActivity id="CallActivity_L4_child3" name="6.1.2.5: Review resolutions" calledElement="Process_6_1_2_5">
+    <bpmn:callActivity id="CallActivity_L4_child3" name="6.1.2.1: Define service channels" calledElement="Process_6_1_2_1">
       <bpmn:incoming>Flow_child2_to_child3</bpmn:incoming>
       <bpmn:outgoing>Flow_child3_to_child4</bpmn:outgoing>
     </bpmn:callActivity>
-    <bpmn:callActivity id="CallActivity_L4_child4" name="6.1.2.3: Design customer journey" calledElement="Process_6_1_2_3">
+    <bpmn:callActivity id="CallActivity_L4_child4" name="6.1.2.5: Review resolutions" calledElement="Process_6_1_2_5">
       <bpmn:incoming>Flow_child3_to_child4</bpmn:incoming>
       <bpmn:outgoing>Flow_child4_to_child5</bpmn:outgoing>
     </bpmn:callActivity>
-    <bpmn:callActivity id="CallActivity_L4_child5" name="6.1.2.2: Establish service processes" calledElement="Process_6_1_2_2">
+    <bpmn:callActivity id="CallActivity_L4_child5" name="6.1.2.6: Optimize resolutions" calledElement="Process_6_1_2_6">
       <bpmn:incoming>Flow_child4_to_child5</bpmn:incoming>
       <bpmn:outgoing>Flow_child5_to_child6</bpmn:outgoing>
     </bpmn:callActivity>
-    <bpmn:callActivity id="CallActivity_L4_child6" name="6.1.2.6: Optimize resolutions" calledElement="Process_6_1_2_6">
+    <bpmn:callActivity id="CallActivity_L4_child6" name="6.1.2.7: Document resolutions" calledElement="Process_6_1_2_7">
       <bpmn:incoming>Flow_child5_to_child6</bpmn:incoming>
       <bpmn:outgoing>Flow_child6_to_child7</bpmn:outgoing>
     </bpmn:callActivity>
-    <bpmn:callActivity id="CallActivity_L4_child7" name="6.1.2.7: Document resolutions" calledElement="Process_6_1_2_7">
+    <bpmn:callActivity id="CallActivity_L4_child7" name="6.1.2.8: Report resolutions" calledElement="Process_6_1_2_8">
       <bpmn:incoming>Flow_child6_to_child7</bpmn:incoming>
       <bpmn:outgoing>Flow_child7_to_child8</bpmn:outgoing>
     </bpmn:callActivity>
-    <bpmn:callActivity id="CallActivity_L4_child8" name="6.1.2.8: Report resolutions" calledElement="Process_6_1_2_8">
+    <bpmn:callActivity id="CallActivity_L4_child8" name="6.1.2.3: Design customer journey" calledElement="Process_6_1_2_3">
       <bpmn:incoming>Flow_child7_to_child8</bpmn:incoming>
       <bpmn:outgoing>Flow_child8_to_end</bpmn:outgoing>
     </bpmn:callActivity>

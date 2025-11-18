@@ -11,12 +11,12 @@ Orchestration Pattern: Sequential Workflow
 Standards: A2A, ANP, ACP, BPP, BDP, BRP, BMP, BCP, BIP
 
 Child Agents:
-  - 7.3.3.1: Conduct career discussions
-  - 7.3.3.4: Support career transitions
-  - 7.3.3.5: Review workforce
-  - 7.3.3.6: Optimize workforce
   - 7.3.3.3: Create career plans
   - 7.3.3.2: Identify career paths
+  - 7.3.3.5: Review workforce
+  - 7.3.3.4: Support career transitions
+  - 7.3.3.6: Optimize workforce
+  - 7.3.3.1: Conduct career discussions
 
 
 Generated: 2025-11-18
@@ -47,12 +47,12 @@ class CompositeAgent_7_3_3:
         self.apqc_id = "7.3.3"
         self.level = 4
         self.child_agent_ids = [
-        "7.3.3.1",
-        "7.3.3.4",
-        "7.3.3.5",
-        "7.3.3.6",
         "7.3.3.3",
-        "7.3.3.2"
+        "7.3.3.2",
+        "7.3.3.5",
+        "7.3.3.4",
+        "7.3.3.6",
+        "7.3.3.1"
 ]
         self.logger = logging.getLogger(f"CompositeAgent_7_3_3")
 

@@ -11,16 +11,16 @@ Orchestration Pattern: Sequential Workflow
 Standards: A2A, ANP, ACP, BPP, BDP, BRP, BMP, BCP, BIP
 
 Child Agents:
-  - 7.5.2.2: Conduct exit process
   - 7.5.1.3: Transition employees
-  - 7.5.3.1: Document performance issues
-  - 7.5.3.4: Manage offboarding
-  - 7.5.3.2: Conduct termination process
-  - 7.5.3.3: Complete exit procedures
-  - 7.5.2.4: Process retirement benefits
-  - 7.5.2.1: Plan for retirements
-  - 7.5.1.1: Identify redeployment opportunities
+  - 7.5.2.2: Conduct exit process
+  - 7.5.1.2: Match employees to roles
   - 7.5.1.4: Support integration
+  - 7.5.2.3: Transfer knowledge
+  - 7.5.3.4: Manage offboarding
+  - 7.5.3.3: Complete exit procedures
+  - 7.5.1.1: Identify redeployment opportunities
+  - 7.5.3.2: Conduct termination process
+  - 7.5.3.1: Document performance issues
   ... and 2 more
 
 Generated: 2025-11-18
@@ -51,18 +51,18 @@ class CompositeAgent_7_5:
         self.apqc_id = "7.5"
         self.level = 3
         self.child_agent_ids = [
-        "7.5.2.2",
         "7.5.1.3",
-        "7.5.3.1",
-        "7.5.3.4",
-        "7.5.3.2",
-        "7.5.3.3",
-        "7.5.2.4",
-        "7.5.2.1",
-        "7.5.1.1",
+        "7.5.2.2",
+        "7.5.1.2",
         "7.5.1.4",
         "7.5.2.3",
-        "7.5.1.2"
+        "7.5.3.4",
+        "7.5.3.3",
+        "7.5.1.1",
+        "7.5.3.2",
+        "7.5.3.1",
+        "7.5.2.4",
+        "7.5.2.1"
 ]
         self.logger = logging.getLogger(f"CompositeAgent_7_5")
 

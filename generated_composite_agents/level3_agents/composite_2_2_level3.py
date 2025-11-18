@@ -11,16 +11,16 @@ Orchestration Pattern: Sequential Workflow
 Standards: A2A, ANP, ACP, BPP, BDP, BRP, BMP, BCP, BIP
 
 Child Agents:
-  - 2.2.1.2: Create detailed design specifications
-  - 2.2.2.8: Report requirements
-  - 2.2.1.4: Test prototypes
-  - 2.2.2.5: Review requirements
-  - 2.2.1.1: Develop product concepts
-  - 2.2.3.2: Develop production process
   - 2.2.3.1: Define manufacturing requirements
-  - 2.2.2.2: Gather customer feedback
+  - 2.2.1.7: Document designs
+  - 2.2.1.2: Create detailed design specifications
+  - 2.2.1.8: Report designs
   - 2.2.2.3: Refine product based on testing
-  - 2.2.2.7: Document requirements
+  - 2.2.1.4: Test prototypes
+  - 2.2.3.2: Develop production process
+  - 2.2.2.1: Conduct alpha/beta testing
+  - 2.2.3.4: Launch production
+  - 2.2.1.5: Conduct pilot production
   ... and 15 more
 
 Generated: 2025-11-18
@@ -51,31 +51,31 @@ class CompositeAgent_2_2:
         self.apqc_id = "2.2"
         self.level = 3
         self.child_agent_ids = [
-        "2.2.1.2",
-        "2.2.2.8",
-        "2.2.1.4",
-        "2.2.2.5",
-        "2.2.1.1",
-        "2.2.3.2",
         "2.2.3.1",
-        "2.2.2.2",
-        "2.2.2.3",
-        "2.2.2.7",
-        "2.2.1.8",
-        "2.2.1.6",
-        "2.2.2.4",
-        "2.2.3.5",
-        "2.2.3.7",
-        "2.2.3.6",
-        "2.2.3.3",
-        "2.2.1.3",
-        "2.2.2.1",
         "2.2.1.7",
-        "2.2.1.9",
-        "2.2.2.6",
-        "2.2.1.5",
+        "2.2.1.2",
+        "2.2.1.8",
+        "2.2.2.3",
+        "2.2.1.4",
+        "2.2.3.2",
+        "2.2.2.1",
         "2.2.3.4",
-        "2.2.3.8"
+        "2.2.1.5",
+        "2.2.2.2",
+        "2.2.1.1",
+        "2.2.3.6",
+        "2.2.2.7",
+        "2.2.3.3",
+        "2.2.3.7",
+        "2.2.1.9",
+        "2.2.1.6",
+        "2.2.3.8",
+        "2.2.2.8",
+        "2.2.1.3",
+        "2.2.2.5",
+        "2.2.3.5",
+        "2.2.2.6",
+        "2.2.2.4"
 ]
         self.logger = logging.getLogger(f"CompositeAgent_2_2")
 

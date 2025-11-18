@@ -11,14 +11,14 @@ Orchestration Pattern: Sequential Workflow
 Standards: A2A, ANP, ACP, BPP, BDP, BRP, BMP, BCP, BIP
 
 Child Agents:
-  - 2.1.2.5: Review designs
-  - 2.1.2.8: Report designs
-  - 2.1.2.2: Assess product market position
-  - 2.1.2.7: Document designs
-  - 2.1.2.6: Optimize designs
-  - 2.1.2.4: Manage product transitions
-  - 2.1.2.1: Monitor product performance
   - 2.1.2.3: Make go/kill decisions
+  - 2.1.2.4: Manage product transitions
+  - 2.1.2.6: Optimize designs
+  - 2.1.2.2: Assess product market position
+  - 2.1.2.8: Report designs
+  - 2.1.2.7: Document designs
+  - 2.1.2.1: Monitor product performance
+  - 2.1.2.5: Review designs
 
 
 Generated: 2025-11-18
@@ -49,14 +49,14 @@ class CompositeAgent_2_1_2:
         self.apqc_id = "2.1.2"
         self.level = 4
         self.child_agent_ids = [
-        "2.1.2.5",
-        "2.1.2.8",
-        "2.1.2.2",
-        "2.1.2.7",
-        "2.1.2.6",
+        "2.1.2.3",
         "2.1.2.4",
+        "2.1.2.6",
+        "2.1.2.2",
+        "2.1.2.8",
+        "2.1.2.7",
         "2.1.2.1",
-        "2.1.2.3"
+        "2.1.2.5"
 ]
         self.logger = logging.getLogger(f"CompositeAgent_2_1_2")
 

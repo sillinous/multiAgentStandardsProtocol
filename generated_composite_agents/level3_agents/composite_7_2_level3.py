@@ -11,16 +11,16 @@ Orchestration Pattern: Sequential Workflow
 Standards: A2A, ANP, ACP, BPP, BDP, BRP, BMP, BCP, BIP
 
 Child Agents:
+  - 7.2.1.1: Identify hiring needs
+  - 7.2.2.5: Review benefits
+  - 7.2.2.1: Post job openings
+  - 7.2.4.5: Review workforce
   - 7.2.4.1: Extend offers
-  - 7.2.3.6: Optimize training
-  - 7.2.3.3: Conduct interviews
-  - 7.2.4.4: Assign to role
+  - 7.2.1.7: Document compensation
   - 7.2.4.2: Complete paperwork
-  - 7.2.1.8: Report compensation
-  - 7.2.3.8: Report training
   - 7.2.2.2: Source candidates
-  - 7.2.1.6: Optimize compensation
-  - 7.2.3.4: Perform background checks
+  - 7.2.3.7: Document training
+  - 7.2.2.7: Document benefits
   ... and 23 more
 
 Generated: 2025-11-18
@@ -51,39 +51,39 @@ class CompositeAgent_7_2:
         self.apqc_id = "7.2"
         self.level = 3
         self.child_agent_ids = [
-        "7.2.4.1",
-        "7.2.3.6",
-        "7.2.3.3",
-        "7.2.4.4",
-        "7.2.4.2",
-        "7.2.1.8",
-        "7.2.3.8",
-        "7.2.2.2",
-        "7.2.1.6",
-        "7.2.3.4",
-        "7.2.2.3",
-        "7.2.2.7",
-        "7.2.3.5",
-        "7.2.2.4",
-        "7.2.1.3",
-        "7.2.4.8",
-        "7.2.1.7",
-        "7.2.3.9",
-        "7.2.1.4",
         "7.2.1.1",
-        "7.2.4.6",
-        "7.2.2.8",
-        "7.2.4.5",
-        "7.2.3.7",
-        "7.2.3.1",
-        "7.2.1.5",
-        "7.2.4.3",
-        "7.2.2.1",
-        "7.2.1.2",
-        "7.2.2.6",
         "7.2.2.5",
+        "7.2.2.1",
+        "7.2.4.5",
+        "7.2.4.1",
+        "7.2.1.7",
+        "7.2.4.2",
+        "7.2.2.2",
+        "7.2.3.7",
+        "7.2.2.7",
+        "7.2.1.8",
+        "7.2.4.7",
+        "7.2.3.3",
+        "7.2.3.1",
+        "7.2.2.8",
+        "7.2.1.5",
+        "7.2.2.3",
+        "7.2.4.8",
+        "7.2.2.4",
+        "7.2.3.8",
+        "7.2.2.6",
+        "7.2.4.6",
+        "7.2.4.3",
+        "7.2.3.4",
+        "7.2.4.4",
+        "7.2.3.9",
+        "7.2.3.6",
         "7.2.3.2",
-        "7.2.4.7"
+        "7.2.1.3",
+        "7.2.1.4",
+        "7.2.1.2",
+        "7.2.1.6",
+        "7.2.3.5"
 ]
         self.logger = logging.getLogger(f"CompositeAgent_7_2")
 

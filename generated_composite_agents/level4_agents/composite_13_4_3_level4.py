@@ -11,10 +11,10 @@ Orchestration Pattern: Sequential Workflow
 Standards: A2A, ANP, ACP, BPP, BDP, BRP, BMP, BCP, BIP
 
 Child Agents:
-  - 13.4.3.1: Create content
-  - 13.4.3.2: Review and approve content
   - 13.4.3.4: Maintain content
   - 13.4.3.3: Publish content
+  - 13.4.3.2: Review and approve content
+  - 13.4.3.1: Create content
 
 
 Generated: 2025-11-18
@@ -45,10 +45,10 @@ class CompositeAgent_13_4_3:
         self.apqc_id = "13.4.3"
         self.level = 4
         self.child_agent_ids = [
-        "13.4.3.1",
-        "13.4.3.2",
         "13.4.3.4",
-        "13.4.3.3"
+        "13.4.3.3",
+        "13.4.3.2",
+        "13.4.3.1"
 ]
         self.logger = logging.getLogger(f"CompositeAgent_13_4_3")
 

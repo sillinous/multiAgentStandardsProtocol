@@ -12,12 +12,12 @@ Standards: A2A, ANP, ACP, BPP, BDP, BRP, BMP, BCP, BIP
 
 Child Agents:
   - 4.1.3.7: Document deliveries
-  - 4.1.3.5: Review deliveries
-  - 4.1.3.6: Optimize deliveries
   - 4.1.3.8: Report deliveries
-  - 4.1.3.4: Plan production
-  - 4.1.3.1: Forecast demand
+  - 4.1.3.6: Optimize deliveries
+  - 4.1.3.5: Review deliveries
   - 4.1.3.3: Manage inventory levels
+  - 4.1.3.1: Forecast demand
+  - 4.1.3.4: Plan production
   - 4.1.3.2: Synchronize supply/demand
 
 
@@ -50,12 +50,12 @@ class CompositeAgent_4_1_3:
         self.level = 4
         self.child_agent_ids = [
         "4.1.3.7",
-        "4.1.3.5",
-        "4.1.3.6",
         "4.1.3.8",
-        "4.1.3.4",
-        "4.1.3.1",
+        "4.1.3.6",
+        "4.1.3.5",
         "4.1.3.3",
+        "4.1.3.1",
+        "4.1.3.4",
         "4.1.3.2"
 ]
         self.logger = logging.getLogger(f"CompositeAgent_4_1_3")

@@ -13,10 +13,10 @@ Standards: A2A, ANP, ACP, BPP, BDP, BRP, BMP, BCP, BIP
 Child Agents:
   - 11.4.1.4: Approve audit plan
   - 11.4.1.2: Create audit plan
-  - 11.4.1.5: Review regulations
+  - 11.4.1.1: Assess audit risks
   - 11.4.1.6: Optimize regulations
   - 11.4.1.3: Allocate audit resources
-  - 11.4.1.1: Assess audit risks
+  - 11.4.1.5: Review regulations
 
 
 Generated: 2025-11-18
@@ -49,10 +49,10 @@ class CompositeAgent_11_4_1:
         self.child_agent_ids = [
         "11.4.1.4",
         "11.4.1.2",
-        "11.4.1.5",
+        "11.4.1.1",
         "11.4.1.6",
         "11.4.1.3",
-        "11.4.1.1"
+        "11.4.1.5"
 ]
         self.logger = logging.getLogger(f"CompositeAgent_11_4_1")
 

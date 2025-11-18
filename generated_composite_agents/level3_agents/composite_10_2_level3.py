@@ -11,16 +11,16 @@ Orchestration Pattern: Sequential Workflow
 Standards: A2A, ANP, ACP, BPP, BDP, BRP, BMP, BCP, BIP
 
 Child Agents:
-  - 10.2.1.3: Plan maintenance resources
-  - 10.2.3.6: Optimize lifecycle
-  - 10.2.3.4: Restore operations
-  - 10.2.1.1: Define maintenance objectives
-  - 10.2.2.4: Track maintenance history
-  - 10.2.2.5: Review projects
-  - 10.2.2.7: Document projects
-  - 10.2.3.8: Report lifecycle
-  - 10.2.3.3: Repair assets
   - 10.2.3.1: Report breakdowns
+  - 10.2.3.5: Review lifecycle
+  - 10.2.2.7: Document projects
+  - 10.2.3.7: Document lifecycle
+  - 10.2.2.6: Optimize projects
+  - 10.2.2.8: Report projects
+  - 10.2.1.2: Establish maintenance policies
+  - 10.2.3.2: Diagnose problems
+  - 10.2.3.6: Optimize lifecycle
+  - 10.2.2.2: Execute maintenance
   ... and 14 more
 
 Generated: 2025-11-18
@@ -51,30 +51,30 @@ class CompositeAgent_10_2:
         self.apqc_id = "10.2"
         self.level = 3
         self.child_agent_ids = [
-        "10.2.1.3",
-        "10.2.3.6",
-        "10.2.3.4",
-        "10.2.1.1",
-        "10.2.2.4",
-        "10.2.2.5",
-        "10.2.2.7",
-        "10.2.3.8",
-        "10.2.3.3",
         "10.2.3.1",
-        "10.2.2.1",
+        "10.2.3.5",
+        "10.2.2.7",
+        "10.2.3.7",
         "10.2.2.6",
-        "10.2.3.2",
         "10.2.2.8",
         "10.2.1.2",
-        "10.2.1.8",
-        "10.2.3.5",
-        "10.2.1.4",
-        "10.2.1.6",
+        "10.2.3.2",
+        "10.2.3.6",
         "10.2.2.2",
-        "10.2.2.3",
+        "10.2.3.3",
+        "10.2.3.4",
+        "10.2.1.4",
+        "10.2.1.3",
+        "10.2.2.1",
+        "10.2.1.8",
         "10.2.1.5",
-        "10.2.3.7",
-        "10.2.1.7"
+        "10.2.1.7",
+        "10.2.1.6",
+        "10.2.2.4",
+        "10.2.2.3",
+        "10.2.2.5",
+        "10.2.1.1",
+        "10.2.3.8"
 ]
         self.logger = logging.getLogger(f"CompositeAgent_10_2")
 

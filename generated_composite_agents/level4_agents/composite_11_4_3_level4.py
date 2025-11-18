@@ -11,10 +11,10 @@ Orchestration Pattern: Sequential Workflow
 Standards: A2A, ANP, ACP, BPP, BDP, BRP, BMP, BCP, BIP
 
 Child Agents:
-  - 11.4.3.3: Re-audit if needed
   - 11.4.3.4: Close audit findings
-  - 11.4.3.1: Track remediation plans
   - 11.4.3.2: Verify corrective actions
+  - 11.4.3.3: Re-audit if needed
+  - 11.4.3.1: Track remediation plans
 
 
 Generated: 2025-11-18
@@ -45,10 +45,10 @@ class CompositeAgent_11_4_3:
         self.apqc_id = "11.4.3"
         self.level = 4
         self.child_agent_ids = [
-        "11.4.3.3",
         "11.4.3.4",
-        "11.4.3.1",
-        "11.4.3.2"
+        "11.4.3.2",
+        "11.4.3.3",
+        "11.4.3.1"
 ]
         self.logger = logging.getLogger(f"CompositeAgent_11_4_3")
 

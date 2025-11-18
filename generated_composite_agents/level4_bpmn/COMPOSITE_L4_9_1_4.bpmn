@@ -7,54 +7,54 @@ Manage Financial Resources
 APQC ID: 9.1.4
 
 Orchestrates 8 child agents:
-  1. 9.1.4.8: Report controls
-  2. 9.1.4.3: Report to management
-  3. 9.1.4.1: Prepare financial reports
-  4. 9.1.4.4: Support decision-making
-  5. 9.1.4.7: Document controls
-  6. 9.1.4.6: Optimize controls
-  7. 9.1.4.2: Analyze financial performance
-  8. 9.1.4.5: Review controls
+  1. 9.1.4.4: Support decision-making
+  2. 9.1.4.2: Analyze financial performance
+  3. 9.1.4.8: Report controls
+  4. 9.1.4.5: Review controls
+  5. 9.1.4.1: Prepare financial reports
+  6. 9.1.4.3: Report to management
+  7. 9.1.4.7: Document controls
+  8. 9.1.4.6: Optimize controls
 
 
 Orchestration Pattern: Sequential Workflow (Pipeline)
 Standards: BPMN 2.0, A2A Protocol
 
-Generated: 2025-11-18T01:19:11.428432
+Generated: 2025-11-18T01:38:33.496293
 Status: Production Ready
 </bpmn:documentation>
     <bpmn:startEvent id="Start_L4_9_1_4" name="Start Composite">
       <bpmn:outgoing>Flow_start_to_child1</bpmn:outgoing>
     </bpmn:startEvent>
-    <bpmn:callActivity id="CallActivity_L4_child1" name="9.1.4.8: Report controls" calledElement="Process_9_1_4_8">
+    <bpmn:callActivity id="CallActivity_L4_child1" name="9.1.4.4: Support decision-making" calledElement="Process_9_1_4_4">
       <bpmn:incoming>Flow_start_to_child1</bpmn:incoming>
       <bpmn:outgoing>Flow_child1_to_child2</bpmn:outgoing>
     </bpmn:callActivity>
-    <bpmn:callActivity id="CallActivity_L4_child2" name="9.1.4.3: Report to management" calledElement="Process_9_1_4_3">
+    <bpmn:callActivity id="CallActivity_L4_child2" name="9.1.4.2: Analyze financial performance" calledElement="Process_9_1_4_2">
       <bpmn:incoming>Flow_child1_to_child2</bpmn:incoming>
       <bpmn:outgoing>Flow_child2_to_child3</bpmn:outgoing>
     </bpmn:callActivity>
-    <bpmn:callActivity id="CallActivity_L4_child3" name="9.1.4.1: Prepare financial reports" calledElement="Process_9_1_4_1">
+    <bpmn:callActivity id="CallActivity_L4_child3" name="9.1.4.8: Report controls" calledElement="Process_9_1_4_8">
       <bpmn:incoming>Flow_child2_to_child3</bpmn:incoming>
       <bpmn:outgoing>Flow_child3_to_child4</bpmn:outgoing>
     </bpmn:callActivity>
-    <bpmn:callActivity id="CallActivity_L4_child4" name="9.1.4.4: Support decision-making" calledElement="Process_9_1_4_4">
+    <bpmn:callActivity id="CallActivity_L4_child4" name="9.1.4.5: Review controls" calledElement="Process_9_1_4_5">
       <bpmn:incoming>Flow_child3_to_child4</bpmn:incoming>
       <bpmn:outgoing>Flow_child4_to_child5</bpmn:outgoing>
     </bpmn:callActivity>
-    <bpmn:callActivity id="CallActivity_L4_child5" name="9.1.4.7: Document controls" calledElement="Process_9_1_4_7">
+    <bpmn:callActivity id="CallActivity_L4_child5" name="9.1.4.1: Prepare financial reports" calledElement="Process_9_1_4_1">
       <bpmn:incoming>Flow_child4_to_child5</bpmn:incoming>
       <bpmn:outgoing>Flow_child5_to_child6</bpmn:outgoing>
     </bpmn:callActivity>
-    <bpmn:callActivity id="CallActivity_L4_child6" name="9.1.4.6: Optimize controls" calledElement="Process_9_1_4_6">
+    <bpmn:callActivity id="CallActivity_L4_child6" name="9.1.4.3: Report to management" calledElement="Process_9_1_4_3">
       <bpmn:incoming>Flow_child5_to_child6</bpmn:incoming>
       <bpmn:outgoing>Flow_child6_to_child7</bpmn:outgoing>
     </bpmn:callActivity>
-    <bpmn:callActivity id="CallActivity_L4_child7" name="9.1.4.2: Analyze financial performance" calledElement="Process_9_1_4_2">
+    <bpmn:callActivity id="CallActivity_L4_child7" name="9.1.4.7: Document controls" calledElement="Process_9_1_4_7">
       <bpmn:incoming>Flow_child6_to_child7</bpmn:incoming>
       <bpmn:outgoing>Flow_child7_to_child8</bpmn:outgoing>
     </bpmn:callActivity>
-    <bpmn:callActivity id="CallActivity_L4_child8" name="9.1.4.5: Review controls" calledElement="Process_9_1_4_5">
+    <bpmn:callActivity id="CallActivity_L4_child8" name="9.1.4.6: Optimize controls" calledElement="Process_9_1_4_6">
       <bpmn:incoming>Flow_child7_to_child8</bpmn:incoming>
       <bpmn:outgoing>Flow_child8_to_end</bpmn:outgoing>
     </bpmn:callActivity>

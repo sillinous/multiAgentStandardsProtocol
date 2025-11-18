@@ -11,16 +11,16 @@ Orchestration Pattern: Sequential Workflow
 Standards: A2A, ANP, ACP, BPP, BDP, BRP, BMP, BCP, BIP
 
 Child Agents:
-  - 10.4.1.3: Ensure regulatory compliance
-  - 10.4.3.4: Report environmental performance
-  - 10.4.3.1: Monitor environmental impacts
-  - 10.4.3.2: Manage emissions
   - 10.4.2.1: Conduct risk assessments
   - 10.4.1.5: Review lifecycle
   - 10.4.3.3: Manage waste
-  - 10.4.2.2: Implement safety controls
-  - 10.4.2.3: Train employees
+  - 10.4.3.4: Report environmental performance
+  - 10.4.2.4: Monitor safety performance
+  - 10.4.1.3: Ensure regulatory compliance
+  - 10.4.3.1: Monitor environmental impacts
   - 10.4.1.2: Establish EHS policies
+  - 10.4.1.1: Define EHS objectives
+  - 10.4.2.3: Train employees
   ... and 4 more
 
 Generated: 2025-11-18
@@ -51,20 +51,20 @@ class CompositeAgent_10_4:
         self.apqc_id = "10.4"
         self.level = 3
         self.child_agent_ids = [
-        "10.4.1.3",
-        "10.4.3.4",
-        "10.4.3.1",
-        "10.4.3.2",
         "10.4.2.1",
         "10.4.1.5",
         "10.4.3.3",
-        "10.4.2.2",
-        "10.4.2.3",
+        "10.4.3.4",
+        "10.4.2.4",
+        "10.4.1.3",
+        "10.4.3.1",
         "10.4.1.2",
         "10.4.1.1",
+        "10.4.2.3",
         "10.4.1.6",
-        "10.4.2.4",
-        "10.4.1.4"
+        "10.4.1.4",
+        "10.4.3.2",
+        "10.4.2.2"
 ]
         self.logger = logging.getLogger(f"CompositeAgent_10_4")
 

@@ -13,8 +13,8 @@ Standards: A2A, ANP, ACP, BPP, BDP, BRP, BMP, BCP, BIP
 Child Agents:
   - 13.5.1.2: Identify analytics use cases
   - 13.5.1.4: Build analytics competencies
-  - 13.5.1.3: Establish analytics capabilities
   - 13.5.1.1: Define analytics objectives
+  - 13.5.1.3: Establish analytics capabilities
 
 
 Generated: 2025-11-18
@@ -47,8 +47,8 @@ class CompositeAgent_13_5_1:
         self.child_agent_ids = [
         "13.5.1.2",
         "13.5.1.4",
-        "13.5.1.3",
-        "13.5.1.1"
+        "13.5.1.1",
+        "13.5.1.3"
 ]
         self.logger = logging.getLogger(f"CompositeAgent_13_5_1")
 

@@ -11,14 +11,14 @@ Orchestration Pattern: Sequential Workflow
 Standards: A2A, ANP, ACP, BPP, BDP, BRP, BMP, BCP, BIP
 
 Child Agents:
-  - 7.2.2.2: Source candidates
-  - 7.2.2.3: Build talent pipeline
-  - 7.2.2.7: Document benefits
-  - 7.2.2.4: Engage passive candidates
-  - 7.2.2.8: Report benefits
-  - 7.2.2.1: Post job openings
-  - 7.2.2.6: Optimize benefits
   - 7.2.2.5: Review benefits
+  - 7.2.2.1: Post job openings
+  - 7.2.2.2: Source candidates
+  - 7.2.2.7: Document benefits
+  - 7.2.2.8: Report benefits
+  - 7.2.2.3: Build talent pipeline
+  - 7.2.2.4: Engage passive candidates
+  - 7.2.2.6: Optimize benefits
 
 
 Generated: 2025-11-18
@@ -49,14 +49,14 @@ class CompositeAgent_7_2_2:
         self.apqc_id = "7.2.2"
         self.level = 4
         self.child_agent_ids = [
-        "7.2.2.2",
-        "7.2.2.3",
-        "7.2.2.7",
-        "7.2.2.4",
-        "7.2.2.8",
+        "7.2.2.5",
         "7.2.2.1",
-        "7.2.2.6",
-        "7.2.2.5"
+        "7.2.2.2",
+        "7.2.2.7",
+        "7.2.2.8",
+        "7.2.2.3",
+        "7.2.2.4",
+        "7.2.2.6"
 ]
         self.logger = logging.getLogger(f"CompositeAgent_7_2_2")
 

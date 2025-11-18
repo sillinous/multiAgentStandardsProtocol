@@ -12,13 +12,13 @@ Standards: A2A, ANP, ACP, BPP, BDP, BRP, BMP, BCP, BIP
 
 Child Agents:
   - 11.3.1.3: Define roles and responsibilities
-  - 11.3.1.8: Report policies
-  - 11.3.1.7: Document policies
   - 11.3.1.1: Define governance structure
-  - 11.3.1.6: Optimize policies
-  - 11.3.1.5: Review policies
-  - 11.3.1.2: Establish board committees
   - 11.3.1.4: Create governance policies
+  - 11.3.1.8: Report policies
+  - 11.3.1.5: Review policies
+  - 11.3.1.6: Optimize policies
+  - 11.3.1.7: Document policies
+  - 11.3.1.2: Establish board committees
 
 
 Generated: 2025-11-18
@@ -50,13 +50,13 @@ class CompositeAgent_11_3_1:
         self.level = 4
         self.child_agent_ids = [
         "11.3.1.3",
-        "11.3.1.8",
-        "11.3.1.7",
         "11.3.1.1",
-        "11.3.1.6",
+        "11.3.1.4",
+        "11.3.1.8",
         "11.3.1.5",
-        "11.3.1.2",
-        "11.3.1.4"
+        "11.3.1.6",
+        "11.3.1.7",
+        "11.3.1.2"
 ]
         self.logger = logging.getLogger(f"CompositeAgent_11_3_1")
 

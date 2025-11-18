@@ -12,13 +12,13 @@ Standards: A2A, ANP, ACP, BPP, BDP, BRP, BMP, BCP, BIP
 
 Child Agents:
   - 1.1.4.6: Optimize objectives
-  - 1.1.4.2: Communicate vision to stakeholders
-  - 1.1.4.3: Create mission statement
   - 1.1.4.5: Review objectives
-  - 1.1.4.7: Document objectives
-  - 1.1.4.1: Align stakeholders around vision
-  - 1.1.4.8: Report objectives
+  - 1.1.4.3: Create mission statement
   - 1.1.4.4: Define guiding principles/values
+  - 1.1.4.8: Report objectives
+  - 1.1.4.1: Align stakeholders around vision
+  - 1.1.4.2: Communicate vision to stakeholders
+  - 1.1.4.7: Document objectives
 
 
 Generated: 2025-11-18
@@ -50,13 +50,13 @@ class CompositeAgent_1_1_4:
         self.level = 4
         self.child_agent_ids = [
         "1.1.4.6",
-        "1.1.4.2",
-        "1.1.4.3",
         "1.1.4.5",
-        "1.1.4.7",
-        "1.1.4.1",
+        "1.1.4.3",
+        "1.1.4.4",
         "1.1.4.8",
-        "1.1.4.4"
+        "1.1.4.1",
+        "1.1.4.2",
+        "1.1.4.7"
 ]
         self.logger = logging.getLogger(f"CompositeAgent_1_1_4")
 

@@ -11,14 +11,14 @@ Orchestration Pattern: Sequential Workflow
 Standards: A2A, ANP, ACP, BPP, BDP, BRP, BMP, BCP, BIP
 
 Child Agents:
-  - 9.4.2.5: Review budgets
-  - 9.4.2.4: Perform impairment tests
+  - 9.4.2.2: Calculate depreciation
   - 9.4.2.3: Maintain asset records
   - 9.4.2.6: Optimize budgets
+  - 9.4.2.5: Review budgets
   - 9.4.2.7: Document budgets
-  - 9.4.2.1: Track assets
-  - 9.4.2.2: Calculate depreciation
   - 9.4.2.8: Report budgets
+  - 9.4.2.1: Track assets
+  - 9.4.2.4: Perform impairment tests
 
 
 Generated: 2025-11-18
@@ -49,14 +49,14 @@ class CompositeAgent_9_4_2:
         self.apqc_id = "9.4.2"
         self.level = 4
         self.child_agent_ids = [
-        "9.4.2.5",
-        "9.4.2.4",
+        "9.4.2.2",
         "9.4.2.3",
         "9.4.2.6",
+        "9.4.2.5",
         "9.4.2.7",
+        "9.4.2.8",
         "9.4.2.1",
-        "9.4.2.2",
-        "9.4.2.8"
+        "9.4.2.4"
 ]
         self.logger = logging.getLogger(f"CompositeAgent_9_4_2")
 

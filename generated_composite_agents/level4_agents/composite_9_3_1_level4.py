@@ -12,12 +12,12 @@ Standards: A2A, ANP, ACP, BPP, BDP, BRP, BMP, BCP, BIP
 
 Child Agents:
   - 9.3.1.4: Close periods
-  - 9.3.1.1: Process journal entries
   - 9.3.1.7: Document audits
-  - 9.3.1.5: Review audits
   - 9.3.1.8: Report audits
   - 9.3.1.6: Optimize audits
+  - 9.3.1.1: Process journal entries
   - 9.3.1.2: Post transactions
+  - 9.3.1.5: Review audits
 
 
 Generated: 2025-11-18
@@ -49,12 +49,12 @@ class CompositeAgent_9_3_1:
         self.level = 4
         self.child_agent_ids = [
         "9.3.1.4",
-        "9.3.1.1",
         "9.3.1.7",
-        "9.3.1.5",
         "9.3.1.8",
         "9.3.1.6",
-        "9.3.1.2"
+        "9.3.1.1",
+        "9.3.1.2",
+        "9.3.1.5"
 ]
         self.logger = logging.getLogger(f"CompositeAgent_9_3_1")
 

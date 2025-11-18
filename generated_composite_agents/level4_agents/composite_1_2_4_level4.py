@@ -11,13 +11,13 @@ Orchestration Pattern: Sequential Workflow
 Standards: A2A, ANP, ACP, BPP, BDP, BRP, BMP, BCP, BIP
 
 Child Agents:
-  - 1.2.4.5: Review strategy
-  - 1.2.4.2: Develop sales and marketing strategy
-  - 1.2.4.1: Develop product/service strategy
   - 1.2.4.7: Document strategy
+  - 1.2.4.1: Develop product/service strategy
+  - 1.2.4.2: Develop sales and marketing strategy
+  - 1.2.4.5: Review strategy
   - 1.2.4.4: Develop technology strategy
-  - 1.2.4.3: Develop supply chain strategy
   - 1.2.4.6: Optimize strategy
+  - 1.2.4.3: Develop supply chain strategy
 
 
 Generated: 2025-11-18
@@ -48,13 +48,13 @@ class CompositeAgent_1_2_4:
         self.apqc_id = "1.2.4"
         self.level = 4
         self.child_agent_ids = [
-        "1.2.4.5",
-        "1.2.4.2",
-        "1.2.4.1",
         "1.2.4.7",
+        "1.2.4.1",
+        "1.2.4.2",
+        "1.2.4.5",
         "1.2.4.4",
-        "1.2.4.3",
-        "1.2.4.6"
+        "1.2.4.6",
+        "1.2.4.3"
 ]
         self.logger = logging.getLogger(f"CompositeAgent_1_2_4")
 

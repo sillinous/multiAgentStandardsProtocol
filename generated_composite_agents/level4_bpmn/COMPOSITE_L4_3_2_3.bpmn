@@ -12,15 +12,15 @@ Orchestrates 8 child agents:
   3. 3.2.3.8: Report marketing
   4. 3.2.3.7: Document marketing
   5. 3.2.3.4: Manage channel partners
-  6. 3.2.3.2: Select distribution channels
-  7. 3.2.3.1: Evaluate channel options
+  6. 3.2.3.1: Evaluate channel options
+  7. 3.2.3.2: Select distribution channels
   8. 3.2.3.3: Define channel programs
 
 
 Orchestration Pattern: Sequential Workflow (Pipeline)
 Standards: BPMN 2.0, A2A Protocol
 
-Generated: 2025-11-18T01:19:11.359525
+Generated: 2025-11-18T01:38:33.414625
 Status: Production Ready
 </bpmn:documentation>
     <bpmn:startEvent id="Start_L4_3_2_3" name="Start Composite">
@@ -46,11 +46,11 @@ Status: Production Ready
       <bpmn:incoming>Flow_child4_to_child5</bpmn:incoming>
       <bpmn:outgoing>Flow_child5_to_child6</bpmn:outgoing>
     </bpmn:callActivity>
-    <bpmn:callActivity id="CallActivity_L4_child6" name="3.2.3.2: Select distribution channels" calledElement="Process_3_2_3_2">
+    <bpmn:callActivity id="CallActivity_L4_child6" name="3.2.3.1: Evaluate channel options" calledElement="Process_3_2_3_1">
       <bpmn:incoming>Flow_child5_to_child6</bpmn:incoming>
       <bpmn:outgoing>Flow_child6_to_child7</bpmn:outgoing>
     </bpmn:callActivity>
-    <bpmn:callActivity id="CallActivity_L4_child7" name="3.2.3.1: Evaluate channel options" calledElement="Process_3_2_3_1">
+    <bpmn:callActivity id="CallActivity_L4_child7" name="3.2.3.2: Select distribution channels" calledElement="Process_3_2_3_2">
       <bpmn:incoming>Flow_child6_to_child7</bpmn:incoming>
       <bpmn:outgoing>Flow_child7_to_child8</bpmn:outgoing>
     </bpmn:callActivity>

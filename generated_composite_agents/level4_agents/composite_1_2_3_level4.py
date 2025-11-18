@@ -11,14 +11,14 @@ Orchestration Pattern: Sequential Workflow
 Standards: A2A, ANP, ACP, BPP, BDP, BRP, BMP, BCP, BIP
 
 Child Agents:
-  - 1.2.3.4: Communicate organizational strategy
-  - 1.2.3.2: Prioritize long-term strategic objectives
-  - 1.2.3.7: Document objectives
-  - 1.2.3.1: Coordinate strategies
   - 1.2.3.5: Review objectives
-  - 1.2.3.6: Optimize objectives
   - 1.2.3.3: Establish organizational structure
+  - 1.2.3.4: Communicate organizational strategy
+  - 1.2.3.7: Document objectives
+  - 1.2.3.2: Prioritize long-term strategic objectives
+  - 1.2.3.1: Coordinate strategies
   - 1.2.3.8: Report objectives
+  - 1.2.3.6: Optimize objectives
 
 
 Generated: 2025-11-18
@@ -49,14 +49,14 @@ class CompositeAgent_1_2_3:
         self.apqc_id = "1.2.3"
         self.level = 4
         self.child_agent_ids = [
-        "1.2.3.4",
-        "1.2.3.2",
-        "1.2.3.7",
-        "1.2.3.1",
         "1.2.3.5",
-        "1.2.3.6",
         "1.2.3.3",
-        "1.2.3.8"
+        "1.2.3.4",
+        "1.2.3.7",
+        "1.2.3.2",
+        "1.2.3.1",
+        "1.2.3.8",
+        "1.2.3.6"
 ]
         self.logger = logging.getLogger(f"CompositeAgent_1_2_3")
 

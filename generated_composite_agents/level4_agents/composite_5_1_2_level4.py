@@ -11,14 +11,14 @@ Orchestration Pattern: Sequential Workflow
 Standards: A2A, ANP, ACP, BPP, BDP, BRP, BMP, BCP, BIP
 
 Child Agents:
-  - 5.1.2.1: Forecast service demand
+  - 5.1.2.5: Review quality
+  - 5.1.2.8: Report quality
   - 5.1.2.2: Plan resource capacity
   - 5.1.2.4: Balance capacity and demand
-  - 5.1.2.8: Report quality
-  - 5.1.2.6: Optimize quality
-  - 5.1.2.5: Review quality
   - 5.1.2.7: Document quality
+  - 5.1.2.6: Optimize quality
   - 5.1.2.3: Allocate service resources
+  - 5.1.2.1: Forecast service demand
 
 
 Generated: 2025-11-18
@@ -49,14 +49,14 @@ class CompositeAgent_5_1_2:
         self.apqc_id = "5.1.2"
         self.level = 4
         self.child_agent_ids = [
-        "5.1.2.1",
+        "5.1.2.5",
+        "5.1.2.8",
         "5.1.2.2",
         "5.1.2.4",
-        "5.1.2.8",
-        "5.1.2.6",
-        "5.1.2.5",
         "5.1.2.7",
-        "5.1.2.3"
+        "5.1.2.6",
+        "5.1.2.3",
+        "5.1.2.1"
 ]
         self.logger = logging.getLogger(f"CompositeAgent_5_1_2")
 

@@ -13,10 +13,10 @@ Standards: A2A, ANP, ACP, BPP, BDP, BRP, BMP, BCP, BIP
 Child Agents:
   - 6.4.2.6: Optimize inquiries
   - 6.4.2.2: Diagnose root cause
-  - 6.4.2.1: Gather information
-  - 6.4.2.5: Review inquiries
   - 6.4.2.4: Recommend solution
+  - 6.4.2.1: Gather information
   - 6.4.2.3: Identify resolution options
+  - 6.4.2.5: Review inquiries
 
 
 Generated: 2025-11-18
@@ -49,10 +49,10 @@ class CompositeAgent_6_4_2:
         self.child_agent_ids = [
         "6.4.2.6",
         "6.4.2.2",
-        "6.4.2.1",
-        "6.4.2.5",
         "6.4.2.4",
-        "6.4.2.3"
+        "6.4.2.1",
+        "6.4.2.3",
+        "6.4.2.5"
 ]
         self.logger = logging.getLogger(f"CompositeAgent_6_4_2")
 

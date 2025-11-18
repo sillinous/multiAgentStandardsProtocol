@@ -12,13 +12,13 @@ Standards: A2A, ANP, ACP, BPP, BDP, BRP, BMP, BCP, BIP
 
 Child Agents:
   - 13.3.2.7: Document governance
-  - 13.3.2.4: Drive quality improvements
-  - 13.3.2.3: Monitor quality metrics
-  - 13.3.2.2: Conduct quality audits
-  - 13.3.2.5: Review governance
-  - 13.3.2.6: Optimize governance
   - 13.3.2.8: Report governance
+  - 13.3.2.5: Review governance
   - 13.3.2.1: Plan quality activities
+  - 13.3.2.6: Optimize governance
+  - 13.3.2.2: Conduct quality audits
+  - 13.3.2.3: Monitor quality metrics
+  - 13.3.2.4: Drive quality improvements
 
 
 Generated: 2025-11-18
@@ -50,13 +50,13 @@ class CompositeAgent_13_3_2:
         self.level = 4
         self.child_agent_ids = [
         "13.3.2.7",
-        "13.3.2.4",
-        "13.3.2.3",
-        "13.3.2.2",
-        "13.3.2.5",
-        "13.3.2.6",
         "13.3.2.8",
-        "13.3.2.1"
+        "13.3.2.5",
+        "13.3.2.1",
+        "13.3.2.6",
+        "13.3.2.2",
+        "13.3.2.3",
+        "13.3.2.4"
 ]
         self.logger = logging.getLogger(f"CompositeAgent_13_3_2")
 

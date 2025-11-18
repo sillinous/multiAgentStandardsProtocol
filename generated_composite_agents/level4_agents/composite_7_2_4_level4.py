@@ -11,14 +11,14 @@ Orchestration Pattern: Sequential Workflow
 Standards: A2A, ANP, ACP, BPP, BDP, BRP, BMP, BCP, BIP
 
 Child Agents:
+  - 7.2.4.5: Review workforce
   - 7.2.4.1: Extend offers
-  - 7.2.4.4: Assign to role
   - 7.2.4.2: Complete paperwork
+  - 7.2.4.7: Document workforce
   - 7.2.4.8: Report workforce
   - 7.2.4.6: Optimize workforce
-  - 7.2.4.5: Review workforce
   - 7.2.4.3: Conduct orientation
-  - 7.2.4.7: Document workforce
+  - 7.2.4.4: Assign to role
 
 
 Generated: 2025-11-18
@@ -49,14 +49,14 @@ class CompositeAgent_7_2_4:
         self.apqc_id = "7.2.4"
         self.level = 4
         self.child_agent_ids = [
+        "7.2.4.5",
         "7.2.4.1",
-        "7.2.4.4",
         "7.2.4.2",
+        "7.2.4.7",
         "7.2.4.8",
         "7.2.4.6",
-        "7.2.4.5",
         "7.2.4.3",
-        "7.2.4.7"
+        "7.2.4.4"
 ]
         self.logger = logging.getLogger(f"CompositeAgent_7_2_4")
 

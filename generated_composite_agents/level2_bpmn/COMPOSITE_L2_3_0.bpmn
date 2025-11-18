@@ -6,139 +6,139 @@ Level 2 Composite Process
 Market and Sell Products and Services
 APQC ID: 3.0
 
-Orchestrates 85 child agents:
-  1. 3.3.3.6: Optimize campaigns
-  2. 3.3.2.8: Report marketing
-  3. 3.4.1.6: Optimize marketing
-  4. 3.2.3.6: Optimize marketing
-  5. 3.1.1.7: Document prospects
-  6. 3.3.1.5: Review sales
-  7. 3.4.1.5: Review marketing
-  8. 3.1.1.9: Plan prospects
-  9. 3.2.2.7: Document sales
-  10. 3.1.2.8: Report opportunities
-  11. 3.2.1.6: Optimize opportunities
-  12. 3.3.1.7: Document sales
-  13. 3.3.3.7: Document campaigns
-  14. 3.2.2.5: Review sales
-  15. 3.1.2.5: Review opportunities
-  16. 3.4.2.5: Review campaigns
-  17. 3.1.1.8: Report prospects
-  18. 3.2.3.5: Review marketing
-  19. 3.3.1.8: Report sales
-  20. 3.2.3.8: Report marketing
-  ... and 65 more
+Orchestrates 87 child agents:
+  1. 3.3.1.5: Review sales
+  2. 3.3.1.8: Report sales
+  3. 3.1.1.6: Optimize prospects
+  4. 3.2.2.5: Review sales
+  5. 3.3.3.7: Document campaigns
+  6. 3.2.2.8: Report sales
+  7. 3.3.2.5: Review marketing
+  8. 3.2.3.6: Optimize marketing
+  9. 3.4.1.7: Document marketing
+  10. 3.3.1.6: Optimize sales
+  11. 3.2.3.5: Review marketing
+  12. 3.2.1.6: Optimize opportunities
+  13. 3.2.3.8: Report marketing
+  14. 3.3.2.7: Document marketing
+  15. 3.1.2.7: Document opportunities
+  16. 3.1.1.9: Plan prospects
+  17. 3.1.2.8: Report opportunities
+  18. 3.3.3.6: Optimize campaigns
+  19. 3.1.1.8: Report prospects
+  20. 3.1.2.6: Optimize opportunities
+  ... and 67 more
 
 Orchestration Pattern: Sequential Workflow (Pipeline)
 Standards: BPMN 2.0, A2A Protocol
 
-Generated: 2025-11-18T01:19:11.537317
+Generated: 2025-11-18T01:38:33.614944
 Status: Production Ready
 </bpmn:documentation>
     <bpmn:startEvent id="Start_L2_3_0" name="Start Composite">
       <bpmn:outgoing>Flow_start_to_child1</bpmn:outgoing>
     </bpmn:startEvent>
-    <bpmn:callActivity id="CallActivity_L2_child1" name="3.3.3.6: Optimize campaigns" calledElement="Process_3_3_3_6">
+    <bpmn:callActivity id="CallActivity_L2_child1" name="3.3.1.5: Review sales" calledElement="Process_3_3_1_5">
       <bpmn:incoming>Flow_start_to_child1</bpmn:incoming>
       <bpmn:outgoing>Flow_child1_to_child2</bpmn:outgoing>
     </bpmn:callActivity>
-    <bpmn:callActivity id="CallActivity_L2_child2" name="3.3.2.8: Report marketing" calledElement="Process_3_3_2_8">
+    <bpmn:callActivity id="CallActivity_L2_child2" name="3.3.1.8: Report sales" calledElement="Process_3_3_1_8">
       <bpmn:incoming>Flow_child1_to_child2</bpmn:incoming>
       <bpmn:outgoing>Flow_child2_to_child3</bpmn:outgoing>
     </bpmn:callActivity>
-    <bpmn:callActivity id="CallActivity_L2_child3" name="3.4.1.6: Optimize marketing" calledElement="Process_3_4_1_6">
+    <bpmn:callActivity id="CallActivity_L2_child3" name="3.1.1.6: Optimize prospects" calledElement="Process_3_1_1_6">
       <bpmn:incoming>Flow_child2_to_child3</bpmn:incoming>
       <bpmn:outgoing>Flow_child3_to_child4</bpmn:outgoing>
     </bpmn:callActivity>
-    <bpmn:callActivity id="CallActivity_L2_child4" name="3.2.3.6: Optimize marketing" calledElement="Process_3_2_3_6">
+    <bpmn:callActivity id="CallActivity_L2_child4" name="3.2.2.5: Review sales" calledElement="Process_3_2_2_5">
       <bpmn:incoming>Flow_child3_to_child4</bpmn:incoming>
       <bpmn:outgoing>Flow_child4_to_child5</bpmn:outgoing>
     </bpmn:callActivity>
-    <bpmn:callActivity id="CallActivity_L2_child5" name="3.1.1.7: Document prospects" calledElement="Process_3_1_1_7">
+    <bpmn:callActivity id="CallActivity_L2_child5" name="3.3.3.7: Document campaigns" calledElement="Process_3_3_3_7">
       <bpmn:incoming>Flow_child4_to_child5</bpmn:incoming>
       <bpmn:outgoing>Flow_child5_to_child6</bpmn:outgoing>
     </bpmn:callActivity>
-    <bpmn:callActivity id="CallActivity_L2_child6" name="3.3.1.5: Review sales" calledElement="Process_3_3_1_5">
+    <bpmn:callActivity id="CallActivity_L2_child6" name="3.2.2.8: Report sales" calledElement="Process_3_2_2_8">
       <bpmn:incoming>Flow_child5_to_child6</bpmn:incoming>
       <bpmn:outgoing>Flow_child6_to_child7</bpmn:outgoing>
     </bpmn:callActivity>
-    <bpmn:callActivity id="CallActivity_L2_child7" name="3.4.1.5: Review marketing" calledElement="Process_3_4_1_5">
+    <bpmn:callActivity id="CallActivity_L2_child7" name="3.3.2.5: Review marketing" calledElement="Process_3_3_2_5">
       <bpmn:incoming>Flow_child6_to_child7</bpmn:incoming>
       <bpmn:outgoing>Flow_child7_to_child8</bpmn:outgoing>
     </bpmn:callActivity>
-    <bpmn:callActivity id="CallActivity_L2_child8" name="3.1.1.9: Plan prospects" calledElement="Process_3_1_1_9">
+    <bpmn:callActivity id="CallActivity_L2_child8" name="3.2.3.6: Optimize marketing" calledElement="Process_3_2_3_6">
       <bpmn:incoming>Flow_child7_to_child8</bpmn:incoming>
       <bpmn:outgoing>Flow_child8_to_child9</bpmn:outgoing>
     </bpmn:callActivity>
-    <bpmn:callActivity id="CallActivity_L2_child9" name="3.2.2.7: Document sales" calledElement="Process_3_2_2_7">
+    <bpmn:callActivity id="CallActivity_L2_child9" name="3.4.1.7: Document marketing" calledElement="Process_3_4_1_7">
       <bpmn:incoming>Flow_child8_to_child9</bpmn:incoming>
       <bpmn:outgoing>Flow_child9_to_child10</bpmn:outgoing>
     </bpmn:callActivity>
-    <bpmn:callActivity id="CallActivity_L2_child10" name="3.1.2.8: Report opportunities" calledElement="Process_3_1_2_8">
+    <bpmn:callActivity id="CallActivity_L2_child10" name="3.3.1.6: Optimize sales" calledElement="Process_3_3_1_6">
       <bpmn:incoming>Flow_child9_to_child10</bpmn:incoming>
       <bpmn:outgoing>Flow_child10_to_child11</bpmn:outgoing>
     </bpmn:callActivity>
-    <bpmn:callActivity id="CallActivity_L2_child11" name="3.2.1.6: Optimize opportunities" calledElement="Process_3_2_1_6">
+    <bpmn:callActivity id="CallActivity_L2_child11" name="3.2.3.5: Review marketing" calledElement="Process_3_2_3_5">
       <bpmn:incoming>Flow_child10_to_child11</bpmn:incoming>
       <bpmn:outgoing>Flow_child11_to_child12</bpmn:outgoing>
     </bpmn:callActivity>
-    <bpmn:callActivity id="CallActivity_L2_child12" name="3.3.1.7: Document sales" calledElement="Process_3_3_1_7">
+    <bpmn:callActivity id="CallActivity_L2_child12" name="3.2.1.6: Optimize opportunities" calledElement="Process_3_2_1_6">
       <bpmn:incoming>Flow_child11_to_child12</bpmn:incoming>
       <bpmn:outgoing>Flow_child12_to_child13</bpmn:outgoing>
     </bpmn:callActivity>
-    <bpmn:callActivity id="CallActivity_L2_child13" name="3.3.3.7: Document campaigns" calledElement="Process_3_3_3_7">
+    <bpmn:callActivity id="CallActivity_L2_child13" name="3.2.3.8: Report marketing" calledElement="Process_3_2_3_8">
       <bpmn:incoming>Flow_child12_to_child13</bpmn:incoming>
       <bpmn:outgoing>Flow_child13_to_child14</bpmn:outgoing>
     </bpmn:callActivity>
-    <bpmn:callActivity id="CallActivity_L2_child14" name="3.2.2.5: Review sales" calledElement="Process_3_2_2_5">
+    <bpmn:callActivity id="CallActivity_L2_child14" name="3.3.2.7: Document marketing" calledElement="Process_3_3_2_7">
       <bpmn:incoming>Flow_child13_to_child14</bpmn:incoming>
       <bpmn:outgoing>Flow_child14_to_child15</bpmn:outgoing>
     </bpmn:callActivity>
-    <bpmn:callActivity id="CallActivity_L2_child15" name="3.1.2.5: Review opportunities" calledElement="Process_3_1_2_5">
+    <bpmn:callActivity id="CallActivity_L2_child15" name="3.1.2.7: Document opportunities" calledElement="Process_3_1_2_7">
       <bpmn:incoming>Flow_child14_to_child15</bpmn:incoming>
       <bpmn:outgoing>Flow_child15_to_child16</bpmn:outgoing>
     </bpmn:callActivity>
-    <bpmn:callActivity id="CallActivity_L2_child16" name="3.4.2.5: Review campaigns" calledElement="Process_3_4_2_5">
+    <bpmn:callActivity id="CallActivity_L2_child16" name="3.1.1.9: Plan prospects" calledElement="Process_3_1_1_9">
       <bpmn:incoming>Flow_child15_to_child16</bpmn:incoming>
       <bpmn:outgoing>Flow_child16_to_child17</bpmn:outgoing>
     </bpmn:callActivity>
-    <bpmn:callActivity id="CallActivity_L2_child17" name="3.1.1.8: Report prospects" calledElement="Process_3_1_1_8">
+    <bpmn:callActivity id="CallActivity_L2_child17" name="3.1.2.8: Report opportunities" calledElement="Process_3_1_2_8">
       <bpmn:incoming>Flow_child16_to_child17</bpmn:incoming>
       <bpmn:outgoing>Flow_child17_to_child18</bpmn:outgoing>
     </bpmn:callActivity>
-    <bpmn:callActivity id="CallActivity_L2_child18" name="3.2.3.5: Review marketing" calledElement="Process_3_2_3_5">
+    <bpmn:callActivity id="CallActivity_L2_child18" name="3.3.3.6: Optimize campaigns" calledElement="Process_3_3_3_6">
       <bpmn:incoming>Flow_child17_to_child18</bpmn:incoming>
       <bpmn:outgoing>Flow_child18_to_child19</bpmn:outgoing>
     </bpmn:callActivity>
-    <bpmn:callActivity id="CallActivity_L2_child19" name="3.3.1.8: Report sales" calledElement="Process_3_3_1_8">
+    <bpmn:callActivity id="CallActivity_L2_child19" name="3.1.1.8: Report prospects" calledElement="Process_3_1_1_8">
       <bpmn:incoming>Flow_child18_to_child19</bpmn:incoming>
       <bpmn:outgoing>Flow_child19_to_child20</bpmn:outgoing>
     </bpmn:callActivity>
-    <bpmn:callActivity id="CallActivity_L2_child20" name="3.2.3.8: Report marketing" calledElement="Process_3_2_3_8">
+    <bpmn:callActivity id="CallActivity_L2_child20" name="3.1.2.6: Optimize opportunities" calledElement="Process_3_1_2_6">
       <bpmn:incoming>Flow_child19_to_child20</bpmn:incoming>
       <bpmn:outgoing>Flow_child20_to_child21</bpmn:outgoing>
     </bpmn:callActivity>
-    <bpmn:callActivity id="CallActivity_L2_child21" name="3.1.2.7: Document opportunities" calledElement="Process_3_1_2_7">
+    <bpmn:callActivity id="CallActivity_L2_child21" name="3.2.1.5: Review opportunities" calledElement="Process_3_2_1_5">
       <bpmn:incoming>Flow_child20_to_child21</bpmn:incoming>
       <bpmn:outgoing>Flow_child21_to_child22</bpmn:outgoing>
     </bpmn:callActivity>
-    <bpmn:callActivity id="CallActivity_L2_child22" name="3.2.1.5: Review opportunities" calledElement="Process_3_2_1_5">
+    <bpmn:callActivity id="CallActivity_L2_child22" name="3.2.1.8: Report opportunities" calledElement="Process_3_2_1_8">
       <bpmn:incoming>Flow_child21_to_child22</bpmn:incoming>
       <bpmn:outgoing>Flow_child22_to_child23</bpmn:outgoing>
     </bpmn:callActivity>
-    <bpmn:callActivity id="CallActivity_L2_child23" name="3.2.2.6: Optimize sales" calledElement="Process_3_2_2_6">
+    <bpmn:callActivity id="CallActivity_L2_child23" name="3.1.1.10: Execute prospects" calledElement="Process_3_1_1_10">
       <bpmn:incoming>Flow_child22_to_child23</bpmn:incoming>
       <bpmn:outgoing>Flow_child23_to_child24</bpmn:outgoing>
     </bpmn:callActivity>
-    <bpmn:callActivity id="CallActivity_L2_child24" name="3.2.3.7: Document marketing" calledElement="Process_3_2_3_7">
+    <bpmn:callActivity id="CallActivity_L2_child24" name="3.1.1.7: Document prospects" calledElement="Process_3_1_1_7">
       <bpmn:incoming>Flow_child23_to_child24</bpmn:incoming>
       <bpmn:outgoing>Flow_child24_to_child25</bpmn:outgoing>
     </bpmn:callActivity>
-    <bpmn:callActivity id="CallActivity_L2_child25" name="3.3.2.5: Review marketing" calledElement="Process_3_3_2_5">
+    <bpmn:callActivity id="CallActivity_L2_child25" name="3.2.3.7: Document marketing" calledElement="Process_3_2_3_7">
       <bpmn:incoming>Flow_child24_to_child25</bpmn:incoming>
       <bpmn:outgoing>Flow_child25_to_child26</bpmn:outgoing>
     </bpmn:callActivity>
-    <bpmn:callActivity id="CallActivity_L2_child26" name="3.4.1.7: Document marketing" calledElement="Process_3_4_1_7">
+    <bpmn:callActivity id="CallActivity_L2_child26" name="3.2.2.6: Optimize sales" calledElement="Process_3_2_2_6">
       <bpmn:incoming>Flow_child25_to_child26</bpmn:incoming>
       <bpmn:outgoing>Flow_child26_to_child27</bpmn:outgoing>
     </bpmn:callActivity>
@@ -146,95 +146,95 @@ Status: Production Ready
       <bpmn:incoming>Flow_child26_to_child27</bpmn:incoming>
       <bpmn:outgoing>Flow_child27_to_child28</bpmn:outgoing>
     </bpmn:callActivity>
-    <bpmn:callActivity id="CallActivity_L2_child28" name="3.3.2.7: Document marketing" calledElement="Process_3_3_2_7">
+    <bpmn:callActivity id="CallActivity_L2_child28" name="3.3.2.8: Report marketing" calledElement="Process_3_3_2_8">
       <bpmn:incoming>Flow_child27_to_child28</bpmn:incoming>
       <bpmn:outgoing>Flow_child28_to_child29</bpmn:outgoing>
     </bpmn:callActivity>
-    <bpmn:callActivity id="CallActivity_L2_child29" name="3.2.2.8: Report sales" calledElement="Process_3_2_2_8">
+    <bpmn:callActivity id="CallActivity_L2_child29" name="3.4.2.5: Review campaigns" calledElement="Process_3_4_2_5">
       <bpmn:incoming>Flow_child28_to_child29</bpmn:incoming>
       <bpmn:outgoing>Flow_child29_to_child30</bpmn:outgoing>
     </bpmn:callActivity>
-    <bpmn:callActivity id="CallActivity_L2_child30" name="3.1.2.6: Optimize opportunities" calledElement="Process_3_1_2_6">
+    <bpmn:callActivity id="CallActivity_L2_child30" name="3.3.1.7: Document sales" calledElement="Process_3_3_1_7">
       <bpmn:incoming>Flow_child29_to_child30</bpmn:incoming>
       <bpmn:outgoing>Flow_child30_to_child31</bpmn:outgoing>
     </bpmn:callActivity>
-    <bpmn:callActivity id="CallActivity_L2_child31" name="3.3.3.8: Report campaigns" calledElement="Process_3_3_3_8">
+    <bpmn:callActivity id="CallActivity_L2_child31" name="3.1.2.5: Review opportunities" calledElement="Process_3_1_2_5">
       <bpmn:incoming>Flow_child30_to_child31</bpmn:incoming>
       <bpmn:outgoing>Flow_child31_to_child32</bpmn:outgoing>
     </bpmn:callActivity>
-    <bpmn:callActivity id="CallActivity_L2_child32" name="3.2.1.8: Report opportunities" calledElement="Process_3_2_1_8">
+    <bpmn:callActivity id="CallActivity_L2_child32" name="3.4.1.5: Review marketing" calledElement="Process_3_4_1_5">
       <bpmn:incoming>Flow_child31_to_child32</bpmn:incoming>
       <bpmn:outgoing>Flow_child32_to_child33</bpmn:outgoing>
     </bpmn:callActivity>
-    <bpmn:callActivity id="CallActivity_L2_child33" name="3.3.2.6: Optimize marketing" calledElement="Process_3_3_2_6">
+    <bpmn:callActivity id="CallActivity_L2_child33" name="3.2.1.7: Document opportunities" calledElement="Process_3_2_1_7">
       <bpmn:incoming>Flow_child32_to_child33</bpmn:incoming>
       <bpmn:outgoing>Flow_child33_to_child34</bpmn:outgoing>
     </bpmn:callActivity>
-    <bpmn:callActivity id="CallActivity_L2_child34" name="3.2.1.7: Document opportunities" calledElement="Process_3_2_1_7">
+    <bpmn:callActivity id="CallActivity_L2_child34" name="3.3.2.6: Optimize marketing" calledElement="Process_3_3_2_6">
       <bpmn:incoming>Flow_child33_to_child34</bpmn:incoming>
       <bpmn:outgoing>Flow_child34_to_child35</bpmn:outgoing>
     </bpmn:callActivity>
-    <bpmn:callActivity id="CallActivity_L2_child35" name="3.3.1.6: Optimize sales" calledElement="Process_3_3_1_6">
+    <bpmn:callActivity id="CallActivity_L2_child35" name="3.1.1.11: Monitor prospects" calledElement="Process_3_1_1_11">
       <bpmn:incoming>Flow_child34_to_child35</bpmn:incoming>
       <bpmn:outgoing>Flow_child35_to_child36</bpmn:outgoing>
     </bpmn:callActivity>
-    <bpmn:callActivity id="CallActivity_L2_child36" name="3.1.1.6: Optimize prospects" calledElement="Process_3_1_1_6">
+    <bpmn:callActivity id="CallActivity_L2_child36" name="3.2.2.7: Document sales" calledElement="Process_3_2_2_7">
       <bpmn:incoming>Flow_child35_to_child36</bpmn:incoming>
       <bpmn:outgoing>Flow_child36_to_child37</bpmn:outgoing>
     </bpmn:callActivity>
-    <bpmn:callActivity id="CallActivity_L2_child37" name="3.4.3.4: Close deals" calledElement="Process_3_4_3_4">
+    <bpmn:callActivity id="CallActivity_L2_child37" name="3.3.3.8: Report campaigns" calledElement="Process_3_3_3_8">
       <bpmn:incoming>Flow_child36_to_child37</bpmn:incoming>
       <bpmn:outgoing>Flow_child37_to_child38</bpmn:outgoing>
     </bpmn:callActivity>
-    <bpmn:callActivity id="CallActivity_L2_child38" name="3.1.2.4: Define target markets" calledElement="Process_3_1_2_4">
+    <bpmn:callActivity id="CallActivity_L2_child38" name="3.4.1.6: Optimize marketing" calledElement="Process_3_4_1_6">
       <bpmn:incoming>Flow_child37_to_child38</bpmn:incoming>
       <bpmn:outgoing>Flow_child38_to_child39</bpmn:outgoing>
     </bpmn:callActivity>
-    <bpmn:callActivity id="CallActivity_L2_child39" name="3.1.1.3: Assess market trends" calledElement="Process_3_1_1_3">
+    <bpmn:callActivity id="CallActivity_L2_child39" name="3.2.2.1: Analyze pricing dynamics" calledElement="Process_3_2_2_1">
       <bpmn:incoming>Flow_child38_to_child39</bpmn:incoming>
       <bpmn:outgoing>Flow_child39_to_child40</bpmn:outgoing>
     </bpmn:callActivity>
-    <bpmn:callActivity id="CallActivity_L2_child40" name="3.3.1.1: Define marketing objectives" calledElement="Process_3_3_1_1">
+    <bpmn:callActivity id="CallActivity_L2_child40" name="3.1.2.1: Assess market attractiveness" calledElement="Process_3_1_2_1">
       <bpmn:incoming>Flow_child39_to_child40</bpmn:incoming>
       <bpmn:outgoing>Flow_child40_to_child41</bpmn:outgoing>
     </bpmn:callActivity>
-    <bpmn:callActivity id="CallActivity_L2_child41" name="3.3.3.3: Optimize campaigns" calledElement="Process_3_3_3_3">
+    <bpmn:callActivity id="CallActivity_L2_child41" name="3.3.1.2: Set marketing budgets" calledElement="Process_3_3_1_2">
       <bpmn:incoming>Flow_child40_to_child41</bpmn:incoming>
       <bpmn:outgoing>Flow_child41_to_child42</bpmn:outgoing>
     </bpmn:callActivity>
-    <bpmn:callActivity id="CallActivity_L2_child42" name="3.3.2.4: Define campaign metrics" calledElement="Process_3_3_2_4">
+    <bpmn:callActivity id="CallActivity_L2_child42" name="3.4.3.1: Negotiate terms" calledElement="Process_3_4_3_1">
       <bpmn:incoming>Flow_child41_to_child42</bpmn:incoming>
       <bpmn:outgoing>Flow_child42_to_child43</bpmn:outgoing>
     </bpmn:callActivity>
-    <bpmn:callActivity id="CallActivity_L2_child43" name="3.4.1.1: Identify potential customers" calledElement="Process_3_4_1_1">
+    <bpmn:callActivity id="CallActivity_L2_child43" name="3.4.1.3: Prioritize leads" calledElement="Process_3_4_1_3">
       <bpmn:incoming>Flow_child42_to_child43</bpmn:incoming>
       <bpmn:outgoing>Flow_child43_to_child44</bpmn:outgoing>
     </bpmn:callActivity>
-    <bpmn:callActivity id="CallActivity_L2_child44" name="3.1.2.2: Evaluate competitive position" calledElement="Process_3_1_2_2">
+    <bpmn:callActivity id="CallActivity_L2_child44" name="3.2.1.4: Define brand identity" calledElement="Process_3_2_1_4">
       <bpmn:incoming>Flow_child43_to_child44</bpmn:incoming>
       <bpmn:outgoing>Flow_child44_to_child45</bpmn:outgoing>
     </bpmn:callActivity>
-    <bpmn:callActivity id="CallActivity_L2_child45" name="3.2.3.4: Manage channel partners" calledElement="Process_3_2_3_4">
+    <bpmn:callActivity id="CallActivity_L2_child45" name="3.1.2.3: Prioritize markets" calledElement="Process_3_1_2_3">
       <bpmn:incoming>Flow_child44_to_child45</bpmn:incoming>
       <bpmn:outgoing>Flow_child45_to_child46</bpmn:outgoing>
     </bpmn:callActivity>
-    <bpmn:callActivity id="CallActivity_L2_child46" name="3.3.2.2: Create campaign messaging" calledElement="Process_3_3_2_2">
+    <bpmn:callActivity id="CallActivity_L2_child46" name="3.4.4.3: Identify upsell/cross-sell opp..." calledElement="Process_3_4_4_3">
       <bpmn:incoming>Flow_child45_to_child46</bpmn:incoming>
       <bpmn:outgoing>Flow_child46_to_child47</bpmn:outgoing>
     </bpmn:callActivity>
-    <bpmn:callActivity id="CallActivity_L2_child47" name="3.2.3.2: Select distribution channels" calledElement="Process_3_2_3_2">
+    <bpmn:callActivity id="CallActivity_L2_child47" name="3.4.1.1: Identify potential customers" calledElement="Process_3_4_1_1">
       <bpmn:incoming>Flow_child46_to_child47</bpmn:incoming>
       <bpmn:outgoing>Flow_child47_to_child48</bpmn:outgoing>
     </bpmn:callActivity>
-    <bpmn:callActivity id="CallActivity_L2_child48" name="3.1.1.1: Conduct market research" calledElement="Process_3_1_1_1">
+    <bpmn:callActivity id="CallActivity_L2_child48" name="3.4.1.2: Qualify leads" calledElement="Process_3_4_1_2">
       <bpmn:incoming>Flow_child47_to_child48</bpmn:incoming>
       <bpmn:outgoing>Flow_child48_to_child49</bpmn:outgoing>
     </bpmn:callActivity>
-    <bpmn:callActivity id="CallActivity_L2_child49" name="3.2.3.1: Evaluate channel options" calledElement="Process_3_2_3_1">
+    <bpmn:callActivity id="CallActivity_L2_child49" name="3.4.2.1: Understand customer needs" calledElement="Process_3_4_2_1">
       <bpmn:incoming>Flow_child48_to_child49</bpmn:incoming>
       <bpmn:outgoing>Flow_child49_to_child50</bpmn:outgoing>
     </bpmn:callActivity>
-    <bpmn:callActivity id="CallActivity_L2_child50" name="3.2.3.3: Define channel programs" calledElement="Process_3_2_3_3">
+    <bpmn:callActivity id="CallActivity_L2_child50" name="3.3.1.1: Define marketing objectives" calledElement="Process_3_3_1_1">
       <bpmn:incoming>Flow_child49_to_child50</bpmn:incoming>
       <bpmn:outgoing>Flow_child50_to_end</bpmn:outgoing>
     </bpmn:callActivity>

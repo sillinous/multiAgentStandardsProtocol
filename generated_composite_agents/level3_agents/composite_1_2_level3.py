@@ -11,16 +11,16 @@ Orchestration Pattern: Sequential Workflow
 Standards: A2A, ANP, ACP, BPP, BDP, BRP, BMP, BCP, BIP
 
 Child Agents:
-  - 1.2.2.2: Assess and analyze impact of strategic options
-  - 1.2.2.1: Define strategic options
-  - 1.2.4.5: Review strategy
   - 1.2.1.4: Analyze initiatives
-  - 1.2.3.4: Communicate organizational strategy
-  - 1.2.4.2: Develop sales and marketing strategy
-  - 1.2.4.1: Develop product/service strategy
+  - 1.2.2.7: Document performance
+  - 1.2.3.5: Review objectives
+  - 1.2.3.3: Establish organizational structure
+  - 1.2.2.1: Define strategic options
   - 1.2.1.6: Optimize initiatives
-  - 1.2.1.7: Document initiatives
   - 1.2.4.7: Document strategy
+  - 1.2.4.1: Develop product/service strategy
+  - 1.2.2.8: Report performance
+  - 1.2.3.4: Communicate organizational strategy
   ... and 20 more
 
 Generated: 2025-11-18
@@ -51,36 +51,36 @@ class CompositeAgent_1_2:
         self.apqc_id = "1.2"
         self.level = 3
         self.child_agent_ids = [
-        "1.2.2.2",
-        "1.2.2.1",
-        "1.2.4.5",
         "1.2.1.4",
-        "1.2.3.4",
-        "1.2.4.2",
-        "1.2.4.1",
-        "1.2.1.6",
-        "1.2.1.7",
-        "1.2.4.7",
-        "1.2.2.8",
-        "1.2.3.2",
-        "1.2.2.6",
-        "1.2.2.3",
-        "1.2.3.7",
-        "1.2.1.5",
-        "1.2.3.1",
-        "1.2.1.1",
         "1.2.2.7",
-        "1.2.1.2",
-        "1.2.4.4",
         "1.2.3.5",
-        "1.2.2.4",
-        "1.2.4.3",
-        "1.2.4.6",
-        "1.2.3.6",
         "1.2.3.3",
-        "1.2.3.8",
+        "1.2.2.1",
+        "1.2.1.6",
+        "1.2.4.7",
+        "1.2.4.1",
+        "1.2.2.8",
+        "1.2.3.4",
+        "1.2.3.7",
+        "1.2.4.2",
         "1.2.2.5",
-        "1.2.1.3"
+        "1.2.3.2",
+        "1.2.4.5",
+        "1.2.3.1",
+        "1.2.3.8",
+        "1.2.1.7",
+        "1.2.1.2",
+        "1.2.2.2",
+        "1.2.4.4",
+        "1.2.1.3",
+        "1.2.1.1",
+        "1.2.1.5",
+        "1.2.3.6",
+        "1.2.2.6",
+        "1.2.2.4",
+        "1.2.2.3",
+        "1.2.4.6",
+        "1.2.4.3"
 ]
         self.logger = logging.getLogger(f"CompositeAgent_1_2")
 

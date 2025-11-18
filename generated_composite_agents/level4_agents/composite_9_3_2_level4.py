@@ -11,13 +11,13 @@ Orchestration Pattern: Sequential Workflow
 Standards: A2A, ANP, ACP, BPP, BDP, BRP, BMP, BCP, BIP
 
 Child Agents:
-  - 9.3.2.1: Generate trial balance
-  - 9.3.2.3: Prepare income statement
-  - 9.3.2.6: Optimize controls
-  - 9.3.2.7: Document controls
   - 9.3.2.4: Prepare cash flow statement
+  - 9.3.2.1: Generate trial balance
+  - 9.3.2.7: Document controls
   - 9.3.2.8: Report controls
   - 9.3.2.2: Prepare balance sheet
+  - 9.3.2.3: Prepare income statement
+  - 9.3.2.6: Optimize controls
   - 9.3.2.5: Review controls
 
 
@@ -49,13 +49,13 @@ class CompositeAgent_9_3_2:
         self.apqc_id = "9.3.2"
         self.level = 4
         self.child_agent_ids = [
-        "9.3.2.1",
-        "9.3.2.3",
-        "9.3.2.6",
-        "9.3.2.7",
         "9.3.2.4",
+        "9.3.2.1",
+        "9.3.2.7",
         "9.3.2.8",
         "9.3.2.2",
+        "9.3.2.3",
+        "9.3.2.6",
         "9.3.2.5"
 ]
         self.logger = logging.getLogger(f"CompositeAgent_9_3_2")

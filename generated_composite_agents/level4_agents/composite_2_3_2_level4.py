@@ -11,11 +11,11 @@ Orchestration Pattern: Sequential Workflow
 Standards: A2A, ANP, ACP, BPP, BDP, BRP, BMP, BCP, BIP
 
 Child Agents:
-  - 2.3.2.2: Monitor launch performance
   - 2.3.2.3: Support sales channels
-  - 2.3.2.5: Review prototypes
-  - 2.3.2.4: Track customer adoption
   - 2.3.2.6: Optimize prototypes
+  - 2.3.2.5: Review prototypes
+  - 2.3.2.2: Monitor launch performance
+  - 2.3.2.4: Track customer adoption
   - 2.3.2.1: Execute launch plan
 
 
@@ -47,11 +47,11 @@ class CompositeAgent_2_3_2:
         self.apqc_id = "2.3.2"
         self.level = 4
         self.child_agent_ids = [
-        "2.3.2.2",
         "2.3.2.3",
-        "2.3.2.5",
-        "2.3.2.4",
         "2.3.2.6",
+        "2.3.2.5",
+        "2.3.2.2",
+        "2.3.2.4",
         "2.3.2.1"
 ]
         self.logger = logging.getLogger(f"CompositeAgent_2_3_2")

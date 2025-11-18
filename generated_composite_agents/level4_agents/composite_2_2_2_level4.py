@@ -11,14 +11,14 @@ Orchestration Pattern: Sequential Workflow
 Standards: A2A, ANP, ACP, BPP, BDP, BRP, BMP, BCP, BIP
 
 Child Agents:
+  - 2.2.2.3: Refine product based on testing
+  - 2.2.2.1: Conduct alpha/beta testing
+  - 2.2.2.2: Gather customer feedback
+  - 2.2.2.7: Document requirements
   - 2.2.2.8: Report requirements
   - 2.2.2.5: Review requirements
-  - 2.2.2.2: Gather customer feedback
-  - 2.2.2.3: Refine product based on testing
-  - 2.2.2.7: Document requirements
-  - 2.2.2.4: Finalize product design
-  - 2.2.2.1: Conduct alpha/beta testing
   - 2.2.2.6: Optimize requirements
+  - 2.2.2.4: Finalize product design
 
 
 Generated: 2025-11-18
@@ -49,14 +49,14 @@ class CompositeAgent_2_2_2:
         self.apqc_id = "2.2.2"
         self.level = 4
         self.child_agent_ids = [
+        "2.2.2.3",
+        "2.2.2.1",
+        "2.2.2.2",
+        "2.2.2.7",
         "2.2.2.8",
         "2.2.2.5",
-        "2.2.2.2",
-        "2.2.2.3",
-        "2.2.2.7",
-        "2.2.2.4",
-        "2.2.2.1",
-        "2.2.2.6"
+        "2.2.2.6",
+        "2.2.2.4"
 ]
         self.logger = logging.getLogger(f"CompositeAgent_2_2_2")
 

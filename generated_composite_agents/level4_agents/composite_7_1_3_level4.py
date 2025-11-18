@@ -11,14 +11,14 @@ Orchestration Pattern: Sequential Workflow
 Standards: A2A, ANP, ACP, BPP, BDP, BRP, BMP, BCP, BIP
 
 Child Agents:
-  - 7.1.3.3: Develop workforce plans
-  - 7.1.3.2: Analyze workforce gaps
-  - 7.1.3.7: Document benefits
-  - 7.1.3.5: Review benefits
-  - 7.1.3.6: Optimize benefits
-  - 7.1.3.8: Report benefits
   - 7.1.3.1: Forecast workforce needs
   - 7.1.3.4: Monitor workforce metrics
+  - 7.1.3.2: Analyze workforce gaps
+  - 7.1.3.5: Review benefits
+  - 7.1.3.3: Develop workforce plans
+  - 7.1.3.8: Report benefits
+  - 7.1.3.7: Document benefits
+  - 7.1.3.6: Optimize benefits
 
 
 Generated: 2025-11-18
@@ -49,14 +49,14 @@ class CompositeAgent_7_1_3:
         self.apqc_id = "7.1.3"
         self.level = 4
         self.child_agent_ids = [
-        "7.1.3.3",
-        "7.1.3.2",
-        "7.1.3.7",
-        "7.1.3.5",
-        "7.1.3.6",
-        "7.1.3.8",
         "7.1.3.1",
-        "7.1.3.4"
+        "7.1.3.4",
+        "7.1.3.2",
+        "7.1.3.5",
+        "7.1.3.3",
+        "7.1.3.8",
+        "7.1.3.7",
+        "7.1.3.6"
 ]
         self.logger = logging.getLogger(f"CompositeAgent_7_1_3")
 

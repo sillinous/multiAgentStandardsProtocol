@@ -11,14 +11,14 @@ Orchestration Pattern: Sequential Workflow
 Standards: A2A, ANP, ACP, BPP, BDP, BRP, BMP, BCP, BIP
 
 Child Agents:
-  - 9.1.2.6: Optimize compliance
-  - 9.1.2.3: Consolidate budgets
-  - 9.1.2.2: Create departmental budgets
-  - 9.1.2.1: Develop budget guidelines
-  - 9.1.2.4: Approve budgets
-  - 9.1.2.5: Review compliance
-  - 9.1.2.8: Report compliance
   - 9.1.2.7: Document compliance
+  - 9.1.2.6: Optimize compliance
+  - 9.1.2.8: Report compliance
+  - 9.1.2.2: Create departmental budgets
+  - 9.1.2.3: Consolidate budgets
+  - 9.1.2.1: Develop budget guidelines
+  - 9.1.2.5: Review compliance
+  - 9.1.2.4: Approve budgets
 
 
 Generated: 2025-11-18
@@ -49,14 +49,14 @@ class CompositeAgent_9_1_2:
         self.apqc_id = "9.1.2"
         self.level = 4
         self.child_agent_ids = [
+        "9.1.2.7",
         "9.1.2.6",
-        "9.1.2.3",
-        "9.1.2.2",
-        "9.1.2.1",
-        "9.1.2.4",
-        "9.1.2.5",
         "9.1.2.8",
-        "9.1.2.7"
+        "9.1.2.2",
+        "9.1.2.3",
+        "9.1.2.1",
+        "9.1.2.5",
+        "9.1.2.4"
 ]
         self.logger = logging.getLogger(f"CompositeAgent_9_1_2")
 

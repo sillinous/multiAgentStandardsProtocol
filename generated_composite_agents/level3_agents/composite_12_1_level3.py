@@ -11,16 +11,16 @@ Orchestration Pattern: Sequential Workflow
 Standards: A2A, ANP, ACP, BPP, BDP, BRP, BMP, BCP, BIP
 
 Child Agents:
+  - 12.1.1.2: Respond to investor inquiries
   - 12.1.2.2: Conduct earnings calls
-  - 12.1.2.7: Document performance
-  - 12.1.1.1: Communicate with investors
-  - 12.1.2.1: Prepare earnings releases
+  - 12.1.2.5: Review performance
   - 12.1.1.9: Plan contracts
-  - 12.1.2.8: Report performance
-  - 12.1.1.6: Optimize contracts
+  - 12.1.1.8: Report contracts
   - 12.1.2.4: Publish annual reports
   - 12.1.1.7: Document contracts
-  - 12.1.2.6: Optimize performance
+  - 12.1.2.3: File regulatory reports
+  - 12.1.2.7: Document performance
+  - 12.1.2.8: Report performance
   ... and 7 more
 
 Generated: 2025-11-18
@@ -51,23 +51,23 @@ class CompositeAgent_12_1:
         self.apqc_id = "12.1"
         self.level = 3
         self.child_agent_ids = [
+        "12.1.1.2",
         "12.1.2.2",
-        "12.1.2.7",
-        "12.1.1.1",
-        "12.1.2.1",
+        "12.1.2.5",
         "12.1.1.9",
-        "12.1.2.8",
-        "12.1.1.6",
+        "12.1.1.8",
         "12.1.2.4",
         "12.1.1.7",
-        "12.1.2.6",
-        "12.1.1.4",
-        "12.1.1.5",
-        "12.1.1.8",
         "12.1.2.3",
+        "12.1.2.7",
+        "12.1.2.8",
+        "12.1.2.1",
         "12.1.1.3",
-        "12.1.1.2",
-        "12.1.2.5"
+        "12.1.1.6",
+        "12.1.1.5",
+        "12.1.1.1",
+        "12.1.1.4",
+        "12.1.2.6"
 ]
         self.logger = logging.getLogger(f"CompositeAgent_12_1")
 

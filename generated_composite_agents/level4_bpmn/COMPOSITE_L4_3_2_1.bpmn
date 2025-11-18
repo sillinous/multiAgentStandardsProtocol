@@ -11,16 +11,16 @@ Orchestrates 8 child agents:
   2. 3.2.1.5: Review opportunities
   3. 3.2.1.8: Report opportunities
   4. 3.2.1.7: Document opportunities
-  5. 3.2.1.1: Define value proposition
-  6. 3.2.1.3: Develop key messages
-  7. 3.2.1.2: Create positioning statements
-  8. 3.2.1.4: Define brand identity
+  5. 3.2.1.4: Define brand identity
+  6. 3.2.1.2: Create positioning statements
+  7. 3.2.1.1: Define value proposition
+  8. 3.2.1.3: Develop key messages
 
 
 Orchestration Pattern: Sequential Workflow (Pipeline)
 Standards: BPMN 2.0, A2A Protocol
 
-Generated: 2025-11-18T01:19:11.357670
+Generated: 2025-11-18T01:38:33.412254
 Status: Production Ready
 </bpmn:documentation>
     <bpmn:startEvent id="Start_L4_3_2_1" name="Start Composite">
@@ -42,19 +42,19 @@ Status: Production Ready
       <bpmn:incoming>Flow_child3_to_child4</bpmn:incoming>
       <bpmn:outgoing>Flow_child4_to_child5</bpmn:outgoing>
     </bpmn:callActivity>
-    <bpmn:callActivity id="CallActivity_L4_child5" name="3.2.1.1: Define value proposition" calledElement="Process_3_2_1_1">
+    <bpmn:callActivity id="CallActivity_L4_child5" name="3.2.1.4: Define brand identity" calledElement="Process_3_2_1_4">
       <bpmn:incoming>Flow_child4_to_child5</bpmn:incoming>
       <bpmn:outgoing>Flow_child5_to_child6</bpmn:outgoing>
     </bpmn:callActivity>
-    <bpmn:callActivity id="CallActivity_L4_child6" name="3.2.1.3: Develop key messages" calledElement="Process_3_2_1_3">
+    <bpmn:callActivity id="CallActivity_L4_child6" name="3.2.1.2: Create positioning statements" calledElement="Process_3_2_1_2">
       <bpmn:incoming>Flow_child5_to_child6</bpmn:incoming>
       <bpmn:outgoing>Flow_child6_to_child7</bpmn:outgoing>
     </bpmn:callActivity>
-    <bpmn:callActivity id="CallActivity_L4_child7" name="3.2.1.2: Create positioning statements" calledElement="Process_3_2_1_2">
+    <bpmn:callActivity id="CallActivity_L4_child7" name="3.2.1.1: Define value proposition" calledElement="Process_3_2_1_1">
       <bpmn:incoming>Flow_child6_to_child7</bpmn:incoming>
       <bpmn:outgoing>Flow_child7_to_child8</bpmn:outgoing>
     </bpmn:callActivity>
-    <bpmn:callActivity id="CallActivity_L4_child8" name="3.2.1.4: Define brand identity" calledElement="Process_3_2_1_4">
+    <bpmn:callActivity id="CallActivity_L4_child8" name="3.2.1.3: Develop key messages" calledElement="Process_3_2_1_3">
       <bpmn:incoming>Flow_child7_to_child8</bpmn:incoming>
       <bpmn:outgoing>Flow_child8_to_end</bpmn:outgoing>
     </bpmn:callActivity>

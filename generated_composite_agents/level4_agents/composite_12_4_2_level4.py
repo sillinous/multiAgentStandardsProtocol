@@ -11,11 +11,11 @@ Orchestration Pattern: Sequential Workflow
 Standards: A2A, ANP, ACP, BPP, BDP, BRP, BMP, BCP, BIP
 
 Child Agents:
+  - 12.4.2.5: Review partners
+  - 12.4.2.3: Execute contracts
   - 12.4.2.1: Negotiate agreements
   - 12.4.2.6: Optimize partners
-  - 12.4.2.5: Review partners
   - 12.4.2.4: Launch partnerships
-  - 12.4.2.3: Execute contracts
   - 12.4.2.2: Structure partnerships
 
 
@@ -47,11 +47,11 @@ class CompositeAgent_12_4_2:
         self.apqc_id = "12.4.2"
         self.level = 4
         self.child_agent_ids = [
+        "12.4.2.5",
+        "12.4.2.3",
         "12.4.2.1",
         "12.4.2.6",
-        "12.4.2.5",
         "12.4.2.4",
-        "12.4.2.3",
         "12.4.2.2"
 ]
         self.logger = logging.getLogger(f"CompositeAgent_12_4_2")

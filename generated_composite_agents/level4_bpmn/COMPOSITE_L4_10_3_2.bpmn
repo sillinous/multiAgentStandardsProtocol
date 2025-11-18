@@ -7,44 +7,44 @@ Acquire, Construct, and Manage Assets
 APQC ID: 10.3.2
 
 Orchestrates 6 child agents:
-  1. 10.3.2.1: Assess asset value
-  2. 10.3.2.5: Review lifecycle
-  3. 10.3.2.2: Identify improvement opportunities
-  4. 10.3.2.4: Execute improvements
-  5. 10.3.2.6: Optimize lifecycle
-  6. 10.3.2.3: Prioritize investments
+  1. 10.3.2.4: Execute improvements
+  2. 10.3.2.1: Assess asset value
+  3. 10.3.2.5: Review lifecycle
+  4. 10.3.2.6: Optimize lifecycle
+  5. 10.3.2.3: Prioritize investments
+  6. 10.3.2.2: Identify improvement opportunities
 
 
 Orchestration Pattern: Sequential Workflow (Pipeline)
 Standards: BPMN 2.0, A2A Protocol
 
-Generated: 2025-11-18T01:19:11.311109
+Generated: 2025-11-18T01:38:33.357452
 Status: Production Ready
 </bpmn:documentation>
     <bpmn:startEvent id="Start_L4_10_3_2" name="Start Composite">
       <bpmn:outgoing>Flow_start_to_child1</bpmn:outgoing>
     </bpmn:startEvent>
-    <bpmn:callActivity id="CallActivity_L4_child1" name="10.3.2.1: Assess asset value" calledElement="Process_10_3_2_1">
+    <bpmn:callActivity id="CallActivity_L4_child1" name="10.3.2.4: Execute improvements" calledElement="Process_10_3_2_4">
       <bpmn:incoming>Flow_start_to_child1</bpmn:incoming>
       <bpmn:outgoing>Flow_child1_to_child2</bpmn:outgoing>
     </bpmn:callActivity>
-    <bpmn:callActivity id="CallActivity_L4_child2" name="10.3.2.5: Review lifecycle" calledElement="Process_10_3_2_5">
+    <bpmn:callActivity id="CallActivity_L4_child2" name="10.3.2.1: Assess asset value" calledElement="Process_10_3_2_1">
       <bpmn:incoming>Flow_child1_to_child2</bpmn:incoming>
       <bpmn:outgoing>Flow_child2_to_child3</bpmn:outgoing>
     </bpmn:callActivity>
-    <bpmn:callActivity id="CallActivity_L4_child3" name="10.3.2.2: Identify improvement opportuni..." calledElement="Process_10_3_2_2">
+    <bpmn:callActivity id="CallActivity_L4_child3" name="10.3.2.5: Review lifecycle" calledElement="Process_10_3_2_5">
       <bpmn:incoming>Flow_child2_to_child3</bpmn:incoming>
       <bpmn:outgoing>Flow_child3_to_child4</bpmn:outgoing>
     </bpmn:callActivity>
-    <bpmn:callActivity id="CallActivity_L4_child4" name="10.3.2.4: Execute improvements" calledElement="Process_10_3_2_4">
+    <bpmn:callActivity id="CallActivity_L4_child4" name="10.3.2.6: Optimize lifecycle" calledElement="Process_10_3_2_6">
       <bpmn:incoming>Flow_child3_to_child4</bpmn:incoming>
       <bpmn:outgoing>Flow_child4_to_child5</bpmn:outgoing>
     </bpmn:callActivity>
-    <bpmn:callActivity id="CallActivity_L4_child5" name="10.3.2.6: Optimize lifecycle" calledElement="Process_10_3_2_6">
+    <bpmn:callActivity id="CallActivity_L4_child5" name="10.3.2.3: Prioritize investments" calledElement="Process_10_3_2_3">
       <bpmn:incoming>Flow_child4_to_child5</bpmn:incoming>
       <bpmn:outgoing>Flow_child5_to_child6</bpmn:outgoing>
     </bpmn:callActivity>
-    <bpmn:callActivity id="CallActivity_L4_child6" name="10.3.2.3: Prioritize investments" calledElement="Process_10_3_2_3">
+    <bpmn:callActivity id="CallActivity_L4_child6" name="10.3.2.2: Identify improvement opportuni..." calledElement="Process_10_3_2_2">
       <bpmn:incoming>Flow_child5_to_child6</bpmn:incoming>
       <bpmn:outgoing>Flow_child6_to_end</bpmn:outgoing>
     </bpmn:callActivity>

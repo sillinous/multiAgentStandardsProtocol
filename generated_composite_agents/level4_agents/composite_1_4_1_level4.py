@@ -12,8 +12,8 @@ Standards: A2A, ANP, ACP, BPP, BDP, BRP, BMP, BCP, BIP
 
 Child Agents:
   - 1.4.1.1: Plan objectives
-  - 1.4.1.4: Analyze objectives
   - 1.4.1.2: Execute objectives
+  - 1.4.1.4: Analyze objectives
   - 1.4.1.3: Monitor objectives
 
 
@@ -46,8 +46,8 @@ class CompositeAgent_1_4_1:
         self.level = 4
         self.child_agent_ids = [
         "1.4.1.1",
-        "1.4.1.4",
         "1.4.1.2",
+        "1.4.1.4",
         "1.4.1.3"
 ]
         self.logger = logging.getLogger(f"CompositeAgent_1_4_1")

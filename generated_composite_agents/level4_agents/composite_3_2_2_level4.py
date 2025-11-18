@@ -11,14 +11,14 @@ Orchestration Pattern: Sequential Workflow
 Standards: A2A, ANP, ACP, BPP, BDP, BRP, BMP, BCP, BIP
 
 Child Agents:
-  - 3.2.2.7: Document sales
   - 3.2.2.5: Review sales
-  - 3.2.2.6: Optimize sales
   - 3.2.2.8: Report sales
-  - 3.2.2.2: Establish pricing objectives
-  - 3.2.2.3: Define pricing tactics
+  - 3.2.2.6: Optimize sales
+  - 3.2.2.7: Document sales
   - 3.2.2.1: Analyze pricing dynamics
+  - 3.2.2.2: Establish pricing objectives
   - 3.2.2.4: Create pricing policies
+  - 3.2.2.3: Define pricing tactics
 
 
 Generated: 2025-11-18
@@ -49,14 +49,14 @@ class CompositeAgent_3_2_2:
         self.apqc_id = "3.2.2"
         self.level = 4
         self.child_agent_ids = [
-        "3.2.2.7",
         "3.2.2.5",
-        "3.2.2.6",
         "3.2.2.8",
-        "3.2.2.2",
-        "3.2.2.3",
+        "3.2.2.6",
+        "3.2.2.7",
         "3.2.2.1",
-        "3.2.2.4"
+        "3.2.2.2",
+        "3.2.2.4",
+        "3.2.2.3"
 ]
         self.logger = logging.getLogger(f"CompositeAgent_3_2_2")
 

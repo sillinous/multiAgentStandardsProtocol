@@ -6,219 +6,219 @@ Level 1 Composite Process
 Manage Customer Service
 APQC ID: 6
 
-Orchestrates 65 child agents:
-  1. 6.1.1.5: Review tickets
-  2. 6.4.2.6: Optimize inquiries
-  3. 6.3.2.1: Research customer history
-  4. 6.4.3.2: Validate resolution
-  5. 6.2.1.6: Optimize resolutions
-  6. 6.4.2.2: Diagnose root cause
-  7. 6.2.1.3: Monitor call volumes
-  8. 6.1.2.1: Define service channels
-  9. 6.3.2.7: Document support
-  10. 6.3.1.8: Report satisfaction
-  11. 6.2.1.4: Manage service queues
-  12. 6.4.3.3: Confirm with customer
-  13. 6.3.2.2: Identify solution
-  14. 6.1.2.4: Create service policies
-  15. 6.3.1.3: Route to appropriate agent
-  16. 6.2.2.4: Support social media
-  17. 6.4.2.1: Gather information
-  18. 6.1.1.1: Define service vision
-  19. 6.1.1.7: Document tickets
-  20. 6.2.1.1: Staff service centers
-  ... and 45 more
+Orchestrates 67 child agents:
+  1. 6.1.2.4: Create service policies
+  2. 6.1.2.2: Establish service processes
+  3. 6.4.1.4: Set resolution timeframe
+  4. 6.2.1.2: Schedule agents
+  5. 6.3.1.1: Log inquiry
+  6. 6.2.1.1: Staff service centers
+  7. 6.1.2.1: Define service channels
+  8. 6.1.1.1: Define service vision
+  9. 6.1.1.9: Plan tickets
+  10. 6.2.1.5: Review resolutions
+  11. 6.1.1.10: Execute tickets
+  12. 6.1.1.4: Set service objectives
+  13. 6.2.1.8: Report resolutions
+  14. 6.3.2.8: Report support
+  15. 6.2.2.8: Report satisfaction
+  16. 6.1.2.5: Review resolutions
+  17. 6.2.1.6: Optimize resolutions
+  18. 6.3.2.6: Optimize support
+  19. 6.3.1.3: Route to appropriate agent
+  20. 6.4.2.6: Optimize inquiries
+  ... and 47 more
 
 Orchestration Pattern: Sequential Workflow (Pipeline)
 Standards: BPMN 2.0, A2A Protocol
 
-Generated: 2025-11-18T01:19:11.565352
+Generated: 2025-11-18T01:38:33.647021
 Status: Production Ready
 </bpmn:documentation>
     <bpmn:startEvent id="Start_L1_6" name="Start Composite">
       <bpmn:outgoing>Flow_start_to_child1</bpmn:outgoing>
     </bpmn:startEvent>
-    <bpmn:callActivity id="CallActivity_L1_child1" name="6.1.1.5: Review tickets" calledElement="Process_6_1_1_5">
+    <bpmn:callActivity id="CallActivity_L1_child1" name="6.1.2.4: Create service policies" calledElement="Process_6_1_2_4">
       <bpmn:incoming>Flow_start_to_child1</bpmn:incoming>
       <bpmn:outgoing>Flow_child1_to_child2</bpmn:outgoing>
     </bpmn:callActivity>
-    <bpmn:callActivity id="CallActivity_L1_child2" name="6.4.2.6: Optimize inquiries" calledElement="Process_6_4_2_6">
+    <bpmn:callActivity id="CallActivity_L1_child2" name="6.1.2.2: Establish service processes" calledElement="Process_6_1_2_2">
       <bpmn:incoming>Flow_child1_to_child2</bpmn:incoming>
       <bpmn:outgoing>Flow_child2_to_child3</bpmn:outgoing>
     </bpmn:callActivity>
-    <bpmn:callActivity id="CallActivity_L1_child3" name="6.3.2.1: Research customer history" calledElement="Process_6_3_2_1">
+    <bpmn:callActivity id="CallActivity_L1_child3" name="6.4.1.4: Set resolution timeframe" calledElement="Process_6_4_1_4">
       <bpmn:incoming>Flow_child2_to_child3</bpmn:incoming>
       <bpmn:outgoing>Flow_child3_to_child4</bpmn:outgoing>
     </bpmn:callActivity>
-    <bpmn:callActivity id="CallActivity_L1_child4" name="6.4.3.2: Validate resolution" calledElement="Process_6_4_3_2">
+    <bpmn:callActivity id="CallActivity_L1_child4" name="6.2.1.2: Schedule agents" calledElement="Process_6_2_1_2">
       <bpmn:incoming>Flow_child3_to_child4</bpmn:incoming>
       <bpmn:outgoing>Flow_child4_to_child5</bpmn:outgoing>
     </bpmn:callActivity>
-    <bpmn:callActivity id="CallActivity_L1_child5" name="6.2.1.6: Optimize resolutions" calledElement="Process_6_2_1_6">
+    <bpmn:callActivity id="CallActivity_L1_child5" name="6.3.1.1: Log inquiry" calledElement="Process_6_3_1_1">
       <bpmn:incoming>Flow_child4_to_child5</bpmn:incoming>
       <bpmn:outgoing>Flow_child5_to_child6</bpmn:outgoing>
     </bpmn:callActivity>
-    <bpmn:callActivity id="CallActivity_L1_child6" name="6.4.2.2: Diagnose root cause" calledElement="Process_6_4_2_2">
+    <bpmn:callActivity id="CallActivity_L1_child6" name="6.2.1.1: Staff service centers" calledElement="Process_6_2_1_1">
       <bpmn:incoming>Flow_child5_to_child6</bpmn:incoming>
       <bpmn:outgoing>Flow_child6_to_child7</bpmn:outgoing>
     </bpmn:callActivity>
-    <bpmn:callActivity id="CallActivity_L1_child7" name="6.2.1.3: Monitor call volumes" calledElement="Process_6_2_1_3">
+    <bpmn:callActivity id="CallActivity_L1_child7" name="6.1.2.1: Define service channels" calledElement="Process_6_1_2_1">
       <bpmn:incoming>Flow_child6_to_child7</bpmn:incoming>
       <bpmn:outgoing>Flow_child7_to_child8</bpmn:outgoing>
     </bpmn:callActivity>
-    <bpmn:callActivity id="CallActivity_L1_child8" name="6.1.2.1: Define service channels" calledElement="Process_6_1_2_1">
+    <bpmn:callActivity id="CallActivity_L1_child8" name="6.1.1.1: Define service vision" calledElement="Process_6_1_1_1">
       <bpmn:incoming>Flow_child7_to_child8</bpmn:incoming>
       <bpmn:outgoing>Flow_child8_to_child9</bpmn:outgoing>
     </bpmn:callActivity>
-    <bpmn:callActivity id="CallActivity_L1_child9" name="6.3.2.7: Document support" calledElement="Process_6_3_2_7">
+    <bpmn:callActivity id="CallActivity_L1_child9" name="6.1.1.9: Plan tickets" calledElement="Process_6_1_1_9">
       <bpmn:incoming>Flow_child8_to_child9</bpmn:incoming>
       <bpmn:outgoing>Flow_child9_to_child10</bpmn:outgoing>
     </bpmn:callActivity>
-    <bpmn:callActivity id="CallActivity_L1_child10" name="6.3.1.8: Report satisfaction" calledElement="Process_6_3_1_8">
+    <bpmn:callActivity id="CallActivity_L1_child10" name="6.2.1.5: Review resolutions" calledElement="Process_6_2_1_5">
       <bpmn:incoming>Flow_child9_to_child10</bpmn:incoming>
       <bpmn:outgoing>Flow_child10_to_child11</bpmn:outgoing>
     </bpmn:callActivity>
-    <bpmn:callActivity id="CallActivity_L1_child11" name="6.2.1.4: Manage service queues" calledElement="Process_6_2_1_4">
+    <bpmn:callActivity id="CallActivity_L1_child11" name="6.1.1.10: Execute tickets" calledElement="Process_6_1_1_10">
       <bpmn:incoming>Flow_child10_to_child11</bpmn:incoming>
       <bpmn:outgoing>Flow_child11_to_child12</bpmn:outgoing>
     </bpmn:callActivity>
-    <bpmn:callActivity id="CallActivity_L1_child12" name="6.4.3.3: Confirm with customer" calledElement="Process_6_4_3_3">
+    <bpmn:callActivity id="CallActivity_L1_child12" name="6.1.1.4: Set service objectives" calledElement="Process_6_1_1_4">
       <bpmn:incoming>Flow_child11_to_child12</bpmn:incoming>
       <bpmn:outgoing>Flow_child12_to_child13</bpmn:outgoing>
     </bpmn:callActivity>
-    <bpmn:callActivity id="CallActivity_L1_child13" name="6.3.2.2: Identify solution" calledElement="Process_6_3_2_2">
+    <bpmn:callActivity id="CallActivity_L1_child13" name="6.2.1.8: Report resolutions" calledElement="Process_6_2_1_8">
       <bpmn:incoming>Flow_child12_to_child13</bpmn:incoming>
       <bpmn:outgoing>Flow_child13_to_child14</bpmn:outgoing>
     </bpmn:callActivity>
-    <bpmn:callActivity id="CallActivity_L1_child14" name="6.1.2.4: Create service policies" calledElement="Process_6_1_2_4">
+    <bpmn:callActivity id="CallActivity_L1_child14" name="6.3.2.8: Report support" calledElement="Process_6_3_2_8">
       <bpmn:incoming>Flow_child13_to_child14</bpmn:incoming>
       <bpmn:outgoing>Flow_child14_to_child15</bpmn:outgoing>
     </bpmn:callActivity>
-    <bpmn:callActivity id="CallActivity_L1_child15" name="6.3.1.3: Route to appropriate agent" calledElement="Process_6_3_1_3">
+    <bpmn:callActivity id="CallActivity_L1_child15" name="6.2.2.8: Report satisfaction" calledElement="Process_6_2_2_8">
       <bpmn:incoming>Flow_child14_to_child15</bpmn:incoming>
       <bpmn:outgoing>Flow_child15_to_child16</bpmn:outgoing>
     </bpmn:callActivity>
-    <bpmn:callActivity id="CallActivity_L1_child16" name="6.2.2.4: Support social media" calledElement="Process_6_2_2_4">
+    <bpmn:callActivity id="CallActivity_L1_child16" name="6.1.2.5: Review resolutions" calledElement="Process_6_1_2_5">
       <bpmn:incoming>Flow_child15_to_child16</bpmn:incoming>
       <bpmn:outgoing>Flow_child16_to_child17</bpmn:outgoing>
     </bpmn:callActivity>
-    <bpmn:callActivity id="CallActivity_L1_child17" name="6.4.2.1: Gather information" calledElement="Process_6_4_2_1">
+    <bpmn:callActivity id="CallActivity_L1_child17" name="6.2.1.6: Optimize resolutions" calledElement="Process_6_2_1_6">
       <bpmn:incoming>Flow_child16_to_child17</bpmn:incoming>
       <bpmn:outgoing>Flow_child17_to_child18</bpmn:outgoing>
     </bpmn:callActivity>
-    <bpmn:callActivity id="CallActivity_L1_child18" name="6.1.1.1: Define service vision" calledElement="Process_6_1_1_1">
+    <bpmn:callActivity id="CallActivity_L1_child18" name="6.3.2.6: Optimize support" calledElement="Process_6_3_2_6">
       <bpmn:incoming>Flow_child17_to_child18</bpmn:incoming>
       <bpmn:outgoing>Flow_child18_to_child19</bpmn:outgoing>
     </bpmn:callActivity>
-    <bpmn:callActivity id="CallActivity_L1_child19" name="6.1.1.7: Document tickets" calledElement="Process_6_1_1_7">
+    <bpmn:callActivity id="CallActivity_L1_child19" name="6.3.1.3: Route to appropriate agent" calledElement="Process_6_3_1_3">
       <bpmn:incoming>Flow_child18_to_child19</bpmn:incoming>
       <bpmn:outgoing>Flow_child19_to_child20</bpmn:outgoing>
     </bpmn:callActivity>
-    <bpmn:callActivity id="CallActivity_L1_child20" name="6.2.1.1: Staff service centers" calledElement="Process_6_2_1_1">
+    <bpmn:callActivity id="CallActivity_L1_child20" name="6.4.2.6: Optimize inquiries" calledElement="Process_6_4_2_6">
       <bpmn:incoming>Flow_child19_to_child20</bpmn:incoming>
       <bpmn:outgoing>Flow_child20_to_child21</bpmn:outgoing>
     </bpmn:callActivity>
-    <bpmn:callActivity id="CallActivity_L1_child21" name="6.3.1.1: Log inquiry" calledElement="Process_6_3_1_1">
+    <bpmn:callActivity id="CallActivity_L1_child21" name="6.1.2.6: Optimize resolutions" calledElement="Process_6_1_2_6">
       <bpmn:incoming>Flow_child20_to_child21</bpmn:incoming>
       <bpmn:outgoing>Flow_child21_to_child22</bpmn:outgoing>
     </bpmn:callActivity>
-    <bpmn:callActivity id="CallActivity_L1_child22" name="6.1.1.4: Set service objectives" calledElement="Process_6_1_1_4">
+    <bpmn:callActivity id="CallActivity_L1_child22" name="6.3.1.8: Report satisfaction" calledElement="Process_6_3_1_8">
       <bpmn:incoming>Flow_child21_to_child22</bpmn:incoming>
       <bpmn:outgoing>Flow_child22_to_child23</bpmn:outgoing>
     </bpmn:callActivity>
-    <bpmn:callActivity id="CallActivity_L1_child23" name="6.4.1.2: Assess severity" calledElement="Process_6_4_1_2">
+    <bpmn:callActivity id="CallActivity_L1_child23" name="6.1.1.5: Review tickets" calledElement="Process_6_1_1_5">
       <bpmn:incoming>Flow_child22_to_child23</bpmn:incoming>
       <bpmn:outgoing>Flow_child23_to_child24</bpmn:outgoing>
     </bpmn:callActivity>
-    <bpmn:callActivity id="CallActivity_L1_child24" name="6.4.1.5: Review support" calledElement="Process_6_4_1_5">
+    <bpmn:callActivity id="CallActivity_L1_child24" name="6.4.3.3: Confirm with customer" calledElement="Process_6_4_3_3">
       <bpmn:incoming>Flow_child23_to_child24</bpmn:incoming>
       <bpmn:outgoing>Flow_child24_to_child25</bpmn:outgoing>
     </bpmn:callActivity>
-    <bpmn:callActivity id="CallActivity_L1_child25" name="6.4.1.4: Set resolution timeframe" calledElement="Process_6_4_1_4">
+    <bpmn:callActivity id="CallActivity_L1_child25" name="6.3.1.7: Document satisfaction" calledElement="Process_6_3_1_7">
       <bpmn:incoming>Flow_child24_to_child25</bpmn:incoming>
       <bpmn:outgoing>Flow_child25_to_child26</bpmn:outgoing>
     </bpmn:callActivity>
-    <bpmn:callActivity id="CallActivity_L1_child26" name="6.3.2.6: Optimize support" calledElement="Process_6_3_2_6">
+    <bpmn:callActivity id="CallActivity_L1_child26" name="6.2.2.4: Support social media" calledElement="Process_6_2_2_4">
       <bpmn:incoming>Flow_child25_to_child26</bpmn:incoming>
       <bpmn:outgoing>Flow_child26_to_child27</bpmn:outgoing>
     </bpmn:callActivity>
-    <bpmn:callActivity id="CallActivity_L1_child27" name="6.3.1.5: Review satisfaction" calledElement="Process_6_3_1_5">
+    <bpmn:callActivity id="CallActivity_L1_child27" name="6.2.1.4: Manage service queues" calledElement="Process_6_2_1_4">
       <bpmn:incoming>Flow_child26_to_child27</bpmn:incoming>
       <bpmn:outgoing>Flow_child27_to_child28</bpmn:outgoing>
     </bpmn:callActivity>
-    <bpmn:callActivity id="CallActivity_L1_child28" name="6.4.1.3: Assign to resolver" calledElement="Process_6_4_1_3">
+    <bpmn:callActivity id="CallActivity_L1_child28" name="6.4.1.6: Optimize support" calledElement="Process_6_4_1_6">
       <bpmn:incoming>Flow_child27_to_child28</bpmn:incoming>
       <bpmn:outgoing>Flow_child28_to_child29</bpmn:outgoing>
     </bpmn:callActivity>
-    <bpmn:callActivity id="CallActivity_L1_child29" name="6.2.1.2: Schedule agents" calledElement="Process_6_2_1_2">
+    <bpmn:callActivity id="CallActivity_L1_child29" name="6.1.1.6: Optimize tickets" calledElement="Process_6_1_1_6">
       <bpmn:incoming>Flow_child28_to_child29</bpmn:incoming>
       <bpmn:outgoing>Flow_child29_to_child30</bpmn:outgoing>
     </bpmn:callActivity>
-    <bpmn:callActivity id="CallActivity_L1_child30" name="6.1.1.6: Optimize tickets" calledElement="Process_6_1_1_6">
+    <bpmn:callActivity id="CallActivity_L1_child30" name="6.4.1.5: Review support" calledElement="Process_6_4_1_5">
       <bpmn:incoming>Flow_child29_to_child30</bpmn:incoming>
       <bpmn:outgoing>Flow_child30_to_child31</bpmn:outgoing>
     </bpmn:callActivity>
-    <bpmn:callActivity id="CallActivity_L1_child31" name="6.2.2.7: Document satisfaction" calledElement="Process_6_2_2_7">
+    <bpmn:callActivity id="CallActivity_L1_child31" name="6.1.1.3: Design service model" calledElement="Process_6_1_1_3">
       <bpmn:incoming>Flow_child30_to_child31</bpmn:incoming>
       <bpmn:outgoing>Flow_child31_to_child32</bpmn:outgoing>
     </bpmn:callActivity>
-    <bpmn:callActivity id="CallActivity_L1_child32" name="6.3.2.5: Review support" calledElement="Process_6_3_2_5">
+    <bpmn:callActivity id="CallActivity_L1_child32" name="6.2.2.5: Review satisfaction" calledElement="Process_6_2_2_5">
       <bpmn:incoming>Flow_child31_to_child32</bpmn:incoming>
       <bpmn:outgoing>Flow_child32_to_child33</bpmn:outgoing>
     </bpmn:callActivity>
-    <bpmn:callActivity id="CallActivity_L1_child33" name="6.3.1.6: Optimize satisfaction" calledElement="Process_6_3_1_6">
+    <bpmn:callActivity id="CallActivity_L1_child33" name="6.3.1.4: Prioritize inquiry" calledElement="Process_6_3_1_4">
       <bpmn:incoming>Flow_child32_to_child33</bpmn:incoming>
       <bpmn:outgoing>Flow_child33_to_child34</bpmn:outgoing>
     </bpmn:callActivity>
-    <bpmn:callActivity id="CallActivity_L1_child34" name="6.2.2.8: Report satisfaction" calledElement="Process_6_2_2_8">
+    <bpmn:callActivity id="CallActivity_L1_child34" name="6.1.2.7: Document resolutions" calledElement="Process_6_1_2_7">
       <bpmn:incoming>Flow_child33_to_child34</bpmn:incoming>
       <bpmn:outgoing>Flow_child34_to_child35</bpmn:outgoing>
     </bpmn:callActivity>
-    <bpmn:callActivity id="CallActivity_L1_child35" name="6.4.3.4: Close issue ticket" calledElement="Process_6_4_3_4">
+    <bpmn:callActivity id="CallActivity_L1_child35" name="6.4.1.7: Document support" calledElement="Process_6_4_1_7">
       <bpmn:incoming>Flow_child34_to_child35</bpmn:incoming>
       <bpmn:outgoing>Flow_child35_to_child36</bpmn:outgoing>
     </bpmn:callActivity>
-    <bpmn:callActivity id="CallActivity_L1_child36" name="6.3.1.2: Categorize inquiry" calledElement="Process_6_3_1_2">
+    <bpmn:callActivity id="CallActivity_L1_child36" name="6.4.2.2: Diagnose root cause" calledElement="Process_6_4_2_2">
       <bpmn:incoming>Flow_child35_to_child36</bpmn:incoming>
       <bpmn:outgoing>Flow_child36_to_child37</bpmn:outgoing>
     </bpmn:callActivity>
-    <bpmn:callActivity id="CallActivity_L1_child37" name="6.2.2.5: Review satisfaction" calledElement="Process_6_2_2_5">
+    <bpmn:callActivity id="CallActivity_L1_child37" name="6.2.2.2: Support email channel" calledElement="Process_6_2_2_2">
       <bpmn:incoming>Flow_child36_to_child37</bpmn:incoming>
       <bpmn:outgoing>Flow_child37_to_child38</bpmn:outgoing>
     </bpmn:callActivity>
-    <bpmn:callActivity id="CallActivity_L1_child38" name="6.1.2.5: Review resolutions" calledElement="Process_6_1_2_5">
+    <bpmn:callActivity id="CallActivity_L1_child38" name="6.4.2.4: Recommend solution" calledElement="Process_6_4_2_4">
       <bpmn:incoming>Flow_child37_to_child38</bpmn:incoming>
       <bpmn:outgoing>Flow_child38_to_child39</bpmn:outgoing>
     </bpmn:callActivity>
-    <bpmn:callActivity id="CallActivity_L1_child39" name="6.4.1.7: Document support" calledElement="Process_6_4_1_7">
+    <bpmn:callActivity id="CallActivity_L1_child39" name="6.4.3.1: Implement solution" calledElement="Process_6_4_3_1">
       <bpmn:incoming>Flow_child38_to_child39</bpmn:incoming>
       <bpmn:outgoing>Flow_child39_to_child40</bpmn:outgoing>
     </bpmn:callActivity>
-    <bpmn:callActivity id="CallActivity_L1_child40" name="6.2.2.1: Support phone channel" calledElement="Process_6_2_2_1">
+    <bpmn:callActivity id="CallActivity_L1_child40" name="6.3.2.1: Research customer history" calledElement="Process_6_3_2_1">
       <bpmn:incoming>Flow_child39_to_child40</bpmn:incoming>
       <bpmn:outgoing>Flow_child40_to_child41</bpmn:outgoing>
     </bpmn:callActivity>
-    <bpmn:callActivity id="CallActivity_L1_child41" name="6.1.2.3: Design customer journey" calledElement="Process_6_1_2_3">
+    <bpmn:callActivity id="CallActivity_L1_child41" name="6.3.2.2: Identify solution" calledElement="Process_6_3_2_2">
       <bpmn:incoming>Flow_child40_to_child41</bpmn:incoming>
       <bpmn:outgoing>Flow_child41_to_child42</bpmn:outgoing>
     </bpmn:callActivity>
-    <bpmn:callActivity id="CallActivity_L1_child42" name="6.2.2.2: Support email channel" calledElement="Process_6_2_2_2">
+    <bpmn:callActivity id="CallActivity_L1_child42" name="6.3.2.4: Document resolution" calledElement="Process_6_3_2_4">
       <bpmn:incoming>Flow_child41_to_child42</bpmn:incoming>
       <bpmn:outgoing>Flow_child42_to_child43</bpmn:outgoing>
     </bpmn:callActivity>
-    <bpmn:callActivity id="CallActivity_L1_child43" name="6.1.2.2: Establish service processes" calledElement="Process_6_1_2_2">
+    <bpmn:callActivity id="CallActivity_L1_child43" name="6.1.1.7: Document tickets" calledElement="Process_6_1_1_7">
       <bpmn:incoming>Flow_child42_to_child43</bpmn:incoming>
       <bpmn:outgoing>Flow_child43_to_child44</bpmn:outgoing>
     </bpmn:callActivity>
-    <bpmn:callActivity id="CallActivity_L1_child44" name="6.3.1.7: Document satisfaction" calledElement="Process_6_3_1_7">
+    <bpmn:callActivity id="CallActivity_L1_child44" name="6.2.1.7: Document resolutions" calledElement="Process_6_2_1_7">
       <bpmn:incoming>Flow_child43_to_child44</bpmn:incoming>
       <bpmn:outgoing>Flow_child44_to_child45</bpmn:outgoing>
     </bpmn:callActivity>
-    <bpmn:callActivity id="CallActivity_L1_child45" name="6.3.2.8: Report support" calledElement="Process_6_3_2_8">
+    <bpmn:callActivity id="CallActivity_L1_child45" name="6.4.1.2: Assess severity" calledElement="Process_6_4_1_2">
       <bpmn:incoming>Flow_child44_to_child45</bpmn:incoming>
       <bpmn:outgoing>Flow_child45_to_child46</bpmn:outgoing>
     </bpmn:callActivity>
-    <bpmn:callActivity id="CallActivity_L1_child46" name="6.2.1.8: Report resolutions" calledElement="Process_6_2_1_8">
+    <bpmn:callActivity id="CallActivity_L1_child46" name="6.4.2.1: Gather information" calledElement="Process_6_4_2_1">
       <bpmn:incoming>Flow_child45_to_child46</bpmn:incoming>
       <bpmn:outgoing>Flow_child46_to_child47</bpmn:outgoing>
     </bpmn:callActivity>
@@ -226,15 +226,15 @@ Status: Production Ready
       <bpmn:incoming>Flow_child46_to_child47</bpmn:incoming>
       <bpmn:outgoing>Flow_child47_to_child48</bpmn:outgoing>
     </bpmn:callActivity>
-    <bpmn:callActivity id="CallActivity_L1_child48" name="6.1.2.6: Optimize resolutions" calledElement="Process_6_1_2_6">
+    <bpmn:callActivity id="CallActivity_L1_child48" name="6.3.1.2: Categorize inquiry" calledElement="Process_6_3_1_2">
       <bpmn:incoming>Flow_child47_to_child48</bpmn:incoming>
       <bpmn:outgoing>Flow_child48_to_child49</bpmn:outgoing>
     </bpmn:callActivity>
-    <bpmn:callActivity id="CallActivity_L1_child49" name="6.4.3.1: Implement solution" calledElement="Process_6_4_3_1">
+    <bpmn:callActivity id="CallActivity_L1_child49" name="6.3.1.6: Optimize satisfaction" calledElement="Process_6_3_1_6">
       <bpmn:incoming>Flow_child48_to_child49</bpmn:incoming>
       <bpmn:outgoing>Flow_child49_to_child50</bpmn:outgoing>
     </bpmn:callActivity>
-    <bpmn:callActivity id="CallActivity_L1_child50" name="6.4.1.6: Optimize support" calledElement="Process_6_4_1_6">
+    <bpmn:callActivity id="CallActivity_L1_child50" name="6.4.1.3: Assign to resolver" calledElement="Process_6_4_1_3">
       <bpmn:incoming>Flow_child49_to_child50</bpmn:incoming>
       <bpmn:outgoing>Flow_child50_to_end</bpmn:outgoing>
     </bpmn:callActivity>

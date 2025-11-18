@@ -5,23 +5,23 @@ Level 3 Process: 8.1 - Composite APQC Agent
 APQC Level 3: 8.1
 Category: Manage Information Technology (8.0)
 
-This is a COMPOSITE AGENT that orchestrates 24 child agents.
+This is a COMPOSITE AGENT that orchestrates 25 child agents.
 
 Orchestration Pattern: Sequential Workflow
 Standards: A2A, ANP, ACP, BPP, BDP, BRP, BMP, BCP, BIP
 
 Child Agents:
-  - 8.1.3.4: Prioritize investments
-  - 8.1.1.8: Report applications
   - 8.1.1.4: Develop IT roadmap
-  - 8.1.2.5: Review security
-  - 8.1.2.8: Report security
-  - 8.1.3.6: Optimize data
   - 8.1.2.4: Monitor IT risks
-  - 8.1.2.7: Document security
+  - 8.1.1.8: Report applications
+  - 8.1.2.5: Review security
+  - 8.1.1.5: Review applications
+  - 8.1.3.2: Assess portfolio value
+  - 8.1.3.1: Inventory IT assets
+  - 8.1.2.1: Establish IT governance model
+  - 8.1.3.8: Report data
   - 8.1.1.7: Document applications
-  - 8.1.3.3: Rationalize applications
-  ... and 14 more
+  ... and 15 more
 
 Generated: 2025-11-18
 Version: 3.0.0
@@ -44,37 +44,38 @@ class CompositeAgent_8_1:
     """
     Composite Agent for APQC Level 3: 8.1
 
-    Orchestrates 24 child agents in a coordinated workflow.
+    Orchestrates 25 child agents in a coordinated workflow.
     """
 
     def __init__(self):
         self.apqc_id = "8.1"
         self.level = 3
         self.child_agent_ids = [
-        "8.1.3.4",
-        "8.1.1.8",
         "8.1.1.4",
-        "8.1.2.5",
-        "8.1.2.8",
-        "8.1.3.6",
         "8.1.2.4",
-        "8.1.2.7",
-        "8.1.1.7",
-        "8.1.3.3",
-        "8.1.1.6",
-        "8.1.2.1",
-        "8.1.2.6",
+        "8.1.1.8",
+        "8.1.2.5",
+        "8.1.1.5",
         "8.1.3.2",
         "8.1.3.1",
-        "8.1.1.1",
-        "8.1.3.5",
-        "8.1.2.2",
+        "8.1.2.1",
+        "8.1.3.8",
+        "8.1.1.7",
+        "8.1.2.8",
         "8.1.2.3",
+        "8.1.2.7",
+        "8.1.2.6",
+        "8.1.1.9",
+        "8.1.3.3",
+        "8.1.1.1",
+        "8.1.2.2",
         "8.1.1.3",
-        "8.1.3.7",
         "8.1.1.2",
-        "8.1.1.5",
-        "8.1.3.8"
+        "8.1.1.6",
+        "8.1.3.5",
+        "8.1.3.4",
+        "8.1.3.7",
+        "8.1.3.6"
 ]
         self.logger = logging.getLogger(f"CompositeAgent_8_1")
 

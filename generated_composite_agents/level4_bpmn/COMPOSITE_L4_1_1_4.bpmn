@@ -8,19 +8,19 @@ APQC ID: 1.1.4
 
 Orchestrates 8 child agents:
   1. 1.1.4.6: Optimize objectives
-  2. 1.1.4.2: Communicate vision to stakeholders
+  2. 1.1.4.5: Review objectives
   3. 1.1.4.3: Create mission statement
-  4. 1.1.4.5: Review objectives
-  5. 1.1.4.7: Document objectives
+  4. 1.1.4.4: Define guiding principles/values
+  5. 1.1.4.8: Report objectives
   6. 1.1.4.1: Align stakeholders around vision
-  7. 1.1.4.8: Report objectives
-  8. 1.1.4.4: Define guiding principles/values
+  7. 1.1.4.2: Communicate vision to stakeholders
+  8. 1.1.4.7: Document objectives
 
 
 Orchestration Pattern: Sequential Workflow (Pipeline)
 Standards: BPMN 2.0, A2A Protocol
 
-Generated: 2025-11-18T01:19:11.293174
+Generated: 2025-11-18T01:38:33.336067
 Status: Production Ready
 </bpmn:documentation>
     <bpmn:startEvent id="Start_L4_1_1_4" name="Start Composite">
@@ -30,7 +30,7 @@ Status: Production Ready
       <bpmn:incoming>Flow_start_to_child1</bpmn:incoming>
       <bpmn:outgoing>Flow_child1_to_child2</bpmn:outgoing>
     </bpmn:callActivity>
-    <bpmn:callActivity id="CallActivity_L4_child2" name="1.1.4.2: Communicate vision to stakehol..." calledElement="Process_1_1_4_2">
+    <bpmn:callActivity id="CallActivity_L4_child2" name="1.1.4.5: Review objectives" calledElement="Process_1_1_4_5">
       <bpmn:incoming>Flow_child1_to_child2</bpmn:incoming>
       <bpmn:outgoing>Flow_child2_to_child3</bpmn:outgoing>
     </bpmn:callActivity>
@@ -38,11 +38,11 @@ Status: Production Ready
       <bpmn:incoming>Flow_child2_to_child3</bpmn:incoming>
       <bpmn:outgoing>Flow_child3_to_child4</bpmn:outgoing>
     </bpmn:callActivity>
-    <bpmn:callActivity id="CallActivity_L4_child4" name="1.1.4.5: Review objectives" calledElement="Process_1_1_4_5">
+    <bpmn:callActivity id="CallActivity_L4_child4" name="1.1.4.4: Define guiding principles/valu..." calledElement="Process_1_1_4_4">
       <bpmn:incoming>Flow_child3_to_child4</bpmn:incoming>
       <bpmn:outgoing>Flow_child4_to_child5</bpmn:outgoing>
     </bpmn:callActivity>
-    <bpmn:callActivity id="CallActivity_L4_child5" name="1.1.4.7: Document objectives" calledElement="Process_1_1_4_7">
+    <bpmn:callActivity id="CallActivity_L4_child5" name="1.1.4.8: Report objectives" calledElement="Process_1_1_4_8">
       <bpmn:incoming>Flow_child4_to_child5</bpmn:incoming>
       <bpmn:outgoing>Flow_child5_to_child6</bpmn:outgoing>
     </bpmn:callActivity>
@@ -50,11 +50,11 @@ Status: Production Ready
       <bpmn:incoming>Flow_child5_to_child6</bpmn:incoming>
       <bpmn:outgoing>Flow_child6_to_child7</bpmn:outgoing>
     </bpmn:callActivity>
-    <bpmn:callActivity id="CallActivity_L4_child7" name="1.1.4.8: Report objectives" calledElement="Process_1_1_4_8">
+    <bpmn:callActivity id="CallActivity_L4_child7" name="1.1.4.2: Communicate vision to stakehol..." calledElement="Process_1_1_4_2">
       <bpmn:incoming>Flow_child6_to_child7</bpmn:incoming>
       <bpmn:outgoing>Flow_child7_to_child8</bpmn:outgoing>
     </bpmn:callActivity>
-    <bpmn:callActivity id="CallActivity_L4_child8" name="1.1.4.4: Define guiding principles/valu..." calledElement="Process_1_1_4_4">
+    <bpmn:callActivity id="CallActivity_L4_child8" name="1.1.4.7: Document objectives" calledElement="Process_1_1_4_7">
       <bpmn:incoming>Flow_child7_to_child8</bpmn:incoming>
       <bpmn:outgoing>Flow_child8_to_end</bpmn:outgoing>
     </bpmn:callActivity>

@@ -7,40 +7,40 @@ Manage External Relationships
 APQC ID: 12.4.2
 
 Orchestrates 6 child agents:
-  1. 12.4.2.1: Negotiate agreements
-  2. 12.4.2.6: Optimize partners
-  3. 12.4.2.5: Review partners
-  4. 12.4.2.4: Launch partnerships
-  5. 12.4.2.3: Execute contracts
+  1. 12.4.2.5: Review partners
+  2. 12.4.2.3: Execute contracts
+  3. 12.4.2.1: Negotiate agreements
+  4. 12.4.2.6: Optimize partners
+  5. 12.4.2.4: Launch partnerships
   6. 12.4.2.2: Structure partnerships
 
 
 Orchestration Pattern: Sequential Workflow (Pipeline)
 Standards: BPMN 2.0, A2A Protocol
 
-Generated: 2025-11-18T01:19:11.332310
+Generated: 2025-11-18T01:38:33.383545
 Status: Production Ready
 </bpmn:documentation>
     <bpmn:startEvent id="Start_L4_12_4_2" name="Start Composite">
       <bpmn:outgoing>Flow_start_to_child1</bpmn:outgoing>
     </bpmn:startEvent>
-    <bpmn:callActivity id="CallActivity_L4_child1" name="12.4.2.1: Negotiate agreements" calledElement="Process_12_4_2_1">
+    <bpmn:callActivity id="CallActivity_L4_child1" name="12.4.2.5: Review partners" calledElement="Process_12_4_2_5">
       <bpmn:incoming>Flow_start_to_child1</bpmn:incoming>
       <bpmn:outgoing>Flow_child1_to_child2</bpmn:outgoing>
     </bpmn:callActivity>
-    <bpmn:callActivity id="CallActivity_L4_child2" name="12.4.2.6: Optimize partners" calledElement="Process_12_4_2_6">
+    <bpmn:callActivity id="CallActivity_L4_child2" name="12.4.2.3: Execute contracts" calledElement="Process_12_4_2_3">
       <bpmn:incoming>Flow_child1_to_child2</bpmn:incoming>
       <bpmn:outgoing>Flow_child2_to_child3</bpmn:outgoing>
     </bpmn:callActivity>
-    <bpmn:callActivity id="CallActivity_L4_child3" name="12.4.2.5: Review partners" calledElement="Process_12_4_2_5">
+    <bpmn:callActivity id="CallActivity_L4_child3" name="12.4.2.1: Negotiate agreements" calledElement="Process_12_4_2_1">
       <bpmn:incoming>Flow_child2_to_child3</bpmn:incoming>
       <bpmn:outgoing>Flow_child3_to_child4</bpmn:outgoing>
     </bpmn:callActivity>
-    <bpmn:callActivity id="CallActivity_L4_child4" name="12.4.2.4: Launch partnerships" calledElement="Process_12_4_2_4">
+    <bpmn:callActivity id="CallActivity_L4_child4" name="12.4.2.6: Optimize partners" calledElement="Process_12_4_2_6">
       <bpmn:incoming>Flow_child3_to_child4</bpmn:incoming>
       <bpmn:outgoing>Flow_child4_to_child5</bpmn:outgoing>
     </bpmn:callActivity>
-    <bpmn:callActivity id="CallActivity_L4_child5" name="12.4.2.3: Execute contracts" calledElement="Process_12_4_2_3">
+    <bpmn:callActivity id="CallActivity_L4_child5" name="12.4.2.4: Launch partnerships" calledElement="Process_12_4_2_4">
       <bpmn:incoming>Flow_child4_to_child5</bpmn:incoming>
       <bpmn:outgoing>Flow_child5_to_child6</bpmn:outgoing>
     </bpmn:callActivity>

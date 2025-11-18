@@ -11,16 +11,16 @@ Orchestration Pattern: Sequential Workflow
 Standards: A2A, ANP, ACP, BPP, BDP, BRP, BMP, BCP, BIP
 
 Child Agents:
-  - 6.4.2.6: Optimize inquiries
-  - 6.4.3.2: Validate resolution
-  - 6.4.2.2: Diagnose root cause
-  - 6.4.3.3: Confirm with customer
-  - 6.4.2.1: Gather information
-  - 6.4.1.2: Assess severity
-  - 6.4.1.5: Review support
   - 6.4.1.4: Set resolution timeframe
-  - 6.4.1.3: Assign to resolver
-  - 6.4.3.4: Close issue ticket
+  - 6.4.2.6: Optimize inquiries
+  - 6.4.3.3: Confirm with customer
+  - 6.4.1.6: Optimize support
+  - 6.4.1.5: Review support
+  - 6.4.1.7: Document support
+  - 6.4.2.2: Diagnose root cause
+  - 6.4.2.4: Recommend solution
+  - 6.4.3.1: Implement solution
+  - 6.4.1.2: Assess severity
   ... and 7 more
 
 Generated: 2025-11-18
@@ -51,22 +51,22 @@ class CompositeAgent_6_4:
         self.apqc_id = "6.4"
         self.level = 3
         self.child_agent_ids = [
-        "6.4.2.6",
-        "6.4.3.2",
-        "6.4.2.2",
-        "6.4.3.3",
-        "6.4.2.1",
-        "6.4.1.2",
-        "6.4.1.5",
         "6.4.1.4",
-        "6.4.1.3",
-        "6.4.3.4",
-        "6.4.1.7",
-        "6.4.3.1",
+        "6.4.2.6",
+        "6.4.3.3",
         "6.4.1.6",
-        "6.4.2.5",
+        "6.4.1.5",
+        "6.4.1.7",
+        "6.4.2.2",
         "6.4.2.4",
+        "6.4.3.1",
+        "6.4.1.2",
+        "6.4.2.1",
+        "6.4.1.3",
         "6.4.2.3",
+        "6.4.3.2",
+        "6.4.3.4",
+        "6.4.2.5",
         "6.4.1.1"
 ]
         self.logger = logging.getLogger(f"CompositeAgent_6_4")

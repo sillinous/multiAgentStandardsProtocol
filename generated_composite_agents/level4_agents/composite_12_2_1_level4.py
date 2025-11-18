@@ -12,13 +12,13 @@ Standards: A2A, ANP, ACP, BPP, BDP, BRP, BMP, BCP, BIP
 
 Child Agents:
   - 12.2.1.1: Monitor legislation
+  - 12.2.1.6: Optimize performance
   - 12.2.1.8: Report performance
   - 12.2.1.5: Review performance
-  - 12.2.1.3: Advocate policy positions
-  - 12.2.1.4: Ensure compliance
-  - 12.2.1.7: Document performance
-  - 12.2.1.6: Optimize performance
   - 12.2.1.2: Engage with regulators
+  - 12.2.1.4: Ensure compliance
+  - 12.2.1.3: Advocate policy positions
+  - 12.2.1.7: Document performance
 
 
 Generated: 2025-11-18
@@ -50,13 +50,13 @@ class CompositeAgent_12_2_1:
         self.level = 4
         self.child_agent_ids = [
         "12.2.1.1",
+        "12.2.1.6",
         "12.2.1.8",
         "12.2.1.5",
-        "12.2.1.3",
+        "12.2.1.2",
         "12.2.1.4",
-        "12.2.1.7",
-        "12.2.1.6",
-        "12.2.1.2"
+        "12.2.1.3",
+        "12.2.1.7"
 ]
         self.logger = logging.getLogger(f"CompositeAgent_12_2_1")
 

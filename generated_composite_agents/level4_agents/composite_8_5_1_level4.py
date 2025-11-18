@@ -11,12 +11,12 @@ Orchestration Pattern: Sequential Workflow
 Standards: A2A, ANP, ACP, BPP, BDP, BRP, BMP, BCP, BIP
 
 Child Agents:
-  - 8.5.1.3: Manage storage
-  - 8.5.1.1: Manage servers
   - 8.5.1.5: Review systems
-  - 8.5.1.6: Optimize systems
   - 8.5.1.4: Manage cloud services
   - 8.5.1.2: Manage networks
+  - 8.5.1.3: Manage storage
+  - 8.5.1.6: Optimize systems
+  - 8.5.1.1: Manage servers
 
 
 Generated: 2025-11-18
@@ -47,12 +47,12 @@ class CompositeAgent_8_5_1:
         self.apqc_id = "8.5.1"
         self.level = 4
         self.child_agent_ids = [
-        "8.5.1.3",
-        "8.5.1.1",
         "8.5.1.5",
-        "8.5.1.6",
         "8.5.1.4",
-        "8.5.1.2"
+        "8.5.1.2",
+        "8.5.1.3",
+        "8.5.1.6",
+        "8.5.1.1"
 ]
         self.logger = logging.getLogger(f"CompositeAgent_8_5_1")
 

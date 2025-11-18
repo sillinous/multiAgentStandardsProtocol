@@ -11,14 +11,14 @@ Orchestration Pattern: Sequential Workflow
 Standards: A2A, ANP, ACP, BPP, BDP, BRP, BMP, BCP, BIP
 
 Child Agents:
-  - 12.2.2.7: Document collaboration
+  - 12.2.2.1: Engage with community
+  - 12.2.2.5: Review collaboration
+  - 12.2.2.8: Report collaboration
+  - 12.2.2.4: Build community partnerships
   - 12.2.2.2: Support community initiatives
   - 12.2.2.6: Optimize collaboration
   - 12.2.2.3: Manage corporate social responsibility
-  - 12.2.2.4: Build community partnerships
-  - 12.2.2.8: Report collaboration
-  - 12.2.2.1: Engage with community
-  - 12.2.2.5: Review collaboration
+  - 12.2.2.7: Document collaboration
 
 
 Generated: 2025-11-18
@@ -49,14 +49,14 @@ class CompositeAgent_12_2_2:
         self.apqc_id = "12.2.2"
         self.level = 4
         self.child_agent_ids = [
-        "12.2.2.7",
+        "12.2.2.1",
+        "12.2.2.5",
+        "12.2.2.8",
+        "12.2.2.4",
         "12.2.2.2",
         "12.2.2.6",
         "12.2.2.3",
-        "12.2.2.4",
-        "12.2.2.8",
-        "12.2.2.1",
-        "12.2.2.5"
+        "12.2.2.7"
 ]
         self.logger = logging.getLogger(f"CompositeAgent_12_2_2")
 

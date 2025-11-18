@@ -11,14 +11,14 @@ Orchestration Pattern: Sequential Workflow
 Standards: A2A, ANP, ACP, BPP, BDP, BRP, BMP, BCP, BIP
 
 Child Agents:
-  - 8.1.3.4: Prioritize investments
-  - 8.1.3.6: Optimize data
-  - 8.1.3.3: Rationalize applications
   - 8.1.3.2: Assess portfolio value
   - 8.1.3.1: Inventory IT assets
-  - 8.1.3.5: Review data
-  - 8.1.3.7: Document data
   - 8.1.3.8: Report data
+  - 8.1.3.3: Rationalize applications
+  - 8.1.3.5: Review data
+  - 8.1.3.4: Prioritize investments
+  - 8.1.3.7: Document data
+  - 8.1.3.6: Optimize data
 
 
 Generated: 2025-11-18
@@ -49,14 +49,14 @@ class CompositeAgent_8_1_3:
         self.apqc_id = "8.1.3"
         self.level = 4
         self.child_agent_ids = [
-        "8.1.3.4",
-        "8.1.3.6",
-        "8.1.3.3",
         "8.1.3.2",
         "8.1.3.1",
+        "8.1.3.8",
+        "8.1.3.3",
         "8.1.3.5",
+        "8.1.3.4",
         "8.1.3.7",
-        "8.1.3.8"
+        "8.1.3.6"
 ]
         self.logger = logging.getLogger(f"CompositeAgent_8_1_3")
 

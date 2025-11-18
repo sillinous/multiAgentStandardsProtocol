@@ -7,8 +7,8 @@ Manage Financial Resources
 APQC ID: 9.8.2
 
 Orchestrates 4 child agents:
-  1. 9.8.2.2: Eliminate intercompany transactions
-  2. 9.8.2.3: Consolidate results
+  1. 9.8.2.3: Consolidate results
+  2. 9.8.2.2: Eliminate intercompany transactions
   3. 9.8.2.4: Report consolidated financials
   4. 9.8.2.1: Collect subsidiary data
 
@@ -16,17 +16,17 @@ Orchestrates 4 child agents:
 Orchestration Pattern: Sequential Workflow (Pipeline)
 Standards: BPMN 2.0, A2A Protocol
 
-Generated: 2025-11-18T01:19:11.446769
+Generated: 2025-11-18T01:38:33.516216
 Status: Production Ready
 </bpmn:documentation>
     <bpmn:startEvent id="Start_L4_9_8_2" name="Start Composite">
       <bpmn:outgoing>Flow_start_to_child1</bpmn:outgoing>
     </bpmn:startEvent>
-    <bpmn:callActivity id="CallActivity_L4_child1" name="9.8.2.2: Eliminate intercompany transac..." calledElement="Process_9_8_2_2">
+    <bpmn:callActivity id="CallActivity_L4_child1" name="9.8.2.3: Consolidate results" calledElement="Process_9_8_2_3">
       <bpmn:incoming>Flow_start_to_child1</bpmn:incoming>
       <bpmn:outgoing>Flow_child1_to_child2</bpmn:outgoing>
     </bpmn:callActivity>
-    <bpmn:callActivity id="CallActivity_L4_child2" name="9.8.2.3: Consolidate results" calledElement="Process_9_8_2_3">
+    <bpmn:callActivity id="CallActivity_L4_child2" name="9.8.2.2: Eliminate intercompany transac..." calledElement="Process_9_8_2_2">
       <bpmn:incoming>Flow_child1_to_child2</bpmn:incoming>
       <bpmn:outgoing>Flow_child2_to_child3</bpmn:outgoing>
     </bpmn:callActivity>

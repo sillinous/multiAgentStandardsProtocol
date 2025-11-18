@@ -7,30 +7,30 @@ Deliver Physical Products
 APQC ID: 4.1.2
 
 Orchestrates 8 child agents:
-  1. 4.1.2.6: Optimize logistics
-  2. 4.1.2.7: Document logistics
+  1. 4.1.2.5: Review logistics
+  2. 4.1.2.6: Optimize logistics
   3. 4.1.2.8: Report logistics
-  4. 4.1.2.5: Review logistics
-  5. 4.1.2.3: Balance supply and demand
-  6. 4.1.2.2: Optimize facility locations
-  7. 4.1.2.4: Configure distribution network
-  8. 4.1.2.1: Design supply chain network
+  4. 4.1.2.7: Document logistics
+  5. 4.1.2.4: Configure distribution network
+  6. 4.1.2.3: Balance supply and demand
+  7. 4.1.2.1: Design supply chain network
+  8. 4.1.2.2: Optimize facility locations
 
 
 Orchestration Pattern: Sequential Workflow (Pipeline)
 Standards: BPMN 2.0, A2A Protocol
 
-Generated: 2025-11-18T01:19:11.368077
+Generated: 2025-11-18T01:38:33.424993
 Status: Production Ready
 </bpmn:documentation>
     <bpmn:startEvent id="Start_L4_4_1_2" name="Start Composite">
       <bpmn:outgoing>Flow_start_to_child1</bpmn:outgoing>
     </bpmn:startEvent>
-    <bpmn:callActivity id="CallActivity_L4_child1" name="4.1.2.6: Optimize logistics" calledElement="Process_4_1_2_6">
+    <bpmn:callActivity id="CallActivity_L4_child1" name="4.1.2.5: Review logistics" calledElement="Process_4_1_2_5">
       <bpmn:incoming>Flow_start_to_child1</bpmn:incoming>
       <bpmn:outgoing>Flow_child1_to_child2</bpmn:outgoing>
     </bpmn:callActivity>
-    <bpmn:callActivity id="CallActivity_L4_child2" name="4.1.2.7: Document logistics" calledElement="Process_4_1_2_7">
+    <bpmn:callActivity id="CallActivity_L4_child2" name="4.1.2.6: Optimize logistics" calledElement="Process_4_1_2_6">
       <bpmn:incoming>Flow_child1_to_child2</bpmn:incoming>
       <bpmn:outgoing>Flow_child2_to_child3</bpmn:outgoing>
     </bpmn:callActivity>
@@ -38,23 +38,23 @@ Status: Production Ready
       <bpmn:incoming>Flow_child2_to_child3</bpmn:incoming>
       <bpmn:outgoing>Flow_child3_to_child4</bpmn:outgoing>
     </bpmn:callActivity>
-    <bpmn:callActivity id="CallActivity_L4_child4" name="4.1.2.5: Review logistics" calledElement="Process_4_1_2_5">
+    <bpmn:callActivity id="CallActivity_L4_child4" name="4.1.2.7: Document logistics" calledElement="Process_4_1_2_7">
       <bpmn:incoming>Flow_child3_to_child4</bpmn:incoming>
       <bpmn:outgoing>Flow_child4_to_child5</bpmn:outgoing>
     </bpmn:callActivity>
-    <bpmn:callActivity id="CallActivity_L4_child5" name="4.1.2.3: Balance supply and demand" calledElement="Process_4_1_2_3">
+    <bpmn:callActivity id="CallActivity_L4_child5" name="4.1.2.4: Configure distribution network" calledElement="Process_4_1_2_4">
       <bpmn:incoming>Flow_child4_to_child5</bpmn:incoming>
       <bpmn:outgoing>Flow_child5_to_child6</bpmn:outgoing>
     </bpmn:callActivity>
-    <bpmn:callActivity id="CallActivity_L4_child6" name="4.1.2.2: Optimize facility locations" calledElement="Process_4_1_2_2">
+    <bpmn:callActivity id="CallActivity_L4_child6" name="4.1.2.3: Balance supply and demand" calledElement="Process_4_1_2_3">
       <bpmn:incoming>Flow_child5_to_child6</bpmn:incoming>
       <bpmn:outgoing>Flow_child6_to_child7</bpmn:outgoing>
     </bpmn:callActivity>
-    <bpmn:callActivity id="CallActivity_L4_child7" name="4.1.2.4: Configure distribution network" calledElement="Process_4_1_2_4">
+    <bpmn:callActivity id="CallActivity_L4_child7" name="4.1.2.1: Design supply chain network" calledElement="Process_4_1_2_1">
       <bpmn:incoming>Flow_child6_to_child7</bpmn:incoming>
       <bpmn:outgoing>Flow_child7_to_child8</bpmn:outgoing>
     </bpmn:callActivity>
-    <bpmn:callActivity id="CallActivity_L4_child8" name="4.1.2.1: Design supply chain network" calledElement="Process_4_1_2_1">
+    <bpmn:callActivity id="CallActivity_L4_child8" name="4.1.2.2: Optimize facility locations" calledElement="Process_4_1_2_2">
       <bpmn:incoming>Flow_child7_to_child8</bpmn:incoming>
       <bpmn:outgoing>Flow_child8_to_end</bpmn:outgoing>
     </bpmn:callActivity>

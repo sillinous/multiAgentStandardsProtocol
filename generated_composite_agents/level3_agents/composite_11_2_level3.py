@@ -3,7 +3,7 @@ Level 3 Process: 11.2 - Composite APQC Agent
 ============================================================
 
 APQC Level 3: 11.2
-Category: Manage Enterprise Risk and Compliance (11.0)
+Category: Manage Enterprise Risk, Compliance, and Governance (11.0)
 
 This is a COMPOSITE AGENT that orchestrates 16 child agents.
 
@@ -11,16 +11,16 @@ Orchestration Pattern: Sequential Workflow
 Standards: A2A, ANP, ACP, BPP, BDP, BRP, BMP, BCP, BIP
 
 Child Agents:
-  - 11.2.1.5: Review audits
-  - 11.2.2.2: Conduct compliance audits
-  - 11.2.1.6: Optimize audits
-  - 11.2.1.3: Assign compliance responsibilities
   - 11.2.1.4: Establish compliance processes
-  - 11.2.2.5: Review policies
+  - 11.2.2.2: Conduct compliance audits
   - 11.2.1.8: Report audits
+  - 11.2.2.4: Remediate compliance issues
   - 11.2.2.1: Track compliance activities
+  - 11.2.1.5: Review audits
+  - 11.2.2.3: Report compliance status
+  - 11.2.1.1: Identify compliance requirements
   - 11.2.1.2: Define compliance policies
-  - 11.2.2.6: Optimize policies
+  - 11.2.2.8: Report policies
   ... and 6 more
 
 Generated: 2025-11-18
@@ -51,22 +51,22 @@ class CompositeAgent_11_2:
         self.apqc_id = "11.2"
         self.level = 3
         self.child_agent_ids = [
-        "11.2.1.5",
-        "11.2.2.2",
-        "11.2.1.6",
-        "11.2.1.3",
         "11.2.1.4",
-        "11.2.2.5",
+        "11.2.2.2",
         "11.2.1.8",
+        "11.2.2.4",
         "11.2.2.1",
+        "11.2.1.5",
+        "11.2.2.3",
+        "11.2.1.1",
         "11.2.1.2",
+        "11.2.2.8",
+        "11.2.2.5",
         "11.2.2.6",
         "11.2.2.7",
-        "11.2.2.4",
-        "11.2.1.1",
-        "11.2.2.3",
-        "11.2.2.8",
-        "11.2.1.7"
+        "11.2.1.7",
+        "11.2.1.3",
+        "11.2.1.6"
 ]
         self.logger = logging.getLogger(f"CompositeAgent_11_2")
 

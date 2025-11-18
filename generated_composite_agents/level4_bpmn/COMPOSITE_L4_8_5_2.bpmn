@@ -7,10 +7,10 @@ Manage Information Technology
 APQC ID: 8.5.2
 
 Orchestrates 6 child agents:
-  1. 8.5.2.6: Optimize infrastructure
+  1. 8.5.2.1: Implement security controls
   2. 8.5.2.5: Review infrastructure
-  3. 8.5.2.1: Implement security controls
-  4. 8.5.2.2: Monitor security threats
+  3. 8.5.2.2: Monitor security threats
+  4. 8.5.2.6: Optimize infrastructure
   5. 8.5.2.3: Respond to incidents
   6. 8.5.2.4: Ensure compliance
 
@@ -18,13 +18,13 @@ Orchestrates 6 child agents:
 Orchestration Pattern: Sequential Workflow (Pipeline)
 Standards: BPMN 2.0, A2A Protocol
 
-Generated: 2025-11-18T01:19:11.422888
+Generated: 2025-11-18T01:38:33.490966
 Status: Production Ready
 </bpmn:documentation>
     <bpmn:startEvent id="Start_L4_8_5_2" name="Start Composite">
       <bpmn:outgoing>Flow_start_to_child1</bpmn:outgoing>
     </bpmn:startEvent>
-    <bpmn:callActivity id="CallActivity_L4_child1" name="8.5.2.6: Optimize infrastructure" calledElement="Process_8_5_2_6">
+    <bpmn:callActivity id="CallActivity_L4_child1" name="8.5.2.1: Implement security controls" calledElement="Process_8_5_2_1">
       <bpmn:incoming>Flow_start_to_child1</bpmn:incoming>
       <bpmn:outgoing>Flow_child1_to_child2</bpmn:outgoing>
     </bpmn:callActivity>
@@ -32,11 +32,11 @@ Status: Production Ready
       <bpmn:incoming>Flow_child1_to_child2</bpmn:incoming>
       <bpmn:outgoing>Flow_child2_to_child3</bpmn:outgoing>
     </bpmn:callActivity>
-    <bpmn:callActivity id="CallActivity_L4_child3" name="8.5.2.1: Implement security controls" calledElement="Process_8_5_2_1">
+    <bpmn:callActivity id="CallActivity_L4_child3" name="8.5.2.2: Monitor security threats" calledElement="Process_8_5_2_2">
       <bpmn:incoming>Flow_child2_to_child3</bpmn:incoming>
       <bpmn:outgoing>Flow_child3_to_child4</bpmn:outgoing>
     </bpmn:callActivity>
-    <bpmn:callActivity id="CallActivity_L4_child4" name="8.5.2.2: Monitor security threats" calledElement="Process_8_5_2_2">
+    <bpmn:callActivity id="CallActivity_L4_child4" name="8.5.2.6: Optimize infrastructure" calledElement="Process_8_5_2_6">
       <bpmn:incoming>Flow_child3_to_child4</bpmn:incoming>
       <bpmn:outgoing>Flow_child4_to_child5</bpmn:outgoing>
     </bpmn:callActivity>

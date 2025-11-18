@@ -11,16 +11,16 @@ Orchestration Pattern: Sequential Workflow
 Standards: A2A, ANP, ACP, BPP, BDP, BRP, BMP, BCP, BIP
 
 Child Agents:
-  - 9.5.1.3: Approve timesheets
-  - 9.5.3.4: Remit taxes and deductions
-  - 9.5.1.1: Capture time entries
-  - 9.5.3.3: Distribute pay statements
+  - 9.5.1.5: Review budgets
+  - 9.5.1.2: Validate time data
   - 9.5.3.1: Generate paychecks
-  - 9.5.2.1: Calculate gross pay
+  - 9.5.2.2: Calculate deductions
   - 9.5.1.6: Optimize budgets
-  - 9.5.2.3: Calculate net pay
   - 9.5.1.4: Process adjustments
+  - 9.5.2.1: Calculate gross pay
+  - 9.5.3.3: Distribute pay statements
   - 9.5.3.2: Execute direct deposits
+  - 9.5.2.3: Calculate net pay
   ... and 6 more
 
 Generated: 2025-11-18
@@ -51,22 +51,22 @@ class CompositeAgent_9_5:
         self.apqc_id = "9.5"
         self.level = 3
         self.child_agent_ids = [
-        "9.5.1.3",
-        "9.5.3.4",
-        "9.5.1.1",
-        "9.5.3.3",
-        "9.5.3.1",
-        "9.5.2.1",
-        "9.5.1.6",
-        "9.5.2.3",
-        "9.5.1.4",
-        "9.5.3.2",
         "9.5.1.5",
-        "9.5.2.4",
-        "9.5.2.6",
-        "9.5.2.5",
         "9.5.1.2",
-        "9.5.2.2"
+        "9.5.3.1",
+        "9.5.2.2",
+        "9.5.1.6",
+        "9.5.1.4",
+        "9.5.2.1",
+        "9.5.3.3",
+        "9.5.3.2",
+        "9.5.2.3",
+        "9.5.2.5",
+        "9.5.2.6",
+        "9.5.1.1",
+        "9.5.3.4",
+        "9.5.1.3",
+        "9.5.2.4"
 ]
         self.logger = logging.getLogger(f"CompositeAgent_9_5")
 

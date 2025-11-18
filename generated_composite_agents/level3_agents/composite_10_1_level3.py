@@ -5,23 +5,23 @@ Level 3 Process: 10.1 - Composite APQC Agent
 APQC Level 3: 10.1
 Category: Acquire, Construct, and Manage Assets (10.0)
 
-This is a COMPOSITE AGENT that orchestrates 24 child agents.
+This is a COMPOSITE AGENT that orchestrates 25 child agents.
 
 Orchestration Pattern: Sequential Workflow
 Standards: A2A, ANP, ACP, BPP, BDP, BRP, BMP, BCP, BIP
 
 Child Agents:
-  - 10.1.2.1: Define requirements
-  - 10.1.3.1: Procure construction services
-  - 10.1.2.5: Review maintenance
-  - 10.1.1.3: Approve capital funding
-  - 10.1.2.6: Optimize maintenance
-  - 10.1.1.8: Report equipment
+  - 10.1.2.4: Obtain permits
   - 10.1.3.4: Complete construction
+  - 10.1.2.7: Document maintenance
+  - 10.1.3.2: Execute construction
+  - 10.1.3.6: Optimize projects
+  - 10.1.2.6: Optimize maintenance
+  - 10.1.3.1: Procure construction services
+  - 10.1.2.1: Define requirements
+  - 10.1.2.3: Review and approve designs
   - 10.1.1.4: Assemble project team
-  - 10.1.3.5: Review projects
-  - 10.1.3.8: Report projects
-  ... and 14 more
+  ... and 15 more
 
 Generated: 2025-11-18
 Version: 3.0.0
@@ -44,37 +44,38 @@ class CompositeAgent_10_1:
     """
     Composite Agent for APQC Level 3: 10.1
 
-    Orchestrates 24 child agents in a coordinated workflow.
+    Orchestrates 25 child agents in a coordinated workflow.
     """
 
     def __init__(self):
         self.apqc_id = "10.1"
         self.level = 3
         self.child_agent_ids = [
-        "10.1.2.1",
+        "10.1.2.4",
+        "10.1.3.4",
+        "10.1.2.7",
+        "10.1.3.2",
+        "10.1.3.6",
+        "10.1.2.6",
         "10.1.3.1",
+        "10.1.2.1",
+        "10.1.2.3",
+        "10.1.1.4",
+        "10.1.3.3",
+        "10.1.1.8",
+        "10.1.2.8",
+        "10.1.1.9",
+        "10.1.3.7",
+        "10.1.1.1",
+        "10.1.1.2",
+        "10.1.2.2",
         "10.1.2.5",
         "10.1.1.3",
-        "10.1.2.6",
-        "10.1.1.8",
-        "10.1.3.4",
-        "10.1.1.4",
         "10.1.3.5",
-        "10.1.3.8",
-        "10.1.1.7",
-        "10.1.3.6",
-        "10.1.3.7",
-        "10.1.2.7",
-        "10.1.2.8",
-        "10.1.1.6",
-        "10.1.2.4",
-        "10.1.2.3",
-        "10.1.2.2",
-        "10.1.1.1",
-        "10.1.3.2",
         "10.1.1.5",
-        "10.1.1.2",
-        "10.1.3.3"
+        "10.1.1.6",
+        "10.1.3.8",
+        "10.1.1.7"
 ]
         self.logger = logging.getLogger(f"CompositeAgent_10_1")
 

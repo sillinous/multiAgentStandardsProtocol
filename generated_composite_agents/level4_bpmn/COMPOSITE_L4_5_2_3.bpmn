@@ -8,19 +8,19 @@ APQC ID: 5.2.3
 
 Orchestrates 8 child agents:
   1. 5.2.3.7: Document resources
-  2. 5.2.3.2: Document service activities
-  3. 5.2.3.8: Report resources
-  4. 5.2.3.5: Review resources
-  5. 5.2.3.3: Obtain customer acknowledgment
-  6. 5.2.3.4: Complete service records
-  7. 5.2.3.6: Optimize resources
-  8. 5.2.3.1: Perform service delivery
+  2. 5.2.3.1: Perform service delivery
+  3. 5.2.3.3: Obtain customer acknowledgment
+  4. 5.2.3.8: Report resources
+  5. 5.2.3.2: Document service activities
+  6. 5.2.3.6: Optimize resources
+  7. 5.2.3.5: Review resources
+  8. 5.2.3.4: Complete service records
 
 
 Orchestration Pattern: Sequential Workflow (Pipeline)
 Standards: BPMN 2.0, A2A Protocol
 
-Generated: 2025-11-18T01:19:11.385117
+Generated: 2025-11-18T01:38:33.445767
 Status: Production Ready
 </bpmn:documentation>
     <bpmn:startEvent id="Start_L4_5_2_3" name="Start Composite">
@@ -30,31 +30,31 @@ Status: Production Ready
       <bpmn:incoming>Flow_start_to_child1</bpmn:incoming>
       <bpmn:outgoing>Flow_child1_to_child2</bpmn:outgoing>
     </bpmn:callActivity>
-    <bpmn:callActivity id="CallActivity_L4_child2" name="5.2.3.2: Document service activities" calledElement="Process_5_2_3_2">
+    <bpmn:callActivity id="CallActivity_L4_child2" name="5.2.3.1: Perform service delivery" calledElement="Process_5_2_3_1">
       <bpmn:incoming>Flow_child1_to_child2</bpmn:incoming>
       <bpmn:outgoing>Flow_child2_to_child3</bpmn:outgoing>
     </bpmn:callActivity>
-    <bpmn:callActivity id="CallActivity_L4_child3" name="5.2.3.8: Report resources" calledElement="Process_5_2_3_8">
+    <bpmn:callActivity id="CallActivity_L4_child3" name="5.2.3.3: Obtain customer acknowledgment" calledElement="Process_5_2_3_3">
       <bpmn:incoming>Flow_child2_to_child3</bpmn:incoming>
       <bpmn:outgoing>Flow_child3_to_child4</bpmn:outgoing>
     </bpmn:callActivity>
-    <bpmn:callActivity id="CallActivity_L4_child4" name="5.2.3.5: Review resources" calledElement="Process_5_2_3_5">
+    <bpmn:callActivity id="CallActivity_L4_child4" name="5.2.3.8: Report resources" calledElement="Process_5_2_3_8">
       <bpmn:incoming>Flow_child3_to_child4</bpmn:incoming>
       <bpmn:outgoing>Flow_child4_to_child5</bpmn:outgoing>
     </bpmn:callActivity>
-    <bpmn:callActivity id="CallActivity_L4_child5" name="5.2.3.3: Obtain customer acknowledgment" calledElement="Process_5_2_3_3">
+    <bpmn:callActivity id="CallActivity_L4_child5" name="5.2.3.2: Document service activities" calledElement="Process_5_2_3_2">
       <bpmn:incoming>Flow_child4_to_child5</bpmn:incoming>
       <bpmn:outgoing>Flow_child5_to_child6</bpmn:outgoing>
     </bpmn:callActivity>
-    <bpmn:callActivity id="CallActivity_L4_child6" name="5.2.3.4: Complete service records" calledElement="Process_5_2_3_4">
+    <bpmn:callActivity id="CallActivity_L4_child6" name="5.2.3.6: Optimize resources" calledElement="Process_5_2_3_6">
       <bpmn:incoming>Flow_child5_to_child6</bpmn:incoming>
       <bpmn:outgoing>Flow_child6_to_child7</bpmn:outgoing>
     </bpmn:callActivity>
-    <bpmn:callActivity id="CallActivity_L4_child7" name="5.2.3.6: Optimize resources" calledElement="Process_5_2_3_6">
+    <bpmn:callActivity id="CallActivity_L4_child7" name="5.2.3.5: Review resources" calledElement="Process_5_2_3_5">
       <bpmn:incoming>Flow_child6_to_child7</bpmn:incoming>
       <bpmn:outgoing>Flow_child7_to_child8</bpmn:outgoing>
     </bpmn:callActivity>
-    <bpmn:callActivity id="CallActivity_L4_child8" name="5.2.3.1: Perform service delivery" calledElement="Process_5_2_3_1">
+    <bpmn:callActivity id="CallActivity_L4_child8" name="5.2.3.4: Complete service records" calledElement="Process_5_2_3_4">
       <bpmn:incoming>Flow_child7_to_child8</bpmn:incoming>
       <bpmn:outgoing>Flow_child8_to_end</bpmn:outgoing>
     </bpmn:callActivity>

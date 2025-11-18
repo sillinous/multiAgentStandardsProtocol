@@ -7,94 +7,94 @@ Manage Financial Resources
 APQC ID: 9.5
 
 Orchestrates 16 child agents:
-  1. 9.5.1.3: Approve timesheets
-  2. 9.5.3.4: Remit taxes and deductions
-  3. 9.5.1.1: Capture time entries
-  4. 9.5.3.3: Distribute pay statements
-  5. 9.5.3.1: Generate paychecks
-  6. 9.5.2.1: Calculate gross pay
-  7. 9.5.1.6: Optimize budgets
-  8. 9.5.2.3: Calculate net pay
-  9. 9.5.1.4: Process adjustments
-  10. 9.5.3.2: Execute direct deposits
-  11. 9.5.1.5: Review budgets
-  12. 9.5.2.4: Process special payments
-  13. 9.5.2.6: Optimize transactions
-  14. 9.5.2.5: Review transactions
-  15. 9.5.1.2: Validate time data
-  16. 9.5.2.2: Calculate deductions
+  1. 9.5.1.5: Review budgets
+  2. 9.5.1.2: Validate time data
+  3. 9.5.3.1: Generate paychecks
+  4. 9.5.2.2: Calculate deductions
+  5. 9.5.1.6: Optimize budgets
+  6. 9.5.1.4: Process adjustments
+  7. 9.5.2.1: Calculate gross pay
+  8. 9.5.3.3: Distribute pay statements
+  9. 9.5.3.2: Execute direct deposits
+  10. 9.5.2.3: Calculate net pay
+  11. 9.5.2.5: Review transactions
+  12. 9.5.2.6: Optimize transactions
+  13. 9.5.1.1: Capture time entries
+  14. 9.5.3.4: Remit taxes and deductions
+  15. 9.5.1.3: Approve timesheets
+  16. 9.5.2.4: Process special payments
 
 
 Orchestration Pattern: Sequential Workflow (Pipeline)
 Standards: BPMN 2.0, A2A Protocol
 
-Generated: 2025-11-18T01:19:11.522463
+Generated: 2025-11-18T01:38:33.597305
 Status: Production Ready
 </bpmn:documentation>
     <bpmn:startEvent id="Start_L3_9_5" name="Start Composite">
       <bpmn:outgoing>Flow_start_to_child1</bpmn:outgoing>
     </bpmn:startEvent>
-    <bpmn:callActivity id="CallActivity_L3_child1" name="9.5.1.3: Approve timesheets" calledElement="Process_9_5_1_3">
+    <bpmn:callActivity id="CallActivity_L3_child1" name="9.5.1.5: Review budgets" calledElement="Process_9_5_1_5">
       <bpmn:incoming>Flow_start_to_child1</bpmn:incoming>
       <bpmn:outgoing>Flow_child1_to_child2</bpmn:outgoing>
     </bpmn:callActivity>
-    <bpmn:callActivity id="CallActivity_L3_child2" name="9.5.3.4: Remit taxes and deductions" calledElement="Process_9_5_3_4">
+    <bpmn:callActivity id="CallActivity_L3_child2" name="9.5.1.2: Validate time data" calledElement="Process_9_5_1_2">
       <bpmn:incoming>Flow_child1_to_child2</bpmn:incoming>
       <bpmn:outgoing>Flow_child2_to_child3</bpmn:outgoing>
     </bpmn:callActivity>
-    <bpmn:callActivity id="CallActivity_L3_child3" name="9.5.1.1: Capture time entries" calledElement="Process_9_5_1_1">
+    <bpmn:callActivity id="CallActivity_L3_child3" name="9.5.3.1: Generate paychecks" calledElement="Process_9_5_3_1">
       <bpmn:incoming>Flow_child2_to_child3</bpmn:incoming>
       <bpmn:outgoing>Flow_child3_to_child4</bpmn:outgoing>
     </bpmn:callActivity>
-    <bpmn:callActivity id="CallActivity_L3_child4" name="9.5.3.3: Distribute pay statements" calledElement="Process_9_5_3_3">
+    <bpmn:callActivity id="CallActivity_L3_child4" name="9.5.2.2: Calculate deductions" calledElement="Process_9_5_2_2">
       <bpmn:incoming>Flow_child3_to_child4</bpmn:incoming>
       <bpmn:outgoing>Flow_child4_to_child5</bpmn:outgoing>
     </bpmn:callActivity>
-    <bpmn:callActivity id="CallActivity_L3_child5" name="9.5.3.1: Generate paychecks" calledElement="Process_9_5_3_1">
+    <bpmn:callActivity id="CallActivity_L3_child5" name="9.5.1.6: Optimize budgets" calledElement="Process_9_5_1_6">
       <bpmn:incoming>Flow_child4_to_child5</bpmn:incoming>
       <bpmn:outgoing>Flow_child5_to_child6</bpmn:outgoing>
     </bpmn:callActivity>
-    <bpmn:callActivity id="CallActivity_L3_child6" name="9.5.2.1: Calculate gross pay" calledElement="Process_9_5_2_1">
+    <bpmn:callActivity id="CallActivity_L3_child6" name="9.5.1.4: Process adjustments" calledElement="Process_9_5_1_4">
       <bpmn:incoming>Flow_child5_to_child6</bpmn:incoming>
       <bpmn:outgoing>Flow_child6_to_child7</bpmn:outgoing>
     </bpmn:callActivity>
-    <bpmn:callActivity id="CallActivity_L3_child7" name="9.5.1.6: Optimize budgets" calledElement="Process_9_5_1_6">
+    <bpmn:callActivity id="CallActivity_L3_child7" name="9.5.2.1: Calculate gross pay" calledElement="Process_9_5_2_1">
       <bpmn:incoming>Flow_child6_to_child7</bpmn:incoming>
       <bpmn:outgoing>Flow_child7_to_child8</bpmn:outgoing>
     </bpmn:callActivity>
-    <bpmn:callActivity id="CallActivity_L3_child8" name="9.5.2.3: Calculate net pay" calledElement="Process_9_5_2_3">
+    <bpmn:callActivity id="CallActivity_L3_child8" name="9.5.3.3: Distribute pay statements" calledElement="Process_9_5_3_3">
       <bpmn:incoming>Flow_child7_to_child8</bpmn:incoming>
       <bpmn:outgoing>Flow_child8_to_child9</bpmn:outgoing>
     </bpmn:callActivity>
-    <bpmn:callActivity id="CallActivity_L3_child9" name="9.5.1.4: Process adjustments" calledElement="Process_9_5_1_4">
+    <bpmn:callActivity id="CallActivity_L3_child9" name="9.5.3.2: Execute direct deposits" calledElement="Process_9_5_3_2">
       <bpmn:incoming>Flow_child8_to_child9</bpmn:incoming>
       <bpmn:outgoing>Flow_child9_to_child10</bpmn:outgoing>
     </bpmn:callActivity>
-    <bpmn:callActivity id="CallActivity_L3_child10" name="9.5.3.2: Execute direct deposits" calledElement="Process_9_5_3_2">
+    <bpmn:callActivity id="CallActivity_L3_child10" name="9.5.2.3: Calculate net pay" calledElement="Process_9_5_2_3">
       <bpmn:incoming>Flow_child9_to_child10</bpmn:incoming>
       <bpmn:outgoing>Flow_child10_to_child11</bpmn:outgoing>
     </bpmn:callActivity>
-    <bpmn:callActivity id="CallActivity_L3_child11" name="9.5.1.5: Review budgets" calledElement="Process_9_5_1_5">
+    <bpmn:callActivity id="CallActivity_L3_child11" name="9.5.2.5: Review transactions" calledElement="Process_9_5_2_5">
       <bpmn:incoming>Flow_child10_to_child11</bpmn:incoming>
       <bpmn:outgoing>Flow_child11_to_child12</bpmn:outgoing>
     </bpmn:callActivity>
-    <bpmn:callActivity id="CallActivity_L3_child12" name="9.5.2.4: Process special payments" calledElement="Process_9_5_2_4">
+    <bpmn:callActivity id="CallActivity_L3_child12" name="9.5.2.6: Optimize transactions" calledElement="Process_9_5_2_6">
       <bpmn:incoming>Flow_child11_to_child12</bpmn:incoming>
       <bpmn:outgoing>Flow_child12_to_child13</bpmn:outgoing>
     </bpmn:callActivity>
-    <bpmn:callActivity id="CallActivity_L3_child13" name="9.5.2.6: Optimize transactions" calledElement="Process_9_5_2_6">
+    <bpmn:callActivity id="CallActivity_L3_child13" name="9.5.1.1: Capture time entries" calledElement="Process_9_5_1_1">
       <bpmn:incoming>Flow_child12_to_child13</bpmn:incoming>
       <bpmn:outgoing>Flow_child13_to_child14</bpmn:outgoing>
     </bpmn:callActivity>
-    <bpmn:callActivity id="CallActivity_L3_child14" name="9.5.2.5: Review transactions" calledElement="Process_9_5_2_5">
+    <bpmn:callActivity id="CallActivity_L3_child14" name="9.5.3.4: Remit taxes and deductions" calledElement="Process_9_5_3_4">
       <bpmn:incoming>Flow_child13_to_child14</bpmn:incoming>
       <bpmn:outgoing>Flow_child14_to_child15</bpmn:outgoing>
     </bpmn:callActivity>
-    <bpmn:callActivity id="CallActivity_L3_child15" name="9.5.1.2: Validate time data" calledElement="Process_9_5_1_2">
+    <bpmn:callActivity id="CallActivity_L3_child15" name="9.5.1.3: Approve timesheets" calledElement="Process_9_5_1_3">
       <bpmn:incoming>Flow_child14_to_child15</bpmn:incoming>
       <bpmn:outgoing>Flow_child15_to_child16</bpmn:outgoing>
     </bpmn:callActivity>
-    <bpmn:callActivity id="CallActivity_L3_child16" name="9.5.2.2: Calculate deductions" calledElement="Process_9_5_2_2">
+    <bpmn:callActivity id="CallActivity_L3_child16" name="9.5.2.4: Process special payments" calledElement="Process_9_5_2_4">
       <bpmn:incoming>Flow_child15_to_child16</bpmn:incoming>
       <bpmn:outgoing>Flow_child16_to_end</bpmn:outgoing>
     </bpmn:callActivity>

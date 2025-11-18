@@ -15,10 +15,10 @@ Child Agents:
   - 3.2.1.5: Review opportunities
   - 3.2.1.8: Report opportunities
   - 3.2.1.7: Document opportunities
+  - 3.2.1.4: Define brand identity
+  - 3.2.1.2: Create positioning statements
   - 3.2.1.1: Define value proposition
   - 3.2.1.3: Develop key messages
-  - 3.2.1.2: Create positioning statements
-  - 3.2.1.4: Define brand identity
 
 
 Generated: 2025-11-18
@@ -53,10 +53,10 @@ class CompositeAgent_3_2_1:
         "3.2.1.5",
         "3.2.1.8",
         "3.2.1.7",
-        "3.2.1.1",
-        "3.2.1.3",
+        "3.2.1.4",
         "3.2.1.2",
-        "3.2.1.4"
+        "3.2.1.1",
+        "3.2.1.3"
 ]
         self.logger = logging.getLogger(f"CompositeAgent_3_2_1")
 

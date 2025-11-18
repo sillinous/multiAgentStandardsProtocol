@@ -11,14 +11,14 @@ Orchestration Pattern: Sequential Workflow
 Standards: A2A, ANP, ACP, BPP, BDP, BRP, BMP, BCP, BIP
 
 Child Agents:
-  - 9.1.3.8: Report audits
-  - 9.1.3.7: Document audits
-  - 9.1.3.6: Optimize audits
   - 9.1.3.2: Allocate costs
+  - 9.1.3.3: Analyze variances
   - 9.1.3.1: Track costs
   - 9.1.3.5: Review audits
+  - 9.1.3.6: Optimize audits
+  - 9.1.3.7: Document audits
+  - 9.1.3.8: Report audits
   - 9.1.3.4: Control costs
-  - 9.1.3.3: Analyze variances
 
 
 Generated: 2025-11-18
@@ -49,14 +49,14 @@ class CompositeAgent_9_1_3:
         self.apqc_id = "9.1.3"
         self.level = 4
         self.child_agent_ids = [
-        "9.1.3.8",
-        "9.1.3.7",
-        "9.1.3.6",
         "9.1.3.2",
+        "9.1.3.3",
         "9.1.3.1",
         "9.1.3.5",
-        "9.1.3.4",
-        "9.1.3.3"
+        "9.1.3.6",
+        "9.1.3.7",
+        "9.1.3.8",
+        "9.1.3.4"
 ]
         self.logger = logging.getLogger(f"CompositeAgent_9_1_3")
 

@@ -12,13 +12,13 @@ Standards: A2A, ANP, ACP, BPP, BDP, BRP, BMP, BCP, BIP
 
 Child Agents:
   - 3.3.1.5: Review sales
-  - 3.3.1.7: Document sales
   - 3.3.1.8: Report sales
   - 3.3.1.6: Optimize sales
-  - 3.3.1.1: Define marketing objectives
-  - 3.3.1.4: Define success metrics
+  - 3.3.1.7: Document sales
   - 3.3.1.2: Set marketing budgets
+  - 3.3.1.1: Define marketing objectives
   - 3.3.1.3: Allocate resources
+  - 3.3.1.4: Define success metrics
 
 
 Generated: 2025-11-18
@@ -50,13 +50,13 @@ class CompositeAgent_3_3_1:
         self.level = 4
         self.child_agent_ids = [
         "3.3.1.5",
-        "3.3.1.7",
         "3.3.1.8",
         "3.3.1.6",
-        "3.3.1.1",
-        "3.3.1.4",
+        "3.3.1.7",
         "3.3.1.2",
-        "3.3.1.3"
+        "3.3.1.1",
+        "3.3.1.3",
+        "3.3.1.4"
 ]
         self.logger = logging.getLogger(f"CompositeAgent_3_3_1")
 

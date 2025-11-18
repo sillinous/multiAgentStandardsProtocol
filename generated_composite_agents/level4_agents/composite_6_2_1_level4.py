@@ -11,14 +11,14 @@ Orchestration Pattern: Sequential Workflow
 Standards: A2A, ANP, ACP, BPP, BDP, BRP, BMP, BCP, BIP
 
 Child Agents:
-  - 6.2.1.6: Optimize resolutions
-  - 6.2.1.3: Monitor call volumes
-  - 6.2.1.4: Manage service queues
-  - 6.2.1.1: Staff service centers
   - 6.2.1.2: Schedule agents
-  - 6.2.1.8: Report resolutions
-  - 6.2.1.7: Document resolutions
+  - 6.2.1.1: Staff service centers
   - 6.2.1.5: Review resolutions
+  - 6.2.1.8: Report resolutions
+  - 6.2.1.6: Optimize resolutions
+  - 6.2.1.4: Manage service queues
+  - 6.2.1.7: Document resolutions
+  - 6.2.1.3: Monitor call volumes
 
 
 Generated: 2025-11-18
@@ -49,14 +49,14 @@ class CompositeAgent_6_2_1:
         self.apqc_id = "6.2.1"
         self.level = 4
         self.child_agent_ids = [
-        "6.2.1.6",
-        "6.2.1.3",
-        "6.2.1.4",
-        "6.2.1.1",
         "6.2.1.2",
+        "6.2.1.1",
+        "6.2.1.5",
         "6.2.1.8",
+        "6.2.1.6",
+        "6.2.1.4",
         "6.2.1.7",
-        "6.2.1.5"
+        "6.2.1.3"
 ]
         self.logger = logging.getLogger(f"CompositeAgent_6_2_1")
 

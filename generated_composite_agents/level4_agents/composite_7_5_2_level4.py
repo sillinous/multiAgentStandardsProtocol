@@ -12,9 +12,9 @@ Standards: A2A, ANP, ACP, BPP, BDP, BRP, BMP, BCP, BIP
 
 Child Agents:
   - 7.5.2.2: Conduct exit process
+  - 7.5.2.3: Transfer knowledge
   - 7.5.2.4: Process retirement benefits
   - 7.5.2.1: Plan for retirements
-  - 7.5.2.3: Transfer knowledge
 
 
 Generated: 2025-11-18
@@ -46,9 +46,9 @@ class CompositeAgent_7_5_2:
         self.level = 4
         self.child_agent_ids = [
         "7.5.2.2",
+        "7.5.2.3",
         "7.5.2.4",
-        "7.5.2.1",
-        "7.5.2.3"
+        "7.5.2.1"
 ]
         self.logger = logging.getLogger(f"CompositeAgent_7_5_2")
 

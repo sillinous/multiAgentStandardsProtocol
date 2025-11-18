@@ -11,11 +11,11 @@ Orchestration Pattern: Sequential Workflow
 Standards: A2A, ANP, ACP, BPP, BDP, BRP, BMP, BCP, BIP
 
 Child Agents:
+  - 12.4.3.2: Measure partnership value
   - 12.4.3.5: Review relationships
   - 12.4.3.3: Resolve partnership issues
-  - 12.4.3.6: Optimize relationships
-  - 12.4.3.2: Measure partnership value
   - 12.4.3.1: Monitor partnership activities
+  - 12.4.3.6: Optimize relationships
   - 12.4.3.4: Optimize partnerships
 
 
@@ -47,11 +47,11 @@ class CompositeAgent_12_4_3:
         self.apqc_id = "12.4.3"
         self.level = 4
         self.child_agent_ids = [
+        "12.4.3.2",
         "12.4.3.5",
         "12.4.3.3",
-        "12.4.3.6",
-        "12.4.3.2",
         "12.4.3.1",
+        "12.4.3.6",
         "12.4.3.4"
 ]
         self.logger = logging.getLogger(f"CompositeAgent_12_4_3")

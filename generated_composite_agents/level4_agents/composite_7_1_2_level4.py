@@ -11,14 +11,14 @@ Orchestration Pattern: Sequential Workflow
 Standards: A2A, ANP, ACP, BPP, BDP, BRP, BMP, BCP, BIP
 
 Child Agents:
-  - 7.1.2.3: Communicate policies
+  - 7.1.2.8: Report compensation
   - 7.1.2.2: Ensure regulatory compliance
   - 7.1.2.1: Create HR policies
-  - 7.1.2.6: Optimize compensation
-  - 7.1.2.7: Document compensation
+  - 7.1.2.3: Communicate policies
   - 7.1.2.5: Review compensation
-  - 7.1.2.8: Report compensation
+  - 7.1.2.7: Document compensation
   - 7.1.2.4: Monitor policy adherence
+  - 7.1.2.6: Optimize compensation
 
 
 Generated: 2025-11-18
@@ -49,14 +49,14 @@ class CompositeAgent_7_1_2:
         self.apqc_id = "7.1.2"
         self.level = 4
         self.child_agent_ids = [
-        "7.1.2.3",
+        "7.1.2.8",
         "7.1.2.2",
         "7.1.2.1",
-        "7.1.2.6",
-        "7.1.2.7",
+        "7.1.2.3",
         "7.1.2.5",
-        "7.1.2.8",
-        "7.1.2.4"
+        "7.1.2.7",
+        "7.1.2.4",
+        "7.1.2.6"
 ]
         self.logger = logging.getLogger(f"CompositeAgent_7_1_2")
 

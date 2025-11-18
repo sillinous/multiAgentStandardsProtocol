@@ -11,10 +11,10 @@ Orchestration Pattern: Sequential Workflow
 Standards: A2A, ANP, ACP, BPP, BDP, BRP, BMP, BCP, BIP
 
 Child Agents:
-  - 7.4.3.2: Identify recognition opportunities
-  - 7.4.3.1: Design recognition programs
-  - 7.4.3.3: Deliver recognition
   - 7.4.3.4: Track recognition
+  - 7.4.3.2: Identify recognition opportunities
+  - 7.4.3.3: Deliver recognition
+  - 7.4.3.1: Design recognition programs
 
 
 Generated: 2025-11-18
@@ -45,10 +45,10 @@ class CompositeAgent_7_4_3:
         self.apqc_id = "7.4.3"
         self.level = 4
         self.child_agent_ids = [
+        "7.4.3.4",
         "7.4.3.2",
-        "7.4.3.1",
         "7.4.3.3",
-        "7.4.3.4"
+        "7.4.3.1"
 ]
         self.logger = logging.getLogger(f"CompositeAgent_7_4_3")
 

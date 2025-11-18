@@ -11,16 +11,16 @@ Orchestration Pattern: Sequential Workflow
 Standards: A2A, ANP, ACP, BPP, BDP, BRP, BMP, BCP, BIP
 
 Child Agents:
-  - 5.2.2.8: Report feedback
-  - 5.2.2.3: Allocate equipment/tools
-  - 5.2.1.2: Define service specifications
-  - 5.2.2.4: Confirm schedules
   - 5.2.2.6: Optimize feedback
-  - 5.2.1.4: Confirm resource availability
-  - 5.2.4.6: Optimize services
+  - 5.2.1.8: Report quality
+  - 5.2.4.2: Track service metrics
+  - 5.2.3.7: Document resources
   - 5.2.2.5: Review feedback
+  - 5.2.2.3: Allocate equipment/tools
+  - 5.2.3.1: Perform service delivery
+  - 5.2.4.3: Conduct quality reviews
+  - 5.2.1.5: Review quality
   - 5.2.4.7: Document services
-  - 5.2.4.4: Implement improvements
   ... and 22 more
 
 Generated: 2025-11-18
@@ -51,38 +51,38 @@ class CompositeAgent_5_2:
         self.apqc_id = "5.2"
         self.level = 3
         self.child_agent_ids = [
-        "5.2.2.8",
-        "5.2.2.3",
-        "5.2.1.2",
-        "5.2.2.4",
         "5.2.2.6",
-        "5.2.1.4",
-        "5.2.4.6",
-        "5.2.2.5",
-        "5.2.4.7",
-        "5.2.4.4",
-        "5.2.3.7",
-        "5.2.2.7",
-        "5.2.1.3",
-        "5.2.1.6",
-        "5.2.2.1",
-        "5.2.1.7",
-        "5.2.3.2",
         "5.2.1.8",
-        "5.2.2.2",
-        "5.2.4.1",
-        "5.2.4.8",
-        "5.2.3.8",
-        "5.2.1.5",
-        "5.2.3.5",
-        "5.2.3.3",
-        "5.2.3.4",
-        "5.2.3.6",
-        "5.2.3.1",
-        "5.2.4.5",
         "5.2.4.2",
+        "5.2.3.7",
+        "5.2.2.5",
+        "5.2.2.3",
+        "5.2.3.1",
+        "5.2.4.3",
+        "5.2.1.5",
+        "5.2.4.7",
+        "5.2.2.7",
+        "5.2.4.5",
+        "5.2.1.2",
+        "5.2.3.3",
+        "5.2.4.1",
+        "5.2.4.6",
+        "5.2.3.8",
+        "5.2.3.2",
+        "5.2.2.2",
+        "5.2.2.1",
         "5.2.1.1",
-        "5.2.4.3"
+        "5.2.1.4",
+        "5.2.3.6",
+        "5.2.2.8",
+        "5.2.1.7",
+        "5.2.1.3",
+        "5.2.4.8",
+        "5.2.3.5",
+        "5.2.4.4",
+        "5.2.1.6",
+        "5.2.3.4",
+        "5.2.2.4"
 ]
         self.logger = logging.getLogger(f"CompositeAgent_5_2")
 

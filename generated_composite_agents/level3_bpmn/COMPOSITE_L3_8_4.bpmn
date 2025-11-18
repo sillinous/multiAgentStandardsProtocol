@@ -7,42 +7,42 @@ Manage Information Technology
 APQC ID: 8.4
 
 Orchestrates 16 child agents:
-  1. 8.4.1.3: Build solutions
-  2. 8.4.2.2: Execute deployment
-  3. 8.4.1.8: Report technology
+  1. 8.4.2.6: Optimize systems
+  2. 8.4.1.1: Gather requirements
+  3. 8.4.2.4: Train users
   4. 8.4.1.2: Design architecture
-  5. 8.4.1.4: Test solutions
+  5. 8.4.2.3: Migrate data
   6. 8.4.1.7: Document technology
-  7. 8.4.2.7: Document systems
-  8. 8.4.2.1: Plan deployment
+  7. 8.4.2.1: Plan deployment
+  8. 8.4.2.5: Review systems
   9. 8.4.1.5: Review technology
-  10. 8.4.2.8: Report systems
-  11. 8.4.2.6: Optimize systems
-  12. 8.4.2.3: Migrate data
-  13. 8.4.1.1: Gather requirements
-  14. 8.4.1.6: Optimize technology
-  15. 8.4.2.4: Train users
-  16. 8.4.2.5: Review systems
+  10. 8.4.1.4: Test solutions
+  11. 8.4.1.6: Optimize technology
+  12. 8.4.1.3: Build solutions
+  13. 8.4.1.8: Report technology
+  14. 8.4.2.2: Execute deployment
+  15. 8.4.2.8: Report systems
+  16. 8.4.2.7: Document systems
 
 
 Orchestration Pattern: Sequential Workflow (Pipeline)
 Standards: BPMN 2.0, A2A Protocol
 
-Generated: 2025-11-18T01:19:11.514763
+Generated: 2025-11-18T01:38:33.588318
 Status: Production Ready
 </bpmn:documentation>
     <bpmn:startEvent id="Start_L3_8_4" name="Start Composite">
       <bpmn:outgoing>Flow_start_to_child1</bpmn:outgoing>
     </bpmn:startEvent>
-    <bpmn:callActivity id="CallActivity_L3_child1" name="8.4.1.3: Build solutions" calledElement="Process_8_4_1_3">
+    <bpmn:callActivity id="CallActivity_L3_child1" name="8.4.2.6: Optimize systems" calledElement="Process_8_4_2_6">
       <bpmn:incoming>Flow_start_to_child1</bpmn:incoming>
       <bpmn:outgoing>Flow_child1_to_child2</bpmn:outgoing>
     </bpmn:callActivity>
-    <bpmn:callActivity id="CallActivity_L3_child2" name="8.4.2.2: Execute deployment" calledElement="Process_8_4_2_2">
+    <bpmn:callActivity id="CallActivity_L3_child2" name="8.4.1.1: Gather requirements" calledElement="Process_8_4_1_1">
       <bpmn:incoming>Flow_child1_to_child2</bpmn:incoming>
       <bpmn:outgoing>Flow_child2_to_child3</bpmn:outgoing>
     </bpmn:callActivity>
-    <bpmn:callActivity id="CallActivity_L3_child3" name="8.4.1.8: Report technology" calledElement="Process_8_4_1_8">
+    <bpmn:callActivity id="CallActivity_L3_child3" name="8.4.2.4: Train users" calledElement="Process_8_4_2_4">
       <bpmn:incoming>Flow_child2_to_child3</bpmn:incoming>
       <bpmn:outgoing>Flow_child3_to_child4</bpmn:outgoing>
     </bpmn:callActivity>
@@ -50,7 +50,7 @@ Status: Production Ready
       <bpmn:incoming>Flow_child3_to_child4</bpmn:incoming>
       <bpmn:outgoing>Flow_child4_to_child5</bpmn:outgoing>
     </bpmn:callActivity>
-    <bpmn:callActivity id="CallActivity_L3_child5" name="8.4.1.4: Test solutions" calledElement="Process_8_4_1_4">
+    <bpmn:callActivity id="CallActivity_L3_child5" name="8.4.2.3: Migrate data" calledElement="Process_8_4_2_3">
       <bpmn:incoming>Flow_child4_to_child5</bpmn:incoming>
       <bpmn:outgoing>Flow_child5_to_child6</bpmn:outgoing>
     </bpmn:callActivity>
@@ -58,11 +58,11 @@ Status: Production Ready
       <bpmn:incoming>Flow_child5_to_child6</bpmn:incoming>
       <bpmn:outgoing>Flow_child6_to_child7</bpmn:outgoing>
     </bpmn:callActivity>
-    <bpmn:callActivity id="CallActivity_L3_child7" name="8.4.2.7: Document systems" calledElement="Process_8_4_2_7">
+    <bpmn:callActivity id="CallActivity_L3_child7" name="8.4.2.1: Plan deployment" calledElement="Process_8_4_2_1">
       <bpmn:incoming>Flow_child6_to_child7</bpmn:incoming>
       <bpmn:outgoing>Flow_child7_to_child8</bpmn:outgoing>
     </bpmn:callActivity>
-    <bpmn:callActivity id="CallActivity_L3_child8" name="8.4.2.1: Plan deployment" calledElement="Process_8_4_2_1">
+    <bpmn:callActivity id="CallActivity_L3_child8" name="8.4.2.5: Review systems" calledElement="Process_8_4_2_5">
       <bpmn:incoming>Flow_child7_to_child8</bpmn:incoming>
       <bpmn:outgoing>Flow_child8_to_child9</bpmn:outgoing>
     </bpmn:callActivity>
@@ -70,31 +70,31 @@ Status: Production Ready
       <bpmn:incoming>Flow_child8_to_child9</bpmn:incoming>
       <bpmn:outgoing>Flow_child9_to_child10</bpmn:outgoing>
     </bpmn:callActivity>
-    <bpmn:callActivity id="CallActivity_L3_child10" name="8.4.2.8: Report systems" calledElement="Process_8_4_2_8">
+    <bpmn:callActivity id="CallActivity_L3_child10" name="8.4.1.4: Test solutions" calledElement="Process_8_4_1_4">
       <bpmn:incoming>Flow_child9_to_child10</bpmn:incoming>
       <bpmn:outgoing>Flow_child10_to_child11</bpmn:outgoing>
     </bpmn:callActivity>
-    <bpmn:callActivity id="CallActivity_L3_child11" name="8.4.2.6: Optimize systems" calledElement="Process_8_4_2_6">
+    <bpmn:callActivity id="CallActivity_L3_child11" name="8.4.1.6: Optimize technology" calledElement="Process_8_4_1_6">
       <bpmn:incoming>Flow_child10_to_child11</bpmn:incoming>
       <bpmn:outgoing>Flow_child11_to_child12</bpmn:outgoing>
     </bpmn:callActivity>
-    <bpmn:callActivity id="CallActivity_L3_child12" name="8.4.2.3: Migrate data" calledElement="Process_8_4_2_3">
+    <bpmn:callActivity id="CallActivity_L3_child12" name="8.4.1.3: Build solutions" calledElement="Process_8_4_1_3">
       <bpmn:incoming>Flow_child11_to_child12</bpmn:incoming>
       <bpmn:outgoing>Flow_child12_to_child13</bpmn:outgoing>
     </bpmn:callActivity>
-    <bpmn:callActivity id="CallActivity_L3_child13" name="8.4.1.1: Gather requirements" calledElement="Process_8_4_1_1">
+    <bpmn:callActivity id="CallActivity_L3_child13" name="8.4.1.8: Report technology" calledElement="Process_8_4_1_8">
       <bpmn:incoming>Flow_child12_to_child13</bpmn:incoming>
       <bpmn:outgoing>Flow_child13_to_child14</bpmn:outgoing>
     </bpmn:callActivity>
-    <bpmn:callActivity id="CallActivity_L3_child14" name="8.4.1.6: Optimize technology" calledElement="Process_8_4_1_6">
+    <bpmn:callActivity id="CallActivity_L3_child14" name="8.4.2.2: Execute deployment" calledElement="Process_8_4_2_2">
       <bpmn:incoming>Flow_child13_to_child14</bpmn:incoming>
       <bpmn:outgoing>Flow_child14_to_child15</bpmn:outgoing>
     </bpmn:callActivity>
-    <bpmn:callActivity id="CallActivity_L3_child15" name="8.4.2.4: Train users" calledElement="Process_8_4_2_4">
+    <bpmn:callActivity id="CallActivity_L3_child15" name="8.4.2.8: Report systems" calledElement="Process_8_4_2_8">
       <bpmn:incoming>Flow_child14_to_child15</bpmn:incoming>
       <bpmn:outgoing>Flow_child15_to_child16</bpmn:outgoing>
     </bpmn:callActivity>
-    <bpmn:callActivity id="CallActivity_L3_child16" name="8.4.2.5: Review systems" calledElement="Process_8_4_2_5">
+    <bpmn:callActivity id="CallActivity_L3_child16" name="8.4.2.7: Document systems" calledElement="Process_8_4_2_7">
       <bpmn:incoming>Flow_child15_to_child16</bpmn:incoming>
       <bpmn:outgoing>Flow_child16_to_end</bpmn:outgoing>
     </bpmn:callActivity>

@@ -11,12 +11,12 @@ Orchestration Pattern: Sequential Workflow
 Standards: A2A, ANP, ACP, BPP, BDP, BRP, BMP, BCP, BIP
 
 Child Agents:
-  - 9.5.1.3: Approve timesheets
-  - 9.5.1.1: Capture time entries
-  - 9.5.1.6: Optimize budgets
-  - 9.5.1.4: Process adjustments
   - 9.5.1.5: Review budgets
   - 9.5.1.2: Validate time data
+  - 9.5.1.6: Optimize budgets
+  - 9.5.1.4: Process adjustments
+  - 9.5.1.1: Capture time entries
+  - 9.5.1.3: Approve timesheets
 
 
 Generated: 2025-11-18
@@ -47,12 +47,12 @@ class CompositeAgent_9_5_1:
         self.apqc_id = "9.5.1"
         self.level = 4
         self.child_agent_ids = [
-        "9.5.1.3",
-        "9.5.1.1",
+        "9.5.1.5",
+        "9.5.1.2",
         "9.5.1.6",
         "9.5.1.4",
-        "9.5.1.5",
-        "9.5.1.2"
+        "9.5.1.1",
+        "9.5.1.3"
 ]
         self.logger = logging.getLogger(f"CompositeAgent_9_5_1")
 

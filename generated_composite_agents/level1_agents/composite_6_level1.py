@@ -5,23 +5,23 @@ Level 1 Category: 6 - Composite APQC Agent
 APQC Level 1: 6
 Category: Manage Customer Service (6.0)
 
-This is a COMPOSITE AGENT that orchestrates 65 child agents.
+This is a COMPOSITE AGENT that orchestrates 67 child agents.
 
 Orchestration Pattern: Sequential Workflow
 Standards: A2A, ANP, ACP, BPP, BDP, BRP, BMP, BCP, BIP
 
 Child Agents:
-  - 6.1.1.5: Review tickets
-  - 6.4.2.6: Optimize inquiries
-  - 6.3.2.1: Research customer history
-  - 6.4.3.2: Validate resolution
-  - 6.2.1.6: Optimize resolutions
-  - 6.4.2.2: Diagnose root cause
-  - 6.2.1.3: Monitor call volumes
+  - 6.1.2.4: Create service policies
+  - 6.1.2.2: Establish service processes
+  - 6.4.1.4: Set resolution timeframe
+  - 6.2.1.2: Schedule agents
+  - 6.3.1.1: Log inquiry
+  - 6.2.1.1: Staff service centers
   - 6.1.2.1: Define service channels
-  - 6.3.2.7: Document support
-  - 6.3.1.8: Report satisfaction
-  ... and 55 more
+  - 6.1.1.1: Define service vision
+  - 6.1.1.9: Plan tickets
+  - 6.2.1.5: Review resolutions
+  ... and 57 more
 
 Generated: 2025-11-18
 Version: 3.0.0
@@ -44,78 +44,80 @@ class CompositeAgent_6:
     """
     Composite Agent for APQC Level 1: 6
 
-    Orchestrates 65 child agents in a coordinated workflow.
+    Orchestrates 67 child agents in a coordinated workflow.
     """
 
     def __init__(self):
         self.apqc_id = "6"
         self.level = 1
         self.child_agent_ids = [
-        "6.1.1.5",
-        "6.4.2.6",
-        "6.3.2.1",
-        "6.4.3.2",
-        "6.2.1.6",
-        "6.4.2.2",
-        "6.2.1.3",
-        "6.1.2.1",
-        "6.3.2.7",
-        "6.3.1.8",
-        "6.2.1.4",
-        "6.4.3.3",
-        "6.3.2.2",
         "6.1.2.4",
-        "6.3.1.3",
-        "6.2.2.4",
-        "6.4.2.1",
-        "6.1.1.1",
-        "6.1.1.7",
-        "6.2.1.1",
-        "6.3.1.1",
-        "6.1.1.4",
-        "6.4.1.2",
-        "6.4.1.5",
-        "6.4.1.4",
-        "6.3.2.6",
-        "6.3.1.5",
-        "6.4.1.3",
-        "6.2.1.2",
-        "6.1.1.6",
-        "6.2.2.7",
-        "6.3.2.5",
-        "6.3.1.6",
-        "6.2.2.8",
-        "6.4.3.4",
-        "6.3.1.2",
-        "6.2.2.5",
-        "6.1.2.5",
-        "6.4.1.7",
-        "6.2.2.1",
-        "6.1.2.3",
-        "6.2.2.2",
         "6.1.2.2",
-        "6.3.1.7",
-        "6.3.2.8",
-        "6.2.1.8",
-        "6.3.2.3",
-        "6.1.2.6",
-        "6.4.3.1",
-        "6.4.1.6",
-        "6.4.2.5",
-        "6.1.2.7",
-        "6.2.2.3",
-        "6.1.1.2",
-        "6.3.2.4",
-        "6.2.2.6",
-        "6.3.1.4",
-        "6.1.1.3",
-        "6.4.2.4",
-        "6.1.1.8",
-        "6.2.1.7",
-        "6.4.2.3",
-        "6.4.1.1",
+        "6.4.1.4",
+        "6.2.1.2",
+        "6.3.1.1",
+        "6.2.1.1",
+        "6.1.2.1",
+        "6.1.1.1",
+        "6.1.1.9",
         "6.2.1.5",
-        "6.1.2.8"
+        "6.1.1.10",
+        "6.1.1.4",
+        "6.2.1.8",
+        "6.3.2.8",
+        "6.2.2.8",
+        "6.1.2.5",
+        "6.2.1.6",
+        "6.3.2.6",
+        "6.3.1.3",
+        "6.4.2.6",
+        "6.1.2.6",
+        "6.3.1.8",
+        "6.1.1.5",
+        "6.4.3.3",
+        "6.3.1.7",
+        "6.2.2.4",
+        "6.2.1.4",
+        "6.4.1.6",
+        "6.1.1.6",
+        "6.4.1.5",
+        "6.1.1.3",
+        "6.2.2.5",
+        "6.3.1.4",
+        "6.1.2.7",
+        "6.4.1.7",
+        "6.4.2.2",
+        "6.2.2.2",
+        "6.4.2.4",
+        "6.4.3.1",
+        "6.3.2.1",
+        "6.3.2.2",
+        "6.3.2.4",
+        "6.1.1.7",
+        "6.2.1.7",
+        "6.4.1.2",
+        "6.4.2.1",
+        "6.3.2.3",
+        "6.3.1.2",
+        "6.3.1.6",
+        "6.4.1.3",
+        "6.2.2.1",
+        "6.4.2.3",
+        "6.4.3.2",
+        "6.1.2.8",
+        "6.4.3.4",
+        "6.1.1.2",
+        "6.2.2.6",
+        "6.4.2.5",
+        "6.2.1.3",
+        "6.1.2.3",
+        "6.3.1.5",
+        "6.3.2.7",
+        "6.1.1.8",
+        "6.3.2.5",
+        "6.2.2.7",
+        "6.4.1.1",
+        "6.2.2.3"
 ]
         self.logger = logging.getLogger(f"CompositeAgent_6")
 

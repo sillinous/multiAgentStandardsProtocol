@@ -11,14 +11,14 @@ Orchestration Pattern: Sequential Workflow
 Standards: A2A, ANP, ACP, BPP, BDP, BRP, BMP, BCP, BIP
 
 Child Agents:
-  - 10.1.3.1: Procure construction services
   - 10.1.3.4: Complete construction
+  - 10.1.3.2: Execute construction
+  - 10.1.3.6: Optimize projects
+  - 10.1.3.1: Procure construction services
+  - 10.1.3.3: Monitor progress
+  - 10.1.3.7: Document projects
   - 10.1.3.5: Review projects
   - 10.1.3.8: Report projects
-  - 10.1.3.6: Optimize projects
-  - 10.1.3.7: Document projects
-  - 10.1.3.2: Execute construction
-  - 10.1.3.3: Monitor progress
 
 
 Generated: 2025-11-18
@@ -49,14 +49,14 @@ class CompositeAgent_10_1_3:
         self.apqc_id = "10.1.3"
         self.level = 4
         self.child_agent_ids = [
-        "10.1.3.1",
         "10.1.3.4",
-        "10.1.3.5",
-        "10.1.3.8",
-        "10.1.3.6",
-        "10.1.3.7",
         "10.1.3.2",
-        "10.1.3.3"
+        "10.1.3.6",
+        "10.1.3.1",
+        "10.1.3.3",
+        "10.1.3.7",
+        "10.1.3.5",
+        "10.1.3.8"
 ]
         self.logger = logging.getLogger(f"CompositeAgent_10_1_3")
 

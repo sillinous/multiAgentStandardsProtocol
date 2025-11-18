@@ -11,14 +11,14 @@ Orchestration Pattern: Sequential Workflow
 Standards: A2A, ANP, ACP, BPP, BDP, BRP, BMP, BCP, BIP
 
 Child Agents:
-  - 10.2.1.3: Plan maintenance resources
-  - 10.2.1.1: Define maintenance objectives
   - 10.2.1.2: Establish maintenance policies
-  - 10.2.1.8: Report maintenance
   - 10.2.1.4: Set maintenance budgets
-  - 10.2.1.6: Optimize maintenance
+  - 10.2.1.3: Plan maintenance resources
+  - 10.2.1.8: Report maintenance
   - 10.2.1.5: Review maintenance
   - 10.2.1.7: Document maintenance
+  - 10.2.1.6: Optimize maintenance
+  - 10.2.1.1: Define maintenance objectives
 
 
 Generated: 2025-11-18
@@ -49,14 +49,14 @@ class CompositeAgent_10_2_1:
         self.apqc_id = "10.2.1"
         self.level = 4
         self.child_agent_ids = [
-        "10.2.1.3",
-        "10.2.1.1",
         "10.2.1.2",
-        "10.2.1.8",
         "10.2.1.4",
-        "10.2.1.6",
+        "10.2.1.3",
+        "10.2.1.8",
         "10.2.1.5",
-        "10.2.1.7"
+        "10.2.1.7",
+        "10.2.1.6",
+        "10.2.1.1"
 ]
         self.logger = logging.getLogger(f"CompositeAgent_10_2_1")
 

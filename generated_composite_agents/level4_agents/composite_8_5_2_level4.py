@@ -11,10 +11,10 @@ Orchestration Pattern: Sequential Workflow
 Standards: A2A, ANP, ACP, BPP, BDP, BRP, BMP, BCP, BIP
 
 Child Agents:
-  - 8.5.2.6: Optimize infrastructure
-  - 8.5.2.5: Review infrastructure
   - 8.5.2.1: Implement security controls
+  - 8.5.2.5: Review infrastructure
   - 8.5.2.2: Monitor security threats
+  - 8.5.2.6: Optimize infrastructure
   - 8.5.2.3: Respond to incidents
   - 8.5.2.4: Ensure compliance
 
@@ -47,10 +47,10 @@ class CompositeAgent_8_5_2:
         self.apqc_id = "8.5.2"
         self.level = 4
         self.child_agent_ids = [
-        "8.5.2.6",
-        "8.5.2.5",
         "8.5.2.1",
+        "8.5.2.5",
         "8.5.2.2",
+        "8.5.2.6",
         "8.5.2.3",
         "8.5.2.4"
 ]

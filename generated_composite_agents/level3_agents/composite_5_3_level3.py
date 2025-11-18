@@ -11,13 +11,13 @@ Orchestration Pattern: Sequential Workflow
 Standards: A2A, ANP, ACP, BPP, BDP, BRP, BMP, BCP, BIP
 
 Child Agents:
-  - 5.3.1.1: Plan feedback
-  - 5.3.1.3: Monitor feedback
-  - 5.3.1.2: Execute feedback
-  - 5.3.2.2: Execute resources
   - 5.3.1.4: Analyze feedback
-  - 5.3.2.1: Plan resources
   - 5.3.1.5: Review feedback
+  - 5.3.1.1: Plan feedback
+  - 5.3.1.2: Execute feedback
+  - 5.3.1.3: Monitor feedback
+  - 5.3.2.1: Plan resources
+  - 5.3.2.2: Execute resources
 
 
 Generated: 2025-11-18
@@ -48,13 +48,13 @@ class CompositeAgent_5_3:
         self.apqc_id = "5.3"
         self.level = 3
         self.child_agent_ids = [
-        "5.3.1.1",
-        "5.3.1.3",
-        "5.3.1.2",
-        "5.3.2.2",
         "5.3.1.4",
+        "5.3.1.5",
+        "5.3.1.1",
+        "5.3.1.2",
+        "5.3.1.3",
         "5.3.2.1",
-        "5.3.1.5"
+        "5.3.2.2"
 ]
         self.logger = logging.getLogger(f"CompositeAgent_5_3")
 

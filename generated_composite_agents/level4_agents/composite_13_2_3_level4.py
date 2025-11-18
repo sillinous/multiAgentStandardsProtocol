@@ -11,14 +11,14 @@ Orchestration Pattern: Sequential Workflow
 Standards: A2A, ANP, ACP, BPP, BDP, BRP, BMP, BCP, BIP
 
 Child Agents:
-  - 13.2.3.5: Review governance
+  - 13.2.3.7: Document governance
   - 13.2.3.1: Track adoption metrics
-  - 13.2.3.6: Optimize governance
-  - 13.2.3.8: Report governance
   - 13.2.3.3: Reinforce changes
   - 13.2.3.2: Address resistance
+  - 13.2.3.5: Review governance
+  - 13.2.3.6: Optimize governance
   - 13.2.3.4: Sustain improvements
-  - 13.2.3.7: Document governance
+  - 13.2.3.8: Report governance
 
 
 Generated: 2025-11-18
@@ -49,14 +49,14 @@ class CompositeAgent_13_2_3:
         self.apqc_id = "13.2.3"
         self.level = 4
         self.child_agent_ids = [
-        "13.2.3.5",
+        "13.2.3.7",
         "13.2.3.1",
-        "13.2.3.6",
-        "13.2.3.8",
         "13.2.3.3",
         "13.2.3.2",
+        "13.2.3.5",
+        "13.2.3.6",
         "13.2.3.4",
-        "13.2.3.7"
+        "13.2.3.8"
 ]
         self.logger = logging.getLogger(f"CompositeAgent_13_2_3")
 

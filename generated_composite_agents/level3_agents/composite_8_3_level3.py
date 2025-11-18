@@ -11,16 +11,16 @@ Orchestration Pattern: Sequential Workflow
 Standards: A2A, ANP, ACP, BPP, BDP, BRP, BMP, BCP, BIP
 
 Child Agents:
-  - 8.3.2.1: Maintain system availability
   - 8.3.1.5: Review data
-  - 8.3.1.3: Classify data
+  - 8.3.1.2: Define data standards
   - 8.3.1.7: Document data
-  - 8.3.1.6: Optimize data
-  - 8.3.1.4: Manage data quality
-  - 8.3.2.2: Monitor system performance
-  - 8.3.2.8: Report technology
-  - 8.3.1.8: Report data
   - 8.3.2.5: Review technology
+  - 8.3.1.6: Optimize data
+  - 8.3.2.6: Optimize technology
+  - 8.3.2.3: Manage system capacity
+  - 8.3.1.4: Manage data quality
+  - 8.3.2.8: Report technology
+  - 8.3.2.2: Monitor system performance
   ... and 6 more
 
 Generated: 2025-11-18
@@ -51,22 +51,22 @@ class CompositeAgent_8_3:
         self.apqc_id = "8.3"
         self.level = 3
         self.child_agent_ids = [
-        "8.3.2.1",
         "8.3.1.5",
-        "8.3.1.3",
-        "8.3.1.7",
-        "8.3.1.6",
-        "8.3.1.4",
-        "8.3.2.2",
-        "8.3.2.8",
-        "8.3.1.8",
-        "8.3.2.5",
-        "8.3.2.3",
-        "8.3.2.6",
-        "8.3.2.7",
         "8.3.1.2",
+        "8.3.1.7",
+        "8.3.2.5",
+        "8.3.1.6",
+        "8.3.2.6",
+        "8.3.2.3",
+        "8.3.1.4",
+        "8.3.2.8",
+        "8.3.2.2",
+        "8.3.2.7",
+        "8.3.1.3",
+        "8.3.1.8",
         "8.3.2.4",
-        "8.3.1.1"
+        "8.3.1.1",
+        "8.3.2.1"
 ]
         self.logger = logging.getLogger(f"CompositeAgent_8_3")
 

@@ -11,16 +11,16 @@ Orchestration Pattern: Sequential Workflow
 Standards: A2A, ANP, ACP, BPP, BDP, BRP, BMP, BCP, BIP
 
 Child Agents:
-  - 7.3.1.1: Assess development needs
-  - 7.3.3.1: Conduct career discussions
-  - 7.3.3.4: Support career transitions
-  - 7.3.2.4: Certify competencies
-  - 7.3.3.5: Review workforce
-  - 7.3.3.6: Optimize workforce
-  - 7.3.1.7: Document benefits
-  - 7.3.1.8: Report benefits
   - 7.3.3.3: Create career plans
+  - 7.3.3.2: Identify career paths
   - 7.3.2.2: Assess competencies
+  - 7.3.1.2: Create development plans
+  - 7.3.2.4: Certify competencies
+  - 7.3.1.7: Document benefits
+  - 7.3.2.6: Optimize training
+  - 7.3.1.5: Review benefits
+  - 7.3.2.5: Review training
+  - 7.3.3.5: Review workforce
   ... and 11 more
 
 Generated: 2025-11-18
@@ -51,27 +51,27 @@ class CompositeAgent_7_3:
         self.apqc_id = "7.3"
         self.level = 3
         self.child_agent_ids = [
-        "7.3.1.1",
-        "7.3.3.1",
-        "7.3.3.4",
-        "7.3.2.4",
-        "7.3.3.5",
-        "7.3.3.6",
-        "7.3.1.7",
-        "7.3.1.8",
         "7.3.3.3",
-        "7.3.2.2",
         "7.3.3.2",
-        "7.3.1.3",
-        "7.3.1.5",
-        "7.3.1.6",
+        "7.3.2.2",
         "7.3.1.2",
-        "7.3.2.3",
-        "7.3.2.1",
-        "7.3.2.7",
-        "7.3.1.4",
+        "7.3.2.4",
+        "7.3.1.7",
         "7.3.2.6",
-        "7.3.2.5"
+        "7.3.1.5",
+        "7.3.2.5",
+        "7.3.3.5",
+        "7.3.1.3",
+        "7.3.3.4",
+        "7.3.3.6",
+        "7.3.2.3",
+        "7.3.1.8",
+        "7.3.3.1",
+        "7.3.1.4",
+        "7.3.2.7",
+        "7.3.1.6",
+        "7.3.2.1",
+        "7.3.1.1"
 ]
         self.logger = logging.getLogger(f"CompositeAgent_7_3")
 

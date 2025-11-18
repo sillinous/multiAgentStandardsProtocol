@@ -12,13 +12,13 @@ Standards: A2A, ANP, ACP, BPP, BDP, BRP, BMP, BCP, BIP
 
 Child Agents:
   - 4.2.3.8: Report warehouse
-  - 4.2.3.7: Document warehouse
   - 4.2.3.6: Optimize warehouse
   - 4.2.3.5: Review warehouse
-  - 4.2.3.4: Expedite orders
+  - 4.2.3.7: Document warehouse
   - 4.2.3.3: Monitor order status
   - 4.2.3.2: Create purchase orders
   - 4.2.3.1: Generate purchase requisitions
+  - 4.2.3.4: Expedite orders
 
 
 Generated: 2025-11-18
@@ -50,13 +50,13 @@ class CompositeAgent_4_2_3:
         self.level = 4
         self.child_agent_ids = [
         "4.2.3.8",
-        "4.2.3.7",
         "4.2.3.6",
         "4.2.3.5",
-        "4.2.3.4",
+        "4.2.3.7",
         "4.2.3.3",
         "4.2.3.2",
-        "4.2.3.1"
+        "4.2.3.1",
+        "4.2.3.4"
 ]
         self.logger = logging.getLogger(f"CompositeAgent_4_2_3")
 

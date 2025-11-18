@@ -5,23 +5,23 @@ Level 3 Process: 6.1 - Composite APQC Agent
 APQC Level 3: 6.1
 Category: Manage Customer Service (6.0)
 
-This is a COMPOSITE AGENT that orchestrates 16 child agents.
+This is a COMPOSITE AGENT that orchestrates 18 child agents.
 
 Orchestration Pattern: Sequential Workflow
 Standards: A2A, ANP, ACP, BPP, BDP, BRP, BMP, BCP, BIP
 
 Child Agents:
-  - 6.1.1.5: Review tickets
-  - 6.1.2.1: Define service channels
   - 6.1.2.4: Create service policies
-  - 6.1.1.1: Define service vision
-  - 6.1.1.7: Document tickets
-  - 6.1.1.4: Set service objectives
-  - 6.1.1.6: Optimize tickets
-  - 6.1.2.5: Review resolutions
-  - 6.1.2.3: Design customer journey
   - 6.1.2.2: Establish service processes
-  ... and 6 more
+  - 6.1.2.1: Define service channels
+  - 6.1.1.1: Define service vision
+  - 6.1.1.9: Plan tickets
+  - 6.1.1.10: Execute tickets
+  - 6.1.1.4: Set service objectives
+  - 6.1.2.5: Review resolutions
+  - 6.1.2.6: Optimize resolutions
+  - 6.1.1.5: Review tickets
+  ... and 8 more
 
 Generated: 2025-11-18
 Version: 3.0.0
@@ -44,29 +44,31 @@ class CompositeAgent_6_1:
     """
     Composite Agent for APQC Level 3: 6.1
 
-    Orchestrates 16 child agents in a coordinated workflow.
+    Orchestrates 18 child agents in a coordinated workflow.
     """
 
     def __init__(self):
         self.apqc_id = "6.1"
         self.level = 3
         self.child_agent_ids = [
-        "6.1.1.5",
-        "6.1.2.1",
         "6.1.2.4",
-        "6.1.1.1",
-        "6.1.1.7",
-        "6.1.1.4",
-        "6.1.1.6",
-        "6.1.2.5",
-        "6.1.2.3",
         "6.1.2.2",
+        "6.1.2.1",
+        "6.1.1.1",
+        "6.1.1.9",
+        "6.1.1.10",
+        "6.1.1.4",
+        "6.1.2.5",
         "6.1.2.6",
-        "6.1.2.7",
-        "6.1.1.2",
+        "6.1.1.5",
+        "6.1.1.6",
         "6.1.1.3",
-        "6.1.1.8",
-        "6.1.2.8"
+        "6.1.2.7",
+        "6.1.1.7",
+        "6.1.2.8",
+        "6.1.1.2",
+        "6.1.2.3",
+        "6.1.1.8"
 ]
         self.logger = logging.getLogger(f"CompositeAgent_6_1")
 

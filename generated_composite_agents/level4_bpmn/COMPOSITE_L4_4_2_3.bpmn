@@ -8,19 +8,19 @@ APQC ID: 4.2.3
 
 Orchestrates 8 child agents:
   1. 4.2.3.8: Report warehouse
-  2. 4.2.3.7: Document warehouse
-  3. 4.2.3.6: Optimize warehouse
-  4. 4.2.3.5: Review warehouse
-  5. 4.2.3.4: Expedite orders
-  6. 4.2.3.3: Monitor order status
-  7. 4.2.3.2: Create purchase orders
-  8. 4.2.3.1: Generate purchase requisitions
+  2. 4.2.3.6: Optimize warehouse
+  3. 4.2.3.5: Review warehouse
+  4. 4.2.3.7: Document warehouse
+  5. 4.2.3.3: Monitor order status
+  6. 4.2.3.2: Create purchase orders
+  7. 4.2.3.1: Generate purchase requisitions
+  8. 4.2.3.4: Expedite orders
 
 
 Orchestration Pattern: Sequential Workflow (Pipeline)
 Standards: BPMN 2.0, A2A Protocol
 
-Generated: 2025-11-18T01:19:11.371867
+Generated: 2025-11-18T01:38:33.429769
 Status: Production Ready
 </bpmn:documentation>
     <bpmn:startEvent id="Start_L4_4_2_3" name="Start Composite">
@@ -30,31 +30,31 @@ Status: Production Ready
       <bpmn:incoming>Flow_start_to_child1</bpmn:incoming>
       <bpmn:outgoing>Flow_child1_to_child2</bpmn:outgoing>
     </bpmn:callActivity>
-    <bpmn:callActivity id="CallActivity_L4_child2" name="4.2.3.7: Document warehouse" calledElement="Process_4_2_3_7">
+    <bpmn:callActivity id="CallActivity_L4_child2" name="4.2.3.6: Optimize warehouse" calledElement="Process_4_2_3_6">
       <bpmn:incoming>Flow_child1_to_child2</bpmn:incoming>
       <bpmn:outgoing>Flow_child2_to_child3</bpmn:outgoing>
     </bpmn:callActivity>
-    <bpmn:callActivity id="CallActivity_L4_child3" name="4.2.3.6: Optimize warehouse" calledElement="Process_4_2_3_6">
+    <bpmn:callActivity id="CallActivity_L4_child3" name="4.2.3.5: Review warehouse" calledElement="Process_4_2_3_5">
       <bpmn:incoming>Flow_child2_to_child3</bpmn:incoming>
       <bpmn:outgoing>Flow_child3_to_child4</bpmn:outgoing>
     </bpmn:callActivity>
-    <bpmn:callActivity id="CallActivity_L4_child4" name="4.2.3.5: Review warehouse" calledElement="Process_4_2_3_5">
+    <bpmn:callActivity id="CallActivity_L4_child4" name="4.2.3.7: Document warehouse" calledElement="Process_4_2_3_7">
       <bpmn:incoming>Flow_child3_to_child4</bpmn:incoming>
       <bpmn:outgoing>Flow_child4_to_child5</bpmn:outgoing>
     </bpmn:callActivity>
-    <bpmn:callActivity id="CallActivity_L4_child5" name="4.2.3.4: Expedite orders" calledElement="Process_4_2_3_4">
+    <bpmn:callActivity id="CallActivity_L4_child5" name="4.2.3.3: Monitor order status" calledElement="Process_4_2_3_3">
       <bpmn:incoming>Flow_child4_to_child5</bpmn:incoming>
       <bpmn:outgoing>Flow_child5_to_child6</bpmn:outgoing>
     </bpmn:callActivity>
-    <bpmn:callActivity id="CallActivity_L4_child6" name="4.2.3.3: Monitor order status" calledElement="Process_4_2_3_3">
+    <bpmn:callActivity id="CallActivity_L4_child6" name="4.2.3.2: Create purchase orders" calledElement="Process_4_2_3_2">
       <bpmn:incoming>Flow_child5_to_child6</bpmn:incoming>
       <bpmn:outgoing>Flow_child6_to_child7</bpmn:outgoing>
     </bpmn:callActivity>
-    <bpmn:callActivity id="CallActivity_L4_child7" name="4.2.3.2: Create purchase orders" calledElement="Process_4_2_3_2">
+    <bpmn:callActivity id="CallActivity_L4_child7" name="4.2.3.1: Generate purchase requisitions" calledElement="Process_4_2_3_1">
       <bpmn:incoming>Flow_child6_to_child7</bpmn:incoming>
       <bpmn:outgoing>Flow_child7_to_child8</bpmn:outgoing>
     </bpmn:callActivity>
-    <bpmn:callActivity id="CallActivity_L4_child8" name="4.2.3.1: Generate purchase requisitions" calledElement="Process_4_2_3_1">
+    <bpmn:callActivity id="CallActivity_L4_child8" name="4.2.3.4: Expedite orders" calledElement="Process_4_2_3_4">
       <bpmn:incoming>Flow_child7_to_child8</bpmn:incoming>
       <bpmn:outgoing>Flow_child8_to_end</bpmn:outgoing>
     </bpmn:callActivity>

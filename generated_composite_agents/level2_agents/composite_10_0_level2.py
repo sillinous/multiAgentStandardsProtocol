@@ -5,23 +5,23 @@ Level 2 ProcessGroup: 10.0 - Composite APQC Agent
 APQC Level 2: 10.0
 Category: Acquire, Construct, and Manage Assets (10.0)
 
-This is a COMPOSITE AGENT that orchestrates 75 child agents.
+This is a COMPOSITE AGENT that orchestrates 76 child agents.
 
 Orchestration Pattern: Sequential Workflow
 Standards: A2A, ANP, ACP, BPP, BDP, BRP, BMP, BCP, BIP
 
 Child Agents:
-  - 10.3.2.1: Assess asset value
-  - 10.2.1.3: Plan maintenance resources
-  - 10.4.1.3: Ensure regulatory compliance
-  - 10.3.2.5: Review lifecycle
-  - 10.1.2.1: Define requirements
-  - 10.1.3.1: Procure construction services
-  - 10.1.2.5: Review maintenance
-  - 10.2.3.6: Optimize lifecycle
-  - 10.2.3.4: Restore operations
-  - 10.1.1.3: Approve capital funding
-  ... and 65 more
+  - 10.1.2.4: Obtain permits
+  - 10.1.3.4: Complete construction
+  - 10.2.3.1: Report breakdowns
+  - 10.1.2.7: Document maintenance
+  - 10.4.2.1: Conduct risk assessments
+  - 10.1.3.2: Execute construction
+  - 10.1.3.6: Optimize projects
+  - 10.4.1.5: Review lifecycle
+  - 10.1.2.6: Optimize maintenance
+  - 10.3.2.4: Execute improvements
+  ... and 66 more
 
 Generated: 2025-11-18
 Version: 3.0.0
@@ -44,88 +44,89 @@ class CompositeAgent_10_0:
     """
     Composite Agent for APQC Level 2: 10.0
 
-    Orchestrates 75 child agents in a coordinated workflow.
+    Orchestrates 76 child agents in a coordinated workflow.
     """
 
     def __init__(self):
         self.apqc_id = "10.0"
         self.level = 2
         self.child_agent_ids = [
-        "10.3.2.1",
-        "10.2.1.3",
-        "10.4.1.3",
-        "10.3.2.5",
-        "10.1.2.1",
-        "10.1.3.1",
-        "10.1.2.5",
-        "10.2.3.6",
-        "10.2.3.4",
-        "10.1.1.3",
-        "10.3.1.1",
-        "10.1.2.6",
-        "10.4.3.4",
-        "10.2.1.1",
-        "10.2.2.4",
-        "10.2.2.5",
-        "10.3.2.2",
-        "10.2.2.7",
-        "10.4.3.1",
-        "10.3.1.4",
-        "10.3.2.4",
-        "10.1.1.8",
-        "10.3.1.5",
-        "10.4.3.2",
-        "10.4.2.1",
-        "10.2.3.8",
-        "10.3.1.7",
+        "10.1.2.4",
         "10.1.3.4",
-        "10.4.1.5",
-        "10.3.1.3",
-        "10.2.3.3",
-        "10.1.1.4",
-        "10.1.3.5",
-        "10.4.3.3",
-        "10.1.3.8",
-        "10.3.1.6",
         "10.2.3.1",
-        "10.4.2.2",
-        "10.2.2.1",
+        "10.1.2.7",
+        "10.4.2.1",
+        "10.1.3.2",
+        "10.1.3.6",
+        "10.4.1.5",
+        "10.1.2.6",
+        "10.3.2.4",
+        "10.2.3.5",
+        "10.2.2.7",
+        "10.1.3.1",
+        "10.1.2.1",
+        "10.2.3.7",
         "10.2.2.6",
-        "10.1.1.7",
-        "10.2.3.2",
-        "10.3.2.6",
+        "10.1.2.3",
+        "10.1.1.4",
+        "10.3.2.1",
         "10.2.2.8",
         "10.2.1.2",
-        "10.4.2.3",
-        "10.2.1.8",
-        "10.2.3.5",
-        "10.1.3.6",
-        "10.1.3.7",
-        "10.3.2.3",
-        "10.1.2.7",
-        "10.4.1.2",
-        "10.2.1.4",
-        "10.2.1.6",
+        "10.4.3.3",
+        "10.2.3.2",
+        "10.3.2.5",
+        "10.1.3.3",
+        "10.3.1.1",
+        "10.3.2.6",
+        "10.2.3.6",
+        "10.1.1.8",
         "10.2.2.2",
-        "10.4.1.1",
-        "10.1.2.8",
-        "10.3.1.2",
-        "10.1.1.6",
-        "10.4.1.6",
-        "10.1.2.4",
-        "10.1.2.3",
-        "10.1.2.2",
-        "10.2.2.3",
-        "10.1.1.1",
+        "10.4.3.4",
         "10.4.2.4",
-        "10.2.1.5",
-        "10.2.3.7",
-        "10.1.3.2",
-        "10.1.1.5",
-        "10.4.1.4",
+        "10.1.2.8",
+        "10.3.1.7",
+        "10.1.1.9",
+        "10.3.1.4",
+        "10.4.1.3",
+        "10.3.2.3",
+        "10.1.3.7",
+        "10.1.1.1",
+        "10.4.3.1",
+        "10.2.3.3",
         "10.1.1.2",
+        "10.1.2.2",
+        "10.2.3.4",
+        "10.2.1.4",
+        "10.3.1.2",
+        "10.4.1.2",
+        "10.2.1.3",
+        "10.2.2.1",
+        "10.4.1.1",
+        "10.2.1.8",
+        "10.1.2.5",
+        "10.2.1.5",
+        "10.3.1.3",
+        "10.3.1.5",
+        "10.3.1.6",
+        "10.4.2.3",
         "10.2.1.7",
-        "10.1.3.3"
+        "10.1.1.3",
+        "10.1.3.5",
+        "10.4.1.6",
+        "10.4.1.4",
+        "10.2.1.6",
+        "10.1.1.5",
+        "10.1.1.6",
+        "10.3.2.2",
+        "10.2.2.4",
+        "10.2.2.3",
+        "10.4.3.2",
+        "10.1.3.8",
+        "10.1.1.7",
+        "10.2.2.5",
+        "10.4.2.2",
+        "10.2.1.1",
+        "10.2.3.8"
 ]
         self.logger = logging.getLogger(f"CompositeAgent_10_0")
 

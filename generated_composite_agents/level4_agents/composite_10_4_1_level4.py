@@ -11,8 +11,8 @@ Orchestration Pattern: Sequential Workflow
 Standards: A2A, ANP, ACP, BPP, BDP, BRP, BMP, BCP, BIP
 
 Child Agents:
-  - 10.4.1.3: Ensure regulatory compliance
   - 10.4.1.5: Review lifecycle
+  - 10.4.1.3: Ensure regulatory compliance
   - 10.4.1.2: Establish EHS policies
   - 10.4.1.1: Define EHS objectives
   - 10.4.1.6: Optimize lifecycle
@@ -47,8 +47,8 @@ class CompositeAgent_10_4_1:
         self.apqc_id = "10.4.1"
         self.level = 4
         self.child_agent_ids = [
-        "10.4.1.3",
         "10.4.1.5",
+        "10.4.1.3",
         "10.4.1.2",
         "10.4.1.1",
         "10.4.1.6",

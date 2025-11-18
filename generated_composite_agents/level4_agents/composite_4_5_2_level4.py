@@ -11,10 +11,10 @@ Orchestration Pattern: Sequential Workflow
 Standards: A2A, ANP, ACP, BPP, BDP, BRP, BMP, BCP, BIP
 
 Child Agents:
-  - 4.5.2.4: Confirm orders
-  - 4.5.2.2: Validate orders
   - 4.5.2.1: Receive orders
+  - 4.5.2.4: Confirm orders
   - 4.5.2.3: Allocate inventory
+  - 4.5.2.2: Validate orders
 
 
 Generated: 2025-11-18
@@ -45,10 +45,10 @@ class CompositeAgent_4_5_2:
         self.apqc_id = "4.5.2"
         self.level = 4
         self.child_agent_ids = [
-        "4.5.2.4",
-        "4.5.2.2",
         "4.5.2.1",
-        "4.5.2.3"
+        "4.5.2.4",
+        "4.5.2.3",
+        "4.5.2.2"
 ]
         self.logger = logging.getLogger(f"CompositeAgent_4_5_2")
 

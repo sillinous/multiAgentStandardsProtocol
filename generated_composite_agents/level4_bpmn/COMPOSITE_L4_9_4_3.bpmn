@@ -7,49 +7,49 @@ Manage Financial Resources
 APQC ID: 9.4.3
 
 Orchestrates 7 child agents:
-  1. 9.4.3.5: Review transactions
-  2. 9.4.3.7: Document transactions
-  3. 9.4.3.4: Record disposal transactions
-  4. 9.4.3.3: Execute disposals
-  5. 9.4.3.2: Approve disposals
-  6. 9.4.3.1: Identify disposal candidates
-  7. 9.4.3.6: Optimize transactions
+  1. 9.4.3.2: Approve disposals
+  2. 9.4.3.3: Execute disposals
+  3. 9.4.3.1: Identify disposal candidates
+  4. 9.4.3.6: Optimize transactions
+  5. 9.4.3.4: Record disposal transactions
+  6. 9.4.3.7: Document transactions
+  7. 9.4.3.5: Review transactions
 
 
 Orchestration Pattern: Sequential Workflow (Pipeline)
 Standards: BPMN 2.0, A2A Protocol
 
-Generated: 2025-11-18T01:19:11.438384
+Generated: 2025-11-18T01:38:33.506715
 Status: Production Ready
 </bpmn:documentation>
     <bpmn:startEvent id="Start_L4_9_4_3" name="Start Composite">
       <bpmn:outgoing>Flow_start_to_child1</bpmn:outgoing>
     </bpmn:startEvent>
-    <bpmn:callActivity id="CallActivity_L4_child1" name="9.4.3.5: Review transactions" calledElement="Process_9_4_3_5">
+    <bpmn:callActivity id="CallActivity_L4_child1" name="9.4.3.2: Approve disposals" calledElement="Process_9_4_3_2">
       <bpmn:incoming>Flow_start_to_child1</bpmn:incoming>
       <bpmn:outgoing>Flow_child1_to_child2</bpmn:outgoing>
     </bpmn:callActivity>
-    <bpmn:callActivity id="CallActivity_L4_child2" name="9.4.3.7: Document transactions" calledElement="Process_9_4_3_7">
+    <bpmn:callActivity id="CallActivity_L4_child2" name="9.4.3.3: Execute disposals" calledElement="Process_9_4_3_3">
       <bpmn:incoming>Flow_child1_to_child2</bpmn:incoming>
       <bpmn:outgoing>Flow_child2_to_child3</bpmn:outgoing>
     </bpmn:callActivity>
-    <bpmn:callActivity id="CallActivity_L4_child3" name="9.4.3.4: Record disposal transactions" calledElement="Process_9_4_3_4">
+    <bpmn:callActivity id="CallActivity_L4_child3" name="9.4.3.1: Identify disposal candidates" calledElement="Process_9_4_3_1">
       <bpmn:incoming>Flow_child2_to_child3</bpmn:incoming>
       <bpmn:outgoing>Flow_child3_to_child4</bpmn:outgoing>
     </bpmn:callActivity>
-    <bpmn:callActivity id="CallActivity_L4_child4" name="9.4.3.3: Execute disposals" calledElement="Process_9_4_3_3">
+    <bpmn:callActivity id="CallActivity_L4_child4" name="9.4.3.6: Optimize transactions" calledElement="Process_9_4_3_6">
       <bpmn:incoming>Flow_child3_to_child4</bpmn:incoming>
       <bpmn:outgoing>Flow_child4_to_child5</bpmn:outgoing>
     </bpmn:callActivity>
-    <bpmn:callActivity id="CallActivity_L4_child5" name="9.4.3.2: Approve disposals" calledElement="Process_9_4_3_2">
+    <bpmn:callActivity id="CallActivity_L4_child5" name="9.4.3.4: Record disposal transactions" calledElement="Process_9_4_3_4">
       <bpmn:incoming>Flow_child4_to_child5</bpmn:incoming>
       <bpmn:outgoing>Flow_child5_to_child6</bpmn:outgoing>
     </bpmn:callActivity>
-    <bpmn:callActivity id="CallActivity_L4_child6" name="9.4.3.1: Identify disposal candidates" calledElement="Process_9_4_3_1">
+    <bpmn:callActivity id="CallActivity_L4_child6" name="9.4.3.7: Document transactions" calledElement="Process_9_4_3_7">
       <bpmn:incoming>Flow_child5_to_child6</bpmn:incoming>
       <bpmn:outgoing>Flow_child6_to_child7</bpmn:outgoing>
     </bpmn:callActivity>
-    <bpmn:callActivity id="CallActivity_L4_child7" name="9.4.3.6: Optimize transactions" calledElement="Process_9_4_3_6">
+    <bpmn:callActivity id="CallActivity_L4_child7" name="9.4.3.5: Review transactions" calledElement="Process_9_4_3_5">
       <bpmn:incoming>Flow_child6_to_child7</bpmn:incoming>
       <bpmn:outgoing>Flow_child7_to_end</bpmn:outgoing>
     </bpmn:callActivity>

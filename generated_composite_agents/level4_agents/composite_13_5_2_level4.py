@@ -12,9 +12,9 @@ Standards: A2A, ANP, ACP, BPP, BDP, BRP, BMP, BCP, BIP
 
 Child Agents:
   - 13.5.2.2: Analyze data
+  - 13.5.2.4: Communicate insights
   - 13.5.2.3: Generate insights
   - 13.5.2.1: Collect and integrate data
-  - 13.5.2.4: Communicate insights
 
 
 Generated: 2025-11-18
@@ -46,9 +46,9 @@ class CompositeAgent_13_5_2:
         self.level = 4
         self.child_agent_ids = [
         "13.5.2.2",
+        "13.5.2.4",
         "13.5.2.3",
-        "13.5.2.1",
-        "13.5.2.4"
+        "13.5.2.1"
 ]
         self.logger = logging.getLogger(f"CompositeAgent_13_5_2")
 

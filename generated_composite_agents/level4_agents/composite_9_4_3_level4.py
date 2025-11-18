@@ -11,13 +11,13 @@ Orchestration Pattern: Sequential Workflow
 Standards: A2A, ANP, ACP, BPP, BDP, BRP, BMP, BCP, BIP
 
 Child Agents:
-  - 9.4.3.5: Review transactions
-  - 9.4.3.7: Document transactions
-  - 9.4.3.4: Record disposal transactions
-  - 9.4.3.3: Execute disposals
   - 9.4.3.2: Approve disposals
+  - 9.4.3.3: Execute disposals
   - 9.4.3.1: Identify disposal candidates
   - 9.4.3.6: Optimize transactions
+  - 9.4.3.4: Record disposal transactions
+  - 9.4.3.7: Document transactions
+  - 9.4.3.5: Review transactions
 
 
 Generated: 2025-11-18
@@ -48,13 +48,13 @@ class CompositeAgent_9_4_3:
         self.apqc_id = "9.4.3"
         self.level = 4
         self.child_agent_ids = [
-        "9.4.3.5",
-        "9.4.3.7",
-        "9.4.3.4",
-        "9.4.3.3",
         "9.4.3.2",
+        "9.4.3.3",
         "9.4.3.1",
-        "9.4.3.6"
+        "9.4.3.6",
+        "9.4.3.4",
+        "9.4.3.7",
+        "9.4.3.5"
 ]
         self.logger = logging.getLogger(f"CompositeAgent_9_4_3")
 
