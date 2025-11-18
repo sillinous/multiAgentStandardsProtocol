@@ -159,6 +159,14 @@ async def dashboard():
         return FileResponse(dashboard_path)
     raise HTTPException(status_code=404, detail="Dashboard not found")
 
+@app.get("/admin")
+async def admin_panel():
+    """Serve the admin panel"""
+    admin_path = static_dir / "admin.html"
+    if admin_path.exists():
+        return FileResponse(admin_path)
+    raise HTTPException(status_code=404, detail="Admin panel not found")
+
 
 # ============================================================================
 # Health Check
@@ -287,6 +295,34 @@ async def get_workflow_stages(workflow_id: str, db: Session = Depends(get_db)):
             for stage in stages
         ]
     }
+
+
+# ============================================================================
+# Admin Endpoints
+# ============================================================================
+
+@app.get("/api/admin/workflows/all")
+async def get_all_workflows(db: Session = Depends(get_db)):
+    """Get all workflows for admin panel (no pagination)"""
+    workflows = db.query(Workflow).order_by(Workflow.created_at.desc()).all()
+    return [
+        {
+            "workflow_id": w.workflow_id,
+            "workflow_name": w.workflow_name,
+            "workflow_type": w.workflow_type,
+            "status": w.status,
+            "success": w.success,
+            "started_at": w.started_at.isoformat() if w.started_at else None,
+            "completed_at": w.completed_at.isoformat() if w.completed_at else None,
+            "execution_time_ms": w.execution_time_ms,
+            "total_agents": w.total_agents,
+            "agents_succeeded": w.agents_succeeded or 0,
+            "agents_failed": w.agents_failed or 0,
+            "created_at": w.created_at.isoformat() if w.created_at else None,
+            "error_message": w.error_message
+        }
+        for w in workflows
+    ]
 
 
 # ============================================================================
