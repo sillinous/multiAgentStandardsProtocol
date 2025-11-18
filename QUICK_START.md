@@ -10,29 +10,29 @@ cd multiAgentStandardsProtocol
 
 ### Step 2: Install Python Dependencies
 ```bash
-pip install fastapi uvicorn sqlalchemy pydantic python-multipart
+pip3 install fastapi uvicorn sqlalchemy pydantic python-multipart
 ```
 
 ### Step 3: Start the API Server
 
 **Method 1: Use the startup script (Recommended)**
 ```bash
-python start_server.py
+python3 start_server.py
 ```
 
-**Method 2: Use the batch file (Windows)**
+**Method 2: Use the batch file (Windows only)**
 ```cmd
 start_server.bat
 ```
 
 **Method 3: Direct uvicorn command**
 ```bash
-python -m uvicorn api_server.main:app --host 0.0.0.0 --port 8000 --reload
+python3 -m uvicorn api_server.main:app --host 0.0.0.0 --port 8000 --reload
 ```
 
 **Method 4: Using Python directly**
 ```bash
-python -c "import uvicorn; uvicorn.run('api_server.main:app', host='0.0.0.0', port=8000, reload=True)"
+python3 -c "import uvicorn; uvicorn.run('api_server.main:app', host='0.0.0.0', port=8000, reload=True)"
 ```
 
 You should see:
@@ -58,13 +58,9 @@ INFO:     Uvicorn running on http://0.0.0.0:8000
 **Solution**:
 ```bash
 # Check Python version (need 3.8+)
-python --version
-# or
 python3 --version
 
 # Install dependencies
-pip install fastapi uvicorn sqlalchemy pydantic python-multipart
-# or
 pip3 install fastapi uvicorn sqlalchemy pydantic python-multipart
 ```
 
@@ -74,9 +70,9 @@ pip3 install fastapi uvicorn sqlalchemy pydantic python-multipart
 
 **Solution**: Use a different port
 ```bash
-python start_server.py 8005
+python3 start_server.py 8005
 # or
-python -m uvicorn api_server.main:app --host 0.0.0.0 --port 8005
+python3 -m uvicorn api_server.main:app --host 0.0.0.0 --port 8005
 ```
 
 ### "No module named 'api_server'"
@@ -87,7 +83,7 @@ python -m uvicorn api_server.main:app --host 0.0.0.0 --port 8005
 ```bash
 cd multiAgentStandardsProtocol
 ls  # Should see: api_server/ workflows/ agents/ etc.
-python start_server.py
+python3 start_server.py
 ```
 
 ### Can't access from browser
@@ -107,12 +103,12 @@ python start_server.py
 **Solutions**:
 ```bash
 # Upgrade pip first
-python -m pip install --upgrade pip
+python3 -m pip install --upgrade pip
 
 # Install with --user flag
-pip install --user fastapi uvicorn sqlalchemy pydantic python-multipart
+pip3 install --user fastapi uvicorn sqlalchemy pydantic python-multipart
 
-# Use Python 3 explicitly
+# If pip3 doesn't work, use python3 -m pip
 python3 -m pip install fastapi uvicorn sqlalchemy pydantic python-multipart
 ```
 

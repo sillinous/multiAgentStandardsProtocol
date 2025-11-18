@@ -22,7 +22,7 @@ def check_dependencies():
         print("❌ Missing dependencies!")
         print(f"   Missing: {', '.join(missing)}")
         print("\n📦 Install them with:")
-        print("   pip install fastapi uvicorn sqlalchemy pydantic python-multipart")
+        print("   pip3 install fastapi uvicorn sqlalchemy pydantic python-multipart")
         return False
     
     print("✅ All dependencies installed")
@@ -48,7 +48,7 @@ def start_server(port=8000):
         print(f"\n❌ Error starting server: {e}")
         print("\n💡 Troubleshooting:")
         print(f"   1. Check if port {port} is available")
-        print(f"   2. Try a different port: python start_server.py 8005")
+        print(f"   2. Try a different port: python3 start_server.py 8005")
         print("   3. Make sure you're in the project root directory")
         return False
     
