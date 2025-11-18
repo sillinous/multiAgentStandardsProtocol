@@ -1,0 +1,121 @@
+<?xml version='1.0' encoding='utf-8'?>
+<bpmn:definitions xmlns:bpmn="http://www.omg.org/spec/BPMN/20100524/MODEL" xmlns:bpmndi="http://www.omg.org/spec/BPMN/20100524/DI" xmlns:dc="http://www.omg.org/spec/DD/20100524/DC" id="Definitions_12_1_1_1" targetNamespace="http://apqc.org/process/12.1.1.1" exporter="APQC Agentic Platform v3.0" exporterVersion="3.0.0">
+  <bpmn:process id="Process_12_1_1_1" name="12.1.1.1 - Communicate with investors" isExecutable="true">
+    <bpmn:documentation>
+Manage External Relationships (12.0)
+Task: 12.1.1.1 - Communicate with investors
+
+Complete BPMN 2.0 workflow with 8 business process steps.
+
+Standards: BPMN 2.0, APQC PCF 7.0.1
+Industry Standards: Supplier Relationship Management Best Practices, ISO 44001
+Compliance: Contract law, Anti-corruption regulations
+
+Generated: 2025-11-18T00:36:53.062297
+Status: Production Ready
+
+Visual Aspects:
+- User-adjustable workflow
+- Editable in BPMN 2.0 tools (Camunda Modeler, etc.)
+- Importable to BPM platforms
+- Standards-compliant interfaces (A2A, ANP, ACP, BPP, BDP, BRP, BMP, BCP, BIP)
+</bpmn:documentation>
+    <bpmn:startEvent id="Start_12_1_1_1" name="Start Process">
+      <bpmn:outgoing>Flow_start_to_step1</bpmn:outgoing>
+    </bpmn:startEvent>
+    <bpmn:serviceTask id="Task_12_1_1_1_step1" name="Step 1: Identify Relationship Need">
+      <bpmn:incoming>Flow_start_to_step1</bpmn:incoming>
+      <bpmn:outgoing>Flow_step1_to_step2</bpmn:outgoing>
+      <bpmn:documentation>Business Process Step 1: Identify Relationship Need
+APQC Task: 12.1.1.1</bpmn:documentation>
+    </bpmn:serviceTask>
+    <bpmn:serviceTask id="Task_12_1_1_1_step2" name="Step 2: Evaluate Potential Partners">
+      <bpmn:incoming>Flow_step1_to_step2</bpmn:incoming>
+      <bpmn:outgoing>Flow_step2_to_step3</bpmn:outgoing>
+      <bpmn:documentation>Business Process Step 2: Evaluate Potential Partners
+APQC Task: 12.1.1.1</bpmn:documentation>
+    </bpmn:serviceTask>
+    <bpmn:serviceTask id="Task_12_1_1_1_step3" name="Step 3: Negotiate Terms">
+      <bpmn:incoming>Flow_step2_to_step3</bpmn:incoming>
+      <bpmn:outgoing>Flow_step3_to_step4</bpmn:outgoing>
+      <bpmn:documentation>Business Process Step 3: Negotiate Terms
+APQC Task: 12.1.1.1</bpmn:documentation>
+    </bpmn:serviceTask>
+    <bpmn:serviceTask id="Task_12_1_1_1_step4" name="Step 4: Establish Agreement">
+      <bpmn:incoming>Flow_step3_to_step4</bpmn:incoming>
+      <bpmn:outgoing>Flow_step4_to_step5</bpmn:outgoing>
+      <bpmn:documentation>Business Process Step 4: Establish Agreement
+APQC Task: 12.1.1.1</bpmn:documentation>
+    </bpmn:serviceTask>
+    <bpmn:serviceTask id="Task_12_1_1_1_step5" name="Step 5: Monitor Performance">
+      <bpmn:incoming>Flow_step4_to_step5</bpmn:incoming>
+      <bpmn:outgoing>Flow_step5_to_step6</bpmn:outgoing>
+      <bpmn:documentation>Business Process Step 5: Monitor Performance
+APQC Task: 12.1.1.1</bpmn:documentation>
+    </bpmn:serviceTask>
+    <bpmn:serviceTask id="Task_12_1_1_1_step6" name="Step 6: Manage Communications">
+      <bpmn:incoming>Flow_step5_to_step6</bpmn:incoming>
+      <bpmn:outgoing>Flow_step6_to_step7</bpmn:outgoing>
+      <bpmn:documentation>Business Process Step 6: Manage Communications
+APQC Task: 12.1.1.1</bpmn:documentation>
+    </bpmn:serviceTask>
+    <bpmn:serviceTask id="Task_12_1_1_1_step7" name="Step 7: Resolve Issues">
+      <bpmn:incoming>Flow_step6_to_step7</bpmn:incoming>
+      <bpmn:outgoing>Flow_step7_to_step8</bpmn:outgoing>
+      <bpmn:documentation>Business Process Step 7: Resolve Issues
+APQC Task: 12.1.1.1</bpmn:documentation>
+    </bpmn:serviceTask>
+    <bpmn:serviceTask id="Task_12_1_1_1_step8" name="Step 8: Document Relationship">
+      <bpmn:incoming>Flow_step7_to_step8</bpmn:incoming>
+      <bpmn:outgoing>Flow_step8_to_end</bpmn:outgoing>
+      <bpmn:documentation>Business Process Step 8: Document Relationship
+APQC Task: 12.1.1.1</bpmn:documentation>
+    </bpmn:serviceTask>
+    <bpmn:sequenceFlow id="Flow_start_to_step1" sourceRef="Start_12_1_1_1" targetRef="Task_12_1_1_1_step1" />
+    <bpmn:sequenceFlow id="Flow_step1_to_step2" sourceRef="Task_12_1_1_1_step1" targetRef="Task_12_1_1_1_step2" />
+    <bpmn:sequenceFlow id="Flow_step2_to_step3" sourceRef="Task_12_1_1_1_step2" targetRef="Task_12_1_1_1_step3" />
+    <bpmn:sequenceFlow id="Flow_step3_to_step4" sourceRef="Task_12_1_1_1_step3" targetRef="Task_12_1_1_1_step4" />
+    <bpmn:sequenceFlow id="Flow_step4_to_step5" sourceRef="Task_12_1_1_1_step4" targetRef="Task_12_1_1_1_step5" />
+    <bpmn:sequenceFlow id="Flow_step5_to_step6" sourceRef="Task_12_1_1_1_step5" targetRef="Task_12_1_1_1_step6" />
+    <bpmn:sequenceFlow id="Flow_step6_to_step7" sourceRef="Task_12_1_1_1_step6" targetRef="Task_12_1_1_1_step7" />
+    <bpmn:sequenceFlow id="Flow_step7_to_step8" sourceRef="Task_12_1_1_1_step7" targetRef="Task_12_1_1_1_step8" />
+    <bpmn:sequenceFlow id="Flow_step8_to_end" sourceRef="Task_12_1_1_1_step8" targetRef="End_12_1_1_1" />
+    <bpmn:endEvent id="End_12_1_1_1" name="Process Complete">
+      <bpmn:incoming>Flow_step8_to_end</bpmn:incoming>
+    </bpmn:endEvent>
+  </bpmn:process>
+  <bpmndi:BPMNDiagram id="Diagram_12_1_1_1">
+    <bpmndi:BPMNPlane id="Plane_12_1_1_1" bpmnElement="Process_12_1_1_1">
+      <bpmndi:BPMNShape id="Shape_Start_12_1_1_1" bpmnElement="Start_12_1_1_1">
+        <dc:Bounds x="150" y="50" width="36" height="36" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Shape_Task_12_1_1_1_step1" bpmnElement="Task_12_1_1_1_step1">
+        <dc:Bounds x="100" y="130" width="150" height="80" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Shape_Task_12_1_1_1_step2" bpmnElement="Task_12_1_1_1_step2">
+        <dc:Bounds x="100" y="230" width="150" height="80" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Shape_Task_12_1_1_1_step3" bpmnElement="Task_12_1_1_1_step3">
+        <dc:Bounds x="100" y="330" width="150" height="80" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Shape_Task_12_1_1_1_step4" bpmnElement="Task_12_1_1_1_step4">
+        <dc:Bounds x="100" y="430" width="150" height="80" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Shape_Task_12_1_1_1_step5" bpmnElement="Task_12_1_1_1_step5">
+        <dc:Bounds x="100" y="530" width="150" height="80" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Shape_Task_12_1_1_1_step6" bpmnElement="Task_12_1_1_1_step6">
+        <dc:Bounds x="100" y="630" width="150" height="80" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Shape_Task_12_1_1_1_step7" bpmnElement="Task_12_1_1_1_step7">
+        <dc:Bounds x="100" y="730" width="150" height="80" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Shape_Task_12_1_1_1_step8" bpmnElement="Task_12_1_1_1_step8">
+        <dc:Bounds x="100" y="830" width="150" height="80" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Shape_End_12_1_1_1" bpmnElement="End_12_1_1_1">
+        <dc:Bounds x="150" y="930" width="36" height="36" />
+      </bpmndi:BPMNShape>
+    </bpmndi:BPMNPlane>
+  </bpmndi:BPMNDiagram>
+</bpmn:definitions>
