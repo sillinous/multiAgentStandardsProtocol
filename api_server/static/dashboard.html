@@ -1,0 +1,682 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>APQC Agent Platform - Live Dashboard</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+            color: #333;
+        }
+
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+        }
+
+        header {
+            text-align: center;
+            color: white;
+            margin-bottom: 30px;
+            animation: fadeIn 0.8s ease-in;
+        }
+
+        header h1 {
+            font-size: 3em;
+            margin-bottom: 10px;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.2);
+        }
+
+        header p {
+            font-size: 1.2em;
+            opacity: 0.9;
+        }
+
+        .stats-bar {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 20px;
+            margin-bottom: 30px;
+            animation: slideUp 0.8s ease-out;
+        }
+
+        .stat-card {
+            background: white;
+            border-radius: 15px;
+            padding: 20px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+        }
+
+        .stat-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 15px 40px rgba(0,0,0,0.3);
+        }
+
+        .stat-card h3 {
+            font-size: 0.9em;
+            color: #666;
+            margin-bottom: 10px;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        .stat-card .value {
+            font-size: 2.5em;
+            font-weight: bold;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .main-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 30px;
+            animation: fadeIn 1s ease-in;
+        }
+
+        .card {
+            background: white;
+            border-radius: 20px;
+            padding: 30px;
+            box-shadow: 0 10px 40px rgba(0,0,0,0.2);
+        }
+
+        .card h2 {
+            margin-bottom: 20px;
+            color: #667eea;
+            font-size: 1.5em;
+        }
+
+        .workflow-viz {
+            grid-column: 1 / -1;
+        }
+
+        .pipeline {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin: 30px 0;
+            padding: 20px;
+            background: linear-gradient(to right, #f8f9fa, #e9ecef);
+            border-radius: 15px;
+        }
+
+        .agent-node {
+            flex: 1;
+            text-align: center;
+            padding: 20px;
+            background: white;
+            border-radius: 15px;
+            margin: 0 10px;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+            transition: all 0.3s ease;
+            position: relative;
+        }
+
+        .agent-node.active {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            transform: scale(1.1);
+            box-shadow: 0 10px 30px rgba(102, 126, 234, 0.4);
+            animation: pulse 1s infinite;
+        }
+
+        .agent-node.completed {
+            background: linear-gradient(135deg, #56ab2f 0%, #a8e063 100%);
+            color: white;
+        }
+
+        .agent-node.failed {
+            background: linear-gradient(135deg, #eb3349 0%, #f45c43 100%);
+            color: white;
+        }
+
+        .agent-node h4 {
+            font-size: 0.9em;
+            margin-bottom: 5px;
+        }
+
+        .agent-node .agent-id {
+            font-size: 0.8em;
+            opacity: 0.7;
+        }
+
+        .agent-node .duration {
+            font-size: 0.75em;
+            margin-top: 10px;
+            font-weight: bold;
+        }
+
+        .arrow {
+            font-size: 2em;
+            color: #667eea;
+            animation: slideRight 1s infinite;
+        }
+
+        .form-group {
+            margin-bottom: 20px;
+        }
+
+        .form-group label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: 600;
+            color: #555;
+        }
+
+        .form-group input, .form-group textarea {
+            width: 100%;
+            padding: 12px;
+            border: 2px solid #e0e0e0;
+            border-radius: 8px;
+            font-size: 1em;
+            transition: border-color 0.3s ease;
+        }
+
+        .form-group input:focus, .form-group textarea:focus {
+            outline: none;
+            border-color: #667eea;
+        }
+
+        .btn {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            padding: 15px 30px;
+            border-radius: 10px;
+            font-size: 1.1em;
+            font-weight: bold;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            box-shadow: 0 5px 15px rgba(102, 126, 234, 0.3);
+        }
+
+        .btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 20px rgba(102, 126, 234, 0.4);
+        }
+
+        .btn:active {
+            transform: translateY(0);
+        }
+
+        .btn:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+
+        .result {
+            margin-top: 20px;
+            padding: 20px;
+            border-radius: 10px;
+            background: #f8f9fa;
+        }
+
+        .result.success {
+            background: linear-gradient(135deg, #d4fc79 0%, #96e6a1 100%);
+        }
+
+        .result.failed {
+            background: linear-gradient(135deg, #ffecd2 0%, #fcb69f 100%);
+        }
+
+        .result h3 {
+            margin-bottom: 15px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .result .icon {
+            font-size: 1.5em;
+        }
+
+        .result-details {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 15px;
+            margin-top: 15px;
+        }
+
+        .result-item {
+            background: white;
+            padding: 15px;
+            border-radius: 8px;
+        }
+
+        .result-item .label {
+            font-size: 0.85em;
+            color: #666;
+            margin-bottom: 5px;
+        }
+
+        .result-item .value {
+            font-size: 1.2em;
+            font-weight: bold;
+            color: #333;
+        }
+
+        .execution-log {
+            max-height: 400px;
+            overflow-y: auto;
+            background: #1e1e1e;
+            color: #d4d4d4;
+            padding: 20px;
+            border-radius: 10px;
+            font-family: 'Courier New', monospace;
+            font-size: 0.9em;
+        }
+
+        .log-entry {
+            margin-bottom: 8px;
+            padding: 5px;
+            border-left: 3px solid #667eea;
+            padding-left: 10px;
+        }
+
+        .log-entry.success {
+            border-left-color: #56ab2f;
+        }
+
+        .log-entry.error {
+            border-left-color: #eb3349;
+        }
+
+        .timestamp {
+            color: #858585;
+            font-size: 0.85em;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+
+        @keyframes slideUp {
+            from {
+                opacity: 0;
+                transform: translateY(30px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        @keyframes pulse {
+            0%, 100% { transform: scale(1.1); }
+            50% { transform: scale(1.15); }
+        }
+
+        @keyframes slideRight {
+            0%, 100% { transform: translateX(0); }
+            50% { transform: translateX(5px); }
+        }
+
+        .loading {
+            display: inline-block;
+            width: 20px;
+            height: 20px;
+            border: 3px solid rgba(255,255,255,.3);
+            border-radius: 50%;
+            border-top-color: white;
+            animation: spin 1s ease-in-out infinite;
+        }
+
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+
+        .hidden {
+            display: none;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>🤖 APQC Agent Platform</h1>
+            <p>Real-Time Multi-Agent Workflow Visualization</p>
+        </header>
+
+        <!-- Stats Bar -->
+        <div class="stats-bar">
+            <div class="stat-card">
+                <h3>Total Agents</h3>
+                <div class="value" id="totalAgents">1,100</div>
+            </div>
+            <div class="stat-card">
+                <h3>Workflows Executed</h3>
+                <div class="value" id="workflowsExecuted">0</div>
+            </div>
+            <div class="stat-card">
+                <h3>Success Rate</h3>
+                <div class="value" id="successRate">-</div>
+            </div>
+            <div class="stat-card">
+                <h3>Avg Response Time</h3>
+                <div class="value" id="avgTime">-</div>
+            </div>
+        </div>
+
+        <!-- Workflow Visualization -->
+        <div class="card workflow-viz">
+            <h2>📊 Live Workflow Pipeline</h2>
+            <div class="pipeline" id="pipeline">
+                <div class="agent-node" id="node-extract">
+                    <h4>Extract</h4>
+                    <div class="agent-id">9.1.1.6</div>
+                    <div class="duration" id="dur-extract"></div>
+                </div>
+                <div class="arrow">→</div>
+                <div class="agent-node" id="node-validate">
+                    <h4>Validate</h4>
+                    <div class="agent-id">9.1.1.7</div>
+                    <div class="duration" id="dur-validate"></div>
+                </div>
+                <div class="arrow">→</div>
+                <div class="agent-node" id="node-calculate">
+                    <h4>Calculate</h4>
+                    <div class="agent-id">9.1.1.8</div>
+                    <div class="duration" id="dur-calculate"></div>
+                </div>
+                <div class="arrow">→</div>
+                <div class="agent-node" id="node-approve">
+                    <h4>Approve</h4>
+                    <div class="agent-id">9.1.1.9</div>
+                    <div class="duration" id="dur-approve"></div>
+                </div>
+            </div>
+        </div>
+
+        <div class="main-grid">
+            <!-- Invoice Submission Form -->
+            <div class="card">
+                <h2>📄 Submit Invoice</h2>
+                <form id="invoiceForm">
+                    <div class="form-group">
+                        <label>Invoice Number</label>
+                        <input type="text" id="invoiceNumber" required placeholder="INV-2025-001">
+                    </div>
+                    <div class="form-group">
+                        <label>Vendor Name</label>
+                        <input type="text" id="vendorName" required placeholder="Acme Corp">
+                    </div>
+                    <div class="form-group">
+                        <label>Date</label>
+                        <input type="date" id="invoiceDate" required>
+                    </div>
+                    <div class="form-group">
+                        <label>Line Items (JSON)</label>
+                        <textarea id="lineItems" rows="4" required placeholder='[{"desc": "Software License", "qty": 10, "price": 450.00}]'></textarea>
+                    </div>
+                    <button type="submit" class="btn" id="submitBtn">
+                        Process Invoice
+                    </button>
+                </form>
+            </div>
+
+            <!-- Execution Log -->
+            <div class="card">
+                <h2>📋 Execution Log</h2>
+                <div class="execution-log" id="executionLog">
+                    <div class="log-entry">
+                        <span class="timestamp">[System Ready]</span> Waiting for workflow submission...
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Results Section -->
+        <div class="card" id="resultsCard" style="margin-top: 30px; display: none;">
+            <h2>✅ Workflow Results</h2>
+            <div id="resultsContainer"></div>
+        </div>
+    </div>
+
+    <script>
+        const API_URL = 'http://localhost:8000';
+        let workflowCount = 0;
+        let successCount = 0;
+        let totalTime = 0;
+
+        // Set default date to today
+        document.getElementById('invoiceDate').valueAsDate = new Date();
+
+        // Set default line items
+        document.getElementById('lineItems').value = JSON.stringify([
+            {"desc": "Software License", "qty": 10, "price": 450.00},
+            {"desc": "Support Contract", "qty": 1, "price": 500.00}
+        ], null, 2);
+
+        // Add log entry
+        function addLog(message, type = 'info') {
+            const log = document.getElementById('executionLog');
+            const entry = document.createElement('div');
+            entry.className = `log-entry ${type}`;
+            const timestamp = new Date().toLocaleTimeString();
+            entry.innerHTML = `<span class="timestamp">[${timestamp}]</span> ${message}`;
+            log.appendChild(entry);
+            log.scrollTop = log.scrollHeight;
+        }
+
+        // Update pipeline visualization
+        function updatePipeline(stage, status, duration = null) {
+            const node = document.getElementById(`node-${stage}`);
+            const durElement = document.getElementById(`dur-${stage}`);
+
+            // Reset all states first if starting new workflow
+            if (stage === 'extract' && status === 'active') {
+                ['extract', 'validate', 'calculate', 'approve'].forEach(s => {
+                    const n = document.getElementById(`node-${s}`);
+                    const d = document.getElementById(`dur-${s}`);
+                    n.className = 'agent-node';
+                    d.textContent = '';
+                });
+            }
+
+            node.className = `agent-node ${status}`;
+            if (duration !== null) {
+                durElement.textContent = `${duration.toFixed(2)}ms`;
+            }
+        }
+
+        // Update stats
+        function updateStats() {
+            document.getElementById('workflowsExecuted').textContent = workflowCount;
+            if (workflowCount > 0) {
+                const successRate = ((successCount / workflowCount) * 100).toFixed(0);
+                document.getElementById('successRate').textContent = `${successRate}%`;
+                const avgTime = (totalTime / workflowCount).toFixed(2);
+                document.getElementById('avgTime').textContent = `${avgTime}ms`;
+            }
+        }
+
+        // Poll workflow status
+        async function pollWorkflowStatus(workflowId) {
+            const maxAttempts = 20;
+            let attempts = 0;
+
+            const poll = async () => {
+                try {
+                    const response = await fetch(`${API_URL}/api/workflows/${workflowId}`);
+                    const data = await response.json();
+
+                    if (data.status === 'pending' || data.status === 'running') {
+                        attempts++;
+                        if (attempts < maxAttempts) {
+                            setTimeout(poll, 200); // Poll every 200ms
+                        } else {
+                            addLog('❌ Workflow timeout', 'error');
+                        }
+                    } else {
+                        // Workflow completed
+                        displayResults(data);
+                    }
+                } catch (error) {
+                    addLog(`❌ Error polling status: ${error.message}`, 'error');
+                }
+            };
+
+            poll();
+        }
+
+        // Display workflow results
+        function displayResults(workflow) {
+            workflowCount++;
+
+            const stages = workflow.output_data?.stages || {};
+            const decision = workflow.output_data?.final_decision;
+
+            // Animate each stage
+            const stageNames = ['extract', 'validate', 'calculate', 'approve'];
+            let delay = 0;
+
+            stageNames.forEach((stageName, index) => {
+                setTimeout(() => {
+                    const stageData = stages[stageName];
+                    if (stageData) {
+                        updatePipeline(stageName, 'active');
+                        addLog(`🔄 Executing ${stageName}...`, 'info');
+
+                        setTimeout(() => {
+                            const status = stageData.success ? 'completed' : 'failed';
+                            updatePipeline(stageName, status, stageData.execution_time_ms);
+                            const icon = stageData.success ? '✅' : '❌';
+                            addLog(`${icon} ${stageName} ${status} (${stageData.execution_time_ms.toFixed(2)}ms)`, stageData.success ? 'success' : 'error');
+                        }, 300);
+                    }
+                }, delay);
+                delay += 500;
+            });
+
+            // Show final results after all stages
+            setTimeout(() => {
+                if (workflow.success) {
+                    successCount++;
+                }
+                totalTime += workflow.execution_time_ms || 0;
+                updateStats();
+
+                const resultsCard = document.getElementById('resultsCard');
+                const resultsContainer = document.getElementById('resultsContainer');
+
+                resultsCard.style.display = 'block';
+                resultsCard.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+
+                const invoice = workflow.output_data?.stages?.calculate?.data?.invoice;
+                const validation = workflow.output_data?.stages?.validate?.data?.validation;
+                const calculations = workflow.output_data?.stages?.calculate?.data?.calculations;
+
+                const isApproved = decision?.action === 'APPROVE' || decision?.action === 'AUTO_APPROVE';
+                const resultClass = isApproved ? 'success' : 'failed';
+                const icon = isApproved ? '✅' : '❌';
+
+                resultsContainer.innerHTML = `
+                    <div class="result ${resultClass}">
+                        <h3>
+                            <span class="icon">${icon}</span>
+                            ${decision?.action || 'UNKNOWN'}: ${invoice?.invoice_id || 'N/A'}
+                        </h3>
+                        <p><strong>Approver:</strong> ${decision?.approver || 'N/A'}</p>
+                        <p><strong>Reason:</strong> ${decision?.reason || 'N/A'}</p>
+                        <p><strong>Confidence:</strong> ${((decision?.confidence_score || 0) * 100).toFixed(0)}%</p>
+
+                        <div class="result-details">
+                            <div class="result-item">
+                                <div class="label">Vendor</div>
+                                <div class="value">${invoice?.vendor_name || 'N/A'}</div>
+                            </div>
+                            <div class="result-item">
+                                <div class="label">Subtotal</div>
+                                <div class="value">$${(calculations?.subtotal || 0).toLocaleString()}</div>
+                            </div>
+                            <div class="result-item">
+                                <div class="label">Tax</div>
+                                <div class="value">$${(calculations?.tax || 0).toLocaleString()}</div>
+                            </div>
+                            <div class="result-item">
+                                <div class="label">Total</div>
+                                <div class="value">$${(calculations?.total || 0).toLocaleString()}</div>
+                            </div>
+                            <div class="result-item">
+                                <div class="label">Validation</div>
+                                <div class="value">${validation?.is_valid ? '✅ Valid' : '❌ Invalid'}</div>
+                            </div>
+                            <div class="result-item">
+                                <div class="label">Execution Time</div>
+                                <div class="value">${(workflow.execution_time_ms || 0).toFixed(2)}ms</div>
+                            </div>
+                        </div>
+                    </div>
+                `;
+
+                const finalIcon = isApproved ? '🎉' : '⚠️';
+                addLog(`${finalIcon} Workflow completed: ${decision?.action}`, isApproved ? 'success' : 'error');
+            }, delay + 500);
+        }
+
+        // Form submission
+        document.getElementById('invoiceForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+
+            const submitBtn = document.getElementById('submitBtn');
+            submitBtn.disabled = true;
+            submitBtn.innerHTML = '<span class="loading"></span> Processing...';
+
+            // Clear previous results
+            document.getElementById('resultsCard').style.display = 'none';
+
+            const invoiceData = {
+                source: 'dashboard',
+                invoice_number: document.getElementById('invoiceNumber').value,
+                vendor_name: document.getElementById('vendorName').value,
+                date: document.getElementById('invoiceDate').value,
+                items: JSON.parse(document.getElementById('lineItems').value)
+            };
+
+            addLog(`🚀 Submitting invoice: ${invoiceData.invoice_number}`, 'info');
+            updatePipeline('extract', 'active');
+
+            try {
+                const response = await fetch(`${API_URL}/api/workflows/invoice`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify(invoiceData)
+                });
+
+                const result = await response.json();
+                addLog(`✅ Workflow started: ${result.workflow_id}`, 'success');
+
+                // Poll for results
+                await pollWorkflowStatus(result.workflow_id);
+
+            } catch (error) {
+                addLog(`❌ Error: ${error.message}`, 'error');
+            } finally {
+                submitBtn.disabled = false;
+                submitBtn.innerHTML = 'Process Invoice';
+            }
+        });
+
+        // Load initial stats
+        addLog('✨ Dashboard initialized', 'success');
+        addLog('🔌 Connected to API: ' + API_URL, 'success');
+    </script>
+</body>
+</html>

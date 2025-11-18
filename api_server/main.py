@@ -21,6 +21,8 @@ from uuid import uuid4
 
 from fastapi import FastAPI, HTTPException, Depends, BackgroundTasks
 from fastapi.middleware.cors import CORSMiddleware
+from fastapi.staticfiles import StaticFiles
+from fastapi.responses import FileResponse
 from pydantic import BaseModel
 from sqlalchemy.orm import Session
 
@@ -130,6 +132,32 @@ async def startup_event():
     init_db()
     seed_agents()
     print("✅ API Server ready!")
+
+
+# ============================================================================
+# Static Files & Dashboard
+# ============================================================================
+
+# Mount static files directory
+static_dir = Path(__file__).parent / "static"
+static_dir.mkdir(exist_ok=True)
+app.mount("/static", StaticFiles(directory=str(static_dir)), name="static")
+
+@app.get("/")
+async def root():
+    """Serve the dashboard"""
+    dashboard_path = static_dir / "dashboard.html"
+    if dashboard_path.exists():
+        return FileResponse(dashboard_path)
+    return {"message": "APQC Agent Platform API", "docs": "/docs"}
+
+@app.get("/dashboard")
+async def dashboard():
+    """Serve the dashboard"""
+    dashboard_path = static_dir / "dashboard.html"
+    if dashboard_path.exists():
+        return FileResponse(dashboard_path)
+    raise HTTPException(status_code=404, detail="Dashboard not found")
 
 
 # ============================================================================
