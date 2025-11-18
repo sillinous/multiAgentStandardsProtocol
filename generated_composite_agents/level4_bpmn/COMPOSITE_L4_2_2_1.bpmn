@@ -1,0 +1,81 @@
+<?xml version='1.0' encoding='utf-8'?>
+<bpmn:definitions xmlns:bpmn="http://www.omg.org/spec/BPMN/20100524/MODEL" xmlns:bpmndi="http://www.omg.org/spec/BPMN/20100524/DI" xmlns:dc="http://www.omg.org/spec/DD/20100524/DC" id="Definitions_L4_2_2_1" targetNamespace="http://apqc.org/composite/level4/2.2.1" exporter="APQC Agentic Platform v3.0" exporterVersion="3.0.0">
+  <bpmn:process id="Process_L4_2_2_1" name="Level 4: 2.2.1" isExecutable="true">
+    <bpmn:documentation>
+Level 4 Composite Process
+Develop and Manage Products and Services
+APQC ID: 2.2.1
+
+Orchestrates 5 child agents:
+  1. 2.2.1.2: Create detailed design specifications
+  2. 2.2.1.3: Build prototypes
+  3. 2.2.1.1: Develop product concepts
+  4. 2.2.1.5: Conduct pilot production
+  5. 2.2.1.4: Test prototypes
+
+
+Orchestration Pattern: Sequential Workflow (Pipeline)
+Standards: BPMN 2.0, A2A Protocol
+
+Generated: 2025-11-18T00:44:42.473928
+Status: Production Ready
+</bpmn:documentation>
+    <bpmn:startEvent id="Start_L4_2_2_1" name="Start Composite">
+      <bpmn:outgoing>Flow_start_to_child1</bpmn:outgoing>
+    </bpmn:startEvent>
+    <bpmn:callActivity id="CallActivity_L4_child1" name="2.2.1.2: Create detailed design specifi..." calledElement="Process_2_2_1_2">
+      <bpmn:incoming>Flow_start_to_child1</bpmn:incoming>
+      <bpmn:outgoing>Flow_child1_to_child2</bpmn:outgoing>
+    </bpmn:callActivity>
+    <bpmn:callActivity id="CallActivity_L4_child2" name="2.2.1.3: Build prototypes" calledElement="Process_2_2_1_3">
+      <bpmn:incoming>Flow_child1_to_child2</bpmn:incoming>
+      <bpmn:outgoing>Flow_child2_to_child3</bpmn:outgoing>
+    </bpmn:callActivity>
+    <bpmn:callActivity id="CallActivity_L4_child3" name="2.2.1.1: Develop product concepts" calledElement="Process_2_2_1_1">
+      <bpmn:incoming>Flow_child2_to_child3</bpmn:incoming>
+      <bpmn:outgoing>Flow_child3_to_child4</bpmn:outgoing>
+    </bpmn:callActivity>
+    <bpmn:callActivity id="CallActivity_L4_child4" name="2.2.1.5: Conduct pilot production" calledElement="Process_2_2_1_5">
+      <bpmn:incoming>Flow_child3_to_child4</bpmn:incoming>
+      <bpmn:outgoing>Flow_child4_to_child5</bpmn:outgoing>
+    </bpmn:callActivity>
+    <bpmn:callActivity id="CallActivity_L4_child5" name="2.2.1.4: Test prototypes" calledElement="Process_2_2_1_4">
+      <bpmn:incoming>Flow_child4_to_child5</bpmn:incoming>
+      <bpmn:outgoing>Flow_child5_to_end</bpmn:outgoing>
+    </bpmn:callActivity>
+    <bpmn:sequenceFlow id="Flow_start_to_child1" sourceRef="Start_L4_2_2_1" targetRef="CallActivity_L4_child1" />
+    <bpmn:sequenceFlow id="Flow_child1_to_child2" sourceRef="CallActivity_L4_child1" targetRef="CallActivity_L4_child2" />
+    <bpmn:sequenceFlow id="Flow_child2_to_child3" sourceRef="CallActivity_L4_child2" targetRef="CallActivity_L4_child3" />
+    <bpmn:sequenceFlow id="Flow_child3_to_child4" sourceRef="CallActivity_L4_child3" targetRef="CallActivity_L4_child4" />
+    <bpmn:sequenceFlow id="Flow_child4_to_child5" sourceRef="CallActivity_L4_child4" targetRef="CallActivity_L4_child5" />
+    <bpmn:sequenceFlow id="Flow_child5_to_end" sourceRef="CallActivity_L4_child5" targetRef="End_L4_2_2_1" />
+    <bpmn:endEvent id="End_L4_2_2_1" name="Composite Complete">
+      <bpmn:incoming>Flow_child5_to_end</bpmn:incoming>
+    </bpmn:endEvent>
+  </bpmn:process>
+  <bpmndi:BPMNDiagram id="Diagram_L4_2_2_1">
+    <bpmndi:BPMNPlane id="Plane_L4_2_2_1" bpmnElement="Process_L4_2_2_1">
+      <bpmndi:BPMNShape id="Shape_Start_L4_2_2_1" bpmnElement="Start_L4_2_2_1">
+        <dc:Bounds x="150" y="50" width="36" height="36" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Shape_CallActivity_L4_child1" bpmnElement="CallActivity_L4_child1">
+        <dc:Bounds x="100" y="130" width="150" height="80" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Shape_CallActivity_L4_child2" bpmnElement="CallActivity_L4_child2">
+        <dc:Bounds x="100" y="230" width="150" height="80" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Shape_CallActivity_L4_child3" bpmnElement="CallActivity_L4_child3">
+        <dc:Bounds x="100" y="330" width="150" height="80" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Shape_CallActivity_L4_child4" bpmnElement="CallActivity_L4_child4">
+        <dc:Bounds x="100" y="430" width="150" height="80" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Shape_CallActivity_L4_child5" bpmnElement="CallActivity_L4_child5">
+        <dc:Bounds x="100" y="530" width="150" height="80" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Shape_End_L4_2_2_1" bpmnElement="End_L4_2_2_1">
+        <dc:Bounds x="150" y="630" width="36" height="36" />
+      </bpmndi:BPMNShape>
+    </bpmndi:BPMNPlane>
+  </bpmndi:BPMNDiagram>
+</bpmn:definitions>

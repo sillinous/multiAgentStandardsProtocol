@@ -1,0 +1,30 @@
+{
+  "level_4": {
+    "level": 4,
+    "total_composites": 152,
+    "agents_generated": 152,
+    "bpmn_generated": 152,
+    "by_category": {}
+  },
+  "level_3": {
+    "level": 3,
+    "total_composites": 56,
+    "agents_generated": 56,
+    "bpmn_generated": 56,
+    "by_category": {}
+  },
+  "level_2": {
+    "level": 2,
+    "total_composites": 13,
+    "agents_generated": 13,
+    "bpmn_generated": 13,
+    "by_category": {}
+  },
+  "level_1": {
+    "level": 1,
+    "total_composites": 13,
+    "agents_generated": 13,
+    "bpmn_generated": 13,
+    "by_category": {}
+  }
+}
