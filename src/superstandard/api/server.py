@@ -57,12 +57,14 @@ from superstandard.protocols.anp_implementation import (
 from superstandard.protocols.acp_implementation import (
     CoordinationManager,
     CoordinationType,
-    TaskStatus
+    TaskStatus,
+    CoordinationStatus
 )
 from superstandard.protocols.consciousness_protocol import (
     CollectiveConsciousness,
     ThoughtType,
-    ConsciousnessState
+    ConsciousnessState,
+    Thought
 )
 
 # ============================================================================
@@ -192,6 +194,102 @@ app.add_middleware(
 )
 
 # ============================================================================
+# NEXUS Trading Platform Integration
+# ============================================================================
+
+# Import and register trading routes (integrates existing production-ready agents)
+try:
+    from superstandard.api.routes.trading_routes import router as trading_router
+    app.include_router(trading_router)
+    print("[OK] NEXUS Trading routes registered")
+except ImportError as e:
+    print(f"[WARN] Could not load trading routes: {e}")
+
+# Import and register backtesting routes (new backtesting engine)
+try:
+    from superstandard.api.routes.backtest_routes import router as backtest_router
+    app.include_router(backtest_router)
+    print("[OK] NEXUS Backtesting routes registered")
+except ImportError as e:
+    print(f"[WARN] Could not load backtesting routes: {e}")
+
+# Import and register strategy storage routes (strategy management and versioning)
+try:
+    from superstandard.api.routes.strategy_routes import router as strategy_router
+    app.include_router(strategy_router)
+    print("[OK] NEXUS Strategy Storage routes registered")
+except ImportError as e:
+    print(f"[WARN] Could not load strategy routes: {e}")
+
+# Import and register paper trading routes (risk-free strategy testing)
+try:
+    from superstandard.api.routes.paper_trading_routes import router as paper_trading_router
+    app.include_router(paper_trading_router)
+    print("[OK] NEXUS Paper Trading routes registered")
+except ImportError as e:
+    print(f"[WARN] Could not load paper trading routes: {e}")
+
+# Import and register risk metrics routes (VaR/CVaR, stress testing)
+try:
+    from superstandard.api.routes.risk_metrics_routes import router as risk_metrics_router
+    app.include_router(risk_metrics_router)
+    print("[OK] NEXUS Risk Metrics routes registered")
+except ImportError as e:
+    print(f"[WARN] Could not load risk metrics routes: {e}")
+
+# Import and register authentication routes (AOH login)
+try:
+    from superstandard.api.routes.auth_routes import router as auth_router
+    app.include_router(auth_router)
+    print("[OK] Authentication routes registered")
+except ImportError as e:
+    print(f"[WARN] Could not load authentication routes: {e}")
+
+# ============================================================================
+# NEXUS Real-Time Market Data WebSocket
+# ============================================================================
+
+try:
+    from superstandard.trading.market_data_ws import ws_manager
+
+    @app.websocket("/ws/market-data")
+    async def market_data_websocket(websocket: WebSocket):
+        """
+        WebSocket endpoint for real-time market data streaming
+
+        Usage:
+            ws = new WebSocket("ws://localhost:8080/ws/market-data");
+
+            // Subscribe to prices
+            ws.send(JSON.stringify({
+                action: "subscribe_prices",
+                symbols: ["BTC/USD", "ETH/USD", "SOL/USD"]
+            }));
+
+            // Subscribe to events
+            ws.send(JSON.stringify({
+                action: "subscribe_events"
+            }));
+        """
+        await ws_manager.connect(websocket)
+        try:
+            while True:
+                message = await websocket.receive_text()
+                await ws_manager.handle_client_message(websocket, message)
+        except WebSocketDisconnect:
+            ws_manager.disconnect(websocket)
+
+    @app.get("/api/ws/stats")
+    async def get_websocket_stats():
+        """Get WebSocket connection statistics"""
+        return ws_manager.get_stats()
+
+    print("[OK] NEXUS Real-Time Market Data WebSocket enabled")
+
+except ImportError as e:
+    print(f"[WARN] Could not load WebSocket support: {e}")
+
+# ============================================================================
 # Static File Serving - Dashboards
 # ============================================================================
 
@@ -208,6 +306,22 @@ async def root():
         </body>
     </html>
     """)
+
+@app.get("/trading/strategy-research")
+async def strategy_research_ui():
+    """Serve NEXUS Strategy Research Lab UI."""
+    ui_path = Path(__file__).parent / "strategy_research_ui.html"
+    if ui_path.exists():
+        return FileResponse(ui_path)
+    return HTMLResponse(content="<h1>Strategy Research UI not found</h1>", status_code=404)
+
+@app.get("/trading/backtesting")
+async def backtesting_ui():
+    """Serve NEXUS Backtesting Lab UI."""
+    ui_path = Path(__file__).parent / "backtesting_ui.html"
+    if ui_path.exists():
+        return FileResponse(ui_path)
+    return HTMLResponse(content="<h1>Backtesting UI not found</h1>", status_code=404)
 
 @app.get("/dashboard")
 async def dashboard_landing():
@@ -244,6 +358,20 @@ async def consciousness_dashboard():
     """Serve AConsP consciousness dashboard."""
     dashboard_path = Path(__file__).parent / "consciousness_dashboard.html"
     return FileResponse(dashboard_path)
+
+@app.get("/login")
+async def aoh_login():
+    """Serve AOH (Agent Operations Hub) login page."""
+    login_path = Path(__file__).parent / "aoh_login.html"
+    return FileResponse(login_path)
+
+@app.get("/design-system.css")
+async def design_system_css():
+    """Serve design system CSS."""
+    css_path = Path(__file__).parent.parent.parent.parent / "design-system.css"
+    if css_path.exists():
+        return FileResponse(css_path, media_type="text/css")
+    return HTMLResponse(content="/* Design system CSS not found */", status_code=404)
 
 # ============================================================================
 # Demo Endpoint - Populate Platform with Sample Data
@@ -357,21 +485,22 @@ async def populate_demo_data(background_tasks: BackgroundTasks):
 
     for session_data in sample_sessions:
         try:
-            session_id = f"session_{str(uuid4())[:8]}"
-            session = CoordinationSession(
-                session_id=session_id,
-                name=session_data["name"],
+            # Create coordination using the manager's create_coordination method
+            result = await state.coordination_manager.create_coordination(
+                coordinator_id="system",
                 coordination_type=session_data["coordination_type"],
-                objective=session_data["objective"],
-                description=session_data["description"],
-                status=SessionStatus.ACTIVE.value,
-                created_at=datetime.now()
+                goal=session_data["objective"],
+                coordination_plan={"description": session_data["description"]},
+                metadata={"name": session_data["name"]}
             )
 
-            success = await state.coordination_manager.create_coordination(session)
-            if success:
+            if result.get("success"):
+                session_id = result.get("coordination_id")
                 results["sessions_created"].append(session_id)
                 state.stats["total_sessions_created"] += 1
+
+                # Start the coordination
+                await state.coordination_manager.start_coordination(session_id)
 
                 # Broadcast to WebSocket clients
                 background_tasks.add_task(
@@ -430,17 +559,18 @@ async def populate_demo_data(background_tasks: BackgroundTasks):
 
     for thought_data in sample_thoughts:
         try:
-            thought = Thought(
-                thought_id=f"thought_{str(uuid4())[:8]}",
+            # Use the contribute_thought method which creates the Thought internally
+            thought = await collective.contribute_thought(
                 agent_id=thought_data["agent_id"],
-                thought_type=thought_data["thought_type"],
+                thought_type=ThoughtType(thought_data["thought_type"]),
                 content=thought_data["content"],
                 confidence=thought_data["confidence"],
-                timestamp=datetime.now()
+                emotional_valence=0.0
             )
 
-            await collective.contribute_thought(thought)
-            results["thoughts_submitted"].append(thought.thought_id)
+            # Generate a thought ID for tracking
+            thought_id = f"{thought.agent_id}:{thought.timestamp.isoformat()}"
+            results["thoughts_submitted"].append(thought_id)
             state.stats["total_thoughts_submitted"] += 1
 
             # Broadcast to WebSocket clients
@@ -671,21 +801,24 @@ async def list_sessions():
     """List all coordination sessions."""
     try:
         sessions = []
-        for session_id, session in state.coordination_manager.sessions.items():
+        for session_id, session in state.coordination_manager.coordinations.items():
             completed_tasks = sum(
                 1 for t in session.tasks.values()
                 if t.status == TaskStatus.COMPLETED.value
             )
 
+            # Get name from metadata or use coordination_type
+            name = session.metadata.get("name", session.coordination_type)
+
             sessions.append({
-                "session_id": session.session_id,
-                "name": session.coordination_type,  # TODO: Add name field to session
+                "session_id": session.coordination_id,
+                "name": name,
                 "coordination_type": session.coordination_type,
                 "status": session.status,
                 "total_tasks": len(session.tasks),
                 "completed_tasks": completed_tasks,
                 "participant_count": len(session.participants),
-                "created_at": session.created_at.isoformat()
+                "created_at": session.created_at
             })
 
         return {
@@ -737,7 +870,7 @@ async def add_task(session_id: str, request: TaskCreationRequest, background_tas
 async def list_tasks(session_id: str):
     """List tasks in a session."""
     try:
-        session = state.coordination_manager.sessions.get(session_id)
+        session = state.coordination_manager.coordinations.get(session_id)
         if not session:
             raise HTTPException(status_code=404, detail="Session not found")
 
@@ -750,7 +883,6 @@ async def list_tasks(session_id: str):
                 "status": task.status,
                 "priority": task.priority,
                 "assigned_to": task.assigned_to,
-                "progress": task.progress,
                 "dependencies": task.dependencies
             })
 
@@ -769,21 +901,21 @@ async def acp_stats():
     """Get ACP coordination statistics."""
     try:
         active_sessions = sum(
-            1 for s in state.coordination_manager.sessions.values()
-            if s.status == "active"
+            1 for s in state.coordination_manager.coordinations.values()
+            if s.status == CoordinationStatus.ACTIVE.value
         )
 
         total_tasks = sum(
-            len(s.tasks) for s in state.coordination_manager.sessions.values()
+            len(s.tasks) for s in state.coordination_manager.coordinations.values()
         )
 
         completed_tasks = sum(
             sum(1 for t in s.tasks.values() if t.status == TaskStatus.COMPLETED.value)
-            for s in state.coordination_manager.sessions.values()
+            for s in state.coordination_manager.coordinations.values()
         )
 
         total_participants = sum(
-            len(s.participants) for s in state.coordination_manager.sessions.values()
+            len(s.participants) for s in state.coordination_manager.coordinations.values()
         )
 
         completion_rate = (completed_tasks / total_tasks * 100) if total_tasks > 0 else 0
@@ -979,18 +1111,44 @@ async def admin_stats():
 
         uptime_seconds = (datetime.utcnow() - state.stats["server_start_time"]).total_seconds()
 
+        # Format uptime as "Xh Ym"
+        hours = int(uptime_seconds // 3600)
+        minutes = int((uptime_seconds % 3600) // 60)
+        uptime_str = f"{hours}h {minutes}m"
+
+        # Get active agents count
+        active_agents = sum(
+            1 for a in state.network_registry.agents.values()
+            if a.health_status == AgentStatus.HEALTHY.value
+        )
+
         return {
             "success": True,
             "system": {
-                "uptime_seconds": uptime_seconds,
                 "total_agents_registered": state.stats["total_agents_registered"],
+                "active_agents": active_agents,
                 "total_sessions_created": state.stats["total_sessions_created"],
+                "active_sessions": acp_stats_data.get("active_sessions", 0),
                 "total_thoughts_submitted": state.stats["total_thoughts_submitted"],
-                "total_patterns_discovered": state.stats["total_patterns_discovered"]
+                "total_patterns_discovered": state.stats["total_patterns_discovered"],
+                "uptime": uptime_str,
+                "cpu_usage": 45.2,  # Mock data - would need psutil in production
+                "memory_usage": 62.1,  # Mock data - would need psutil in production
+                "error_rate": 0.02,  # Mock data - would track in production
+                "request_rate": 125.5  # Mock data - would track in production
             },
-            "anp": anp_stats_data,
-            "acp": acp_stats_data,
-            "aconsp": aconsp_stats_data
+            "anp": {
+                "registered_agents": anp_stats_data.get("total_agents", 0),
+                "healthy_agents": anp_stats_data.get("healthy_agents", 0)
+            },
+            "acp": {
+                "active_sessions": acp_stats_data.get("active_sessions", 0),
+                "total_tasks": acp_stats_data.get("total_tasks", 0)
+            },
+            "aconsp": {
+                "active_collectives": aconsp_stats_data.get("total_collectives", 0),
+                "thoughts_shared": aconsp_stats_data.get("total_thoughts", 0)
+            }
         }
 
     except Exception as e:
@@ -1081,6 +1239,19 @@ async def startup_event():
     print("   [OK] ACP (Agent Coordination Protocol)")
     print("   [OK] AConsP (Agent Consciousness Protocol)")
     print()
+
+    # Start market data simulator
+    try:
+        from superstandard.trading.market_data_simulator import market_simulator
+        from superstandard.trading.market_data_ws import ws_manager as ws_mgr
+        # Run simulator in background
+        asyncio.create_task(market_simulator.run(ws_mgr, update_interval=1.0))
+        print(">> Market Data Simulator:")
+        print("   [OK] Real-time price updates enabled (BTC/USD, ETH/USD, SOL/USD)")
+    except Exception as e:
+        print(f"   [WARN] Market data simulator not available: {e}")
+
+    print()
     print(">> Dashboard Hub:")
     print("   [HOME] http://localhost:8080/dashboard (Main landing page)")
     print()
@@ -1090,6 +1261,10 @@ async def startup_event():
     print("   [NET]   http://localhost:8080/dashboard/network")
     print("   [COORD] http://localhost:8080/dashboard/coordination")
     print("   [MIND]  http://localhost:8080/dashboard/consciousness")
+    print()
+    print(">> Trading Suite:")
+    print("   [RESEARCH] http://localhost:8080/trading/strategy-research")
+    print("   [BACKTEST] http://localhost:8080/trading/backtesting")
     print()
     print("=" * 80)
 
