@@ -6,18 +6,20 @@ Level 4 Composite Process
 Manage Financial Resources
 APQC ID: 9.3.1
 
-Orchestrates 5 child agents:
+Orchestrates 7 child agents:
   1. 9.3.1.4: Close periods
   2. 9.3.1.1: Process journal entries
-  3. 9.3.1.5: Review audits
-  4. 9.3.1.6: Optimize audits
-  5. 9.3.1.2: Post transactions
+  3. 9.3.1.7: Document audits
+  4. 9.3.1.5: Review audits
+  5. 9.3.1.8: Report audits
+  6. 9.3.1.6: Optimize audits
+  7. 9.3.1.2: Post transactions
 
 
 Orchestration Pattern: Sequential Workflow (Pipeline)
 Standards: BPMN 2.0, A2A Protocol
 
-Generated: 2025-11-18T01:11:36.681418
+Generated: 2025-11-18T01:19:11.432777
 Status: Production Ready
 </bpmn:documentation>
     <bpmn:startEvent id="Start_L4_9_3_1" name="Start Composite">
@@ -31,26 +33,36 @@ Status: Production Ready
       <bpmn:incoming>Flow_child1_to_child2</bpmn:incoming>
       <bpmn:outgoing>Flow_child2_to_child3</bpmn:outgoing>
     </bpmn:callActivity>
-    <bpmn:callActivity id="CallActivity_L4_child3" name="9.3.1.5: Review audits" calledElement="Process_9_3_1_5">
+    <bpmn:callActivity id="CallActivity_L4_child3" name="9.3.1.7: Document audits" calledElement="Process_9_3_1_7">
       <bpmn:incoming>Flow_child2_to_child3</bpmn:incoming>
       <bpmn:outgoing>Flow_child3_to_child4</bpmn:outgoing>
     </bpmn:callActivity>
-    <bpmn:callActivity id="CallActivity_L4_child4" name="9.3.1.6: Optimize audits" calledElement="Process_9_3_1_6">
+    <bpmn:callActivity id="CallActivity_L4_child4" name="9.3.1.5: Review audits" calledElement="Process_9_3_1_5">
       <bpmn:incoming>Flow_child3_to_child4</bpmn:incoming>
       <bpmn:outgoing>Flow_child4_to_child5</bpmn:outgoing>
     </bpmn:callActivity>
-    <bpmn:callActivity id="CallActivity_L4_child5" name="9.3.1.2: Post transactions" calledElement="Process_9_3_1_2">
+    <bpmn:callActivity id="CallActivity_L4_child5" name="9.3.1.8: Report audits" calledElement="Process_9_3_1_8">
       <bpmn:incoming>Flow_child4_to_child5</bpmn:incoming>
-      <bpmn:outgoing>Flow_child5_to_end</bpmn:outgoing>
+      <bpmn:outgoing>Flow_child5_to_child6</bpmn:outgoing>
+    </bpmn:callActivity>
+    <bpmn:callActivity id="CallActivity_L4_child6" name="9.3.1.6: Optimize audits" calledElement="Process_9_3_1_6">
+      <bpmn:incoming>Flow_child5_to_child6</bpmn:incoming>
+      <bpmn:outgoing>Flow_child6_to_child7</bpmn:outgoing>
+    </bpmn:callActivity>
+    <bpmn:callActivity id="CallActivity_L4_child7" name="9.3.1.2: Post transactions" calledElement="Process_9_3_1_2">
+      <bpmn:incoming>Flow_child6_to_child7</bpmn:incoming>
+      <bpmn:outgoing>Flow_child7_to_end</bpmn:outgoing>
     </bpmn:callActivity>
     <bpmn:sequenceFlow id="Flow_start_to_child1" sourceRef="Start_L4_9_3_1" targetRef="CallActivity_L4_child1" />
     <bpmn:sequenceFlow id="Flow_child1_to_child2" sourceRef="CallActivity_L4_child1" targetRef="CallActivity_L4_child2" />
     <bpmn:sequenceFlow id="Flow_child2_to_child3" sourceRef="CallActivity_L4_child2" targetRef="CallActivity_L4_child3" />
     <bpmn:sequenceFlow id="Flow_child3_to_child4" sourceRef="CallActivity_L4_child3" targetRef="CallActivity_L4_child4" />
     <bpmn:sequenceFlow id="Flow_child4_to_child5" sourceRef="CallActivity_L4_child4" targetRef="CallActivity_L4_child5" />
-    <bpmn:sequenceFlow id="Flow_child5_to_end" sourceRef="CallActivity_L4_child5" targetRef="End_L4_9_3_1" />
+    <bpmn:sequenceFlow id="Flow_child5_to_child6" sourceRef="CallActivity_L4_child5" targetRef="CallActivity_L4_child6" />
+    <bpmn:sequenceFlow id="Flow_child6_to_child7" sourceRef="CallActivity_L4_child6" targetRef="CallActivity_L4_child7" />
+    <bpmn:sequenceFlow id="Flow_child7_to_end" sourceRef="CallActivity_L4_child7" targetRef="End_L4_9_3_1" />
     <bpmn:endEvent id="End_L4_9_3_1" name="Composite Complete">
-      <bpmn:incoming>Flow_child5_to_end</bpmn:incoming>
+      <bpmn:incoming>Flow_child7_to_end</bpmn:incoming>
     </bpmn:endEvent>
   </bpmn:process>
   <bpmndi:BPMNDiagram id="Diagram_L4_9_3_1">
@@ -73,8 +85,14 @@ Status: Production Ready
       <bpmndi:BPMNShape id="Shape_CallActivity_L4_child5" bpmnElement="CallActivity_L4_child5">
         <dc:Bounds x="100" y="530" width="150" height="80" />
       </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Shape_CallActivity_L4_child6" bpmnElement="CallActivity_L4_child6">
+        <dc:Bounds x="100" y="630" width="150" height="80" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Shape_CallActivity_L4_child7" bpmnElement="CallActivity_L4_child7">
+        <dc:Bounds x="100" y="730" width="150" height="80" />
+      </bpmndi:BPMNShape>
       <bpmndi:BPMNShape id="Shape_End_L4_9_3_1" bpmnElement="End_L4_9_3_1">
-        <dc:Bounds x="150" y="630" width="36" height="36" />
+        <dc:Bounds x="150" y="830" width="36" height="36" />
       </bpmndi:BPMNShape>
     </bpmndi:BPMNPlane>
   </bpmndi:BPMNDiagram>

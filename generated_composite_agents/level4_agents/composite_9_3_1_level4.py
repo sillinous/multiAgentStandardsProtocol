@@ -5,7 +5,7 @@ Level 4 Activity: 9.3.1 - Composite APQC Agent
 APQC Level 4: 9.3.1
 Category: Manage Financial Resources (9.0)
 
-This is a COMPOSITE AGENT that orchestrates 5 child agents.
+This is a COMPOSITE AGENT that orchestrates 7 child agents.
 
 Orchestration Pattern: Sequential Workflow
 Standards: A2A, ANP, ACP, BPP, BDP, BRP, BMP, BCP, BIP
@@ -13,7 +13,9 @@ Standards: A2A, ANP, ACP, BPP, BDP, BRP, BMP, BCP, BIP
 Child Agents:
   - 9.3.1.4: Close periods
   - 9.3.1.1: Process journal entries
+  - 9.3.1.7: Document audits
   - 9.3.1.5: Review audits
+  - 9.3.1.8: Report audits
   - 9.3.1.6: Optimize audits
   - 9.3.1.2: Post transactions
 
@@ -39,7 +41,7 @@ class CompositeAgent_9_3_1:
     """
     Composite Agent for APQC Level 4: 9.3.1
 
-    Orchestrates 5 child agents in a coordinated workflow.
+    Orchestrates 7 child agents in a coordinated workflow.
     """
 
     def __init__(self):
@@ -48,7 +50,9 @@ class CompositeAgent_9_3_1:
         self.child_agent_ids = [
         "9.3.1.4",
         "9.3.1.1",
+        "9.3.1.7",
         "9.3.1.5",
+        "9.3.1.8",
         "9.3.1.6",
         "9.3.1.2"
 ]

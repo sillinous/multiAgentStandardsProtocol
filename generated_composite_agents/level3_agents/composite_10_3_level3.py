@@ -5,7 +5,7 @@ Level 3 Process: 10.3 - Composite APQC Agent
 APQC Level 3: 10.3
 Category: Acquire, Construct, and Manage Assets (10.0)
 
-This is a COMPOSITE AGENT that orchestrates 12 child agents.
+This is a COMPOSITE AGENT that orchestrates 13 child agents.
 
 Orchestration Pattern: Sequential Workflow
 Standards: A2A, ANP, ACP, BPP, BDP, BRP, BMP, BCP, BIP
@@ -18,10 +18,10 @@ Child Agents:
   - 10.3.1.4: Analyze asset performance
   - 10.3.2.4: Execute improvements
   - 10.3.1.5: Review projects
+  - 10.3.1.7: Document projects
   - 10.3.1.3: Measure asset reliability
   - 10.3.1.6: Optimize projects
-  - 10.3.2.6: Optimize lifecycle
-  ... and 2 more
+  ... and 3 more
 
 Generated: 2025-11-18
 Version: 3.0.0
@@ -44,7 +44,7 @@ class CompositeAgent_10_3:
     """
     Composite Agent for APQC Level 3: 10.3
 
-    Orchestrates 12 child agents in a coordinated workflow.
+    Orchestrates 13 child agents in a coordinated workflow.
     """
 
     def __init__(self):
@@ -58,6 +58,7 @@ class CompositeAgent_10_3:
         "10.3.1.4",
         "10.3.2.4",
         "10.3.1.5",
+        "10.3.1.7",
         "10.3.1.3",
         "10.3.1.6",
         "10.3.2.6",

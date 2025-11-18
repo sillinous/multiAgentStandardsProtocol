@@ -5,7 +5,7 @@ Level 4 Activity: 10.2.1 - Composite APQC Agent
 APQC Level 4: 10.2.1
 Category: Acquire, Construct, and Manage Assets (10.0)
 
-This is a COMPOSITE AGENT that orchestrates 6 child agents.
+This is a COMPOSITE AGENT that orchestrates 8 child agents.
 
 Orchestration Pattern: Sequential Workflow
 Standards: A2A, ANP, ACP, BPP, BDP, BRP, BMP, BCP, BIP
@@ -14,9 +14,11 @@ Child Agents:
   - 10.2.1.3: Plan maintenance resources
   - 10.2.1.1: Define maintenance objectives
   - 10.2.1.2: Establish maintenance policies
+  - 10.2.1.8: Report maintenance
   - 10.2.1.4: Set maintenance budgets
   - 10.2.1.6: Optimize maintenance
   - 10.2.1.5: Review maintenance
+  - 10.2.1.7: Document maintenance
 
 
 Generated: 2025-11-18
@@ -40,7 +42,7 @@ class CompositeAgent_10_2_1:
     """
     Composite Agent for APQC Level 4: 10.2.1
 
-    Orchestrates 6 child agents in a coordinated workflow.
+    Orchestrates 8 child agents in a coordinated workflow.
     """
 
     def __init__(self):
@@ -50,9 +52,11 @@ class CompositeAgent_10_2_1:
         "10.2.1.3",
         "10.2.1.1",
         "10.2.1.2",
+        "10.2.1.8",
         "10.2.1.4",
         "10.2.1.6",
-        "10.2.1.5"
+        "10.2.1.5",
+        "10.2.1.7"
 ]
         self.logger = logging.getLogger(f"CompositeAgent_10_2_1")
 

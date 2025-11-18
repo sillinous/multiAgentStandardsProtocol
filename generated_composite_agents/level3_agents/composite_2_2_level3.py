@@ -5,13 +5,14 @@ Level 3 Process: 2.2 - Composite APQC Agent
 APQC Level 3: 2.2
 Category: Develop and Manage Products and Services (2.0)
 
-This is a COMPOSITE AGENT that orchestrates 19 child agents.
+This is a COMPOSITE AGENT that orchestrates 25 child agents.
 
 Orchestration Pattern: Sequential Workflow
 Standards: A2A, ANP, ACP, BPP, BDP, BRP, BMP, BCP, BIP
 
 Child Agents:
   - 2.2.1.2: Create detailed design specifications
+  - 2.2.2.8: Report requirements
   - 2.2.1.4: Test prototypes
   - 2.2.2.5: Review requirements
   - 2.2.1.1: Develop product concepts
@@ -19,9 +20,8 @@ Child Agents:
   - 2.2.3.1: Define manufacturing requirements
   - 2.2.2.2: Gather customer feedback
   - 2.2.2.3: Refine product based on testing
-  - 2.2.1.6: Optimize designs
-  - 2.2.2.4: Finalize product design
-  ... and 9 more
+  - 2.2.2.7: Document requirements
+  ... and 15 more
 
 Generated: 2025-11-18
 Version: 3.0.0
@@ -44,7 +44,7 @@ class CompositeAgent_2_2:
     """
     Composite Agent for APQC Level 3: 2.2
 
-    Orchestrates 19 child agents in a coordinated workflow.
+    Orchestrates 25 child agents in a coordinated workflow.
     """
 
     def __init__(self):
@@ -52,6 +52,7 @@ class CompositeAgent_2_2:
         self.level = 3
         self.child_agent_ids = [
         "2.2.1.2",
+        "2.2.2.8",
         "2.2.1.4",
         "2.2.2.5",
         "2.2.1.1",
@@ -59,17 +60,22 @@ class CompositeAgent_2_2:
         "2.2.3.1",
         "2.2.2.2",
         "2.2.2.3",
+        "2.2.2.7",
+        "2.2.1.8",
         "2.2.1.6",
         "2.2.2.4",
         "2.2.3.5",
+        "2.2.3.7",
         "2.2.3.6",
         "2.2.3.3",
         "2.2.1.3",
         "2.2.2.1",
         "2.2.1.7",
+        "2.2.1.9",
         "2.2.2.6",
         "2.2.1.5",
-        "2.2.3.4"
+        "2.2.3.4",
+        "2.2.3.8"
 ]
         self.logger = logging.getLogger(f"CompositeAgent_2_2")
 

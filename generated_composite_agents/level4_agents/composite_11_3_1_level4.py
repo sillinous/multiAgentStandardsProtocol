@@ -5,13 +5,15 @@ Level 4 Activity: 11.3.1 - Composite APQC Agent
 APQC Level 4: 11.3.1
 Category: Manage Enterprise Risk, Compliance, and Governance (11.0)
 
-This is a COMPOSITE AGENT that orchestrates 6 child agents.
+This is a COMPOSITE AGENT that orchestrates 8 child agents.
 
 Orchestration Pattern: Sequential Workflow
 Standards: A2A, ANP, ACP, BPP, BDP, BRP, BMP, BCP, BIP
 
 Child Agents:
   - 11.3.1.3: Define roles and responsibilities
+  - 11.3.1.8: Report policies
+  - 11.3.1.7: Document policies
   - 11.3.1.1: Define governance structure
   - 11.3.1.6: Optimize policies
   - 11.3.1.5: Review policies
@@ -40,7 +42,7 @@ class CompositeAgent_11_3_1:
     """
     Composite Agent for APQC Level 4: 11.3.1
 
-    Orchestrates 6 child agents in a coordinated workflow.
+    Orchestrates 8 child agents in a coordinated workflow.
     """
 
     def __init__(self):
@@ -48,6 +50,8 @@ class CompositeAgent_11_3_1:
         self.level = 4
         self.child_agent_ids = [
         "11.3.1.3",
+        "11.3.1.8",
+        "11.3.1.7",
         "11.3.1.1",
         "11.3.1.6",
         "11.3.1.5",

@@ -6,47 +6,57 @@ Level 4 Composite Process
 Develop and Manage Products and Services
 APQC ID: 2.2.2
 
-Orchestrates 6 child agents:
-  1. 2.2.2.5: Review requirements
-  2. 2.2.2.2: Gather customer feedback
-  3. 2.2.2.3: Refine product based on testing
-  4. 2.2.2.4: Finalize product design
-  5. 2.2.2.1: Conduct alpha/beta testing
-  6. 2.2.2.6: Optimize requirements
+Orchestrates 8 child agents:
+  1. 2.2.2.8: Report requirements
+  2. 2.2.2.5: Review requirements
+  3. 2.2.2.2: Gather customer feedback
+  4. 2.2.2.3: Refine product based on testing
+  5. 2.2.2.7: Document requirements
+  6. 2.2.2.4: Finalize product design
+  7. 2.2.2.1: Conduct alpha/beta testing
+  8. 2.2.2.6: Optimize requirements
 
 
 Orchestration Pattern: Sequential Workflow (Pipeline)
 Standards: BPMN 2.0, A2A Protocol
 
-Generated: 2025-11-18T01:11:36.615493
+Generated: 2025-11-18T01:19:11.349397
 Status: Production Ready
 </bpmn:documentation>
     <bpmn:startEvent id="Start_L4_2_2_2" name="Start Composite">
       <bpmn:outgoing>Flow_start_to_child1</bpmn:outgoing>
     </bpmn:startEvent>
-    <bpmn:callActivity id="CallActivity_L4_child1" name="2.2.2.5: Review requirements" calledElement="Process_2_2_2_5">
+    <bpmn:callActivity id="CallActivity_L4_child1" name="2.2.2.8: Report requirements" calledElement="Process_2_2_2_8">
       <bpmn:incoming>Flow_start_to_child1</bpmn:incoming>
       <bpmn:outgoing>Flow_child1_to_child2</bpmn:outgoing>
     </bpmn:callActivity>
-    <bpmn:callActivity id="CallActivity_L4_child2" name="2.2.2.2: Gather customer feedback" calledElement="Process_2_2_2_2">
+    <bpmn:callActivity id="CallActivity_L4_child2" name="2.2.2.5: Review requirements" calledElement="Process_2_2_2_5">
       <bpmn:incoming>Flow_child1_to_child2</bpmn:incoming>
       <bpmn:outgoing>Flow_child2_to_child3</bpmn:outgoing>
     </bpmn:callActivity>
-    <bpmn:callActivity id="CallActivity_L4_child3" name="2.2.2.3: Refine product based on testin..." calledElement="Process_2_2_2_3">
+    <bpmn:callActivity id="CallActivity_L4_child3" name="2.2.2.2: Gather customer feedback" calledElement="Process_2_2_2_2">
       <bpmn:incoming>Flow_child2_to_child3</bpmn:incoming>
       <bpmn:outgoing>Flow_child3_to_child4</bpmn:outgoing>
     </bpmn:callActivity>
-    <bpmn:callActivity id="CallActivity_L4_child4" name="2.2.2.4: Finalize product design" calledElement="Process_2_2_2_4">
+    <bpmn:callActivity id="CallActivity_L4_child4" name="2.2.2.3: Refine product based on testin..." calledElement="Process_2_2_2_3">
       <bpmn:incoming>Flow_child3_to_child4</bpmn:incoming>
       <bpmn:outgoing>Flow_child4_to_child5</bpmn:outgoing>
     </bpmn:callActivity>
-    <bpmn:callActivity id="CallActivity_L4_child5" name="2.2.2.1: Conduct alpha/beta testing" calledElement="Process_2_2_2_1">
+    <bpmn:callActivity id="CallActivity_L4_child5" name="2.2.2.7: Document requirements" calledElement="Process_2_2_2_7">
       <bpmn:incoming>Flow_child4_to_child5</bpmn:incoming>
       <bpmn:outgoing>Flow_child5_to_child6</bpmn:outgoing>
     </bpmn:callActivity>
-    <bpmn:callActivity id="CallActivity_L4_child6" name="2.2.2.6: Optimize requirements" calledElement="Process_2_2_2_6">
+    <bpmn:callActivity id="CallActivity_L4_child6" name="2.2.2.4: Finalize product design" calledElement="Process_2_2_2_4">
       <bpmn:incoming>Flow_child5_to_child6</bpmn:incoming>
-      <bpmn:outgoing>Flow_child6_to_end</bpmn:outgoing>
+      <bpmn:outgoing>Flow_child6_to_child7</bpmn:outgoing>
+    </bpmn:callActivity>
+    <bpmn:callActivity id="CallActivity_L4_child7" name="2.2.2.1: Conduct alpha/beta testing" calledElement="Process_2_2_2_1">
+      <bpmn:incoming>Flow_child6_to_child7</bpmn:incoming>
+      <bpmn:outgoing>Flow_child7_to_child8</bpmn:outgoing>
+    </bpmn:callActivity>
+    <bpmn:callActivity id="CallActivity_L4_child8" name="2.2.2.6: Optimize requirements" calledElement="Process_2_2_2_6">
+      <bpmn:incoming>Flow_child7_to_child8</bpmn:incoming>
+      <bpmn:outgoing>Flow_child8_to_end</bpmn:outgoing>
     </bpmn:callActivity>
     <bpmn:sequenceFlow id="Flow_start_to_child1" sourceRef="Start_L4_2_2_2" targetRef="CallActivity_L4_child1" />
     <bpmn:sequenceFlow id="Flow_child1_to_child2" sourceRef="CallActivity_L4_child1" targetRef="CallActivity_L4_child2" />
@@ -54,9 +64,11 @@ Status: Production Ready
     <bpmn:sequenceFlow id="Flow_child3_to_child4" sourceRef="CallActivity_L4_child3" targetRef="CallActivity_L4_child4" />
     <bpmn:sequenceFlow id="Flow_child4_to_child5" sourceRef="CallActivity_L4_child4" targetRef="CallActivity_L4_child5" />
     <bpmn:sequenceFlow id="Flow_child5_to_child6" sourceRef="CallActivity_L4_child5" targetRef="CallActivity_L4_child6" />
-    <bpmn:sequenceFlow id="Flow_child6_to_end" sourceRef="CallActivity_L4_child6" targetRef="End_L4_2_2_2" />
+    <bpmn:sequenceFlow id="Flow_child6_to_child7" sourceRef="CallActivity_L4_child6" targetRef="CallActivity_L4_child7" />
+    <bpmn:sequenceFlow id="Flow_child7_to_child8" sourceRef="CallActivity_L4_child7" targetRef="CallActivity_L4_child8" />
+    <bpmn:sequenceFlow id="Flow_child8_to_end" sourceRef="CallActivity_L4_child8" targetRef="End_L4_2_2_2" />
     <bpmn:endEvent id="End_L4_2_2_2" name="Composite Complete">
-      <bpmn:incoming>Flow_child6_to_end</bpmn:incoming>
+      <bpmn:incoming>Flow_child8_to_end</bpmn:incoming>
     </bpmn:endEvent>
   </bpmn:process>
   <bpmndi:BPMNDiagram id="Diagram_L4_2_2_2">
@@ -82,8 +94,14 @@ Status: Production Ready
       <bpmndi:BPMNShape id="Shape_CallActivity_L4_child6" bpmnElement="CallActivity_L4_child6">
         <dc:Bounds x="100" y="630" width="150" height="80" />
       </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Shape_CallActivity_L4_child7" bpmnElement="CallActivity_L4_child7">
+        <dc:Bounds x="100" y="730" width="150" height="80" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Shape_CallActivity_L4_child8" bpmnElement="CallActivity_L4_child8">
+        <dc:Bounds x="100" y="830" width="150" height="80" />
+      </bpmndi:BPMNShape>
       <bpmndi:BPMNShape id="Shape_End_L4_2_2_2" bpmnElement="End_L4_2_2_2">
-        <dc:Bounds x="150" y="730" width="36" height="36" />
+        <dc:Bounds x="150" y="930" width="36" height="36" />
       </bpmndi:BPMNShape>
     </bpmndi:BPMNPlane>
   </bpmndi:BPMNDiagram>

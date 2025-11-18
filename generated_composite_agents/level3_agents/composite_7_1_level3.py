@@ -5,7 +5,7 @@ Level 3 Process: 7.1 - Composite APQC Agent
 APQC Level 3: 7.1
 Category: Manage Human Capital (7.0)
 
-This is a COMPOSITE AGENT that orchestrates 18 child agents.
+This is a COMPOSITE AGENT that orchestrates 24 child agents.
 
 Orchestration Pattern: Sequential Workflow
 Standards: A2A, ANP, ACP, BPP, BDP, BRP, BMP, BCP, BIP
@@ -16,12 +16,12 @@ Child Agents:
   - 7.1.2.2: Ensure regulatory compliance
   - 7.1.2.1: Create HR policies
   - 7.1.3.2: Analyze workforce gaps
+  - 7.1.1.7: Document performance
   - 7.1.1.4: Develop HR roadmap
   - 7.1.2.6: Optimize compensation
+  - 7.1.1.8: Report performance
   - 7.1.1.3: Assess HR capabilities
-  - 7.1.1.5: Review performance
-  - 7.1.1.2: Define HR objectives
-  ... and 8 more
+  ... and 14 more
 
 Generated: 2025-11-18
 Version: 3.0.0
@@ -44,7 +44,7 @@ class CompositeAgent_7_1:
     """
     Composite Agent for APQC Level 3: 7.1
 
-    Orchestrates 18 child agents in a coordinated workflow.
+    Orchestrates 24 child agents in a coordinated workflow.
     """
 
     def __init__(self):
@@ -56,15 +56,21 @@ class CompositeAgent_7_1:
         "7.1.2.2",
         "7.1.2.1",
         "7.1.3.2",
+        "7.1.1.7",
         "7.1.1.4",
         "7.1.2.6",
+        "7.1.1.8",
         "7.1.1.3",
+        "7.1.3.7",
         "7.1.1.5",
         "7.1.1.2",
         "7.1.3.5",
         "7.1.3.6",
+        "7.1.2.7",
         "7.1.1.6",
         "7.1.2.5",
+        "7.1.2.8",
+        "7.1.3.8",
         "7.1.2.4",
         "7.1.3.1",
         "7.1.3.4",

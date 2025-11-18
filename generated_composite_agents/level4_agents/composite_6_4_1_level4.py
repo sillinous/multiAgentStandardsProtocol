@@ -5,7 +5,7 @@ Level 4 Activity: 6.4.1 - Composite APQC Agent
 APQC Level 4: 6.4.1
 Category: Manage Customer Service (6.0)
 
-This is a COMPOSITE AGENT that orchestrates 6 child agents.
+This is a COMPOSITE AGENT that orchestrates 7 child agents.
 
 Orchestration Pattern: Sequential Workflow
 Standards: A2A, ANP, ACP, BPP, BDP, BRP, BMP, BCP, BIP
@@ -15,6 +15,7 @@ Child Agents:
   - 6.4.1.5: Review support
   - 6.4.1.4: Set resolution timeframe
   - 6.4.1.3: Assign to resolver
+  - 6.4.1.7: Document support
   - 6.4.1.6: Optimize support
   - 6.4.1.1: Log issue
 
@@ -40,7 +41,7 @@ class CompositeAgent_6_4_1:
     """
     Composite Agent for APQC Level 4: 6.4.1
 
-    Orchestrates 6 child agents in a coordinated workflow.
+    Orchestrates 7 child agents in a coordinated workflow.
     """
 
     def __init__(self):
@@ -51,6 +52,7 @@ class CompositeAgent_6_4_1:
         "6.4.1.5",
         "6.4.1.4",
         "6.4.1.3",
+        "6.4.1.7",
         "6.4.1.6",
         "6.4.1.1"
 ]

@@ -5,7 +5,7 @@ Level 4 Activity: 4.2.4 - Composite APQC Agent
 APQC Level 4: 4.2.4
 Category: Deliver Physical Products (4.0)
 
-This is a COMPOSITE AGENT that orchestrates 6 child agents.
+This is a COMPOSITE AGENT that orchestrates 8 child agents.
 
 Orchestration Pattern: Sequential Workflow
 Standards: A2A, ANP, ACP, BPP, BDP, BRP, BMP, BCP, BIP
@@ -13,6 +13,8 @@ Standards: A2A, ANP, ACP, BPP, BDP, BRP, BMP, BCP, BIP
 Child Agents:
   - 4.2.4.6: Optimize orders
   - 4.2.4.5: Review orders
+  - 4.2.4.8: Report orders
+  - 4.2.4.7: Document orders
   - 4.2.4.2: Develop strategic suppliers
   - 4.2.4.1: Monitor supplier performance
   - 4.2.4.4: Certify suppliers
@@ -40,7 +42,7 @@ class CompositeAgent_4_2_4:
     """
     Composite Agent for APQC Level 4: 4.2.4
 
-    Orchestrates 6 child agents in a coordinated workflow.
+    Orchestrates 8 child agents in a coordinated workflow.
     """
 
     def __init__(self):
@@ -49,6 +51,8 @@ class CompositeAgent_4_2_4:
         self.child_agent_ids = [
         "4.2.4.6",
         "4.2.4.5",
+        "4.2.4.8",
+        "4.2.4.7",
         "4.2.4.2",
         "4.2.4.1",
         "4.2.4.4",

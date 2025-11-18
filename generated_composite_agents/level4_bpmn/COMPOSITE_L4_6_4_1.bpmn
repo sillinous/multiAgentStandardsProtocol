@@ -6,19 +6,20 @@ Level 4 Composite Process
 Manage Customer Service
 APQC ID: 6.4.1
 
-Orchestrates 6 child agents:
+Orchestrates 7 child agents:
   1. 6.4.1.2: Assess severity
   2. 6.4.1.5: Review support
   3. 6.4.1.4: Set resolution timeframe
   4. 6.4.1.3: Assign to resolver
-  5. 6.4.1.6: Optimize support
-  6. 6.4.1.1: Log issue
+  5. 6.4.1.7: Document support
+  6. 6.4.1.6: Optimize support
+  7. 6.4.1.1: Log issue
 
 
 Orchestration Pattern: Sequential Workflow (Pipeline)
 Standards: BPMN 2.0, A2A Protocol
 
-Generated: 2025-11-18T01:11:36.651852
+Generated: 2025-11-18T01:19:11.393850
 Status: Production Ready
 </bpmn:documentation>
     <bpmn:startEvent id="Start_L4_6_4_1" name="Start Composite">
@@ -40,13 +41,17 @@ Status: Production Ready
       <bpmn:incoming>Flow_child3_to_child4</bpmn:incoming>
       <bpmn:outgoing>Flow_child4_to_child5</bpmn:outgoing>
     </bpmn:callActivity>
-    <bpmn:callActivity id="CallActivity_L4_child5" name="6.4.1.6: Optimize support" calledElement="Process_6_4_1_6">
+    <bpmn:callActivity id="CallActivity_L4_child5" name="6.4.1.7: Document support" calledElement="Process_6_4_1_7">
       <bpmn:incoming>Flow_child4_to_child5</bpmn:incoming>
       <bpmn:outgoing>Flow_child5_to_child6</bpmn:outgoing>
     </bpmn:callActivity>
-    <bpmn:callActivity id="CallActivity_L4_child6" name="6.4.1.1: Log issue" calledElement="Process_6_4_1_1">
+    <bpmn:callActivity id="CallActivity_L4_child6" name="6.4.1.6: Optimize support" calledElement="Process_6_4_1_6">
       <bpmn:incoming>Flow_child5_to_child6</bpmn:incoming>
-      <bpmn:outgoing>Flow_child6_to_end</bpmn:outgoing>
+      <bpmn:outgoing>Flow_child6_to_child7</bpmn:outgoing>
+    </bpmn:callActivity>
+    <bpmn:callActivity id="CallActivity_L4_child7" name="6.4.1.1: Log issue" calledElement="Process_6_4_1_1">
+      <bpmn:incoming>Flow_child6_to_child7</bpmn:incoming>
+      <bpmn:outgoing>Flow_child7_to_end</bpmn:outgoing>
     </bpmn:callActivity>
     <bpmn:sequenceFlow id="Flow_start_to_child1" sourceRef="Start_L4_6_4_1" targetRef="CallActivity_L4_child1" />
     <bpmn:sequenceFlow id="Flow_child1_to_child2" sourceRef="CallActivity_L4_child1" targetRef="CallActivity_L4_child2" />
@@ -54,9 +59,10 @@ Status: Production Ready
     <bpmn:sequenceFlow id="Flow_child3_to_child4" sourceRef="CallActivity_L4_child3" targetRef="CallActivity_L4_child4" />
     <bpmn:sequenceFlow id="Flow_child4_to_child5" sourceRef="CallActivity_L4_child4" targetRef="CallActivity_L4_child5" />
     <bpmn:sequenceFlow id="Flow_child5_to_child6" sourceRef="CallActivity_L4_child5" targetRef="CallActivity_L4_child6" />
-    <bpmn:sequenceFlow id="Flow_child6_to_end" sourceRef="CallActivity_L4_child6" targetRef="End_L4_6_4_1" />
+    <bpmn:sequenceFlow id="Flow_child6_to_child7" sourceRef="CallActivity_L4_child6" targetRef="CallActivity_L4_child7" />
+    <bpmn:sequenceFlow id="Flow_child7_to_end" sourceRef="CallActivity_L4_child7" targetRef="End_L4_6_4_1" />
     <bpmn:endEvent id="End_L4_6_4_1" name="Composite Complete">
-      <bpmn:incoming>Flow_child6_to_end</bpmn:incoming>
+      <bpmn:incoming>Flow_child7_to_end</bpmn:incoming>
     </bpmn:endEvent>
   </bpmn:process>
   <bpmndi:BPMNDiagram id="Diagram_L4_6_4_1">
@@ -82,8 +88,11 @@ Status: Production Ready
       <bpmndi:BPMNShape id="Shape_CallActivity_L4_child6" bpmnElement="CallActivity_L4_child6">
         <dc:Bounds x="100" y="630" width="150" height="80" />
       </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Shape_CallActivity_L4_child7" bpmnElement="CallActivity_L4_child7">
+        <dc:Bounds x="100" y="730" width="150" height="80" />
+      </bpmndi:BPMNShape>
       <bpmndi:BPMNShape id="Shape_End_L4_6_4_1" bpmnElement="End_L4_6_4_1">
-        <dc:Bounds x="150" y="730" width="36" height="36" />
+        <dc:Bounds x="150" y="830" width="36" height="36" />
       </bpmndi:BPMNShape>
     </bpmndi:BPMNPlane>
   </bpmndi:BPMNDiagram>

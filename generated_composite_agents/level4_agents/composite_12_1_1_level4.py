@@ -5,16 +5,19 @@ Level 4 Activity: 12.1.1 - Composite APQC Agent
 APQC Level 4: 12.1.1
 Category: Manage External Relationships (12.0)
 
-This is a COMPOSITE AGENT that orchestrates 6 child agents.
+This is a COMPOSITE AGENT that orchestrates 9 child agents.
 
 Orchestration Pattern: Sequential Workflow
 Standards: A2A, ANP, ACP, BPP, BDP, BRP, BMP, BCP, BIP
 
 Child Agents:
   - 12.1.1.1: Communicate with investors
+  - 12.1.1.9: Plan contracts
   - 12.1.1.6: Optimize contracts
+  - 12.1.1.7: Document contracts
   - 12.1.1.4: Maintain investor database
   - 12.1.1.5: Review contracts
+  - 12.1.1.8: Report contracts
   - 12.1.1.3: Organize investor events
   - 12.1.1.2: Respond to investor inquiries
 
@@ -40,7 +43,7 @@ class CompositeAgent_12_1_1:
     """
     Composite Agent for APQC Level 4: 12.1.1
 
-    Orchestrates 6 child agents in a coordinated workflow.
+    Orchestrates 9 child agents in a coordinated workflow.
     """
 
     def __init__(self):
@@ -48,9 +51,12 @@ class CompositeAgent_12_1_1:
         self.level = 4
         self.child_agent_ids = [
         "12.1.1.1",
+        "12.1.1.9",
         "12.1.1.6",
+        "12.1.1.7",
         "12.1.1.4",
         "12.1.1.5",
+        "12.1.1.8",
         "12.1.1.3",
         "12.1.1.2"
 ]

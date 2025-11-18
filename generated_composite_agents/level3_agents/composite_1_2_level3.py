@@ -5,7 +5,7 @@ Level 3 Process: 1.2 - Composite APQC Agent
 APQC Level 3: 1.2
 Category: Develop Vision and Strategy (1.0)
 
-This is a COMPOSITE AGENT that orchestrates 23 child agents.
+This is a COMPOSITE AGENT that orchestrates 30 child agents.
 
 Orchestration Pattern: Sequential Workflow
 Standards: A2A, ANP, ACP, BPP, BDP, BRP, BMP, BCP, BIP
@@ -18,10 +18,10 @@ Child Agents:
   - 1.2.3.4: Communicate organizational strategy
   - 1.2.4.2: Develop sales and marketing strategy
   - 1.2.4.1: Develop product/service strategy
-  - 1.2.3.2: Prioritize long-term strategic objectives
-  - 1.2.2.6: Optimize performance
-  - 1.2.2.3: Develop sustainability strategy
-  ... and 13 more
+  - 1.2.1.6: Optimize initiatives
+  - 1.2.1.7: Document initiatives
+  - 1.2.4.7: Document strategy
+  ... and 20 more
 
 Generated: 2025-11-18
 Version: 3.0.0
@@ -44,7 +44,7 @@ class CompositeAgent_1_2:
     """
     Composite Agent for APQC Level 3: 1.2
 
-    Orchestrates 23 child agents in a coordinated workflow.
+    Orchestrates 30 child agents in a coordinated workflow.
     """
 
     def __init__(self):
@@ -58,12 +58,18 @@ class CompositeAgent_1_2:
         "1.2.3.4",
         "1.2.4.2",
         "1.2.4.1",
+        "1.2.1.6",
+        "1.2.1.7",
+        "1.2.4.7",
+        "1.2.2.8",
         "1.2.3.2",
         "1.2.2.6",
         "1.2.2.3",
+        "1.2.3.7",
         "1.2.1.5",
         "1.2.3.1",
         "1.2.1.1",
+        "1.2.2.7",
         "1.2.1.2",
         "1.2.4.4",
         "1.2.3.5",
@@ -72,6 +78,7 @@ class CompositeAgent_1_2:
         "1.2.4.6",
         "1.2.3.6",
         "1.2.3.3",
+        "1.2.3.8",
         "1.2.2.5",
         "1.2.1.3"
 ]

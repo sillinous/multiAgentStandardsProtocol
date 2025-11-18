@@ -5,7 +5,7 @@ Level 3 Process: 7.3 - Composite APQC Agent
 APQC Level 3: 7.3
 Category: Manage Human Capital (7.0)
 
-This is a COMPOSITE AGENT that orchestrates 18 child agents.
+This is a COMPOSITE AGENT that orchestrates 21 child agents.
 
 Orchestration Pattern: Sequential Workflow
 Standards: A2A, ANP, ACP, BPP, BDP, BRP, BMP, BCP, BIP
@@ -17,11 +17,11 @@ Child Agents:
   - 7.3.2.4: Certify competencies
   - 7.3.3.5: Review workforce
   - 7.3.3.6: Optimize workforce
+  - 7.3.1.7: Document benefits
+  - 7.3.1.8: Report benefits
   - 7.3.3.3: Create career plans
   - 7.3.2.2: Assess competencies
-  - 7.3.3.2: Identify career paths
-  - 7.3.1.3: Provide training
-  ... and 8 more
+  ... and 11 more
 
 Generated: 2025-11-18
 Version: 3.0.0
@@ -44,7 +44,7 @@ class CompositeAgent_7_3:
     """
     Composite Agent for APQC Level 3: 7.3
 
-    Orchestrates 18 child agents in a coordinated workflow.
+    Orchestrates 21 child agents in a coordinated workflow.
     """
 
     def __init__(self):
@@ -57,6 +57,8 @@ class CompositeAgent_7_3:
         "7.3.2.4",
         "7.3.3.5",
         "7.3.3.6",
+        "7.3.1.7",
+        "7.3.1.8",
         "7.3.3.3",
         "7.3.2.2",
         "7.3.3.2",
@@ -66,6 +68,7 @@ class CompositeAgent_7_3:
         "7.3.1.2",
         "7.3.2.3",
         "7.3.2.1",
+        "7.3.2.7",
         "7.3.1.4",
         "7.3.2.6",
         "7.3.2.5"

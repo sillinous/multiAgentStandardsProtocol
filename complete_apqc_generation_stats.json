@@ -1,11 +1,11 @@
 {
-  "agents_generated": 0,
-  "bpmn_generated": 0,
-  "categories_processed": 0,
+  "agents_generated": 162,
+  "bpmn_generated": 162,
+  "categories_processed": 10,
   "errors": [],
-  "total_existing": 880,
-  "total_new": 0,
-  "total_agents": 880,
+  "total_existing": 921,
+  "total_new": 162,
+  "total_agents": 1083,
   "target": 1100,
-  "coverage_percent": 80.0
+  "coverage_percent": 98.45454545454545
 }

@@ -5,7 +5,7 @@ Level 3 Process: 13.2 - Composite APQC Agent
 APQC Level 3: 13.2
 Category: Develop and Manage Business Capabilities (13.0)
 
-This is a COMPOSITE AGENT that orchestrates 18 child agents.
+This is a COMPOSITE AGENT that orchestrates 24 child agents.
 
 Orchestration Pattern: Sequential Workflow
 Standards: A2A, ANP, ACP, BPP, BDP, BRP, BMP, BCP, BIP
@@ -14,14 +14,14 @@ Child Agents:
   - 13.2.2.5: Review improvement
   - 13.2.3.5: Review governance
   - 13.2.3.1: Track adoption metrics
+  - 13.2.1.8: Report innovation
   - 13.2.3.6: Optimize governance
   - 13.2.1.6: Optimize innovation
   - 13.2.1.1: Assess change readiness
+  - 13.2.3.8: Report governance
   - 13.2.2.3: Implement changes
   - 13.2.3.3: Reinforce changes
-  - 13.2.3.2: Address resistance
-  - 13.2.2.6: Optimize improvement
-  ... and 8 more
+  ... and 14 more
 
 Generated: 2025-11-18
 Version: 3.0.0
@@ -44,7 +44,7 @@ class CompositeAgent_13_2:
     """
     Composite Agent for APQC Level 3: 13.2
 
-    Orchestrates 18 child agents in a coordinated workflow.
+    Orchestrates 24 child agents in a coordinated workflow.
     """
 
     def __init__(self):
@@ -54,9 +54,11 @@ class CompositeAgent_13_2:
         "13.2.2.5",
         "13.2.3.5",
         "13.2.3.1",
+        "13.2.1.8",
         "13.2.3.6",
         "13.2.1.6",
         "13.2.1.1",
+        "13.2.3.8",
         "13.2.2.3",
         "13.2.3.3",
         "13.2.3.2",
@@ -64,11 +66,15 @@ class CompositeAgent_13_2:
         "13.2.2.4",
         "13.2.1.3",
         "13.2.3.4",
+        "13.2.2.8",
+        "13.2.1.7",
         "13.2.1.2",
+        "13.2.3.7",
         "13.2.2.1",
         "13.2.1.5",
         "13.2.2.2",
-        "13.2.1.4"
+        "13.2.1.4",
+        "13.2.2.7"
 ]
         self.logger = logging.getLogger(f"CompositeAgent_13_2")
 

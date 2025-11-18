@@ -5,23 +5,23 @@ Level 2 ProcessGroup: 3.0 - Composite APQC Agent
 APQC Level 2: 3.0
 Category: Market and Sell Products and Services (3.0)
 
-This is a COMPOSITE AGENT that orchestrates 68 child agents.
+This is a COMPOSITE AGENT that orchestrates 85 child agents.
 
 Orchestration Pattern: Sequential Workflow
 Standards: A2A, ANP, ACP, BPP, BDP, BRP, BMP, BCP, BIP
 
 Child Agents:
   - 3.3.3.6: Optimize campaigns
+  - 3.3.2.8: Report marketing
   - 3.4.1.6: Optimize marketing
   - 3.2.3.6: Optimize marketing
   - 3.1.1.7: Document prospects
   - 3.3.1.5: Review sales
   - 3.4.1.5: Review marketing
-  - 3.2.1.6: Optimize opportunities
-  - 3.2.2.5: Review sales
-  - 3.1.2.5: Review opportunities
-  - 3.4.2.5: Review campaigns
-  ... and 58 more
+  - 3.1.1.9: Plan prospects
+  - 3.2.2.7: Document sales
+  - 3.1.2.8: Report opportunities
+  ... and 75 more
 
 Generated: 2025-11-18
 Version: 3.0.0
@@ -44,7 +44,7 @@ class CompositeAgent_3_0:
     """
     Composite Agent for APQC Level 2: 3.0
 
-    Orchestrates 68 child agents in a coordinated workflow.
+    Orchestrates 85 child agents in a coordinated workflow.
     """
 
     def __init__(self):
@@ -52,22 +52,39 @@ class CompositeAgent_3_0:
         self.level = 2
         self.child_agent_ids = [
         "3.3.3.6",
+        "3.3.2.8",
         "3.4.1.6",
         "3.2.3.6",
         "3.1.1.7",
         "3.3.1.5",
         "3.4.1.5",
+        "3.1.1.9",
+        "3.2.2.7",
+        "3.1.2.8",
         "3.2.1.6",
+        "3.3.1.7",
+        "3.3.3.7",
         "3.2.2.5",
         "3.1.2.5",
         "3.4.2.5",
+        "3.1.1.8",
         "3.2.3.5",
+        "3.3.1.8",
+        "3.2.3.8",
+        "3.1.2.7",
         "3.2.1.5",
         "3.2.2.6",
+        "3.2.3.7",
         "3.3.2.5",
+        "3.4.1.7",
         "3.3.3.5",
+        "3.3.2.7",
+        "3.2.2.8",
         "3.1.2.6",
+        "3.3.3.8",
+        "3.2.1.8",
         "3.3.2.6",
+        "3.2.1.7",
         "3.3.1.6",
         "3.1.1.6",
         "3.4.3.4",

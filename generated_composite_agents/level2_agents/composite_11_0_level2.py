@@ -5,13 +5,14 @@ Level 2 ProcessGroup: 11.0 - Composite APQC Agent
 APQC Level 2: 11.0
 Category: Manage Enterprise Risk, Compliance, and Governance (11.0)
 
-This is a COMPOSITE AGENT that orchestrates 58 child agents.
+This is a COMPOSITE AGENT that orchestrates 70 child agents.
 
 Orchestration Pattern: Sequential Workflow
 Standards: A2A, ANP, ACP, BPP, BDP, BRP, BMP, BCP, BIP
 
 Child Agents:
   - 11.3.2.4: Track action items
+  - 11.1.3.8: Report policies
   - 11.2.1.5: Review audits
   - 11.3.1.3: Define roles and responsibilities
   - 11.1.3.2: Implement controls
@@ -19,9 +20,8 @@ Child Agents:
   - 11.4.2.5: Review risks
   - 11.2.1.6: Optimize audits
   - 11.1.3.5: Review policies
-  - 11.4.3.3: Re-audit if needed
-  - 11.1.3.6: Optimize policies
-  ... and 48 more
+  - 11.3.1.8: Report policies
+  ... and 60 more
 
 Generated: 2025-11-18
 Version: 3.0.0
@@ -44,7 +44,7 @@ class CompositeAgent_11_0:
     """
     Composite Agent for APQC Level 2: 11.0
 
-    Orchestrates 58 child agents in a coordinated workflow.
+    Orchestrates 70 child agents in a coordinated workflow.
     """
 
     def __init__(self):
@@ -52,6 +52,7 @@ class CompositeAgent_11_0:
         self.level = 2
         self.child_agent_ids = [
         "11.3.2.4",
+        "11.1.3.8",
         "11.2.1.5",
         "11.3.1.3",
         "11.1.3.2",
@@ -59,6 +60,8 @@ class CompositeAgent_11_0:
         "11.4.2.5",
         "11.2.1.6",
         "11.1.3.5",
+        "11.3.1.8",
+        "11.3.1.7",
         "11.4.3.3",
         "11.1.3.6",
         "11.2.1.3",
@@ -80,11 +83,15 @@ class CompositeAgent_11_0:
         "11.2.2.5",
         "11.4.3.4",
         "11.1.3.1",
+        "11.2.1.8",
         "11.2.2.1",
+        "11.1.2.7",
+        "11.1.3.7",
         "11.2.1.2",
         "11.2.2.6",
         "11.3.2.5",
         "11.1.3.4",
+        "11.2.2.7",
         "11.4.3.1",
         "11.2.2.4",
         "11.1.1.2",
@@ -100,15 +107,20 @@ class CompositeAgent_11_0:
         "11.4.1.6",
         "11.4.2.4",
         "11.4.1.3",
+        "11.1.1.7",
         "11.3.2.6",
+        "11.2.2.8",
         "11.4.1.1",
         "11.1.1.1",
         "11.1.1.4",
+        "11.1.2.8",
         "11.1.2.2",
+        "11.2.1.7",
         "11.1.2.1",
         "11.1.1.3",
         "11.3.2.3",
-        "11.4.2.6"
+        "11.4.2.6",
+        "11.1.1.8"
 ]
         self.logger = logging.getLogger(f"CompositeAgent_11_0")
 

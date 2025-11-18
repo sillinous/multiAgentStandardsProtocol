@@ -5,7 +5,7 @@ Level 4 Activity: 7.3.2 - Composite APQC Agent
 APQC Level 4: 7.3.2
 Category: Manage Human Capital (7.0)
 
-This is a COMPOSITE AGENT that orchestrates 6 child agents.
+This is a COMPOSITE AGENT that orchestrates 7 child agents.
 
 Orchestration Pattern: Sequential Workflow
 Standards: A2A, ANP, ACP, BPP, BDP, BRP, BMP, BCP, BIP
@@ -15,6 +15,7 @@ Child Agents:
   - 7.3.2.2: Assess competencies
   - 7.3.2.3: Develop competencies
   - 7.3.2.1: Define competency models
+  - 7.3.2.7: Document training
   - 7.3.2.6: Optimize training
   - 7.3.2.5: Review training
 
@@ -40,7 +41,7 @@ class CompositeAgent_7_3_2:
     """
     Composite Agent for APQC Level 4: 7.3.2
 
-    Orchestrates 6 child agents in a coordinated workflow.
+    Orchestrates 7 child agents in a coordinated workflow.
     """
 
     def __init__(self):
@@ -51,6 +52,7 @@ class CompositeAgent_7_3_2:
         "7.3.2.2",
         "7.3.2.3",
         "7.3.2.1",
+        "7.3.2.7",
         "7.3.2.6",
         "7.3.2.5"
 ]

@@ -5,7 +5,7 @@ Level 4 Activity: 3.2.3 - Composite APQC Agent
 APQC Level 4: 3.2.3
 Category: Market and Sell Products and Services (3.0)
 
-This is a COMPOSITE AGENT that orchestrates 6 child agents.
+This is a COMPOSITE AGENT that orchestrates 8 child agents.
 
 Orchestration Pattern: Sequential Workflow
 Standards: A2A, ANP, ACP, BPP, BDP, BRP, BMP, BCP, BIP
@@ -13,6 +13,8 @@ Standards: A2A, ANP, ACP, BPP, BDP, BRP, BMP, BCP, BIP
 Child Agents:
   - 3.2.3.6: Optimize marketing
   - 3.2.3.5: Review marketing
+  - 3.2.3.8: Report marketing
+  - 3.2.3.7: Document marketing
   - 3.2.3.4: Manage channel partners
   - 3.2.3.2: Select distribution channels
   - 3.2.3.1: Evaluate channel options
@@ -40,7 +42,7 @@ class CompositeAgent_3_2_3:
     """
     Composite Agent for APQC Level 4: 3.2.3
 
-    Orchestrates 6 child agents in a coordinated workflow.
+    Orchestrates 8 child agents in a coordinated workflow.
     """
 
     def __init__(self):
@@ -49,6 +51,8 @@ class CompositeAgent_3_2_3:
         self.child_agent_ids = [
         "3.2.3.6",
         "3.2.3.5",
+        "3.2.3.8",
+        "3.2.3.7",
         "3.2.3.4",
         "3.2.3.2",
         "3.2.3.1",

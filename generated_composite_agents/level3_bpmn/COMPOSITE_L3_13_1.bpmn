@@ -6,25 +6,29 @@ Level 3 Composite Process
 Develop and Manage Business Capabilities
 APQC ID: 13.1
 
-Orchestrates 12 child agents:
+Orchestrates 16 child agents:
   1. 13.1.1.3: Document processes
   2. 13.1.1.6: Optimize knowledge
   3. 13.1.2.1: Identify improvement opportunities
   4. 13.1.1.2: Identify core processes
-  5. 13.1.1.4: Establish process standards
-  6. 13.1.2.3: Implement process changes
-  7. 13.1.2.5: Review innovation
-  8. 13.1.2.6: Optimize innovation
-  9. 13.1.2.2: Design improved processes
-  10. 13.1.1.1: Define process governance
-  11. 13.1.1.5: Review knowledge
-  12. 13.1.2.4: Monitor process performance
+  5. 13.1.2.8: Report innovation
+  6. 13.1.1.7: Document knowledge
+  7. 13.1.2.7: Document innovation
+  8. 13.1.1.4: Establish process standards
+  9. 13.1.2.3: Implement process changes
+  10. 13.1.1.8: Report knowledge
+  11. 13.1.2.5: Review innovation
+  12. 13.1.2.6: Optimize innovation
+  13. 13.1.2.2: Design improved processes
+  14. 13.1.1.1: Define process governance
+  15. 13.1.1.5: Review knowledge
+  16. 13.1.2.4: Monitor process performance
 
 
 Orchestration Pattern: Sequential Workflow (Pipeline)
 Standards: BPMN 2.0, A2A Protocol
 
-Generated: 2025-11-18T01:11:36.708619
+Generated: 2025-11-18T01:19:11.470488
 Status: Production Ready
 </bpmn:documentation>
     <bpmn:startEvent id="Start_L3_13_1" name="Start Composite">
@@ -46,37 +50,53 @@ Status: Production Ready
       <bpmn:incoming>Flow_child3_to_child4</bpmn:incoming>
       <bpmn:outgoing>Flow_child4_to_child5</bpmn:outgoing>
     </bpmn:callActivity>
-    <bpmn:callActivity id="CallActivity_L3_child5" name="13.1.1.4: Establish process standards" calledElement="Process_13_1_1_4">
+    <bpmn:callActivity id="CallActivity_L3_child5" name="13.1.2.8: Report innovation" calledElement="Process_13_1_2_8">
       <bpmn:incoming>Flow_child4_to_child5</bpmn:incoming>
       <bpmn:outgoing>Flow_child5_to_child6</bpmn:outgoing>
     </bpmn:callActivity>
-    <bpmn:callActivity id="CallActivity_L3_child6" name="13.1.2.3: Implement process changes" calledElement="Process_13_1_2_3">
+    <bpmn:callActivity id="CallActivity_L3_child6" name="13.1.1.7: Document knowledge" calledElement="Process_13_1_1_7">
       <bpmn:incoming>Flow_child5_to_child6</bpmn:incoming>
       <bpmn:outgoing>Flow_child6_to_child7</bpmn:outgoing>
     </bpmn:callActivity>
-    <bpmn:callActivity id="CallActivity_L3_child7" name="13.1.2.5: Review innovation" calledElement="Process_13_1_2_5">
+    <bpmn:callActivity id="CallActivity_L3_child7" name="13.1.2.7: Document innovation" calledElement="Process_13_1_2_7">
       <bpmn:incoming>Flow_child6_to_child7</bpmn:incoming>
       <bpmn:outgoing>Flow_child7_to_child8</bpmn:outgoing>
     </bpmn:callActivity>
-    <bpmn:callActivity id="CallActivity_L3_child8" name="13.1.2.6: Optimize innovation" calledElement="Process_13_1_2_6">
+    <bpmn:callActivity id="CallActivity_L3_child8" name="13.1.1.4: Establish process standards" calledElement="Process_13_1_1_4">
       <bpmn:incoming>Flow_child7_to_child8</bpmn:incoming>
       <bpmn:outgoing>Flow_child8_to_child9</bpmn:outgoing>
     </bpmn:callActivity>
-    <bpmn:callActivity id="CallActivity_L3_child9" name="13.1.2.2: Design improved processes" calledElement="Process_13_1_2_2">
+    <bpmn:callActivity id="CallActivity_L3_child9" name="13.1.2.3: Implement process changes" calledElement="Process_13_1_2_3">
       <bpmn:incoming>Flow_child8_to_child9</bpmn:incoming>
       <bpmn:outgoing>Flow_child9_to_child10</bpmn:outgoing>
     </bpmn:callActivity>
-    <bpmn:callActivity id="CallActivity_L3_child10" name="13.1.1.1: Define process governance" calledElement="Process_13_1_1_1">
+    <bpmn:callActivity id="CallActivity_L3_child10" name="13.1.1.8: Report knowledge" calledElement="Process_13_1_1_8">
       <bpmn:incoming>Flow_child9_to_child10</bpmn:incoming>
       <bpmn:outgoing>Flow_child10_to_child11</bpmn:outgoing>
     </bpmn:callActivity>
-    <bpmn:callActivity id="CallActivity_L3_child11" name="13.1.1.5: Review knowledge" calledElement="Process_13_1_1_5">
+    <bpmn:callActivity id="CallActivity_L3_child11" name="13.1.2.5: Review innovation" calledElement="Process_13_1_2_5">
       <bpmn:incoming>Flow_child10_to_child11</bpmn:incoming>
       <bpmn:outgoing>Flow_child11_to_child12</bpmn:outgoing>
     </bpmn:callActivity>
-    <bpmn:callActivity id="CallActivity_L3_child12" name="13.1.2.4: Monitor process performance" calledElement="Process_13_1_2_4">
+    <bpmn:callActivity id="CallActivity_L3_child12" name="13.1.2.6: Optimize innovation" calledElement="Process_13_1_2_6">
       <bpmn:incoming>Flow_child11_to_child12</bpmn:incoming>
-      <bpmn:outgoing>Flow_child12_to_end</bpmn:outgoing>
+      <bpmn:outgoing>Flow_child12_to_child13</bpmn:outgoing>
+    </bpmn:callActivity>
+    <bpmn:callActivity id="CallActivity_L3_child13" name="13.1.2.2: Design improved processes" calledElement="Process_13_1_2_2">
+      <bpmn:incoming>Flow_child12_to_child13</bpmn:incoming>
+      <bpmn:outgoing>Flow_child13_to_child14</bpmn:outgoing>
+    </bpmn:callActivity>
+    <bpmn:callActivity id="CallActivity_L3_child14" name="13.1.1.1: Define process governance" calledElement="Process_13_1_1_1">
+      <bpmn:incoming>Flow_child13_to_child14</bpmn:incoming>
+      <bpmn:outgoing>Flow_child14_to_child15</bpmn:outgoing>
+    </bpmn:callActivity>
+    <bpmn:callActivity id="CallActivity_L3_child15" name="13.1.1.5: Review knowledge" calledElement="Process_13_1_1_5">
+      <bpmn:incoming>Flow_child14_to_child15</bpmn:incoming>
+      <bpmn:outgoing>Flow_child15_to_child16</bpmn:outgoing>
+    </bpmn:callActivity>
+    <bpmn:callActivity id="CallActivity_L3_child16" name="13.1.2.4: Monitor process performance" calledElement="Process_13_1_2_4">
+      <bpmn:incoming>Flow_child15_to_child16</bpmn:incoming>
+      <bpmn:outgoing>Flow_child16_to_end</bpmn:outgoing>
     </bpmn:callActivity>
     <bpmn:sequenceFlow id="Flow_start_to_child1" sourceRef="Start_L3_13_1" targetRef="CallActivity_L3_child1" />
     <bpmn:sequenceFlow id="Flow_child1_to_child2" sourceRef="CallActivity_L3_child1" targetRef="CallActivity_L3_child2" />
@@ -90,9 +110,13 @@ Status: Production Ready
     <bpmn:sequenceFlow id="Flow_child9_to_child10" sourceRef="CallActivity_L3_child9" targetRef="CallActivity_L3_child10" />
     <bpmn:sequenceFlow id="Flow_child10_to_child11" sourceRef="CallActivity_L3_child10" targetRef="CallActivity_L3_child11" />
     <bpmn:sequenceFlow id="Flow_child11_to_child12" sourceRef="CallActivity_L3_child11" targetRef="CallActivity_L3_child12" />
-    <bpmn:sequenceFlow id="Flow_child12_to_end" sourceRef="CallActivity_L3_child12" targetRef="End_L3_13_1" />
+    <bpmn:sequenceFlow id="Flow_child12_to_child13" sourceRef="CallActivity_L3_child12" targetRef="CallActivity_L3_child13" />
+    <bpmn:sequenceFlow id="Flow_child13_to_child14" sourceRef="CallActivity_L3_child13" targetRef="CallActivity_L3_child14" />
+    <bpmn:sequenceFlow id="Flow_child14_to_child15" sourceRef="CallActivity_L3_child14" targetRef="CallActivity_L3_child15" />
+    <bpmn:sequenceFlow id="Flow_child15_to_child16" sourceRef="CallActivity_L3_child15" targetRef="CallActivity_L3_child16" />
+    <bpmn:sequenceFlow id="Flow_child16_to_end" sourceRef="CallActivity_L3_child16" targetRef="End_L3_13_1" />
     <bpmn:endEvent id="End_L3_13_1" name="Composite Complete">
-      <bpmn:incoming>Flow_child12_to_end</bpmn:incoming>
+      <bpmn:incoming>Flow_child16_to_end</bpmn:incoming>
     </bpmn:endEvent>
   </bpmn:process>
   <bpmndi:BPMNDiagram id="Diagram_L3_13_1">
@@ -136,8 +160,20 @@ Status: Production Ready
       <bpmndi:BPMNShape id="Shape_CallActivity_L3_child12" bpmnElement="CallActivity_L3_child12">
         <dc:Bounds x="100" y="1230" width="150" height="80" />
       </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Shape_CallActivity_L3_child13" bpmnElement="CallActivity_L3_child13">
+        <dc:Bounds x="100" y="1330" width="150" height="80" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Shape_CallActivity_L3_child14" bpmnElement="CallActivity_L3_child14">
+        <dc:Bounds x="100" y="1430" width="150" height="80" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Shape_CallActivity_L3_child15" bpmnElement="CallActivity_L3_child15">
+        <dc:Bounds x="100" y="1530" width="150" height="80" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Shape_CallActivity_L3_child16" bpmnElement="CallActivity_L3_child16">
+        <dc:Bounds x="100" y="1630" width="150" height="80" />
+      </bpmndi:BPMNShape>
       <bpmndi:BPMNShape id="Shape_End_L3_13_1" bpmnElement="End_L3_13_1">
-        <dc:Bounds x="150" y="1330" width="36" height="36" />
+        <dc:Bounds x="150" y="1730" width="36" height="36" />
       </bpmndi:BPMNShape>
     </bpmndi:BPMNPlane>
   </bpmndi:BPMNDiagram>

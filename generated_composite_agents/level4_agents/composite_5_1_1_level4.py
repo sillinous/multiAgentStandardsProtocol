@@ -5,7 +5,7 @@ Level 4 Activity: 5.1.1 - Composite APQC Agent
 APQC Level 4: 5.1.1
 Category: Deliver Services (5.0)
 
-This is a COMPOSITE AGENT that orchestrates 6 child agents.
+This is a COMPOSITE AGENT that orchestrates 8 child agents.
 
 Orchestration Pattern: Sequential Workflow
 Standards: A2A, ANP, ACP, BPP, BDP, BRP, BMP, BCP, BIP
@@ -14,9 +14,11 @@ Child Agents:
   - 5.1.1.5: Review delivery
   - 5.1.1.6: Optimize delivery
   - 5.1.1.4: Develop service roadmap
+  - 5.1.1.8: Report delivery
   - 5.1.1.1: Define service objectives
   - 5.1.1.2: Assess service capabilities
   - 5.1.1.3: Identify improvement opportunities
+  - 5.1.1.7: Document delivery
 
 
 Generated: 2025-11-18
@@ -40,7 +42,7 @@ class CompositeAgent_5_1_1:
     """
     Composite Agent for APQC Level 4: 5.1.1
 
-    Orchestrates 6 child agents in a coordinated workflow.
+    Orchestrates 8 child agents in a coordinated workflow.
     """
 
     def __init__(self):
@@ -50,9 +52,11 @@ class CompositeAgent_5_1_1:
         "5.1.1.5",
         "5.1.1.6",
         "5.1.1.4",
+        "5.1.1.8",
         "5.1.1.1",
         "5.1.1.2",
-        "5.1.1.3"
+        "5.1.1.3",
+        "5.1.1.7"
 ]
         self.logger = logging.getLogger(f"CompositeAgent_5_1_1")
 

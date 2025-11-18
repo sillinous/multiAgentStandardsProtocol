@@ -5,7 +5,7 @@ Level 4 Activity: 13.1.1 - Composite APQC Agent
 APQC Level 4: 13.1.1
 Category: Develop and Manage Business Capabilities (13.0)
 
-This is a COMPOSITE AGENT that orchestrates 6 child agents.
+This is a COMPOSITE AGENT that orchestrates 8 child agents.
 
 Orchestration Pattern: Sequential Workflow
 Standards: A2A, ANP, ACP, BPP, BDP, BRP, BMP, BCP, BIP
@@ -14,7 +14,9 @@ Child Agents:
   - 13.1.1.3: Document processes
   - 13.1.1.6: Optimize knowledge
   - 13.1.1.2: Identify core processes
+  - 13.1.1.7: Document knowledge
   - 13.1.1.4: Establish process standards
+  - 13.1.1.8: Report knowledge
   - 13.1.1.1: Define process governance
   - 13.1.1.5: Review knowledge
 
@@ -40,7 +42,7 @@ class CompositeAgent_13_1_1:
     """
     Composite Agent for APQC Level 4: 13.1.1
 
-    Orchestrates 6 child agents in a coordinated workflow.
+    Orchestrates 8 child agents in a coordinated workflow.
     """
 
     def __init__(self):
@@ -50,7 +52,9 @@ class CompositeAgent_13_1_1:
         "13.1.1.3",
         "13.1.1.6",
         "13.1.1.2",
+        "13.1.1.7",
         "13.1.1.4",
+        "13.1.1.8",
         "13.1.1.1",
         "13.1.1.5"
 ]

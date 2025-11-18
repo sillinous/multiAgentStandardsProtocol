@@ -5,7 +5,7 @@ Level 3 Process: 7.2 - Composite APQC Agent
 APQC Level 3: 7.2
 Category: Manage Human Capital (7.0)
 
-This is a COMPOSITE AGENT that orchestrates 25 child agents.
+This is a COMPOSITE AGENT that orchestrates 33 child agents.
 
 Orchestration Pattern: Sequential Workflow
 Standards: A2A, ANP, ACP, BPP, BDP, BRP, BMP, BCP, BIP
@@ -16,12 +16,12 @@ Child Agents:
   - 7.2.3.3: Conduct interviews
   - 7.2.4.4: Assign to role
   - 7.2.4.2: Complete paperwork
+  - 7.2.1.8: Report compensation
+  - 7.2.3.8: Report training
   - 7.2.2.2: Source candidates
   - 7.2.1.6: Optimize compensation
   - 7.2.3.4: Perform background checks
-  - 7.2.2.3: Build talent pipeline
-  - 7.2.3.5: Make hiring decisions
-  ... and 15 more
+  ... and 23 more
 
 Generated: 2025-11-18
 Version: 3.0.0
@@ -44,7 +44,7 @@ class CompositeAgent_7_2:
     """
     Composite Agent for APQC Level 3: 7.2
 
-    Orchestrates 25 child agents in a coordinated workflow.
+    Orchestrates 33 child agents in a coordinated workflow.
     """
 
     def __init__(self):
@@ -56,16 +56,23 @@ class CompositeAgent_7_2:
         "7.2.3.3",
         "7.2.4.4",
         "7.2.4.2",
+        "7.2.1.8",
+        "7.2.3.8",
         "7.2.2.2",
         "7.2.1.6",
         "7.2.3.4",
         "7.2.2.3",
+        "7.2.2.7",
         "7.2.3.5",
         "7.2.2.4",
         "7.2.1.3",
+        "7.2.4.8",
+        "7.2.1.7",
+        "7.2.3.9",
         "7.2.1.4",
         "7.2.1.1",
         "7.2.4.6",
+        "7.2.2.8",
         "7.2.4.5",
         "7.2.3.7",
         "7.2.3.1",
@@ -75,7 +82,8 @@ class CompositeAgent_7_2:
         "7.2.1.2",
         "7.2.2.6",
         "7.2.2.5",
-        "7.2.3.2"
+        "7.2.3.2",
+        "7.2.4.7"
 ]
         self.logger = logging.getLogger(f"CompositeAgent_7_2")
 

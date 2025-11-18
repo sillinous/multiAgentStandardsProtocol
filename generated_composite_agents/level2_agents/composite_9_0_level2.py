@@ -5,7 +5,7 @@ Level 2 ProcessGroup: 9.0 - Composite APQC Agent
 APQC Level 2: 9.0
 Category: Manage Financial Resources (9.0)
 
-This is a COMPOSITE AGENT that orchestrates 115 child agents.
+This is a COMPOSITE AGENT that orchestrates 140 child agents.
 
 Orchestration Pattern: Sequential Workflow
 Standards: A2A, ANP, ACP, BPP, BDP, BRP, BMP, BCP, BIP
@@ -16,12 +16,12 @@ Child Agents:
   - 9.4.3.5: Review transactions
   - 9.6.2.2: Generate payments
   - 9.5.3.4: Remit taxes and deductions
+  - 9.2.2.8: Report audits
   - 9.4.2.5: Review budgets
   - 9.2.1.6: Optimize compliance
   - 9.2.3.5: Review controls
-  - 9.2.1.2: Send invoices
-  - 9.4.1.5: Review controls
-  ... and 105 more
+  - 9.1.3.8: Report audits
+  ... and 130 more
 
 Generated: 2025-11-18
 Version: 3.0.0
@@ -44,7 +44,7 @@ class CompositeAgent_9_0:
     """
     Composite Agent for APQC Level 2: 9.0
 
-    Orchestrates 115 child agents in a coordinated workflow.
+    Orchestrates 140 child agents in a coordinated workflow.
     """
 
     def __init__(self):
@@ -56,19 +56,25 @@ class CompositeAgent_9_0:
         "9.4.3.5",
         "9.6.2.2",
         "9.5.3.4",
+        "9.2.2.8",
         "9.4.2.5",
         "9.2.1.6",
         "9.2.3.5",
+        "9.1.3.8",
         "9.2.1.2",
         "9.4.1.5",
         "9.3.2.1",
         "9.5.1.1",
         "9.1.2.6",
+        "9.4.1.7",
         "9.7.1.3",
+        "9.4.3.7",
         "9.2.3.2",
         "9.8.1.4",
+        "9.1.4.8",
         "9.3.2.3",
         "9.1.4.3",
+        "9.1.3.7",
         "9.2.2.5",
         "9.3.3.5",
         "9.2.3.1",
@@ -76,6 +82,7 @@ class CompositeAgent_9_0:
         "9.3.1.4",
         "9.5.3.3",
         "9.8.2.2",
+        "9.2.3.7",
         "9.4.1.4",
         "9.1.1.2",
         "9.4.1.3",
@@ -85,9 +92,11 @@ class CompositeAgent_9_0:
         "9.4.1.2",
         "9.2.1.4",
         "9.4.2.4",
+        "9.1.1.7",
         "9.3.2.6",
         "9.3.3.6",
         "9.1.4.1",
+        "9.3.2.7",
         "9.6.1.4",
         "9.1.4.4",
         "9.2.3.6",
@@ -95,6 +104,7 @@ class CompositeAgent_9_0:
         "9.3.1.1",
         "9.3.2.4",
         "9.1.1.3",
+        "9.3.2.8",
         "9.4.1.6",
         "9.7.1.2",
         "9.5.1.6",
@@ -104,7 +114,10 @@ class CompositeAgent_9_0:
         "9.5.2.3",
         "9.7.2.1",
         "9.1.1.5",
+        "9.2.3.8",
+        "9.1.4.7",
         "9.3.3.1",
+        "9.3.1.7",
         "9.7.2.4",
         "9.1.2.1",
         "9.1.3.2",
@@ -118,8 +131,11 @@ class CompositeAgent_9_0:
         "9.4.3.2",
         "9.2.2.4",
         "9.8.2.3",
+        "9.3.3.7",
         "9.5.1.5",
+        "9.4.2.7",
         "9.3.2.2",
+        "9.3.3.8",
         "9.4.1.1",
         "9.6.2.3",
         "9.2.3.4",
@@ -132,7 +148,9 @@ class CompositeAgent_9_0:
         "9.1.1.6",
         "9.3.1.5",
         "9.1.4.6",
+        "9.1.1.8",
         "9.8.1.2",
+        "9.2.1.7",
         "9.1.1.4",
         "9.4.3.1",
         "9.8.1.3",
@@ -146,23 +164,30 @@ class CompositeAgent_9_0:
         "9.1.3.5",
         "9.3.3.2",
         "9.1.1.1",
+        "9.3.1.8",
         "9.5.2.5",
+        "9.2.1.8",
         "9.7.1.1",
         "9.5.1.2",
         "9.6.1.2",
         "9.3.1.6",
         "9.4.2.1",
         "9.2.1.5",
+        "9.4.1.8",
         "9.6.2.1",
         "9.2.3.3",
         "9.1.4.5",
+        "9.1.2.8",
         "9.6.1.1",
         "9.4.2.2",
         "9.8.2.1",
+        "9.4.2.8",
+        "9.1.2.7",
         "9.3.1.2",
         "9.7.1.4",
         "9.8.1.1",
         "9.5.2.2",
+        "9.2.2.7",
         "9.2.1.3",
         "9.1.3.4",
         "9.1.3.3"

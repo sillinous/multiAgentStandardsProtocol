@@ -5,7 +5,7 @@ Level 3 Process: 6.2 - Composite APQC Agent
 APQC Level 3: 6.2
 Category: Manage Customer Service (6.0)
 
-This is a COMPOSITE AGENT that orchestrates 12 child agents.
+This is a COMPOSITE AGENT that orchestrates 16 child agents.
 
 Orchestration Pattern: Sequential Workflow
 Standards: A2A, ANP, ACP, BPP, BDP, BRP, BMP, BCP, BIP
@@ -17,11 +17,11 @@ Child Agents:
   - 6.2.2.4: Support social media
   - 6.2.1.1: Staff service centers
   - 6.2.1.2: Schedule agents
+  - 6.2.2.7: Document satisfaction
+  - 6.2.2.8: Report satisfaction
   - 6.2.2.5: Review satisfaction
   - 6.2.2.1: Support phone channel
-  - 6.2.2.2: Support email channel
-  - 6.2.2.3: Support chat channel
-  ... and 2 more
+  ... and 6 more
 
 Generated: 2025-11-18
 Version: 3.0.0
@@ -44,7 +44,7 @@ class CompositeAgent_6_2:
     """
     Composite Agent for APQC Level 3: 6.2
 
-    Orchestrates 12 child agents in a coordinated workflow.
+    Orchestrates 16 child agents in a coordinated workflow.
     """
 
     def __init__(self):
@@ -57,11 +57,15 @@ class CompositeAgent_6_2:
         "6.2.2.4",
         "6.2.1.1",
         "6.2.1.2",
+        "6.2.2.7",
+        "6.2.2.8",
         "6.2.2.5",
         "6.2.2.1",
         "6.2.2.2",
+        "6.2.1.8",
         "6.2.2.3",
         "6.2.2.6",
+        "6.2.1.7",
         "6.2.1.5"
 ]
         self.logger = logging.getLogger(f"CompositeAgent_6_2")

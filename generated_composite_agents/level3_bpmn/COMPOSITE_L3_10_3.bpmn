@@ -6,7 +6,7 @@ Level 3 Composite Process
 Acquire, Construct, and Manage Assets
 APQC ID: 10.3
 
-Orchestrates 12 child agents:
+Orchestrates 13 child agents:
   1. 10.3.2.1: Assess asset value
   2. 10.3.2.5: Review lifecycle
   3. 10.3.1.1: Track asset utilization
@@ -14,17 +14,18 @@ Orchestrates 12 child agents:
   5. 10.3.1.4: Analyze asset performance
   6. 10.3.2.4: Execute improvements
   7. 10.3.1.5: Review projects
-  8. 10.3.1.3: Measure asset reliability
-  9. 10.3.1.6: Optimize projects
-  10. 10.3.2.6: Optimize lifecycle
-  11. 10.3.2.3: Prioritize investments
-  12. 10.3.1.2: Monitor asset condition
+  8. 10.3.1.7: Document projects
+  9. 10.3.1.3: Measure asset reliability
+  10. 10.3.1.6: Optimize projects
+  11. 10.3.2.6: Optimize lifecycle
+  12. 10.3.2.3: Prioritize investments
+  13. 10.3.1.2: Monitor asset condition
 
 
 Orchestration Pattern: Sequential Workflow (Pipeline)
 Standards: BPMN 2.0, A2A Protocol
 
-Generated: 2025-11-18T01:11:36.699029
+Generated: 2025-11-18T01:19:11.457151
 Status: Production Ready
 </bpmn:documentation>
     <bpmn:startEvent id="Start_L3_10_3" name="Start Composite">
@@ -58,25 +59,29 @@ Status: Production Ready
       <bpmn:incoming>Flow_child6_to_child7</bpmn:incoming>
       <bpmn:outgoing>Flow_child7_to_child8</bpmn:outgoing>
     </bpmn:callActivity>
-    <bpmn:callActivity id="CallActivity_L3_child8" name="10.3.1.3: Measure asset reliability" calledElement="Process_10_3_1_3">
+    <bpmn:callActivity id="CallActivity_L3_child8" name="10.3.1.7: Document projects" calledElement="Process_10_3_1_7">
       <bpmn:incoming>Flow_child7_to_child8</bpmn:incoming>
       <bpmn:outgoing>Flow_child8_to_child9</bpmn:outgoing>
     </bpmn:callActivity>
-    <bpmn:callActivity id="CallActivity_L3_child9" name="10.3.1.6: Optimize projects" calledElement="Process_10_3_1_6">
+    <bpmn:callActivity id="CallActivity_L3_child9" name="10.3.1.3: Measure asset reliability" calledElement="Process_10_3_1_3">
       <bpmn:incoming>Flow_child8_to_child9</bpmn:incoming>
       <bpmn:outgoing>Flow_child9_to_child10</bpmn:outgoing>
     </bpmn:callActivity>
-    <bpmn:callActivity id="CallActivity_L3_child10" name="10.3.2.6: Optimize lifecycle" calledElement="Process_10_3_2_6">
+    <bpmn:callActivity id="CallActivity_L3_child10" name="10.3.1.6: Optimize projects" calledElement="Process_10_3_1_6">
       <bpmn:incoming>Flow_child9_to_child10</bpmn:incoming>
       <bpmn:outgoing>Flow_child10_to_child11</bpmn:outgoing>
     </bpmn:callActivity>
-    <bpmn:callActivity id="CallActivity_L3_child11" name="10.3.2.3: Prioritize investments" calledElement="Process_10_3_2_3">
+    <bpmn:callActivity id="CallActivity_L3_child11" name="10.3.2.6: Optimize lifecycle" calledElement="Process_10_3_2_6">
       <bpmn:incoming>Flow_child10_to_child11</bpmn:incoming>
       <bpmn:outgoing>Flow_child11_to_child12</bpmn:outgoing>
     </bpmn:callActivity>
-    <bpmn:callActivity id="CallActivity_L3_child12" name="10.3.1.2: Monitor asset condition" calledElement="Process_10_3_1_2">
+    <bpmn:callActivity id="CallActivity_L3_child12" name="10.3.2.3: Prioritize investments" calledElement="Process_10_3_2_3">
       <bpmn:incoming>Flow_child11_to_child12</bpmn:incoming>
-      <bpmn:outgoing>Flow_child12_to_end</bpmn:outgoing>
+      <bpmn:outgoing>Flow_child12_to_child13</bpmn:outgoing>
+    </bpmn:callActivity>
+    <bpmn:callActivity id="CallActivity_L3_child13" name="10.3.1.2: Monitor asset condition" calledElement="Process_10_3_1_2">
+      <bpmn:incoming>Flow_child12_to_child13</bpmn:incoming>
+      <bpmn:outgoing>Flow_child13_to_end</bpmn:outgoing>
     </bpmn:callActivity>
     <bpmn:sequenceFlow id="Flow_start_to_child1" sourceRef="Start_L3_10_3" targetRef="CallActivity_L3_child1" />
     <bpmn:sequenceFlow id="Flow_child1_to_child2" sourceRef="CallActivity_L3_child1" targetRef="CallActivity_L3_child2" />
@@ -90,9 +95,10 @@ Status: Production Ready
     <bpmn:sequenceFlow id="Flow_child9_to_child10" sourceRef="CallActivity_L3_child9" targetRef="CallActivity_L3_child10" />
     <bpmn:sequenceFlow id="Flow_child10_to_child11" sourceRef="CallActivity_L3_child10" targetRef="CallActivity_L3_child11" />
     <bpmn:sequenceFlow id="Flow_child11_to_child12" sourceRef="CallActivity_L3_child11" targetRef="CallActivity_L3_child12" />
-    <bpmn:sequenceFlow id="Flow_child12_to_end" sourceRef="CallActivity_L3_child12" targetRef="End_L3_10_3" />
+    <bpmn:sequenceFlow id="Flow_child12_to_child13" sourceRef="CallActivity_L3_child12" targetRef="CallActivity_L3_child13" />
+    <bpmn:sequenceFlow id="Flow_child13_to_end" sourceRef="CallActivity_L3_child13" targetRef="End_L3_10_3" />
     <bpmn:endEvent id="End_L3_10_3" name="Composite Complete">
-      <bpmn:incoming>Flow_child12_to_end</bpmn:incoming>
+      <bpmn:incoming>Flow_child13_to_end</bpmn:incoming>
     </bpmn:endEvent>
   </bpmn:process>
   <bpmndi:BPMNDiagram id="Diagram_L3_10_3">
@@ -136,8 +142,11 @@ Status: Production Ready
       <bpmndi:BPMNShape id="Shape_CallActivity_L3_child12" bpmnElement="CallActivity_L3_child12">
         <dc:Bounds x="100" y="1230" width="150" height="80" />
       </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Shape_CallActivity_L3_child13" bpmnElement="CallActivity_L3_child13">
+        <dc:Bounds x="100" y="1330" width="150" height="80" />
+      </bpmndi:BPMNShape>
       <bpmndi:BPMNShape id="Shape_End_L3_10_3" bpmnElement="End_L3_10_3">
-        <dc:Bounds x="150" y="1330" width="36" height="36" />
+        <dc:Bounds x="150" y="1430" width="36" height="36" />
       </bpmndi:BPMNShape>
     </bpmndi:BPMNPlane>
   </bpmndi:BPMNDiagram>

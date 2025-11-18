@@ -3,14 +3,15 @@ Level 3 Process: 11.1 - Composite APQC Agent
 ============================================================
 
 APQC Level 3: 11.1
-Category: Manage Enterprise Risk, Compliance, and Governance (11.0)
+Category: Manage Enterprise Risk and Compliance (11.0)
 
-This is a COMPOSITE AGENT that orchestrates 18 child agents.
+This is a COMPOSITE AGENT that orchestrates 24 child agents.
 
 Orchestration Pattern: Sequential Workflow
 Standards: A2A, ANP, ACP, BPP, BDP, BRP, BMP, BCP, BIP
 
 Child Agents:
+  - 11.1.3.8: Report policies
   - 11.1.3.2: Implement controls
   - 11.1.3.5: Review policies
   - 11.1.3.6: Optimize policies
@@ -19,9 +20,8 @@ Child Agents:
   - 11.1.2.5: Review audits
   - 11.1.2.4: Prioritize risks
   - 11.1.3.1: Develop mitigation plans
-  - 11.1.3.4: Report risk status
-  - 11.1.1.2: Create risk policies
-  ... and 8 more
+  - 11.1.2.7: Document audits
+  ... and 14 more
 
 Generated: 2025-11-18
 Version: 3.0.0
@@ -44,13 +44,14 @@ class CompositeAgent_11_1:
     """
     Composite Agent for APQC Level 3: 11.1
 
-    Orchestrates 18 child agents in a coordinated workflow.
+    Orchestrates 24 child agents in a coordinated workflow.
     """
 
     def __init__(self):
         self.apqc_id = "11.1"
         self.level = 3
         self.child_agent_ids = [
+        "11.1.3.8",
         "11.1.3.2",
         "11.1.3.5",
         "11.1.3.6",
@@ -59,16 +60,21 @@ class CompositeAgent_11_1:
         "11.1.2.5",
         "11.1.2.4",
         "11.1.3.1",
+        "11.1.2.7",
+        "11.1.3.7",
         "11.1.3.4",
         "11.1.1.2",
         "11.1.1.6",
         "11.1.3.3",
         "11.1.2.6",
+        "11.1.1.7",
         "11.1.1.1",
         "11.1.1.4",
+        "11.1.2.8",
         "11.1.2.2",
         "11.1.2.1",
-        "11.1.1.3"
+        "11.1.1.3",
+        "11.1.1.8"
 ]
         self.logger = logging.getLogger(f"CompositeAgent_11_1")
 

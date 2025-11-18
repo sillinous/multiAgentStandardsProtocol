@@ -5,12 +5,13 @@ Level 3 Process: 5.2 - Composite APQC Agent
 APQC Level 3: 5.2
 Category: Deliver Services (5.0)
 
-This is a COMPOSITE AGENT that orchestrates 24 child agents.
+This is a COMPOSITE AGENT that orchestrates 32 child agents.
 
 Orchestration Pattern: Sequential Workflow
 Standards: A2A, ANP, ACP, BPP, BDP, BRP, BMP, BCP, BIP
 
 Child Agents:
+  - 5.2.2.8: Report feedback
   - 5.2.2.3: Allocate equipment/tools
   - 5.2.1.2: Define service specifications
   - 5.2.2.4: Confirm schedules
@@ -18,10 +19,9 @@ Child Agents:
   - 5.2.1.4: Confirm resource availability
   - 5.2.4.6: Optimize services
   - 5.2.2.5: Review feedback
+  - 5.2.4.7: Document services
   - 5.2.4.4: Implement improvements
-  - 5.2.1.3: Establish service level agreements
-  - 5.2.1.6: Optimize quality
-  ... and 14 more
+  ... and 22 more
 
 Generated: 2025-11-18
 Version: 3.0.0
@@ -44,13 +44,14 @@ class CompositeAgent_5_2:
     """
     Composite Agent for APQC Level 3: 5.2
 
-    Orchestrates 24 child agents in a coordinated workflow.
+    Orchestrates 32 child agents in a coordinated workflow.
     """
 
     def __init__(self):
         self.apqc_id = "5.2"
         self.level = 3
         self.child_agent_ids = [
+        "5.2.2.8",
         "5.2.2.3",
         "5.2.1.2",
         "5.2.2.4",
@@ -58,13 +59,20 @@ class CompositeAgent_5_2:
         "5.2.1.4",
         "5.2.4.6",
         "5.2.2.5",
+        "5.2.4.7",
         "5.2.4.4",
+        "5.2.3.7",
+        "5.2.2.7",
         "5.2.1.3",
         "5.2.1.6",
         "5.2.2.1",
+        "5.2.1.7",
         "5.2.3.2",
+        "5.2.1.8",
         "5.2.2.2",
         "5.2.4.1",
+        "5.2.4.8",
+        "5.2.3.8",
         "5.2.1.5",
         "5.2.3.5",
         "5.2.3.3",

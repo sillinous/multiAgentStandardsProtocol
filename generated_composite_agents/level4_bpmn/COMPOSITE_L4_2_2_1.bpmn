@@ -6,20 +6,22 @@ Level 4 Composite Process
 Develop and Manage Products and Services
 APQC ID: 2.2.1
 
-Orchestrates 7 child agents:
+Orchestrates 9 child agents:
   1. 2.2.1.2: Create detailed design specifications
   2. 2.2.1.4: Test prototypes
   3. 2.2.1.1: Develop product concepts
-  4. 2.2.1.6: Optimize designs
-  5. 2.2.1.3: Build prototypes
-  6. 2.2.1.7: Document designs
-  7. 2.2.1.5: Conduct pilot production
+  4. 2.2.1.8: Report designs
+  5. 2.2.1.6: Optimize designs
+  6. 2.2.1.3: Build prototypes
+  7. 2.2.1.7: Document designs
+  8. 2.2.1.9: Plan designs
+  9. 2.2.1.5: Conduct pilot production
 
 
 Orchestration Pattern: Sequential Workflow (Pipeline)
 Standards: BPMN 2.0, A2A Protocol
 
-Generated: 2025-11-18T01:11:36.614726
+Generated: 2025-11-18T01:19:11.348377
 Status: Production Ready
 </bpmn:documentation>
     <bpmn:startEvent id="Start_L4_2_2_1" name="Start Composite">
@@ -37,21 +39,29 @@ Status: Production Ready
       <bpmn:incoming>Flow_child2_to_child3</bpmn:incoming>
       <bpmn:outgoing>Flow_child3_to_child4</bpmn:outgoing>
     </bpmn:callActivity>
-    <bpmn:callActivity id="CallActivity_L4_child4" name="2.2.1.6: Optimize designs" calledElement="Process_2_2_1_6">
+    <bpmn:callActivity id="CallActivity_L4_child4" name="2.2.1.8: Report designs" calledElement="Process_2_2_1_8">
       <bpmn:incoming>Flow_child3_to_child4</bpmn:incoming>
       <bpmn:outgoing>Flow_child4_to_child5</bpmn:outgoing>
     </bpmn:callActivity>
-    <bpmn:callActivity id="CallActivity_L4_child5" name="2.2.1.3: Build prototypes" calledElement="Process_2_2_1_3">
+    <bpmn:callActivity id="CallActivity_L4_child5" name="2.2.1.6: Optimize designs" calledElement="Process_2_2_1_6">
       <bpmn:incoming>Flow_child4_to_child5</bpmn:incoming>
       <bpmn:outgoing>Flow_child5_to_child6</bpmn:outgoing>
     </bpmn:callActivity>
-    <bpmn:callActivity id="CallActivity_L4_child6" name="2.2.1.7: Document designs" calledElement="Process_2_2_1_7">
+    <bpmn:callActivity id="CallActivity_L4_child6" name="2.2.1.3: Build prototypes" calledElement="Process_2_2_1_3">
       <bpmn:incoming>Flow_child5_to_child6</bpmn:incoming>
       <bpmn:outgoing>Flow_child6_to_child7</bpmn:outgoing>
     </bpmn:callActivity>
-    <bpmn:callActivity id="CallActivity_L4_child7" name="2.2.1.5: Conduct pilot production" calledElement="Process_2_2_1_5">
+    <bpmn:callActivity id="CallActivity_L4_child7" name="2.2.1.7: Document designs" calledElement="Process_2_2_1_7">
       <bpmn:incoming>Flow_child6_to_child7</bpmn:incoming>
-      <bpmn:outgoing>Flow_child7_to_end</bpmn:outgoing>
+      <bpmn:outgoing>Flow_child7_to_child8</bpmn:outgoing>
+    </bpmn:callActivity>
+    <bpmn:callActivity id="CallActivity_L4_child8" name="2.2.1.9: Plan designs" calledElement="Process_2_2_1_9">
+      <bpmn:incoming>Flow_child7_to_child8</bpmn:incoming>
+      <bpmn:outgoing>Flow_child8_to_child9</bpmn:outgoing>
+    </bpmn:callActivity>
+    <bpmn:callActivity id="CallActivity_L4_child9" name="2.2.1.5: Conduct pilot production" calledElement="Process_2_2_1_5">
+      <bpmn:incoming>Flow_child8_to_child9</bpmn:incoming>
+      <bpmn:outgoing>Flow_child9_to_end</bpmn:outgoing>
     </bpmn:callActivity>
     <bpmn:sequenceFlow id="Flow_start_to_child1" sourceRef="Start_L4_2_2_1" targetRef="CallActivity_L4_child1" />
     <bpmn:sequenceFlow id="Flow_child1_to_child2" sourceRef="CallActivity_L4_child1" targetRef="CallActivity_L4_child2" />
@@ -60,9 +70,11 @@ Status: Production Ready
     <bpmn:sequenceFlow id="Flow_child4_to_child5" sourceRef="CallActivity_L4_child4" targetRef="CallActivity_L4_child5" />
     <bpmn:sequenceFlow id="Flow_child5_to_child6" sourceRef="CallActivity_L4_child5" targetRef="CallActivity_L4_child6" />
     <bpmn:sequenceFlow id="Flow_child6_to_child7" sourceRef="CallActivity_L4_child6" targetRef="CallActivity_L4_child7" />
-    <bpmn:sequenceFlow id="Flow_child7_to_end" sourceRef="CallActivity_L4_child7" targetRef="End_L4_2_2_1" />
+    <bpmn:sequenceFlow id="Flow_child7_to_child8" sourceRef="CallActivity_L4_child7" targetRef="CallActivity_L4_child8" />
+    <bpmn:sequenceFlow id="Flow_child8_to_child9" sourceRef="CallActivity_L4_child8" targetRef="CallActivity_L4_child9" />
+    <bpmn:sequenceFlow id="Flow_child9_to_end" sourceRef="CallActivity_L4_child9" targetRef="End_L4_2_2_1" />
     <bpmn:endEvent id="End_L4_2_2_1" name="Composite Complete">
-      <bpmn:incoming>Flow_child7_to_end</bpmn:incoming>
+      <bpmn:incoming>Flow_child9_to_end</bpmn:incoming>
     </bpmn:endEvent>
   </bpmn:process>
   <bpmndi:BPMNDiagram id="Diagram_L4_2_2_1">
@@ -91,8 +103,14 @@ Status: Production Ready
       <bpmndi:BPMNShape id="Shape_CallActivity_L4_child7" bpmnElement="CallActivity_L4_child7">
         <dc:Bounds x="100" y="730" width="150" height="80" />
       </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Shape_CallActivity_L4_child8" bpmnElement="CallActivity_L4_child8">
+        <dc:Bounds x="100" y="830" width="150" height="80" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Shape_CallActivity_L4_child9" bpmnElement="CallActivity_L4_child9">
+        <dc:Bounds x="100" y="930" width="150" height="80" />
+      </bpmndi:BPMNShape>
       <bpmndi:BPMNShape id="Shape_End_L4_2_2_1" bpmnElement="End_L4_2_2_1">
-        <dc:Bounds x="150" y="830" width="36" height="36" />
+        <dc:Bounds x="150" y="1030" width="36" height="36" />
       </bpmndi:BPMNShape>
     </bpmndi:BPMNPlane>
   </bpmndi:BPMNDiagram>

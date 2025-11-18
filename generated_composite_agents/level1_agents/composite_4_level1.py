@@ -5,23 +5,23 @@ Level 1 Category: 4 - Composite APQC Agent
 APQC Level 1: 4
 Category: Deliver Physical Products (4.0)
 
-This is a COMPOSITE AGENT that orchestrates 82 child agents.
+This is a COMPOSITE AGENT that orchestrates 100 child agents.
 
 Orchestration Pattern: Sequential Workflow
 Standards: A2A, ANP, ACP, BPP, BDP, BRP, BMP, BCP, BIP
 
 Child Agents:
   - 4.3.1.6: Optimize deliveries
+  - 4.3.2.8: Report warehouse
   - 4.2.4.6: Optimize orders
   - 4.1.2.6: Optimize logistics
+  - 4.1.2.7: Document logistics
+  - 4.3.2.7: Document warehouse
+  - 4.1.2.8: Report logistics
   - 4.4.1.5: Review warehouse
   - 4.1.2.5: Review logistics
-  - 4.3.2.5: Review warehouse
-  - 4.1.1.5: Review inventory
-  - 4.2.1.6: Optimize logistics
-  - 4.1.1.6: Optimize inventory
-  - 4.1.3.5: Review deliveries
-  ... and 72 more
+  - 4.2.3.8: Report warehouse
+  ... and 90 more
 
 Generated: 2025-11-18
 Version: 3.0.0
@@ -44,7 +44,7 @@ class CompositeAgent_4:
     """
     Composite Agent for APQC Level 1: 4
 
-    Orchestrates 82 child agents in a coordinated workflow.
+    Orchestrates 100 child agents in a coordinated workflow.
     """
 
     def __init__(self):
@@ -52,27 +52,45 @@ class CompositeAgent_4:
         self.level = 1
         self.child_agent_ids = [
         "4.3.1.6",
+        "4.3.2.8",
         "4.2.4.6",
         "4.1.2.6",
+        "4.1.2.7",
+        "4.3.2.7",
+        "4.1.2.8",
         "4.4.1.5",
         "4.1.2.5",
+        "4.2.3.8",
+        "4.2.2.8",
+        "4.1.1.8",
+        "4.2.3.7",
+        "4.1.1.7",
         "4.3.2.5",
+        "4.1.3.7",
         "4.1.1.5",
         "4.2.1.6",
         "4.1.1.6",
         "4.1.3.5",
         "4.3.1.5",
         "4.3.3.5",
+        "4.3.1.8",
         "4.2.3.6",
+        "4.2.1.7",
         "4.1.3.6",
+        "4.3.1.7",
         "4.2.4.5",
         "4.2.2.5",
         "4.3.2.6",
+        "4.2.1.8",
         "4.3.3.6",
+        "4.2.4.8",
         "4.4.1.6",
+        "4.1.3.8",
+        "4.2.4.7",
         "4.2.1.5",
         "4.2.3.5",
         "4.2.2.6",
+        "4.2.2.7",
         "4.2.3.4",
         "4.2.1.2",
         "4.5.1.4",

@@ -5,7 +5,7 @@ Level 3 Process: 12.4 - Composite APQC Agent
 APQC Level 3: 12.4
 Category: Manage External Relationships (12.0)
 
-This is a COMPOSITE AGENT that orchestrates 18 child agents.
+This is a COMPOSITE AGENT that orchestrates 19 child agents.
 
 Orchestration Pattern: Sequential Workflow
 Standards: A2A, ANP, ACP, BPP, BDP, BRP, BMP, BCP, BIP
@@ -17,11 +17,11 @@ Child Agents:
   - 12.4.2.6: Optimize partners
   - 12.4.3.5: Review relationships
   - 12.4.2.5: Review partners
+  - 12.4.1.7: Document stakeholders
   - 12.4.3.3: Resolve partnership issues
   - 12.4.1.6: Optimize stakeholders
   - 12.4.1.3: Evaluate partners
-  - 12.4.3.6: Optimize relationships
-  ... and 8 more
+  ... and 9 more
 
 Generated: 2025-11-18
 Version: 3.0.0
@@ -44,7 +44,7 @@ class CompositeAgent_12_4:
     """
     Composite Agent for APQC Level 3: 12.4
 
-    Orchestrates 18 child agents in a coordinated workflow.
+    Orchestrates 19 child agents in a coordinated workflow.
     """
 
     def __init__(self):
@@ -57,6 +57,7 @@ class CompositeAgent_12_4:
         "12.4.2.6",
         "12.4.3.5",
         "12.4.2.5",
+        "12.4.1.7",
         "12.4.3.3",
         "12.4.1.6",
         "12.4.1.3",

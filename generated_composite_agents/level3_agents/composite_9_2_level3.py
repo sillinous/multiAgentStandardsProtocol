@@ -5,23 +5,23 @@ Level 3 Process: 9.2 - Composite APQC Agent
 APQC Level 3: 9.2
 Category: Manage Financial Resources (9.0)
 
-This is a COMPOSITE AGENT that orchestrates 17 child agents.
+This is a COMPOSITE AGENT that orchestrates 23 child agents.
 
 Orchestration Pattern: Sequential Workflow
 Standards: A2A, ANP, ACP, BPP, BDP, BRP, BMP, BCP, BIP
 
 Child Agents:
+  - 9.2.2.8: Report audits
   - 9.2.1.6: Optimize compliance
   - 9.2.3.5: Review controls
   - 9.2.1.2: Send invoices
   - 9.2.3.2: Defer revenue
   - 9.2.2.5: Review audits
   - 9.2.3.1: Apply revenue recognition rules
+  - 9.2.3.7: Document controls
   - 9.2.1.4: Resolve billing issues
   - 9.2.3.6: Optimize controls
-  - 9.2.2.1: Record receipts
-  - 9.2.2.4: Manage collections
-  ... and 7 more
+  ... and 13 more
 
 Generated: 2025-11-18
 Version: 3.0.0
@@ -44,29 +44,35 @@ class CompositeAgent_9_2:
     """
     Composite Agent for APQC Level 3: 9.2
 
-    Orchestrates 17 child agents in a coordinated workflow.
+    Orchestrates 23 child agents in a coordinated workflow.
     """
 
     def __init__(self):
         self.apqc_id = "9.2"
         self.level = 3
         self.child_agent_ids = [
+        "9.2.2.8",
         "9.2.1.6",
         "9.2.3.5",
         "9.2.1.2",
         "9.2.3.2",
         "9.2.2.5",
         "9.2.3.1",
+        "9.2.3.7",
         "9.2.1.4",
         "9.2.3.6",
+        "9.2.3.8",
         "9.2.2.1",
         "9.2.2.4",
         "9.2.3.4",
         "9.2.1.1",
+        "9.2.1.7",
         "9.2.2.6",
         "9.2.2.2",
+        "9.2.1.8",
         "9.2.1.5",
         "9.2.3.3",
+        "9.2.2.7",
         "9.2.1.3"
 ]
         self.logger = logging.getLogger(f"CompositeAgent_9_2")

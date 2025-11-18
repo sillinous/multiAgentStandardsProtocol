@@ -6,31 +6,33 @@ Level 3 Composite Process
 Acquire, Construct, and Manage Assets
 APQC ID: 10.1
 
-Orchestrates 18 child agents:
+Orchestrates 24 child agents:
   1. 10.1.2.1: Define requirements
   2. 10.1.3.1: Procure construction services
   3. 10.1.2.5: Review maintenance
   4. 10.1.1.3: Approve capital funding
   5. 10.1.2.6: Optimize maintenance
-  6. 10.1.3.4: Complete construction
-  7. 10.1.1.4: Assemble project team
-  8. 10.1.3.5: Review projects
-  9. 10.1.3.6: Optimize projects
-  10. 10.1.1.6: Optimize equipment
-  11. 10.1.2.4: Obtain permits
-  12. 10.1.2.3: Review and approve designs
-  13. 10.1.2.2: Create design specifications
-  14. 10.1.1.1: Identify project needs
-  15. 10.1.3.2: Execute construction
-  16. 10.1.1.5: Review equipment
-  17. 10.1.1.2: Develop business case
-  18. 10.1.3.3: Monitor progress
-
+  6. 10.1.1.8: Report equipment
+  7. 10.1.3.4: Complete construction
+  8. 10.1.1.4: Assemble project team
+  9. 10.1.3.5: Review projects
+  10. 10.1.3.8: Report projects
+  11. 10.1.1.7: Document equipment
+  12. 10.1.3.6: Optimize projects
+  13. 10.1.3.7: Document projects
+  14. 10.1.2.7: Document maintenance
+  15. 10.1.2.8: Report maintenance
+  16. 10.1.1.6: Optimize equipment
+  17. 10.1.2.4: Obtain permits
+  18. 10.1.2.3: Review and approve designs
+  19. 10.1.2.2: Create design specifications
+  20. 10.1.1.1: Identify project needs
+  ... and 4 more
 
 Orchestration Pattern: Sequential Workflow (Pipeline)
 Standards: BPMN 2.0, A2A Protocol
 
-Generated: 2025-11-18T01:11:36.696920
+Generated: 2025-11-18T01:19:11.453855
 Status: Production Ready
 </bpmn:documentation>
     <bpmn:startEvent id="Start_L3_10_1" name="Start Composite">
@@ -56,57 +58,81 @@ Status: Production Ready
       <bpmn:incoming>Flow_child4_to_child5</bpmn:incoming>
       <bpmn:outgoing>Flow_child5_to_child6</bpmn:outgoing>
     </bpmn:callActivity>
-    <bpmn:callActivity id="CallActivity_L3_child6" name="10.1.3.4: Complete construction" calledElement="Process_10_1_3_4">
+    <bpmn:callActivity id="CallActivity_L3_child6" name="10.1.1.8: Report equipment" calledElement="Process_10_1_1_8">
       <bpmn:incoming>Flow_child5_to_child6</bpmn:incoming>
       <bpmn:outgoing>Flow_child6_to_child7</bpmn:outgoing>
     </bpmn:callActivity>
-    <bpmn:callActivity id="CallActivity_L3_child7" name="10.1.1.4: Assemble project team" calledElement="Process_10_1_1_4">
+    <bpmn:callActivity id="CallActivity_L3_child7" name="10.1.3.4: Complete construction" calledElement="Process_10_1_3_4">
       <bpmn:incoming>Flow_child6_to_child7</bpmn:incoming>
       <bpmn:outgoing>Flow_child7_to_child8</bpmn:outgoing>
     </bpmn:callActivity>
-    <bpmn:callActivity id="CallActivity_L3_child8" name="10.1.3.5: Review projects" calledElement="Process_10_1_3_5">
+    <bpmn:callActivity id="CallActivity_L3_child8" name="10.1.1.4: Assemble project team" calledElement="Process_10_1_1_4">
       <bpmn:incoming>Flow_child7_to_child8</bpmn:incoming>
       <bpmn:outgoing>Flow_child8_to_child9</bpmn:outgoing>
     </bpmn:callActivity>
-    <bpmn:callActivity id="CallActivity_L3_child9" name="10.1.3.6: Optimize projects" calledElement="Process_10_1_3_6">
+    <bpmn:callActivity id="CallActivity_L3_child9" name="10.1.3.5: Review projects" calledElement="Process_10_1_3_5">
       <bpmn:incoming>Flow_child8_to_child9</bpmn:incoming>
       <bpmn:outgoing>Flow_child9_to_child10</bpmn:outgoing>
     </bpmn:callActivity>
-    <bpmn:callActivity id="CallActivity_L3_child10" name="10.1.1.6: Optimize equipment" calledElement="Process_10_1_1_6">
+    <bpmn:callActivity id="CallActivity_L3_child10" name="10.1.3.8: Report projects" calledElement="Process_10_1_3_8">
       <bpmn:incoming>Flow_child9_to_child10</bpmn:incoming>
       <bpmn:outgoing>Flow_child10_to_child11</bpmn:outgoing>
     </bpmn:callActivity>
-    <bpmn:callActivity id="CallActivity_L3_child11" name="10.1.2.4: Obtain permits" calledElement="Process_10_1_2_4">
+    <bpmn:callActivity id="CallActivity_L3_child11" name="10.1.1.7: Document equipment" calledElement="Process_10_1_1_7">
       <bpmn:incoming>Flow_child10_to_child11</bpmn:incoming>
       <bpmn:outgoing>Flow_child11_to_child12</bpmn:outgoing>
     </bpmn:callActivity>
-    <bpmn:callActivity id="CallActivity_L3_child12" name="10.1.2.3: Review and approve designs" calledElement="Process_10_1_2_3">
+    <bpmn:callActivity id="CallActivity_L3_child12" name="10.1.3.6: Optimize projects" calledElement="Process_10_1_3_6">
       <bpmn:incoming>Flow_child11_to_child12</bpmn:incoming>
       <bpmn:outgoing>Flow_child12_to_child13</bpmn:outgoing>
     </bpmn:callActivity>
-    <bpmn:callActivity id="CallActivity_L3_child13" name="10.1.2.2: Create design specifications" calledElement="Process_10_1_2_2">
+    <bpmn:callActivity id="CallActivity_L3_child13" name="10.1.3.7: Document projects" calledElement="Process_10_1_3_7">
       <bpmn:incoming>Flow_child12_to_child13</bpmn:incoming>
       <bpmn:outgoing>Flow_child13_to_child14</bpmn:outgoing>
     </bpmn:callActivity>
-    <bpmn:callActivity id="CallActivity_L3_child14" name="10.1.1.1: Identify project needs" calledElement="Process_10_1_1_1">
+    <bpmn:callActivity id="CallActivity_L3_child14" name="10.1.2.7: Document maintenance" calledElement="Process_10_1_2_7">
       <bpmn:incoming>Flow_child13_to_child14</bpmn:incoming>
       <bpmn:outgoing>Flow_child14_to_child15</bpmn:outgoing>
     </bpmn:callActivity>
-    <bpmn:callActivity id="CallActivity_L3_child15" name="10.1.3.2: Execute construction" calledElement="Process_10_1_3_2">
+    <bpmn:callActivity id="CallActivity_L3_child15" name="10.1.2.8: Report maintenance" calledElement="Process_10_1_2_8">
       <bpmn:incoming>Flow_child14_to_child15</bpmn:incoming>
       <bpmn:outgoing>Flow_child15_to_child16</bpmn:outgoing>
     </bpmn:callActivity>
-    <bpmn:callActivity id="CallActivity_L3_child16" name="10.1.1.5: Review equipment" calledElement="Process_10_1_1_5">
+    <bpmn:callActivity id="CallActivity_L3_child16" name="10.1.1.6: Optimize equipment" calledElement="Process_10_1_1_6">
       <bpmn:incoming>Flow_child15_to_child16</bpmn:incoming>
       <bpmn:outgoing>Flow_child16_to_child17</bpmn:outgoing>
     </bpmn:callActivity>
-    <bpmn:callActivity id="CallActivity_L3_child17" name="10.1.1.2: Develop business case" calledElement="Process_10_1_1_2">
+    <bpmn:callActivity id="CallActivity_L3_child17" name="10.1.2.4: Obtain permits" calledElement="Process_10_1_2_4">
       <bpmn:incoming>Flow_child16_to_child17</bpmn:incoming>
       <bpmn:outgoing>Flow_child17_to_child18</bpmn:outgoing>
     </bpmn:callActivity>
-    <bpmn:callActivity id="CallActivity_L3_child18" name="10.1.3.3: Monitor progress" calledElement="Process_10_1_3_3">
+    <bpmn:callActivity id="CallActivity_L3_child18" name="10.1.2.3: Review and approve designs" calledElement="Process_10_1_2_3">
       <bpmn:incoming>Flow_child17_to_child18</bpmn:incoming>
-      <bpmn:outgoing>Flow_child18_to_end</bpmn:outgoing>
+      <bpmn:outgoing>Flow_child18_to_child19</bpmn:outgoing>
+    </bpmn:callActivity>
+    <bpmn:callActivity id="CallActivity_L3_child19" name="10.1.2.2: Create design specifications" calledElement="Process_10_1_2_2">
+      <bpmn:incoming>Flow_child18_to_child19</bpmn:incoming>
+      <bpmn:outgoing>Flow_child19_to_child20</bpmn:outgoing>
+    </bpmn:callActivity>
+    <bpmn:callActivity id="CallActivity_L3_child20" name="10.1.1.1: Identify project needs" calledElement="Process_10_1_1_1">
+      <bpmn:incoming>Flow_child19_to_child20</bpmn:incoming>
+      <bpmn:outgoing>Flow_child20_to_child21</bpmn:outgoing>
+    </bpmn:callActivity>
+    <bpmn:callActivity id="CallActivity_L3_child21" name="10.1.3.2: Execute construction" calledElement="Process_10_1_3_2">
+      <bpmn:incoming>Flow_child20_to_child21</bpmn:incoming>
+      <bpmn:outgoing>Flow_child21_to_child22</bpmn:outgoing>
+    </bpmn:callActivity>
+    <bpmn:callActivity id="CallActivity_L3_child22" name="10.1.1.5: Review equipment" calledElement="Process_10_1_1_5">
+      <bpmn:incoming>Flow_child21_to_child22</bpmn:incoming>
+      <bpmn:outgoing>Flow_child22_to_child23</bpmn:outgoing>
+    </bpmn:callActivity>
+    <bpmn:callActivity id="CallActivity_L3_child23" name="10.1.1.2: Develop business case" calledElement="Process_10_1_1_2">
+      <bpmn:incoming>Flow_child22_to_child23</bpmn:incoming>
+      <bpmn:outgoing>Flow_child23_to_child24</bpmn:outgoing>
+    </bpmn:callActivity>
+    <bpmn:callActivity id="CallActivity_L3_child24" name="10.1.3.3: Monitor progress" calledElement="Process_10_1_3_3">
+      <bpmn:incoming>Flow_child23_to_child24</bpmn:incoming>
+      <bpmn:outgoing>Flow_child24_to_end</bpmn:outgoing>
     </bpmn:callActivity>
     <bpmn:sequenceFlow id="Flow_start_to_child1" sourceRef="Start_L3_10_1" targetRef="CallActivity_L3_child1" />
     <bpmn:sequenceFlow id="Flow_child1_to_child2" sourceRef="CallActivity_L3_child1" targetRef="CallActivity_L3_child2" />
@@ -126,9 +152,15 @@ Status: Production Ready
     <bpmn:sequenceFlow id="Flow_child15_to_child16" sourceRef="CallActivity_L3_child15" targetRef="CallActivity_L3_child16" />
     <bpmn:sequenceFlow id="Flow_child16_to_child17" sourceRef="CallActivity_L3_child16" targetRef="CallActivity_L3_child17" />
     <bpmn:sequenceFlow id="Flow_child17_to_child18" sourceRef="CallActivity_L3_child17" targetRef="CallActivity_L3_child18" />
-    <bpmn:sequenceFlow id="Flow_child18_to_end" sourceRef="CallActivity_L3_child18" targetRef="End_L3_10_1" />
+    <bpmn:sequenceFlow id="Flow_child18_to_child19" sourceRef="CallActivity_L3_child18" targetRef="CallActivity_L3_child19" />
+    <bpmn:sequenceFlow id="Flow_child19_to_child20" sourceRef="CallActivity_L3_child19" targetRef="CallActivity_L3_child20" />
+    <bpmn:sequenceFlow id="Flow_child20_to_child21" sourceRef="CallActivity_L3_child20" targetRef="CallActivity_L3_child21" />
+    <bpmn:sequenceFlow id="Flow_child21_to_child22" sourceRef="CallActivity_L3_child21" targetRef="CallActivity_L3_child22" />
+    <bpmn:sequenceFlow id="Flow_child22_to_child23" sourceRef="CallActivity_L3_child22" targetRef="CallActivity_L3_child23" />
+    <bpmn:sequenceFlow id="Flow_child23_to_child24" sourceRef="CallActivity_L3_child23" targetRef="CallActivity_L3_child24" />
+    <bpmn:sequenceFlow id="Flow_child24_to_end" sourceRef="CallActivity_L3_child24" targetRef="End_L3_10_1" />
     <bpmn:endEvent id="End_L3_10_1" name="Composite Complete">
-      <bpmn:incoming>Flow_child18_to_end</bpmn:incoming>
+      <bpmn:incoming>Flow_child24_to_end</bpmn:incoming>
     </bpmn:endEvent>
   </bpmn:process>
   <bpmndi:BPMNDiagram id="Diagram_L3_10_1">
@@ -190,8 +222,14 @@ Status: Production Ready
       <bpmndi:BPMNShape id="Shape_CallActivity_L3_child18" bpmnElement="CallActivity_L3_child18">
         <dc:Bounds x="100" y="1830" width="150" height="80" />
       </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Shape_CallActivity_L3_child19" bpmnElement="CallActivity_L3_child19">
+        <dc:Bounds x="100" y="1930" width="150" height="80" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Shape_CallActivity_L3_child20" bpmnElement="CallActivity_L3_child20">
+        <dc:Bounds x="100" y="2030" width="150" height="80" />
+      </bpmndi:BPMNShape>
       <bpmndi:BPMNShape id="Shape_End_L3_10_1" bpmnElement="End_L3_10_1">
-        <dc:Bounds x="150" y="1930" width="36" height="36" />
+        <dc:Bounds x="150" y="2130" width="36" height="36" />
       </bpmndi:BPMNShape>
     </bpmndi:BPMNPlane>
   </bpmndi:BPMNDiagram>

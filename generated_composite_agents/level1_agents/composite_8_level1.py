@@ -5,7 +5,7 @@ Level 1 Category: 8 - Composite APQC Agent
 APQC Level 1: 8
 Category: Manage Information Technology (8.0)
 
-This is a COMPOSITE AGENT that orchestrates 70 child agents.
+This is a COMPOSITE AGENT that orchestrates 88 child agents.
 
 Orchestration Pattern: Sequential Workflow
 Standards: A2A, ANP, ACP, BPP, BDP, BRP, BMP, BCP, BIP
@@ -14,14 +14,14 @@ Child Agents:
   - 8.4.1.3: Build solutions
   - 8.5.2.6: Optimize infrastructure
   - 8.1.3.4: Prioritize investments
+  - 8.1.1.8: Report applications
   - 8.1.1.4: Develop IT roadmap
   - 8.1.2.5: Review security
   - 8.2.1.5: Review security
   - 8.4.2.2: Execute deployment
+  - 8.1.2.8: Report security
   - 8.3.2.1: Maintain system availability
-  - 8.3.1.5: Review data
-  - 8.1.3.6: Optimize data
-  ... and 60 more
+  ... and 78 more
 
 Generated: 2025-11-18
 Version: 3.0.0
@@ -44,7 +44,7 @@ class CompositeAgent_8:
     """
     Composite Agent for APQC Level 1: 8
 
-    Orchestrates 70 child agents in a coordinated workflow.
+    Orchestrates 88 child agents in a coordinated workflow.
     """
 
     def __init__(self):
@@ -54,19 +54,26 @@ class CompositeAgent_8:
         "8.4.1.3",
         "8.5.2.6",
         "8.1.3.4",
+        "8.1.1.8",
         "8.1.1.4",
         "8.1.2.5",
         "8.2.1.5",
         "8.4.2.2",
+        "8.1.2.8",
         "8.3.2.1",
         "8.3.1.5",
         "8.1.3.6",
         "8.1.2.4",
+        "8.2.2.7",
         "8.2.1.4",
         "8.2.2.6",
+        "8.1.2.7",
         "8.2.2.3",
         "8.3.1.3",
         "8.5.2.5",
+        "8.3.1.7",
+        "8.1.1.7",
+        "8.4.1.8",
         "8.5.1.3",
         "8.5.1.1",
         "8.2.2.5",
@@ -75,12 +82,17 @@ class CompositeAgent_8:
         "8.4.1.4",
         "8.2.2.1",
         "8.1.3.3",
+        "8.2.1.7",
         "8.1.1.6",
+        "8.4.1.7",
         "8.3.1.6",
         "8.3.1.4",
         "8.3.2.2",
+        "8.3.2.8",
         "8.5.2.1",
         "8.1.2.1",
+        "8.4.2.7",
+        "8.3.1.8",
         "8.4.2.1",
         "8.1.2.6",
         "8.2.1.6",
@@ -90,8 +102,10 @@ class CompositeAgent_8:
         "8.2.1.1",
         "8.5.2.2",
         "8.1.1.1",
+        "8.2.1.8",
         "8.3.2.5",
         "8.1.3.5",
+        "8.4.2.8",
         "8.3.2.3",
         "8.4.2.6",
         "8.5.1.6",
@@ -103,7 +117,9 @@ class CompositeAgent_8:
         "8.5.3.3",
         "8.5.2.4",
         "8.1.1.3",
+        "8.1.3.7",
         "8.1.1.2",
+        "8.3.2.7",
         "8.3.1.2",
         "8.2.2.4",
         "8.5.1.4",
@@ -113,8 +129,10 @@ class CompositeAgent_8:
         "8.1.1.5",
         "8.5.3.2",
         "8.5.1.2",
+        "8.2.2.8",
         "8.3.2.4",
         "8.2.2.2",
+        "8.1.3.8",
         "8.4.2.4",
         "8.2.1.3",
         "8.5.3.4",
