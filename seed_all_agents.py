@@ -18,14 +18,29 @@ def extract_agent_info_from_file(filepath):
     """Extract agent info from Python file"""
     with open(filepath, 'r', encoding='utf-8') as f:
         content = f.read()
-    
-    # Extract APQC ID from filename (e.g., agent_9_1_1_6_production.py -> 9.1.1.6)
+
+    # Extract APQC ID from filename - handle multiple patterns:
+    # Pattern 1: agent_9_1_1_6_production.py -> 9.1.1.6
+    # Pattern 2: 10_1_1_5_agent.py -> 10.1.1.5
+    # Pattern 3: 9_1_1_agent.py -> 9.1.1 (3 parts)
     filename = os.path.basename(filepath)
+
+    # Try pattern 1: agent_X_X_X_X
     match = re.search(r'agent_(\d+)_(\d+)_(\d+)_(\d+)', filename)
     if match:
         apqc_id = '.'.join(match.groups())
     else:
-        apqc_id = None
+        # Try pattern 2: X_X_X_X_agent (4 parts)
+        match = re.search(r'^(\d+)_(\d+)_(\d+)_(\d+)_agent', filename)
+        if match:
+            apqc_id = '.'.join(match.groups())
+        else:
+            # Try pattern 3: X_X_X_agent (3 parts)
+            match = re.search(r'^(\d+)_(\d+)_(\d+)_agent', filename)
+            if match:
+                apqc_id = '.'.join(match.groups())
+            else:
+                apqc_id = None
     
     # Try to extract name and description from docstring
     name_match = re.search(r'class\s+(\w+Agent)\s*\(', content)
