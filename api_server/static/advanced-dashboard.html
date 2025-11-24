@@ -638,8 +638,7 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
     <script>
         const API_URL = 'http://localhost:8000';
-        let currentLevel = 1;
-        let currentParent = null;
+        let hierarchyPath = []; // Track full path: [{id, name, level}, ...]
         let selectedAgent = null;
         let canvasItems = [];
 
@@ -659,13 +658,16 @@
             event.target.classList.add('active');
         }
 
-        // Load hierarchy
+        // Load hierarchy at current level
         async function loadHierarchy() {
             const container = document.getElementById('hierarchyContainer');
             container.innerHTML = '<div class="loading"><div class="spinner"></div></div>';
 
             try {
-                const response = await fetch(`${API_URL}/api/agents/by-apqc-level?level=${currentLevel}&parent_id=${currentParent || ''}`);
+                const currentLevel = hierarchyPath.length + 1;
+                const parentId = hierarchyPath.length > 0 ? hierarchyPath[hierarchyPath.length - 1].id : null;
+
+                const response = await fetch(`${API_URL}/api/agents/by-apqc-level?level=${currentLevel}&parent_id=${parentId || ''}`);
                 const data = await response.json();
 
                 if (!data.items || data.items.length === 0) {
@@ -680,44 +682,49 @@
                         <div class="count">${item.children_count || item.count} items</div>
                     </div>
                 `).join('');
+
+                updateBreadcrumb();
             } catch (error) {
                 console.error('Error loading hierarchy:', error);
                 container.innerHTML = '<div class="empty-state"><p>Error loading items</p></div>';
             }
         }
 
-        // Select hierarchy item
+        // Select hierarchy item - drill down to next level
         async function selectHierarchyItem(id, type, name) {
-            if (type === 'category') {
-                currentLevel = 2;
-                currentParent = id;
-                updateBreadcrumb(name);
-                await loadHierarchy();
-            } else if (type === 'agent') {
+            if (type === 'agent') {
+                // Reached an agent - show details
                 selectedAgent = { id, name };
                 showAgentDetails(id);
+            } else {
+                // Continue drilling down
+                hierarchyPath.push({ id, name, level: hierarchyPath.length + 1 });
+                await loadHierarchy();
             }
         }
 
-        // Navigate level
-        async function navigateLevel(level) {
-            if (level === 1) {
-                currentLevel = 1;
-                currentParent = null;
-                document.getElementById('breadcrumb').innerHTML = '<span class="separator">📍</span><span onclick="navigateLevel(1)" style="font-weight: 600;">Root</span>';
+        // Navigate to specific level in the hierarchy
+        async function navigateLevel(levelIndex) {
+            if (levelIndex === 0) {
+                // Go back to root
+                hierarchyPath = [];
+            } else {
+                // Trim path to selected level
+                hierarchyPath = hierarchyPath.slice(0, levelIndex);
             }
             await loadHierarchy();
         }
 
-        // Update breadcrumb
-        function updateBreadcrumb(name) {
+        // Update breadcrumb with full path
+        function updateBreadcrumb() {
             const breadcrumb = document.getElementById('breadcrumb');
-            breadcrumb.innerHTML = `
-                <span class="separator">📍</span>
-                <span onclick="navigateLevel(1)">Root</span>
-                <span class="separator">›</span>
-                <span onclick="navigateLevel(${currentLevel})" style="font-weight: 600;">${name}</span>
-            `;
+            let html = '<span class="separator">📍</span><span onclick="navigateLevel(0)" style="cursor: pointer; font-weight: 600;">Root</span>';
+
+            hierarchyPath.forEach((item, index) => {
+                html += `<span class="separator">›</span><span onclick="navigateLevel(${index + 1})" style="cursor: pointer; ${index === hierarchyPath.length - 1 ? 'font-weight: 600;' : ''}">${item.name}</span>`;
+            });
+
+            breadcrumb.innerHTML = html;
         }
 
         // Load agent palette for builder

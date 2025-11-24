@@ -235,15 +235,6 @@ async def list_agents(
     ]
 
 
-@app.get("/api/agents/{agent_id}", response_model=AgentResponse)
-async def get_agent(agent_id: str, db: Session = Depends(get_db)):
-    """Get details for a specific agent"""
-    agent = db.query(Agent).filter(Agent.agent_id == agent_id).first()
-    if not agent:
-        raise HTTPException(status_code=404, detail=f"Agent {agent_id} not found")
-    return agent
-
-
 @app.get("/api/agents/categories/list")
 async def list_categories(db: Session = Depends(get_db)):
     """Get all available APQC categories with agent counts"""
@@ -406,6 +397,15 @@ def get_category_color(category: str) -> str:
         "Serve Customers": "#FFAF87"
     }
     return colors.get(category, "#667eea")
+
+
+@app.get("/api/agents/{agent_id}", response_model=AgentResponse)
+async def get_agent(agent_id: str, db: Session = Depends(get_db)):
+    """Get details for a specific agent"""
+    agent = db.query(Agent).filter(Agent.agent_id == agent_id).first()
+    if not agent:
+        raise HTTPException(status_code=404, detail=f"Agent {agent_id} not found")
+    return agent
 
 
 @app.post("/api/workflows/save")
