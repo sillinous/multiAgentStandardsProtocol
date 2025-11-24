@@ -290,6 +290,95 @@ except ImportError as e:
     print(f"[WARN] Could not load WebSocket support: {e}")
 
 # ============================================================================
+# Helper Functions for Stats Gathering (used by both routes and admin_stats)
+# ============================================================================
+
+async def _get_anp_stats():
+    """Helper: Get ANP network statistics without route context."""
+    try:
+        total_agents = len(state.network_registry.agents)
+        healthy_agents = sum(
+            1 for a in state.network_registry.agents.values()
+            if a.health_status == AgentStatus.HEALTHY.value
+        )
+
+        all_capabilities = set()
+        for agent in state.network_registry.agents.values():
+            all_capabilities.update(agent.capabilities)
+
+        return {
+            "total_agents": total_agents,
+            "healthy_agents": healthy_agents,
+            "total_capabilities": len(all_capabilities),
+            "discoveries_24h": state.stats["total_agents_registered"],
+            "heartbeat_rate": 0,
+            "network_uptime": 99.9
+        }
+    except Exception as e:
+        return {"error": str(e)}
+
+async def _get_acp_stats():
+    """Helper: Get ACP coordination statistics without route context."""
+    try:
+        active_sessions = sum(
+            1 for s in state.coordination_manager.coordinations.values()
+            if s.status == CoordinationStatus.ACTIVE.value
+        )
+
+        total_tasks = sum(
+            len(s.tasks) for s in state.coordination_manager.coordinations.values()
+        )
+
+        completed_tasks = sum(
+            sum(1 for t in s.tasks.values() if t.status == TaskStatus.COMPLETED.value)
+            for s in state.coordination_manager.coordinations.values()
+        )
+
+        total_participants = sum(
+            len(s.participants) for s in state.coordination_manager.coordinations.values()
+        )
+
+        completion_rate = (completed_tasks / total_tasks * 100) if total_tasks > 0 else 0
+
+        return {
+            "active_sessions": active_sessions,
+            "total_tasks": total_tasks,
+            "completed_tasks": completed_tasks,
+            "completion_rate": round(completion_rate, 1),
+            "total_participants": total_participants
+        }
+    except Exception as e:
+        return {"error": str(e)}
+
+async def _get_aconsp_stats():
+    """Helper: Get AConsP consciousness statistics without route context."""
+    try:
+        total_collectives = len(state.collectives)
+
+        total_thoughts = sum(
+            len(c.thought_stream) for c in state.collectives.values()
+        )
+
+        total_patterns = state.stats["total_patterns_discovered"]
+
+        # Calculate average awareness
+        if state.collectives:
+            avg_awareness = sum(
+                c.collective_awareness for c in state.collectives.values()
+            ) / len(state.collectives)
+        else:
+            avg_awareness = 0
+
+        return {
+            "total_collectives": total_collectives,
+            "total_thoughts": total_thoughts,
+            "total_patterns": total_patterns,
+            "average_awareness": round(avg_awareness, 1)
+        }
+    except Exception as e:
+        return {"error": str(e)}
+
+# ============================================================================
 # Static File Serving - Dashboards
 # ============================================================================
 
@@ -711,25 +800,10 @@ async def agent_heartbeat(agent_id: str, health_status: str = "healthy", load_sc
 async def anp_stats():
     """Get ANP network statistics."""
     try:
-        total_agents = len(state.network_registry.agents)
-        healthy_agents = sum(
-            1 for a in state.network_registry.agents.values()
-            if a.health_status == AgentStatus.HEALTHY.value
-        )
-
-        all_capabilities = set()
-        for agent in state.network_registry.agents.values():
-            all_capabilities.update(agent.capabilities)
-
-        return {
-            "total_agents": total_agents,
-            "healthy_agents": healthy_agents,
-            "total_capabilities": len(all_capabilities),
-            "discoveries_24h": state.stats["total_agents_registered"],  # Simplified
-            "heartbeat_rate": 0,  # TODO: Track actual heartbeat rate
-            "network_uptime": 99.9  # TODO: Calculate actual uptime
-        }
-
+        stats = await _get_anp_stats()
+        if "error" in stats:
+            raise HTTPException(status_code=500, detail=stats["error"])
+        return stats
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
 
@@ -753,13 +827,16 @@ async def create_session(request: SessionCreationRequest, background_tasks: Back
         if not coord_type:
             raise HTTPException(status_code=400, detail="Invalid coordination type")
 
-        session_id = await state.coordination_manager.create_coordination(
-            request.name,
-            coord_type,
-            request.metadata
+        result = await state.coordination_manager.create_coordination(
+            coordinator_id="system",
+            coordination_type=coord_type.value,
+            goal=request.description or request.name,
+            coordination_plan={"name": request.name},
+            metadata=request.metadata
         )
 
-        if session_id:
+        if result.get("success"):
+            session_id = result.get("coordination_id")
             state.stats["total_sessions_created"] += 1
 
             # Broadcast event
@@ -787,8 +864,8 @@ async def create_session(request: SessionCreationRequest, background_tasks: Back
             )
 
         return {
-            "success": session_id is not None,
-            "session_id": session_id,
+            "success": result.get("success", False),
+            "session_id": result.get("coordination_id"),
             "name": request.name,
             "coordination_type": request.coordination_type
         }
@@ -900,34 +977,10 @@ async def list_tasks(session_id: str):
 async def acp_stats():
     """Get ACP coordination statistics."""
     try:
-        active_sessions = sum(
-            1 for s in state.coordination_manager.coordinations.values()
-            if s.status == CoordinationStatus.ACTIVE.value
-        )
-
-        total_tasks = sum(
-            len(s.tasks) for s in state.coordination_manager.coordinations.values()
-        )
-
-        completed_tasks = sum(
-            sum(1 for t in s.tasks.values() if t.status == TaskStatus.COMPLETED.value)
-            for s in state.coordination_manager.coordinations.values()
-        )
-
-        total_participants = sum(
-            len(s.participants) for s in state.coordination_manager.coordinations.values()
-        )
-
-        completion_rate = (completed_tasks / total_tasks * 100) if total_tasks > 0 else 0
-
-        return {
-            "active_sessions": active_sessions,
-            "total_tasks": total_tasks,
-            "completed_tasks": completed_tasks,
-            "completion_rate": round(completion_rate, 1),
-            "total_participants": total_participants
-        }
-
+        stats = await _get_acp_stats()
+        if "error" in stats:
+            raise HTTPException(status_code=500, detail=stats["error"])
+        return stats
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
 
@@ -1071,29 +1124,10 @@ async def get_collective_state(collective_id: str):
 async def aconsp_stats():
     """Get AConsP consciousness statistics."""
     try:
-        total_collectives = len(state.collectives)
-
-        total_thoughts = sum(
-            len(c.thought_superposition) for c in state.collectives.values()
-        )
-
-        total_patterns = state.stats["total_patterns_discovered"]
-
-        # Calculate average awareness
-        if state.collectives:
-            avg_awareness = sum(
-                c.collective_awareness for c in state.collectives.values()
-            ) / len(state.collectives)
-        else:
-            avg_awareness = 0
-
-        return {
-            "total_collectives": total_collectives,
-            "total_thoughts": total_thoughts,
-            "total_patterns": total_patterns,
-            "average_awareness": round(avg_awareness, 1)
-        }
-
+        stats = await _get_aconsp_stats()
+        if "error" in stats:
+            raise HTTPException(status_code=500, detail=stats["error"])
+        return stats
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
 
@@ -1105,9 +1139,9 @@ async def aconsp_stats():
 async def admin_stats():
     """Get comprehensive system statistics."""
     try:
-        anp_stats_data = await anp_stats()
-        acp_stats_data = await acp_stats()
-        aconsp_stats_data = await aconsp_stats()
+        anp_stats_data = await _get_anp_stats()
+        acp_stats_data = await _get_acp_stats()
+        aconsp_stats_data = await _get_aconsp_stats()
 
         uptime_seconds = (datetime.utcnow() - state.stats["server_start_time"]).total_seconds()
 

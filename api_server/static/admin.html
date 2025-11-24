@@ -424,15 +424,12 @@
         <!-- Agent Registry Tab -->
         <div id="tab-agents" class="tab-content">
             <div class="card">
-                <h2>Agent Registry (1,100 APQC Agents)</h2>
-                <input type="text" class="search-box" id="agent-search" placeholder="Search agents by ID, name, or APQC category...">
+                <h2>🤖 Agent Registry (1,100+ APQC Agents)</h2>
+                <input type="text" class="search-box" id="agent-search" placeholder="Search agents by ID, name, APQC code, or category...">
 
                 <div class="filters">
                     <select id="filter-category">
                         <option value="">All Categories</option>
-                        <option value="Manage Financial Resources">Financial Resources</option>
-                        <option value="Manage Human Capital">Human Capital</option>
-                        <option value="Manage Information Technology">Information Technology</option>
                     </select>
                     <select id="filter-status">
                         <option value="">All Status</option>
@@ -441,6 +438,7 @@
                     </select>
                     <button class="btn small" onclick="applyAgentFilters()">Apply Filters</button>
                     <button class="btn small success" onclick="loadAllAgents()">Reset</button>
+                    <button class="btn small" onclick="exportAgentData()">📥 Export</button>
                 </div>
 
                 <div id="agents-list"></div>
@@ -554,6 +552,7 @@
         const API_URL = 'http://localhost:8000';
         let currentPage = 1;
         const pageSize = 10;
+        let allAgents = [];
 
         // Switch tabs
         function switchTab(tabName) {
@@ -620,16 +619,23 @@
             listDiv.innerHTML = '<div class="loading"><div class="spinner"></div></div>';
 
             try {
-                const response = await fetch(`${API_URL}/api/agents`);
+                const response = await fetch(`${API_URL}/api/agents?limit=5000`);
                 const agents = await response.json();
+                allAgents = agents;  // Store for export
 
                 // Apply search filter
                 const searchTerm = document.getElementById('agent-search')?.value.toLowerCase() || '';
-                let filtered = agents.filter(agent =>
-                    agent.agent_id.toLowerCase().includes(searchTerm) ||
-                    agent.name.toLowerCase().includes(searchTerm) ||
-                    agent.apqc_category?.toLowerCase().includes(searchTerm)
-                );
+                const categoryFilter = document.getElementById('filter-category')?.value || '';
+                let filtered = agents.filter(agent => {
+                    const matchesSearch = !searchTerm ||
+                        agent.agent_id.toLowerCase().includes(searchTerm) ||
+                        agent.name.toLowerCase().includes(searchTerm) ||
+                        agent.apqc_category?.toLowerCase().includes(searchTerm) ||
+                        (agent.apqc_id && agent.apqc_id.toLowerCase().includes(searchTerm));
+
+                    const matchesCategory = !categoryFilter || agent.apqc_category === categoryFilter;
+                    return matchesSearch && matchesCategory;
+                });
 
                 // Paginate
                 const start = (page - 1) * pageSize;
@@ -646,7 +652,7 @@
                         <h4>${agent.name}</h4>
                         <p>${agent.description || 'No description'}</p>
                         <div class="meta">
-                            <span><strong>ID:</strong> ${agent.agent_id}</span>
+                            <span><strong>ID:</strong> <code style="background: #f0f0f0; padding: 2px 6px; border-radius: 4px;">${agent.agent_id}</code></span>
                             <span><strong>APQC:</strong> ${agent.apqc_id || 'N/A'}</span>
                             <span><strong>Category:</strong> ${agent.apqc_category || 'N/A'}</span>
                             <span><strong>Status:</strong> <span class="badge ${agent.is_active ? 'active' : 'inactive'}">${agent.is_active ? 'Active' : 'Inactive'}</span></span>
@@ -797,8 +803,48 @@
             }
         }
 
+        // Load categories for dropdown
+        async function loadAgentCategories() {
+            try {
+                const response = await fetch(`${API_URL}/api/agents/categories/list`);
+                const categories = await response.json();
+
+                const select = document.getElementById('filter-category');
+                categories.forEach(cat => {
+                    const option = document.createElement('option');
+                    option.value = cat.category;
+                    option.textContent = `${cat.category} (${cat.count})`;
+                    select.appendChild(option);
+                });
+            } catch (error) {
+                console.error('Error loading categories:', error);
+            }
+        }
+
+        // Export agent data
+        function exportAgentData() {
+            try {
+                const agents = allAgents || [];
+                const csv = "Agent ID,Name,APQC Category,APQC ID,Agent Type,Status\n" +
+                    agents.map(a => `"${a.agent_id}","${a.name}","${a.apqc_category}","${a.apqc_id || 'N/A'}","${a.agent_type}","${a.is_active ? 'Active' : 'Inactive'}"`).join('\n');
+
+                const blob = new Blob([csv], { type: 'text/csv' });
+                const url = window.URL.createObjectURL(blob);
+                const a = document.createElement('a');
+                a.href = url;
+                a.download = `agents_export_${new Date().toISOString().split('T')[0]}.csv`;
+                document.body.appendChild(a);
+                a.click();
+                window.URL.revokeObjectURL(url);
+                document.body.removeChild(a);
+            } catch (error) {
+                alert('Error exporting data: ' + error.message);
+            }
+        }
+
         // Search agents
         document.addEventListener('DOMContentLoaded', () => {
+            loadAgentCategories();
             document.getElementById('agent-search')?.addEventListener('input', (e) => {
                 if (e.target.value.length > 2 || e.target.value.length === 0) {
                     loadAllAgents(1);

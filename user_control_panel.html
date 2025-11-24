@@ -1,0 +1,1225 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>User Control Panel - SuperStandard Platform</title>
+    <link rel="stylesheet" href="design-system.css">
+    <style>
+        /* Custom styles for User Control Panel */
+        body {
+            margin: 0;
+            padding: 0;
+        }
+
+        .page-header {
+            background: var(--gradient-primary);
+            color: var(--color-white);
+            padding: var(--spacing-8) var(--spacing-6);
+            box-shadow: var(--shadow-lg);
+        }
+
+        .page-header h1 {
+            font-size: var(--font-size-3xl);
+            font-weight: var(--font-weight-bold);
+            margin-bottom: var(--spacing-2);
+        }
+
+        .page-header p {
+            font-size: var(--font-size-lg);
+            opacity: 0.9;
+        }
+
+        .main-content {
+            max-width: 1536px;
+            margin: 0 auto;
+            padding: var(--spacing-8);
+        }
+
+        .section {
+            margin-bottom: var(--spacing-8);
+        }
+
+        .section-title {
+            font-size: var(--font-size-2xl);
+            font-weight: var(--font-weight-semibold);
+            color: var(--color-neutral-900);
+            margin-bottom: var(--spacing-6);
+            display: flex;
+            align-items: center;
+            gap: var(--spacing-3);
+        }
+
+        .quick-stats {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: var(--spacing-6);
+            margin-bottom: var(--spacing-8);
+        }
+
+        .action-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: var(--spacing-4);
+        }
+
+        .action-card {
+            background: var(--color-white);
+            border: 2px solid var(--color-neutral-200);
+            border-radius: var(--radius-lg);
+            padding: var(--spacing-6);
+            transition: var(--transition-base);
+            cursor: pointer;
+        }
+
+        .action-card:hover {
+            border-color: var(--color-primary-600);
+            box-shadow: var(--shadow-md);
+            transform: translateY(-2px);
+        }
+
+        .action-card-icon {
+            font-size: var(--font-size-3xl);
+            margin-bottom: var(--spacing-3);
+        }
+
+        .action-card-title {
+            font-size: var(--font-size-lg);
+            font-weight: var(--font-weight-semibold);
+            color: var(--color-neutral-900);
+            margin-bottom: var(--spacing-2);
+        }
+
+        .action-card-description {
+            font-size: var(--font-size-sm);
+            color: var(--color-neutral-600);
+            margin-bottom: var(--spacing-4);
+        }
+
+        .hidden {
+            display: none;
+        }
+
+        .form-row {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: var(--spacing-4);
+        }
+
+        .activity-feed {
+            max-height: 400px;
+            overflow-y: auto;
+        }
+
+        .activity-item {
+            padding: var(--spacing-4);
+            border-left: 3px solid var(--color-primary-600);
+            margin-bottom: var(--spacing-3);
+            background: var(--color-neutral-50);
+            border-radius: var(--radius-md);
+        }
+
+        .activity-item.agent {
+            border-left-color: var(--color-success-600);
+        }
+
+        .activity-item.session {
+            border-left-color: var(--color-info-600);
+        }
+
+        .activity-item.thought {
+            border-left-color: var(--color-secondary-600);
+        }
+
+        .activity-time {
+            font-size: var(--font-size-xs);
+            color: var(--color-neutral-500);
+            margin-bottom: var(--spacing-1);
+        }
+
+        .activity-message {
+            font-size: var(--font-size-sm);
+            color: var(--color-neutral-900);
+        }
+
+        .session-card {
+            background: var(--color-white);
+            border: 1px solid var(--color-neutral-200);
+            border-radius: var(--radius-lg);
+            padding: var(--spacing-5);
+            margin-bottom: var(--spacing-4);
+        }
+
+        .session-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            margin-bottom: var(--spacing-3);
+        }
+
+        .session-name {
+            font-size: var(--font-size-lg);
+            font-weight: var(--font-weight-semibold);
+            color: var(--color-neutral-900);
+        }
+
+        .session-type {
+            font-size: var(--font-size-sm);
+            color: var(--color-neutral-600);
+            margin-top: var(--spacing-1);
+        }
+
+        .session-actions {
+            display: flex;
+            gap: var(--spacing-2);
+        }
+
+        .log-viewer {
+            background: var(--color-neutral-900);
+            color: var(--color-success-400);
+            font-family: var(--font-family-mono);
+            font-size: var(--font-size-sm);
+            padding: var(--spacing-4);
+            border-radius: var(--radius-md);
+            max-height: 400px;
+            overflow-y: auto;
+            line-height: var(--line-height-relaxed);
+        }
+
+        .log-line {
+            margin-bottom: var(--spacing-1);
+        }
+
+        .log-line.error {
+            color: var(--color-error-400);
+        }
+
+        .log-line.warning {
+            color: var(--color-warning-400);
+        }
+
+        .log-line.info {
+            color: var(--color-info-400);
+        }
+
+        @media (max-width: 768px) {
+            .form-row {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- Toast Container for Notifications -->
+    <div id="toastContainer" class="toast-container"></div>
+
+    <!-- Page Header -->
+    <header class="page-header">
+        <h1>User Control Panel</h1>
+        <p>Manage agents, coordinate sessions, and monitor platform activity</p>
+    </header>
+
+    <!-- Main Content -->
+    <main class="main-content">
+        <!-- Quick Stats Overview -->
+        <section class="section">
+            <div class="quick-stats">
+                <div class="stat-card">
+                    <div class="stat-icon">🤖</div>
+                    <div class="stat-value" id="totalAgents">0</div>
+                    <div class="stat-label">Total Agents</div>
+                    <div class="stat-change positive" id="agentsChange">↑ +0 today</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-icon">🔗</div>
+                    <div class="stat-value" id="activeSessions">0</div>
+                    <div class="stat-label">Active Sessions</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-icon">💭</div>
+                    <div class="stat-value" id="totalThoughts">0</div>
+                    <div class="stat-label">Thoughts Shared</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-icon">✅</div>
+                    <div class="stat-value" id="healthyAgents">0</div>
+                    <div class="stat-label">Healthy Agents</div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Quick Actions -->
+        <section class="section">
+            <h2 class="section-title">
+                <span>⚡</span>
+                Quick Actions
+            </h2>
+            <div class="action-grid">
+                <div class="action-card" onclick="showModal('registerAgentModal')">
+                    <div class="action-card-icon">➕</div>
+                    <div class="action-card-title">Register Agent</div>
+                    <div class="action-card-description">Add a new agent to the network</div>
+                    <button class="btn btn-primary btn-sm">Register</button>
+                </div>
+                <div class="action-card" onclick="showModal('createSessionModal')">
+                    <div class="action-card-icon">🔗</div>
+                    <div class="action-card-title">Create Session</div>
+                    <div class="action-card-description">Start a new coordination session</div>
+                    <button class="btn btn-primary btn-sm">Create</button>
+                </div>
+                <div class="action-card" onclick="showModal('submitThoughtModal')">
+                    <div class="action-card-icon">💭</div>
+                    <div class="action-card-title">Submit Thought</div>
+                    <div class="action-card-description">Contribute to collective consciousness</div>
+                    <button class="btn btn-primary btn-sm">Submit</button>
+                </div>
+                <div class="action-card" onclick="runHealthCheck()">
+                    <div class="action-card-icon">🏥</div>
+                    <div class="action-card-title">Health Check</div>
+                    <div class="action-card-description">Check platform health status</div>
+                    <button class="btn btn-success btn-sm">Run Check</button>
+                </div>
+            </div>
+        </section>
+
+        <!-- Agent Management -->
+        <section class="section">
+            <h2 class="section-title">
+                <span>🤖</span>
+                Agent Management
+            </h2>
+            <div class="panel">
+                <div class="panel-header">
+                    <h3 class="panel-title">Registered Agents</h3>
+                    <div class="panel-actions">
+                        <button class="btn btn-sm btn-ghost" onclick="refreshAgents()">
+                            🔄 Refresh
+                        </button>
+                        <button class="btn btn-sm btn-primary" onclick="showModal('registerAgentModal')">
+                            ➕ Register Agent
+                        </button>
+                    </div>
+                </div>
+                <div class="panel-body no-padding">
+                    <div class="table-container">
+                        <table class="table">
+                            <thead>
+                                <tr>
+                                    <th>Agent ID</th>
+                                    <th>Type</th>
+                                    <th>Status</th>
+                                    <th>Capabilities</th>
+                                    <th>Last Heartbeat</th>
+                                    <th>Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody id="agentsTableBody">
+                                <tr>
+                                    <td colspan="6" style="text-align: center; padding: var(--spacing-8);">
+                                        <div class="spinner-lg"></div>
+                                        <p style="margin-top: var(--spacing-4); color: var(--color-neutral-600);">Loading agents...</p>
+                                    </td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Session Management -->
+        <section class="section">
+            <h2 class="section-title">
+                <span>🔗</span>
+                Coordination Sessions
+            </h2>
+            <div class="panel">
+                <div class="panel-header">
+                    <h3 class="panel-title">Active Sessions</h3>
+                    <div class="panel-actions">
+                        <button class="btn btn-sm btn-ghost" onclick="refreshSessions()">
+                            🔄 Refresh
+                        </button>
+                        <button class="btn btn-sm btn-primary" onclick="showModal('createSessionModal')">
+                            ➕ Create Session
+                        </button>
+                    </div>
+                </div>
+                <div class="panel-body">
+                    <div id="sessionsContainer">
+                        <div style="text-align: center; padding: var(--spacing-8);">
+                            <div class="spinner-lg"></div>
+                            <p style="margin-top: var(--spacing-4); color: var(--color-neutral-600);">Loading sessions...</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Activity Feed -->
+        <section class="section">
+            <h2 class="section-title">
+                <span>📊</span>
+                Recent Activity
+            </h2>
+            <div class="panel">
+                <div class="panel-header">
+                    <h3 class="panel-title">Live Activity Feed</h3>
+                    <div class="panel-actions">
+                        <div class="status-indicator status-online">
+                            <span class="status-dot"></span>
+                            <span id="wsStatus">Connected</span>
+                        </div>
+                    </div>
+                </div>
+                <div class="panel-body">
+                    <div class="activity-feed" id="activityFeed">
+                        <div style="text-align: center; padding: var(--spacing-8); color: var(--color-neutral-500);">
+                            Waiting for activity...
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+    </main>
+
+    <!-- Register Agent Modal -->
+    <div id="registerAgentModal" class="modal-overlay hidden" onclick="closeModalOnOverlay(event, 'registerAgentModal')">
+        <div class="modal" onclick="event.stopPropagation()">
+            <div class="modal-header">
+                <h3 class="modal-title">Register New Agent</h3>
+                <button class="modal-close" onclick="closeModal('registerAgentModal')">×</button>
+            </div>
+            <div class="modal-body">
+                <form id="registerAgentForm">
+                    <div class="form-group">
+                        <label class="form-label required">Agent ID</label>
+                        <input type="text" name="agent_id" class="form-input" placeholder="e.g., agent-001" required>
+                        <div class="form-help">Unique identifier for this agent</div>
+                        <div class="form-error hidden" id="agentIdError"></div>
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label required">Agent Type</label>
+                        <select name="agent_type" class="form-select" required>
+                            <option value="">Select type...</option>
+                            <option value="analyst">Analyst</option>
+                            <option value="processor">Processor</option>
+                            <option value="coordinator">Coordinator</option>
+                            <option value="monitor">Monitor</option>
+                            <option value="executor">Executor</option>
+                            <option value="researcher">Researcher</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Capabilities</label>
+                        <input type="text" name="capabilities" class="form-input" placeholder="e.g., analysis, data-processing, coordination">
+                        <div class="form-help">Comma-separated list of capabilities</div>
+                    </div>
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label class="form-label">Region</label>
+                            <input type="text" name="region" class="form-input" placeholder="e.g., us-east-1">
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">Tags</label>
+                            <input type="text" name="tags" class="form-input" placeholder="e.g., production, high-priority">
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Endpoint URL</label>
+                        <input type="url" name="endpoint" class="form-input" placeholder="http://localhost:8081">
+                        <div class="form-help">HTTP endpoint for this agent</div>
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button class="btn btn-secondary" onclick="closeModal('registerAgentModal')">Cancel</button>
+                <button class="btn btn-primary" onclick="registerAgent()">
+                    <span id="registerAgentBtnText">Register Agent</span>
+                    <div class="spinner hidden" id="registerAgentSpinner"></div>
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Create Session Modal -->
+    <div id="createSessionModal" class="modal-overlay hidden" onclick="closeModalOnOverlay(event, 'createSessionModal')">
+        <div class="modal" onclick="event.stopPropagation()">
+            <div class="modal-header">
+                <h3 class="modal-title">Create Coordination Session</h3>
+                <button class="modal-close" onclick="closeModal('createSessionModal')">×</button>
+            </div>
+            <div class="modal-body">
+                <form id="createSessionForm">
+                    <div class="form-group">
+                        <label class="form-label required">Session Name</label>
+                        <input type="text" name="name" class="form-input" placeholder="e.g., Data Processing Pipeline" required>
+                        <div class="form-error hidden" id="sessionNameError"></div>
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label required">Coordination Type</label>
+                        <select name="coordination_type" class="form-select" required>
+                            <option value="">Select type...</option>
+                            <option value="pipeline">Pipeline - Sequential task processing</option>
+                            <option value="swarm">Swarm - Parallel distributed work</option>
+                            <option value="supervisor">Supervisor - Hierarchical management</option>
+                            <option value="negotiation">Negotiation - Collaborative decision making</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Description</label>
+                        <textarea name="description" class="form-textarea" rows="3" placeholder="Describe the purpose of this session..."></textarea>
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Priority</label>
+                        <select name="priority" class="form-select">
+                            <option value="5" selected>Normal (5)</option>
+                            <option value="1">Very Low (1)</option>
+                            <option value="3">Low (3)</option>
+                            <option value="7">High (7)</option>
+                            <option value="10">Critical (10)</option>
+                        </select>
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button class="btn btn-secondary" onclick="closeModal('createSessionModal')">Cancel</button>
+                <button class="btn btn-primary" onclick="createSession()">
+                    <span id="createSessionBtnText">Create Session</span>
+                    <div class="spinner hidden" id="createSessionSpinner"></div>
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Submit Thought Modal -->
+    <div id="submitThoughtModal" class="modal-overlay hidden" onclick="closeModalOnOverlay(event, 'submitThoughtModal')">
+        <div class="modal" onclick="event.stopPropagation()">
+            <div class="modal-header">
+                <h3 class="modal-title">Submit Thought to Collective</h3>
+                <button class="modal-close" onclick="closeModal('submitThoughtModal')">×</button>
+            </div>
+            <div class="modal-body">
+                <form id="submitThoughtForm">
+                    <div class="form-group">
+                        <label class="form-label required">Your Agent ID</label>
+                        <input type="text" name="agent_id" class="form-input" placeholder="e.g., agent-001" required>
+                        <div class="form-help">The agent submitting this thought</div>
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label required">Thought Type</label>
+                        <select name="thought_type" class="form-select" required>
+                            <option value="">Select type...</option>
+                            <option value="observation">Observation - Direct sensory input</option>
+                            <option value="inference">Inference - Logical deduction</option>
+                            <option value="intuition">Intuition - Pattern recognition</option>
+                            <option value="insight">Insight - Novel understanding</option>
+                            <option value="intention">Intention - Future action plan</option>
+                            <option value="question">Question - Seeking information</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label required">Thought Content</label>
+                        <textarea name="content" class="form-textarea" rows="4" placeholder="Express your thought here..." required></textarea>
+                    </div>
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label class="form-label">Confidence (0-1)</label>
+                            <input type="number" name="confidence" class="form-input" min="0" max="1" step="0.1" value="0.5">
+                            <div class="form-help">How confident are you in this thought?</div>
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">Emotional Valence (-1 to 1)</label>
+                            <input type="number" name="emotional_valence" class="form-input" min="-1" max="1" step="0.1" value="0">
+                            <div class="form-help">Emotional tone of this thought</div>
+                        </div>
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button class="btn btn-secondary" onclick="closeModal('submitThoughtModal')">Cancel</button>
+                <button class="btn btn-primary" onclick="submitThought()">
+                    <span id="submitThoughtBtnText">Submit Thought</span>
+                    <div class="spinner hidden" id="submitThoughtSpinner"></div>
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Agent Logs Modal -->
+    <div id="agentLogsModal" class="modal-overlay hidden" onclick="closeModalOnOverlay(event, 'agentLogsModal')">
+        <div class="modal" onclick="event.stopPropagation()">
+            <div class="modal-header">
+                <h3 class="modal-title">Agent Logs - <span id="logsAgentId"></span></h3>
+                <button class="modal-close" onclick="closeModal('agentLogsModal')">×</button>
+            </div>
+            <div class="modal-body">
+                <div class="log-viewer" id="logViewer">
+                    <div class="log-line info">[INFO] Agent log viewer initialized</div>
+                    <div class="log-line info">[INFO] Waiting for log data...</div>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button class="btn btn-secondary" onclick="closeModal('agentLogsModal')">Close</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Confirmation Modal -->
+    <div id="confirmModal" class="modal-overlay hidden" onclick="closeModalOnOverlay(event, 'confirmModal')">
+        <div class="modal" onclick="event.stopPropagation()" style="max-width: 400px;">
+            <div class="modal-header">
+                <h3 class="modal-title">Confirm Action</h3>
+                <button class="modal-close" onclick="closeModal('confirmModal')">×</button>
+            </div>
+            <div class="modal-body">
+                <p id="confirmMessage" style="font-size: var(--font-size-base); color: var(--color-neutral-700);"></p>
+            </div>
+            <div class="modal-footer">
+                <button class="btn btn-secondary" onclick="closeModal('confirmModal')">Cancel</button>
+                <button class="btn btn-danger" id="confirmButton">Confirm</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Configuration
+        const API_BASE = window.location.origin;
+        const WS_BASE = `ws://${window.location.host}`;
+
+        // Global state
+        let ws = null;
+        let wsReconnectTimer = null;
+        let currentCollectiveId = 'default';
+        let activityCount = 0;
+
+        // Initialize on page load
+        document.addEventListener('DOMContentLoaded', function() {
+            initializeApp();
+        });
+
+        async function initializeApp() {
+            // Load initial data
+            await Promise.all([
+                loadStats(),
+                refreshAgents(),
+                refreshSessions()
+            ]);
+
+            // Connect WebSocket
+            connectWebSocket();
+
+            // Auto-refresh every 30 seconds
+            setInterval(() => {
+                loadStats();
+                refreshAgents();
+                refreshSessions();
+            }, 30000);
+        }
+
+        // =====================================================
+        // WebSocket Connection
+        // =====================================================
+
+        function connectWebSocket() {
+            try {
+                ws = new WebSocket(`${WS_BASE}/ws/admin`);
+
+                ws.onopen = () => {
+                    console.log('WebSocket connected');
+                    updateWsStatus(true);
+                };
+
+                ws.onmessage = (event) => {
+                    const data = JSON.parse(event.data);
+                    handleWebSocketMessage(data);
+                };
+
+                ws.onclose = () => {
+                    console.log('WebSocket disconnected');
+                    updateWsStatus(false);
+                    // Reconnect after 5 seconds
+                    wsReconnectTimer = setTimeout(connectWebSocket, 5000);
+                };
+
+                ws.onerror = (error) => {
+                    console.error('WebSocket error:', error);
+                };
+            } catch (error) {
+                console.error('WebSocket connection error:', error);
+                updateWsStatus(false);
+            }
+        }
+
+        function updateWsStatus(connected) {
+            const statusEl = document.getElementById('wsStatus');
+            const indicator = statusEl.parentElement;
+
+            if (connected) {
+                statusEl.textContent = 'Connected';
+                indicator.classList.remove('status-offline');
+                indicator.classList.add('status-online');
+            } else {
+                statusEl.textContent = 'Disconnected';
+                indicator.classList.remove('status-online');
+                indicator.classList.add('status-offline');
+            }
+        }
+
+        function handleWebSocketMessage(data) {
+            console.log('WebSocket message:', data);
+
+            if (data.type === 'activity') {
+                addActivityItem(data);
+            } else if (data.type === 'agent_registered') {
+                refreshAgents();
+                loadStats();
+            }
+        }
+
+        function addActivityItem(data) {
+            const feed = document.getElementById('activityFeed');
+
+            // Remove placeholder if exists
+            if (feed.querySelector('[style*="text-align: center"]')) {
+                feed.innerHTML = '';
+            }
+
+            const item = document.createElement('div');
+            item.className = `activity-item ${data.category || ''}`;
+
+            const time = new Date(data.timestamp).toLocaleTimeString();
+
+            item.innerHTML = `
+                <div class="activity-time">${time}</div>
+                <div class="activity-message">${data.message}</div>
+            `;
+
+            feed.insertBefore(item, feed.firstChild);
+
+            // Keep only last 50 items
+            while (feed.children.length > 50) {
+                feed.removeChild(feed.lastChild);
+            }
+
+            activityCount++;
+        }
+
+        // =====================================================
+        // Load Stats
+        // =====================================================
+
+        async function loadStats() {
+            try {
+                const response = await fetch(`${API_BASE}/api/admin/stats`);
+                const data = await response.json();
+
+                document.getElementById('totalAgents').textContent = data.total_agents || 0;
+                document.getElementById('activeSessions').textContent = data.active_sessions || 0;
+                document.getElementById('totalThoughts').textContent = data.total_thoughts || 0;
+                document.getElementById('healthyAgents').textContent = data.healthy_agents || 0;
+
+                // Update change indicator
+                const change = data.agents_today || 0;
+                const changeEl = document.getElementById('agentsChange');
+                if (change > 0) {
+                    changeEl.textContent = `↑ +${change} today`;
+                    changeEl.className = 'stat-change positive';
+                } else {
+                    changeEl.textContent = 'No change today';
+                    changeEl.className = 'stat-change';
+                }
+            } catch (error) {
+                console.error('Error loading stats:', error);
+            }
+        }
+
+        // =====================================================
+        // Agent Management
+        // =====================================================
+
+        async function refreshAgents() {
+            try {
+                const response = await fetch(`${API_BASE}/api/anp/agents`);
+                const data = await response.json();
+
+                const tbody = document.getElementById('agentsTableBody');
+
+                if (!data.success || data.agents.length === 0) {
+                    tbody.innerHTML = `
+                        <tr>
+                            <td colspan="6" style="text-align: center; padding: var(--spacing-8);">
+                                <div class="empty-state">
+                                    <div class="empty-state-icon">🤖</div>
+                                    <h3 class="empty-state-title">No Agents Registered</h3>
+                                    <p class="empty-state-message">Get started by registering your first agent</p>
+                                    <div class="empty-state-actions">
+                                        <button class="btn btn-primary" onclick="showModal('registerAgentModal')">Register Agent</button>
+                                    </div>
+                                </div>
+                            </td>
+                        </tr>
+                    `;
+                    return;
+                }
+
+                tbody.innerHTML = data.agents.map(agent => `
+                    <tr>
+                        <td><strong>${agent.agent_id}</strong></td>
+                        <td><span class="badge badge-primary">${agent.agent_type}</span></td>
+                        <td>
+                            <div class="status-indicator status-${agent.health_status === 'healthy' ? 'online' : 'offline'}">
+                                <span class="status-dot"></span>
+                                <span>${agent.health_status || 'unknown'}</span>
+                            </div>
+                        </td>
+                        <td>
+                            ${(agent.capabilities || []).map(cap =>
+                                `<span class="badge badge-neutral">${cap}</span>`
+                            ).join(' ') || '-'}
+                        </td>
+                        <td>${agent.last_heartbeat ? new Date(agent.last_heartbeat).toLocaleString() : 'Never'}</td>
+                        <td>
+                            <div class="btn-group">
+                                <button class="btn btn-sm btn-ghost" onclick="viewAgentLogs('${agent.agent_id}')" title="View logs">
+                                    📋
+                                </button>
+                                <button class="btn btn-sm btn-ghost" onclick="sendHeartbeat('${agent.agent_id}')" title="Send heartbeat">
+                                    💓
+                                </button>
+                                <button class="btn btn-sm btn-danger" onclick="confirmDeleteAgent('${agent.agent_id}')" title="Delete">
+                                    🗑️
+                                </button>
+                            </div>
+                        </td>
+                    </tr>
+                `).join('');
+            } catch (error) {
+                console.error('Error loading agents:', error);
+                showToast('Error loading agents', 'error');
+            }
+        }
+
+        async function registerAgent() {
+            const form = document.getElementById('registerAgentForm');
+            const formData = new FormData(form);
+
+            // Clear previous errors
+            document.querySelectorAll('.form-error').forEach(el => el.classList.add('hidden'));
+
+            // Validate
+            if (!form.checkValidity()) {
+                form.reportValidity();
+                return;
+            }
+
+            // Show loading state
+            const btn = document.getElementById('registerAgentBtnText');
+            const spinner = document.getElementById('registerAgentSpinner');
+            btn.classList.add('hidden');
+            spinner.classList.remove('hidden');
+
+            try {
+                const capabilities = formData.get('capabilities').split(',').map(s => s.trim()).filter(Boolean);
+                const tags = formData.get('tags').split(',').map(s => s.trim()).filter(Boolean);
+
+                const payload = {
+                    agent_id: formData.get('agent_id'),
+                    agent_type: formData.get('agent_type'),
+                    capabilities: capabilities,
+                    endpoints: formData.get('endpoint') ? { http: formData.get('endpoint') } : {},
+                    metadata: {
+                        region: formData.get('region') || 'default',
+                        tags: tags,
+                        registered_via: 'user_control_panel',
+                        registered_at: new Date().toISOString()
+                    }
+                };
+
+                const response = await fetch(`${API_BASE}/api/anp/agents/register`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(payload)
+                });
+
+                const data = await response.json();
+
+                if (data.success) {
+                    showToast('Agent registered successfully!', 'success');
+                    closeModal('registerAgentModal');
+                    form.reset();
+                    refreshAgents();
+                    loadStats();
+                } else {
+                    showToast(data.message || 'Registration failed', 'error');
+                }
+            } catch (error) {
+                console.error('Error registering agent:', error);
+                showToast('Error registering agent: ' + error.message, 'error');
+            } finally {
+                btn.classList.remove('hidden');
+                spinner.classList.add('hidden');
+            }
+        }
+
+        async function sendHeartbeat(agentId) {
+            try {
+                const response = await fetch(`${API_BASE}/api/anp/agents/${agentId}/heartbeat`, {
+                    method: 'POST'
+                });
+                const data = await response.json();
+
+                if (data.success) {
+                    showToast('Heartbeat sent successfully', 'success');
+                    refreshAgents();
+                } else {
+                    showToast('Failed to send heartbeat', 'error');
+                }
+            } catch (error) {
+                console.error('Error sending heartbeat:', error);
+                showToast('Error sending heartbeat', 'error');
+            }
+        }
+
+        function viewAgentLogs(agentId) {
+            document.getElementById('logsAgentId').textContent = agentId;
+
+            // Simulate logs (in real implementation, fetch from API)
+            const logViewer = document.getElementById('logViewer');
+            logViewer.innerHTML = `
+                <div class="log-line info">[${new Date().toISOString()}] [INFO] Agent ${agentId} initialized</div>
+                <div class="log-line info">[${new Date().toISOString()}] [INFO] Capabilities loaded: analysis, processing</div>
+                <div class="log-line info">[${new Date().toISOString()}] [INFO] Heartbeat sent successfully</div>
+                <div class="log-line warning">[${new Date().toISOString()}] [WARN] Load score increasing: 0.75</div>
+                <div class="log-line info">[${new Date().toISOString()}] [INFO] Task processing completed</div>
+            `;
+
+            showModal('agentLogsModal');
+        }
+
+        function confirmDeleteAgent(agentId) {
+            document.getElementById('confirmMessage').textContent =
+                `Are you sure you want to delete agent "${agentId}"? This action cannot be undone.`;
+
+            const confirmBtn = document.getElementById('confirmButton');
+            confirmBtn.onclick = () => deleteAgent(agentId);
+
+            showModal('confirmModal');
+        }
+
+        async function deleteAgent(agentId) {
+            try {
+                // Note: Delete endpoint would need to be added to the API
+                showToast(`Agent ${agentId} deletion requested (API endpoint not yet implemented)`, 'info');
+                closeModal('confirmModal');
+                // In real implementation:
+                // const response = await fetch(`${API_BASE}/api/anp/agents/${agentId}`, { method: 'DELETE' });
+                // if successful, refresh the agents list
+            } catch (error) {
+                console.error('Error deleting agent:', error);
+                showToast('Error deleting agent', 'error');
+            }
+        }
+
+        // =====================================================
+        // Session Management
+        // =====================================================
+
+        async function refreshSessions() {
+            try {
+                const response = await fetch(`${API_BASE}/api/acp/sessions`);
+                const data = await response.json();
+
+                const container = document.getElementById('sessionsContainer');
+
+                if (!data.success || data.sessions.length === 0) {
+                    container.innerHTML = `
+                        <div class="empty-state">
+                            <div class="empty-state-icon">🔗</div>
+                            <h3 class="empty-state-title">No Active Sessions</h3>
+                            <p class="empty-state-message">Create a coordination session to get started</p>
+                            <div class="empty-state-actions">
+                                <button class="btn btn-primary" onclick="showModal('createSessionModal')">Create Session</button>
+                            </div>
+                        </div>
+                    `;
+                    return;
+                }
+
+                container.innerHTML = data.sessions.map(session => `
+                    <div class="session-card">
+                        <div class="session-header">
+                            <div>
+                                <div class="session-name">${session.name}</div>
+                                <div class="session-type">
+                                    <span class="badge badge-info">${session.coordination_type}</span>
+                                    <span style="margin-left: var(--spacing-2); color: var(--color-neutral-600);">
+                                        ${session.participating_agents?.length || 0} agents
+                                    </span>
+                                </div>
+                            </div>
+                            <div class="session-actions">
+                                <button class="btn btn-sm btn-success" onclick="joinSession('${session.session_id}')">
+                                    Join
+                                </button>
+                                <button class="btn btn-sm btn-ghost" onclick="viewSessionDetails('${session.session_id}')">
+                                    View
+                                </button>
+                                <button class="btn btn-sm btn-danger" onclick="confirmEndSession('${session.session_id}')">
+                                    End
+                                </button>
+                            </div>
+                        </div>
+                        ${session.description ? `<p style="color: var(--color-neutral-600); font-size: var(--font-size-sm); margin-top: var(--spacing-2);">${session.description}</p>` : ''}
+                        <div style="margin-top: var(--spacing-3); font-size: var(--font-size-xs); color: var(--color-neutral-500);">
+                            Created: ${new Date(session.created_at).toLocaleString()}
+                        </div>
+                    </div>
+                `).join('');
+            } catch (error) {
+                console.error('Error loading sessions:', error);
+                showToast('Error loading sessions', 'error');
+            }
+        }
+
+        async function createSession() {
+            const form = document.getElementById('createSessionForm');
+            const formData = new FormData(form);
+
+            // Clear previous errors
+            document.querySelectorAll('.form-error').forEach(el => el.classList.add('hidden'));
+
+            // Validate
+            if (!form.checkValidity()) {
+                form.reportValidity();
+                return;
+            }
+
+            // Show loading state
+            const btn = document.getElementById('createSessionBtnText');
+            const spinner = document.getElementById('createSessionSpinner');
+            btn.classList.add('hidden');
+            spinner.classList.remove('hidden');
+
+            try {
+                const payload = {
+                    name: formData.get('name'),
+                    coordination_type: formData.get('coordination_type'),
+                    description: formData.get('description') || '',
+                    metadata: {
+                        priority: parseInt(formData.get('priority')),
+                        created_via: 'user_control_panel',
+                        created_at: new Date().toISOString()
+                    }
+                };
+
+                const response = await fetch(`${API_BASE}/api/acp/sessions`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(payload)
+                });
+
+                const data = await response.json();
+
+                if (data.success) {
+                    showToast('Session created successfully!', 'success');
+                    closeModal('createSessionModal');
+                    form.reset();
+                    refreshSessions();
+                    loadStats();
+                } else {
+                    showToast(data.message || 'Session creation failed', 'error');
+                }
+            } catch (error) {
+                console.error('Error creating session:', error);
+                showToast('Error creating session: ' + error.message, 'error');
+            } finally {
+                btn.classList.remove('hidden');
+                spinner.classList.add('hidden');
+            }
+        }
+
+        function joinSession(sessionId) {
+            showToast(`Joining session ${sessionId} (feature in development)`, 'info');
+            // In real implementation, this would join the agent to the session
+        }
+
+        function viewSessionDetails(sessionId) {
+            showToast(`Viewing session ${sessionId} details (feature in development)`, 'info');
+            // In real implementation, this would show a modal with session details
+        }
+
+        function confirmEndSession(sessionId) {
+            document.getElementById('confirmMessage').textContent =
+                `Are you sure you want to end this session? All participating agents will be notified.`;
+
+            const confirmBtn = document.getElementById('confirmButton');
+            confirmBtn.onclick = () => endSession(sessionId);
+
+            showModal('confirmModal');
+        }
+
+        async function endSession(sessionId) {
+            try {
+                // Note: End session endpoint would need to be added to the API
+                showToast(`Session ${sessionId} end requested (API endpoint not yet implemented)`, 'info');
+                closeModal('confirmModal');
+                // In real implementation:
+                // const response = await fetch(`${API_BASE}/api/acp/sessions/${sessionId}`, { method: 'DELETE' });
+                // if successful, refresh the sessions list
+            } catch (error) {
+                console.error('Error ending session:', error);
+                showToast('Error ending session', 'error');
+            }
+        }
+
+        // =====================================================
+        // Thought Submission
+        // =====================================================
+
+        async function submitThought() {
+            const form = document.getElementById('submitThoughtForm');
+            const formData = new FormData(form);
+
+            // Validate
+            if (!form.checkValidity()) {
+                form.reportValidity();
+                return;
+            }
+
+            // Show loading state
+            const btn = document.getElementById('submitThoughtBtnText');
+            const spinner = document.getElementById('submitThoughtSpinner');
+            btn.classList.add('hidden');
+            spinner.classList.remove('hidden');
+
+            try {
+                const payload = {
+                    agent_id: formData.get('agent_id'),
+                    thought_type: formData.get('thought_type'),
+                    content: formData.get('content'),
+                    confidence: parseFloat(formData.get('confidence')),
+                    emotional_valence: parseFloat(formData.get('emotional_valence')) || null,
+                    context: {
+                        submitted_via: 'user_control_panel',
+                        submitted_at: new Date().toISOString()
+                    }
+                };
+
+                const response = await fetch(`${API_BASE}/api/aconsp/collectives/${currentCollectiveId}/thoughts`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(payload)
+                });
+
+                const data = await response.json();
+
+                if (data.success) {
+                    showToast('Thought submitted successfully!', 'success');
+                    closeModal('submitThoughtModal');
+                    form.reset();
+                    loadStats();
+                } else {
+                    showToast(data.message || 'Thought submission failed', 'error');
+                }
+            } catch (error) {
+                console.error('Error submitting thought:', error);
+                showToast('Error submitting thought: ' + error.message, 'error');
+            } finally {
+                btn.classList.remove('hidden');
+                spinner.classList.add('hidden');
+            }
+        }
+
+        // =====================================================
+        // Health Check
+        // =====================================================
+
+        async function runHealthCheck() {
+            try {
+                showToast('Running health check...', 'info');
+
+                const response = await fetch(`${API_BASE}/api/health`);
+                const data = await response.json();
+
+                if (data.status === 'healthy') {
+                    showToast(`Health check passed! All systems operational.`, 'success');
+                } else {
+                    showToast(`Health check warning: ${data.message || 'Some systems need attention'}`, 'warning');
+                }
+            } catch (error) {
+                console.error('Error running health check:', error);
+                showToast('Health check failed: Cannot connect to server', 'error');
+            }
+        }
+
+        // =====================================================
+        // Modal Management
+        // =====================================================
+
+        function showModal(modalId) {
+            const modal = document.getElementById(modalId);
+            modal.classList.remove('hidden');
+            document.body.style.overflow = 'hidden';
+        }
+
+        function closeModal(modalId) {
+            const modal = document.getElementById(modalId);
+            modal.classList.add('hidden');
+            document.body.style.overflow = '';
+        }
+
+        function closeModalOnOverlay(event, modalId) {
+            if (event.target.classList.contains('modal-overlay')) {
+                closeModal(modalId);
+            }
+        }
+
+        // =====================================================
+        // Toast Notifications
+        // =====================================================
+
+        function showToast(message, type = 'info') {
+            const container = document.getElementById('toastContainer');
+
+            const icons = {
+                success: '✅',
+                error: '❌',
+                warning: '⚠️',
+                info: 'ℹ️'
+            };
+
+            const toast = document.createElement('div');
+            toast.className = 'toast';
+            toast.innerHTML = `
+                <div class="toast-icon" style="color: var(--color-${type}-600);">${icons[type]}</div>
+                <div class="toast-content">
+                    <div class="toast-title">${type.charAt(0).toUpperCase() + type.slice(1)}</div>
+                    <div class="toast-message">${message}</div>
+                </div>
+                <button class="toast-close" onclick="this.parentElement.remove()">×</button>
+            `;
+
+            container.appendChild(toast);
+
+            // Auto-remove after 5 seconds
+            setTimeout(() => {
+                toast.remove();
+            }, 5000);
+        }
+
+        // =====================================================
+        // Cleanup
+        // =====================================================
+
+        window.addEventListener('beforeunload', () => {
+            if (ws) {
+                ws.close();
+            }
+            if (wsReconnectTimer) {
+                clearTimeout(wsReconnectTimer);
+            }
+        });
+    </script>
+</body>
+</html>

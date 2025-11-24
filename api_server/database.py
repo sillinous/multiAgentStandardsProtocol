@@ -161,17 +161,121 @@ def get_db():
 
 
 def seed_agents():
-    """Seed database with agent definitions"""
+    """Seed database with all APQC agent definitions from generated_agents_v2"""
+    import os
+    import re
+    from pathlib import Path
+
     db = SessionLocal()
 
     # Check if agents already exist
     if db.query(Agent).count() > 0:
-        print("Agents already seeded")
+        print(f"✅ Agents already seeded ({db.query(Agent).count()} agents)")
         db.close()
         return
 
-    # Seed the 4 invoice agents we built
-    agents = [
+    # Path to generated agents
+    agents_dir = Path(__file__).parent.parent / "generated_agents_v2"
+    if not agents_dir.exists():
+        print("⚠️  generated_agents_v2 directory not found, seeding minimal agents")
+        agents = get_minimal_agents()
+    else:
+        agents = scan_and_load_agents(agents_dir)
+
+    if agents:
+        db.add_all(agents)
+        db.commit()
+        print(f"✅ Seeded {len(agents)} agents")
+
+    db.close()
+
+
+def scan_and_load_agents(agents_dir):
+    """Scan the generated_agents_v2 directory and create Agent objects"""
+    from pathlib import Path
+    import re
+
+    agents = []
+    category_map = {
+        "asset_management": "Manage Assets",
+        "business_capabilities": "Develop Business Capabilities",
+        "customer_service": "Serve Customers",
+        "external_relations": "Manage External Relations",
+        "finance": "Manage Financial Resources",
+        "human_resources": "Manage Human Capital",
+        "information_technology": "Manage Information Technology",
+        "product_management": "Manage Product Development",
+        "risk_compliance": "Manage Risk & Compliance",
+        "sales_marketing": "Manage Sales and Marketing",
+        "service_delivery": "Deliver Service",
+        "strategy": "Develop Strategy & Manage Enterprise Transformation",
+        "supply_chain": "Manage Supply Chain"
+    }
+
+    # Scan all subdirectories (categories)
+    for category_dir in sorted(agents_dir.iterdir()):
+        if not category_dir.is_dir():
+            continue
+
+        category_name = category_dir.name
+        category_label = category_map.get(category_name, category_name.replace("_", " ").title())
+        agent_counter = {}  # Track ID suffix for functional names
+
+        # Scan all Python files in category
+        for agent_file in sorted(category_dir.glob("*.py")):
+            if agent_file.name.startswith("__"):
+                continue
+
+            filename = agent_file.stem
+
+            # Try to extract APQC ID first
+            # Format: "9_1_2_3_agent.py" or similar
+            match = re.match(r"^(\d+)_(\d+)_(\d+)_(\d+)", filename)
+
+            if match:
+                # Standard APQC ID format
+                apqc_id = f"{match.group(1)}.{match.group(2)}.{match.group(3)}.{match.group(4)}"
+                agent_name = f"APQC {apqc_id} - {category_label} Agent"
+                agent_id = f"{category_name}_{apqc_id.replace('.', '_')}"
+            else:
+                # Functional name format: "allocate_costs_manage_agent.py"
+                # Extract the functional part (remove "_manage_agent" suffix if present)
+                functional_name = filename
+                if functional_name.endswith("_manage_agent"):
+                    functional_name = functional_name[:-13]  # Remove "_manage_agent"
+                elif functional_name.endswith("_agent"):
+                    functional_name = functional_name[:-6]   # Remove "_agent"
+
+                # Convert to readable name
+                readable_name = functional_name.replace("_", " ").title()
+                agent_name = f"{readable_name} - {category_label}"
+
+                # Generate a unique agent ID
+                base_id = f"{category_name}_{functional_name}"
+                agent_counter[base_id] = agent_counter.get(base_id, 0) + 1
+                agent_id = f"{base_id}_{agent_counter[base_id]}" if agent_counter[base_id] > 1 else base_id
+
+                apqc_id = None  # No APQC ID for functional agents
+
+            # Create agent
+            agent = Agent(
+                agent_id=agent_id,
+                name=agent_name,
+                description=f"Autonomous agent for {category_label.lower()}",
+                apqc_id=apqc_id,
+                apqc_category=category_label,
+                agent_type="atomic",
+                version="1.0.0",
+                is_active=True
+            )
+            agents.append(agent)
+
+    return agents
+
+
+def get_minimal_agents():
+    """Fallback: Seed the 4 base invoice agents"""
+    return [
         Agent(
             agent_id="9.1.1.6",
             name="Extract Invoice Data",
@@ -209,11 +313,6 @@ def seed_agents():
             version="1.0.0"
         )
     ]
-
-    db.add_all(agents)
-    db.commit()
-    print(f"✅ Seeded {len(agents)} agents")
-    db.close()
 
 
 if __name__ == "__main__":

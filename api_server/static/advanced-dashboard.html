@@ -1,0 +1,958 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>APQC Workflow Orchestration Platform</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: #f5f5f5;
+            color: #333;
+        }
+
+        .header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 20px 40px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+        }
+
+        .header h1 {
+            font-size: 2em;
+            margin-bottom: 5px;
+        }
+
+        .header p {
+            opacity: 0.9;
+        }
+
+        .container {
+            max-width: 1800px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+
+        .tabs {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 20px;
+            flex-wrap: wrap;
+        }
+
+        .tab-button {
+            background: white;
+            border: 2px solid #ddd;
+            padding: 12px 24px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: 600;
+            transition: all 0.3s;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+        }
+
+        .tab-button:hover {
+            border-color: #667eea;
+            box-shadow: 0 4px 12px rgba(102, 126, 234, 0.2);
+        }
+
+        .tab-button.active {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border-color: #667eea;
+            box-shadow: 0 4px 12px rgba(102, 126, 234, 0.3);
+        }
+
+        .tab-content {
+            display: none;
+            animation: fadeIn 0.4s ease;
+        }
+
+        .tab-content.active {
+            display: block;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .card {
+            background: white;
+            border-radius: 12px;
+            padding: 24px;
+            box-shadow: 0 2px 12px rgba(0,0,0,0.1);
+            margin-bottom: 20px;
+        }
+
+        .card h2 {
+            color: #667eea;
+            margin-bottom: 20px;
+            font-size: 1.5em;
+        }
+
+        /* Hierarchical Navigator */
+        .hierarchy-tree {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+            gap: 15px;
+        }
+
+        .hierarchy-item {
+            background: white;
+            border: 2px solid #f0f0f0;
+            border-radius: 10px;
+            padding: 20px;
+            cursor: pointer;
+            transition: all 0.3s;
+            text-align: center;
+        }
+
+        .hierarchy-item:hover {
+            border-color: #667eea;
+            box-shadow: 0 8px 20px rgba(102, 126, 234, 0.2);
+            transform: translateY(-4px);
+        }
+
+        .hierarchy-item .icon {
+            font-size: 2.5em;
+            margin-bottom: 10px;
+        }
+
+        .hierarchy-item .name {
+            font-weight: 600;
+            color: #333;
+            margin-bottom: 8px;
+        }
+
+        .hierarchy-item .count {
+            font-size: 0.85em;
+            color: #999;
+        }
+
+        .breadcrumb {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 20px;
+            padding: 12px;
+            background: #f8f9fa;
+            border-radius: 8px;
+            flex-wrap: wrap;
+        }
+
+        .breadcrumb span {
+            padding: 4px 12px;
+            background: white;
+            border-radius: 6px;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+
+        .breadcrumb span:hover {
+            background: #667eea;
+            color: white;
+        }
+
+        .breadcrumb span.separator {
+            padding: 0 8px;
+            cursor: default;
+        }
+
+        /* Agent Cards */
+        .agent-card {
+            background: white;
+            border: 2px solid #f0f0f0;
+            border-radius: 10px;
+            padding: 16px;
+            margin-bottom: 12px;
+            transition: all 0.3s;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .agent-card:hover {
+            border-color: #667eea;
+            box-shadow: 0 6px 18px rgba(102, 126, 234, 0.15);
+        }
+
+        .agent-info {
+            flex: 1;
+        }
+
+        .agent-info h4 {
+            color: #667eea;
+            margin-bottom: 6px;
+        }
+
+        .agent-info p {
+            font-size: 0.9em;
+            color: #666;
+            margin-bottom: 8px;
+        }
+
+        .agent-meta {
+            display: flex;
+            gap: 12px;
+            font-size: 0.85em;
+            color: #999;
+        }
+
+        .agent-actions {
+            display: flex;
+            gap: 8px;
+        }
+
+        .btn {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            padding: 10px 16px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-weight: 600;
+            transition: all 0.3s;
+            font-size: 0.9em;
+            white-space: nowrap;
+        }
+
+        .btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(102, 126, 234, 0.3);
+        }
+
+        .btn.small {
+            padding: 8px 12px;
+            font-size: 0.85em;
+        }
+
+        .btn.secondary {
+            background: #f0f0f0;
+            color: #333;
+        }
+
+        .btn.secondary:hover {
+            background: #e0e0e0;
+        }
+
+        .btn.danger {
+            background: linear-gradient(135deg, #eb3349 0%, #f45c43 100%);
+        }
+
+        .btn.success {
+            background: linear-gradient(135deg, #56ab2f 0%, #a8e063 100%);
+        }
+
+        /* Workflow Builder Canvas */
+        .builder-container {
+            display: grid;
+            grid-template-columns: 200px 1fr 300px;
+            gap: 15px;
+            min-height: 600px;
+        }
+
+        .agent-palette {
+            background: white;
+            border: 2px solid #f0f0f0;
+            border-radius: 10px;
+            padding: 15px;
+            overflow-y: auto;
+            max-height: 600px;
+        }
+
+        .agent-palette h3 {
+            font-size: 0.95em;
+            color: #667eea;
+            margin-bottom: 12px;
+            padding-bottom: 8px;
+            border-bottom: 2px solid #f0f0f0;
+        }
+
+        .palette-item {
+            background: #f8f9fa;
+            padding: 10px;
+            margin-bottom: 8px;
+            border-radius: 6px;
+            cursor: move;
+            transition: all 0.3s;
+            font-size: 0.9em;
+            font-weight: 500;
+        }
+
+        .palette-item:hover {
+            background: #667eea;
+            color: white;
+            transform: translateX(4px);
+        }
+
+        .canvas {
+            background: white;
+            border: 3px dashed #667eea;
+            border-radius: 10px;
+            position: relative;
+            overflow: hidden;
+            min-height: 600px;
+        }
+
+        .canvas-empty {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            height: 100%;
+            color: #999;
+            text-align: center;
+        }
+
+        .canvas-item {
+            position: absolute;
+            background: white;
+            border: 2px solid #667eea;
+            border-radius: 8px;
+            padding: 12px;
+            min-width: 150px;
+            cursor: move;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+        }
+
+        .properties-panel {
+            background: white;
+            border: 2px solid #f0f0f0;
+            border-radius: 10px;
+            padding: 15px;
+            overflow-y: auto;
+            max-height: 600px;
+        }
+
+        .properties-panel h3 {
+            color: #667eea;
+            margin-bottom: 12px;
+            font-size: 0.95em;
+        }
+
+        .property-group {
+            margin-bottom: 15px;
+            padding-bottom: 12px;
+            border-bottom: 1px solid #f0f0f0;
+        }
+
+        .property-group label {
+            display: block;
+            font-weight: 600;
+            font-size: 0.85em;
+            color: #555;
+            margin-bottom: 6px;
+        }
+
+        .property-group input,
+        .property-group textarea {
+            width: 100%;
+            padding: 8px;
+            border: 2px solid #f0f0f0;
+            border-radius: 6px;
+            font-size: 0.9em;
+            font-family: monospace;
+        }
+
+        /* Modals */
+        .modal {
+            display: none;
+            position: fixed;
+            z-index: 2000;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0,0,0,0.6);
+            animation: fadeIn 0.3s;
+        }
+
+        .modal.active {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .modal-content {
+            background: white;
+            border-radius: 12px;
+            padding: 30px;
+            max-width: 700px;
+            width: 90%;
+            max-height: 90vh;
+            overflow-y: auto;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+        }
+
+        .modal-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+            padding-bottom: 15px;
+            border-bottom: 2px solid #f0f0f0;
+        }
+
+        .modal-header h2 {
+            color: #667eea;
+        }
+
+        .close-btn {
+            background: none;
+            border: none;
+            font-size: 1.8em;
+            cursor: pointer;
+            color: #999;
+        }
+
+        .close-btn:hover {
+            color: #333;
+        }
+
+        /* Loading & Empty States */
+        .loading {
+            text-align: center;
+            padding: 40px;
+        }
+
+        .spinner {
+            width: 40px;
+            height: 40px;
+            border: 4px solid #f0f0f0;
+            border-top-color: #667eea;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+            margin: 0 auto;
+        }
+
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+
+        .empty-state {
+            text-align: center;
+            padding: 60px 20px;
+            color: #999;
+        }
+
+        .empty-state h3 {
+            margin-bottom: 10px;
+        }
+
+        /* Stats */
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 15px;
+            margin-bottom: 20px;
+        }
+
+        .stat-box {
+            background: linear-gradient(135deg, #667eea15 0%, #764ba215 100%);
+            border: 2px solid #667eea30;
+            border-radius: 10px;
+            padding: 20px;
+            text-align: center;
+        }
+
+        .stat-box .value {
+            font-size: 2em;
+            font-weight: bold;
+            color: #667eea;
+            margin-bottom: 8px;
+        }
+
+        .stat-box .label {
+            font-size: 0.85em;
+            color: #666;
+        }
+
+        .success-msg {
+            background: #d4fc79;
+            border-left: 4px solid #56ab2f;
+            padding: 15px;
+            border-radius: 6px;
+            margin-bottom: 15px;
+            color: #333;
+        }
+
+        .error-msg {
+            background: #ffecd2;
+            border-left: 4px solid #f45c43;
+            padding: 15px;
+            border-radius: 6px;
+            margin-bottom: 15px;
+            color: #333;
+        }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <h1>🎯 APQC Workflow Orchestration Platform</h1>
+        <p>Enterprise-grade process composition, visualization, and execution</p>
+    </div>
+
+    <div class="container">
+        <!-- Navigation Tabs -->
+        <div class="tabs">
+            <button class="tab-button active" onclick="switchTab('explorer')">🗂️ Hierarchy Explorer</button>
+            <button class="tab-button" onclick="switchTab('builder')">🔧 Workflow Builder</button>
+            <button class="tab-button" onclick="switchTab('bpmn')">📊 BPMN Viewer</button>
+            <button class="tab-button" onclick="switchTab('executor')">⚡ Executor</button>
+            <button class="tab-button" onclick="switchTab('manager')">📁 Workflow Manager</button>
+        </div>
+
+        <!-- Tab: Hierarchy Explorer -->
+        <div id="tab-explorer" class="tab-content active">
+            <div class="card">
+                <h2>🗂️ APQC Hierarchy Explorer</h2>
+                <p style="margin-bottom: 20px; color: #666;">Click any category to drill down and explore processes at different levels</p>
+
+                <div class="breadcrumb" id="breadcrumb">
+                    <span class="separator">📍</span>
+                    <span onclick="navigateLevel(1)" style="font-weight: 600;">Root</span>
+                </div>
+
+                <div id="hierarchyContainer" class="hierarchy-tree">
+                    <div class="loading"><div class="spinner"></div></div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Tab: Workflow Builder -->
+        <div id="tab-builder" class="tab-content">
+            <div class="card">
+                <h2>🔧 Visual Workflow Builder - Drag & Drop Orchestration</h2>
+
+                <div style="margin-bottom: 15px; display: flex; gap: 10px;">
+                    <input type="text" id="workflowName" placeholder="Workflow Name" style="flex: 1; padding: 10px; border: 2px solid #f0f0f0; border-radius: 6px;">
+                    <button class="btn success" onclick="saveWorkflow()">💾 Save</button>
+                    <button class="btn" onclick="executeWorkflow()">▶️ Execute (Sandbox)</button>
+                    <button class="btn danger" onclick="clearCanvas()">🗑️ Clear</button>
+                </div>
+
+                <div class="builder-container">
+                    <!-- Agent Palette -->
+                    <div class="agent-palette">
+                        <h3>📦 Agent Library</h3>
+                        <div id="agentPalette"></div>
+                    </div>
+
+                    <!-- Canvas -->
+                    <div class="canvas" id="canvas">
+                        <div class="canvas-empty">
+                            <div>
+                                <p style="font-size: 1.1em; margin-bottom: 10px;">Drag agents from the library to build your workflow</p>
+                                <p style="font-size: 0.9em; opacity: 0.7;">Click and drag items to reposition them</p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Properties Panel -->
+                    <div class="properties-panel">
+                        <h3>⚙️ Properties</h3>
+                        <div id="propertiesPanel">
+                            <p style="color: #999; font-size: 0.9em;">Select an agent on the canvas to see its properties</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Tab: BPMN Viewer -->
+        <div id="tab-bpmn" class="tab-content">
+            <div class="card">
+                <h2>📊 BPMN Process Visualization</h2>
+                <p style="margin-bottom: 20px; color: #666;">View standardized BPMN 2.0 diagrams for selected agents</p>
+
+                <div style="display: grid; grid-template-columns: 250px 1fr; gap: 15px;">
+                    <div>
+                        <input type="text" id="bpmnSearch" placeholder="Search agent..." style="width: 100%; padding: 10px; border: 2px solid #f0f0f0; border-radius: 6px; margin-bottom: 10px;">
+                        <div id="bpmnAgentList" style="max-height: 600px; overflow-y: auto;"></div>
+                    </div>
+                    <div id="bpmnViewer" style="background: white; border: 2px solid #f0f0f0; border-radius: 10px; padding: 20px; min-height: 600px; display: flex; align-items: center; justify-content: center; color: #999;">
+                        <p>Select an agent to view its BPMN diagram</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Tab: Executor -->
+        <div id="tab-executor" class="tab-content">
+            <div class="card">
+                <h2>⚡ Workflow Executor - Sandbox Testing</h2>
+
+                <div class="stats-grid" id="executorStats"></div>
+
+                <div id="executorStatus"></div>
+
+                <div style="margin-top: 20px;" id="executorForm">
+                    <p style="color: #666; margin-bottom: 15px;">Select a workflow to test in the sandbox environment</p>
+                    <div style="display: grid; grid-template-columns: 1fr auto; gap: 10px; margin-bottom: 20px;">
+                        <select id="workflowSelect" style="padding: 10px; border: 2px solid #f0f0f0; border-radius: 6px;">
+                            <option>Select a workflow...</option>
+                        </select>
+                        <button class="btn" onclick="testWorkflow()">🧪 Test in Sandbox</button>
+                    </div>
+                </div>
+
+                <div id="executorResults"></div>
+            </div>
+        </div>
+
+        <!-- Tab: Workflow Manager -->
+        <div id="tab-manager" class="tab-content">
+            <div class="card">
+                <h2>📁 Workflow Management - Save & Deploy</h2>
+
+                <div style="margin-bottom: 20px; display: flex; gap: 10px;">
+                    <button class="btn" onclick="loadSavedWorkflows()">🔄 Refresh</button>
+                    <button class="btn secondary" onclick="exportWorkflows()">📥 Export</button>
+                </div>
+
+                <div id="workflowsList"></div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Agent Details Modal -->
+    <div id="agentModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2>Agent Details</h2>
+                <button class="close-btn" onclick="closeModal()">&times;</button>
+            </div>
+            <div id="agentModalBody"></div>
+            <div style="margin-top: 20px; display: flex; gap: 10px;">
+                <button class="btn" onclick="addToCanvas()">➕ Add to Workflow</button>
+                <button class="btn secondary" onclick="closeModal()">Close</button>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
+    <script>
+        const API_URL = 'http://localhost:8000';
+        let currentLevel = 1;
+        let currentParent = null;
+        let selectedAgent = null;
+        let canvasItems = [];
+
+        // Initialize
+        async function init() {
+            await loadHierarchy();
+            await loadAgentPalette();
+            await loadBpmnAgents();
+        }
+
+        // Switch tabs
+        function switchTab(tabName) {
+            document.querySelectorAll('.tab-content').forEach(el => el.classList.remove('active'));
+            document.querySelectorAll('.tab-button').forEach(el => el.classList.remove('active'));
+
+            document.getElementById(`tab-${tabName}`).classList.add('active');
+            event.target.classList.add('active');
+        }
+
+        // Load hierarchy
+        async function loadHierarchy() {
+            const container = document.getElementById('hierarchyContainer');
+            container.innerHTML = '<div class="loading"><div class="spinner"></div></div>';
+
+            try {
+                const response = await fetch(`${API_URL}/api/agents/by-apqc-level?level=${currentLevel}&parent_id=${currentParent || ''}`);
+                const data = await response.json();
+
+                if (!data.items || data.items.length === 0) {
+                    container.innerHTML = '<div class="empty-state"><p>No items found</p></div>';
+                    return;
+                }
+
+                container.innerHTML = data.items.map(item => `
+                    <div class="hierarchy-item" onclick="selectHierarchyItem('${item.id}', '${item.type}', '${item.name}')">
+                        <div class="icon">${item.icon || '📋'}</div>
+                        <div class="name">${item.name}</div>
+                        <div class="count">${item.children_count || item.count} items</div>
+                    </div>
+                `).join('');
+            } catch (error) {
+                console.error('Error loading hierarchy:', error);
+                container.innerHTML = '<div class="empty-state"><p>Error loading items</p></div>';
+            }
+        }
+
+        // Select hierarchy item
+        async function selectHierarchyItem(id, type, name) {
+            if (type === 'category') {
+                currentLevel = 2;
+                currentParent = id;
+                updateBreadcrumb(name);
+                await loadHierarchy();
+            } else if (type === 'agent') {
+                selectedAgent = { id, name };
+                showAgentDetails(id);
+            }
+        }
+
+        // Navigate level
+        async function navigateLevel(level) {
+            if (level === 1) {
+                currentLevel = 1;
+                currentParent = null;
+                document.getElementById('breadcrumb').innerHTML = '<span class="separator">📍</span><span onclick="navigateLevel(1)" style="font-weight: 600;">Root</span>';
+            }
+            await loadHierarchy();
+        }
+
+        // Update breadcrumb
+        function updateBreadcrumb(name) {
+            const breadcrumb = document.getElementById('breadcrumb');
+            breadcrumb.innerHTML = `
+                <span class="separator">📍</span>
+                <span onclick="navigateLevel(1)">Root</span>
+                <span class="separator">›</span>
+                <span onclick="navigateLevel(${currentLevel})" style="font-weight: 600;">${name}</span>
+            `;
+        }
+
+        // Load agent palette for builder
+        async function loadAgentPalette() {
+            try {
+                const response = await fetch(`${API_URL}/api/agents?limit=100`);
+                const agents = await response.json();
+
+                const palette = document.getElementById('agentPalette');
+                palette.innerHTML = agents.slice(0, 20).map(agent => `
+                    <div class="palette-item" draggable="true" ondragstart="dragStart(event, '${agent.agent_id}', '${agent.name}')">
+                        ${agent.name}
+                    </div>
+                `).join('');
+            } catch (error) {
+                console.error('Error loading palette:', error);
+            }
+        }
+
+        // Drag and drop
+        function dragStart(e, agentId, agentName) {
+            e.dataTransfer.effectAllowed = 'copy';
+            e.dataTransfer.setData('agentId', agentId);
+            e.dataTransfer.setData('agentName', agentName);
+        }
+
+        // Canvas drop
+        document.addEventListener('dragover', (e) => {
+            const canvas = document.getElementById('canvas');
+            if (e.target === canvas || canvas.contains(e.target)) {
+                e.preventDefault();
+                e.dataTransfer.dropEffect = 'copy';
+            }
+        });
+
+        document.getElementById('canvas')?.addEventListener('drop', (e) => {
+            e.preventDefault();
+            const agentId = e.dataTransfer.getData('agentId');
+            const agentName = e.dataTransfer.getData('agentName');
+
+            const rect = document.getElementById('canvas').getBoundingClientRect();
+            const x = e.clientX - rect.left;
+            const y = e.clientY - rect.top;
+
+            addCanvasItem(agentId, agentName, x, y);
+        });
+
+        // Add item to canvas
+        function addCanvasItem(agentId, agentName, x, y) {
+            const canvas = document.getElementById('canvas');
+            const emptyState = canvas.querySelector('.canvas-empty');
+            if (emptyState) emptyState.remove();
+
+            const itemId = `item_${Date.now()}`;
+            const item = document.createElement('div');
+            item.className = 'canvas-item';
+            item.id = itemId;
+            item.style.left = x + 'px';
+            item.style.top = y + 'px';
+            item.innerHTML = `
+                <div style="font-weight: 600; color: #667eea; margin-bottom: 8px; font-size: 0.9em;">${agentName}</div>
+                <div style="font-size: 0.75em; color: #999; margin-bottom: 8px;">${agentId}</div>
+                <div style="display: flex; gap: 4px;">
+                    <button class="btn small" onclick="editCanvasItem('${itemId}')" style="flex: 1;">✏️</button>
+                    <button class="btn small danger" onclick="removeCanvasItem('${itemId}')" style="flex: 1;">✕</button>
+                </div>
+            `;
+
+            item.draggable = true;
+            item.ondragstart = (e) => {
+                e.dataTransfer.effectAllowed = 'move';
+                e.dataTransfer.setData('itemId', itemId);
+            };
+
+            canvas.appendChild(item);
+            canvasItems.push({ id: itemId, agentId, agentName, x, y });
+        }
+
+        // Remove canvas item
+        function removeCanvasItem(itemId) {
+            document.getElementById(itemId)?.remove();
+            canvasItems = canvasItems.filter(item => item.id !== itemId);
+        }
+
+        // Clear canvas
+        function clearCanvas() {
+            if (confirm('Clear all items from the canvas?')) {
+                document.getElementById('canvas').innerHTML = '<div class="canvas-empty"><div><p>Drag agents from the library to build your workflow</p></div></div>';
+                canvasItems = [];
+            }
+        }
+
+        // Save workflow
+        async function saveWorkflow() {
+            const name = document.getElementById('workflowName').value || 'Untitled Workflow';
+
+            try {
+                const response = await fetch(`${API_URL}/api/workflows/save`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        name,
+                        agents: canvasItems.map(item => item.agentId),
+                        connections: []
+                    })
+                });
+
+                const result = await response.json();
+                alert(`✅ Workflow "${name}" saved!\nID: ${result.workflow_id}`);
+            } catch (error) {
+                alert(`❌ Error saving workflow: ${error.message}`);
+            }
+        }
+
+        // Execute workflow
+        async function executeWorkflow() {
+            if (canvasItems.length === 0) {
+                alert('Add agents to the canvas first');
+                return;
+            }
+
+            try {
+                const response = await fetch(`${API_URL}/api/workflows/execute-custom`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        name: document.getElementById('workflowName').value || 'Custom Workflow',
+                        agents: canvasItems.map(item => item.agentId),
+                        connections: [],
+                        sandbox: true
+                    })
+                });
+
+                const result = await response.json();
+                alert(`✅ Workflow executing in sandbox!\nExecution ID: ${result.workflow_id}`);
+            } catch (error) {
+                alert(`❌ Error: ${error.message}`);
+            }
+        }
+
+        // Load BPMN agents
+        async function loadBpmnAgents() {
+            try {
+                const response = await fetch(`${API_URL}/api/agents?limit=50`);
+                const agents = await response.json();
+
+                const list = document.getElementById('bpmnAgentList');
+                list.innerHTML = agents.map(agent => `
+                    <div class="agent-card" onclick="viewBpmn('${agent.agent_id}', '${agent.name}')">
+                        <div class="agent-info">
+                            <h4>${agent.name}</h4>
+                            <p>${agent.description}</p>
+                        </div>
+                    </div>
+                `).join('');
+            } catch (error) {
+                console.error('Error loading BPMN agents:', error);
+            }
+        }
+
+        // View BPMN
+        function viewBpmn(agentId, agentName) {
+            const viewer = document.getElementById('bpmnViewer');
+            viewer.innerHTML = `
+                <div style="text-align: center; padding: 40px;">
+                    <h3 style="color: #667eea; margin-bottom: 20px;">${agentName}</h3>
+                    <p style="color: #999; margin-bottom: 20px;">BPMN 2.0 Diagram</p>
+                    <svg width="400" height="300" style="border: 2px solid #f0f0f0; border-radius: 8px;">
+                        <!-- Sample BPMN diagram -->
+                        <rect x="50" y="50" width="80" height="60" fill="#667eea" stroke="#333" stroke-width="2" rx="8"/>
+                        <text x="90" y="85" text-anchor="middle" fill="white" font-weight="600">Start</text>
+
+                        <path d="M 150 80 L 220 80" stroke="#333" stroke-width="2" fill="none" marker-end="url(#arrowhead)"/>
+
+                        <rect x="220" y="50" width="100" height="60" fill="#764ba2" stroke="#333" stroke-width="2" rx="8"/>
+                        <text x="270" y="80" text-anchor="middle" fill="white" font-weight="600" font-size="12px">${agentName}</text>
+
+                        <path d="M 330 80 L 400 80" stroke="#333" stroke-width="2" fill="none" marker-end="url(#arrowhead)"/>
+
+                        <defs>
+                            <marker id="arrowhead" markerWidth="10" markerHeight="10" refX="9" refY="3" orient="auto">
+                                <polygon points="0 0, 10 3, 0 6" fill="#333"/>
+                            </marker>
+                        </defs>
+                    </svg>
+                    <p style="margin-top: 20px; color: #999; font-size: 0.9em;">Full BPMN diagrams will be loaded from generated process models</p>
+                </div>
+            `;
+        }
+
+        // Show agent details
+        async function showAgentDetails(agentId) {
+            try {
+                const response = await fetch(`${API_URL}/api/agents/${agentId}`);
+                const agent = await response.json();
+
+                const body = document.getElementById('agentModalBody');
+                body.innerHTML = `
+                    <div>
+                        <h3 style="color: #667eea; margin-bottom: 15px;">${agent.name}</h3>
+                        <p><strong>ID:</strong> ${agent.agent_id}</p>
+                        <p><strong>APQC ID:</strong> ${agent.apqc_id || 'N/A'}</p>
+                        <p><strong>Category:</strong> ${agent.apqc_category}</p>
+                        <p><strong>Description:</strong> ${agent.description || 'No description'}</p>
+                        <p><strong>Type:</strong> ${agent.agent_type}</p>
+                        <p><strong>Status:</strong> ${agent.is_active ? '✅ Active' : '❌ Inactive'}</p>
+                    </div>
+                `;
+
+                document.getElementById('agentModal').classList.add('active');
+            } catch (error) {
+                console.error('Error loading agent:', error);
+            }
+        }
+
+        // Add to canvas from modal
+        function addToCanvas() {
+            if (selectedAgent) {
+                addCanvasItem(selectedAgent.id, selectedAgent.name, 100, 100);
+                closeModal();
+            }
+        }
+
+        // Close modal
+        function closeModal() {
+            document.getElementById('agentModal').classList.remove('active');
+        }
+
+        // Test workflow
+        async function testWorkflow() {
+            alert('🧪 Workflow testing interface ready!\n\nYou can select and test workflows in the sandbox environment here.');
+        }
+
+        // Initialize on page load
+        window.addEventListener('DOMContentLoaded', init);
+    </script>
+</body>
+</html>
