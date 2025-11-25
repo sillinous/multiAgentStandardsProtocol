@@ -58,6 +58,27 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
+# Content Security Policy middleware - allow unsafe-eval for bpmn-js
+@app.middleware("http")
+async def add_csp_header(request, call_next):
+    """Add CSP header that allows unsafe-eval for BPMN viewer library"""
+    response = await call_next(request)
+    # Allow unsafe-eval for bpmn-js library (needed for diagram rendering)
+    response.headers["Content-Security-Policy"] = (
+        "default-src 'self'; "
+        "script-src 'self' 'unsafe-eval' 'unsafe-inline' https://cdn.jsdelivr.net https://unpkg.com https://cdnjs.cloudflare.com; "
+        "style-src 'self' 'unsafe-inline' https://cdn.jsdelivr.net https://unpkg.com https://cdnjs.cloudflare.com https://fonts.googleapis.com; "
+        "img-src 'self' data: https: blob:; "
+        "font-src 'self' https://fonts.gstatic.com https://fonts.googleapis.com data: https:; "
+        "connect-src 'self' https: wss:; "
+        "media-src 'self' https: data: blob:; "
+        "object-src 'none'; "
+        "frame-src 'self'; "
+        "base-uri 'self'; "
+        "form-action 'self'"
+    )
+    return response
+
 
 # ============================================================================
 # Pydantic Models (Request/Response)
@@ -167,6 +188,14 @@ async def admin_panel():
     if admin_path.exists():
         return FileResponse(admin_path)
     raise HTTPException(status_code=404, detail="Admin panel not found")
+
+@app.get("/process-testing")
+async def process_testing_dashboard():
+    """Serve the process testing and debugging dashboard"""
+    dashboard_path = static_dir / "process-testing-dashboard.html"
+    if dashboard_path.exists():
+        return FileResponse(dashboard_path)
+    raise HTTPException(status_code=404, detail="Process testing dashboard not found")
 
 
 # ============================================================================
@@ -305,8 +334,9 @@ async def get_agents_by_apqc_level(
 ):
     """Get agents organized by APQC hierarchy level (1-5)
 
-    Level 1: Categories (13 total)
-    Level 2-5: Processes within categories
+    Level 1: Categories (13 total) - Process Groups
+    Level 2-4: Sub-processes within categories
+    Level 5: Individual atomic agents (executable)
     """
     if level == 1:
         # Return all categories with agent counts
@@ -330,32 +360,118 @@ async def get_agents_by_apqc_level(
                 for cat, count in categories
             ]
         }
-    else:
-        # Return agents from a category, grouped by APQC ID prefix
-        if not parent_id:
-            return {"level": level, "items": []}
 
-        category = parent_id.replace("_", " ")
-        agents = db.query(Agent).filter(
-            Agent.is_active == True,
-            Agent.apqc_category == category
-        ).order_by(Agent.apqc_id, Agent.name).all()
+    # For levels 2-5, return hierarchical structure based on APQC codes
+    if not parent_id:
+        return {"level": level, "items": []}
+
+    category = parent_id.split("|")[0].replace("_", " ")
+
+    # Get all agents in this category
+    agents = db.query(Agent).filter(
+        Agent.is_active == True,
+        Agent.apqc_category == category
+    ).order_by(Agent.agent_id).all()
+
+    if not agents:
+        return {"level": level, "parent": category, "items": []}
+
+    if level == 2:
+        # Level 2: Return process groups (5.1, 5.2, 5.3, etc)
+        # Extract Level 2 codes from APQC IDs
+        level2_groups = {}
+
+        for agent in agents:
+            # Get APQC code from agent name (e.g., "APQC 5.1.1.5 - ...")
+            parts = agent.name.split(" ")
+            if len(parts) >= 2 and parts[0] == "APQC":
+                code = parts[1]  # e.g., "5.1.1.5"
+                code_parts = code.split(".")
+                if len(code_parts) >= 2:
+                    level2_code = code_parts[0] + "." + code_parts[1]  # e.g., "5.1"
+
+                    if level2_code not in level2_groups:
+                        level2_groups[level2_code] = {
+                            "code": level2_code,
+                            "agents": [],
+                            "name": ""  # Will be filled from first agent
+                        }
+
+                    level2_groups[level2_code]["agents"].append(agent)
+                    # Extract sub-process name from agent (e.g., "Allocate Resources")
+                    if not level2_groups[level2_code]["name"] and len(parts) > 3:
+                        level2_groups[level2_code]["name"] = " ".join(parts[3:]).rstrip(" -")
+
+        # Convert to list items
+        items = []
+        for level2_code in sorted(level2_groups.keys()):
+            group = level2_groups[level2_code]
+            items.append({
+                "id": f"{category.replace(' ', '_')}|{level2_code}",
+                "name": f"{level2_code} - {group['name']}" if group['name'] else f"{level2_code} - Process Group",
+                "type": "process_group",
+                "code": level2_code,
+                "description": f"Sub-process group containing {len(group['agents'])} agents",
+                "children_count": len(group['agents'])
+            })
 
         return {
             "level": level,
             "parent": category,
-            "items": [
-                {
-                    "id": a.agent_id,
-                    "name": a.name,
+            "items": items
+        }
+
+    else:
+        # Level 3+: Return individual agents within a Level 2 group
+        # parent_id format: "Category|5.1"
+        parts = parent_id.split("|")
+        if len(parts) < 2:
+            # Fallback: return all agents
+            items = []
+            for agent in agents:
+                items.append({
+                    "id": agent.agent_id,
+                    "name": agent.name,
                     "type": "agent",
-                    "apqc_id": a.apqc_id,
-                    "description": a.description,
-                    "category": a.apqc_category,
-                    "agent_type": a.agent_type
-                }
-                for a in agents
-            ]
+                    "description": agent.description,
+                    "agent_type": agent.agent_type,
+                    "apqc_category": agent.apqc_category,
+                    "children_count": 0
+                })
+            return {"level": level, "parent": category, "items": items}
+
+        level2_code = parts[1]  # e.g., "5.1"
+
+        # Filter agents by Level 2 code
+        filtered_agents = []
+        for agent in agents:
+            agent_parts = agent.name.split(" ")
+            if len(agent_parts) >= 2 and agent_parts[0] == "APQC":
+                code = agent_parts[1]
+                code_parts = code.split(".")
+                if len(code_parts) >= 2:
+                    agent_level2 = code_parts[0] + "." + code_parts[1]
+                    if agent_level2 == level2_code:
+                        filtered_agents.append(agent)
+
+        # Return agents as testable items
+        items = []
+        for agent in filtered_agents:
+            items.append({
+                "id": agent.agent_id,
+                "name": agent.name,
+                "type": "agent",
+                "description": agent.description,
+                "agent_type": agent.agent_type,
+                "apqc_category": agent.apqc_category,
+                "children_count": 0
+            })
+
+        return {
+            "level": level,
+            "parent": category,
+            "code": level2_code,
+            "items": items
         }
 
 
@@ -547,6 +663,69 @@ async def get_workflow_stages(workflow_id: str, db: Session = Depends(get_db)):
 # Process Testing & Debugging Endpoints
 # ============================================================================
 
+def _get_business_description(agent_name: str, agent_type: str, category: str) -> str:
+    """Generate realistic business descriptions for process steps"""
+    descriptions = {
+        "deliver service": [
+            "Allocate and schedule service delivery resources based on customer requirements",
+            "Assess current service capabilities and capacity constraints",
+            "Assign qualified personnel to handle customer service requests",
+            "Coordinate service fulfillment with logistics and operations teams",
+            "Monitor service delivery performance and customer satisfaction metrics",
+            "Perform post-service quality assurance and feedback collection"
+        ],
+        "develop business capabilities": [
+            "Analyze business requirements and define capability improvements",
+            "Design new business processes and systems architecture",
+            "Develop training materials and change management plans",
+            "Implement capability enhancements across the organization",
+            "Conduct capability maturity assessments and gap analysis",
+            "Update business process documentation and standard operating procedures"
+        ],
+        "manage financial resources": [
+            "Review and approve budget allocations for business units",
+            "Forecast revenue and expense projections for planning purposes",
+            "Manage cash flow and working capital optimization",
+            "Process accounts payable and receivable transactions",
+            "Conduct financial reconciliation and audit preparations",
+            "Generate financial reports and performance dashboards"
+        ],
+        "manage human capital": [
+            "Recruit and onboard qualified candidates for open positions",
+            "Manage employee performance reviews and compensation planning",
+            "Develop and deliver employee training and development programs",
+            "Administer benefits, payroll, and human resources systems",
+            "Maintain employee records and compliance documentation",
+            "Foster employee engagement and organizational culture initiatives"
+        ],
+        "develop strategy": [
+            "Analyze market trends and competitive landscape",
+            "Define organizational strategy and strategic objectives",
+            "Communicate strategy to stakeholders and obtain alignment",
+            "Monitor strategy execution and business performance metrics",
+            "Adjust strategies based on market changes and performance data",
+            "Conduct scenario planning for emerging business opportunities"
+        ],
+        "manage information technology": [
+            "Assess IT infrastructure needs and technology solutions",
+            "Design and implement enterprise technology systems",
+            "Manage IT operations, maintenance, and system uptime",
+            "Ensure cybersecurity and data protection compliance",
+            "Manage IT vendor relationships and service agreements",
+            "Provide technical support and resolve system issues"
+        ]
+    }
+
+    # Find matching description based on category
+    category_lower = category.lower()
+    for key, desc_list in descriptions.items():
+        if key in category_lower:
+            return desc_list[hash(agent_name) % len(desc_list)]
+
+    # Default description if no match
+    return f"Execute critical business process step: {agent_name}"
+
+
 @app.get("/api/processes/{process_id}/definition")
 async def get_process_definition(process_id: str, db: Session = Depends(get_db)):
     """Get complete process definition with steps, inputs, outputs, and roles"""
@@ -566,7 +745,7 @@ async def get_process_definition(process_id: str, db: Session = Depends(get_db))
             "step_number": i,
             "name": agent.name,
             "description": agent.description or f"Process step for {agent.agent_type}",
-            "required_role": f"Process_{agent.agent_type.title()}_Manager",
+            "required_role": f"Process Manager - {agent.apqc_category}",
             "input_schema": {
                 "format": "json",
                 "fields": {
@@ -589,7 +768,7 @@ async def get_process_definition(process_id: str, db: Session = Depends(get_db))
                     "next_step_data": "object"
                 }
             },
-            "business_description": f"Execute {agent.agent_type} agent: {agent.name}",
+            "business_description": _get_business_description(agent.name, agent.agent_type, agent.apqc_category),
             "agent_id": agent.agent_id
         }
         for i, agent in enumerate(agents, 1)
@@ -682,39 +861,177 @@ async def execute_process_step(
 
 
 @app.get("/api/processes/{process_id}/diagram")
-async def get_process_diagram(process_id: str):
-    """Get BPMN2 diagram for the process"""
-    # Return basic BPMN2 structure
-    bpmn2_diagram = f"""<?xml version="1.0" encoding="UTF-8"?>
+async def get_process_diagram(process_id: str, db: Session = Depends(get_db)):
+    """Get BPMN2 diagram for the process with full visual layout (BPMNDI)"""
+
+    # Parse process_id to extract category and APQC code
+    # Format can be: "Category_Name|8.1" or "Category_Name" or "apqc_8_1_1"
+    category = None
+    apqc_prefix = None
+
+    if "|" in process_id:
+        # Level 2+ format: "Manage_Information_Technology|8.1"
+        parts = process_id.split("|")
+        category = parts[0].replace("_", " ")
+        apqc_prefix = parts[1] if len(parts) > 1 else None
+    else:
+        # Level 1 format: just category name like "Manage_Information_Technology"
+        category = process_id.replace("_", " ")
+
+    # Query agents based on category
+    query = db.query(Agent).filter(
+        Agent.is_active == True,
+        Agent.apqc_category == category
+    )
+
+    agents_list = query.order_by(Agent.name).all()
+
+    # Filter by APQC prefix if specified (e.g., "8.1" matches "APQC 8.1.x.x")
+    if apqc_prefix and agents_list:
+        filtered = []
+        for agent in agents_list:
+            # Extract APQC code from agent name (e.g., "APQC 8.1.1.5 - ...")
+            if agent.name.startswith("APQC "):
+                parts = agent.name.split(" ")
+                if len(parts) >= 2:
+                    agent_code = parts[1]  # e.g., "8.1.1.5"
+                    if agent_code.startswith(apqc_prefix + "."):
+                        filtered.append(agent)
+        agents_list = filtered
+
+    # Limit to 5 for readability in diagram
+    agents = agents_list[:5]
+
+    # If no agents found, create a simple placeholder diagram
+    if not agents:
+        # Create a minimal valid BPMN with one placeholder task
+        class PlaceholderAgent:
+            name = f"Process: {category or process_id}" + (f" ({apqc_prefix})" if apqc_prefix else "")
+        agents = [PlaceholderAgent()]
+
+    # Build dynamic tasks and flows
+    tasks_xml = ""
+    shapes_xml = ""
+    edges_xml = ""
+
+    # Starting position for layout
+    x_pos = 180
+    y_pos = 80
+    task_width = 100
+    task_height = 80
+    spacing = 50
+
+    # Start event
+    start_id = f"StartEvent_{process_id}"
+
+    # Build tasks from agents
+    task_ids = []
+    for i, agent in enumerate(agents[:5]):  # Limit to 5 tasks for readability
+        task_id = f"Task_{i+1}"
+        task_ids.append(task_id)
+        task_name = agent.name[:30] + "..." if len(agent.name) > 30 else agent.name
+
+        # Task XML
+        incoming = f"Flow_{i}" if i == 0 else f"Flow_{i}"
+        outgoing = f"Flow_{i+1}"
+        tasks_xml += f'''
+    <bpmn:task id="{task_id}" name="{task_name}">
+      <bpmn:incoming>{incoming}</bpmn:incoming>
+      <bpmn:outgoing>{outgoing}</bpmn:outgoing>
+    </bpmn:task>'''
+
+        # Shape XML (visual position)
+        task_x = x_pos + i * (task_width + spacing)
+        shapes_xml += f'''
+      <bpmndi:BPMNShape id="{task_id}_di" bpmnElement="{task_id}">
+        <dc:Bounds x="{task_x}" y="{y_pos}" width="{task_width}" height="{task_height}" />
+        <bpmndi:BPMNLabel />
+      </bpmndi:BPMNShape>'''
+
+    # Build sequence flows
+    flows_xml = f'''
+    <bpmn:sequenceFlow id="Flow_0" sourceRef="{start_id}" targetRef="Task_1" />'''
+
+    # Start event edge
+    edges_xml += f'''
+      <bpmndi:BPMNEdge id="Flow_0_di" bpmnElement="Flow_0">
+        <di:waypoint x="158" y="{y_pos + task_height//2}" />
+        <di:waypoint x="{x_pos}" y="{y_pos + task_height//2}" />
+      </bpmndi:BPMNEdge>'''
+
+    for i in range(len(task_ids)):
+        if i < len(task_ids) - 1:
+            flow_id = f"Flow_{i+1}"
+            flows_xml += f'''
+    <bpmn:sequenceFlow id="{flow_id}" sourceRef="Task_{i+1}" targetRef="Task_{i+2}" />'''
+
+            # Edge waypoints
+            src_x = x_pos + i * (task_width + spacing) + task_width
+            tgt_x = x_pos + (i+1) * (task_width + spacing)
+            edges_xml += f'''
+      <bpmndi:BPMNEdge id="{flow_id}_di" bpmnElement="{flow_id}">
+        <di:waypoint x="{src_x}" y="{y_pos + task_height//2}" />
+        <di:waypoint x="{tgt_x}" y="{y_pos + task_height//2}" />
+      </bpmndi:BPMNEdge>'''
+        else:
+            # Last task to end event
+            flow_id = f"Flow_{i+1}"
+            end_id = f"EndEvent_{process_id}"
+            flows_xml += f'''
+    <bpmn:sequenceFlow id="{flow_id}" sourceRef="Task_{i+1}" targetRef="{end_id}" />'''
+
+            src_x = x_pos + i * (task_width + spacing) + task_width
+            end_x = src_x + spacing + 18
+            edges_xml += f'''
+      <bpmndi:BPMNEdge id="{flow_id}_di" bpmnElement="{flow_id}">
+        <di:waypoint x="{src_x}" y="{y_pos + task_height//2}" />
+        <di:waypoint x="{end_x}" y="{y_pos + task_height//2}" />
+      </bpmndi:BPMNEdge>'''
+
+    # Calculate end event position
+    end_x = x_pos + len(task_ids) * (task_width + spacing)
+    end_id = f"EndEvent_{process_id}"
+
+    # Complete BPMN2 with BPMNDI section for visual rendering
+    bpmn2_diagram = f'''<?xml version="1.0" encoding="UTF-8"?>
 <bpmn:definitions xmlns:bpmn="http://www.omg.org/spec/BPMN/20100524/MODEL"
-                   xmlns:bpmndi="http://www.omg.org/spec/BPMN/20100524/DI"
-                   id="Definitions_{process_id}">
+                  xmlns:bpmndi="http://www.omg.org/spec/BPMN/20100524/DI"
+                  xmlns:dc="http://www.omg.org/spec/DD/20100524/DC"
+                  xmlns:di="http://www.omg.org/spec/DD/20100524/DI"
+                  id="Definitions_{process_id}"
+                  targetNamespace="http://bpmn.io/schema/bpmn">
   <bpmn:process id="Process_{process_id}" isExecutable="true">
-    <bpmn:startEvent id="StartEvent_{process_id}">
-      <bpmn:outgoing>Flow_1</bpmn:outgoing>
-    </bpmn:startEvent>
-    <bpmn:task id="Task_1" name="Process Step 1">
-      <bpmn:incoming>Flow_1</bpmn:incoming>
-      <bpmn:outgoing>Flow_2</bpmn:outgoing>
-    </bpmn:task>
-    <bpmn:task id="Task_2" name="Process Step 2">
-      <bpmn:incoming>Flow_2</bpmn:incoming>
-      <bpmn:outgoing>Flow_3</bpmn:outgoing>
-    </bpmn:task>
-    <bpmn:endEvent id="EndEvent_{process_id}">
-      <bpmn:incoming>Flow_3</bpmn:incoming>
-    </bpmn:endEvent>
-    <bpmn:sequenceFlow id="Flow_1" sourceRef="StartEvent_{process_id}" targetRef="Task_1" />
-    <bpmn:sequenceFlow id="Flow_2" sourceRef="Task_1" targetRef="Task_2" />
-    <bpmn:sequenceFlow id="Flow_3" sourceRef="Task_2" targetRef="EndEvent_{process_id}" />
+    <bpmn:startEvent id="{start_id}" name="Start">
+      <bpmn:outgoing>Flow_0</bpmn:outgoing>
+    </bpmn:startEvent>{tasks_xml}
+    <bpmn:endEvent id="{end_id}" name="End">
+      <bpmn:incoming>Flow_{len(task_ids)}</bpmn:incoming>
+    </bpmn:endEvent>{flows_xml}
   </bpmn:process>
-</bpmn:definitions>"""
+  <bpmndi:BPMNDiagram id="BPMNDiagram_{process_id}">
+    <bpmndi:BPMNPlane id="BPMNPlane_{process_id}" bpmnElement="Process_{process_id}">
+      <bpmndi:BPMNShape id="{start_id}_di" bpmnElement="{start_id}">
+        <dc:Bounds x="122" y="{y_pos + task_height//2 - 18}" width="36" height="36" />
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="128" y="{y_pos + task_height//2 + 22}" width="24" height="14" />
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNShape>{shapes_xml}
+      <bpmndi:BPMNShape id="{end_id}_di" bpmnElement="{end_id}">
+        <dc:Bounds x="{end_x}" y="{y_pos + task_height//2 - 18}" width="36" height="36" />
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="{end_x + 6}" y="{y_pos + task_height//2 + 22}" width="24" height="14" />
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNShape>{edges_xml}
+    </bpmndi:BPMNPlane>
+  </bpmndi:BPMNDiagram>
+</bpmn:definitions>'''
 
     return {
         "process_id": process_id,
         "format": "bpmn2",
         "content": bpmn2_diagram,
-        "diagram_url": f"/api/processes/{process_id}/diagram.svg"
+        "diagram_url": f"/api/processes/{process_id}/diagram.svg",
+        "task_count": len(task_ids)
     }
 
 
