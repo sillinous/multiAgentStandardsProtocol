@@ -24,10 +24,10 @@ from uuid import uuid4
 from fastapi import FastAPI, HTTPException, Depends, BackgroundTasks, Request
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.staticfiles import StaticFiles
-from fastapi.responses import FileResponse, JSONResponse
+from fastapi.responses import FileResponse, JSONResponse, Response
 from pydantic import BaseModel, Field, validator
-from sqlalchemy.orm import Session
-from sqlalchemy import func, distinct
+from sqlalchemy.orm import Session, sessionmaker
+from sqlalchemy import func, distinct, create_engine
 
 # Import security module
 from api_server.security import (
@@ -40,6 +40,23 @@ from api_server.security import (
     logger as security_logger
 )
 
+# Import configuration, logging, and error handling
+from api_server.config import settings
+from api_server.logging_config import setup_logging, get_logger, RequestLoggingMiddleware, Timer
+from api_server.errors import (
+    APIError,
+    NotFoundError,
+    ValidationError,
+    WorkflowExecutionError,
+    ServiceUnavailableError,
+    api_error_handler,
+    error_response
+)
+
+# Setup logging early
+setup_logging()
+logger = get_logger(__name__)
+
 # Load APQC PCF Hierarchy
 APQC_HIERARCHY_PATH = Path(__file__).parent.parent / "apqc_pcf_hierarchy.json"
 APQC_HIERARCHY = {}
@@ -50,11 +67,31 @@ if APQC_HIERARCHY_PATH.exists():
 # Add project root to path
 sys.path.insert(0, str(Path(__file__).parent.parent))
 
-from api_server.database import get_db, Agent, Workflow, AgentExecution, WorkflowStage, init_db, seed_agents
+from api_server.database import get_db, Agent, Workflow, AgentExecution, WorkflowStage, init_db, seed_agents, DATABASE_URL
 
 # Import our workflow
 sys.path.insert(0, str(Path(__file__).parent.parent))
 from poc_invoice_workflow import InvoiceProcessingWorkflow
+
+# Add src to path for superstandard imports
+sys.path.insert(0, str(Path(__file__).parent.parent / "src"))
+
+# Import integration catalog (used by multiple endpoints)
+try:
+    from superstandard.schemas.integration_catalog import INTEGRATION_CATALOG, CATEGORY_SUMMARY
+    INTEGRATION_CATALOG_AVAILABLE = True
+except ImportError:
+    INTEGRATION_CATALOG = {}
+    CATEGORY_SUMMARY = {}
+    INTEGRATION_CATALOG_AVAILABLE = False
+
+# Import workflow engine (lazy initialization for performance)
+try:
+    from superstandard.engine.workflow_engine import WorkflowEngine
+    WORKFLOW_ENGINE_AVAILABLE = True
+except ImportError:
+    WorkflowEngine = None
+    WORKFLOW_ENGINE_AVAILABLE = False
 
 
 # ============================================================================
@@ -66,20 +103,34 @@ app = FastAPI(
     description="REST API for executing APQC agents and workflows with real business logic",
     version="1.0.0",
     docs_url="/docs",
-    redoc_url="/redoc"
+    redoc_url="/redoc",
+    debug=settings.DEBUG
 )
 
-# CORS middleware
+# Add request logging middleware (must be added before CORS)
+app.add_middleware(RequestLoggingMiddleware)
+
+# CORS middleware - use settings
+cors_origins = settings.CORS_ORIGINS if settings.CORS_ORIGINS != ["*"] else ["*"]
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"],
-    allow_credentials=True,
+    allow_origins=cors_origins,
+    allow_credentials=settings.CORS_ALLOW_CREDENTIALS,
     allow_methods=["*"],
     allow_headers=["*"],
 )
 
+# Register custom error handlers
+app.add_exception_handler(APIError, api_error_handler)
+
 # Setup security middleware and exception handlers
 setup_security(app)
+
+# Log startup configuration
+logger.info(
+    "API server initialized",
+    extra={"config": settings.to_dict()}
+)
 
 # Content Security Policy middleware - allow unsafe-eval for bpmn-js
 @app.middleware("http")
@@ -1327,12 +1378,6 @@ async def get_all_workflows(db: Session = Depends(get_db)):
 
 async def run_invoice_workflow(workflow_db_id: int, workflow_id: str, db: Session):
     """Background task to execute invoice workflow"""
-    import asyncio
-    from sqlalchemy import create_engine
-    from sqlalchemy.orm import sessionmaker
-    from api_server.database import DATABASE_URL
-    import os
-
     # Create new session for background task
     engine = create_engine(DATABASE_URL, connect_args={"check_same_thread": False} if "sqlite" in DATABASE_URL else {})
     SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
@@ -1453,7 +1498,6 @@ async def get_bpmn_file(apqc_code: str):
         with open(filepath, 'r', encoding='utf-8') as f:
             bpmn_content = f.read()
 
-        from fastapi.responses import Response
         return Response(
             content=bpmn_content,
             media_type="application/xml",
@@ -1567,11 +1611,19 @@ async def list_agent_cards():
                     "apqc_id": data.get("apqc_id"),
                     "apqc_name": data.get("apqc_name"),
                     "category": data.get("category"),
+                    "description": data.get("description"),
+                    "orchestration_pattern": data.get("orchestration_pattern", "sequential"),
                     "total_steps": data.get("total_steps", len(data.get("agent_cards", []))),
+                    "estimated_duration_seconds": data.get("estimated_duration_seconds"),
+                    "compliance_frameworks": data.get("compliance_frameworks", []),
+                    "integration_summary": data.get("integration_summary", {}),
                     "filename": filepath.name
                 })
         except Exception as e:
             continue
+
+    # Sort by APQC ID
+    cards.sort(key=lambda x: x.get("apqc_id", ""))
 
     return {"total": len(cards), "agent_cards": cards}
 
@@ -1607,7 +1659,8 @@ async def get_agent_card(apqc_code: str):
         try:
             with open(filepath, 'r') as f:
                 return json.load(f)
-        except:
+        except (json.JSONDecodeError, IOError, OSError):
+            # Skip files that can't be read or parsed
             continue
 
     raise HTTPException(
@@ -1638,28 +1691,24 @@ async def list_integrations():
     """
     List all available integrations from the catalog.
     """
-    try:
-        import sys
-        sys.path.insert(0, str(Path(__file__).parent.parent / "src"))
-        from superstandard.schemas.integration_catalog import INTEGRATION_CATALOG, CATEGORY_SUMMARY
-
-        integrations = []
-        for int_id, int_data in INTEGRATION_CATALOG.items():
-            integrations.append({
-                "id": int_id,
-                "name": int_data.get("name"),
-                "category": int_data.get("category"),
-                "type": int_data.get("type"),
-                "capabilities_count": len(int_data.get("capabilities", []))
-            })
-
-        return {
-            "total": len(integrations),
-            "categories": CATEGORY_SUMMARY,
-            "integrations": integrations
-        }
-    except ImportError:
+    if not INTEGRATION_CATALOG_AVAILABLE:
         return {"total": 0, "categories": {}, "integrations": [], "error": "Integration catalog not found"}
+
+    integrations = []
+    for int_id, int_data in INTEGRATION_CATALOG.items():
+        integrations.append({
+            "id": int_id,
+            "name": int_data.get("name"),
+            "category": int_data.get("category"),
+            "type": int_data.get("type"),
+            "capabilities_count": len(int_data.get("capabilities", []))
+        })
+
+    return {
+        "total": len(integrations),
+        "categories": CATEGORY_SUMMARY,
+        "integrations": integrations
+    }
 
 
 @app.get("/api/integrations/{integration_id}")
@@ -1667,17 +1716,13 @@ async def get_integration(integration_id: str):
     """
     Get details for a specific integration.
     """
-    try:
-        import sys
-        sys.path.insert(0, str(Path(__file__).parent.parent / "src"))
-        from superstandard.schemas.integration_catalog import INTEGRATION_CATALOG
-
-        if integration_id in INTEGRATION_CATALOG:
-            return INTEGRATION_CATALOG[integration_id]
-
-        raise HTTPException(status_code=404, detail=f"Integration {integration_id} not found")
-    except ImportError:
+    if not INTEGRATION_CATALOG_AVAILABLE:
         raise HTTPException(status_code=500, detail="Integration catalog not available")
+
+    if integration_id in INTEGRATION_CATALOG:
+        return INTEGRATION_CATALOG[integration_id]
+
+    raise HTTPException(status_code=404, detail=f"Integration {integration_id} not found")
 
 
 @app.get("/api/integrations/category/{category}")
@@ -1685,20 +1730,16 @@ async def get_integrations_by_category(category: str):
     """
     Get all integrations in a specific category.
     """
-    try:
-        import sys
-        sys.path.insert(0, str(Path(__file__).parent.parent / "src"))
-        from superstandard.schemas.integration_catalog import INTEGRATION_CATALOG
-
-        integrations = [
-            integration
-            for integration in INTEGRATION_CATALOG.values()
-            if integration["category"] == category
-        ]
-
-        return {"category": category, "total": len(integrations), "integrations": integrations}
-    except ImportError:
+    if not INTEGRATION_CATALOG_AVAILABLE:
         raise HTTPException(status_code=500, detail="Integration catalog not available")
+
+    integrations = [
+        integration
+        for integration in INTEGRATION_CATALOG.values()
+        if integration["category"] == category
+    ]
+
+    return {"category": category, "total": len(integrations), "integrations": integrations}
 
 
 @app.get("/api/integrations/search/{capability}")
@@ -1706,36 +1747,31 @@ async def search_integrations_by_capability(capability: str):
     """
     Find integrations that have a specific capability.
     """
-    try:
-        import sys
-        sys.path.insert(0, str(Path(__file__).parent.parent / "src"))
-        from superstandard.schemas.integration_catalog import INTEGRATION_CATALOG
-
-        integrations = [
-            integration
-            for integration in INTEGRATION_CATALOG.values()
-            if capability.lower() in [c.lower() for c in integration.get("capabilities", [])]
-        ]
-
-        return {"capability": capability, "total": len(integrations), "integrations": integrations}
-    except ImportError:
+    if not INTEGRATION_CATALOG_AVAILABLE:
         raise HTTPException(status_code=500, detail="Integration catalog not available")
+
+    integrations = [
+        integration
+        for integration in INTEGRATION_CATALOG.values()
+        if capability.lower() in [c.lower() for c in integration.get("capabilities", [])]
+    ]
+
+    return {"capability": capability, "total": len(integrations), "integrations": integrations}
 
 
 # ============================================================================
 # Workflow Execution Engine Endpoints
 # ============================================================================
 
-# Initialize workflow engine
+# Initialize workflow engine (lazy loading)
 workflow_engine = None
 
 def get_workflow_engine():
     """Get or create workflow engine instance"""
     global workflow_engine
     if workflow_engine is None:
-        import sys
-        sys.path.insert(0, str(Path(__file__).parent.parent / "src"))
-        from superstandard.engine.workflow_engine import WorkflowEngine
+        if not WORKFLOW_ENGINE_AVAILABLE:
+            raise HTTPException(status_code=500, detail="Workflow engine not available")
         workflow_engine = WorkflowEngine(
             agent_cards_dir=str(Path(__file__).parent.parent / "agent_cards")
         )
@@ -1888,7 +1924,8 @@ async def list_executable_workflows():
                             for int_id in step.get("required_integrations", [])
                         ))
                     })
-            except:
+            except (json.JSONDecodeError, IOError, OSError, KeyError, TypeError):
+                # Skip files that can't be read, parsed, or have invalid structure
                 continue
 
         return {
@@ -1897,6 +1934,317 @@ async def list_executable_workflows():
         }
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Failed to list workflows: {str(e)}")
+
+
+# ============================================================================
+# Agent Card Execution Endpoints
+# ============================================================================
+
+class AgentCardExecuteRequest(BaseModel):
+    """Request model for agent card execution"""
+    input_data: Dict[str, Any] = {}
+    credentials: Optional[Dict[str, Dict[str, str]]] = None
+    dry_run: bool = False
+    step_by_step: bool = False
+
+
+@app.post("/api/agent-cards/{apqc_code:path}/execute")
+async def execute_agent_card(apqc_code: str, request: AgentCardExecuteRequest):
+    """
+    Execute an agent card workflow.
+
+    This endpoint executes the full workflow defined by the agent card,
+    with options for dry-run and step-by-step execution.
+
+    Args:
+        apqc_code: APQC code (e.g., "8.2.1.1")
+        request: Execution request with input_data, credentials, and options
+
+    Returns:
+        Execution result including step details and audit trail
+    """
+    # First verify the agent card exists
+    card = await get_agent_card(apqc_code)
+
+    try:
+        engine = get_workflow_engine()
+
+        if request.dry_run:
+            # Simulate execution without making actual integration calls
+            return await _simulate_execution(card, request.input_data)
+
+        result = await engine.execute(
+            apqc_code=apqc_code,
+            input_data=request.input_data,
+            credentials=request.credentials
+        )
+        return result
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Execution failed: {str(e)}")
+
+
+async def _simulate_execution(card: Dict[str, Any], input_data: Dict[str, Any]) -> Dict[str, Any]:
+    """Simulate workflow execution without actual API calls."""
+    execution_id = f"DRY-{datetime.now().strftime('%Y%m%d%H%M%S')}-{card.get('apqc_id', 'unknown').replace('.', '')}"
+
+    steps = card.get("agent_cards", [])
+    simulated_steps = []
+
+    for step in steps:
+        step_result = {
+            "step_number": step.get("step_number"),
+            "step_name": step.get("step_name"),
+            "status": "simulated",
+            "simulated_output": {
+                field["name"]: f"<simulated_{field['type']}>"
+                for field in step.get("output_schema", [])
+            },
+            "would_call_integrations": [
+                int_ref.get("system") if isinstance(int_ref, dict) else int_ref
+                for int_ref in step.get("required_integrations", [])
+            ],
+            "decision_rules_to_evaluate": [
+                rule.get("name") for rule in step.get("decision_rules", [])
+            ]
+        }
+        simulated_steps.append(step_result)
+
+    return {
+        "success": True,
+        "dry_run": True,
+        "execution_id": execution_id,
+        "apqc_code": card.get("apqc_id"),
+        "apqc_name": card.get("apqc_name"),
+        "total_steps": len(steps),
+        "simulated_steps": simulated_steps,
+        "estimated_duration_seconds": card.get("estimated_duration_seconds", 0),
+        "required_integrations_summary": list(set(
+            int_ref.get("system") if isinstance(int_ref, dict) else int_ref
+            for step in steps
+            for int_ref in step.get("required_integrations", [])
+        )),
+        "message": "Dry run completed. No actual integrations were called."
+    }
+
+
+@app.post("/api/agent-cards/{apqc_code:path}/validate")
+async def validate_agent_card_input(apqc_code: str, input_data: Dict[str, Any]):
+    """
+    Validate input data against an agent card's input schema.
+
+    Args:
+        apqc_code: APQC code (e.g., "8.2.1.1")
+        input_data: The input data to validate
+
+    Returns:
+        Validation result with any errors or warnings
+    """
+    card = await get_agent_card(apqc_code)
+    steps = card.get("agent_cards", [])
+
+    if not steps:
+        return {
+            "valid": True,
+            "apqc_code": apqc_code,
+            "message": "No input schema defined for this agent card"
+        }
+
+    # Get first step's input schema
+    first_step = steps[0]
+    input_schema = first_step.get("input_schema", [])
+
+    errors = []
+    warnings = []
+
+    # Check required fields
+    for field in input_schema:
+        field_name = field.get("name")
+        is_required = field.get("required", False)
+        field_type = field.get("type", "string")
+
+        if is_required and field_name not in input_data:
+            errors.append({
+                "field": field_name,
+                "error": "required_field_missing",
+                "message": f"Required field '{field_name}' is missing"
+            })
+        elif field_name in input_data:
+            value = input_data[field_name]
+            # Basic type validation
+            if field_type == "string" and not isinstance(value, str):
+                warnings.append({
+                    "field": field_name,
+                    "warning": "type_mismatch",
+                    "message": f"Field '{field_name}' should be string, got {type(value).__name__}"
+                })
+            elif field_type == "number" and not isinstance(value, (int, float)):
+                warnings.append({
+                    "field": field_name,
+                    "warning": "type_mismatch",
+                    "message": f"Field '{field_name}' should be number, got {type(value).__name__}"
+                })
+            elif field_type == "array" and not isinstance(value, list):
+                warnings.append({
+                    "field": field_name,
+                    "warning": "type_mismatch",
+                    "message": f"Field '{field_name}' should be array, got {type(value).__name__}"
+                })
+
+            # Check enum validation
+            validation = field.get("validation", {})
+            if "enum" in validation and value not in validation["enum"]:
+                errors.append({
+                    "field": field_name,
+                    "error": "invalid_enum_value",
+                    "message": f"Field '{field_name}' must be one of: {validation['enum']}"
+                })
+
+    return {
+        "valid": len(errors) == 0,
+        "apqc_code": apqc_code,
+        "apqc_name": card.get("apqc_name"),
+        "errors": errors,
+        "warnings": warnings,
+        "schema_fields": len(input_schema),
+        "provided_fields": len(input_data)
+    }
+
+
+@app.get("/api/agent-cards/{apqc_code:path}/execution-history")
+async def get_agent_card_execution_history(apqc_code: str, limit: int = 20):
+    """
+    Get execution history for a specific agent card.
+
+    Args:
+        apqc_code: APQC code (e.g., "8.2.1.1")
+        limit: Maximum number of executions to return
+
+    Returns:
+        List of past executions for this agent card
+    """
+    # Verify the agent card exists
+    card = await get_agent_card(apqc_code)
+
+    try:
+        engine = get_workflow_engine()
+        all_executions = engine.list_executions(limit=500)
+
+        # Filter to this agent card
+        card_executions = [
+            exec_data for exec_data in all_executions
+            if exec_data.get("apqc_code") == apqc_code
+        ][:limit]
+
+        return {
+            "apqc_code": apqc_code,
+            "apqc_name": card.get("apqc_name"),
+            "total_executions": len(card_executions),
+            "executions": card_executions
+        }
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Failed to get execution history: {str(e)}")
+
+
+@app.get("/api/agent-cards/{apqc_code:path}/required-inputs")
+async def get_agent_card_required_inputs(apqc_code: str):
+    """
+    Get the required inputs for an agent card workflow.
+
+    Args:
+        apqc_code: APQC code (e.g., "8.2.1.1")
+
+    Returns:
+        Input schema with field names, types, and requirements
+    """
+    card = await get_agent_card(apqc_code)
+    steps = card.get("agent_cards", [])
+
+    if not steps:
+        return {
+            "apqc_code": apqc_code,
+            "apqc_name": card.get("apqc_name"),
+            "required_inputs": [],
+            "optional_inputs": []
+        }
+
+    first_step = steps[0]
+    input_schema = first_step.get("input_schema", [])
+
+    required = []
+    optional = []
+
+    for field in input_schema:
+        field_info = {
+            "name": field.get("name"),
+            "type": field.get("type", "string"),
+            "description": field.get("description", ""),
+            "validation": field.get("validation", {}),
+            "example": field.get("example")
+        }
+
+        if field.get("required", False):
+            required.append(field_info)
+        else:
+            optional.append(field_info)
+
+    return {
+        "apqc_code": apqc_code,
+        "apqc_name": card.get("apqc_name"),
+        "required_inputs": required,
+        "optional_inputs": optional,
+        "total_fields": len(input_schema)
+    }
+
+
+@app.get("/api/agent-cards/{apqc_code:path}/integrations")
+async def get_agent_card_integrations(apqc_code: str):
+    """
+    Get all integrations required by an agent card.
+
+    Args:
+        apqc_code: APQC code (e.g., "8.2.1.1")
+
+    Returns:
+        List of required integrations grouped by step
+    """
+    card = await get_agent_card(apqc_code)
+    steps = card.get("agent_cards", [])
+
+    integrations_by_step = []
+    all_integrations = set()
+
+    for step in steps:
+        step_integrations = []
+        for int_ref in step.get("required_integrations", []):
+            if isinstance(int_ref, dict):
+                int_info = {
+                    "system": int_ref.get("system"),
+                    "type": int_ref.get("type"),
+                    "protocol": int_ref.get("protocol"),
+                    "examples": int_ref.get("examples", [])
+                }
+                step_integrations.append(int_info)
+                all_integrations.add(int_ref.get("system"))
+            else:
+                step_integrations.append({"system": int_ref})
+                all_integrations.add(int_ref)
+
+        integrations_by_step.append({
+            "step_number": step.get("step_number"),
+            "step_name": step.get("step_name"),
+            "integrations": step_integrations
+        })
+
+    # Also include integration summary from card level
+    integration_summary = card.get("integration_summary", {})
+
+    return {
+        "apqc_code": apqc_code,
+        "apqc_name": card.get("apqc_name"),
+        "total_unique_integrations": len(all_integrations),
+        "integrations_by_step": integrations_by_step,
+        "integration_summary": integration_summary
+    }
 
 
 # ============================================================================
