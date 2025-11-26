@@ -1,0 +1,949 @@
+{
+  "apqc_id": "9.2.1.1",
+  "apqc_name": "Manage vendor relationships and performance",
+  "category": "9.0 - Acquire, Construct, and Manage Assets",
+  "description": "End-to-end vendor management workflow from onboarding to performance monitoring, including risk assessment, contract management, and supplier development.",
+  "orchestration_pattern": "event_driven",
+  "total_steps": 7,
+  "estimated_duration_seconds": 86400,
+  "compliance_frameworks": ["SOX", "FCPA", "GDPR", "Modern Slavery Act"],
+  "data_retention_days": 2555,
+
+  "agent_cards": [
+    {
+      "id": "agent_9_2_1_1_step1",
+      "apqc_id": "9.2.1.1",
+      "step_number": 1,
+      "step_name": "Vendor Onboarding",
+      "description": "Register and validate new vendors in the system",
+      "purpose": "Establish compliant vendor relationships",
+      "business_value": "Reduce risk and ensure proper documentation",
+
+      "capabilities": [
+        "collect_vendor_information",
+        "validate_tax_id",
+        "verify_bank_details",
+        "screen_sanctions_lists",
+        "collect_compliance_docs",
+        "assign_vendor_category",
+        "create_vendor_master"
+      ],
+
+      "input_schema": [
+        {
+          "name": "company_name",
+          "type": "string",
+          "required": true
+        },
+        {
+          "name": "tax_id",
+          "type": "string",
+          "description": "EIN, VAT, or equivalent",
+          "required": true
+        },
+        {
+          "name": "address",
+          "type": "object",
+          "required": true
+        },
+        {
+          "name": "contact_info",
+          "type": "object",
+          "required": true
+        },
+        {
+          "name": "bank_details",
+          "type": "object",
+          "required": true
+        },
+        {
+          "name": "vendor_type",
+          "type": "string",
+          "required": true,
+          "validation": {"enum": ["supplier", "contractor", "consultant", "service_provider"]}
+        },
+        {
+          "name": "spend_category",
+          "type": "string",
+          "required": true
+        }
+      ],
+
+      "output_schema": [
+        {
+          "name": "vendor_id",
+          "type": "string",
+          "required": true,
+          "example": "VND-2025-001234"
+        },
+        {
+          "name": "onboarding_status",
+          "type": "string",
+          "required": true,
+          "validation": {"enum": ["complete", "pending_docs", "pending_verification", "rejected"]}
+        },
+        {
+          "name": "risk_score",
+          "type": "integer",
+          "description": "Initial risk score 0-100",
+          "required": true
+        },
+        {
+          "name": "compliance_status",
+          "type": "object",
+          "required": true
+        },
+        {
+          "name": "approved_categories",
+          "type": "array",
+          "required": true
+        }
+      ],
+
+      "required_integrations": [
+        {"system": "ERP - Vendor Master", "type": "bidirectional", "protocol": "API", "examples": ["SAP MM", "Oracle Procurement"]},
+        {"system": "Tax Validation", "type": "verify", "protocol": "API", "examples": ["IRS TIN Match", "VIES"]},
+        {"system": "Bank Validation", "type": "verify", "protocol": "API", "examples": ["Plaid", "MicroBilt"]},
+        {"system": "Sanctions Screening", "type": "check", "protocol": "API", "examples": ["Dow Jones Risk", "LexisNexis", "World-Check"]}
+      ],
+
+      "decision_rules": [
+        {
+          "rule_id": "DR-VM-001",
+          "name": "Sanctions Hit",
+          "condition": "sanctions_match == true",
+          "action": "reject_and_alert_compliance",
+          "priority": 1
+        },
+        {
+          "rule_id": "DR-VM-002",
+          "name": "Invalid TIN",
+          "condition": "tin_validation_failed == true",
+          "action": "request_corrected_w9",
+          "priority": 1
+        },
+        {
+          "rule_id": "DR-VM-003",
+          "name": "High Risk Country",
+          "condition": "country IN high_risk_country_list",
+          "action": "require_enhanced_due_diligence",
+          "priority": 1
+        },
+        {
+          "rule_id": "DR-VM-004",
+          "name": "Expedited Onboarding",
+          "condition": "requester.level == 'VP' AND business_critical == true",
+          "action": "fast_track_with_approval",
+          "priority": 2
+        }
+      ],
+
+      "error_handlers": [
+        {
+          "error_type": "duplicate_vendor",
+          "severity": "medium",
+          "action": "merge_or_reject",
+          "notification": ["procurement", "master_data_team"]
+        },
+        {
+          "error_type": "screening_service_unavailable",
+          "severity": "high",
+          "action": "hold_pending_manual_check",
+          "notification": ["compliance", "procurement"]
+        }
+      ]
+    },
+
+    {
+      "id": "agent_9_2_1_1_step2",
+      "apqc_id": "9.2.1.1",
+      "step_number": 2,
+      "step_name": "Vendor Risk Assessment",
+      "description": "Evaluate and monitor vendor risk on ongoing basis",
+      "purpose": "Identify and mitigate supply chain risks",
+      "business_value": "Prevent disruptions and compliance violations",
+
+      "capabilities": [
+        "assess_financial_health",
+        "evaluate_operational_risk",
+        "assess_compliance_risk",
+        "monitor_news_sentiment",
+        "calculate_risk_score",
+        "trigger_risk_reviews"
+      ],
+
+      "input_schema": [
+        {
+          "name": "vendor_id",
+          "type": "string",
+          "required": true
+        },
+        {
+          "name": "assessment_type",
+          "type": "string",
+          "required": true,
+          "validation": {"enum": ["initial", "periodic", "triggered", "renewal"]}
+        },
+        {
+          "name": "risk_dimensions",
+          "type": "array",
+          "required": false,
+          "example": ["financial", "operational", "compliance", "cyber", "esg"]
+        }
+      ],
+
+      "output_schema": [
+        {
+          "name": "risk_assessment_id",
+          "type": "string",
+          "required": true
+        },
+        {
+          "name": "overall_risk_score",
+          "type": "integer",
+          "required": true
+        },
+        {
+          "name": "risk_tier",
+          "type": "string",
+          "required": true,
+          "validation": {"enum": ["critical", "high", "medium", "low"]}
+        },
+        {
+          "name": "risk_breakdown",
+          "type": "object",
+          "required": true,
+          "example": {"financial": 65, "operational": 45, "compliance": 30}
+        },
+        {
+          "name": "mitigation_actions",
+          "type": "array",
+          "required": true
+        },
+        {
+          "name": "next_review_date",
+          "type": "date",
+          "required": true
+        }
+      ],
+
+      "required_integrations": [
+        {"system": "Credit Bureau", "type": "inquiry", "protocol": "API", "examples": ["D&B", "Experian Business"]},
+        {"system": "Risk Intelligence", "type": "read", "protocol": "API", "examples": ["Resilinc", "Interos", "RiskMethods"]},
+        {"system": "Cyber Risk", "type": "inquiry", "protocol": "API", "examples": ["SecurityScorecard", "BitSight"]},
+        {"system": "News Monitoring", "type": "inbound", "protocol": "API", "examples": ["Factiva", "Meltwater"]}
+      ],
+
+      "decision_rules": [
+        {
+          "rule_id": "DR-VM-010",
+          "name": "Critical Risk Alert",
+          "condition": "overall_risk_score > 80 OR bankruptcy_indicator == true",
+          "action": "trigger_immediate_review",
+          "priority": 1
+        },
+        {
+          "rule_id": "DR-VM-011",
+          "name": "Cyber Risk Threshold",
+          "condition": "cyber_security_score < 600 AND data_access == 'sensitive'",
+          "action": "require_security_audit",
+          "priority": 1
+        },
+        {
+          "rule_id": "DR-VM-012",
+          "name": "ESG Concern",
+          "condition": "esg_controversy_flag == true",
+          "action": "escalate_to_sustainability_team",
+          "priority": 2
+        },
+        {
+          "rule_id": "DR-VM-013",
+          "name": "Single Source Risk",
+          "condition": "vendor.sole_source == true AND spend > 1000000",
+          "action": "require_backup_source_plan",
+          "priority": 1
+        }
+      ],
+
+      "error_handlers": [
+        {
+          "error_type": "financial_data_unavailable",
+          "severity": "medium",
+          "action": "request_direct_from_vendor",
+          "notification": ["buyer", "vendor"]
+        },
+        {
+          "error_type": "negative_news_alert",
+          "severity": "high",
+          "action": "immediate_review_and_stakeholder_alert",
+          "notification": ["category_manager", "risk_team"]
+        }
+      ]
+    },
+
+    {
+      "id": "agent_9_2_1_1_step3",
+      "apqc_id": "9.2.1.1",
+      "step_number": 3,
+      "step_name": "Contract Management",
+      "description": "Manage vendor contracts throughout their lifecycle",
+      "purpose": "Ensure contractual compliance and value realization",
+      "business_value": "Maximize contract value and minimize legal risk",
+
+      "capabilities": [
+        "store_contract_documents",
+        "extract_key_terms",
+        "track_obligations",
+        "monitor_expirations",
+        "manage_amendments",
+        "trigger_renewals"
+      ],
+
+      "input_schema": [
+        {
+          "name": "vendor_id",
+          "type": "string",
+          "required": true
+        },
+        {
+          "name": "contract_document",
+          "type": "binary",
+          "required": true
+        },
+        {
+          "name": "contract_type",
+          "type": "string",
+          "required": true,
+          "validation": {"enum": ["master", "sow", "nda", "amendment", "renewal"]}
+        },
+        {
+          "name": "effective_date",
+          "type": "date",
+          "required": true
+        },
+        {
+          "name": "expiration_date",
+          "type": "date",
+          "required": true
+        }
+      ],
+
+      "output_schema": [
+        {
+          "name": "contract_id",
+          "type": "string",
+          "required": true
+        },
+        {
+          "name": "key_terms",
+          "type": "object",
+          "required": true,
+          "example": {"payment_terms": "Net 30", "liability_cap": 1000000, "renewal_type": "auto"}
+        },
+        {
+          "name": "obligations",
+          "type": "array",
+          "required": true
+        },
+        {
+          "name": "milestones",
+          "type": "array",
+          "required": false
+        },
+        {
+          "name": "contract_status",
+          "type": "string",
+          "required": true,
+          "validation": {"enum": ["active", "expiring_soon", "expired", "terminated"]}
+        }
+      ],
+
+      "required_integrations": [
+        {"system": "CLM Platform", "type": "bidirectional", "protocol": "API", "examples": ["Icertis", "DocuSign CLM", "Agiloft"]},
+        {"system": "Document Repository", "type": "store", "protocol": "API", "examples": ["SharePoint", "Box"]},
+        {"system": "AI Contract Analysis", "type": "processing", "protocol": "API", "examples": ["Kira", "Evisort"]},
+        {"system": "E-Signature", "type": "bidirectional", "protocol": "API", "examples": ["DocuSign", "Adobe Sign"]}
+      ],
+
+      "decision_rules": [
+        {
+          "rule_id": "DR-VM-020",
+          "name": "Expiration Warning",
+          "condition": "days_to_expiration <= 90",
+          "action": "trigger_renewal_workflow",
+          "priority": 1
+        },
+        {
+          "rule_id": "DR-VM-021",
+          "name": "Auto-Renewal Alert",
+          "condition": "auto_renew == true AND days_to_notice_deadline <= 30",
+          "action": "alert_for_renewal_decision",
+          "priority": 1
+        },
+        {
+          "rule_id": "DR-VM-022",
+          "name": "Non-Standard Terms",
+          "condition": "deviation_from_template > threshold",
+          "action": "require_legal_review",
+          "priority": 1
+        },
+        {
+          "rule_id": "DR-VM-023",
+          "name": "High Value Contract",
+          "condition": "contract_value > 500000",
+          "action": "require_executive_approval",
+          "priority": 1
+        }
+      ],
+
+      "error_handlers": [
+        {
+          "error_type": "extraction_low_confidence",
+          "severity": "medium",
+          "action": "flag_for_manual_review",
+          "notification": ["contracts_team"]
+        },
+        {
+          "error_type": "missing_signature",
+          "severity": "high",
+          "action": "hold_contract_activation",
+          "notification": ["legal", "procurement"]
+        }
+      ]
+    },
+
+    {
+      "id": "agent_9_2_1_1_step4",
+      "apqc_id": "9.2.1.1",
+      "step_number": 4,
+      "step_name": "Performance Monitoring",
+      "description": "Track and evaluate vendor performance against SLAs and KPIs",
+      "purpose": "Ensure vendors meet performance expectations",
+      "business_value": "Drive continuous improvement and accountability",
+
+      "capabilities": [
+        "collect_performance_data",
+        "calculate_scorecard",
+        "track_sla_compliance",
+        "identify_trends",
+        "generate_performance_reports",
+        "trigger_performance_reviews"
+      ],
+
+      "input_schema": [
+        {
+          "name": "vendor_id",
+          "type": "string",
+          "required": true
+        },
+        {
+          "name": "evaluation_period",
+          "type": "object",
+          "required": true,
+          "example": {"start": "2025-01-01", "end": "2025-03-31"}
+        },
+        {
+          "name": "kpi_categories",
+          "type": "array",
+          "required": false,
+          "example": ["quality", "delivery", "cost", "responsiveness", "innovation"]
+        }
+      ],
+
+      "output_schema": [
+        {
+          "name": "scorecard_id",
+          "type": "string",
+          "required": true
+        },
+        {
+          "name": "overall_score",
+          "type": "number",
+          "description": "Weighted score 0-100",
+          "required": true
+        },
+        {
+          "name": "score_by_category",
+          "type": "object",
+          "required": true
+        },
+        {
+          "name": "sla_breaches",
+          "type": "array",
+          "required": true
+        },
+        {
+          "name": "trend",
+          "type": "string",
+          "required": true,
+          "validation": {"enum": ["improving", "stable", "declining"]}
+        },
+        {
+          "name": "action_items",
+          "type": "array",
+          "required": true
+        }
+      ],
+
+      "required_integrations": [
+        {"system": "Procurement Analytics", "type": "read", "protocol": "API", "examples": ["Coupa Analytics", "SAP Ariba"]},
+        {"system": "Quality Management", "type": "read", "protocol": "API"},
+        {"system": "Receiving/WMS", "type": "read", "protocol": "API"},
+        {"system": "Survey Platform", "type": "bidirectional", "protocol": "API", "examples": ["Qualtrics", "SurveyMonkey"]}
+      ],
+
+      "decision_rules": [
+        {
+          "rule_id": "DR-VM-030",
+          "name": "Poor Performance Alert",
+          "condition": "overall_score < 60 AND trend == 'declining'",
+          "action": "trigger_performance_improvement_plan",
+          "priority": 1
+        },
+        {
+          "rule_id": "DR-VM-031",
+          "name": "SLA Breach Penalty",
+          "condition": "sla_breach_count > threshold",
+          "action": "calculate_and_apply_penalties",
+          "priority": 1
+        },
+        {
+          "rule_id": "DR-VM-032",
+          "name": "Top Performer Recognition",
+          "condition": "overall_score > 90 AND consistent_6_months",
+          "action": "nominate_for_preferred_status",
+          "priority": 2
+        },
+        {
+          "rule_id": "DR-VM-033",
+          "name": "Quality Critical",
+          "condition": "quality_score < 70 AND product_category == 'critical'",
+          "action": "escalate_to_quality_review_board",
+          "priority": 1
+        }
+      ],
+
+      "error_handlers": [
+        {
+          "error_type": "insufficient_data",
+          "severity": "medium",
+          "action": "generate_partial_scorecard_with_flag",
+          "notification": ["category_manager"]
+        },
+        {
+          "error_type": "data_quality_issue",
+          "severity": "medium",
+          "action": "quarantine_data_and_investigate",
+          "notification": ["data_team", "procurement"]
+        }
+      ]
+    },
+
+    {
+      "id": "agent_9_2_1_1_step5",
+      "apqc_id": "9.2.1.1",
+      "step_number": 5,
+      "step_name": "Supplier Development",
+      "description": "Work with vendors to improve capabilities and performance",
+      "purpose": "Build strategic supplier capabilities",
+      "business_value": "Create competitive advantage through supplier excellence",
+
+      "capabilities": [
+        "identify_development_needs",
+        "create_development_plans",
+        "track_improvement_initiatives",
+        "measure_development_roi",
+        "share_best_practices",
+        "certify_supplier_programs"
+      ],
+
+      "input_schema": [
+        {
+          "name": "vendor_id",
+          "type": "string",
+          "required": true
+        },
+        {
+          "name": "development_type",
+          "type": "string",
+          "required": true,
+          "validation": {"enum": ["quality", "lean", "innovation", "sustainability", "diversity", "capability"]}
+        },
+        {
+          "name": "objectives",
+          "type": "array",
+          "required": true
+        },
+        {
+          "name": "investment_budget",
+          "type": "currency",
+          "required": false
+        }
+      ],
+
+      "output_schema": [
+        {
+          "name": "development_plan_id",
+          "type": "string",
+          "required": true
+        },
+        {
+          "name": "milestones",
+          "type": "array",
+          "required": true
+        },
+        {
+          "name": "resources_assigned",
+          "type": "array",
+          "required": true
+        },
+        {
+          "name": "progress_status",
+          "type": "string",
+          "required": true,
+          "validation": {"enum": ["not_started", "in_progress", "on_track", "at_risk", "completed"]}
+        },
+        {
+          "name": "roi_achieved",
+          "type": "object",
+          "required": false
+        }
+      ],
+
+      "required_integrations": [
+        {"system": "Project Management", "type": "bidirectional", "protocol": "API", "examples": ["Jira", "Asana", "Monday"]},
+        {"system": "Learning Management", "type": "bidirectional", "protocol": "API"},
+        {"system": "Collaboration Platform", "type": "bidirectional", "protocol": "API", "examples": ["Teams", "Slack"]},
+        {"system": "Document Sharing", "type": "bidirectional", "protocol": "API"}
+      ],
+
+      "decision_rules": [
+        {
+          "rule_id": "DR-VM-040",
+          "name": "Strategic Vendor Priority",
+          "condition": "vendor.tier == 'strategic' AND development_gap_identified",
+          "action": "prioritize_development_resources",
+          "priority": 1
+        },
+        {
+          "rule_id": "DR-VM-041",
+          "name": "Certification Milestone",
+          "condition": "all_certification_criteria_met",
+          "action": "issue_certification_and_benefits",
+          "priority": 1
+        },
+        {
+          "rule_id": "DR-VM-042",
+          "name": "At Risk Plan",
+          "condition": "milestone_missed > 2 OR progress < expected * 0.7",
+          "action": "escalate_and_intervention",
+          "priority": 1
+        }
+      ],
+
+      "error_handlers": [
+        {
+          "error_type": "vendor_disengaged",
+          "severity": "high",
+          "action": "escalate_to_executive_sponsor",
+          "notification": ["category_manager", "vendor_executive"]
+        },
+        {
+          "error_type": "resource_constraint",
+          "severity": "medium",
+          "action": "reprioritize_or_extend_timeline",
+          "notification": ["program_manager"]
+        }
+      ]
+    },
+
+    {
+      "id": "agent_9_2_1_1_step6",
+      "apqc_id": "9.2.1.1",
+      "step_number": 6,
+      "step_name": "Vendor Communication Hub",
+      "description": "Manage all vendor communications and collaboration",
+      "purpose": "Enable effective vendor engagement",
+      "business_value": "Improve relationship quality and responsiveness",
+
+      "capabilities": [
+        "manage_vendor_portal",
+        "route_inquiries",
+        "broadcast_announcements",
+        "collect_feedback",
+        "schedule_business_reviews",
+        "track_issues_and_disputes"
+      ],
+
+      "input_schema": [
+        {
+          "name": "communication_type",
+          "type": "string",
+          "required": true,
+          "validation": {"enum": ["inquiry", "announcement", "feedback_request", "meeting", "issue", "dispute"]}
+        },
+        {
+          "name": "vendor_ids",
+          "type": "array",
+          "required": true
+        },
+        {
+          "name": "subject",
+          "type": "string",
+          "required": true
+        },
+        {
+          "name": "content",
+          "type": "string",
+          "required": true
+        },
+        {
+          "name": "priority",
+          "type": "string",
+          "required": false,
+          "validation": {"enum": ["low", "medium", "high", "urgent"]}
+        }
+      ],
+
+      "output_schema": [
+        {
+          "name": "communication_id",
+          "type": "string",
+          "required": true
+        },
+        {
+          "name": "delivery_status",
+          "type": "object",
+          "required": true
+        },
+        {
+          "name": "response_received",
+          "type": "boolean",
+          "required": true
+        },
+        {
+          "name": "response_time_hours",
+          "type": "number",
+          "required": false
+        },
+        {
+          "name": "resolution_status",
+          "type": "string",
+          "required": false
+        }
+      ],
+
+      "required_integrations": [
+        {"system": "Vendor Portal", "type": "bidirectional", "protocol": "REST API", "examples": ["Coupa Supplier Portal", "SAP Ariba Network"]},
+        {"system": "Email Platform", "type": "outbound", "protocol": "API"},
+        {"system": "Calendar System", "type": "bidirectional", "protocol": "API"},
+        {"system": "Case Management", "type": "bidirectional", "protocol": "API", "examples": ["ServiceNow", "Zendesk"]}
+      ],
+
+      "decision_rules": [
+        {
+          "rule_id": "DR-VM-050",
+          "name": "Escalate Unresponsive",
+          "condition": "no_response AND hours_elapsed > 48 AND priority IN ['high', 'urgent']",
+          "action": "escalate_to_vendor_executive",
+          "priority": 1
+        },
+        {
+          "rule_id": "DR-VM-051",
+          "name": "Auto-Route Inquiry",
+          "condition": "inquiry_type matches routing_rules",
+          "action": "route_to_designated_team",
+          "priority": 2
+        },
+        {
+          "rule_id": "DR-VM-052",
+          "name": "Dispute Threshold",
+          "condition": "dispute_amount > 10000",
+          "action": "require_management_approval_for_resolution",
+          "priority": 1
+        }
+      ],
+
+      "error_handlers": [
+        {
+          "error_type": "portal_access_issue",
+          "severity": "medium",
+          "action": "reset_credentials_or_escalate",
+          "notification": ["it_support", "vendor"]
+        },
+        {
+          "error_type": "communication_failed",
+          "severity": "medium",
+          "action": "retry_alternate_channel",
+          "notification": ["procurement"]
+        }
+      ]
+    },
+
+    {
+      "id": "agent_9_2_1_1_step7",
+      "apqc_id": "9.2.1.1",
+      "step_number": 7,
+      "step_name": "Vendor Analytics and Reporting",
+      "description": "Generate insights and reports on vendor portfolio",
+      "purpose": "Enable data-driven vendor management decisions",
+      "business_value": "Optimize vendor portfolio and reduce total cost of ownership",
+
+      "capabilities": [
+        "generate_spend_analysis",
+        "benchmark_vendors",
+        "analyze_vendor_consolidation",
+        "calculate_tco",
+        "identify_savings_opportunities",
+        "produce_executive_dashboards"
+      ],
+
+      "input_schema": [
+        {
+          "name": "report_type",
+          "type": "string",
+          "required": true,
+          "validation": {"enum": ["spend_analysis", "vendor_scorecard", "risk_summary", "savings_tracker", "consolidation", "diversity"]}
+        },
+        {
+          "name": "date_range",
+          "type": "object",
+          "required": true
+        },
+        {
+          "name": "filters",
+          "type": "object",
+          "required": false,
+          "example": {"category": "IT Services", "region": "North America"}
+        }
+      ],
+
+      "output_schema": [
+        {
+          "name": "report_id",
+          "type": "string",
+          "required": true
+        },
+        {
+          "name": "summary_metrics",
+          "type": "object",
+          "required": true
+        },
+        {
+          "name": "total_spend",
+          "type": "currency",
+          "required": true
+        },
+        {
+          "name": "vendor_count",
+          "type": "integer",
+          "required": true
+        },
+        {
+          "name": "recommendations",
+          "type": "array",
+          "required": true
+        },
+        {
+          "name": "visualization_url",
+          "type": "string",
+          "required": false
+        }
+      ],
+
+      "required_integrations": [
+        {"system": "Spend Analytics", "type": "read", "protocol": "API", "examples": ["Coupa", "SAP Ariba Spend Visibility", "Sievo"]},
+        {"system": "Data Warehouse", "type": "read", "protocol": "SQL/API"},
+        {"system": "BI Platform", "type": "publish", "protocol": "API", "examples": ["Tableau", "Power BI"]},
+        {"system": "Benchmarking Service", "type": "read", "protocol": "API"}
+      ],
+
+      "decision_rules": [
+        {
+          "rule_id": "DR-VM-060",
+          "name": "Consolidation Opportunity",
+          "condition": "vendor_count > 5 AND similar_category AND combined_spend > 500000",
+          "action": "flag_for_consolidation_review",
+          "priority": 1
+        },
+        {
+          "rule_id": "DR-VM-061",
+          "name": "Maverick Spend",
+          "condition": "off_contract_spend > 20%",
+          "action": "alert_category_manager",
+          "priority": 1
+        },
+        {
+          "rule_id": "DR-VM-062",
+          "name": "Diversity Target",
+          "condition": "diverse_spend < target",
+          "action": "highlight_diverse_vendor_opportunities",
+          "priority": 2
+        }
+      ],
+
+      "error_handlers": [
+        {
+          "error_type": "data_latency",
+          "severity": "low",
+          "action": "use_available_data_with_timestamp",
+          "notification": ["analyst"]
+        },
+        {
+          "error_type": "classification_gap",
+          "severity": "medium",
+          "action": "flag_unclassified_spend",
+          "notification": ["data_team", "procurement"]
+        }
+      ]
+    }
+  ],
+
+  "integration_summary": {
+    "erp_systems": ["SAP S/4HANA", "Oracle Cloud Procurement", "Microsoft Dynamics 365"],
+    "srm_platforms": ["SAP Ariba", "Coupa", "Jaggaer", "GEP SMART"],
+    "risk_platforms": ["Resilinc", "Interos", "RiskMethods", "D&B"],
+    "clm_platforms": ["Icertis", "DocuSign CLM", "Agiloft", "Ironclad"],
+    "spend_analytics": ["Coupa Analytics", "Sievo", "SpendHQ"],
+    "collaboration": ["Teams", "Slack", "Zoom"]
+  },
+
+  "kpis": [
+    {
+      "name": "Vendor Performance Score",
+      "description": "Average weighted scorecard across all vendors",
+      "target": "> 80",
+      "measurement": "avg(vendor_scorecards.overall_score)"
+    },
+    {
+      "name": "Contract Compliance Rate",
+      "description": "Spend on contract vs. total spend",
+      "target": "> 85%",
+      "measurement": "contract_spend / total_spend"
+    },
+    {
+      "name": "Vendor Risk Exposure",
+      "description": "Percentage of spend with high-risk vendors",
+      "target": "< 10%",
+      "measurement": "high_risk_vendor_spend / total_spend"
+    },
+    {
+      "name": "Onboarding Cycle Time",
+      "description": "Average days to onboard new vendor",
+      "target": "< 10 days",
+      "measurement": "avg(onboarding_complete_date - request_date)"
+    },
+    {
+      "name": "Supplier Diversity Spend",
+      "description": "Percentage of spend with diverse suppliers",
+      "target": "> 15%",
+      "measurement": "diverse_supplier_spend / total_spend"
+    },
+    {
+      "name": "Contract Renewal Advance Rate",
+      "description": "Contracts renewed before expiration",
+      "target": "> 90%",
+      "measurement": "renewals_before_expiry / total_renewals"
+    }
+  ]
+}
