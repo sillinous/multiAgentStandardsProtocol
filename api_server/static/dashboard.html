@@ -861,6 +861,7 @@
             <button class="tab-button" onclick="switchTab('integrations')">🔌 Integrations</button>
             <button class="tab-button" onclick="switchTab('execute')">🚀 Execute Workflows</button>
             <button class="tab-button" onclick="switchTab('workflow')">📋 Test Workflow</button>
+            <button class="tab-button" onclick="switchTab('bpmn')">📊 BPMN Browser</button>
         </div>
 
         <!-- Agent Explorer Tab -->
@@ -1088,6 +1089,52 @@
                 </div>
             </div>
         </div>
+
+        <!-- BPMN Browser Tab -->
+        <div id="tab-bpmn" class="tab-content">
+            <div class="main-content">
+                <h2 style="margin-bottom: 10px;">📊 BPMN Process Diagrams</h2>
+                <p style="color: #666; margin-bottom: 20px;">Browse all available BPMN 2.0 process diagrams. Click any process to view its interactive workflow diagram.</p>
+
+                <!-- Stats Bar -->
+                <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 15px; margin-bottom: 25px;">
+                    <div style="background: linear-gradient(135deg, #667eea15 0%, #764ba215 100%); border-radius: 12px; padding: 20px; text-align: center;">
+                        <div style="font-size: 2em; font-weight: bold; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); -webkit-background-clip: text; -webkit-text-fill-color: transparent;" id="bpmnTotalCount">--</div>
+                        <div style="color: #666; font-size: 0.9em;">Total BPMN Files</div>
+                    </div>
+                    <div style="background: linear-gradient(135deg, #27ae6015 0%, #2ecc7115 100%); border-radius: 12px; padding: 20px; text-align: center;">
+                        <div style="font-size: 2em; font-weight: bold; color: #27ae60;" id="bpmnLevel2Count">--</div>
+                        <div style="color: #666; font-size: 0.9em;">Process Groups (L2)</div>
+                    </div>
+                    <div style="background: linear-gradient(135deg, #3498db15 0%, #2980b915 100%); border-radius: 12px; padding: 20px; text-align: center;">
+                        <div style="font-size: 2em; font-weight: bold; color: #3498db;" id="bpmnLevel3Count">--</div>
+                        <div style="color: #666; font-size: 0.9em;">Processes (L3)</div>
+                    </div>
+                </div>
+
+                <!-- Filter Controls -->
+                <div style="display: flex; gap: 15px; margin-bottom: 25px; flex-wrap: wrap; align-items: center;">
+                    <input type="text" id="bpmnSearchInput" class="search-input" placeholder="Search by APQC code (e.g., 9.1 or 10.2)" style="flex: 1; min-width: 200px;" onkeypress="if(event.key==='Enter') filterBpmnList()">
+                    <select id="bpmnLevelFilter" class="filter-select" onchange="filterBpmnList()">
+                        <option value="">All Levels</option>
+                        <option value="2">Level 2 - Process Groups</option>
+                        <option value="3">Level 3 - Processes</option>
+                    </select>
+                    <button class="btn" onclick="filterBpmnList()">🔍 Filter</button>
+                    <button class="btn secondary" onclick="resetBpmnFilter()">↻ Reset</button>
+                </div>
+
+                <!-- BPMN Files Grid -->
+                <div id="bpmnFilesGrid" style="display: grid; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); gap: 20px;">
+                    <div class="loading">
+                        <div class="spinner"></div>
+                    </div>
+                </div>
+
+                <!-- Results Count -->
+                <div id="bpmnResultsCount" style="text-align: center; margin-top: 20px; color: #999; font-size: 0.9em;"></div>
+            </div>
+        </div>
     </div>
 
     <!-- Agent Detail Modal -->
@@ -1240,6 +1287,8 @@
                 loadIntegrations();
             } else if (tabName === 'execute') {
                 loadExecuteTab();
+            } else if (tabName === 'bpmn') {
+                loadBpmnFiles();
             }
         }
 
@@ -1556,6 +1605,130 @@
             document.getElementById('modalBody').innerHTML = html;
             document.querySelector('.modal-header h2').textContent = 'APQC Item Details';
             document.getElementById('agentModal').classList.add('active');
+        }
+
+        // ========================================
+        // BPMN BROWSER FUNCTIONS
+        // ========================================
+
+        let allBpmnFiles = [];
+        let filteredBpmnFiles = [];
+
+        // Load all BPMN files for the browser tab
+        async function loadBpmnFiles() {
+            const grid = document.getElementById('bpmnFilesGrid');
+            grid.innerHTML = '<div class="loading"><div class="spinner"></div></div>';
+
+            try {
+                const response = await fetch(`${API_URL}/api/apqc/bpmn-list`);
+                if (!response.ok) throw new Error('Failed to load BPMN list');
+
+                const data = await response.json();
+                allBpmnFiles = data.bpmn_files || [];
+                filteredBpmnFiles = [...allBpmnFiles];
+
+                // Update stats
+                document.getElementById('bpmnTotalCount').textContent = data.total || 0;
+                document.getElementById('bpmnLevel2Count').textContent = data.level_2_count || 0;
+                document.getElementById('bpmnLevel3Count').textContent = data.level_3_count || 0;
+
+                renderBpmnGrid();
+            } catch (error) {
+                console.error('Error loading BPMN files:', error);
+                grid.innerHTML = `
+                    <div style="grid-column: 1 / -1; text-align: center; padding: 40px; color: #999;">
+                        <span style="font-size: 3em; display: block; margin-bottom: 15px;">⚠️</span>
+                        <p style="font-size: 1.1em;">Unable to load BPMN files</p>
+                        <p style="font-size: 0.9em;">${error.message}</p>
+                        <button class="btn" onclick="loadBpmnFiles()" style="margin-top: 15px;">Retry</button>
+                    </div>
+                `;
+            }
+        }
+
+        // Render the BPMN files grid
+        function renderBpmnGrid() {
+            const grid = document.getElementById('bpmnFilesGrid');
+            const countEl = document.getElementById('bpmnResultsCount');
+
+            if (filteredBpmnFiles.length === 0) {
+                grid.innerHTML = `
+                    <div style="grid-column: 1 / -1; text-align: center; padding: 40px; color: #999;">
+                        <span style="font-size: 3em; display: block; margin-bottom: 15px;">📂</span>
+                        <p style="font-size: 1.1em;">No BPMN files found</p>
+                        <p style="font-size: 0.9em;">Try adjusting your search or filter criteria</p>
+                    </div>
+                `;
+                countEl.textContent = '';
+                return;
+            }
+
+            const cards = filteredBpmnFiles.map(file => {
+                const levelColor = file.level === 2 ? '#27ae60' : '#3498db';
+                const levelBg = file.level === 2 ? '#27ae6015' : '#3498db15';
+                const levelIcon = file.level === 2 ? '📁' : '📄';
+
+                return `
+                    <div class="bpmn-file-card" style="background: white; border: 2px solid #f0f0f0; border-radius: 12px; padding: 20px; cursor: pointer; transition: all 0.3s ease;"
+                         onmouseover="this.style.borderColor='#667eea'; this.style.transform='translateY(-3px)'; this.style.boxShadow='0 8px 25px rgba(102, 126, 234, 0.2)';"
+                         onmouseout="this.style.borderColor='#f0f0f0'; this.style.transform='translateY(0)'; this.style.boxShadow='none';"
+                         onclick="viewBpmn('${file.apqc_code}', '${file.level_name}: ${file.apqc_code}')">
+                        <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 12px;">
+                            <div style="font-size: 2em;">${levelIcon}</div>
+                            <span style="background: ${levelBg}; color: ${levelColor}; padding: 4px 12px; border-radius: 15px; font-size: 0.75em; font-weight: 600;">
+                                Level ${file.level}
+                            </span>
+                        </div>
+                        <div style="font-size: 1.4em; font-weight: 600; color: #667eea; margin-bottom: 8px; font-family: monospace;">
+                            ${file.apqc_code}
+                        </div>
+                        <div style="color: #666; font-size: 0.9em; margin-bottom: 12px;">
+                            ${file.level_name}
+                        </div>
+                        <div style="font-size: 0.8em; color: #999; font-family: monospace; background: #f8f9fa; padding: 6px 10px; border-radius: 6px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">
+                            ${file.filename}
+                        </div>
+                        <button class="btn" style="width: 100%; margin-top: 12px; padding: 10px;" onclick="event.stopPropagation(); viewBpmn('${file.apqc_code}', '${file.level_name}: ${file.apqc_code}')">
+                            📊 View Diagram
+                        </button>
+                    </div>
+                `;
+            }).join('');
+
+            grid.innerHTML = cards;
+            countEl.textContent = `Showing ${filteredBpmnFiles.length} of ${allBpmnFiles.length} BPMN files`;
+        }
+
+        // Filter BPMN files based on search and level filter
+        function filterBpmnList() {
+            const searchTerm = document.getElementById('bpmnSearchInput').value.toLowerCase().trim();
+            const levelFilter = document.getElementById('bpmnLevelFilter').value;
+
+            filteredBpmnFiles = allBpmnFiles.filter(file => {
+                // Level filter
+                if (levelFilter && file.level !== parseInt(levelFilter)) {
+                    return false;
+                }
+
+                // Search filter (by APQC code)
+                if (searchTerm) {
+                    if (!file.apqc_code.toLowerCase().includes(searchTerm)) {
+                        return false;
+                    }
+                }
+
+                return true;
+            });
+
+            renderBpmnGrid();
+        }
+
+        // Reset BPMN filters
+        function resetBpmnFilter() {
+            document.getElementById('bpmnSearchInput').value = '';
+            document.getElementById('bpmnLevelFilter').value = '';
+            filteredBpmnFiles = [...allBpmnFiles];
+            renderBpmnGrid();
         }
 
         // ========================================
