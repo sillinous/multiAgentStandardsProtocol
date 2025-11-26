@@ -14,6 +14,7 @@ Endpoints:
 """
 
 import sys
+import json
 from pathlib import Path
 from datetime import datetime
 from typing import Optional, Dict, Any, List
@@ -26,6 +27,13 @@ from fastapi.responses import FileResponse
 from pydantic import BaseModel
 from sqlalchemy.orm import Session
 from sqlalchemy import func, distinct
+
+# Load APQC PCF Hierarchy
+APQC_HIERARCHY_PATH = Path(__file__).parent.parent / "apqc_pcf_hierarchy.json"
+APQC_HIERARCHY = {}
+if APQC_HIERARCHY_PATH.exists():
+    with open(APQC_HIERARCHY_PATH, 'r') as f:
+        APQC_HIERARCHY = json.load(f)
 
 # Add project root to path
 sys.path.insert(0, str(Path(__file__).parent.parent))
@@ -421,9 +429,95 @@ async def get_agents_by_apqc_level(
             "items": items
         }
 
-    else:
-        # Level 3+: Return individual agents within a Level 2 group
+    elif level == 3:
+        # Level 3: Group by level 3 codes (e.g., 5.1.1, 5.1.2)
         # parent_id format: "Category|5.1"
+        parts = parent_id.split("|")
+        if len(parts) < 2:
+            return {"level": level, "parent": category, "items": []}
+
+        level2_code = parts[1]  # e.g., "5.1"
+        level3_groups = {}
+
+        for agent in agents:
+            agent_parts = agent.name.split(" ")
+            if len(agent_parts) >= 2 and agent_parts[0] == "APQC":
+                code = agent_parts[1]
+                code_parts = code.split(".")
+                if len(code_parts) >= 3:
+                    agent_level2 = code_parts[0] + "." + code_parts[1]
+                    if agent_level2 == level2_code:
+                        level3_code = ".".join(code_parts[:3])  # e.g., "5.1.1"
+                        if level3_code not in level3_groups:
+                            # Extract name from agent
+                            name_parts = " ".join(agent_parts[3:]).split(" - ")
+                            level3_groups[level3_code] = {
+                                "code": level3_code,
+                                "agents": [],
+                                "name": name_parts[0] if name_parts else "Sub-process"
+                            }
+                        level3_groups[level3_code]["agents"].append(agent)
+
+        items = []
+        for code in sorted(level3_groups.keys()):
+            group = level3_groups[code]
+            items.append({
+                "id": f"{category.replace(' ', '_')}|{code}",
+                "name": f"{code} - {group['name']}",
+                "type": "sub_process",
+                "code": code,
+                "description": f"Contains {len(group['agents'])} activities",
+                "children_count": len(group['agents'])
+            })
+
+        return {"level": level, "parent": category, "code": level2_code, "items": items}
+
+    elif level == 4:
+        # Level 4: Group by level 4 codes (e.g., 5.1.1.1, 5.1.1.2)
+        # parent_id format: "Category|5.1.1"
+        parts = parent_id.split("|")
+        if len(parts) < 2:
+            return {"level": level, "parent": category, "items": []}
+
+        level3_code = parts[1]  # e.g., "5.1.1"
+        level4_groups = {}
+
+        for agent in agents:
+            agent_parts = agent.name.split(" ")
+            if len(agent_parts) >= 2 and agent_parts[0] == "APQC":
+                code = agent_parts[1]
+                code_parts = code.split(".")
+                if len(code_parts) >= 4:
+                    agent_level3 = ".".join(code_parts[:3])
+                    if agent_level3 == level3_code:
+                        level4_code = ".".join(code_parts[:4])  # e.g., "5.1.1.1"
+                        if level4_code not in level4_groups:
+                            # Extract name from agent
+                            name_parts = " ".join(agent_parts[3:]).split(" - ")
+                            level4_groups[level4_code] = {
+                                "code": level4_code,
+                                "agents": [],
+                                "name": name_parts[0] if name_parts else "Activity"
+                            }
+                        level4_groups[level4_code]["agents"].append(agent)
+
+        items = []
+        for code in sorted(level4_groups.keys()):
+            group = level4_groups[code]
+            items.append({
+                "id": f"{category.replace(' ', '_')}|{code}",
+                "name": f"{code} - {group['name']}",
+                "type": "activity",
+                "code": code,
+                "description": f"Contains {len(group['agents'])} tasks/agents",
+                "children_count": len(group['agents'])
+            })
+
+        return {"level": level, "parent": category, "code": level3_code, "items": items}
+
+    else:
+        # Level 5: Return individual agents within a Level 4 group
+        # parent_id format: "Category|5.1.1.1"
         parts = parent_id.split("|")
         if len(parts) < 2:
             # Fallback: return all agents
@@ -440,21 +534,21 @@ async def get_agents_by_apqc_level(
                 })
             return {"level": level, "parent": category, "items": items}
 
-        level2_code = parts[1]  # e.g., "5.1"
+        level4_code = parts[1]  # e.g., "5.1.1.1"
 
-        # Filter agents by Level 2 code
+        # Filter agents by Level 4 code
         filtered_agents = []
         for agent in agents:
             agent_parts = agent.name.split(" ")
             if len(agent_parts) >= 2 and agent_parts[0] == "APQC":
                 code = agent_parts[1]
                 code_parts = code.split(".")
-                if len(code_parts) >= 2:
-                    agent_level2 = code_parts[0] + "." + code_parts[1]
-                    if agent_level2 == level2_code:
+                if len(code_parts) >= 4:
+                    agent_level4 = ".".join(code_parts[:4])
+                    if agent_level4 == level4_code:
                         filtered_agents.append(agent)
 
-        # Return agents as testable items
+        # Return agents as items
         items = []
         for agent in filtered_agents:
             items.append({
@@ -470,9 +564,158 @@ async def get_agents_by_apqc_level(
         return {
             "level": level,
             "parent": category,
-            "code": level2_code,
+            "code": level4_code,
             "items": items
         }
+
+
+# ============================================================================
+# APQC PCF Hierarchy Endpoint (using JSON file)
+# ============================================================================
+
+@app.get("/api/apqc/hierarchy")
+async def get_apqc_hierarchy(
+    level: int = 1,
+    parent_code: Optional[str] = None
+):
+    """Get APQC PCF hierarchy from the complete JSON file.
+
+    This provides the full APQC PCF 7.4 structure with proper names at all levels.
+
+    Level 1: 13 Categories (1.0 - 13.0)
+    Level 2: Process Groups (1.1, 1.2, etc.)
+    Level 3: Processes (1.1.1, 1.1.2, etc.)
+    Level 4: Activities (1.1.1.1, 1.1.1.2, etc.)
+    """
+    if not APQC_HIERARCHY or "hierarchy" not in APQC_HIERARCHY:
+        raise HTTPException(status_code=500, detail="APQC hierarchy data not loaded")
+
+    hierarchy = APQC_HIERARCHY["hierarchy"]
+
+    # Level 1: Return all 13 categories
+    if level == 1:
+        items = []
+        for code, data in sorted(hierarchy.items()):
+            children_count = len(data.get("children", {}))
+            items.append({
+                "id": code,
+                "code": code,
+                "name": data["name"],
+                "type": data["type"],
+                "icon": get_pcf_icon(code),
+                "color": get_pcf_color(code),
+                "children_count": children_count,
+                "description": f"APQC Category {code}"
+            })
+        return {"level": 1, "items": items, "total": len(items)}
+
+    # Level 2+: Navigate into the hierarchy based on parent_code
+    if not parent_code:
+        return {"level": level, "items": [], "error": "parent_code required for level > 1"}
+
+    # Parse the parent code to navigate the hierarchy
+    # parent_code format: "1.0" for level 2, "1.1" for level 3, "1.1.1" for level 4
+    code_parts = parent_code.split(".")
+
+    # Navigate to the correct position in hierarchy
+    current = hierarchy
+    try:
+        # For level 2, parent is "1.0" -> go to hierarchy["1.0"]["children"]
+        if level == 2:
+            cat_code = parent_code  # e.g., "1.0"
+            current = hierarchy.get(cat_code, {}).get("children", {})
+        elif level == 3:
+            # parent is "1.1" -> go to hierarchy["1.0"]["children"]["1.1"]["children"]
+            cat_code = code_parts[0] + ".0"
+            pg_code = parent_code  # e.g., "1.1"
+            current = hierarchy.get(cat_code, {}).get("children", {}).get(pg_code, {}).get("children", {})
+        elif level == 4:
+            # parent is "1.1.1" -> deeper navigation
+            cat_code = code_parts[0] + ".0"
+            pg_code = ".".join(code_parts[:2])  # e.g., "1.1"
+            proc_code = parent_code  # e.g., "1.1.1"
+            current = (hierarchy.get(cat_code, {})
+                      .get("children", {}).get(pg_code, {})
+                      .get("children", {}).get(proc_code, {})
+                      .get("children", {}))
+        elif level == 5:
+            # parent is "1.1.1.1" -> deepest level
+            cat_code = code_parts[0] + ".0"
+            pg_code = ".".join(code_parts[:2])
+            proc_code = ".".join(code_parts[:3])
+            act_code = parent_code
+            current = (hierarchy.get(cat_code, {})
+                      .get("children", {}).get(pg_code, {})
+                      .get("children", {}).get(proc_code, {})
+                      .get("children", {}).get(act_code, {})
+                      .get("children", {}))
+    except (KeyError, AttributeError):
+        current = {}
+
+    # Build response items
+    items = []
+    for code, data in sorted(current.items()):
+        if isinstance(data, dict):
+            children_count = len(data.get("children", {})) if isinstance(data.get("children"), dict) else 0
+            items.append({
+                "id": code,
+                "code": code,
+                "name": data.get("name", code),
+                "type": data.get("type", "item"),
+                "icon": get_pcf_icon(code),
+                "color": get_pcf_color(code.split(".")[0] + ".0"),
+                "children_count": children_count,
+                "description": f"APQC {data.get('type', 'item').replace('_', ' ').title()} {code}"
+            })
+
+    return {
+        "level": level,
+        "parent_code": parent_code,
+        "items": items,
+        "total": len(items)
+    }
+
+
+def get_pcf_icon(code: str) -> str:
+    """Get icon based on APQC code"""
+    cat = code.split(".")[0]
+    icons = {
+        "1": "🎯",   # Vision & Strategy
+        "2": "🚀",   # Products & Services
+        "3": "📈",   # Market & Sell
+        "4": "📦",   # Deliver Physical Products
+        "5": "🛎️",   # Deliver Services
+        "6": "😊",   # Customer Service
+        "7": "👥",   # Human Capital
+        "8": "💻",   # IT
+        "9": "💵",   # Financial Resources
+        "10": "🏗️",  # Assets
+        "11": "🛡️",  # Risk & Compliance
+        "12": "🤝",  # External Relationships
+        "13": "📊"   # Business Capabilities
+    }
+    return icons.get(cat, "📋")
+
+
+def get_pcf_color(code: str) -> str:
+    """Get color based on APQC category code"""
+    cat = code.split(".")[0]
+    colors = {
+        "1": "#667eea",  # Purple
+        "2": "#f093fb",  # Pink
+        "3": "#4facfe",  # Blue
+        "4": "#43e97b",  # Green
+        "5": "#fa709a",  # Rose
+        "6": "#fee140",  # Yellow
+        "7": "#30cfd0",  # Cyan
+        "8": "#a8edea",  # Teal
+        "9": "#d299c2",  # Lavender
+        "10": "#ffecd2", # Peach
+        "11": "#fcb69f", # Coral
+        "12": "#a1c4fd", # Light Blue
+        "13": "#c2e9fb"  # Sky
+    }
+    return colors.get(cat, "#667eea")
 
 
 def get_category_icon(category: str) -> str:
@@ -1138,6 +1381,507 @@ async def run_invoice_workflow(workflow_db_id: int, workflow_id: str, db: Sessio
 
     finally:
         db.close()
+
+
+# ============================================================================
+# BPMN File Service Endpoints
+# ============================================================================
+
+BPMN_BASE_DIR = Path(__file__).parent.parent / "generated_composite_agents"
+BPMN_L2_DIR = BPMN_BASE_DIR / "level2_bpmn"  # Level 2: Process Groups (x.y)
+BPMN_L3_DIR = BPMN_BASE_DIR / "level4_bpmn"  # Level 3: Processes (x.y.z) - named level4 historically
+
+def get_bpmn_filepath(apqc_code: str):
+    """Get the file path for a BPMN file based on APQC code level"""
+    code_parts = apqc_code.split(".")
+    code_underscore = apqc_code.replace(".", "_")
+
+    # Level 2 codes (x.y) -> level2_bpmn/COMPOSITE_L2_x_y.bpmn
+    if len(code_parts) == 2:
+        filename = f"COMPOSITE_L2_{code_underscore}.bpmn"
+        return BPMN_L2_DIR / filename, filename
+
+    # Level 3 codes (x.y.z) -> level4_bpmn/COMPOSITE_L4_x_y_z.bpmn
+    elif len(code_parts) == 3:
+        filename = f"COMPOSITE_L4_{code_underscore}.bpmn"
+        return BPMN_L3_DIR / filename, filename
+
+    # Other levels - check both directories
+    else:
+        filename = f"COMPOSITE_L4_{code_underscore}.bpmn"
+        return BPMN_L3_DIR / filename, filename
+
+@app.get("/api/apqc/bpmn/{apqc_code:path}")
+async def get_bpmn_file(apqc_code: str):
+    """
+    Get BPMN 2.0 XML file for an APQC code.
+
+    Supports multiple levels:
+    - Level 2 (x.y): Process Groups -> level2_bpmn/
+    - Level 3 (x.y.z): Processes -> level4_bpmn/
+
+    Args:
+        apqc_code: APQC code (e.g., "1.1", "1.1.1", "8.2.3")
+
+    Returns:
+        BPMN 2.0 XML content
+    """
+    filepath, filename = get_bpmn_filepath(apqc_code)
+
+    if not filepath.exists():
+        raise HTTPException(
+            status_code=404,
+            detail=f"BPMN file not found for APQC code {apqc_code}. Expected: {filename}"
+        )
+
+    try:
+        with open(filepath, 'r', encoding='utf-8') as f:
+            bpmn_content = f.read()
+
+        from fastapi.responses import Response
+        return Response(
+            content=bpmn_content,
+            media_type="application/xml",
+            headers={
+                "Content-Disposition": f'inline; filename="{filename}"'
+            }
+        )
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Error reading BPMN file: {str(e)}")
+
+
+@app.get("/api/apqc/bpmn-list")
+async def list_available_bpmn():
+    """
+    List all available BPMN files with their APQC codes.
+
+    Returns:
+        List of APQC codes that have BPMN files available (Level 2 and Level 3)
+    """
+    bpmn_files = []
+
+    # Collect Level 2 BPMN files (Process Groups: x.y)
+    if BPMN_L2_DIR.exists():
+        for filepath in BPMN_L2_DIR.glob("COMPOSITE_L2_*.bpmn"):
+            # Convert filename back to APQC code: "COMPOSITE_L2_1_1.bpmn" -> "1.1"
+            filename = filepath.stem  # "COMPOSITE_L2_1_1"
+            code_part = filename.replace("COMPOSITE_L2_", "")  # "1_1"
+            apqc_code = code_part.replace("_", ".")  # "1.1"
+
+            bpmn_files.append({
+                "apqc_code": apqc_code,
+                "filename": filepath.name,
+                "level": 2,
+                "level_name": "Process Group"
+            })
+
+    # Collect Level 3 BPMN files (Processes: x.y.z)
+    if BPMN_L3_DIR.exists():
+        for filepath in BPMN_L3_DIR.glob("COMPOSITE_L4_*.bpmn"):
+            # Convert filename back to APQC code: "COMPOSITE_L4_1_1_1.bpmn" -> "1.1.1"
+            filename = filepath.stem  # "COMPOSITE_L4_1_1_1"
+            code_part = filename.replace("COMPOSITE_L4_", "")  # "1_1_1"
+            apqc_code = code_part.replace("_", ".")  # "1.1.1"
+
+            bpmn_files.append({
+                "apqc_code": apqc_code,
+                "filename": filepath.name,
+                "level": 3,
+                "level_name": "Process"
+            })
+
+    # Sort by APQC code
+    bpmn_files.sort(key=lambda x: [int(p) for p in x["apqc_code"].split(".")])
+
+    return {
+        "total": len(bpmn_files),
+        "level_2_count": len([f for f in bpmn_files if f["level"] == 2]),
+        "level_3_count": len([f for f in bpmn_files if f["level"] == 3]),
+        "bpmn_files": bpmn_files
+    }
+
+
+@app.get("/api/apqc/bpmn-check/{apqc_code:path}")
+async def check_bpmn_available(apqc_code: str):
+    """
+    Check if a BPMN file exists for a given APQC code.
+
+    Supports multiple levels:
+    - Level 2 (x.y): Process Groups
+    - Level 3 (x.y.z): Processes
+
+    Args:
+        apqc_code: APQC code to check
+
+    Returns:
+        Boolean indicating if BPMN is available
+    """
+    filepath, filename = get_bpmn_filepath(apqc_code)
+    code_parts = apqc_code.split(".")
+    level = len(code_parts)
+
+    return {
+        "apqc_code": apqc_code,
+        "has_bpmn": filepath.exists(),
+        "filename": filename if filepath.exists() else None,
+        "level": level,
+        "level_name": "Process Group" if level == 2 else "Process" if level == 3 else f"Level {level}"
+    }
+
+
+# ============================================================================
+# Agent Card and Integration Catalog Endpoints
+# ============================================================================
+
+AGENT_CARDS_DIR = Path(__file__).parent.parent / "agent_cards"
+
+@app.get("/api/agent-cards")
+async def list_agent_cards():
+    """
+    List all available agent card definitions.
+    """
+    if not AGENT_CARDS_DIR.exists():
+        return {"total": 0, "agent_cards": []}
+
+    cards = []
+    for filepath in AGENT_CARDS_DIR.glob("*.json"):
+        try:
+            with open(filepath, 'r') as f:
+                data = json.load(f)
+                cards.append({
+                    "apqc_id": data.get("apqc_id"),
+                    "apqc_name": data.get("apqc_name"),
+                    "category": data.get("category"),
+                    "total_steps": data.get("total_steps", len(data.get("agent_cards", []))),
+                    "filename": filepath.name
+                })
+        except Exception as e:
+            continue
+
+    return {"total": len(cards), "agent_cards": cards}
+
+
+@app.get("/api/agent-cards/{apqc_code:path}")
+async def get_agent_card(apqc_code: str):
+    """
+    Get agent card definition for a specific APQC code.
+
+    Args:
+        apqc_code: APQC code (e.g., "9.2.1.1")
+    """
+    # Convert code to filename format
+    code_underscore = apqc_code.replace(".", "_")
+
+    # Try different filename patterns
+    possible_files = [
+        AGENT_CARDS_DIR / f"apqc_{code_underscore}.json",
+        AGENT_CARDS_DIR / f"apqc_{code_underscore}_invoice_processing.json",
+        AGENT_CARDS_DIR / f"{code_underscore}.json"
+    ]
+
+    for filepath in possible_files:
+        if filepath.exists():
+            try:
+                with open(filepath, 'r') as f:
+                    return json.load(f)
+            except Exception as e:
+                raise HTTPException(status_code=500, detail=f"Error reading agent card: {str(e)}")
+
+    # Also try glob pattern
+    for filepath in AGENT_CARDS_DIR.glob(f"*{code_underscore}*.json"):
+        try:
+            with open(filepath, 'r') as f:
+                return json.load(f)
+        except:
+            continue
+
+    raise HTTPException(
+        status_code=404,
+        detail=f"Agent card not found for APQC code {apqc_code}"
+    )
+
+
+@app.get("/api/agent-cards/{apqc_code:path}/step/{step_number}")
+async def get_agent_card_step(apqc_code: str, step_number: int):
+    """
+    Get a specific step from an agent card.
+    """
+    card = await get_agent_card(apqc_code)
+
+    for agent in card.get("agent_cards", []):
+        if agent.get("step_number") == step_number:
+            return agent
+
+    raise HTTPException(
+        status_code=404,
+        detail=f"Step {step_number} not found in agent card {apqc_code}"
+    )
+
+
+@app.get("/api/integrations")
+async def list_integrations():
+    """
+    List all available integrations from the catalog.
+    """
+    try:
+        import sys
+        sys.path.insert(0, str(Path(__file__).parent.parent / "src"))
+        from superstandard.schemas.integration_catalog import INTEGRATION_CATALOG, CATEGORY_SUMMARY
+
+        integrations = []
+        for int_id, int_data in INTEGRATION_CATALOG.items():
+            integrations.append({
+                "id": int_id,
+                "name": int_data.get("name"),
+                "category": int_data.get("category"),
+                "type": int_data.get("type"),
+                "capabilities_count": len(int_data.get("capabilities", []))
+            })
+
+        return {
+            "total": len(integrations),
+            "categories": CATEGORY_SUMMARY,
+            "integrations": integrations
+        }
+    except ImportError:
+        return {"total": 0, "categories": {}, "integrations": [], "error": "Integration catalog not found"}
+
+
+@app.get("/api/integrations/{integration_id}")
+async def get_integration(integration_id: str):
+    """
+    Get details for a specific integration.
+    """
+    try:
+        import sys
+        sys.path.insert(0, str(Path(__file__).parent.parent / "src"))
+        from superstandard.schemas.integration_catalog import INTEGRATION_CATALOG
+
+        if integration_id in INTEGRATION_CATALOG:
+            return INTEGRATION_CATALOG[integration_id]
+
+        raise HTTPException(status_code=404, detail=f"Integration {integration_id} not found")
+    except ImportError:
+        raise HTTPException(status_code=500, detail="Integration catalog not available")
+
+
+@app.get("/api/integrations/category/{category}")
+async def get_integrations_by_category(category: str):
+    """
+    Get all integrations in a specific category.
+    """
+    try:
+        import sys
+        sys.path.insert(0, str(Path(__file__).parent.parent / "src"))
+        from superstandard.schemas.integration_catalog import INTEGRATION_CATALOG
+
+        integrations = [
+            integration
+            for integration in INTEGRATION_CATALOG.values()
+            if integration["category"] == category
+        ]
+
+        return {"category": category, "total": len(integrations), "integrations": integrations}
+    except ImportError:
+        raise HTTPException(status_code=500, detail="Integration catalog not available")
+
+
+@app.get("/api/integrations/search/{capability}")
+async def search_integrations_by_capability(capability: str):
+    """
+    Find integrations that have a specific capability.
+    """
+    try:
+        import sys
+        sys.path.insert(0, str(Path(__file__).parent.parent / "src"))
+        from superstandard.schemas.integration_catalog import INTEGRATION_CATALOG
+
+        integrations = [
+            integration
+            for integration in INTEGRATION_CATALOG.values()
+            if capability.lower() in [c.lower() for c in integration.get("capabilities", [])]
+        ]
+
+        return {"capability": capability, "total": len(integrations), "integrations": integrations}
+    except ImportError:
+        raise HTTPException(status_code=500, detail="Integration catalog not available")
+
+
+# ============================================================================
+# Workflow Execution Engine Endpoints
+# ============================================================================
+
+# Initialize workflow engine
+workflow_engine = None
+
+def get_workflow_engine():
+    """Get or create workflow engine instance"""
+    global workflow_engine
+    if workflow_engine is None:
+        import sys
+        sys.path.insert(0, str(Path(__file__).parent.parent / "src"))
+        from superstandard.engine.workflow_engine import WorkflowEngine
+        workflow_engine = WorkflowEngine(
+            agent_cards_dir=str(Path(__file__).parent.parent / "agent_cards")
+        )
+    return workflow_engine
+
+
+class ExecuteWorkflowRequest(BaseModel):
+    """Request model for workflow execution"""
+    apqc_code: str
+    input_data: Dict[str, Any] = {}
+    credentials: Optional[Dict[str, Dict[str, str]]] = None
+
+
+@app.post("/api/execute")
+async def execute_workflow(request: ExecuteWorkflowRequest):
+    """
+    Execute a workflow for the given APQC code.
+
+    This endpoint runs the full workflow defined by the agent card,
+    executing each step in sequence, making integration calls,
+    evaluating decision rules, and generating a complete audit trail.
+
+    Args:
+        request: ExecuteWorkflowRequest with apqc_code, input_data, and optional credentials
+
+    Returns:
+        Complete execution result including:
+        - success: Boolean indicating overall success
+        - execution_id: Unique identifier for this execution
+        - status: Final status (completed, failed, etc.)
+        - step_executions: Details for each step
+        - integration_calls: Log of all API calls made
+        - audit_log: Complete audit trail
+    """
+    try:
+        engine = get_workflow_engine()
+        result = await engine.execute(
+            apqc_code=request.apqc_code,
+            input_data=request.input_data,
+            credentials=request.credentials
+        )
+        return result
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Execution failed: {str(e)}")
+
+
+@app.get("/api/executions")
+async def list_executions(limit: int = 50):
+    """
+    List recent workflow executions.
+
+    Returns both active (running) and completed executions.
+    """
+    try:
+        engine = get_workflow_engine()
+        executions = engine.list_executions(limit=limit)
+        return {
+            "total": len(executions),
+            "executions": executions
+        }
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Failed to list executions: {str(e)}")
+
+
+@app.get("/api/executions/{execution_id}")
+async def get_execution(execution_id: str):
+    """
+    Get details of a specific execution.
+
+    Args:
+        execution_id: The unique execution ID
+
+    Returns:
+        Complete execution details including step results and audit log
+    """
+    try:
+        engine = get_workflow_engine()
+        result = engine.get_execution_status(execution_id)
+
+        if not result:
+            raise HTTPException(status_code=404, detail=f"Execution {execution_id} not found")
+
+        return result
+    except HTTPException:
+        raise
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Failed to get execution: {str(e)}")
+
+
+@app.post("/api/execute/test/{apqc_code:path}")
+async def test_execute_workflow(apqc_code: str):
+    """
+    Test execute a workflow with sample data.
+
+    This is a convenience endpoint for testing workflows without
+    providing custom input data. Uses default test data.
+
+    Args:
+        apqc_code: APQC code to execute (e.g., "9.2.1.1")
+    """
+    # Default test data for invoice processing
+    test_input = {
+        "invoice_number": f"TEST-INV-{datetime.now().strftime('%Y%m%d%H%M%S')}",
+        "vendor_name": "Test Vendor Inc",
+        "invoice_date": datetime.now().isoformat(),
+        "due_date": (datetime.now()).isoformat(),
+        "total_amount": 1500.00,
+        "currency": "USD",
+        "po_number": "PO-TEST-001",
+        "line_items": [
+            {"description": "Test Item 1", "quantity": 10, "unit_price": 100.00, "total": 1000.00},
+            {"description": "Test Item 2", "quantity": 5, "unit_price": 100.00, "total": 500.00}
+        ]
+    }
+
+    try:
+        engine = get_workflow_engine()
+        result = await engine.execute(
+            apqc_code=apqc_code,
+            input_data=test_input,
+            credentials={}  # No credentials for test
+        )
+        return result
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Test execution failed: {str(e)}")
+
+
+@app.get("/api/execute/available")
+async def list_executable_workflows():
+    """
+    List all workflows that have agent card definitions and can be executed.
+    """
+    try:
+        engine = get_workflow_engine()
+        available = []
+
+        for filepath in engine.agent_cards_dir.glob("*.json"):
+            try:
+                with open(filepath, 'r') as f:
+                    card = json.load(f)
+                    available.append({
+                        "apqc_code": card.get("apqc_code"),
+                        "apqc_name": card.get("apqc_name"),
+                        "category": card.get("category"),
+                        "total_steps": len(card.get("agent_cards", [])),
+                        "estimated_duration_seconds": card.get("estimated_duration_seconds", 0),
+                        "required_integrations": list(set(
+                            int_id
+                            for step in card.get("agent_cards", [])
+                            for int_id in step.get("required_integrations", [])
+                        ))
+                    })
+            except:
+                continue
+
+        return {
+            "total": len(available),
+            "workflows": available
+        }
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Failed to list workflows: {str(e)}")
 
 
 # ============================================================================
