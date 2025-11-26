@@ -1,0 +1,675 @@
+{
+  "apqc_id": "7.2.1.1",
+  "apqc_name": "Manage employee onboarding and orientation",
+  "category": "7.0 - Develop and Manage Human Capital",
+  "description": "End-to-end employee onboarding workflow from offer acceptance through first-day readiness, including document collection, system provisioning, equipment setup, and orientation scheduling.",
+  "orchestration_pattern": "parallel_with_sync",
+  "total_steps": 8,
+  "estimated_duration_seconds": 604800,
+  "compliance_frameworks": ["I-9", "E-Verify", "EEO", "HIPAA"],
+  "data_retention_days": 2555,
+
+  "agent_cards": [
+    {
+      "id": "agent_7_2_1_1_step1",
+      "apqc_id": "7.2.1.1",
+      "step_number": 1,
+      "step_name": "Onboarding Initiation",
+      "description": "Create new hire record and initiate onboarding workflow upon offer acceptance",
+      "purpose": "Trigger all onboarding activities in a coordinated manner",
+      "business_value": "Ensures consistent onboarding experience and nothing falls through cracks",
+
+      "capabilities": [
+        "create_employee_record",
+        "assign_employee_id",
+        "create_onboarding_checklist",
+        "notify_stakeholders",
+        "set_start_date",
+        "assign_onboarding_buddy"
+      ],
+
+      "input_schema": [
+        {
+          "name": "candidate_id",
+          "type": "string",
+          "description": "Recruiting system candidate ID",
+          "required": true
+        },
+        {
+          "name": "offer_details",
+          "type": "object",
+          "description": "Accepted offer information",
+          "required": true,
+          "example": {
+            "position": "Software Engineer",
+            "department": "Engineering",
+            "manager_id": "EMP-100",
+            "salary": 150000,
+            "start_date": "2025-12-01",
+            "location": "San Francisco"
+          }
+        },
+        {
+          "name": "personal_info",
+          "type": "object",
+          "description": "New hire personal information",
+          "required": true
+        }
+      ],
+
+      "output_schema": [
+        {
+          "name": "employee_id",
+          "type": "string",
+          "description": "Assigned employee ID",
+          "required": true,
+          "example": "EMP-2025-0456"
+        },
+        {
+          "name": "onboarding_id",
+          "type": "string",
+          "description": "Onboarding workflow tracking ID",
+          "required": true
+        },
+        {
+          "name": "checklist",
+          "type": "array",
+          "description": "Generated onboarding checklist items",
+          "required": true
+        },
+        {
+          "name": "assigned_buddy",
+          "type": "object",
+          "required": false
+        }
+      ],
+
+      "required_integrations": ["workday", "greenhouse"],
+
+      "next_step_on_success": "agent_7_2_1_1_step2",
+      "expected_duration_seconds": 300,
+      "requires_audit_log": true,
+      "version": "1.0.0",
+      "status": "active"
+    },
+
+    {
+      "id": "agent_7_2_1_1_step2",
+      "apqc_id": "7.2.1.1",
+      "step_number": 2,
+      "step_name": "Document Collection and Verification",
+      "description": "Collect and verify required employment documents including I-9, W-4, direct deposit, and policy acknowledgments",
+      "purpose": "Ensure legal compliance and complete employee file",
+      "business_value": "Maintains compliance and reduces audit findings",
+
+      "capabilities": [
+        "send_document_requests",
+        "collect_i9_documents",
+        "collect_w4_form",
+        "collect_direct_deposit",
+        "verify_identity_documents",
+        "run_e_verify",
+        "track_document_status"
+      ],
+
+      "input_schema": [
+        {
+          "name": "employee_id",
+          "type": "string",
+          "required": true
+        },
+        {
+          "name": "employee_email",
+          "type": "string",
+          "required": true
+        },
+        {
+          "name": "citizenship_status",
+          "type": "string",
+          "required": true,
+          "validation": {"enum": ["citizen", "permanent_resident", "work_visa", "other"]}
+        }
+      ],
+
+      "output_schema": [
+        {
+          "name": "documents_collected",
+          "type": "array",
+          "description": "List of collected documents",
+          "required": true
+        },
+        {
+          "name": "i9_status",
+          "type": "string",
+          "required": true,
+          "validation": {"enum": ["complete", "pending", "reverify_needed"]}
+        },
+        {
+          "name": "e_verify_case_number",
+          "type": "string",
+          "required": false
+        },
+        {
+          "name": "compliance_status",
+          "type": "string",
+          "required": true,
+          "validation": {"enum": ["compliant", "pending_documents", "action_required"]}
+        }
+      ],
+
+      "required_integrations": ["docusign", "everify_api"],
+
+      "decision_rules": [
+        {
+          "id": "rule_i9_deadline",
+          "name": "I-9 Completion Deadline",
+          "description": "I-9 Section 2 must be completed within 3 days of start",
+          "condition": "days_since_start <= 3",
+          "action_if_true": "proceed_normally",
+          "action_if_false": "escalate_to_hr",
+          "configurable": false
+        }
+      ],
+
+      "compliance_frameworks": ["I-9", "E-Verify"],
+      "next_step_on_success": "agent_7_2_1_1_step3",
+      "expected_duration_seconds": 259200,
+      "timeout_seconds": 604800,
+      "requires_audit_log": true,
+      "version": "1.0.0",
+      "status": "active"
+    },
+
+    {
+      "id": "agent_7_2_1_1_step3",
+      "apqc_id": "7.2.1.1",
+      "step_number": 3,
+      "step_name": "Benefits Enrollment",
+      "description": "Guide new hire through benefits selection including health, dental, vision, 401k, and voluntary benefits",
+      "purpose": "Ensure timely benefits enrollment within eligibility window",
+      "business_value": "Maximizes benefits participation and employee satisfaction",
+
+      "capabilities": [
+        "present_benefits_options",
+        "capture_elections",
+        "calculate_premiums",
+        "enroll_in_plans",
+        "add_dependents",
+        "designate_beneficiaries"
+      ],
+
+      "input_schema": [
+        {
+          "name": "employee_id",
+          "type": "string",
+          "required": true
+        },
+        {
+          "name": "employment_type",
+          "type": "string",
+          "required": true,
+          "validation": {"enum": ["full_time", "part_time", "contractor"]}
+        },
+        {
+          "name": "start_date",
+          "type": "date",
+          "required": true
+        }
+      ],
+
+      "output_schema": [
+        {
+          "name": "enrollment_status",
+          "type": "string",
+          "required": true,
+          "validation": {"enum": ["complete", "in_progress", "declined", "not_eligible"]}
+        },
+        {
+          "name": "selected_plans",
+          "type": "array",
+          "description": "Elected benefit plans",
+          "required": true
+        },
+        {
+          "name": "monthly_deductions",
+          "type": "currency",
+          "required": true
+        },
+        {
+          "name": "coverage_start_date",
+          "type": "date",
+          "required": true
+        }
+      ],
+
+      "required_integrations": ["benefitfocus", "workday"],
+
+      "decision_rules": [
+        {
+          "id": "rule_enrollment_window",
+          "name": "Benefits Enrollment Window",
+          "description": "Must enroll within 30 days of hire",
+          "condition": "days_since_start <= 30",
+          "action_if_true": "allow_enrollment",
+          "action_if_false": "apply_default_coverage",
+          "configurable": true,
+          "default_threshold": 30
+        }
+      ],
+
+      "compliance_frameworks": ["ERISA", "ACA"],
+      "next_step_on_success": "agent_7_2_1_1_step4",
+      "expected_duration_seconds": 1800,
+      "timeout_seconds": 2592000,
+      "requires_audit_log": true,
+      "version": "1.0.0",
+      "status": "active"
+    },
+
+    {
+      "id": "agent_7_2_1_1_step4",
+      "apqc_id": "7.2.1.1",
+      "step_number": 4,
+      "step_name": "IT Provisioning",
+      "description": "Create accounts, assign equipment, and provision access to required systems",
+      "purpose": "Ensure new hire has all tools needed on day one",
+      "business_value": "Enables productivity from day one, reduces IT tickets",
+
+      "capabilities": [
+        "create_email_account",
+        "create_ad_account",
+        "provision_saas_apps",
+        "assign_security_groups",
+        "order_equipment",
+        "setup_vpn_access",
+        "configure_mfa"
+      ],
+
+      "input_schema": [
+        {
+          "name": "employee_id",
+          "type": "string",
+          "required": true
+        },
+        {
+          "name": "department",
+          "type": "string",
+          "required": true
+        },
+        {
+          "name": "role",
+          "type": "string",
+          "required": true
+        },
+        {
+          "name": "location",
+          "type": "string",
+          "required": true
+        },
+        {
+          "name": "manager_id",
+          "type": "string",
+          "required": true
+        }
+      ],
+
+      "output_schema": [
+        {
+          "name": "email_address",
+          "type": "string",
+          "required": true,
+          "example": "john.smith@company.com"
+        },
+        {
+          "name": "username",
+          "type": "string",
+          "required": true
+        },
+        {
+          "name": "provisioned_apps",
+          "type": "array",
+          "description": "List of provisioned applications",
+          "required": true
+        },
+        {
+          "name": "equipment_order",
+          "type": "object",
+          "description": "Equipment order details",
+          "required": true
+        },
+        {
+          "name": "provisioning_status",
+          "type": "string",
+          "required": true,
+          "validation": {"enum": ["complete", "in_progress", "blocked"]}
+        }
+      ],
+
+      "required_integrations": ["okta", "microsoft_365", "jamf"],
+      "optional_integrations": ["google_workspace", "servicenow"],
+
+      "next_step_on_success": "agent_7_2_1_1_step5",
+      "expected_duration_seconds": 3600,
+      "timeout_seconds": 86400,
+      "requires_audit_log": true,
+      "version": "1.0.0",
+      "status": "active"
+    },
+
+    {
+      "id": "agent_7_2_1_1_step5",
+      "apqc_id": "7.2.1.1",
+      "step_number": 5,
+      "step_name": "Facilities and Workspace Setup",
+      "description": "Arrange workspace, building access, parking, and office supplies",
+      "purpose": "Prepare physical workspace for new hire",
+      "business_value": "Creates welcoming first impression and reduces setup friction",
+
+      "capabilities": [
+        "assign_workspace",
+        "request_badge_access",
+        "assign_parking",
+        "order_office_supplies",
+        "setup_phone_extension",
+        "add_to_building_directory"
+      ],
+
+      "input_schema": [
+        {
+          "name": "employee_id",
+          "type": "string",
+          "required": true
+        },
+        {
+          "name": "location",
+          "type": "string",
+          "required": true
+        },
+        {
+          "name": "department",
+          "type": "string",
+          "required": true
+        },
+        {
+          "name": "start_date",
+          "type": "date",
+          "required": true
+        }
+      ],
+
+      "output_schema": [
+        {
+          "name": "workspace_assignment",
+          "type": "object",
+          "description": "Assigned desk/office details",
+          "required": true
+        },
+        {
+          "name": "badge_number",
+          "type": "string",
+          "required": true
+        },
+        {
+          "name": "parking_assignment",
+          "type": "string",
+          "required": false
+        },
+        {
+          "name": "setup_status",
+          "type": "string",
+          "required": true,
+          "validation": {"enum": ["complete", "in_progress", "na_remote"]}
+        }
+      ],
+
+      "required_integrations": ["envoy", "servicenow"],
+
+      "next_step_on_success": "agent_7_2_1_1_step6",
+      "expected_duration_seconds": 86400,
+      "requires_audit_log": true,
+      "version": "1.0.0",
+      "status": "active"
+    },
+
+    {
+      "id": "agent_7_2_1_1_step6",
+      "apqc_id": "7.2.1.1",
+      "step_number": 6,
+      "step_name": "Training Assignment",
+      "description": "Assign required compliance training and role-specific learning paths",
+      "purpose": "Ensure new hire completes mandatory training",
+      "business_value": "Maintains compliance and accelerates time to productivity",
+
+      "capabilities": [
+        "assign_compliance_training",
+        "assign_role_training",
+        "create_learning_path",
+        "track_completion",
+        "send_reminders"
+      ],
+
+      "input_schema": [
+        {
+          "name": "employee_id",
+          "type": "string",
+          "required": true
+        },
+        {
+          "name": "role",
+          "type": "string",
+          "required": true
+        },
+        {
+          "name": "department",
+          "type": "string",
+          "required": true
+        }
+      ],
+
+      "output_schema": [
+        {
+          "name": "assigned_courses",
+          "type": "array",
+          "description": "List of assigned training courses",
+          "required": true
+        },
+        {
+          "name": "compliance_due_date",
+          "type": "date",
+          "required": true
+        },
+        {
+          "name": "learning_path_id",
+          "type": "string",
+          "required": true
+        }
+      ],
+
+      "required_integrations": ["workday_learning", "cornerstone"],
+
+      "next_step_on_success": "agent_7_2_1_1_step7",
+      "expected_duration_seconds": 600,
+      "requires_audit_log": true,
+      "version": "1.0.0",
+      "status": "active"
+    },
+
+    {
+      "id": "agent_7_2_1_1_step7",
+      "apqc_id": "7.2.1.1",
+      "step_number": 7,
+      "step_name": "Orientation Scheduling",
+      "description": "Schedule orientation sessions, manager meetings, and team introductions",
+      "purpose": "Structure first week experience for new hire",
+      "business_value": "Ensures positive onboarding experience and faster integration",
+
+      "capabilities": [
+        "schedule_orientation",
+        "book_manager_1on1",
+        "schedule_team_intro",
+        "send_calendar_invites",
+        "create_first_week_agenda"
+      ],
+
+      "input_schema": [
+        {
+          "name": "employee_id",
+          "type": "string",
+          "required": true
+        },
+        {
+          "name": "start_date",
+          "type": "date",
+          "required": true
+        },
+        {
+          "name": "manager_id",
+          "type": "string",
+          "required": true
+        },
+        {
+          "name": "buddy_id",
+          "type": "string",
+          "required": false
+        }
+      ],
+
+      "output_schema": [
+        {
+          "name": "orientation_schedule",
+          "type": "array",
+          "description": "Scheduled orientation events",
+          "required": true
+        },
+        {
+          "name": "first_week_calendar",
+          "type": "object",
+          "required": true
+        },
+        {
+          "name": "calendar_invites_sent",
+          "type": "boolean",
+          "required": true
+        }
+      ],
+
+      "required_integrations": ["google_calendar", "microsoft_outlook"],
+
+      "next_step_on_success": "agent_7_2_1_1_step8",
+      "expected_duration_seconds": 600,
+      "requires_audit_log": true,
+      "version": "1.0.0",
+      "status": "active"
+    },
+
+    {
+      "id": "agent_7_2_1_1_step8",
+      "apqc_id": "7.2.1.1",
+      "step_number": 8,
+      "step_name": "Day-One Readiness Verification",
+      "description": "Verify all onboarding tasks are complete before start date",
+      "purpose": "Ensure nothing is missed before new hire arrives",
+      "business_value": "Prevents day-one delays and creates professional impression",
+
+      "capabilities": [
+        "verify_checklist_completion",
+        "send_welcome_package",
+        "confirm_equipment_delivery",
+        "send_day_one_instructions",
+        "notify_stakeholders"
+      ],
+
+      "input_schema": [
+        {
+          "name": "employee_id",
+          "type": "string",
+          "required": true
+        },
+        {
+          "name": "onboarding_id",
+          "type": "string",
+          "required": true
+        },
+        {
+          "name": "start_date",
+          "type": "date",
+          "required": true
+        }
+      ],
+
+      "output_schema": [
+        {
+          "name": "readiness_status",
+          "type": "string",
+          "required": true,
+          "validation": {"enum": ["ready", "issues_found", "not_ready"]}
+        },
+        {
+          "name": "checklist_completion",
+          "type": "number",
+          "description": "Percentage of checklist complete",
+          "required": true
+        },
+        {
+          "name": "outstanding_items",
+          "type": "array",
+          "required": false
+        },
+        {
+          "name": "welcome_package_sent",
+          "type": "boolean",
+          "required": true
+        },
+        {
+          "name": "onboarding_complete",
+          "type": "boolean",
+          "required": true
+        }
+      ],
+
+      "required_integrations": ["workday", "sendgrid"],
+
+      "decision_rules": [
+        {
+          "id": "rule_readiness_threshold",
+          "name": "Minimum Readiness",
+          "description": "Critical items must be complete",
+          "condition": "checklist_completion >= 90",
+          "action_if_true": "mark_ready",
+          "action_if_false": "escalate_outstanding_items",
+          "configurable": true,
+          "default_threshold": 90
+        }
+      ],
+
+      "next_step_on_success": null,
+      "expected_duration_seconds": 300,
+      "requires_audit_log": true,
+      "version": "1.0.0",
+      "status": "active"
+    }
+  ],
+
+  "integration_summary": {
+    "required": [
+      {"id": "workday", "purpose": "HRIS - employee records, core HR"},
+      {"id": "docusign", "purpose": "Document collection and signatures"},
+      {"id": "okta", "purpose": "Identity and access management"},
+      {"id": "google_calendar", "purpose": "Calendar scheduling"}
+    ],
+    "optional": [
+      {"id": "greenhouse", "purpose": "Recruiting/ATS integration"},
+      {"id": "benefitfocus", "purpose": "Benefits enrollment"},
+      {"id": "servicenow", "purpose": "IT ticketing and facilities"},
+      {"id": "cornerstone", "purpose": "Learning management"}
+    ]
+  },
+
+  "kpis": [
+    {"name": "Time to Productivity (days)", "target": "< 30", "current": null},
+    {"name": "Day-One Readiness Rate", "target": "> 95%", "current": null},
+    {"name": "New Hire Satisfaction Score", "target": "> 4.5/5", "current": null},
+    {"name": "I-9 Compliance Rate", "target": "100%", "current": null},
+    {"name": "90-Day Retention Rate", "target": "> 95%", "current": null}
+  ]
+}
