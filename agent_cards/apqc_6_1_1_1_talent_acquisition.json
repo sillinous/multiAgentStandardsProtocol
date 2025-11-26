@@ -1,0 +1,347 @@
+{
+  "apqc_id": "6.1.1.1",
+  "apqc_name": "Recruit and select employees",
+  "category": "6.0 - Develop and Manage Human Capital",
+  "description": "End-to-end talent acquisition workflow from requisition creation through offer acceptance, including sourcing, screening, interviewing, and selection.",
+  "orchestration_pattern": "sequential",
+  "total_steps": 8,
+  "estimated_duration_seconds": 1209600,
+  "compliance_frameworks": ["EEOC", "GDPR", "CCPA", "OFCCP", "ADA"],
+  "data_retention_days": 1095,
+
+  "agent_cards": [
+    {
+      "id": "agent_6_1_1_1_step1",
+      "apqc_id": "6.1.1.1",
+      "step_number": 1,
+      "step_name": "Requisition Creation and Approval",
+      "description": "Create and approve job requisitions with role requirements and budget",
+      "purpose": "Formally initiate the hiring process",
+      "business_value": "Controlled and budgeted hiring",
+
+      "capabilities": ["requisition_creation", "job_description_generation", "compensation_benchmarking", "approval_routing", "budget_validation"],
+
+      "input_schema": [
+        {"name": "department", "type": "string", "required": true},
+        {"name": "job_title", "type": "string", "required": true},
+        {"name": "job_level", "type": "string", "required": true, "validation": {"enum": ["entry", "mid", "senior", "lead", "manager", "director", "vp", "c-level"]}},
+        {"name": "employment_type", "type": "string", "required": true, "validation": {"enum": ["full-time", "part-time", "contract", "intern"]}},
+        {"name": "location", "type": "string", "required": true},
+        {"name": "headcount", "type": "integer", "required": true}
+      ],
+
+      "output_schema": [
+        {"name": "requisition_id", "type": "string", "required": true, "example": "REQ-2025-001234"},
+        {"name": "job_description", "type": "object", "required": true},
+        {"name": "compensation_range", "type": "object", "required": true},
+        {"name": "approval_status", "type": "string", "required": true}
+      ],
+
+      "required_integrations": [
+        {"system": "ATS", "type": "bidirectional", "protocol": "API", "examples": ["Greenhouse", "Lever", "Workday Recruiting"]},
+        {"system": "HRIS", "type": "read", "protocol": "API", "examples": ["Workday", "SAP SuccessFactors"]},
+        {"system": "Compensation", "type": "read", "protocol": "API", "examples": ["Payscale", "Radford", "Mercer"]}
+      ],
+
+      "decision_rules": [
+        {"rule_id": "DR-TA-001", "name": "Budget Check", "condition": "requisition.salary_range.max > budget.available", "action": "escalate_to_finance", "priority": 1},
+        {"rule_id": "DR-TA-002", "name": "Headcount Freeze", "condition": "org.hiring_freeze == true", "action": "require_executive_approval", "priority": 1}
+      ],
+
+      "error_handlers": [
+        {"error_type": "budget_exceeded", "severity": "high", "action": "route_to_finance_review", "notification": ["hiring_manager", "hr_partner"]},
+        {"error_type": "approval_timeout", "severity": "medium", "action": "escalate_to_next_approver", "notification": ["hr_partner"]}
+      ]
+    },
+
+    {
+      "id": "agent_6_1_1_1_step2",
+      "apqc_id": "6.1.1.1",
+      "step_number": 2,
+      "step_name": "Job Posting and Sourcing",
+      "description": "Post job to relevant channels and actively source candidates",
+      "purpose": "Build qualified candidate pipeline",
+      "business_value": "Access to best talent in market",
+
+      "capabilities": ["job_posting", "channel_optimization", "candidate_sourcing", "talent_pool_search", "diversity_sourcing"],
+
+      "input_schema": [
+        {"name": "requisition_id", "type": "string", "required": true},
+        {"name": "posting_channels", "type": "array", "required": true},
+        {"name": "sourcing_strategy", "type": "string", "required": true, "validation": {"enum": ["passive", "active", "referral_focused", "diversity_focused"]}}
+      ],
+
+      "output_schema": [
+        {"name": "job_postings", "type": "array", "required": true},
+        {"name": "sourced_candidates", "type": "array", "required": true},
+        {"name": "channel_metrics", "type": "object", "required": true}
+      ],
+
+      "required_integrations": [
+        {"system": "Job Boards", "type": "outbound", "protocol": "API", "examples": ["LinkedIn", "Indeed", "Glassdoor"]},
+        {"system": "Sourcing Platform", "type": "bidirectional", "protocol": "API", "examples": ["LinkedIn Recruiter", "Hiretual", "Entelo"]},
+        {"system": "ATS", "type": "bidirectional", "protocol": "API"}
+      ],
+
+      "decision_rules": [
+        {"rule_id": "DR-TA-010", "name": "Low Response Rate", "condition": "response_rate < 2%", "action": "optimize_job_posting", "priority": 2},
+        {"rule_id": "DR-TA-011", "name": "Diversity Target", "condition": "diverse_candidates.percentage < diversity_target", "action": "increase_diversity_sourcing", "priority": 1}
+      ],
+
+      "error_handlers": [
+        {"error_type": "posting_failed", "severity": "medium", "action": "retry_with_alternate_channel", "notification": ["recruiter"]}
+      ]
+    },
+
+    {
+      "id": "agent_6_1_1_1_step3",
+      "apqc_id": "6.1.1.1",
+      "step_number": 3,
+      "step_name": "Application Screening",
+      "description": "Screen applications against job requirements and qualifications",
+      "purpose": "Identify qualified candidates efficiently",
+      "business_value": "Reduced time-to-screen, better quality candidates",
+
+      "capabilities": ["resume_parsing", "qualification_matching", "ai_screening", "knockout_questions", "duplicate_detection"],
+
+      "input_schema": [
+        {"name": "applications", "type": "array", "required": true},
+        {"name": "screening_criteria", "type": "object", "required": true},
+        {"name": "auto_screen_enabled", "type": "boolean", "required": false}
+      ],
+
+      "output_schema": [
+        {"name": "screened_candidates", "type": "array", "required": true},
+        {"name": "screening_scores", "type": "object", "required": true},
+        {"name": "rejected_candidates", "type": "array", "required": true},
+        {"name": "rejection_reasons", "type": "object", "required": true}
+      ],
+
+      "required_integrations": [
+        {"system": "ATS", "type": "bidirectional", "protocol": "API"},
+        {"system": "AI Screening", "type": "processing", "protocol": "API", "examples": ["Pymetrics", "HireVue", "Eightfold"]},
+        {"system": "Background Check", "type": "outbound", "protocol": "API", "examples": ["Checkr", "Sterling", "HireRight"]}
+      ],
+
+      "decision_rules": [
+        {"rule_id": "DR-TA-020", "name": "Auto-Advance", "condition": "screening_score >= 85", "action": "advance_to_interview", "priority": 1},
+        {"rule_id": "DR-TA-021", "name": "Auto-Reject", "condition": "screening_score < 40 OR knockout_failed", "action": "send_rejection", "priority": 1}
+      ],
+
+      "error_handlers": [
+        {"error_type": "parsing_failed", "severity": "low", "action": "flag_for_manual_review", "notification": ["recruiter"]}
+      ]
+    },
+
+    {
+      "id": "agent_6_1_1_1_step4",
+      "apqc_id": "6.1.1.1",
+      "step_number": 4,
+      "step_name": "Interview Scheduling",
+      "description": "Coordinate and schedule interviews with candidates and interviewers",
+      "purpose": "Efficient interview coordination",
+      "business_value": "Faster hiring, better candidate experience",
+
+      "capabilities": ["calendar_coordination", "interview_scheduling", "panel_assembly", "reminder_management", "rescheduling"],
+
+      "input_schema": [
+        {"name": "candidates", "type": "array", "required": true},
+        {"name": "interview_stages", "type": "array", "required": true},
+        {"name": "interviewers", "type": "array", "required": true}
+      ],
+
+      "output_schema": [
+        {"name": "scheduled_interviews", "type": "array", "required": true},
+        {"name": "interviewer_assignments", "type": "object", "required": true},
+        {"name": "candidate_confirmations", "type": "object", "required": true}
+      ],
+
+      "required_integrations": [
+        {"system": "Calendar", "type": "bidirectional", "protocol": "API", "examples": ["Google Calendar", "Outlook", "Calendly"]},
+        {"system": "ATS", "type": "bidirectional", "protocol": "API"},
+        {"system": "Video Conferencing", "type": "outbound", "protocol": "API", "examples": ["Zoom", "Teams", "Google Meet"]}
+      ],
+
+      "decision_rules": [
+        {"rule_id": "DR-TA-030", "name": "Scheduling Timeout", "condition": "days_since_screen > 3 AND !scheduled", "action": "escalate_scheduling", "priority": 1}
+      ],
+
+      "error_handlers": [
+        {"error_type": "calendar_conflict", "severity": "low", "action": "propose_alternative_times", "notification": ["candidate", "interviewer"]},
+        {"error_type": "candidate_no_response", "severity": "medium", "action": "send_reminder", "notification": ["recruiter"]}
+      ]
+    },
+
+    {
+      "id": "agent_6_1_1_1_step5",
+      "apqc_id": "6.1.1.1",
+      "step_number": 5,
+      "step_name": "Interview Execution and Feedback",
+      "description": "Conduct interviews and collect structured feedback from interviewers",
+      "purpose": "Consistent evaluation of candidates",
+      "business_value": "Objective hiring decisions",
+
+      "capabilities": ["interview_guide_generation", "feedback_collection", "scorecard_management", "bias_detection", "feedback_synthesis"],
+
+      "input_schema": [
+        {"name": "scheduled_interviews", "type": "array", "required": true},
+        {"name": "evaluation_criteria", "type": "object", "required": true}
+      ],
+
+      "output_schema": [
+        {"name": "interview_feedback", "type": "array", "required": true},
+        {"name": "candidate_scores", "type": "object", "required": true},
+        {"name": "interviewer_recommendations", "type": "object", "required": true}
+      ],
+
+      "required_integrations": [
+        {"system": "ATS", "type": "bidirectional", "protocol": "API"},
+        {"system": "Assessment Platform", "type": "bidirectional", "protocol": "API", "examples": ["Codility", "HackerRank", "Karat"]}
+      ],
+
+      "decision_rules": [
+        {"rule_id": "DR-TA-040", "name": "Feedback Reminder", "condition": "hours_since_interview > 24 AND !feedback_submitted", "action": "send_feedback_reminder", "priority": 2},
+        {"rule_id": "DR-TA-041", "name": "Strong Candidate", "condition": "avg_score >= 4.5 AND no_concerns", "action": "fast_track_to_offer", "priority": 1}
+      ],
+
+      "error_handlers": [
+        {"error_type": "feedback_incomplete", "severity": "medium", "action": "prompt_for_completion", "notification": ["interviewer"]}
+      ]
+    },
+
+    {
+      "id": "agent_6_1_1_1_step6",
+      "apqc_id": "6.1.1.1",
+      "step_number": 6,
+      "step_name": "Candidate Selection",
+      "description": "Evaluate candidates holistically and make hiring recommendation",
+      "purpose": "Select best candidate for the role",
+      "business_value": "Quality hires that succeed in role",
+
+      "capabilities": ["candidate_comparison", "debrief_facilitation", "recommendation_generation", "diversity_analysis", "reference_check_coordination"],
+
+      "input_schema": [
+        {"name": "candidate_scores", "type": "object", "required": true},
+        {"name": "interview_feedback", "type": "array", "required": true},
+        {"name": "reference_results", "type": "object", "required": false}
+      ],
+
+      "output_schema": [
+        {"name": "selected_candidate", "type": "object", "required": true},
+        {"name": "selection_rationale", "type": "string", "required": true},
+        {"name": "backup_candidates", "type": "array", "required": false}
+      ],
+
+      "required_integrations": [
+        {"system": "ATS", "type": "bidirectional", "protocol": "API"},
+        {"system": "Reference Check", "type": "read", "protocol": "API", "examples": ["Checkster", "SkillSurvey", "Xref"]}
+      ],
+
+      "decision_rules": [
+        {"rule_id": "DR-TA-050", "name": "Unanimous Hire", "condition": "all_interviewers.recommend == 'hire'", "action": "proceed_to_offer", "priority": 1},
+        {"rule_id": "DR-TA-051", "name": "Mixed Feedback", "condition": "interviewer_agreement < 0.6", "action": "schedule_debrief", "priority": 1}
+      ],
+
+      "error_handlers": [
+        {"error_type": "no_suitable_candidate", "severity": "high", "action": "extend_search", "notification": ["hiring_manager", "recruiter"]}
+      ]
+    },
+
+    {
+      "id": "agent_6_1_1_1_step7",
+      "apqc_id": "6.1.1.1",
+      "step_number": 7,
+      "step_name": "Offer Generation and Approval",
+      "description": "Generate offer package and obtain required approvals",
+      "purpose": "Create competitive, compliant offer",
+      "business_value": "Attract top talent with right compensation",
+
+      "capabilities": ["offer_generation", "compensation_calculation", "equity_modeling", "benefits_summary", "approval_routing"],
+
+      "input_schema": [
+        {"name": "selected_candidate", "type": "object", "required": true},
+        {"name": "compensation_data", "type": "object", "required": true},
+        {"name": "start_date", "type": "string", "required": true}
+      ],
+
+      "output_schema": [
+        {"name": "offer_letter", "type": "object", "required": true},
+        {"name": "total_compensation", "type": "object", "required": true},
+        {"name": "approval_status", "type": "string", "required": true}
+      ],
+
+      "required_integrations": [
+        {"system": "ATS", "type": "bidirectional", "protocol": "API"},
+        {"system": "HRIS", "type": "read", "protocol": "API"},
+        {"system": "Compensation", "type": "read", "protocol": "API"},
+        {"system": "E-Signature", "type": "outbound", "protocol": "API", "examples": ["DocuSign", "Adobe Sign"]}
+      ],
+
+      "decision_rules": [
+        {"rule_id": "DR-TA-060", "name": "Above Band", "condition": "offer.salary > band.max * 1.1", "action": "require_executive_approval", "priority": 1},
+        {"rule_id": "DR-TA-061", "name": "Equity Exception", "condition": "offer.equity > standard_grant", "action": "require_ceo_approval", "priority": 1}
+      ],
+
+      "error_handlers": [
+        {"error_type": "approval_rejected", "severity": "high", "action": "revise_offer", "notification": ["recruiter", "hiring_manager"]}
+      ]
+    },
+
+    {
+      "id": "agent_6_1_1_1_step8",
+      "apqc_id": "6.1.1.1",
+      "step_number": 8,
+      "step_name": "Offer Delivery and Acceptance",
+      "description": "Present offer to candidate and manage negotiation to acceptance",
+      "purpose": "Secure candidate acceptance",
+      "business_value": "Close top talent successfully",
+
+      "capabilities": ["offer_presentation", "negotiation_support", "counter_offer_handling", "acceptance_tracking", "rejection_analysis"],
+
+      "input_schema": [
+        {"name": "approved_offer", "type": "object", "required": true},
+        {"name": "candidate_contact", "type": "object", "required": true}
+      ],
+
+      "output_schema": [
+        {"name": "offer_status", "type": "string", "required": true, "validation": {"enum": ["accepted", "declined", "negotiating", "pending"]}},
+        {"name": "signed_offer", "type": "object", "required": false},
+        {"name": "start_date_confirmed", "type": "string", "required": false},
+        {"name": "decline_reason", "type": "string", "required": false}
+      ],
+
+      "required_integrations": [
+        {"system": "ATS", "type": "bidirectional", "protocol": "API"},
+        {"system": "E-Signature", "type": "bidirectional", "protocol": "API"},
+        {"system": "Onboarding", "type": "outbound", "protocol": "API", "examples": ["Workday", "BambooHR", "Rippling"]}
+      ],
+
+      "decision_rules": [
+        {"rule_id": "DR-TA-070", "name": "Offer Expiry", "condition": "days_since_offer > 5 AND status == 'pending'", "action": "send_reminder", "priority": 2},
+        {"rule_id": "DR-TA-071", "name": "Counter Offer", "condition": "candidate.counter_offer EXISTS", "action": "evaluate_counter", "priority": 1}
+      ],
+
+      "error_handlers": [
+        {"error_type": "offer_declined", "severity": "high", "action": "offer_to_backup", "notification": ["hiring_manager", "recruiter"]},
+        {"error_type": "candidate_ghosted", "severity": "medium", "action": "close_requisition_with_note", "notification": ["hiring_manager"]}
+      ]
+    }
+  ],
+
+  "integration_summary": {
+    "ats_platforms": ["Greenhouse", "Lever", "Workday Recruiting", "iCIMS", "SmartRecruiters"],
+    "sourcing_platforms": ["LinkedIn Recruiter", "Hiretual", "Entelo", "SeekOut"],
+    "job_boards": ["LinkedIn", "Indeed", "Glassdoor", "ZipRecruiter"],
+    "assessment_tools": ["HireVue", "Pymetrics", "Codility", "HackerRank"],
+    "background_check": ["Checkr", "Sterling", "HireRight", "GoodHire"]
+  },
+
+  "kpis": [
+    {"name": "Time to Fill", "description": "Days from requisition to offer acceptance", "target": "< 45 days", "measurement": "acceptance_date - requisition_date"},
+    {"name": "Time to Hire", "description": "Days from application to offer acceptance", "target": "< 30 days", "measurement": "acceptance_date - application_date"},
+    {"name": "Offer Acceptance Rate", "description": "Percentage of offers accepted", "target": "> 85%", "measurement": "offers_accepted / offers_extended"},
+    {"name": "Quality of Hire", "description": "New hire performance rating at 1 year", "target": "> 3.5/5.0", "measurement": "avg(new_hire_performance_ratings)"},
+    {"name": "Cost per Hire", "description": "Total recruiting cost per hire", "target": "< $5,000", "measurement": "total_recruiting_cost / total_hires"},
+    {"name": "Source of Hire", "description": "Track effectiveness of sourcing channels", "target": "Optimize", "measurement": "hires_by_source / applications_by_source"}
+  ]
+}

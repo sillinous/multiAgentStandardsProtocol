@@ -1,0 +1,304 @@
+{
+  "apqc_id": "7.3.1.1",
+  "apqc_name": "Manage enterprise risk",
+  "category": "7.0 - Manage Information Technology",
+  "description": "Enterprise risk management workflow from risk identification through monitoring and reporting, including risk assessment, mitigation planning, and compliance tracking.",
+  "orchestration_pattern": "event_driven",
+  "total_steps": 7,
+  "estimated_duration_seconds": 259200,
+  "compliance_frameworks": ["ISO 31000", "COSO ERM", "SOX", "NIST RMF", "COBIT"],
+  "data_retention_days": 2555,
+
+  "agent_cards": [
+    {
+      "id": "agent_7_3_1_1_step1",
+      "apqc_id": "7.3.1.1",
+      "step_number": 1,
+      "step_name": "Risk Identification",
+      "description": "Identify and catalog risks across all enterprise domains",
+      "purpose": "Comprehensive risk discovery",
+      "business_value": "Proactive risk awareness",
+
+      "capabilities": ["risk_scanning", "threat_intelligence", "vulnerability_assessment", "risk_categorization", "stakeholder_interviews"],
+
+      "input_schema": [
+        {"name": "assessment_scope", "type": "string", "required": true, "validation": {"enum": ["enterprise", "business_unit", "project", "process"]}},
+        {"name": "risk_domains", "type": "array", "required": true},
+        {"name": "time_horizon", "type": "string", "required": true, "validation": {"enum": ["immediate", "short-term", "medium-term", "long-term"]}},
+        {"name": "stakeholders", "type": "array", "required": false}
+      ],
+
+      "output_schema": [
+        {"name": "risk_register", "type": "array", "required": true},
+        {"name": "risk_categories", "type": "object", "required": true},
+        {"name": "emerging_risks", "type": "array", "required": true},
+        {"name": "risk_owners", "type": "object", "required": true}
+      ],
+
+      "required_integrations": [
+        {"system": "GRC Platform", "type": "bidirectional", "protocol": "API", "examples": ["ServiceNow GRC", "RSA Archer", "MetricStream"]},
+        {"system": "Threat Intelligence", "type": "read", "protocol": "API", "examples": ["Recorded Future", "CrowdStrike", "Mandiant"]},
+        {"system": "Vulnerability Scanner", "type": "read", "protocol": "API", "examples": ["Qualys", "Tenable", "Rapid7"]}
+      ],
+
+      "decision_rules": [
+        {"rule_id": "DR-RM-001", "name": "Critical Risk", "condition": "risk.inherent_score >= 9", "action": "immediate_escalation", "priority": 1},
+        {"rule_id": "DR-RM-002", "name": "Emerging Threat", "condition": "risk.is_emerging AND risk.velocity == 'fast'", "action": "fast_track_assessment", "priority": 1}
+      ],
+
+      "error_handlers": [
+        {"error_type": "incomplete_scope", "severity": "medium", "action": "expand_identification", "notification": ["risk_manager"]},
+        {"error_type": "stakeholder_unavailable", "severity": "low", "action": "proceed_with_available_input", "notification": ["risk_analyst"]}
+      ]
+    },
+
+    {
+      "id": "agent_7_3_1_1_step2",
+      "apqc_id": "7.3.1.1",
+      "step_number": 2,
+      "step_name": "Risk Assessment",
+      "description": "Assess identified risks for likelihood and impact",
+      "purpose": "Quantify risk exposure",
+      "business_value": "Prioritized risk response",
+
+      "capabilities": ["likelihood_assessment", "impact_analysis", "risk_scoring", "scenario_analysis", "monte_carlo_simulation"],
+
+      "input_schema": [
+        {"name": "risk_register", "type": "array", "required": true},
+        {"name": "assessment_methodology", "type": "string", "required": true, "validation": {"enum": ["qualitative", "quantitative", "semi-quantitative"]}},
+        {"name": "risk_appetite", "type": "object", "required": true}
+      ],
+
+      "output_schema": [
+        {"name": "assessed_risks", "type": "array", "required": true},
+        {"name": "risk_matrix", "type": "object", "required": true},
+        {"name": "exposure_summary", "type": "object", "required": true},
+        {"name": "priority_ranking", "type": "array", "required": true}
+      ],
+
+      "required_integrations": [
+        {"system": "GRC Platform", "type": "bidirectional", "protocol": "API"},
+        {"system": "Financial System", "type": "read", "protocol": "API"},
+        {"system": "Risk Analytics", "type": "processing", "protocol": "API", "examples": ["Palantir", "SAS Risk Management"]}
+      ],
+
+      "decision_rules": [
+        {"rule_id": "DR-RM-010", "name": "Above Appetite", "condition": "risk.residual_score > risk_appetite.threshold", "action": "require_treatment", "priority": 1},
+        {"rule_id": "DR-RM-011", "name": "Quantitative Required", "condition": "risk.potential_impact > $1M", "action": "perform_quantitative_analysis", "priority": 1}
+      ],
+
+      "error_handlers": [
+        {"error_type": "insufficient_data", "severity": "medium", "action": "use_expert_judgment", "notification": ["risk_analyst"]}
+      ]
+    },
+
+    {
+      "id": "agent_7_3_1_1_step3",
+      "apqc_id": "7.3.1.1",
+      "step_number": 3,
+      "step_name": "Risk Treatment Planning",
+      "description": "Develop treatment plans for risks requiring mitigation",
+      "purpose": "Define risk response strategies",
+      "business_value": "Effective risk reduction",
+
+      "capabilities": ["treatment_option_analysis", "control_design", "cost_benefit_analysis", "implementation_planning", "owner_assignment"],
+
+      "input_schema": [
+        {"name": "assessed_risks", "type": "array", "required": true},
+        {"name": "treatment_budget", "type": "number", "required": false},
+        {"name": "treatment_strategies", "type": "array", "required": true, "validation": {"enum": ["mitigate", "transfer", "accept", "avoid"]}}
+      ],
+
+      "output_schema": [
+        {"name": "treatment_plans", "type": "array", "required": true},
+        {"name": "control_requirements", "type": "array", "required": true},
+        {"name": "implementation_timeline", "type": "object", "required": true},
+        {"name": "residual_risk_projection", "type": "object", "required": true}
+      ],
+
+      "required_integrations": [
+        {"system": "GRC Platform", "type": "bidirectional", "protocol": "API"},
+        {"system": "Project Management", "type": "bidirectional", "protocol": "API", "examples": ["Jira", "Asana", "Monday.com"]},
+        {"system": "Insurance Management", "type": "read", "protocol": "API"}
+      ],
+
+      "decision_rules": [
+        {"rule_id": "DR-RM-020", "name": "Cost Exceeds Benefit", "condition": "treatment.cost > risk.expected_loss * 3", "action": "consider_acceptance", "priority": 2},
+        {"rule_id": "DR-RM-021", "name": "Insurance Option", "condition": "risk.is_insurable AND treatment.cost > insurance.premium * 2", "action": "evaluate_transfer", "priority": 2}
+      ],
+
+      "error_handlers": [
+        {"error_type": "budget_insufficient", "severity": "high", "action": "prioritize_treatments", "notification": ["risk_manager", "cfo"]}
+      ]
+    },
+
+    {
+      "id": "agent_7_3_1_1_step4",
+      "apqc_id": "7.3.1.1",
+      "step_number": 4,
+      "step_name": "Control Implementation",
+      "description": "Implement risk controls and mitigation measures",
+      "purpose": "Execute risk treatment plans",
+      "business_value": "Reduced risk exposure",
+
+      "capabilities": ["control_deployment", "policy_implementation", "training_coordination", "technology_configuration", "process_modification"],
+
+      "input_schema": [
+        {"name": "treatment_plans", "type": "array", "required": true},
+        {"name": "implementation_resources", "type": "object", "required": true}
+      ],
+
+      "output_schema": [
+        {"name": "implemented_controls", "type": "array", "required": true},
+        {"name": "implementation_status", "type": "object", "required": true},
+        {"name": "control_effectiveness", "type": "object", "required": true}
+      ],
+
+      "required_integrations": [
+        {"system": "GRC Platform", "type": "bidirectional", "protocol": "API"},
+        {"system": "ITSM", "type": "bidirectional", "protocol": "API", "examples": ["ServiceNow", "Jira Service Management"]},
+        {"system": "Security Tools", "type": "bidirectional", "protocol": "API"}
+      ],
+
+      "decision_rules": [
+        {"rule_id": "DR-RM-030", "name": "Implementation Delay", "condition": "days_overdue > 14", "action": "escalate_to_sponsor", "priority": 1}
+      ],
+
+      "error_handlers": [
+        {"error_type": "implementation_failed", "severity": "high", "action": "trigger_incident", "notification": ["risk_owner", "risk_manager"]}
+      ]
+    },
+
+    {
+      "id": "agent_7_3_1_1_step5",
+      "apqc_id": "7.3.1.1",
+      "step_number": 5,
+      "step_name": "Risk Monitoring",
+      "description": "Continuously monitor risk indicators and control effectiveness",
+      "purpose": "Early warning of risk changes",
+      "business_value": "Proactive risk management",
+
+      "capabilities": ["kri_monitoring", "control_testing", "anomaly_detection", "trend_analysis", "threshold_alerting"],
+
+      "input_schema": [
+        {"name": "risk_register", "type": "array", "required": true},
+        {"name": "key_risk_indicators", "type": "array", "required": true},
+        {"name": "monitoring_frequency", "type": "string", "required": true}
+      ],
+
+      "output_schema": [
+        {"name": "kri_values", "type": "object", "required": true},
+        {"name": "control_test_results", "type": "array", "required": true},
+        {"name": "risk_alerts", "type": "array", "required": true},
+        {"name": "trend_analysis", "type": "object", "required": true}
+      ],
+
+      "required_integrations": [
+        {"system": "GRC Platform", "type": "bidirectional", "protocol": "API"},
+        {"system": "SIEM", "type": "read", "protocol": "API", "examples": ["Splunk", "Microsoft Sentinel", "IBM QRadar"]},
+        {"system": "Business Intelligence", "type": "read", "protocol": "API", "examples": ["Tableau", "Power BI"]}
+      ],
+
+      "decision_rules": [
+        {"rule_id": "DR-RM-040", "name": "KRI Breach", "condition": "kri.value > kri.threshold", "action": "trigger_alert", "priority": 1},
+        {"rule_id": "DR-RM-041", "name": "Control Failure", "condition": "control_test.result == 'fail'", "action": "initiate_remediation", "priority": 1}
+      ],
+
+      "error_handlers": [
+        {"error_type": "data_feed_unavailable", "severity": "medium", "action": "use_last_known_value", "notification": ["risk_analyst"]}
+      ]
+    },
+
+    {
+      "id": "agent_7_3_1_1_step6",
+      "apqc_id": "7.3.1.1",
+      "step_number": 6,
+      "step_name": "Risk Reporting",
+      "description": "Generate risk reports for stakeholders and governance bodies",
+      "purpose": "Communicate risk status",
+      "business_value": "Informed decision making",
+
+      "capabilities": ["report_generation", "dashboard_creation", "executive_summary", "regulatory_reporting", "board_presentation"],
+
+      "input_schema": [
+        {"name": "report_type", "type": "string", "required": true, "validation": {"enum": ["executive", "board", "regulatory", "operational", "audit"]}},
+        {"name": "reporting_period", "type": "object", "required": true},
+        {"name": "audience", "type": "array", "required": true}
+      ],
+
+      "output_schema": [
+        {"name": "risk_report", "type": "object", "required": true},
+        {"name": "risk_dashboard", "type": "object", "required": true},
+        {"name": "key_findings", "type": "array", "required": true},
+        {"name": "recommendations", "type": "array", "required": true}
+      ],
+
+      "required_integrations": [
+        {"system": "GRC Platform", "type": "read", "protocol": "API"},
+        {"system": "Business Intelligence", "type": "bidirectional", "protocol": "API"},
+        {"system": "Board Portal", "type": "outbound", "protocol": "API", "examples": ["Diligent", "Nasdaq Boardvantage"]}
+      ],
+
+      "decision_rules": [
+        {"rule_id": "DR-RM-050", "name": "Material Risk", "condition": "risk.is_material", "action": "include_in_board_report", "priority": 1}
+      ],
+
+      "error_handlers": [
+        {"error_type": "report_generation_failed", "severity": "high", "action": "manual_compilation", "notification": ["risk_manager"]}
+      ]
+    },
+
+    {
+      "id": "agent_7_3_1_1_step7",
+      "apqc_id": "7.3.1.1",
+      "step_number": 7,
+      "step_name": "Risk Review and Update",
+      "description": "Periodically review and update risk assessments and register",
+      "purpose": "Maintain current risk view",
+      "business_value": "Accurate risk management",
+
+      "capabilities": ["risk_reassessment", "control_review", "appetite_calibration", "framework_update", "lessons_learned"],
+
+      "input_schema": [
+        {"name": "review_trigger", "type": "string", "required": true, "validation": {"enum": ["scheduled", "event_driven", "audit_finding", "incident"]}},
+        {"name": "scope", "type": "array", "required": true}
+      ],
+
+      "output_schema": [
+        {"name": "updated_risk_register", "type": "array", "required": true},
+        {"name": "changes_summary", "type": "object", "required": true},
+        {"name": "closed_risks", "type": "array", "required": false},
+        {"name": "new_risks", "type": "array", "required": false}
+      ],
+
+      "required_integrations": [
+        {"system": "GRC Platform", "type": "bidirectional", "protocol": "API"},
+        {"system": "Incident Management", "type": "read", "protocol": "API"},
+        {"system": "Audit Management", "type": "read", "protocol": "API"}
+      ],
+
+      "decision_rules": [
+        {"rule_id": "DR-RM-060", "name": "Significant Change", "condition": "risk.score_change > 2", "action": "require_approval", "priority": 1}
+      ],
+
+      "error_handlers": [
+        {"error_type": "review_incomplete", "severity": "medium", "action": "extend_deadline", "notification": ["risk_owner"]}
+      ]
+    }
+  ],
+
+  "integration_summary": {
+    "grc_platforms": ["ServiceNow GRC", "RSA Archer", "MetricStream", "LogicGate", "OneTrust"],
+    "threat_intelligence": ["Recorded Future", "CrowdStrike", "Mandiant", "ThreatConnect"],
+    "security_tools": ["Splunk", "Microsoft Sentinel", "Qualys", "Tenable"],
+    "analytics": ["Tableau", "Power BI", "Palantir", "SAS"]
+  },
+
+  "kpis": [
+    {"name": "Risk Coverage", "description": "Percentage of business areas with risk assessments", "target": "> 95%", "measurement": "assessed_areas / total_areas"},
+    {"name": "Control Effectiveness", "description": "Percentage of controls operating effectively", "target": "> 90%", "measurement": "effective_controls / total_controls"},
+    {"name": "KRI Breach Rate", "description": "Frequency of KRI threshold breaches", "target": "< 5%", "measurement": "breaches / total_kri_readings"},
+    {"name": "Risk Treatment Completion", "description": "On-time completion of treatment plans", "target": "> 85%", "measurement": "completed_on_time / total_treatments"},
+    {"name": "Time to Remediate", "description": "Average days to remediate control gaps", "target": "< 30 days", "measurement": "avg(remediation_time)"}
+  ]
+}

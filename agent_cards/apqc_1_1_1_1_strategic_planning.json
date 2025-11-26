@@ -1,0 +1,303 @@
+{
+  "apqc_id": "1.1.1.1",
+  "apqc_name": "Develop strategic plan",
+  "category": "1.0 - Develop Vision and Strategy",
+  "description": "End-to-end strategic planning workflow from environmental analysis through strategy formulation, including market assessment, competitive analysis, goal setting, and strategic initiative development.",
+  "orchestration_pattern": "sequential",
+  "total_steps": 7,
+  "estimated_duration_seconds": 604800,
+  "compliance_frameworks": ["SOX", "ISO 31000", "COSO ERM"],
+  "data_retention_days": 2555,
+
+  "agent_cards": [
+    {
+      "id": "agent_1_1_1_1_step1",
+      "apqc_id": "1.1.1.1",
+      "step_number": 1,
+      "step_name": "Environmental Scanning",
+      "description": "Analyze external environment including market trends, competitive landscape, and regulatory changes",
+      "purpose": "Understand external factors affecting strategic decisions",
+      "business_value": "Data-driven strategy foundation",
+
+      "capabilities": ["market_research", "trend_analysis", "competitive_intelligence", "regulatory_monitoring", "pestle_analysis"],
+
+      "input_schema": [
+        {"name": "planning_period", "type": "string", "required": true, "validation": {"enum": ["annual", "3-year", "5-year", "10-year"]}},
+        {"name": "industry_sector", "type": "string", "required": true},
+        {"name": "geographic_scope", "type": "array", "required": true},
+        {"name": "focus_areas", "type": "array", "required": false}
+      ],
+
+      "output_schema": [
+        {"name": "market_analysis", "type": "object", "required": true},
+        {"name": "competitive_landscape", "type": "object", "required": true},
+        {"name": "regulatory_outlook", "type": "object", "required": true},
+        {"name": "trend_forecast", "type": "array", "required": true},
+        {"name": "opportunities_threats", "type": "object", "required": true}
+      ],
+
+      "required_integrations": [
+        {"system": "Market Intelligence", "type": "read", "protocol": "API", "examples": ["Gartner", "Forrester", "IDC"]},
+        {"system": "News Aggregation", "type": "read", "protocol": "API", "examples": ["Bloomberg", "Reuters", "Factiva"]},
+        {"system": "Regulatory Database", "type": "read", "protocol": "API"}
+      ],
+
+      "decision_rules": [
+        {"rule_id": "DR-SP-001", "name": "Disruption Alert", "condition": "disruption_risk_score > 0.7", "action": "flag_for_executive_review", "priority": 1},
+        {"rule_id": "DR-SP-002", "name": "Opportunity Threshold", "condition": "opportunity_score > 0.8 AND market_size > $1B", "action": "prioritize_analysis", "priority": 1}
+      ],
+
+      "error_handlers": [
+        {"error_type": "data_source_unavailable", "severity": "medium", "action": "use_cached_data_with_warning", "notification": ["strategy_team"]},
+        {"error_type": "incomplete_market_data", "severity": "low", "action": "proceed_with_available_data", "notification": ["analyst"]}
+      ]
+    },
+
+    {
+      "id": "agent_1_1_1_1_step2",
+      "apqc_id": "1.1.1.1",
+      "step_number": 2,
+      "step_name": "Internal Capability Assessment",
+      "description": "Evaluate organizational strengths, weaknesses, resources, and core competencies",
+      "purpose": "Understand internal capabilities for strategy formulation",
+      "business_value": "Realistic strategy based on actual capabilities",
+
+      "capabilities": ["capability_mapping", "resource_analysis", "competency_assessment", "swot_analysis", "value_chain_analysis"],
+
+      "input_schema": [
+        {"name": "business_units", "type": "array", "required": true},
+        {"name": "assessment_scope", "type": "string", "required": true},
+        {"name": "benchmark_competitors", "type": "array", "required": false}
+      ],
+
+      "output_schema": [
+        {"name": "capability_map", "type": "object", "required": true},
+        {"name": "resource_inventory", "type": "object", "required": true},
+        {"name": "strengths_weaknesses", "type": "object", "required": true},
+        {"name": "capability_gaps", "type": "array", "required": true}
+      ],
+
+      "required_integrations": [
+        {"system": "ERP", "type": "read", "protocol": "API", "examples": ["SAP S/4HANA", "Oracle Cloud"]},
+        {"system": "HR System", "type": "read", "protocol": "API", "examples": ["Workday", "SuccessFactors"]},
+        {"system": "Financial System", "type": "read", "protocol": "API"}
+      ],
+
+      "decision_rules": [
+        {"rule_id": "DR-SP-010", "name": "Critical Gap", "condition": "capability_gap.severity == 'critical'", "action": "escalate_to_leadership", "priority": 1}
+      ],
+
+      "error_handlers": [
+        {"error_type": "system_access_denied", "severity": "high", "action": "request_access_escalation", "notification": ["it_security", "strategy_lead"]}
+      ]
+    },
+
+    {
+      "id": "agent_1_1_1_1_step3",
+      "apqc_id": "1.1.1.1",
+      "step_number": 3,
+      "step_name": "Strategic Option Generation",
+      "description": "Develop potential strategic options based on environmental and internal analysis",
+      "purpose": "Create portfolio of strategic alternatives",
+      "business_value": "Comprehensive set of viable strategic choices",
+
+      "capabilities": ["scenario_planning", "option_generation", "strategic_modeling", "innovation_ideation", "portfolio_analysis"],
+
+      "input_schema": [
+        {"name": "market_analysis", "type": "object", "required": true},
+        {"name": "capability_assessment", "type": "object", "required": true},
+        {"name": "strategic_themes", "type": "array", "required": false}
+      ],
+
+      "output_schema": [
+        {"name": "strategic_options", "type": "array", "required": true},
+        {"name": "scenario_models", "type": "array", "required": true},
+        {"name": "option_dependencies", "type": "object", "required": true}
+      ],
+
+      "required_integrations": [
+        {"system": "Strategy Platform", "type": "bidirectional", "protocol": "API", "examples": ["Cascade", "Workboard", "Gtmhub"]},
+        {"system": "Collaboration", "type": "bidirectional", "protocol": "API", "examples": ["Miro", "Mural", "Microsoft Whiteboard"]}
+      ],
+
+      "decision_rules": [
+        {"rule_id": "DR-SP-020", "name": "Minimum Options", "condition": "strategic_options.count < 3", "action": "expand_option_generation", "priority": 1}
+      ],
+
+      "error_handlers": [
+        {"error_type": "insufficient_input_data", "severity": "high", "action": "request_additional_analysis", "notification": ["strategy_team"]}
+      ]
+    },
+
+    {
+      "id": "agent_1_1_1_1_step4",
+      "apqc_id": "1.1.1.1",
+      "step_number": 4,
+      "step_name": "Strategic Option Evaluation",
+      "description": "Evaluate strategic options against criteria including financial impact, risk, and feasibility",
+      "purpose": "Objectively assess and rank strategic alternatives",
+      "business_value": "Evidence-based strategy selection",
+
+      "capabilities": ["financial_modeling", "risk_assessment", "feasibility_analysis", "scoring_framework", "sensitivity_analysis"],
+
+      "input_schema": [
+        {"name": "strategic_options", "type": "array", "required": true},
+        {"name": "evaluation_criteria", "type": "array", "required": true},
+        {"name": "risk_tolerance", "type": "string", "required": true, "validation": {"enum": ["conservative", "moderate", "aggressive"]}}
+      ],
+
+      "output_schema": [
+        {"name": "option_scores", "type": "array", "required": true},
+        {"name": "financial_projections", "type": "object", "required": true},
+        {"name": "risk_assessments", "type": "array", "required": true},
+        {"name": "recommended_options", "type": "array", "required": true}
+      ],
+
+      "required_integrations": [
+        {"system": "Financial Planning", "type": "bidirectional", "protocol": "API", "examples": ["Anaplan", "Adaptive Insights", "Planful"]},
+        {"system": "Risk Management", "type": "read", "protocol": "API", "examples": ["ServiceNow GRC", "RSA Archer"]}
+      ],
+
+      "decision_rules": [
+        {"rule_id": "DR-SP-030", "name": "ROI Threshold", "condition": "projected_roi < minimum_roi_threshold", "action": "flag_low_return", "priority": 1},
+        {"rule_id": "DR-SP-031", "name": "Risk Threshold", "condition": "risk_score > risk_tolerance_limit", "action": "require_mitigation_plan", "priority": 1}
+      ],
+
+      "error_handlers": [
+        {"error_type": "financial_model_error", "severity": "high", "action": "manual_review_required", "notification": ["finance_team", "strategy_lead"]}
+      ]
+    },
+
+    {
+      "id": "agent_1_1_1_1_step5",
+      "apqc_id": "1.1.1.1",
+      "step_number": 5,
+      "step_name": "Strategy Formulation",
+      "description": "Formulate comprehensive strategy including vision, mission, goals, and strategic initiatives",
+      "purpose": "Create coherent strategic plan document",
+      "business_value": "Clear strategic direction for organization",
+
+      "capabilities": ["strategy_documentation", "goal_setting", "initiative_planning", "resource_allocation", "timeline_development"],
+
+      "input_schema": [
+        {"name": "recommended_options", "type": "array", "required": true},
+        {"name": "organizational_context", "type": "object", "required": true},
+        {"name": "planning_horizon", "type": "string", "required": true}
+      ],
+
+      "output_schema": [
+        {"name": "vision_statement", "type": "string", "required": true},
+        {"name": "mission_statement", "type": "string", "required": true},
+        {"name": "strategic_goals", "type": "array", "required": true},
+        {"name": "strategic_initiatives", "type": "array", "required": true},
+        {"name": "resource_requirements", "type": "object", "required": true},
+        {"name": "implementation_timeline", "type": "object", "required": true}
+      ],
+
+      "required_integrations": [
+        {"system": "Strategy Platform", "type": "bidirectional", "protocol": "API"},
+        {"system": "Document Management", "type": "bidirectional", "protocol": "API", "examples": ["SharePoint", "Confluence"]}
+      ],
+
+      "decision_rules": [
+        {"rule_id": "DR-SP-040", "name": "Goal Alignment", "condition": "goal.alignment_score < 0.7", "action": "review_goal_cascade", "priority": 1}
+      ],
+
+      "error_handlers": [
+        {"error_type": "conflicting_goals", "severity": "medium", "action": "facilitate_reconciliation", "notification": ["strategy_team"]}
+      ]
+    },
+
+    {
+      "id": "agent_1_1_1_1_step6",
+      "apqc_id": "1.1.1.1",
+      "step_number": 6,
+      "step_name": "Executive Review and Approval",
+      "description": "Present strategic plan to executive leadership and board for review and approval",
+      "purpose": "Obtain leadership commitment and approval",
+      "business_value": "Executive alignment and resource commitment",
+
+      "capabilities": ["presentation_generation", "stakeholder_briefing", "approval_workflow", "feedback_collection", "revision_management"],
+
+      "input_schema": [
+        {"name": "strategic_plan", "type": "object", "required": true},
+        {"name": "approval_chain", "type": "array", "required": true},
+        {"name": "presentation_format", "type": "string", "required": false}
+      ],
+
+      "output_schema": [
+        {"name": "approval_status", "type": "string", "required": true, "validation": {"enum": ["approved", "approved_with_modifications", "rejected", "pending"]}},
+        {"name": "executive_feedback", "type": "array", "required": false},
+        {"name": "required_modifications", "type": "array", "required": false},
+        {"name": "approval_date", "type": "string", "required": false}
+      ],
+
+      "required_integrations": [
+        {"system": "Board Portal", "type": "bidirectional", "protocol": "API", "examples": ["Diligent", "Nasdaq Boardvantage", "OnBoard"]},
+        {"system": "Approval Workflow", "type": "bidirectional", "protocol": "API"}
+      ],
+
+      "decision_rules": [
+        {"rule_id": "DR-SP-050", "name": "Approval Timeout", "condition": "days_pending > 14", "action": "escalate_for_decision", "priority": 1}
+      ],
+
+      "error_handlers": [
+        {"error_type": "approval_rejected", "severity": "high", "action": "initiate_revision_cycle", "notification": ["strategy_lead", "ceo_office"]}
+      ]
+    },
+
+    {
+      "id": "agent_1_1_1_1_step7",
+      "apqc_id": "1.1.1.1",
+      "step_number": 7,
+      "step_name": "Strategy Communication and Cascade",
+      "description": "Communicate approved strategy throughout organization and cascade goals to business units",
+      "purpose": "Ensure organization-wide understanding and alignment",
+      "business_value": "Strategy execution readiness",
+
+      "capabilities": ["communication_planning", "goal_cascading", "change_management", "training_coordination", "alignment_tracking"],
+
+      "input_schema": [
+        {"name": "approved_strategy", "type": "object", "required": true},
+        {"name": "communication_channels", "type": "array", "required": true},
+        {"name": "cascade_structure", "type": "object", "required": true}
+      ],
+
+      "output_schema": [
+        {"name": "communication_plan", "type": "object", "required": true},
+        {"name": "cascaded_goals", "type": "array", "required": true},
+        {"name": "alignment_metrics", "type": "object", "required": true},
+        {"name": "acknowledgment_status", "type": "object", "required": true}
+      ],
+
+      "required_integrations": [
+        {"system": "Internal Communications", "type": "bidirectional", "protocol": "API", "examples": ["Slack", "Microsoft Teams", "Workplace"]},
+        {"system": "Performance Management", "type": "bidirectional", "protocol": "API", "examples": ["Workday", "15Five", "Lattice"]},
+        {"system": "LMS", "type": "outbound", "protocol": "API", "examples": ["Cornerstone", "Degreed"]}
+      ],
+
+      "decision_rules": [
+        {"rule_id": "DR-SP-060", "name": "Low Acknowledgment", "condition": "acknowledgment_rate < 0.8", "action": "increase_communication_frequency", "priority": 2}
+      ],
+
+      "error_handlers": [
+        {"error_type": "communication_failure", "severity": "medium", "action": "retry_with_alternate_channel", "notification": ["comms_team"]}
+      ]
+    }
+  ],
+
+  "integration_summary": {
+    "strategy_platforms": ["Cascade", "Workboard", "Gtmhub", "Khorus"],
+    "market_intelligence": ["Gartner", "Forrester", "IDC", "CB Insights"],
+    "financial_planning": ["Anaplan", "Adaptive Insights", "Planful", "Vena"],
+    "collaboration": ["Miro", "Mural", "Microsoft Whiteboard", "Lucidchart"],
+    "board_governance": ["Diligent", "Nasdaq Boardvantage", "OnBoard"]
+  },
+
+  "kpis": [
+    {"name": "Strategy Cycle Time", "description": "Time from initiation to approved strategy", "target": "< 90 days", "measurement": "approval_date - initiation_date"},
+    {"name": "Strategic Goal Achievement", "description": "Percentage of strategic goals met", "target": "> 80%", "measurement": "goals_achieved / total_goals"},
+    {"name": "Strategy Alignment Score", "description": "Organizational alignment to strategy", "target": "> 85%", "measurement": "avg(alignment_scores)"},
+    {"name": "Initiative Success Rate", "description": "Strategic initiatives completed successfully", "target": "> 75%", "measurement": "successful_initiatives / total_initiatives"}
+  ]
+}
