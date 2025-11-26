@@ -862,6 +862,7 @@
             <button class="tab-button" onclick="switchTab('execute')">🚀 Execute Workflows</button>
             <button class="tab-button" onclick="switchTab('workflow')">📋 Test Workflow</button>
             <button class="tab-button" onclick="switchTab('bpmn')">📊 BPMN Browser</button>
+            <button class="tab-button" onclick="switchTab('agentcards')">🎴 Agent Cards</button>
         </div>
 
         <!-- Agent Explorer Tab -->
@@ -1135,6 +1136,57 @@
                 <div id="bpmnResultsCount" style="text-align: center; margin-top: 20px; color: #999; font-size: 0.9em;"></div>
             </div>
         </div>
+
+        <!-- Agent Cards Tab -->
+        <div id="tab-agentcards" class="tab-content">
+            <div class="main-content">
+                <h2 style="margin-bottom: 10px;">🎴 Agent Card Catalog</h2>
+                <p style="color: #666; margin-bottom: 20px;">Browse executable agent card specifications aligned to APQC Process Classification Framework. Each card defines a complete workflow with input/output schemas, integrations, and decision rules.</p>
+
+                <!-- Stats Bar -->
+                <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 15px; margin-bottom: 25px;">
+                    <div style="background: linear-gradient(135deg, #667eea15 0%, #764ba215 100%); border-radius: 12px; padding: 20px; text-align: center;">
+                        <div style="font-size: 2em; font-weight: bold; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); -webkit-background-clip: text; -webkit-text-fill-color: transparent;" id="agentCardsTotalCount">--</div>
+                        <div style="color: #666; font-size: 0.9em;">Total Agent Cards</div>
+                    </div>
+                    <div style="background: linear-gradient(135deg, #27ae6015 0%, #2ecc7115 100%); border-radius: 12px; padding: 20px; text-align: center;">
+                        <div style="font-size: 2em; font-weight: bold; color: #27ae60;" id="agentCardsTotalSteps">--</div>
+                        <div style="color: #666; font-size: 0.9em;">Total Workflow Steps</div>
+                    </div>
+                    <div style="background: linear-gradient(135deg, #3498db15 0%, #2980b915 100%); border-radius: 12px; padding: 20px; text-align: center;">
+                        <div style="font-size: 2em; font-weight: bold; color: #3498db;" id="agentCardsCategories">--</div>
+                        <div style="color: #666; font-size: 0.9em;">APQC Categories</div>
+                    </div>
+                    <div style="background: linear-gradient(135deg, #9b59b615 0%, #8e44ad15 100%); border-radius: 12px; padding: 20px; text-align: center;">
+                        <div style="font-size: 2em; font-weight: bold; color: #9b59b6;" id="agentCardsIntegrations">--</div>
+                        <div style="color: #666; font-size: 0.9em;">Integration Types</div>
+                    </div>
+                </div>
+
+                <!-- Filter Controls -->
+                <div style="display: flex; gap: 15px; margin-bottom: 25px; flex-wrap: wrap; align-items: center;">
+                    <input type="text" id="agentCardsSearchInput" class="search-input" placeholder="Search by APQC code or name (e.g., 8.2.1.1 or payroll)" style="flex: 1; min-width: 200px;" onkeypress="if(event.key==='Enter') filterAgentCards()">
+                    <select id="agentCardsPatternFilter" class="filter-select" onchange="filterAgentCards()">
+                        <option value="">All Patterns</option>
+                        <option value="sequential">Sequential</option>
+                        <option value="parallel">Parallel</option>
+                        <option value="event_driven">Event Driven</option>
+                    </select>
+                    <button class="btn" onclick="filterAgentCards()">🔍 Filter</button>
+                    <button class="btn secondary" onclick="resetAgentCardsFilter()">↻ Reset</button>
+                </div>
+
+                <!-- Agent Cards Grid -->
+                <div id="agentCardsGrid" style="display: grid; grid-template-columns: repeat(auto-fill, minmax(350px, 1fr)); gap: 20px;">
+                    <div class="loading">
+                        <div class="spinner"></div>
+                    </div>
+                </div>
+
+                <!-- Results Count -->
+                <div id="agentCardsResultsCount" style="text-align: center; margin-top: 20px; color: #999; font-size: 0.9em;"></div>
+            </div>
+        </div>
     </div>
 
     <!-- Agent Detail Modal -->
@@ -1289,6 +1341,8 @@
                 loadExecuteTab();
             } else if (tabName === 'bpmn') {
                 loadBpmnFiles();
+            } else if (tabName === 'agentcards') {
+                loadAgentCards();
             }
         }
 
@@ -2463,6 +2517,213 @@
 
             currentBpmnXml = null;
             currentBpmnCode = null;
+        }
+
+        // ========================================
+        // AGENT CARDS TAB FUNCTIONS
+        // ========================================
+        let allAgentCards = [];
+
+        async function loadAgentCards() {
+            const grid = document.getElementById('agentCardsGrid');
+            grid.innerHTML = '<div class="loading"><div class="spinner"></div></div>';
+
+            try {
+                const response = await fetch(`${API_URL}/api/agent-cards`);
+                if (!response.ok) throw new Error(`API returned ${response.status}`);
+                const data = await response.json();
+                allAgentCards = data.agent_cards || [];
+
+                // Calculate stats
+                const totalSteps = allAgentCards.reduce((sum, card) => sum + (card.total_steps || 0), 0);
+                const categories = new Set(allAgentCards.map(c => c.category?.split(' - ')[0] || '').filter(c => c));
+                const integrations = new Set();
+                allAgentCards.forEach(card => {
+                    if (card.integration_summary) {
+                        Object.keys(card.integration_summary).forEach(k => integrations.add(k));
+                    }
+                });
+
+                document.getElementById('agentCardsTotalCount').textContent = allAgentCards.length;
+                document.getElementById('agentCardsTotalSteps').textContent = totalSteps;
+                document.getElementById('agentCardsCategories').textContent = categories.size;
+                document.getElementById('agentCardsIntegrations').textContent = integrations.size;
+
+                renderAgentCardsGrid();
+            } catch (error) {
+                console.error('Error loading agent cards:', error);
+                grid.innerHTML = `<div style="text-align: center; padding: 40px; color: #e74c3c;">Error: ${error.message}</div>`;
+            }
+        }
+
+        function renderAgentCardsGrid(cardsToRender = allAgentCards) {
+            const grid = document.getElementById('agentCardsGrid');
+
+            if (cardsToRender.length === 0) {
+                grid.innerHTML = '<div style="text-align: center; padding: 40px; color: #888;">No agent cards found</div>';
+                document.getElementById('agentCardsResultsCount').textContent = '';
+                return;
+            }
+
+            const patternColors = {
+                'sequential': '#3498db',
+                'parallel': '#27ae60',
+                'event_driven': '#9b59b6'
+            };
+
+            const patternIcons = {
+                'sequential': '➔',
+                'parallel': '⚡',
+                'event_driven': '📡'
+            };
+
+            grid.innerHTML = cardsToRender.map(card => {
+                const pattern = card.orchestration_pattern || 'sequential';
+                const patternColor = patternColors[pattern] || '#667eea';
+                const patternIcon = patternIcons[pattern] || '📋';
+                const categoryName = card.category?.split(' - ')[1] || card.category || 'Unknown';
+                const categoryNum = card.category?.split('.')[0] || '?';
+
+                return `
+                    <div class="agent-card" style="background: white; border-radius: 15px; padding: 20px; box-shadow: 0 4px 15px rgba(0,0,0,0.08); cursor: pointer; transition: all 0.3s ease; border-left: 4px solid ${patternColor};" onclick="viewAgentCard('${card.apqc_id}')" onmouseover="this.style.transform='translateY(-3px)'; this.style.boxShadow='0 8px 25px rgba(0,0,0,0.12)'" onmouseout="this.style.transform='translateY(0)'; this.style.boxShadow='0 4px 15px rgba(0,0,0,0.08)'">
+                        <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 12px;">
+                            <span style="background: ${patternColor}15; color: ${patternColor}; padding: 4px 10px; border-radius: 20px; font-size: 0.75em; font-weight: 600;">${card.apqc_id}</span>
+                            <span style="background: #f0f0f0; color: #666; padding: 4px 10px; border-radius: 20px; font-size: 0.75em;">${patternIcon} ${pattern.replace('_', ' ')}</span>
+                        </div>
+                        <h3 style="font-size: 1.1em; margin-bottom: 8px; color: #333; line-height: 1.3;">${card.apqc_name}</h3>
+                        <p style="font-size: 0.85em; color: #666; margin-bottom: 15px; line-height: 1.4; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden;">${card.description || 'No description'}</p>
+                        <div style="display: flex; gap: 15px; flex-wrap: wrap; font-size: 0.8em; color: #888;">
+                            <span title="Category"><span style="color: #667eea;">${categoryNum}</span> ${categoryName}</span>
+                            <span title="Workflow Steps">📊 ${card.total_steps || 0} steps</span>
+                        </div>
+                    </div>
+                `;
+            }).join('');
+
+            document.getElementById('agentCardsResultsCount').textContent = `Showing ${cardsToRender.length} of ${allAgentCards.length} agent cards`;
+        }
+
+        function filterAgentCards() {
+            const searchTerm = document.getElementById('agentCardsSearchInput').value.toLowerCase().trim();
+            const patternFilter = document.getElementById('agentCardsPatternFilter').value;
+
+            let filtered = allAgentCards;
+
+            if (searchTerm) {
+                filtered = filtered.filter(card =>
+                    card.apqc_id?.toLowerCase().includes(searchTerm) ||
+                    card.apqc_name?.toLowerCase().includes(searchTerm) ||
+                    card.description?.toLowerCase().includes(searchTerm) ||
+                    card.category?.toLowerCase().includes(searchTerm)
+                );
+            }
+
+            if (patternFilter) {
+                filtered = filtered.filter(card => card.orchestration_pattern === patternFilter);
+            }
+
+            renderAgentCardsGrid(filtered);
+        }
+
+        function resetAgentCardsFilter() {
+            document.getElementById('agentCardsSearchInput').value = '';
+            document.getElementById('agentCardsPatternFilter').value = '';
+            renderAgentCardsGrid();
+        }
+
+        async function viewAgentCard(apqcCode) {
+            try {
+                const response = await fetch(`${API_URL}/api/agent-cards/${apqcCode}`);
+                if (!response.ok) throw new Error(`Agent card not found for ${apqcCode}`);
+                const card = await response.json();
+
+                const patternColors = {
+                    'sequential': '#3498db',
+                    'parallel': '#27ae60',
+                    'event_driven': '#9b59b6'
+                };
+                const patternColor = patternColors[card.orchestration_pattern] || '#667eea';
+
+                // Build workflow steps visualization
+                const steps = card.agent_cards || [];
+                const stepsHtml = steps.map((step, idx) => `
+                    <div style="display: flex; align-items: flex-start; margin-bottom: 20px;">
+                        <div style="min-width: 40px; height: 40px; background: ${patternColor}; color: white; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-weight: bold; font-size: 1.1em;">${step.step_number || idx + 1}</div>
+                        <div style="flex: 1; margin-left: 15px; padding: 15px; background: #f8f9fa; border-radius: 10px; border-left: 3px solid ${patternColor};">
+                            <h4 style="margin: 0 0 8px 0; color: #333;">${step.step_name}</h4>
+                            <p style="margin: 0 0 10px 0; color: #666; font-size: 0.9em;">${step.description || ''}</p>
+                            ${step.capabilities ? `<div style="margin-top: 10px;"><strong style="font-size: 0.8em; color: #888;">Capabilities:</strong> <span style="font-size: 0.8em; color: #667eea;">${step.capabilities.slice(0, 5).join(', ')}${step.capabilities.length > 5 ? '...' : ''}</span></div>` : ''}
+                            ${step.required_integrations ? `<div style="margin-top: 5px;"><strong style="font-size: 0.8em; color: #888;">Integrations:</strong> <span style="font-size: 0.8em; color: #27ae60;">${step.required_integrations.map(i => i.system).join(', ')}</span></div>` : ''}
+                        </div>
+                    </div>
+                `).join('');
+
+                // Build KPIs section
+                const kpis = card.kpis || [];
+                const kpisHtml = kpis.length > 0 ? `
+                    <div style="margin-top: 20px;">
+                        <h3 style="margin-bottom: 15px; color: #333;">Key Performance Indicators</h3>
+                        <div style="display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap: 15px;">
+                            ${kpis.map(kpi => `
+                                <div style="background: #f8f9fa; padding: 15px; border-radius: 10px;">
+                                    <div style="font-weight: 600; color: #333; margin-bottom: 5px;">${kpi.name}</div>
+                                    <div style="font-size: 0.85em; color: #666; margin-bottom: 8px;">${kpi.description || ''}</div>
+                                    <div style="font-size: 0.9em; color: #27ae60; font-weight: 600;">Target: ${kpi.target || 'N/A'}</div>
+                                </div>
+                            `).join('')}
+                        </div>
+                    </div>
+                ` : '';
+
+                // Build integrations summary
+                const integrationSummary = card.integration_summary || {};
+                const integrationHtml = Object.keys(integrationSummary).length > 0 ? `
+                    <div style="margin-top: 20px;">
+                        <h3 style="margin-bottom: 15px; color: #333;">Integration Summary</h3>
+                        <div style="display: flex; flex-wrap: wrap; gap: 10px;">
+                            ${Object.entries(integrationSummary).map(([key, values]) => `
+                                <div style="background: #667eea15; padding: 10px 15px; border-radius: 8px;">
+                                    <div style="font-weight: 600; color: #667eea; font-size: 0.85em; margin-bottom: 5px;">${key.replace(/_/g, ' ').toUpperCase()}</div>
+                                    <div style="font-size: 0.8em; color: #666;">${Array.isArray(values) ? values.slice(0, 3).join(', ') : values}${Array.isArray(values) && values.length > 3 ? '...' : ''}</div>
+                                </div>
+                            `).join('')}
+                        </div>
+                    </div>
+                ` : '';
+
+                const html = `
+                    <div style="margin-bottom: 20px;">
+                        <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 10px;">
+                            <span style="background: ${patternColor}15; color: ${patternColor}; padding: 6px 15px; border-radius: 20px; font-weight: 600;">${card.apqc_id}</span>
+                            <span style="background: #f0f0f0; color: #666; padding: 6px 15px; border-radius: 20px; font-size: 0.9em;">${card.orchestration_pattern?.replace('_', ' ') || 'sequential'}</span>
+                        </div>
+                        <p style="margin-top: 15px; color: #666; line-height: 1.5;">${card.description || ''}</p>
+                        <div style="margin-top: 15px; display: flex; gap: 20px; flex-wrap: wrap; font-size: 0.9em; color: #888;">
+                            <span>Category: <strong>${card.category || 'Unknown'}</strong></span>
+                            <span>Duration: <strong>${card.estimated_duration_seconds ? (card.estimated_duration_seconds / 3600).toFixed(1) + ' hours' : 'N/A'}</strong></span>
+                            <span>Data Retention: <strong>${card.data_retention_days ? card.data_retention_days + ' days' : 'N/A'}</strong></span>
+                        </div>
+                        ${card.compliance_frameworks ? `<div style="margin-top: 10px;"><strong style="font-size: 0.85em; color: #888;">Compliance:</strong> ${card.compliance_frameworks.map(f => `<span style="background: #e74c3c15; color: #e74c3c; padding: 2px 8px; border-radius: 10px; font-size: 0.8em; margin-right: 5px;">${f}</span>`).join('')}</div>` : ''}
+                    </div>
+
+                    <div style="margin-top: 25px;">
+                        <h3 style="margin-bottom: 15px; color: #333;">Workflow Steps (${steps.length})</h3>
+                        <div style="position: relative;">
+                            ${stepsHtml}
+                        </div>
+                    </div>
+
+                    ${kpisHtml}
+                    ${integrationHtml}
+                `;
+
+                document.getElementById('modalBody').innerHTML = html;
+                document.querySelector('#agentModal .modal-header h2').textContent = card.apqc_name;
+                document.getElementById('agentModal').classList.add('active');
+            } catch (error) {
+                console.error('Error loading agent card:', error);
+                alert(`Error: ${error.message}`);
+            }
         }
 
         // Legacy function - redirect to drill-down
