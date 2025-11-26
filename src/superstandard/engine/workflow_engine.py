@@ -23,12 +23,15 @@ import asyncio
 import json
 import uuid
 import time
-from datetime import datetime
+import random
+from datetime import datetime, timedelta
 from typing import Dict, List, Any, Optional, Callable
 from dataclasses import dataclass, field
 from enum import Enum
 from pathlib import Path
 import traceback
+import threading
+from collections import deque
 
 
 class ExecutionStatus(Enum):
@@ -50,6 +53,251 @@ class StepResult(Enum):
     SKIPPED = "skipped"
     RETRY = "retry"
     MANUAL_REVIEW = "manual_review"
+
+
+# ============================================================================
+# Circuit Breaker Pattern
+# ============================================================================
+
+class CircuitState(Enum):
+    """Circuit breaker states"""
+    CLOSED = "closed"      # Normal operation
+    OPEN = "open"          # Failing, reject requests
+    HALF_OPEN = "half_open"  # Testing if recovered
+
+
+@dataclass
+class CircuitBreaker:
+    """
+    Circuit breaker to prevent cascading failures.
+
+    When failures exceed threshold, the circuit opens and fast-fails requests
+    until the reset timeout expires, then allows a test request through.
+    """
+    name: str
+    failure_threshold: int = 5
+    reset_timeout_seconds: int = 60
+    half_open_max_calls: int = 3
+
+    state: CircuitState = field(default=CircuitState.CLOSED)
+    failure_count: int = field(default=0)
+    success_count: int = field(default=0)
+    last_failure_time: Optional[datetime] = field(default=None)
+    half_open_calls: int = field(default=0)
+    _lock: threading.Lock = field(default_factory=threading.Lock)
+
+    def can_execute(self) -> tuple[bool, Optional[str]]:
+        """Check if execution is allowed"""
+        with self._lock:
+            if self.state == CircuitState.CLOSED:
+                return True, None
+
+            if self.state == CircuitState.OPEN:
+                # Check if reset timeout has passed
+                if self.last_failure_time:
+                    elapsed = (datetime.now() - self.last_failure_time).total_seconds()
+                    if elapsed >= self.reset_timeout_seconds:
+                        self.state = CircuitState.HALF_OPEN
+                        self.half_open_calls = 0
+                        return True, None
+                return False, f"Circuit breaker '{self.name}' is OPEN. Retry after {self.reset_timeout_seconds}s"
+
+            if self.state == CircuitState.HALF_OPEN:
+                if self.half_open_calls < self.half_open_max_calls:
+                    self.half_open_calls += 1
+                    return True, None
+                return False, f"Circuit breaker '{self.name}' is HALF_OPEN, max test calls reached"
+
+        return True, None
+
+    def record_success(self):
+        """Record a successful execution"""
+        with self._lock:
+            self.success_count += 1
+            if self.state == CircuitState.HALF_OPEN:
+                # Successful test, close circuit
+                self.state = CircuitState.CLOSED
+                self.failure_count = 0
+                self.half_open_calls = 0
+
+    def record_failure(self):
+        """Record a failed execution"""
+        with self._lock:
+            self.failure_count += 1
+            self.last_failure_time = datetime.now()
+
+            if self.state == CircuitState.HALF_OPEN:
+                # Failed test, reopen circuit
+                self.state = CircuitState.OPEN
+                self.half_open_calls = 0
+            elif self.state == CircuitState.CLOSED:
+                if self.failure_count >= self.failure_threshold:
+                    self.state = CircuitState.OPEN
+
+    def get_status(self) -> Dict:
+        """Get circuit breaker status"""
+        return {
+            "name": self.name,
+            "state": self.state.value,
+            "failure_count": self.failure_count,
+            "success_count": self.success_count,
+            "last_failure": self.last_failure_time.isoformat() if self.last_failure_time else None
+        }
+
+
+# ============================================================================
+# Retry with Exponential Backoff
+# ============================================================================
+
+@dataclass
+class RetryConfig:
+    """Configuration for retry behavior"""
+    max_retries: int = 3
+    base_delay_seconds: float = 1.0
+    max_delay_seconds: float = 60.0
+    exponential_base: float = 2.0
+    jitter: bool = True  # Add randomness to prevent thundering herd
+
+    def get_delay(self, attempt: int) -> float:
+        """Calculate delay for given attempt number (0-indexed)"""
+        delay = self.base_delay_seconds * (self.exponential_base ** attempt)
+        delay = min(delay, self.max_delay_seconds)
+
+        if self.jitter:
+            # Add up to 25% jitter
+            jitter_range = delay * 0.25
+            delay += random.uniform(-jitter_range, jitter_range)
+
+        return max(0, delay)
+
+
+async def retry_with_backoff(
+    func: Callable,
+    config: RetryConfig = None,
+    on_retry: Callable = None
+) -> Any:
+    """
+    Execute function with exponential backoff retry.
+
+    Args:
+        func: Async function to execute
+        config: Retry configuration
+        on_retry: Optional callback on retry (attempt, error, delay)
+
+    Returns:
+        Function result on success
+
+    Raises:
+        Last exception if all retries exhausted
+    """
+    config = config or RetryConfig()
+    last_exception = None
+
+    for attempt in range(config.max_retries + 1):
+        try:
+            return await func()
+        except Exception as e:
+            last_exception = e
+
+            if attempt < config.max_retries:
+                delay = config.get_delay(attempt)
+                if on_retry:
+                    on_retry(attempt, e, delay)
+                await asyncio.sleep(delay)
+
+    raise last_exception
+
+
+# ============================================================================
+# Dead Letter Queue for Failed Executions
+# ============================================================================
+
+@dataclass
+class DeadLetterEntry:
+    """Entry in the dead letter queue"""
+    execution_id: str
+    apqc_code: str
+    input_data: Dict[str, Any]
+    error: str
+    traceback: str
+    failed_at: datetime
+    retry_count: int
+    original_context: Dict[str, Any] = field(default_factory=dict)
+
+
+class DeadLetterQueue:
+    """
+    Queue for failed workflow executions that can be retried later.
+
+    Provides:
+    - Persistent storage of failed executions
+    - Retry capability with configurable limits
+    - Metrics on failure patterns
+    """
+
+    def __init__(self, max_size: int = 1000):
+        self.max_size = max_size
+        self.entries: deque[DeadLetterEntry] = deque(maxlen=max_size)
+        self._lock = threading.Lock()
+
+    def add(self, entry: DeadLetterEntry):
+        """Add failed execution to queue"""
+        with self._lock:
+            self.entries.append(entry)
+
+    def get_all(self) -> List[DeadLetterEntry]:
+        """Get all entries"""
+        with self._lock:
+            return list(self.entries)
+
+    def get_by_id(self, execution_id: str) -> Optional[DeadLetterEntry]:
+        """Get entry by execution ID"""
+        with self._lock:
+            for entry in self.entries:
+                if entry.execution_id == execution_id:
+                    return entry
+        return None
+
+    def remove(self, execution_id: str) -> bool:
+        """Remove entry from queue"""
+        with self._lock:
+            for i, entry in enumerate(self.entries):
+                if entry.execution_id == execution_id:
+                    del self.entries[i]
+                    return True
+        return False
+
+    def get_stats(self) -> Dict:
+        """Get queue statistics"""
+        with self._lock:
+            if not self.entries:
+                return {
+                    "total": 0,
+                    "by_error_type": {},
+                    "by_apqc_code": {}
+                }
+
+            by_error = {}
+            by_code = {}
+            for entry in self.entries:
+                # Count by error type
+                error_type = entry.error.split(":")[0] if ":" in entry.error else entry.error[:50]
+                by_error[error_type] = by_error.get(error_type, 0) + 1
+
+                # Count by APQC code
+                by_code[entry.apqc_code] = by_code.get(entry.apqc_code, 0) + 1
+
+            return {
+                "total": len(self.entries),
+                "by_error_type": by_error,
+                "by_apqc_code": by_code,
+                "oldest": self.entries[0].failed_at.isoformat() if self.entries else None,
+                "newest": self.entries[-1].failed_at.isoformat() if self.entries else None
+            }
+
+
+# Global dead letter queue instance
+dead_letter_queue = DeadLetterQueue()
 
 
 @dataclass

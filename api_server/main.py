@@ -15,18 +15,30 @@ Endpoints:
 
 import sys
 import json
+import os
 from pathlib import Path
 from datetime import datetime
 from typing import Optional, Dict, Any, List
 from uuid import uuid4
 
-from fastapi import FastAPI, HTTPException, Depends, BackgroundTasks
+from fastapi import FastAPI, HTTPException, Depends, BackgroundTasks, Request
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.staticfiles import StaticFiles
-from fastapi.responses import FileResponse
-from pydantic import BaseModel
+from fastapi.responses import FileResponse, JSONResponse
+from pydantic import BaseModel, Field, validator
 from sqlalchemy.orm import Session
 from sqlalchemy import func, distinct
+
+# Import security module
+from api_server.security import (
+    setup_security,
+    require_api_key,
+    require_role,
+    SafeInvoiceRequest,
+    SafeAgentExecutionRequest,
+    InputSanitizer,
+    logger as security_logger
+)
 
 # Load APQC PCF Hierarchy
 APQC_HIERARCHY_PATH = Path(__file__).parent.parent / "apqc_pcf_hierarchy.json"
@@ -65,6 +77,9 @@ app.add_middleware(
     allow_methods=["*"],
     allow_headers=["*"],
 )
+
+# Setup security middleware and exception handlers
+setup_security(app)
 
 # Content Security Policy middleware - allow unsafe-eval for bpmn-js
 @app.middleware("http")
