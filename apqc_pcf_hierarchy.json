@@ -1,0 +1,1679 @@
+{
+  "version": "7.4",
+  "description": "APQC Process Classification Framework (PCF) - Cross Industry",
+  "source": "APQC (American Productivity & Quality Center)",
+  "hierarchy": {
+    "1.0": {
+      "name": "Develop Vision and Strategy",
+      "type": "category",
+      "children": {
+        "1.1": {
+          "name": "Define the business concept and long-term vision",
+          "type": "process_group",
+          "children": {
+            "1.1.1": {
+              "name": "Assess the external environment",
+              "type": "process",
+              "children": {
+                "1.1.1.1": {"name": "Analyze and evaluate competition", "type": "activity"},
+                "1.1.1.2": {"name": "Identify economic trends", "type": "activity"},
+                "1.1.1.3": {"name": "Identify political and regulatory issues", "type": "activity"},
+                "1.1.1.4": {"name": "Assess new technology innovations", "type": "activity"},
+                "1.1.1.5": {"name": "Analyze demographics", "type": "activity"},
+                "1.1.1.6": {"name": "Identify social and cultural changes", "type": "activity"},
+                "1.1.1.7": {"name": "Identify ecological concerns", "type": "activity"}
+              }
+            },
+            "1.1.2": {
+              "name": "Survey market and determine customer needs and wants",
+              "type": "process",
+              "children": {
+                "1.1.2.1": {"name": "Conduct qualitative/quantitative assessments", "type": "activity"},
+                "1.1.2.2": {"name": "Capture customer needs", "type": "activity"}
+              }
+            },
+            "1.1.3": {
+              "name": "Perform internal analysis",
+              "type": "process",
+              "children": {
+                "1.1.3.1": {"name": "Analyze organizational characteristics", "type": "activity"},
+                "1.1.3.2": {"name": "Baseline current processes", "type": "activity"},
+                "1.1.3.3": {"name": "Analyze systems and technology", "type": "activity"},
+                "1.1.3.4": {"name": "Analyze financial positions", "type": "activity"},
+                "1.1.3.5": {"name": "Identify core competencies", "type": "activity"}
+              }
+            },
+            "1.1.4": {
+              "name": "Establish strategic vision",
+              "type": "process",
+              "children": {
+                "1.1.4.1": {"name": "Align stakeholders around strategic vision", "type": "activity"},
+                "1.1.4.2": {"name": "Communicate strategic vision to stakeholders", "type": "activity"}
+              }
+            }
+          }
+        },
+        "1.2": {
+          "name": "Develop business strategy",
+          "type": "process_group",
+          "children": {
+            "1.2.1": {
+              "name": "Develop overall mission statement",
+              "type": "process",
+              "children": {
+                "1.2.1.1": {"name": "Define current business", "type": "activity"},
+                "1.2.1.2": {"name": "Formulate mission", "type": "activity"},
+                "1.2.1.3": {"name": "Communicate mission", "type": "activity"}
+              }
+            },
+            "1.2.2": {
+              "name": "Evaluate strategic options",
+              "type": "process",
+              "children": {
+                "1.2.2.1": {"name": "Define strategic options", "type": "activity"},
+                "1.2.2.2": {"name": "Assess and analyze impact of each option", "type": "activity"},
+                "1.2.2.3": {"name": "Develop sustainability strategy", "type": "activity"},
+                "1.2.2.4": {"name": "Develop global support strategy", "type": "activity"}
+              }
+            },
+            "1.2.3": {
+              "name": "Select long-term business strategy",
+              "type": "process",
+              "children": {
+                "1.2.3.1": {"name": "Select core competencies for long-term strategy", "type": "activity"},
+                "1.2.3.2": {"name": "Develop business unit strategy", "type": "activity"},
+                "1.2.3.3": {"name": "Coordinate strategies across business units", "type": "activity"}
+              }
+            },
+            "1.2.4": {
+              "name": "Coordinate and align functional and process strategies",
+              "type": "process",
+              "children": {
+                "1.2.4.1": {"name": "Develop functional strategies", "type": "activity"},
+                "1.2.4.2": {"name": "Develop process strategies", "type": "activity"},
+                "1.2.4.3": {"name": "Align strategies with enterprise objectives", "type": "activity"}
+              }
+            }
+          }
+        },
+        "1.3": {
+          "name": "Manage strategic initiatives",
+          "type": "process_group",
+          "children": {
+            "1.3.1": {
+              "name": "Develop strategic initiatives",
+              "type": "process",
+              "children": {
+                "1.3.1.1": {"name": "Identify strategic initiatives", "type": "activity"},
+                "1.3.1.2": {"name": "Evaluate strategic initiatives", "type": "activity"},
+                "1.3.1.3": {"name": "Select strategic initiatives", "type": "activity"}
+              }
+            },
+            "1.3.2": {
+              "name": "Evaluate and manage mergers/acquisitions/divestitures",
+              "type": "process",
+              "children": {
+                "1.3.2.1": {"name": "Identify acquisition/merger candidates", "type": "activity"},
+                "1.3.2.2": {"name": "Perform due diligence", "type": "activity"},
+                "1.3.2.3": {"name": "Execute acquisitions/mergers/divestitures", "type": "activity"},
+                "1.3.2.4": {"name": "Integrate acquisitions", "type": "activity"}
+              }
+            }
+          }
+        }
+      }
+    },
+    "2.0": {
+      "name": "Develop and Manage Products and Services",
+      "type": "category",
+      "children": {
+        "2.1": {
+          "name": "Manage product and service portfolio",
+          "type": "process_group",
+          "children": {
+            "2.1.1": {
+              "name": "Evaluate performance of existing products/services",
+              "type": "process",
+              "children": {
+                "2.1.1.1": {"name": "Analyze product/service performance", "type": "activity"},
+                "2.1.1.2": {"name": "Determine product/service profitability", "type": "activity"},
+                "2.1.1.3": {"name": "Review pricing", "type": "activity"}
+              }
+            },
+            "2.1.2": {
+              "name": "Define product/service development requirements",
+              "type": "process",
+              "children": {
+                "2.1.2.1": {"name": "Identify potential improvements to existing products", "type": "activity"},
+                "2.1.2.2": {"name": "Identify potential new products/services", "type": "activity"}
+              }
+            },
+            "2.1.3": {
+              "name": "Perform discovery research",
+              "type": "process",
+              "children": {
+                "2.1.3.1": {"name": "Identify new technologies", "type": "activity"},
+                "2.1.3.2": {"name": "Develop new technologies", "type": "activity"},
+                "2.1.3.3": {"name": "Assess feasibility of integrating technologies", "type": "activity"}
+              }
+            }
+          }
+        },
+        "2.2": {
+          "name": "Develop products and services",
+          "type": "process_group",
+          "children": {
+            "2.2.1": {
+              "name": "Design, build, and evaluate products and services",
+              "type": "process",
+              "children": {
+                "2.2.1.1": {"name": "Design new products/services", "type": "activity"},
+                "2.2.1.2": {"name": "Build prototypes", "type": "activity"},
+                "2.2.1.3": {"name": "Conduct testing", "type": "activity"},
+                "2.2.1.4": {"name": "Refine products/services", "type": "activity"},
+                "2.2.1.5": {"name": "Manage product/service design data", "type": "activity"}
+              }
+            },
+            "2.2.2": {
+              "name": "Test market for new products/services",
+              "type": "process",
+              "children": {
+                "2.2.2.1": {"name": "Prepare for product/service launch", "type": "activity"},
+                "2.2.2.2": {"name": "Conduct testing", "type": "activity"},
+                "2.2.2.3": {"name": "Finalize product/service characteristics", "type": "activity"}
+              }
+            },
+            "2.2.3": {
+              "name": "Prepare for production",
+              "type": "process",
+              "children": {
+                "2.2.3.1": {"name": "Develop and test production process", "type": "activity"},
+                "2.2.3.2": {"name": "Design and obtain materials and equipment", "type": "activity"},
+                "2.2.3.3": {"name": "Implement changes to production process", "type": "activity"}
+              }
+            }
+          }
+        }
+      }
+    },
+    "3.0": {
+      "name": "Market and Sell Products and Services",
+      "type": "category",
+      "children": {
+        "3.1": {
+          "name": "Understand markets, customers, and capabilities",
+          "type": "process_group",
+          "children": {
+            "3.1.1": {
+              "name": "Perform customer and market intelligence analysis",
+              "type": "process",
+              "children": {
+                "3.1.1.1": {"name": "Conduct customer and market research", "type": "activity"},
+                "3.1.1.2": {"name": "Analyze and draw conclusions from research", "type": "activity"},
+                "3.1.1.3": {"name": "Identify market segments", "type": "activity"}
+              }
+            },
+            "3.1.2": {
+              "name": "Evaluate and prioritize market opportunities",
+              "type": "process",
+              "children": {
+                "3.1.2.1": {"name": "Quantify market opportunities", "type": "activity"},
+                "3.1.2.2": {"name": "Determine target segments", "type": "activity"},
+                "3.1.2.3": {"name": "Prioritize opportunities", "type": "activity"}
+              }
+            }
+          }
+        },
+        "3.2": {
+          "name": "Develop marketing strategy",
+          "type": "process_group",
+          "children": {
+            "3.2.1": {
+              "name": "Define offering and value proposition",
+              "type": "process",
+              "children": {
+                "3.2.1.1": {"name": "Define offering and positioning", "type": "activity"},
+                "3.2.1.2": {"name": "Develop value proposition", "type": "activity"},
+                "3.2.1.3": {"name": "Define pricing strategy", "type": "activity"}
+              }
+            },
+            "3.2.2": {
+              "name": "Define and manage channel strategy",
+              "type": "process",
+              "children": {
+                "3.2.2.1": {"name": "Evaluate channel attributes", "type": "activity"},
+                "3.2.2.2": {"name": "Determine channel partners", "type": "activity"},
+                "3.2.2.3": {"name": "Manage channel partners", "type": "activity"}
+              }
+            },
+            "3.2.3": {
+              "name": "Plan and manage marketing campaigns",
+              "type": "process",
+              "children": {
+                "3.2.3.1": {"name": "Develop marketing budgets", "type": "activity"},
+                "3.2.3.2": {"name": "Develop and manage marketing calendar", "type": "activity"},
+                "3.2.3.3": {"name": "Develop and manage campaigns", "type": "activity"}
+              }
+            }
+          }
+        },
+        "3.3": {
+          "name": "Develop sales strategy",
+          "type": "process_group",
+          "children": {
+            "3.3.1": {
+              "name": "Develop sales forecast",
+              "type": "process",
+              "children": {
+                "3.3.1.1": {"name": "Gather data for forecasting", "type": "activity"},
+                "3.3.1.2": {"name": "Analyze and develop sales forecasts", "type": "activity"},
+                "3.3.1.3": {"name": "Track accuracy of forecasts", "type": "activity"}
+              }
+            },
+            "3.3.2": {
+              "name": "Develop sales partner relationships",
+              "type": "process",
+              "children": {
+                "3.3.2.1": {"name": "Identify partners", "type": "activity"},
+                "3.3.2.2": {"name": "Establish partner relationships", "type": "activity"},
+                "3.3.2.3": {"name": "Manage partner relationships", "type": "activity"}
+              }
+            }
+          }
+        },
+        "3.4": {
+          "name": "Develop and manage sales plans",
+          "type": "process_group",
+          "children": {
+            "3.4.1": {
+              "name": "Generate leads",
+              "type": "process",
+              "children": {
+                "3.4.1.1": {"name": "Identify potential customers", "type": "activity"},
+                "3.4.1.2": {"name": "Identify leads", "type": "activity"}
+              }
+            },
+            "3.4.2": {
+              "name": "Manage customers and accounts",
+              "type": "process",
+              "children": {
+                "3.4.2.1": {"name": "Manage customer sales calls", "type": "activity"},
+                "3.4.2.2": {"name": "Manage sales pipeline", "type": "activity"},
+                "3.4.2.3": {"name": "Manage customer relationships", "type": "activity"}
+              }
+            },
+            "3.4.3": {
+              "name": "Manage sales orders",
+              "type": "process",
+              "children": {
+                "3.4.3.1": {"name": "Accept and validate orders", "type": "activity"},
+                "3.4.3.2": {"name": "Collect and maintain customer data", "type": "activity"},
+                "3.4.3.3": {"name": "Process sales orders", "type": "activity"}
+              }
+            }
+          }
+        }
+      }
+    },
+    "4.0": {
+      "name": "Deliver Physical Products",
+      "type": "category",
+      "children": {
+        "4.1": {
+          "name": "Plan for and align supply chain resources",
+          "type": "process_group",
+          "children": {
+            "4.1.1": {
+              "name": "Develop production and materials planning strategies",
+              "type": "process",
+              "children": {
+                "4.1.1.1": {"name": "Develop manufacturing strategy", "type": "activity"},
+                "4.1.1.2": {"name": "Develop supply chain strategy", "type": "activity"},
+                "4.1.1.3": {"name": "Develop logistics strategy", "type": "activity"}
+              }
+            },
+            "4.1.2": {
+              "name": "Manage demand for products",
+              "type": "process",
+              "children": {
+                "4.1.2.1": {"name": "Develop baseline demand forecasts", "type": "activity"},
+                "4.1.2.2": {"name": "Collaborate demand with customers", "type": "activity"},
+                "4.1.2.3": {"name": "Develop consensus demand plan", "type": "activity"}
+              }
+            },
+            "4.1.3": {
+              "name": "Create materials plan",
+              "type": "process",
+              "children": {
+                "4.1.3.1": {"name": "Create unconstrained plan", "type": "activity"},
+                "4.1.3.2": {"name": "Collaborate with suppliers", "type": "activity"},
+                "4.1.3.3": {"name": "Create constrained plan", "type": "activity"}
+              }
+            }
+          }
+        },
+        "4.2": {
+          "name": "Procure materials and services",
+          "type": "process_group",
+          "children": {
+            "4.2.1": {
+              "name": "Develop sourcing strategies",
+              "type": "process",
+              "children": {
+                "4.2.1.1": {"name": "Develop procurement plan", "type": "activity"},
+                "4.2.1.2": {"name": "Clarify purchasing requirements", "type": "activity"},
+                "4.2.1.3": {"name": "Match needs to supply capabilities", "type": "activity"}
+              }
+            },
+            "4.2.2": {
+              "name": "Select suppliers and develop contracts",
+              "type": "process",
+              "children": {
+                "4.2.2.1": {"name": "Select suppliers", "type": "activity"},
+                "4.2.2.2": {"name": "Negotiate and establish contracts", "type": "activity"},
+                "4.2.2.3": {"name": "Manage contracts", "type": "activity"}
+              }
+            },
+            "4.2.3": {
+              "name": "Order materials and services",
+              "type": "process",
+              "children": {
+                "4.2.3.1": {"name": "Process requisitions", "type": "activity"},
+                "4.2.3.2": {"name": "Issue purchase orders", "type": "activity"},
+                "4.2.3.3": {"name": "Track and manage orders", "type": "activity"}
+              }
+            },
+            "4.2.4": {
+              "name": "Manage suppliers",
+              "type": "process",
+              "children": {
+                "4.2.4.1": {"name": "Manage supplier performance", "type": "activity"},
+                "4.2.4.2": {"name": "Develop and manage supplier relationships", "type": "activity"}
+              }
+            }
+          }
+        },
+        "4.3": {
+          "name": "Produce/Manufacture/Deliver products",
+          "type": "process_group",
+          "children": {
+            "4.3.1": {
+              "name": "Schedule production",
+              "type": "process",
+              "children": {
+                "4.3.1.1": {"name": "Model production facility", "type": "activity"},
+                "4.3.1.2": {"name": "Generate line schedule", "type": "activity"},
+                "4.3.1.3": {"name": "Schedule production orders", "type": "activity"}
+              }
+            },
+            "4.3.2": {
+              "name": "Produce product",
+              "type": "process",
+              "children": {
+                "4.3.2.1": {"name": "Execute production schedule", "type": "activity"},
+                "4.3.2.2": {"name": "Report production results", "type": "activity"},
+                "4.3.2.3": {"name": "Manage equipment and facilities", "type": "activity"}
+              }
+            },
+            "4.3.3": {
+              "name": "Manage inventory",
+              "type": "process",
+              "children": {
+                "4.3.3.1": {"name": "Receive and store materials", "type": "activity"},
+                "4.3.3.2": {"name": "Track inventory", "type": "activity"},
+                "4.3.3.3": {"name": "Manage inventory levels", "type": "activity"}
+              }
+            }
+          }
+        },
+        "4.4": {
+          "name": "Deliver products to customers",
+          "type": "process_group",
+          "children": {
+            "4.4.1": {
+              "name": "Operate outbound transportation",
+              "type": "process",
+              "children": {
+                "4.4.1.1": {"name": "Plan and schedule shipments", "type": "activity"},
+                "4.4.1.2": {"name": "Rate and route shipments", "type": "activity"},
+                "4.4.1.3": {"name": "Execute shipments", "type": "activity"}
+              }
+            },
+            "4.4.2": {
+              "name": "Track delivery performance",
+              "type": "process",
+              "children": {
+                "4.4.2.1": {"name": "Track shipments", "type": "activity"},
+                "4.4.2.2": {"name": "Manage delivery exceptions", "type": "activity"}
+              }
+            }
+          }
+        },
+        "4.5": {
+          "name": "Manage logistics and warehousing",
+          "type": "process_group",
+          "children": {
+            "4.5.1": {
+              "name": "Manage inbound material flow",
+              "type": "process",
+              "children": {
+                "4.5.1.1": {"name": "Plan inbound material receipts", "type": "activity"},
+                "4.5.1.2": {"name": "Manage inbound deliveries", "type": "activity"}
+              }
+            },
+            "4.5.2": {
+              "name": "Operate warehousing",
+              "type": "process",
+              "children": {
+                "4.5.2.1": {"name": "Receive product", "type": "activity"},
+                "4.5.2.2": {"name": "Store product", "type": "activity"},
+                "4.5.2.3": {"name": "Pick and pack orders", "type": "activity"},
+                "4.5.2.4": {"name": "Ship orders", "type": "activity"}
+              }
+            }
+          }
+        }
+      }
+    },
+    "5.0": {
+      "name": "Deliver Services",
+      "type": "category",
+      "children": {
+        "5.1": {
+          "name": "Establish service delivery governance and strategies",
+          "type": "process_group",
+          "children": {
+            "5.1.1": {
+              "name": "Establish service delivery strategies and goals",
+              "type": "process",
+              "children": {
+                "5.1.1.1": {"name": "Define service delivery vision", "type": "activity"},
+                "5.1.1.2": {"name": "Develop service delivery policies", "type": "activity"},
+                "5.1.1.3": {"name": "Define service levels", "type": "activity"},
+                "5.1.1.4": {"name": "Establish performance metrics", "type": "activity"},
+                "5.1.1.5": {"name": "Allocate resources", "type": "activity"},
+                "5.1.1.6": {"name": "Manage service portfolio", "type": "activity"}
+              }
+            },
+            "5.1.2": {
+              "name": "Manage service delivery resources",
+              "type": "process",
+              "children": {
+                "5.1.2.1": {"name": "Plan resource requirements", "type": "activity"},
+                "5.1.2.2": {"name": "Acquire resources", "type": "activity"},
+                "5.1.2.3": {"name": "Train service delivery staff", "type": "activity"}
+              }
+            }
+          }
+        },
+        "5.2": {
+          "name": "Manage service delivery resources",
+          "type": "process_group",
+          "children": {
+            "5.2.1": {
+              "name": "Manage service delivery workforce",
+              "type": "process",
+              "children": {
+                "5.2.1.1": {"name": "Plan service delivery staff", "type": "activity"},
+                "5.2.1.2": {"name": "Develop and train staff", "type": "activity"},
+                "5.2.1.3": {"name": "Manage staff performance", "type": "activity"}
+              }
+            }
+          }
+        },
+        "5.3": {
+          "name": "Deliver service to customer",
+          "type": "process_group",
+          "children": {
+            "5.3.1": {
+              "name": "Initiate service delivery",
+              "type": "process",
+              "children": {
+                "5.3.1.1": {"name": "Schedule service", "type": "activity"},
+                "5.3.1.2": {"name": "Confirm service", "type": "activity"},
+                "5.3.1.3": {"name": "Initiate service event", "type": "activity"}
+              }
+            },
+            "5.3.2": {
+              "name": "Execute service",
+              "type": "process",
+              "children": {
+                "5.3.2.1": {"name": "Deliver service", "type": "activity"},
+                "5.3.2.2": {"name": "Monitor service execution", "type": "activity"},
+                "5.3.2.3": {"name": "Document service delivery", "type": "activity"}
+              }
+            },
+            "5.3.3": {
+              "name": "Complete service delivery",
+              "type": "process",
+              "children": {
+                "5.3.3.1": {"name": "Complete service event", "type": "activity"},
+                "5.3.3.2": {"name": "Capture customer feedback", "type": "activity"},
+                "5.3.3.3": {"name": "Process service billing", "type": "activity"}
+              }
+            }
+          }
+        }
+      }
+    },
+    "6.0": {
+      "name": "Manage Customer Service",
+      "type": "category",
+      "children": {
+        "6.1": {
+          "name": "Develop customer service strategy",
+          "type": "process_group",
+          "children": {
+            "6.1.1": {
+              "name": "Develop customer service approach",
+              "type": "process",
+              "children": {
+                "6.1.1.1": {"name": "Define customer service vision", "type": "activity"},
+                "6.1.1.2": {"name": "Identify customer segments", "type": "activity"},
+                "6.1.1.3": {"name": "Define service levels", "type": "activity"}
+              }
+            },
+            "6.1.2": {
+              "name": "Develop customer service policies and procedures",
+              "type": "process",
+              "children": {
+                "6.1.2.1": {"name": "Define service policies", "type": "activity"},
+                "6.1.2.2": {"name": "Develop service procedures", "type": "activity"}
+              }
+            }
+          }
+        },
+        "6.2": {
+          "name": "Plan and manage customer service operations",
+          "type": "process_group",
+          "children": {
+            "6.2.1": {
+              "name": "Plan and manage customer service workforce",
+              "type": "process",
+              "children": {
+                "6.2.1.1": {"name": "Forecast customer service volume", "type": "activity"},
+                "6.2.1.2": {"name": "Schedule customer service staff", "type": "activity"},
+                "6.2.1.3": {"name": "Train customer service staff", "type": "activity"}
+              }
+            },
+            "6.2.2": {
+              "name": "Manage customer service requests",
+              "type": "process",
+              "children": {
+                "6.2.2.1": {"name": "Receive customer requests", "type": "activity"},
+                "6.2.2.2": {"name": "Route requests", "type": "activity"},
+                "6.2.2.3": {"name": "Resolve requests", "type": "activity"},
+                "6.2.2.4": {"name": "Confirm resolution", "type": "activity"}
+              }
+            }
+          }
+        },
+        "6.3": {
+          "name": "Measure and evaluate customer service operations",
+          "type": "process_group",
+          "children": {
+            "6.3.1": {
+              "name": "Measure customer satisfaction",
+              "type": "process",
+              "children": {
+                "6.3.1.1": {"name": "Gather customer feedback", "type": "activity"},
+                "6.3.1.2": {"name": "Analyze customer satisfaction", "type": "activity"},
+                "6.3.1.3": {"name": "Report customer satisfaction results", "type": "activity"}
+              }
+            },
+            "6.3.2": {
+              "name": "Measure customer service performance",
+              "type": "process",
+              "children": {
+                "6.3.2.1": {"name": "Track service metrics", "type": "activity"},
+                "6.3.2.2": {"name": "Analyze service performance", "type": "activity"},
+                "6.3.2.3": {"name": "Identify improvement opportunities", "type": "activity"}
+              }
+            }
+          }
+        }
+      }
+    },
+    "7.0": {
+      "name": "Develop and Manage Human Capital",
+      "type": "category",
+      "children": {
+        "7.1": {
+          "name": "Develop and manage HR planning, policies, and strategies",
+          "type": "process_group",
+          "children": {
+            "7.1.1": {
+              "name": "Develop HR strategy",
+              "type": "process",
+              "children": {
+                "7.1.1.1": {"name": "Identify strategic HR needs", "type": "activity"},
+                "7.1.1.2": {"name": "Define HR objectives", "type": "activity"},
+                "7.1.1.3": {"name": "Develop workforce plan", "type": "activity"}
+              }
+            },
+            "7.1.2": {
+              "name": "Develop and manage HR policies",
+              "type": "process",
+              "children": {
+                "7.1.2.1": {"name": "Define HR policies", "type": "activity"},
+                "7.1.2.2": {"name": "Communicate HR policies", "type": "activity"},
+                "7.1.2.3": {"name": "Manage compliance with policies", "type": "activity"}
+              }
+            }
+          }
+        },
+        "7.2": {
+          "name": "Recruit, source, and select employees",
+          "type": "process_group",
+          "children": {
+            "7.2.1": {
+              "name": "Manage requisitions",
+              "type": "process",
+              "children": {
+                "7.2.1.1": {"name": "Create job requisitions", "type": "activity"},
+                "7.2.1.2": {"name": "Approve requisitions", "type": "activity"}
+              }
+            },
+            "7.2.2": {
+              "name": "Recruit and source candidates",
+              "type": "process",
+              "children": {
+                "7.2.2.1": {"name": "Determine recruiting methods", "type": "activity"},
+                "7.2.2.2": {"name": "Post job openings", "type": "activity"},
+                "7.2.2.3": {"name": "Source candidates", "type": "activity"}
+              }
+            },
+            "7.2.3": {
+              "name": "Screen and select candidates",
+              "type": "process",
+              "children": {
+                "7.2.3.1": {"name": "Screen candidates", "type": "activity"},
+                "7.2.3.2": {"name": "Interview candidates", "type": "activity"},
+                "7.2.3.3": {"name": "Select candidates", "type": "activity"},
+                "7.2.3.4": {"name": "Conduct background checks", "type": "activity"}
+              }
+            },
+            "7.2.4": {
+              "name": "Manage new hire onboarding",
+              "type": "process",
+              "children": {
+                "7.2.4.1": {"name": "Create offer letters", "type": "activity"},
+                "7.2.4.2": {"name": "Process new hire documentation", "type": "activity"},
+                "7.2.4.3": {"name": "Onboard new employees", "type": "activity"}
+              }
+            }
+          }
+        },
+        "7.3": {
+          "name": "Develop and counsel employees",
+          "type": "process_group",
+          "children": {
+            "7.3.1": {
+              "name": "Manage employee development",
+              "type": "process",
+              "children": {
+                "7.3.1.1": {"name": "Assess employee competencies", "type": "activity"},
+                "7.3.1.2": {"name": "Develop career paths", "type": "activity"},
+                "7.3.1.3": {"name": "Create development plans", "type": "activity"}
+              }
+            },
+            "7.3.2": {
+              "name": "Develop and manage training programs",
+              "type": "process",
+              "children": {
+                "7.3.2.1": {"name": "Assess training needs", "type": "activity"},
+                "7.3.2.2": {"name": "Develop training curriculum", "type": "activity"},
+                "7.3.2.3": {"name": "Deliver training", "type": "activity"},
+                "7.3.2.4": {"name": "Evaluate training effectiveness", "type": "activity"}
+              }
+            },
+            "7.3.3": {
+              "name": "Manage employee performance",
+              "type": "process",
+              "children": {
+                "7.3.3.1": {"name": "Set performance goals", "type": "activity"},
+                "7.3.3.2": {"name": "Conduct performance reviews", "type": "activity"},
+                "7.3.3.3": {"name": "Manage performance issues", "type": "activity"}
+              }
+            }
+          }
+        },
+        "7.4": {
+          "name": "Manage employee relations",
+          "type": "process_group",
+          "children": {
+            "7.4.1": {
+              "name": "Manage labor relations",
+              "type": "process",
+              "children": {
+                "7.4.1.1": {"name": "Manage union relationships", "type": "activity"},
+                "7.4.1.2": {"name": "Negotiate collective agreements", "type": "activity"}
+              }
+            },
+            "7.4.2": {
+              "name": "Manage employee grievances",
+              "type": "process",
+              "children": {
+                "7.4.2.1": {"name": "Receive grievances", "type": "activity"},
+                "7.4.2.2": {"name": "Investigate grievances", "type": "activity"},
+                "7.4.2.3": {"name": "Resolve grievances", "type": "activity"}
+              }
+            }
+          }
+        },
+        "7.5": {
+          "name": "Reward and retain employees",
+          "type": "process_group",
+          "children": {
+            "7.5.1": {
+              "name": "Develop compensation and benefits programs",
+              "type": "process",
+              "children": {
+                "7.5.1.1": {"name": "Design compensation structure", "type": "activity"},
+                "7.5.1.2": {"name": "Design benefits programs", "type": "activity"},
+                "7.5.1.3": {"name": "Conduct compensation analysis", "type": "activity"}
+              }
+            },
+            "7.5.2": {
+              "name": "Manage employee compensation",
+              "type": "process",
+              "children": {
+                "7.5.2.1": {"name": "Process payroll", "type": "activity"},
+                "7.5.2.2": {"name": "Administer bonuses", "type": "activity"},
+                "7.5.2.3": {"name": "Administer benefits", "type": "activity"}
+              }
+            },
+            "7.5.3": {
+              "name": "Manage employee retention",
+              "type": "process",
+              "children": {
+                "7.5.3.1": {"name": "Measure employee engagement", "type": "activity"},
+                "7.5.3.2": {"name": "Develop retention programs", "type": "activity"},
+                "7.5.3.3": {"name": "Conduct exit interviews", "type": "activity"}
+              }
+            }
+          }
+        },
+        "7.6": {
+          "name": "Redeploy and retire employees",
+          "type": "process_group",
+          "children": {
+            "7.6.1": {
+              "name": "Manage employee separations",
+              "type": "process",
+              "children": {
+                "7.6.1.1": {"name": "Process voluntary separations", "type": "activity"},
+                "7.6.1.2": {"name": "Process involuntary separations", "type": "activity"},
+                "7.6.1.3": {"name": "Process retirements", "type": "activity"}
+              }
+            },
+            "7.6.2": {
+              "name": "Manage employee redeployment",
+              "type": "process",
+              "children": {
+                "7.6.2.1": {"name": "Identify redeployment opportunities", "type": "activity"},
+                "7.6.2.2": {"name": "Match employees to opportunities", "type": "activity"}
+              }
+            }
+          }
+        }
+      }
+    },
+    "8.0": {
+      "name": "Manage Information Technology",
+      "type": "category",
+      "children": {
+        "8.1": {
+          "name": "Manage the business of IT",
+          "type": "process_group",
+          "children": {
+            "8.1.1": {
+              "name": "Develop IT strategy",
+              "type": "process",
+              "children": {
+                "8.1.1.1": {"name": "Align IT with business strategy", "type": "activity"},
+                "8.1.1.2": {"name": "Define IT vision and objectives", "type": "activity"},
+                "8.1.1.3": {"name": "Develop IT roadmap", "type": "activity"}
+              }
+            },
+            "8.1.2": {
+              "name": "Manage IT portfolio",
+              "type": "process",
+              "children": {
+                "8.1.2.1": {"name": "Manage IT investments", "type": "activity"},
+                "8.1.2.2": {"name": "Prioritize IT initiatives", "type": "activity"},
+                "8.1.2.3": {"name": "Monitor IT value delivery", "type": "activity"}
+              }
+            },
+            "8.1.3": {
+              "name": "Manage IT budget",
+              "type": "process",
+              "children": {
+                "8.1.3.1": {"name": "Develop IT budget", "type": "activity"},
+                "8.1.3.2": {"name": "Allocate IT funds", "type": "activity"},
+                "8.1.3.3": {"name": "Track IT expenditures", "type": "activity"}
+              }
+            }
+          }
+        },
+        "8.2": {
+          "name": "Develop and manage IT customer relationships",
+          "type": "process_group",
+          "children": {
+            "8.2.1": {
+              "name": "Manage IT service level agreements",
+              "type": "process",
+              "children": {
+                "8.2.1.1": {"name": "Define service levels", "type": "activity"},
+                "8.2.1.2": {"name": "Negotiate SLAs", "type": "activity"},
+                "8.2.1.3": {"name": "Monitor SLA compliance", "type": "activity"}
+              }
+            },
+            "8.2.2": {
+              "name": "Manage IT customer satisfaction",
+              "type": "process",
+              "children": {
+                "8.2.2.1": {"name": "Gather IT customer feedback", "type": "activity"},
+                "8.2.2.2": {"name": "Analyze IT satisfaction", "type": "activity"}
+              }
+            }
+          }
+        },
+        "8.3": {
+          "name": "Manage enterprise architecture",
+          "type": "process_group",
+          "children": {
+            "8.3.1": {
+              "name": "Define enterprise architecture",
+              "type": "process",
+              "children": {
+                "8.3.1.1": {"name": "Define business architecture", "type": "activity"},
+                "8.3.1.2": {"name": "Define application architecture", "type": "activity"},
+                "8.3.1.3": {"name": "Define data architecture", "type": "activity"},
+                "8.3.1.4": {"name": "Define technology architecture", "type": "activity"}
+              }
+            },
+            "8.3.2": {
+              "name": "Manage architecture standards",
+              "type": "process",
+              "children": {
+                "8.3.2.1": {"name": "Define architecture standards", "type": "activity"},
+                "8.3.2.2": {"name": "Enforce architecture compliance", "type": "activity"}
+              }
+            }
+          }
+        },
+        "8.4": {
+          "name": "Develop and maintain information technology solutions",
+          "type": "process_group",
+          "children": {
+            "8.4.1": {
+              "name": "Develop IT solutions",
+              "type": "process",
+              "children": {
+                "8.4.1.1": {"name": "Gather requirements", "type": "activity"},
+                "8.4.1.2": {"name": "Design solutions", "type": "activity"},
+                "8.4.1.3": {"name": "Develop solutions", "type": "activity"},
+                "8.4.1.4": {"name": "Test solutions", "type": "activity"}
+              }
+            },
+            "8.4.2": {
+              "name": "Maintain IT solutions",
+              "type": "process",
+              "children": {
+                "8.4.2.1": {"name": "Manage application lifecycle", "type": "activity"},
+                "8.4.2.2": {"name": "Apply patches and updates", "type": "activity"},
+                "8.4.2.3": {"name": "Retire applications", "type": "activity"}
+              }
+            }
+          }
+        },
+        "8.5": {
+          "name": "Deploy IT solutions",
+          "type": "process_group",
+          "children": {
+            "8.5.1": {
+              "name": "Manage IT releases",
+              "type": "process",
+              "children": {
+                "8.5.1.1": {"name": "Plan releases", "type": "activity"},
+                "8.5.1.2": {"name": "Build release packages", "type": "activity"},
+                "8.5.1.3": {"name": "Deploy releases", "type": "activity"}
+              }
+            },
+            "8.5.2": {
+              "name": "Manage IT changes",
+              "type": "process",
+              "children": {
+                "8.5.2.1": {"name": "Request changes", "type": "activity"},
+                "8.5.2.2": {"name": "Assess changes", "type": "activity"},
+                "8.5.2.3": {"name": "Approve changes", "type": "activity"},
+                "8.5.2.4": {"name": "Implement changes", "type": "activity"}
+              }
+            }
+          }
+        },
+        "8.6": {
+          "name": "Deliver and support IT services",
+          "type": "process_group",
+          "children": {
+            "8.6.1": {
+              "name": "Manage IT operations",
+              "type": "process",
+              "children": {
+                "8.6.1.1": {"name": "Monitor IT infrastructure", "type": "activity"},
+                "8.6.1.2": {"name": "Manage system availability", "type": "activity"},
+                "8.6.1.3": {"name": "Manage backups", "type": "activity"}
+              }
+            },
+            "8.6.2": {
+              "name": "Manage IT service desk",
+              "type": "process",
+              "children": {
+                "8.6.2.1": {"name": "Receive service requests", "type": "activity"},
+                "8.6.2.2": {"name": "Classify and prioritize requests", "type": "activity"},
+                "8.6.2.3": {"name": "Resolve requests", "type": "activity"},
+                "8.6.2.4": {"name": "Escalate requests", "type": "activity"}
+              }
+            },
+            "8.6.3": {
+              "name": "Manage IT incidents and problems",
+              "type": "process",
+              "children": {
+                "8.6.3.1": {"name": "Detect incidents", "type": "activity"},
+                "8.6.3.2": {"name": "Diagnose incidents", "type": "activity"},
+                "8.6.3.3": {"name": "Resolve incidents", "type": "activity"},
+                "8.6.3.4": {"name": "Perform root cause analysis", "type": "activity"}
+              }
+            }
+          }
+        },
+        "8.7": {
+          "name": "Manage IT knowledge",
+          "type": "process_group",
+          "children": {
+            "8.7.1": {
+              "name": "Manage IT documentation",
+              "type": "process",
+              "children": {
+                "8.7.1.1": {"name": "Create IT documentation", "type": "activity"},
+                "8.7.1.2": {"name": "Maintain IT documentation", "type": "activity"}
+              }
+            }
+          }
+        }
+      }
+    },
+    "9.0": {
+      "name": "Manage Financial Resources",
+      "type": "category",
+      "children": {
+        "9.1": {
+          "name": "Perform planning and management accounting",
+          "type": "process_group",
+          "children": {
+            "9.1.1": {
+              "name": "Perform planning/budgeting/forecasting",
+              "type": "process",
+              "children": {
+                "9.1.1.1": {"name": "Develop budgets", "type": "activity"},
+                "9.1.1.2": {"name": "Develop forecasts", "type": "activity"},
+                "9.1.1.3": {"name": "Develop financial plans", "type": "activity"}
+              }
+            },
+            "9.1.2": {
+              "name": "Perform cost accounting",
+              "type": "process",
+              "children": {
+                "9.1.2.1": {"name": "Analyze costs", "type": "activity"},
+                "9.1.2.2": {"name": "Allocate costs", "type": "activity"},
+                "9.1.2.3": {"name": "Report costs", "type": "activity"}
+              }
+            },
+            "9.1.3": {
+              "name": "Evaluate and manage financial performance",
+              "type": "process",
+              "children": {
+                "9.1.3.1": {"name": "Analyze financial performance", "type": "activity"},
+                "9.1.3.2": {"name": "Report financial performance", "type": "activity"},
+                "9.1.3.3": {"name": "Manage profitability", "type": "activity"}
+              }
+            }
+          }
+        },
+        "9.2": {
+          "name": "Perform revenue accounting",
+          "type": "process_group",
+          "children": {
+            "9.2.1": {
+              "name": "Process customer credit",
+              "type": "process",
+              "children": {
+                "9.2.1.1": {"name": "Establish credit policies", "type": "activity"},
+                "9.2.1.2": {"name": "Evaluate credit", "type": "activity"},
+                "9.2.1.3": {"name": "Approve credit", "type": "activity"}
+              }
+            },
+            "9.2.2": {
+              "name": "Invoice customer",
+              "type": "process",
+              "children": {
+                "9.2.2.1": {"name": "Generate invoices", "type": "activity"},
+                "9.2.2.2": {"name": "Send invoices", "type": "activity"},
+                "9.2.2.3": {"name": "Manage invoice disputes", "type": "activity"}
+              }
+            },
+            "9.2.3": {
+              "name": "Process accounts receivable",
+              "type": "process",
+              "children": {
+                "9.2.3.1": {"name": "Receive payments", "type": "activity"},
+                "9.2.3.2": {"name": "Apply payments", "type": "activity"},
+                "9.2.3.3": {"name": "Manage collections", "type": "activity"}
+              }
+            }
+          }
+        },
+        "9.3": {
+          "name": "Perform general accounting and reporting",
+          "type": "process_group",
+          "children": {
+            "9.3.1": {
+              "name": "Manage general ledger",
+              "type": "process",
+              "children": {
+                "9.3.1.1": {"name": "Maintain chart of accounts", "type": "activity"},
+                "9.3.1.2": {"name": "Post journal entries", "type": "activity"},
+                "9.3.1.3": {"name": "Reconcile accounts", "type": "activity"}
+              }
+            },
+            "9.3.2": {
+              "name": "Perform fixed asset accounting",
+              "type": "process",
+              "children": {
+                "9.3.2.1": {"name": "Record fixed assets", "type": "activity"},
+                "9.3.2.2": {"name": "Calculate depreciation", "type": "activity"},
+                "9.3.2.3": {"name": "Dispose of fixed assets", "type": "activity"}
+              }
+            },
+            "9.3.3": {
+              "name": "Perform financial reporting",
+              "type": "process",
+              "children": {
+                "9.3.3.1": {"name": "Prepare financial statements", "type": "activity"},
+                "9.3.3.2": {"name": "Prepare regulatory reports", "type": "activity"},
+                "9.3.3.3": {"name": "Prepare management reports", "type": "activity"}
+              }
+            }
+          }
+        },
+        "9.4": {
+          "name": "Manage payables and expenses",
+          "type": "process_group",
+          "children": {
+            "9.4.1": {
+              "name": "Process accounts payable",
+              "type": "process",
+              "children": {
+                "9.4.1.1": {"name": "Receive invoices", "type": "activity"},
+                "9.4.1.2": {"name": "Match invoices to orders", "type": "activity"},
+                "9.4.1.3": {"name": "Approve invoices", "type": "activity"},
+                "9.4.1.4": {"name": "Process payments", "type": "activity"}
+              }
+            },
+            "9.4.2": {
+              "name": "Process expense reimbursements",
+              "type": "process",
+              "children": {
+                "9.4.2.1": {"name": "Receive expense claims", "type": "activity"},
+                "9.4.2.2": {"name": "Verify expense claims", "type": "activity"},
+                "9.4.2.3": {"name": "Reimburse expenses", "type": "activity"}
+              }
+            }
+          }
+        },
+        "9.5": {
+          "name": "Manage treasury operations",
+          "type": "process_group",
+          "children": {
+            "9.5.1": {
+              "name": "Manage cash",
+              "type": "process",
+              "children": {
+                "9.5.1.1": {"name": "Forecast cash flow", "type": "activity"},
+                "9.5.1.2": {"name": "Manage cash positions", "type": "activity"},
+                "9.5.1.3": {"name": "Manage bank accounts", "type": "activity"}
+              }
+            },
+            "9.5.2": {
+              "name": "Manage investments",
+              "type": "process",
+              "children": {
+                "9.5.2.1": {"name": "Develop investment strategy", "type": "activity"},
+                "9.5.2.2": {"name": "Execute investments", "type": "activity"},
+                "9.5.2.3": {"name": "Monitor investments", "type": "activity"}
+              }
+            },
+            "9.5.3": {
+              "name": "Manage debt",
+              "type": "process",
+              "children": {
+                "9.5.3.1": {"name": "Manage borrowing", "type": "activity"},
+                "9.5.3.2": {"name": "Service debt", "type": "activity"}
+              }
+            }
+          }
+        },
+        "9.6": {
+          "name": "Manage internal controls",
+          "type": "process_group",
+          "children": {
+            "9.6.1": {
+              "name": "Establish internal controls",
+              "type": "process",
+              "children": {
+                "9.6.1.1": {"name": "Define control framework", "type": "activity"},
+                "9.6.1.2": {"name": "Document controls", "type": "activity"}
+              }
+            },
+            "9.6.2": {
+              "name": "Operate internal controls",
+              "type": "process",
+              "children": {
+                "9.6.2.1": {"name": "Execute controls", "type": "activity"},
+                "9.6.2.2": {"name": "Monitor control effectiveness", "type": "activity"},
+                "9.6.2.3": {"name": "Remediate control deficiencies", "type": "activity"}
+              }
+            }
+          }
+        },
+        "9.7": {
+          "name": "Manage taxes",
+          "type": "process_group",
+          "children": {
+            "9.7.1": {
+              "name": "Manage tax planning",
+              "type": "process",
+              "children": {
+                "9.7.1.1": {"name": "Develop tax strategy", "type": "activity"},
+                "9.7.1.2": {"name": "Optimize tax position", "type": "activity"}
+              }
+            },
+            "9.7.2": {
+              "name": "Process taxes",
+              "type": "process",
+              "children": {
+                "9.7.2.1": {"name": "Calculate taxes", "type": "activity"},
+                "9.7.2.2": {"name": "File tax returns", "type": "activity"},
+                "9.7.2.3": {"name": "Pay taxes", "type": "activity"}
+              }
+            }
+          }
+        }
+      }
+    },
+    "10.0": {
+      "name": "Acquire, Construct, and Manage Assets",
+      "type": "category",
+      "children": {
+        "10.1": {
+          "name": "Plan and acquire assets",
+          "type": "process_group",
+          "children": {
+            "10.1.1": {
+              "name": "Develop asset strategy",
+              "type": "process",
+              "children": {
+                "10.1.1.1": {"name": "Define asset requirements", "type": "activity"},
+                "10.1.1.2": {"name": "Develop acquisition strategy", "type": "activity"}
+              }
+            },
+            "10.1.2": {
+              "name": "Acquire assets",
+              "type": "process",
+              "children": {
+                "10.1.2.1": {"name": "Select assets", "type": "activity"},
+                "10.1.2.2": {"name": "Purchase assets", "type": "activity"},
+                "10.1.2.3": {"name": "Receive and install assets", "type": "activity"}
+              }
+            }
+          }
+        },
+        "10.2": {
+          "name": "Design and construct productive assets",
+          "type": "process_group",
+          "children": {
+            "10.2.1": {
+              "name": "Design productive assets",
+              "type": "process",
+              "children": {
+                "10.2.1.1": {"name": "Develop asset specifications", "type": "activity"},
+                "10.2.1.2": {"name": "Create asset designs", "type": "activity"}
+              }
+            },
+            "10.2.2": {
+              "name": "Construct productive assets",
+              "type": "process",
+              "children": {
+                "10.2.2.1": {"name": "Manage construction projects", "type": "activity"},
+                "10.2.2.2": {"name": "Commission assets", "type": "activity"}
+              }
+            }
+          }
+        },
+        "10.3": {
+          "name": "Manage asset maintenance and repairs",
+          "type": "process_group",
+          "children": {
+            "10.3.1": {
+              "name": "Plan asset maintenance",
+              "type": "process",
+              "children": {
+                "10.3.1.1": {"name": "Develop maintenance schedules", "type": "activity"},
+                "10.3.1.2": {"name": "Plan preventive maintenance", "type": "activity"}
+              }
+            },
+            "10.3.2": {
+              "name": "Perform maintenance and repairs",
+              "type": "process",
+              "children": {
+                "10.3.2.1": {"name": "Execute preventive maintenance", "type": "activity"},
+                "10.3.2.2": {"name": "Perform corrective maintenance", "type": "activity"},
+                "10.3.2.3": {"name": "Manage spare parts", "type": "activity"}
+              }
+            }
+          }
+        },
+        "10.4": {
+          "name": "Dispose of productive assets",
+          "type": "process_group",
+          "children": {
+            "10.4.1": {
+              "name": "Plan asset disposition",
+              "type": "process",
+              "children": {
+                "10.4.1.1": {"name": "Identify assets for disposition", "type": "activity"},
+                "10.4.1.2": {"name": "Evaluate disposition options", "type": "activity"}
+              }
+            },
+            "10.4.2": {
+              "name": "Execute asset disposition",
+              "type": "process",
+              "children": {
+                "10.4.2.1": {"name": "Sell assets", "type": "activity"},
+                "10.4.2.2": {"name": "Retire assets", "type": "activity"},
+                "10.4.2.3": {"name": "Dispose of assets", "type": "activity"}
+              }
+            }
+          }
+        }
+      }
+    },
+    "11.0": {
+      "name": "Manage Enterprise Risk, Compliance, Remediation, and Resiliency",
+      "type": "category",
+      "children": {
+        "11.1": {
+          "name": "Manage enterprise risk",
+          "type": "process_group",
+          "children": {
+            "11.1.1": {
+              "name": "Establish enterprise risk management framework",
+              "type": "process",
+              "children": {
+                "11.1.1.1": {"name": "Define risk appetite", "type": "activity"},
+                "11.1.1.2": {"name": "Develop risk management policies", "type": "activity"},
+                "11.1.1.3": {"name": "Define risk governance", "type": "activity"}
+              }
+            },
+            "11.1.2": {
+              "name": "Identify and assess risks",
+              "type": "process",
+              "children": {
+                "11.1.2.1": {"name": "Identify risks", "type": "activity"},
+                "11.1.2.2": {"name": "Assess risk likelihood and impact", "type": "activity"},
+                "11.1.2.3": {"name": "Prioritize risks", "type": "activity"}
+              }
+            },
+            "11.1.3": {
+              "name": "Manage and mitigate risks",
+              "type": "process",
+              "children": {
+                "11.1.3.1": {"name": "Develop risk response strategies", "type": "activity"},
+                "11.1.3.2": {"name": "Implement risk controls", "type": "activity"},
+                "11.1.3.3": {"name": "Monitor and report on risks", "type": "activity"}
+              }
+            }
+          }
+        },
+        "11.2": {
+          "name": "Manage regulatory compliance",
+          "type": "process_group",
+          "children": {
+            "11.2.1": {
+              "name": "Develop compliance program",
+              "type": "process",
+              "children": {
+                "11.2.1.1": {"name": "Identify compliance requirements", "type": "activity"},
+                "11.2.1.2": {"name": "Develop compliance policies", "type": "activity"},
+                "11.2.1.3": {"name": "Communicate compliance requirements", "type": "activity"}
+              }
+            },
+            "11.2.2": {
+              "name": "Monitor compliance",
+              "type": "process",
+              "children": {
+                "11.2.2.1": {"name": "Conduct compliance assessments", "type": "activity"},
+                "11.2.2.2": {"name": "Report compliance status", "type": "activity"},
+                "11.2.2.3": {"name": "Remediate compliance issues", "type": "activity"}
+              }
+            }
+          }
+        },
+        "11.3": {
+          "name": "Manage business resiliency",
+          "type": "process_group",
+          "children": {
+            "11.3.1": {
+              "name": "Develop business continuity plans",
+              "type": "process",
+              "children": {
+                "11.3.1.1": {"name": "Conduct business impact analysis", "type": "activity"},
+                "11.3.1.2": {"name": "Develop continuity strategies", "type": "activity"},
+                "11.3.1.3": {"name": "Document recovery procedures", "type": "activity"}
+              }
+            },
+            "11.3.2": {
+              "name": "Test and maintain business continuity plans",
+              "type": "process",
+              "children": {
+                "11.3.2.1": {"name": "Test continuity plans", "type": "activity"},
+                "11.3.2.2": {"name": "Update continuity plans", "type": "activity"}
+              }
+            }
+          }
+        }
+      }
+    },
+    "12.0": {
+      "name": "Manage External Relationships",
+      "type": "category",
+      "children": {
+        "12.1": {
+          "name": "Build investor relationships",
+          "type": "process_group",
+          "children": {
+            "12.1.1": {
+              "name": "Manage investor communications",
+              "type": "process",
+              "children": {
+                "12.1.1.1": {"name": "Develop investor relations strategy", "type": "activity"},
+                "12.1.1.2": {"name": "Communicate with investors", "type": "activity"},
+                "12.1.1.3": {"name": "Conduct investor meetings", "type": "activity"}
+              }
+            }
+          }
+        },
+        "12.2": {
+          "name": "Manage government and industry relationships",
+          "type": "process_group",
+          "children": {
+            "12.2.1": {
+              "name": "Manage government relations",
+              "type": "process",
+              "children": {
+                "12.2.1.1": {"name": "Engage with government agencies", "type": "activity"},
+                "12.2.1.2": {"name": "Monitor legislation", "type": "activity"},
+                "12.2.1.3": {"name": "Participate in policy development", "type": "activity"}
+              }
+            },
+            "12.2.2": {
+              "name": "Manage industry relations",
+              "type": "process",
+              "children": {
+                "12.2.2.1": {"name": "Participate in industry associations", "type": "activity"},
+                "12.2.2.2": {"name": "Develop industry partnerships", "type": "activity"}
+              }
+            }
+          }
+        },
+        "12.3": {
+          "name": "Manage relations with board of directors",
+          "type": "process_group",
+          "children": {
+            "12.3.1": {
+              "name": "Manage board communications",
+              "type": "process",
+              "children": {
+                "12.3.1.1": {"name": "Report to board", "type": "activity"},
+                "12.3.1.2": {"name": "Manage board meetings", "type": "activity"}
+              }
+            }
+          }
+        },
+        "12.4": {
+          "name": "Manage legal and ethical issues",
+          "type": "process_group",
+          "children": {
+            "12.4.1": {
+              "name": "Manage legal affairs",
+              "type": "process",
+              "children": {
+                "12.4.1.1": {"name": "Manage contracts", "type": "activity"},
+                "12.4.1.2": {"name": "Manage litigation", "type": "activity"},
+                "12.4.1.3": {"name": "Provide legal counsel", "type": "activity"}
+              }
+            },
+            "12.4.2": {
+              "name": "Manage ethical programs",
+              "type": "process",
+              "children": {
+                "12.4.2.1": {"name": "Develop code of ethics", "type": "activity"},
+                "12.4.2.2": {"name": "Train on ethics", "type": "activity"},
+                "12.4.2.3": {"name": "Investigate ethics violations", "type": "activity"}
+              }
+            }
+          }
+        },
+        "12.5": {
+          "name": "Manage public relations",
+          "type": "process_group",
+          "children": {
+            "12.5.1": {
+              "name": "Manage communications",
+              "type": "process",
+              "children": {
+                "12.5.1.1": {"name": "Develop communications strategy", "type": "activity"},
+                "12.5.1.2": {"name": "Manage media relations", "type": "activity"},
+                "12.5.1.3": {"name": "Manage crisis communications", "type": "activity"}
+              }
+            },
+            "12.5.2": {
+              "name": "Manage community relations",
+              "type": "process",
+              "children": {
+                "12.5.2.1": {"name": "Engage with communities", "type": "activity"},
+                "12.5.2.2": {"name": "Manage corporate social responsibility", "type": "activity"}
+              }
+            }
+          }
+        }
+      }
+    },
+    "13.0": {
+      "name": "Develop and Manage Business Capabilities",
+      "type": "category",
+      "children": {
+        "13.1": {
+          "name": "Manage business processes",
+          "type": "process_group",
+          "children": {
+            "13.1.1": {
+              "name": "Define and manage process framework",
+              "type": "process",
+              "children": {
+                "13.1.1.1": {"name": "Define process architecture", "type": "activity"},
+                "13.1.1.2": {"name": "Document processes", "type": "activity"},
+                "13.1.1.3": {"name": "Maintain process documentation", "type": "activity"}
+              }
+            },
+            "13.1.2": {
+              "name": "Improve processes",
+              "type": "process",
+              "children": {
+                "13.1.2.1": {"name": "Identify improvement opportunities", "type": "activity"},
+                "13.1.2.2": {"name": "Implement process improvements", "type": "activity"},
+                "13.1.2.3": {"name": "Measure process performance", "type": "activity"}
+              }
+            }
+          }
+        },
+        "13.2": {
+          "name": "Manage portfolio, program, and project",
+          "type": "process_group",
+          "children": {
+            "13.2.1": {
+              "name": "Manage portfolio",
+              "type": "process",
+              "children": {
+                "13.2.1.1": {"name": "Define portfolio strategy", "type": "activity"},
+                "13.2.1.2": {"name": "Prioritize portfolio components", "type": "activity"},
+                "13.2.1.3": {"name": "Monitor portfolio performance", "type": "activity"}
+              }
+            },
+            "13.2.2": {
+              "name": "Manage programs",
+              "type": "process",
+              "children": {
+                "13.2.2.1": {"name": "Initiate programs", "type": "activity"},
+                "13.2.2.2": {"name": "Manage program execution", "type": "activity"},
+                "13.2.2.3": {"name": "Close programs", "type": "activity"}
+              }
+            },
+            "13.2.3": {
+              "name": "Manage projects",
+              "type": "process",
+              "children": {
+                "13.2.3.1": {"name": "Initiate projects", "type": "activity"},
+                "13.2.3.2": {"name": "Plan projects", "type": "activity"},
+                "13.2.3.3": {"name": "Execute projects", "type": "activity"},
+                "13.2.3.4": {"name": "Monitor and control projects", "type": "activity"},
+                "13.2.3.5": {"name": "Close projects", "type": "activity"}
+              }
+            }
+          }
+        },
+        "13.3": {
+          "name": "Manage enterprise quality",
+          "type": "process_group",
+          "children": {
+            "13.3.1": {
+              "name": "Develop quality management approach",
+              "type": "process",
+              "children": {
+                "13.3.1.1": {"name": "Define quality standards", "type": "activity"},
+                "13.3.1.2": {"name": "Develop quality policies", "type": "activity"}
+              }
+            },
+            "13.3.2": {
+              "name": "Manage quality assurance",
+              "type": "process",
+              "children": {
+                "13.3.2.1": {"name": "Conduct quality audits", "type": "activity"},
+                "13.3.2.2": {"name": "Monitor quality metrics", "type": "activity"},
+                "13.3.2.3": {"name": "Implement quality improvements", "type": "activity"}
+              }
+            }
+          }
+        },
+        "13.4": {
+          "name": "Manage change",
+          "type": "process_group",
+          "children": {
+            "13.4.1": {
+              "name": "Plan change",
+              "type": "process",
+              "children": {
+                "13.4.1.1": {"name": "Assess change readiness", "type": "activity"},
+                "13.4.1.2": {"name": "Develop change management plan", "type": "activity"}
+              }
+            },
+            "13.4.2": {
+              "name": "Implement change",
+              "type": "process",
+              "children": {
+                "13.4.2.1": {"name": "Execute change activities", "type": "activity"},
+                "13.4.2.2": {"name": "Communicate change", "type": "activity"},
+                "13.4.2.3": {"name": "Support change adoption", "type": "activity"}
+              }
+            }
+          }
+        },
+        "13.5": {
+          "name": "Manage benchmarking",
+          "type": "process_group",
+          "children": {
+            "13.5.1": {
+              "name": "Conduct benchmarking",
+              "type": "process",
+              "children": {
+                "13.5.1.1": {"name": "Identify benchmarking opportunities", "type": "activity"},
+                "13.5.1.2": {"name": "Collect benchmarking data", "type": "activity"},
+                "13.5.1.3": {"name": "Analyze benchmarking results", "type": "activity"},
+                "13.5.1.4": {"name": "Apply benchmarking insights", "type": "activity"}
+              }
+            }
+          }
+        },
+        "13.6": {
+          "name": "Manage knowledge",
+          "type": "process_group",
+          "children": {
+            "13.6.1": {
+              "name": "Develop knowledge management strategy",
+              "type": "process",
+              "children": {
+                "13.6.1.1": {"name": "Define knowledge domains", "type": "activity"},
+                "13.6.1.2": {"name": "Develop knowledge sharing culture", "type": "activity"}
+              }
+            },
+            "13.6.2": {
+              "name": "Manage knowledge assets",
+              "type": "process",
+              "children": {
+                "13.6.2.1": {"name": "Capture knowledge", "type": "activity"},
+                "13.6.2.2": {"name": "Organize knowledge", "type": "activity"},
+                "13.6.2.3": {"name": "Share knowledge", "type": "activity"},
+                "13.6.2.4": {"name": "Maintain knowledge assets", "type": "activity"}
+              }
+            }
+          }
+        },
+        "13.7": {
+          "name": "Manage health, safety, and environment",
+          "type": "process_group",
+          "children": {
+            "13.7.1": {
+              "name": "Develop HSE programs",
+              "type": "process",
+              "children": {
+                "13.7.1.1": {"name": "Define HSE policies", "type": "activity"},
+                "13.7.1.2": {"name": "Conduct HSE risk assessments", "type": "activity"},
+                "13.7.1.3": {"name": "Develop HSE procedures", "type": "activity"}
+              }
+            },
+            "13.7.2": {
+              "name": "Manage environmental programs",
+              "type": "process",
+              "children": {
+                "13.7.2.1": {"name": "Monitor environmental compliance", "type": "activity"},
+                "13.7.2.2": {"name": "Manage environmental impacts", "type": "activity"},
+                "13.7.2.3": {"name": "Implement sustainability initiatives", "type": "activity"}
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+}
