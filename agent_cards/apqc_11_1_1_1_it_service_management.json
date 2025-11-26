@@ -1,0 +1,1001 @@
+{
+  "apqc_id": "11.1.1.1",
+  "apqc_name": "Manage IT service requests and incidents",
+  "category": "11.0 - Manage Information Technology",
+  "description": "End-to-end IT service management workflow from request intake to resolution, including incident management, problem management, and service level monitoring.",
+  "orchestration_pattern": "event_driven",
+  "total_steps": 8,
+  "estimated_duration_seconds": 14400,
+  "compliance_frameworks": ["ITIL", "ISO 20000", "SOC 2", "COBIT"],
+  "data_retention_days": 1095,
+
+  "agent_cards": [
+    {
+      "id": "agent_11_1_1_1_step1",
+      "apqc_id": "11.1.1.1",
+      "step_number": 1,
+      "step_name": "Service Request Intake",
+      "description": "Receive and classify IT service requests from multiple channels",
+      "purpose": "Capture all IT service needs with proper categorization",
+      "business_value": "Single point of contact for all IT services",
+
+      "capabilities": [
+        "receive_ticket_portal",
+        "receive_ticket_email",
+        "receive_ticket_chat",
+        "receive_ticket_phone",
+        "auto_categorize",
+        "priority_assessment",
+        "duplicate_detection"
+      ],
+
+      "input_schema": [
+        {
+          "name": "requester_id",
+          "type": "string",
+          "description": "Employee ID of requester",
+          "required": true
+        },
+        {
+          "name": "channel",
+          "type": "string",
+          "required": true,
+          "validation": {"enum": ["portal", "email", "chat", "phone", "api"]}
+        },
+        {
+          "name": "subject",
+          "type": "string",
+          "required": true
+        },
+        {
+          "name": "description",
+          "type": "string",
+          "required": true
+        },
+        {
+          "name": "category_hint",
+          "type": "string",
+          "required": false
+        },
+        {
+          "name": "attachments",
+          "type": "array",
+          "required": false
+        }
+      ],
+
+      "output_schema": [
+        {
+          "name": "ticket_id",
+          "type": "string",
+          "required": true,
+          "example": "INC-2025-001234"
+        },
+        {
+          "name": "ticket_type",
+          "type": "string",
+          "required": true,
+          "validation": {"enum": ["incident", "service_request", "change", "problem"]}
+        },
+        {
+          "name": "category",
+          "type": "string",
+          "required": true
+        },
+        {
+          "name": "subcategory",
+          "type": "string",
+          "required": true
+        },
+        {
+          "name": "priority",
+          "type": "string",
+          "required": true,
+          "validation": {"enum": ["P1-Critical", "P2-High", "P3-Medium", "P4-Low"]}
+        },
+        {
+          "name": "assigned_group",
+          "type": "string",
+          "required": true
+        },
+        {
+          "name": "sla_target",
+          "type": "object",
+          "required": true
+        }
+      ],
+
+      "required_integrations": [
+        {"system": "ITSM Platform", "type": "bidirectional", "protocol": "REST API", "examples": ["ServiceNow", "Jira Service Management", "BMC Remedy"]},
+        {"system": "Email Gateway", "type": "inbound", "protocol": "IMAP/Graph API"},
+        {"system": "Chat Platform", "type": "bidirectional", "protocol": "API", "examples": ["Slack", "Teams"]},
+        {"system": "AI Classification", "type": "processing", "protocol": "API"}
+      ],
+
+      "decision_rules": [
+        {
+          "rule_id": "DR-IT-001",
+          "name": "VIP User",
+          "condition": "requester.vip_flag == true",
+          "action": "elevate_priority_and_notify_manager",
+          "priority": 1
+        },
+        {
+          "rule_id": "DR-IT-002",
+          "name": "Major Incident Keywords",
+          "condition": "description CONTAINS ['outage', 'down', 'all users affected']",
+          "action": "flag_as_potential_major_incident",
+          "priority": 1
+        },
+        {
+          "rule_id": "DR-IT-003",
+          "name": "Password Reset",
+          "condition": "category == 'Access' AND subcategory == 'Password Reset'",
+          "action": "route_to_self_service_or_automate",
+          "priority": 2
+        },
+        {
+          "rule_id": "DR-IT-004",
+          "name": "Duplicate Detection",
+          "condition": "similar_ticket_open_for_same_user",
+          "action": "link_and_notify",
+          "priority": 1
+        }
+      ],
+
+      "error_handlers": [
+        {
+          "error_type": "classification_low_confidence",
+          "severity": "low",
+          "action": "route_to_service_desk_for_manual_triage",
+          "notification": ["service_desk"]
+        },
+        {
+          "error_type": "requester_not_found",
+          "severity": "medium",
+          "action": "create_external_ticket",
+          "notification": ["service_desk"]
+        }
+      ]
+    },
+
+    {
+      "id": "agent_11_1_1_1_step2",
+      "apqc_id": "11.1.1.1",
+      "step_number": 2,
+      "step_name": "Assignment and Routing",
+      "description": "Route tickets to appropriate resolver groups based on skills and workload",
+      "purpose": "Ensure tickets reach the right team efficiently",
+      "business_value": "Reduce resolution time through optimal routing",
+
+      "capabilities": [
+        "skill_based_routing",
+        "workload_balancing",
+        "escalation_routing",
+        "geographic_routing",
+        "shift_aware_assignment",
+        "auto_assignment"
+      ],
+
+      "input_schema": [
+        {
+          "name": "ticket_id",
+          "type": "string",
+          "required": true
+        },
+        {
+          "name": "category",
+          "type": "string",
+          "required": true
+        },
+        {
+          "name": "priority",
+          "type": "string",
+          "required": true
+        },
+        {
+          "name": "required_skills",
+          "type": "array",
+          "required": false
+        }
+      ],
+
+      "output_schema": [
+        {
+          "name": "assigned_group",
+          "type": "string",
+          "required": true
+        },
+        {
+          "name": "assigned_individual",
+          "type": "string",
+          "required": false
+        },
+        {
+          "name": "assignment_reason",
+          "type": "string",
+          "required": true
+        },
+        {
+          "name": "estimated_wait_time",
+          "type": "integer",
+          "description": "Minutes until first response",
+          "required": true
+        }
+      ],
+
+      "required_integrations": [
+        {"system": "ITSM Platform", "type": "bidirectional", "protocol": "REST API"},
+        {"system": "HR System", "type": "read", "protocol": "API"},
+        {"system": "Workforce Management", "type": "read", "protocol": "API"}
+      ],
+
+      "decision_rules": [
+        {
+          "rule_id": "DR-IT-010",
+          "name": "P1 Critical",
+          "condition": "priority == 'P1-Critical'",
+          "action": "assign_to_on_call_and_notify_management",
+          "priority": 1
+        },
+        {
+          "rule_id": "DR-IT-011",
+          "name": "Round Robin",
+          "condition": "group_assignment AND no_individual_assigned",
+          "action": "apply_round_robin_within_group",
+          "priority": 2
+        },
+        {
+          "rule_id": "DR-IT-012",
+          "name": "Follow the Sun",
+          "condition": "24x7_support AND current_time outside local_business_hours",
+          "action": "route_to_active_region",
+          "priority": 1
+        }
+      ],
+
+      "error_handlers": [
+        {
+          "error_type": "no_available_agents",
+          "severity": "high",
+          "action": "queue_and_alert_manager",
+          "notification": ["it_manager"]
+        },
+        {
+          "error_type": "skill_not_found",
+          "severity": "medium",
+          "action": "escalate_to_tier2",
+          "notification": ["service_desk_lead"]
+        }
+      ]
+    },
+
+    {
+      "id": "agent_11_1_1_1_step3",
+      "apqc_id": "11.1.1.1",
+      "step_number": 3,
+      "step_name": "Investigation and Diagnosis",
+      "description": "Analyze the issue using knowledge base, diagnostics, and collaboration",
+      "purpose": "Identify root cause and determine resolution path",
+      "business_value": "Faster resolution through systematic diagnosis",
+
+      "capabilities": [
+        "search_knowledge_base",
+        "run_diagnostics",
+        "check_known_errors",
+        "analyze_related_incidents",
+        "remote_access",
+        "collect_additional_info"
+      ],
+
+      "input_schema": [
+        {
+          "name": "ticket_id",
+          "type": "string",
+          "required": true
+        },
+        {
+          "name": "symptoms",
+          "type": "string",
+          "required": true
+        },
+        {
+          "name": "affected_ci",
+          "type": "string",
+          "description": "Configuration item affected",
+          "required": false
+        },
+        {
+          "name": "user_actions",
+          "type": "string",
+          "required": false
+        }
+      ],
+
+      "output_schema": [
+        {
+          "name": "diagnosis_status",
+          "type": "string",
+          "required": true,
+          "validation": {"enum": ["identified", "investigating", "escalated", "pending_info"]}
+        },
+        {
+          "name": "root_cause",
+          "type": "string",
+          "required": false
+        },
+        {
+          "name": "kb_article_match",
+          "type": "string",
+          "required": false
+        },
+        {
+          "name": "known_error_match",
+          "type": "string",
+          "required": false
+        },
+        {
+          "name": "recommended_resolution",
+          "type": "string",
+          "required": false
+        }
+      ],
+
+      "required_integrations": [
+        {"system": "Knowledge Base", "type": "read", "protocol": "API", "examples": ["ServiceNow KB", "Confluence", "SharePoint"]},
+        {"system": "CMDB", "type": "read", "protocol": "API"},
+        {"system": "Monitoring Tools", "type": "read", "protocol": "API", "examples": ["Datadog", "Splunk", "New Relic"]},
+        {"system": "Remote Access", "type": "execute", "protocol": "API", "examples": ["TeamViewer", "BeyondTrust"]}
+      ],
+
+      "decision_rules": [
+        {
+          "rule_id": "DR-IT-020",
+          "name": "KB Match Found",
+          "condition": "kb_article_match.confidence > 80%",
+          "action": "suggest_article_to_resolver",
+          "priority": 1
+        },
+        {
+          "rule_id": "DR-IT-021",
+          "name": "Known Error",
+          "condition": "known_error_match EXISTS",
+          "action": "apply_workaround_and_link_to_problem",
+          "priority": 1
+        },
+        {
+          "rule_id": "DR-IT-022",
+          "name": "Need More Info",
+          "condition": "diagnosis_blocked AND missing_info_identified",
+          "action": "request_info_from_user",
+          "priority": 2
+        }
+      ],
+
+      "error_handlers": [
+        {
+          "error_type": "remote_access_denied",
+          "severity": "medium",
+          "action": "request_access_approval",
+          "notification": ["resolver", "user_manager"]
+        },
+        {
+          "error_type": "ci_not_in_cmdb",
+          "severity": "low",
+          "action": "flag_for_cmdb_update",
+          "notification": ["asset_management"]
+        }
+      ]
+    },
+
+    {
+      "id": "agent_11_1_1_1_step4",
+      "apqc_id": "11.1.1.1",
+      "step_number": 4,
+      "step_name": "Resolution Implementation",
+      "description": "Apply the fix or fulfill the service request",
+      "purpose": "Restore service or deliver requested item",
+      "business_value": "Minimize downtime and deliver value",
+
+      "capabilities": [
+        "apply_fix",
+        "execute_runbook",
+        "provision_access",
+        "deploy_software",
+        "configure_settings",
+        "coordinate_with_vendor"
+      ],
+
+      "input_schema": [
+        {
+          "name": "ticket_id",
+          "type": "string",
+          "required": true
+        },
+        {
+          "name": "resolution_type",
+          "type": "string",
+          "required": true,
+          "validation": {"enum": ["manual_fix", "automated_runbook", "vendor_escalation", "hardware_replacement", "access_grant"]}
+        },
+        {
+          "name": "resolution_steps",
+          "type": "array",
+          "required": true
+        }
+      ],
+
+      "output_schema": [
+        {
+          "name": "resolution_status",
+          "type": "string",
+          "required": true,
+          "validation": {"enum": ["resolved", "partial", "failed", "pending_change"]}
+        },
+        {
+          "name": "resolution_notes",
+          "type": "string",
+          "required": true
+        },
+        {
+          "name": "time_to_resolve",
+          "type": "integer",
+          "description": "Minutes from assignment to resolution",
+          "required": true
+        },
+        {
+          "name": "automation_used",
+          "type": "boolean",
+          "required": true
+        }
+      ],
+
+      "required_integrations": [
+        {"system": "ITSM Platform", "type": "bidirectional", "protocol": "REST API"},
+        {"system": "Automation Platform", "type": "execute", "protocol": "API", "examples": ["Ansible", "Puppet", "Chef"]},
+        {"system": "IAM System", "type": "bidirectional", "protocol": "API", "examples": ["Okta", "Azure AD", "SailPoint"]},
+        {"system": "Software Deployment", "type": "execute", "protocol": "API", "examples": ["SCCM", "Intune", "Jamf"]}
+      ],
+
+      "decision_rules": [
+        {
+          "rule_id": "DR-IT-030",
+          "name": "Automate Standard Fix",
+          "condition": "resolution_type == 'automated_runbook' AND runbook_available",
+          "action": "execute_runbook_with_approval",
+          "priority": 1
+        },
+        {
+          "rule_id": "DR-IT-031",
+          "name": "Change Required",
+          "condition": "resolution_requires_change AND no_standard_change_exists",
+          "action": "create_change_request",
+          "priority": 1
+        },
+        {
+          "rule_id": "DR-IT-032",
+          "name": "Vendor Escalation",
+          "condition": "resolution_type == 'vendor_escalation'",
+          "action": "open_vendor_case_and_track",
+          "priority": 1
+        }
+      ],
+
+      "error_handlers": [
+        {
+          "error_type": "automation_failed",
+          "severity": "high",
+          "action": "fallback_to_manual_and_alert",
+          "notification": ["resolver", "automation_team"]
+        },
+        {
+          "error_type": "access_denied",
+          "severity": "medium",
+          "action": "request_elevated_access",
+          "notification": ["resolver"]
+        }
+      ]
+    },
+
+    {
+      "id": "agent_11_1_1_1_step5",
+      "apqc_id": "11.1.1.1",
+      "step_number": 5,
+      "step_name": "User Communication",
+      "description": "Keep users informed throughout the ticket lifecycle",
+      "purpose": "Maintain transparency and manage expectations",
+      "business_value": "Improve user satisfaction through proactive communication",
+
+      "capabilities": [
+        "send_status_updates",
+        "notify_resolution",
+        "request_confirmation",
+        "handle_user_replies",
+        "manage_survey_requests"
+      ],
+
+      "input_schema": [
+        {
+          "name": "ticket_id",
+          "type": "string",
+          "required": true
+        },
+        {
+          "name": "communication_type",
+          "type": "string",
+          "required": true,
+          "validation": {"enum": ["status_update", "resolution_notice", "info_request", "survey_request"]}
+        },
+        {
+          "name": "message_content",
+          "type": "string",
+          "required": true
+        }
+      ],
+
+      "output_schema": [
+        {
+          "name": "communication_id",
+          "type": "string",
+          "required": true
+        },
+        {
+          "name": "delivery_status",
+          "type": "string",
+          "required": true,
+          "validation": {"enum": ["sent", "delivered", "read", "failed"]}
+        },
+        {
+          "name": "user_response",
+          "type": "string",
+          "required": false
+        }
+      ],
+
+      "required_integrations": [
+        {"system": "Email Service", "type": "outbound", "protocol": "SMTP/API"},
+        {"system": "Chat Platform", "type": "bidirectional", "protocol": "API"},
+        {"system": "SMS Gateway", "type": "outbound", "protocol": "API"},
+        {"system": "Survey Platform", "type": "outbound", "protocol": "API"}
+      ],
+
+      "decision_rules": [
+        {
+          "rule_id": "DR-IT-040",
+          "name": "SLA Warning",
+          "condition": "sla_breach_imminent AND no_recent_update",
+          "action": "send_proactive_status_update",
+          "priority": 1
+        },
+        {
+          "rule_id": "DR-IT-041",
+          "name": "P1 Stakeholder Updates",
+          "condition": "priority == 'P1-Critical'",
+          "action": "send_hourly_updates_to_stakeholders",
+          "priority": 1
+        },
+        {
+          "rule_id": "DR-IT-042",
+          "name": "Preferred Channel",
+          "condition": "user.preferred_channel EXISTS",
+          "action": "use_preferred_channel",
+          "priority": 2
+        }
+      ],
+
+      "error_handlers": [
+        {
+          "error_type": "email_bounce",
+          "severity": "low",
+          "action": "try_alternate_contact",
+          "notification": ["service_desk"]
+        },
+        {
+          "error_type": "user_unreachable",
+          "severity": "medium",
+          "action": "notify_manager_and_hold_ticket",
+          "notification": ["user_manager"]
+        }
+      ]
+    },
+
+    {
+      "id": "agent_11_1_1_1_step6",
+      "apqc_id": "11.1.1.1",
+      "step_number": 6,
+      "step_name": "Ticket Closure",
+      "description": "Close tickets after confirmation and update knowledge base",
+      "purpose": "Formal completion with quality assurance",
+      "business_value": "Ensure resolution quality and capture learnings",
+
+      "capabilities": [
+        "request_closure_confirmation",
+        "auto_close_after_timeout",
+        "update_knowledge_base",
+        "link_to_problem_record",
+        "generate_closure_report"
+      ],
+
+      "input_schema": [
+        {
+          "name": "ticket_id",
+          "type": "string",
+          "required": true
+        },
+        {
+          "name": "closure_type",
+          "type": "string",
+          "required": true,
+          "validation": {"enum": ["user_confirmed", "auto_closed", "duplicate", "cancelled", "no_response"]}
+        },
+        {
+          "name": "resolution_summary",
+          "type": "string",
+          "required": true
+        }
+      ],
+
+      "output_schema": [
+        {
+          "name": "closed_date",
+          "type": "datetime",
+          "required": true
+        },
+        {
+          "name": "closure_code",
+          "type": "string",
+          "required": true
+        },
+        {
+          "name": "sla_met",
+          "type": "boolean",
+          "required": true
+        },
+        {
+          "name": "kb_article_created",
+          "type": "boolean",
+          "required": true
+        },
+        {
+          "name": "csat_survey_sent",
+          "type": "boolean",
+          "required": true
+        }
+      ],
+
+      "required_integrations": [
+        {"system": "ITSM Platform", "type": "bidirectional", "protocol": "REST API"},
+        {"system": "Knowledge Base", "type": "write", "protocol": "API"},
+        {"system": "Survey Platform", "type": "outbound", "protocol": "API"}
+      ],
+
+      "decision_rules": [
+        {
+          "rule_id": "DR-IT-050",
+          "name": "Auto Close Timer",
+          "condition": "status == 'pending_confirmation' AND days_since_resolution > 3",
+          "action": "auto_close_with_notification",
+          "priority": 2
+        },
+        {
+          "rule_id": "DR-IT-051",
+          "name": "Create KB Article",
+          "condition": "resolution_novel AND resolution_successful",
+          "action": "draft_kb_article_for_review",
+          "priority": 2
+        },
+        {
+          "rule_id": "DR-IT-052",
+          "name": "Link to Problem",
+          "condition": "recurring_issue_detected",
+          "action": "create_or_link_problem_record",
+          "priority": 1
+        }
+      ],
+
+      "error_handlers": [
+        {
+          "error_type": "user_disputes_resolution",
+          "severity": "high",
+          "action": "reopen_and_escalate",
+          "notification": ["resolver", "service_desk_lead"]
+        },
+        {
+          "error_type": "sla_breached_on_close",
+          "severity": "medium",
+          "action": "log_breach_and_notify_management",
+          "notification": ["it_manager"]
+        }
+      ]
+    },
+
+    {
+      "id": "agent_11_1_1_1_step7",
+      "apqc_id": "11.1.1.1",
+      "step_number": 7,
+      "step_name": "Major Incident Management",
+      "description": "Handle high-impact incidents affecting multiple users or critical services",
+      "purpose": "Coordinate rapid response to minimize business impact",
+      "business_value": "Reduce downtime and protect revenue",
+
+      "capabilities": [
+        "declare_major_incident",
+        "assemble_response_team",
+        "manage_bridge_call",
+        "coordinate_communications",
+        "track_timeline",
+        "post_incident_review"
+      ],
+
+      "input_schema": [
+        {
+          "name": "incident_id",
+          "type": "string",
+          "required": true
+        },
+        {
+          "name": "impact_scope",
+          "type": "string",
+          "required": true,
+          "validation": {"enum": ["single_user", "department", "site", "region", "enterprise"]}
+        },
+        {
+          "name": "affected_services",
+          "type": "array",
+          "required": true
+        },
+        {
+          "name": "estimated_users_affected",
+          "type": "integer",
+          "required": true
+        }
+      ],
+
+      "output_schema": [
+        {
+          "name": "major_incident_id",
+          "type": "string",
+          "required": true,
+          "example": "MI-2025-0042"
+        },
+        {
+          "name": "incident_commander",
+          "type": "string",
+          "required": true
+        },
+        {
+          "name": "bridge_info",
+          "type": "object",
+          "required": true
+        },
+        {
+          "name": "timeline",
+          "type": "array",
+          "required": true
+        },
+        {
+          "name": "mttr",
+          "type": "integer",
+          "description": "Mean time to resolve in minutes",
+          "required": true
+        }
+      ],
+
+      "required_integrations": [
+        {"system": "ITSM Platform", "type": "bidirectional", "protocol": "REST API"},
+        {"system": "Conference Bridge", "type": "bidirectional", "protocol": "API", "examples": ["Zoom", "Teams", "WebEx"]},
+        {"system": "Status Page", "type": "write", "protocol": "API", "examples": ["Statuspage", "Atlassian"]},
+        {"system": "PagerDuty/On-Call", "type": "bidirectional", "protocol": "API"}
+      ],
+
+      "decision_rules": [
+        {
+          "rule_id": "DR-IT-060",
+          "name": "Auto-Declare Major",
+          "condition": "affected_users > 100 OR critical_service_down",
+          "action": "auto_declare_major_incident",
+          "priority": 1
+        },
+        {
+          "rule_id": "DR-IT-061",
+          "name": "Executive Notification",
+          "condition": "impact_scope IN ['region', 'enterprise'] OR duration > 60min",
+          "action": "notify_executive_leadership",
+          "priority": 1
+        },
+        {
+          "rule_id": "DR-IT-062",
+          "name": "External Communication",
+          "condition": "customer_facing_service_affected",
+          "action": "trigger_external_communications",
+          "priority": 1
+        }
+      ],
+
+      "error_handlers": [
+        {
+          "error_type": "bridge_failure",
+          "severity": "critical",
+          "action": "activate_backup_bridge",
+          "notification": ["incident_commander"]
+        },
+        {
+          "error_type": "key_resource_unavailable",
+          "severity": "high",
+          "action": "escalate_to_backup_resource",
+          "notification": ["it_manager"]
+        }
+      ]
+    },
+
+    {
+      "id": "agent_11_1_1_1_step8",
+      "apqc_id": "11.1.1.1",
+      "step_number": 8,
+      "step_name": "Service Analytics and Reporting",
+      "description": "Analyze service performance and generate reports",
+      "purpose": "Enable data-driven service improvement",
+      "business_value": "Continuous improvement of IT service quality",
+
+      "capabilities": [
+        "calculate_sla_metrics",
+        "analyze_trends",
+        "identify_problem_areas",
+        "benchmark_performance",
+        "generate_dashboards",
+        "forecast_demand"
+      ],
+
+      "input_schema": [
+        {
+          "name": "report_type",
+          "type": "string",
+          "required": true,
+          "validation": {"enum": ["sla_compliance", "volume_trends", "csat_analysis", "problem_areas", "agent_performance"]}
+        },
+        {
+          "name": "date_range",
+          "type": "object",
+          "required": true
+        },
+        {
+          "name": "filters",
+          "type": "object",
+          "required": false
+        }
+      ],
+
+      "output_schema": [
+        {
+          "name": "report_id",
+          "type": "string",
+          "required": true
+        },
+        {
+          "name": "sla_compliance_rate",
+          "type": "number",
+          "required": true
+        },
+        {
+          "name": "average_resolution_time",
+          "type": "number",
+          "required": true
+        },
+        {
+          "name": "first_contact_resolution_rate",
+          "type": "number",
+          "required": true
+        },
+        {
+          "name": "csat_score",
+          "type": "number",
+          "required": true
+        },
+        {
+          "name": "top_categories",
+          "type": "array",
+          "required": true
+        },
+        {
+          "name": "recommendations",
+          "type": "array",
+          "required": true
+        }
+      ],
+
+      "required_integrations": [
+        {"system": "ITSM Platform", "type": "read", "protocol": "REST API"},
+        {"system": "Data Warehouse", "type": "read", "protocol": "SQL/API"},
+        {"system": "BI Platform", "type": "publish", "protocol": "API", "examples": ["Tableau", "Power BI"]},
+        {"system": "Survey Results", "type": "read", "protocol": "API"}
+      ],
+
+      "decision_rules": [
+        {
+          "rule_id": "DR-IT-070",
+          "name": "SLA Breach Alert",
+          "condition": "sla_compliance_rate < 95%",
+          "action": "alert_management_with_analysis",
+          "priority": 1
+        },
+        {
+          "rule_id": "DR-IT-071",
+          "name": "Volume Spike",
+          "condition": "weekly_volume > average * 1.5",
+          "action": "investigate_root_cause",
+          "priority": 1
+        },
+        {
+          "rule_id": "DR-IT-072",
+          "name": "Low CSAT Category",
+          "condition": "category_csat < 3.5",
+          "action": "flag_for_process_review",
+          "priority": 2
+        }
+      ],
+
+      "error_handlers": [
+        {
+          "error_type": "data_freshness_issue",
+          "severity": "medium",
+          "action": "use_cached_with_warning",
+          "notification": ["reporting_team"]
+        },
+        {
+          "error_type": "report_generation_failed",
+          "severity": "medium",
+          "action": "retry_and_notify",
+          "notification": ["it_manager"]
+        }
+      ]
+    }
+  ],
+
+  "integration_summary": {
+    "itsm_platforms": ["ServiceNow", "Jira Service Management", "BMC Remedy", "Zendesk"],
+    "monitoring_tools": ["Datadog", "Splunk", "New Relic", "Dynatrace", "Prometheus"],
+    "automation_platforms": ["Ansible", "Puppet", "Chef", "Terraform", "PowerShell DSC"],
+    "identity_management": ["Okta", "Azure AD", "SailPoint", "CyberArk"],
+    "collaboration": ["Slack", "Microsoft Teams", "Zoom", "WebEx"],
+    "analytics": ["Tableau", "Power BI", "Looker", "ServiceNow Performance Analytics"]
+  },
+
+  "kpis": [
+    {
+      "name": "First Contact Resolution Rate",
+      "description": "Percentage of tickets resolved on first contact",
+      "target": "> 70%",
+      "measurement": "first_contact_resolutions / total_tickets"
+    },
+    {
+      "name": "Mean Time to Resolve",
+      "description": "Average time from ticket creation to resolution",
+      "target": "< 4 hours (P2), < 8 hours (P3)",
+      "measurement": "avg(resolved_time - created_time)"
+    },
+    {
+      "name": "SLA Compliance Rate",
+      "description": "Percentage of tickets meeting SLA targets",
+      "target": "> 95%",
+      "measurement": "sla_met_tickets / total_tickets"
+    },
+    {
+      "name": "Customer Satisfaction Score",
+      "description": "Average CSAT rating from post-resolution surveys",
+      "target": "> 4.2 / 5.0",
+      "measurement": "avg(survey_ratings)"
+    },
+    {
+      "name": "Ticket Volume per Agent",
+      "description": "Average tickets handled per agent per day",
+      "target": "15-25 tickets/day",
+      "measurement": "total_tickets / (agent_count * working_days)"
+    },
+    {
+      "name": "Self-Service Adoption Rate",
+      "description": "Percentage of requests resolved via self-service",
+      "target": "> 40%",
+      "measurement": "self_service_resolutions / (self_service + agent_assisted)"
+    }
+  ]
+}
