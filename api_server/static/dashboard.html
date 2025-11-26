@@ -1223,6 +1223,19 @@
         </div>
     </div>
 
+    <!-- Agent Card Execution Modal -->
+    <div id="executeModal" class="modal">
+        <div class="modal-content" style="max-width: 800px;">
+            <div class="modal-header">
+                <h2 id="executeModalTitle">Execute Workflow</h2>
+                <button class="close-btn" onclick="closeExecuteModal()">&times;</button>
+            </div>
+            <div id="executeModalBody" class="modal-body">
+                <!-- Dynamic content -->
+            </div>
+        </div>
+    </div>
+
     <!-- BPMN Viewer Modal -->
     <div id="bpmnModal" class="modal">
         <div class="bpmn-modal-content">
@@ -2585,16 +2598,22 @@
                 const categoryNum = card.category?.split('.')[0] || '?';
 
                 return `
-                    <div class="agent-card" style="background: white; border-radius: 15px; padding: 20px; box-shadow: 0 4px 15px rgba(0,0,0,0.08); cursor: pointer; transition: all 0.3s ease; border-left: 4px solid ${patternColor};" onclick="viewAgentCard('${card.apqc_id}')" onmouseover="this.style.transform='translateY(-3px)'; this.style.boxShadow='0 8px 25px rgba(0,0,0,0.12)'" onmouseout="this.style.transform='translateY(0)'; this.style.boxShadow='0 4px 15px rgba(0,0,0,0.08)'">
+                    <div class="agent-card" style="background: white; border-radius: 15px; padding: 20px; box-shadow: 0 4px 15px rgba(0,0,0,0.08); transition: all 0.3s ease; border-left: 4px solid ${patternColor};" onmouseover="this.style.transform='translateY(-3px)'; this.style.boxShadow='0 8px 25px rgba(0,0,0,0.12)'" onmouseout="this.style.transform='translateY(0)'; this.style.boxShadow='0 4px 15px rgba(0,0,0,0.08)'">
                         <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 12px;">
                             <span style="background: ${patternColor}15; color: ${patternColor}; padding: 4px 10px; border-radius: 20px; font-size: 0.75em; font-weight: 600;">${card.apqc_id}</span>
                             <span style="background: #f0f0f0; color: #666; padding: 4px 10px; border-radius: 20px; font-size: 0.75em;">${patternIcon} ${pattern.replace('_', ' ')}</span>
                         </div>
-                        <h3 style="font-size: 1.1em; margin-bottom: 8px; color: #333; line-height: 1.3;">${card.apqc_name}</h3>
+                        <h3 style="font-size: 1.1em; margin-bottom: 8px; color: #333; line-height: 1.3; cursor: pointer;" onclick="viewAgentCard('${card.apqc_id}')">${card.apqc_name}</h3>
                         <p style="font-size: 0.85em; color: #666; margin-bottom: 15px; line-height: 1.4; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden;">${card.description || 'No description'}</p>
-                        <div style="display: flex; gap: 15px; flex-wrap: wrap; font-size: 0.8em; color: #888;">
-                            <span title="Category"><span style="color: #667eea;">${categoryNum}</span> ${categoryName}</span>
-                            <span title="Workflow Steps">📊 ${card.total_steps || 0} steps</span>
+                        <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 10px;">
+                            <div style="display: flex; gap: 15px; flex-wrap: wrap; font-size: 0.8em; color: #888;">
+                                <span title="Category"><span style="color: #667eea;">${categoryNum}</span> ${categoryName}</span>
+                                <span title="Workflow Steps">📊 ${card.total_steps || 0} steps</span>
+                            </div>
+                            <div style="display: flex; gap: 8px;">
+                                <button onclick="event.stopPropagation(); openExecuteModal('${card.apqc_id}', '${card.apqc_name?.replace(/'/g, "\\'")}', true)" style="padding: 6px 12px; background: #f0f0f0; color: #666; border: none; border-radius: 6px; cursor: pointer; font-size: 0.8em; font-weight: 500;" title="Simulate execution">🧪 Dry Run</button>
+                                <button onclick="event.stopPropagation(); openExecuteModal('${card.apqc_id}', '${card.apqc_name?.replace(/'/g, "\\'")}', false)" style="padding: 6px 12px; background: linear-gradient(135deg, #27ae60, #2ecc71); color: white; border: none; border-radius: 6px; cursor: pointer; font-size: 0.8em; font-weight: 500;" title="Execute workflow">▶ Execute</button>
+                            </div>
                         </div>
                     </div>
                 `;
@@ -2724,6 +2743,281 @@
                 console.error('Error loading agent card:', error);
                 alert(`Error: ${error.message}`);
             }
+        }
+
+        // ========================================
+        // AGENT CARD EXECUTION FUNCTIONS
+        // ========================================
+        let currentExecuteApqcCode = null;
+        let currentExecuteDryRun = false;
+
+        async function openExecuteModal(apqcCode, apqcName, isDryRun) {
+            currentExecuteApqcCode = apqcCode;
+            currentExecuteDryRun = isDryRun;
+
+            const modal = document.getElementById('executeModal');
+            const title = document.getElementById('executeModalTitle');
+            const body = document.getElementById('executeModalBody');
+
+            title.textContent = isDryRun ? `🧪 Dry Run: ${apqcName}` : `▶ Execute: ${apqcName}`;
+            body.innerHTML = '<div class="loading"><div class="spinner"></div></div>';
+            modal.classList.add('active');
+
+            try {
+                // Fetch required inputs for this agent card
+                const response = await fetch(`${API_URL}/api/agent-cards/${apqcCode}/required-inputs`);
+                if (!response.ok) throw new Error('Failed to load input schema');
+                const schema = await response.json();
+
+                const requiredInputs = schema.required_inputs || [];
+                const optionalInputs = schema.optional_inputs || [];
+
+                let inputFieldsHtml = '';
+
+                if (requiredInputs.length === 0 && optionalInputs.length === 0) {
+                    inputFieldsHtml = `
+                        <div style="background: #f8f9fa; padding: 15px; border-radius: 8px; margin-bottom: 20px;">
+                            <p style="color: #666; margin: 0;">No specific input schema defined. You can provide custom JSON input below.</p>
+                        </div>
+                    `;
+                } else {
+                    // Required fields
+                    if (requiredInputs.length > 0) {
+                        inputFieldsHtml += `<h4 style="margin-bottom: 15px; color: #333;">Required Inputs</h4>`;
+                        inputFieldsHtml += requiredInputs.map(field => renderInputField(field, true)).join('');
+                    }
+
+                    // Optional fields
+                    if (optionalInputs.length > 0) {
+                        inputFieldsHtml += `<h4 style="margin: 20px 0 15px 0; color: #666;">Optional Inputs</h4>`;
+                        inputFieldsHtml += optionalInputs.map(field => renderInputField(field, false)).join('');
+                    }
+                }
+
+                body.innerHTML = `
+                    <div style="margin-bottom: 20px;">
+                        <div style="display: flex; gap: 10px; align-items: center; margin-bottom: 15px;">
+                            <span style="background: ${isDryRun ? '#f39c1215' : '#27ae6015'}; color: ${isDryRun ? '#f39c12' : '#27ae60'}; padding: 6px 15px; border-radius: 20px; font-weight: 600;">${apqcCode}</span>
+                            <span style="background: ${isDryRun ? '#f39c1215' : '#27ae6015'}; color: ${isDryRun ? '#f39c12' : '#27ae60'}; padding: 6px 15px; border-radius: 20px; font-size: 0.9em;">${isDryRun ? '🧪 Simulation Mode' : '▶ Live Execution'}</span>
+                        </div>
+                        ${isDryRun ? `<p style="color: #f39c12; font-size: 0.9em; background: #f39c1210; padding: 10px 15px; border-radius: 8px; margin-bottom: 15px;">⚠️ Dry run mode: No actual integrations will be called. This simulates the workflow execution.</p>` : `<p style="color: #e74c3c; font-size: 0.9em; background: #e74c3c10; padding: 10px 15px; border-radius: 8px; margin-bottom: 15px;">⚠️ Live execution: This will make actual API calls to configured integrations.</p>`}
+                    </div>
+
+                    <form id="executeForm" onsubmit="return false;">
+                        ${inputFieldsHtml}
+
+                        <div style="margin-top: 20px;">
+                            <h4 style="margin-bottom: 10px; color: #666;">Custom JSON Input (optional)</h4>
+                            <textarea id="executeCustomJson" style="width: 100%; height: 120px; padding: 12px; border: 2px solid #e0e0e0; border-radius: 8px; font-family: monospace; font-size: 0.9em; resize: vertical;" placeholder='{"key": "value"}'></textarea>
+                        </div>
+                    </form>
+
+                    <div id="executeResultsContainer" style="display: none; margin-top: 25px;">
+                        <h4 style="margin-bottom: 15px; color: #333;">Execution Results</h4>
+                        <div id="executeResults"></div>
+                    </div>
+
+                    <div style="display: flex; justify-content: flex-end; gap: 10px; margin-top: 25px; padding-top: 20px; border-top: 1px solid #e0e0e0;">
+                        <button class="btn secondary" onclick="closeExecuteModal()">Cancel</button>
+                        <button id="executeBtn" class="btn" onclick="runExecution()" style="background: ${isDryRun ? 'linear-gradient(135deg, #f39c12, #e67e22)' : 'linear-gradient(135deg, #27ae60, #2ecc71)'};">${isDryRun ? '🧪 Run Simulation' : '▶ Execute Workflow'}</button>
+                    </div>
+                `;
+            } catch (error) {
+                body.innerHTML = `<div style="color: #e74c3c; padding: 20px;">Error: ${error.message}</div>`;
+            }
+        }
+
+        function renderInputField(field, isRequired) {
+            const fieldId = `exec_${field.name}`;
+            const requiredMark = isRequired ? '<span style="color: #e74c3c;">*</span>' : '';
+            const typeHint = field.type === 'array' ? '(JSON array)' : field.type === 'object' ? '(JSON object)' : '';
+
+            let inputHtml = '';
+            if (field.validation?.enum) {
+                // Dropdown for enum fields
+                inputHtml = `
+                    <select id="${fieldId}" style="width: 100%; padding: 10px; border: 2px solid #e0e0e0; border-radius: 8px; font-size: 0.95em;" ${isRequired ? 'required' : ''}>
+                        <option value="">Select...</option>
+                        ${field.validation.enum.map(opt => `<option value="${opt}">${opt}</option>`).join('')}
+                    </select>
+                `;
+            } else if (field.type === 'array' || field.type === 'object') {
+                // Textarea for complex types
+                inputHtml = `<textarea id="${fieldId}" style="width: 100%; height: 80px; padding: 10px; border: 2px solid #e0e0e0; border-radius: 8px; font-family: monospace; font-size: 0.9em;" placeholder='${field.example ? JSON.stringify(field.example) : (field.type === 'array' ? '[]' : '{}')}' ${isRequired ? 'required' : ''}></textarea>`;
+            } else if (field.type === 'number' || field.type === 'integer') {
+                inputHtml = `<input type="number" id="${fieldId}" style="width: 100%; padding: 10px; border: 2px solid #e0e0e0; border-radius: 8px; font-size: 0.95em;" placeholder="${field.example || ''}" ${isRequired ? 'required' : ''} step="any">`;
+            } else if (field.type === 'boolean') {
+                inputHtml = `
+                    <select id="${fieldId}" style="width: 100%; padding: 10px; border: 2px solid #e0e0e0; border-radius: 8px; font-size: 0.95em;">
+                        <option value="">Select...</option>
+                        <option value="true">True</option>
+                        <option value="false">False</option>
+                    </select>
+                `;
+            } else {
+                inputHtml = `<input type="text" id="${fieldId}" style="width: 100%; padding: 10px; border: 2px solid #e0e0e0; border-radius: 8px; font-size: 0.95em;" placeholder="${field.example || ''}" ${isRequired ? 'required' : ''}>`;
+            }
+
+            return `
+                <div style="margin-bottom: 15px;">
+                    <label style="display: block; margin-bottom: 5px; font-weight: 600; color: #333;">${field.name} ${requiredMark} <span style="font-weight: normal; color: #888; font-size: 0.85em;">${typeHint}</span></label>
+                    ${field.description ? `<p style="color: #666; font-size: 0.85em; margin-bottom: 8px;">${field.description}</p>` : ''}
+                    ${inputHtml}
+                </div>
+            `;
+        }
+
+        async function runExecution() {
+            const btn = document.getElementById('executeBtn');
+            const originalText = btn.textContent;
+            btn.disabled = true;
+            btn.textContent = 'Executing...';
+
+            try {
+                // Collect input data from form fields
+                const inputData = {};
+                const form = document.getElementById('executeForm');
+                const inputs = form.querySelectorAll('input, select, textarea');
+
+                inputs.forEach(input => {
+                    if (input.id === 'executeCustomJson') return; // Handle separately
+                    if (!input.id.startsWith('exec_')) return;
+
+                    const fieldName = input.id.replace('exec_', '');
+                    let value = input.value.trim();
+
+                    if (value) {
+                        // Try to parse JSON for complex types
+                        if (input.tagName === 'TEXTAREA') {
+                            try {
+                                value = JSON.parse(value);
+                            } catch (e) {
+                                // Keep as string if not valid JSON
+                            }
+                        } else if (input.type === 'number') {
+                            value = parseFloat(value);
+                        } else if (value === 'true') {
+                            value = true;
+                        } else if (value === 'false') {
+                            value = false;
+                        }
+                        inputData[fieldName] = value;
+                    }
+                });
+
+                // Merge custom JSON if provided
+                const customJson = document.getElementById('executeCustomJson').value.trim();
+                if (customJson) {
+                    try {
+                        const custom = JSON.parse(customJson);
+                        Object.assign(inputData, custom);
+                    } catch (e) {
+                        throw new Error('Invalid custom JSON: ' + e.message);
+                    }
+                }
+
+                // Execute the workflow
+                const response = await fetch(`${API_URL}/api/agent-cards/${currentExecuteApqcCode}/execute`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        input_data: inputData,
+                        dry_run: currentExecuteDryRun
+                    })
+                });
+
+                const result = await response.json();
+
+                // Display results
+                const resultsContainer = document.getElementById('executeResultsContainer');
+                const resultsDiv = document.getElementById('executeResults');
+                resultsContainer.style.display = 'block';
+
+                if (result.success || result.dry_run) {
+                    resultsDiv.innerHTML = renderExecutionResults(result);
+                } else {
+                    resultsDiv.innerHTML = `
+                        <div style="background: #e74c3c15; padding: 15px; border-radius: 8px; border-left: 4px solid #e74c3c;">
+                            <strong style="color: #e74c3c;">Execution Failed</strong>
+                            <p style="color: #666; margin-top: 10px;">${result.detail || result.error || 'Unknown error'}</p>
+                        </div>
+                    `;
+                }
+            } catch (error) {
+                const resultsContainer = document.getElementById('executeResultsContainer');
+                const resultsDiv = document.getElementById('executeResults');
+                resultsContainer.style.display = 'block';
+                resultsDiv.innerHTML = `
+                    <div style="background: #e74c3c15; padding: 15px; border-radius: 8px; border-left: 4px solid #e74c3c;">
+                        <strong style="color: #e74c3c;">Error</strong>
+                        <p style="color: #666; margin-top: 10px;">${error.message}</p>
+                    </div>
+                `;
+            } finally {
+                btn.disabled = false;
+                btn.textContent = originalText;
+            }
+        }
+
+        function renderExecutionResults(result) {
+            const isDryRun = result.dry_run;
+            const statusColor = result.success ? '#27ae60' : '#e74c3c';
+            const statusBg = result.success ? '#27ae6015' : '#e74c3c15';
+
+            let stepsHtml = '';
+            const steps = isDryRun ? result.simulated_steps : (result.step_results || []);
+
+            if (steps && steps.length > 0) {
+                stepsHtml = `
+                    <div style="margin-top: 20px;">
+                        <h5 style="margin-bottom: 15px; color: #333;">${isDryRun ? 'Simulated Steps' : 'Step Results'}</h5>
+                        ${steps.map((step, idx) => `
+                            <div style="background: #f8f9fa; padding: 15px; border-radius: 8px; margin-bottom: 10px; border-left: 3px solid ${isDryRun ? '#f39c12' : statusColor};">
+                                <div style="display: flex; justify-content: space-between; align-items: center;">
+                                    <strong style="color: #333;">Step ${step.step_number || idx + 1}: ${step.step_name || 'Unknown'}</strong>
+                                    <span style="background: ${isDryRun ? '#f39c1215' : statusBg}; color: ${isDryRun ? '#f39c12' : statusColor}; padding: 2px 10px; border-radius: 10px; font-size: 0.8em;">${step.status || 'simulated'}</span>
+                                </div>
+                                ${step.would_call_integrations ? `<div style="margin-top: 10px; font-size: 0.85em; color: #666;"><strong>Integrations:</strong> ${step.would_call_integrations.join(', ')}</div>` : ''}
+                                ${step.decision_rules_to_evaluate ? `<div style="margin-top: 5px; font-size: 0.85em; color: #666;"><strong>Decision Rules:</strong> ${step.decision_rules_to_evaluate.join(', ')}</div>` : ''}
+                            </div>
+                        `).join('')}
+                    </div>
+                `;
+            }
+
+            return `
+                <div style="background: ${statusBg}; padding: 15px; border-radius: 8px; border-left: 4px solid ${statusColor};">
+                    <div style="display: flex; justify-content: space-between; align-items: center;">
+                        <strong style="color: ${statusColor};">${isDryRun ? '🧪 Dry Run Complete' : (result.success ? '✓ Execution Successful' : '✗ Execution Failed')}</strong>
+                        <span style="color: #666; font-size: 0.85em;">ID: ${result.execution_id || 'N/A'}</span>
+                    </div>
+                    ${result.message ? `<p style="color: #666; margin-top: 10px; font-size: 0.9em;">${result.message}</p>` : ''}
+                </div>
+
+                ${result.required_integrations_summary ? `
+                    <div style="margin-top: 15px; padding: 15px; background: #f8f9fa; border-radius: 8px;">
+                        <strong style="color: #333; font-size: 0.9em;">Required Integrations:</strong>
+                        <div style="margin-top: 8px; display: flex; flex-wrap: wrap; gap: 8px;">
+                            ${result.required_integrations_summary.map(int => `<span style="background: #667eea15; color: #667eea; padding: 4px 10px; border-radius: 15px; font-size: 0.8em;">${int}</span>`).join('')}
+                        </div>
+                    </div>
+                ` : ''}
+
+                ${stepsHtml}
+
+                <div style="margin-top: 15px;">
+                    <details style="cursor: pointer;">
+                        <summary style="color: #666; font-size: 0.9em; padding: 10px 0;">View Raw Response</summary>
+                        <pre style="background: #f8f9fa; padding: 15px; border-radius: 8px; overflow: auto; max-height: 300px; font-size: 0.8em; margin-top: 10px;">${JSON.stringify(result, null, 2)}</pre>
+                    </details>
+                </div>
+            `;
+        }
+
+        function closeExecuteModal() {
+            document.getElementById('executeModal').classList.remove('active');
+            currentExecuteApqcCode = null;
+            currentExecuteDryRun = false;
         }
 
         // Legacy function - redirect to drill-down
