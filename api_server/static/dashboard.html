@@ -859,6 +859,8 @@
             <button class="tab-button active" onclick="switchTab('agents')">🔍 Agent Explorer</button>
             <button class="tab-button" onclick="switchTab('categories')">📂 Browse Categories</button>
             <button class="tab-button" onclick="switchTab('integrations')">🔌 Integrations</button>
+            <button class="tab-button" onclick="switchTab('ai')">🤖 AI Processing</button>
+            <button class="tab-button" onclick="switchTab('orchestration')">🎭 Orchestration</button>
             <button class="tab-button" onclick="switchTab('execute')">🚀 Execute Workflows</button>
             <button class="tab-button" onclick="switchTab('workflow')">📋 Test Workflow</button>
             <button class="tab-button" onclick="switchTab('bpmn')">📊 BPMN Browser</button>
@@ -955,6 +957,174 @@
                 <div id="integrationsContainer" class="integrations-grid">
                     <div class="loading">
                         <div class="spinner"></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- AI Processing Tab -->
+        <div id="tab-ai" class="tab-content">
+            <div class="main-content">
+                <h2 style="margin-bottom: 10px;">🤖 AI-Powered Processing</h2>
+                <p style="color: #666; margin-bottom: 25px;">Intelligent processing using domain-specific AI processors. 78 agents enhanced with smart processing capabilities.</p>
+
+                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 30px;">
+                    <!-- Left: AI Status & Domains -->
+                    <div>
+                        <div class="card" style="margin-bottom: 20px;">
+                            <h3>📊 AI Service Status</h3>
+                            <div id="aiStatusContent" style="padding: 15px 0;">
+                                <div class="spinner"></div>
+                            </div>
+                        </div>
+
+                        <div class="card">
+                            <h3>🏢 Domain Processors</h3>
+                            <p style="color: #666; font-size: 0.9em; margin-bottom: 15px;">Select a domain to run a demo</p>
+                            <div id="aiDomainsContent" style="display: flex; flex-wrap: wrap; gap: 10px;">
+                                <button class="btn" onclick="runAIDemo('finance')" style="background: #10b981;">💰 Finance</button>
+                                <button class="btn" onclick="runAIDemo('hr')" style="background: #8b5cf6;">👥 HR</button>
+                                <button class="btn" onclick="runAIDemo('operations')" style="background: #f59e0b;">🏭 Operations</button>
+                                <button class="btn" onclick="runAIDemo('customer_service')" style="background: #3b82f6;">🎧 Customer Service</button>
+                                <button class="btn" onclick="runAIDemo('it')" style="background: #ef4444;">💻 IT</button>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Right: Demo Results -->
+                    <div>
+                        <div class="card">
+                            <h3>🧪 Demo Results</h3>
+                            <div id="aiDemoResults" style="padding: 15px 0;">
+                                <p style="color: #666; text-align: center;">Click a domain button to run a demo</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- AI Agents List -->
+                <div class="card" style="margin-top: 20px;">
+                    <h3>🤖 AI-Powered Agents (78 Total)</h3>
+                    <p style="color: #666; font-size: 0.9em; margin-bottom: 15px;">Agents enhanced with smart processing capabilities by domain</p>
+                    <div id="aiAgentsContent" style="max-height: 400px; overflow-y: auto;">
+                        <div class="spinner"></div>
+                    </div>
+                </div>
+
+                <!-- API Endpoints Reference -->
+                <div class="card" style="margin-top: 20px;">
+                    <h3>📡 AI API Endpoints</h3>
+                    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 15px; margin-top: 15px;">
+                        <div style="background: #f8f9fa; padding: 15px; border-radius: 8px; border-left: 4px solid #10b981;">
+                            <code style="color: #10b981;">GET /api/ai/status</code>
+                            <p style="font-size: 0.85em; color: #666; margin-top: 5px;">Get AI service status and capabilities</p>
+                        </div>
+                        <div style="background: #f8f9fa; padding: 15px; border-radius: 8px; border-left: 4px solid #3b82f6;">
+                            <code style="color: #3b82f6;">GET /api/ai/domains</code>
+                            <p style="font-size: 0.85em; color: #666; margin-top: 5px;">List available domain processors</p>
+                        </div>
+                        <div style="background: #f8f9fa; padding: 15px; border-radius: 8px; border-left: 4px solid #8b5cf6;">
+                            <code style="color: #8b5cf6;">POST /api/ai/process</code>
+                            <p style="font-size: 0.85em; color: #666; margin-top: 5px;">Process data with domain processor</p>
+                        </div>
+                        <div style="background: #f8f9fa; padding: 15px; border-radius: 8px; border-left: 4px solid #f59e0b;">
+                            <code style="color: #f59e0b;">POST /api/ai/analyze</code>
+                            <p style="font-size: 0.85em; color: #666; margin-top: 5px;">AI-powered data analysis</p>
+                        </div>
+                        <div style="background: #f8f9fa; padding: 15px; border-radius: 8px; border-left: 4px solid #ef4444;">
+                            <code style="color: #ef4444;">POST /api/ai/recommend</code>
+                            <p style="font-size: 0.85em; color: #666; margin-top: 5px;">Generate AI recommendations</p>
+                        </div>
+                        <div style="background: #f8f9fa; padding: 15px; border-radius: 8px; border-left: 4px solid #6366f1;">
+                            <code style="color: #6366f1;">POST /api/ai/demo/{domain}</code>
+                            <p style="font-size: 0.85em; color: #666; margin-top: 5px;">Run domain demo with sample data</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Orchestration Tab -->
+        <div id="tab-orchestration" class="tab-content">
+            <div class="main-content">
+                <h2 style="margin-bottom: 10px;">🎭 Composite Agent Orchestration</h2>
+                <p style="color: #666; margin-bottom: 25px;">Execute composite workflows with AI-powered orchestration. Coordinate multiple agents for complex business processes.</p>
+
+                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 30px;">
+                    <!-- Left: Composite Selection -->
+                    <div>
+                        <div class="card" style="margin-bottom: 20px;">
+                            <h3>📊 Orchestration Status</h3>
+                            <div id="orchestrationStatusContent" style="padding: 15px 0;">
+                                <div class="spinner"></div>
+                            </div>
+                        </div>
+
+                        <div class="card">
+                            <h3>🏢 Available Composite Agents</h3>
+                            <p style="color: #666; font-size: 0.9em; margin-bottom: 15px;">Select a composite to execute</p>
+                            <div id="compositesListContent" style="max-height: 350px; overflow-y: auto;">
+                                <div class="spinner"></div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Right: Execution -->
+                    <div>
+                        <div class="card" style="margin-bottom: 20px;">
+                            <h3>🚀 Execute Composite Workflow</h3>
+                            <div style="margin-bottom: 15px;">
+                                <label style="display: block; margin-bottom: 5px; font-weight: 500;">Selected Composite:</label>
+                                <input type="text" id="selectedComposite" readonly style="width: 100%; padding: 10px; border: 1px solid #ddd; border-radius: 6px; background: #f9f9f9;" placeholder="Select from list...">
+                            </div>
+                            <div style="margin-bottom: 15px;">
+                                <label style="display: block; margin-bottom: 5px; font-weight: 500;">Max Agents to Execute:</label>
+                                <input type="number" id="maxAgents" value="5" min="1" max="20" style="width: 100%; padding: 10px; border: 1px solid #ddd; border-radius: 6px;">
+                            </div>
+                            <div style="margin-bottom: 15px;">
+                                <label style="display: block; margin-bottom: 5px; font-weight: 500;">Input Data (JSON):</label>
+                                <textarea id="orchestrationInput" style="width: 100%; height: 100px; padding: 10px; border: 1px solid #ddd; border-radius: 6px; font-family: monospace;">{}</textarea>
+                            </div>
+                            <button class="btn" onclick="executeComposite()" style="width: 100%; background: #10b981;">▶️ Execute Composite Workflow</button>
+                        </div>
+
+                        <div class="card">
+                            <h3>📋 Execution Results</h3>
+                            <div id="orchestrationResults" style="padding: 15px 0; max-height: 300px; overflow-y: auto;">
+                                <p style="color: #666; text-align: center;">Select and execute a composite workflow</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Recent Executions -->
+                <div class="card" style="margin-top: 20px;">
+                    <h3>📜 Recent Executions</h3>
+                    <div id="recentOrchestrations" style="max-height: 300px; overflow-y: auto;">
+                        <div class="spinner"></div>
+                    </div>
+                </div>
+
+                <!-- API Reference -->
+                <div class="card" style="margin-top: 20px;">
+                    <h3>📡 Orchestration API Endpoints</h3>
+                    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 15px; margin-top: 15px;">
+                        <div style="background: #f8f9fa; padding: 15px; border-radius: 8px; border-left: 4px solid #10b981;">
+                            <code style="color: #10b981;">GET /api/orchestration/status</code>
+                            <p style="font-size: 0.85em; color: #666; margin-top: 5px;">Get orchestration engine status</p>
+                        </div>
+                        <div style="background: #f8f9fa; padding: 15px; border-radius: 8px; border-left: 4px solid #3b82f6;">
+                            <code style="color: #3b82f6;">GET /api/orchestration/composites</code>
+                            <p style="font-size: 0.85em; color: #666; margin-top: 5px;">List available composite agents</p>
+                        </div>
+                        <div style="background: #f8f9fa; padding: 15px; border-radius: 8px; border-left: 4px solid #8b5cf6;">
+                            <code style="color: #8b5cf6;">POST /api/orchestration/execute</code>
+                            <p style="font-size: 0.85em; color: #666; margin-top: 5px;">Execute custom workflow</p>
+                        </div>
+                        <div style="background: #f8f9fa; padding: 15px; border-radius: 8px; border-left: 4px solid #f59e0b;">
+                            <code style="color: #f59e0b;">POST /api/orchestration/composite/{level}/{id}</code>
+                            <p style="font-size: 0.85em; color: #666; margin-top: 5px;">Execute composite agent</p>
+                        </div>
                     </div>
                 </div>
             </div>
@@ -1350,12 +1520,335 @@
                 loadCategoryAgents();
             } else if (tabName === 'integrations') {
                 loadIntegrations();
+            } else if (tabName === 'ai') {
+                loadAITab();
+            } else if (tabName === 'orchestration') {
+                loadOrchestrationTab();
             } else if (tabName === 'execute') {
                 loadExecuteTab();
             } else if (tabName === 'bpmn') {
                 loadBpmnFiles();
             } else if (tabName === 'agentcards') {
                 loadAgentCards();
+            }
+        }
+
+        // Selected composite state
+        let selectedCompositeData = null;
+
+        // Load Orchestration Tab
+        async function loadOrchestrationTab() {
+            await Promise.all([
+                loadOrchestrationStatus(),
+                loadCompositesList(),
+                loadRecentOrchestrations()
+            ]);
+        }
+
+        // Load Orchestration Status
+        async function loadOrchestrationStatus() {
+            try {
+                const response = await fetch(`${API_URL}/api/orchestration/status`);
+                const data = await response.json();
+
+                const statusHtml = `
+                    <div style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 15px;">
+                        <div style="background: ${data.available ? '#d1fae5' : '#fee2e2'}; padding: 12px; border-radius: 8px;">
+                            <strong>Engine:</strong> ${data.available ? '✅ Available' : '❌ Unavailable'}
+                        </div>
+                        <div style="background: #f3f4f6; padding: 12px; border-radius: 8px;">
+                            <strong>Active:</strong> ${data.active_executions || 0} running
+                        </div>
+                        <div style="background: #f3f4f6; padding: 12px; border-radius: 8px;">
+                            <strong>Total:</strong> ${data.total_executions || 0} executions
+                        </div>
+                    </div>
+                `;
+                document.getElementById('orchestrationStatusContent').innerHTML = statusHtml;
+            } catch (error) {
+                document.getElementById('orchestrationStatusContent').innerHTML = `<p style="color: #ef4444;">Error: ${error.message}</p>`;
+            }
+        }
+
+        // Load Composites List
+        async function loadCompositesList() {
+            try {
+                const response = await fetch(`${API_URL}/api/orchestration/composites`);
+                const data = await response.json();
+
+                let html = '<div style="display: flex; flex-direction: column; gap: 8px;">';
+
+                // Group by level
+                const level1 = data.composites.filter(c => c.level === 1);
+                const level2 = data.composites.filter(c => c.level === 2);
+
+                html += '<div style="font-weight: 600; color: #374151; margin-bottom: 5px;">Level 1 Categories (${level1.length})</div>';
+                for (const comp of level1) {
+                    html += `
+                        <div onclick="selectComposite(${comp.level}, '${comp.id}', '${comp.name.replace(/'/g, "\\'")}', ${comp.child_agents})"
+                             style="background: #f8f9fa; padding: 12px; border-radius: 8px; cursor: pointer; border: 2px solid transparent; transition: all 0.2s;"
+                             onmouseover="this.style.borderColor='#10b981'" onmouseout="this.style.borderColor='transparent'"
+                             id="comp-${comp.level}-${comp.id}">
+                            <strong style="color: #374151;">${comp.id}. ${comp.name}</strong>
+                            <span style="background: #10b981; color: white; padding: 2px 8px; border-radius: 10px; font-size: 0.8em; margin-left: 8px;">${comp.child_agents} agents</span>
+                        </div>
+                    `;
+                }
+
+                if (level2.length > 0) {
+                    html += '<div style="font-weight: 600; color: #374151; margin: 15px 0 5px;">Level 2 Processes (${level2.length})</div>';
+                    for (const comp of level2.slice(0, 10)) {
+                        html += `
+                            <div onclick="selectComposite(${comp.level}, '${comp.id}', '${comp.name.replace(/'/g, "\\'")}', ${comp.child_agents})"
+                                 style="background: #f0f9ff; padding: 10px; border-radius: 6px; cursor: pointer; border: 2px solid transparent; font-size: 0.9em;"
+                                 onmouseover="this.style.borderColor='#3b82f6'" onmouseout="this.style.borderColor='transparent'"
+                                 id="comp-${comp.level}-${comp.id}">
+                                <strong>${comp.id}</strong> - ${comp.name}
+                                <span style="background: #3b82f6; color: white; padding: 2px 6px; border-radius: 8px; font-size: 0.75em; margin-left: 5px;">${comp.child_agents}</span>
+                            </div>
+                        `;
+                    }
+                    if (level2.length > 10) {
+                        html += `<p style="color: #666; font-size: 0.85em; text-align: center;">...and ${level2.length - 10} more Level 2 composites</p>`;
+                    }
+                }
+
+                html += '</div>';
+                document.getElementById('compositesListContent').innerHTML = html;
+            } catch (error) {
+                document.getElementById('compositesListContent').innerHTML = `<p style="color: #ef4444;">Error: ${error.message}</p>`;
+            }
+        }
+
+        // Select Composite
+        function selectComposite(level, id, name, childCount) {
+            selectedCompositeData = { level, id, name, childCount };
+            document.getElementById('selectedComposite').value = `Level ${level}: ${id} - ${name} (${childCount} agents)`;
+
+            // Highlight selected
+            document.querySelectorAll('[id^="comp-"]').forEach(el => el.style.borderColor = 'transparent');
+            document.getElementById(`comp-${level}-${id}`).style.borderColor = '#10b981';
+        }
+
+        // Execute Composite
+        async function executeComposite() {
+            if (!selectedCompositeData) {
+                alert('Please select a composite agent first');
+                return;
+            }
+
+            const resultsDiv = document.getElementById('orchestrationResults');
+            resultsDiv.innerHTML = '<div class="spinner"></div><p style="text-align: center; color: #666;">Executing workflow...</p>';
+
+            try {
+                const maxAgents = parseInt(document.getElementById('maxAgents').value) || 5;
+                let inputData = {};
+                try {
+                    inputData = JSON.parse(document.getElementById('orchestrationInput').value || '{}');
+                } catch (e) {
+                    inputData = {};
+                }
+
+                const response = await fetch(`${API_URL}/api/orchestration/composite/${selectedCompositeData.level}/${selectedCompositeData.id}`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        composite_level: selectedCompositeData.level,
+                        composite_id: selectedCompositeData.id,
+                        input_data: inputData,
+                        max_agents: maxAgents
+                    })
+                });
+
+                const data = await response.json();
+
+                if (response.ok) {
+                    const exec = data.execution;
+                    const resultHtml = `
+                        <div style="background: #d1fae5; padding: 12px; border-radius: 8px; margin-bottom: 15px;">
+                            <strong>✅ ${exec.status}</strong>
+                            <span style="float: right; font-size: 0.85em; color: #666;">ID: ${exec.execution_id}</span>
+                        </div>
+                        <div style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 10px; margin-bottom: 15px;">
+                            <div style="background: #f3f4f6; padding: 10px; border-radius: 6px;">
+                                <strong>Steps:</strong> ${exec.steps_completed}/${exec.steps_total}
+                            </div>
+                            <div style="background: #f3f4f6; padding: 10px; border-radius: 6px;">
+                                <strong>Duration:</strong> ${exec.duration_ms ? (exec.duration_ms/1000).toFixed(2) + 's' : 'N/A'}
+                            </div>
+                        </div>
+                        ${exec.ai_orchestration?.summary ? `
+                            <div style="background: #e0e7ff; padding: 12px; border-radius: 8px; margin-bottom: 15px;">
+                                <strong>🤖 AI Summary:</strong><br>
+                                ${exec.ai_orchestration.summary.summary || 'N/A'}
+                            </div>
+                        ` : ''}
+                        <div>
+                            <strong>Steps:</strong>
+                            <div style="max-height: 150px; overflow-y: auto; margin-top: 8px;">
+                                ${exec.steps.map((s, i) => `
+                                    <div style="background: ${s.status === 'completed' ? '#d1fae5' : s.status === 'failed' ? '#fee2e2' : '#f3f4f6'}; padding: 8px; border-radius: 4px; margin-bottom: 4px; font-size: 0.85em;">
+                                        ${i+1}. ${s.agent_name} - ${s.status} ${s.duration_ms ? '(' + s.duration_ms.toFixed(0) + 'ms)' : ''}
+                                    </div>
+                                `).join('')}
+                            </div>
+                        </div>
+                    `;
+                    resultsDiv.innerHTML = resultHtml;
+
+                    // Reload recent executions
+                    loadRecentOrchestrations();
+                } else {
+                    resultsDiv.innerHTML = `<p style="color: #ef4444;">❌ Error: ${data.detail || 'Execution failed'}</p>`;
+                }
+            } catch (error) {
+                resultsDiv.innerHTML = `<p style="color: #ef4444;">❌ Error: ${error.message}</p>`;
+            }
+        }
+
+        // Load Recent Orchestrations
+        async function loadRecentOrchestrations() {
+            try {
+                const response = await fetch(`${API_URL}/api/orchestration/executions?limit=5`);
+                const data = await response.json();
+
+                if (data.executions.length === 0) {
+                    document.getElementById('recentOrchestrations').innerHTML = '<p style="color: #666; text-align: center;">No executions yet</p>';
+                    return;
+                }
+
+                let html = '<div style="display: flex; flex-direction: column; gap: 10px;">';
+                for (const exec of data.executions) {
+                    const statusColor = exec.status === 'completed' ? '#10b981' : exec.status === 'failed' ? '#ef4444' : '#f59e0b';
+                    html += `
+                        <div style="background: #f8f9fa; padding: 12px; border-radius: 8px; border-left: 4px solid ${statusColor};">
+                            <div style="display: flex; justify-content: space-between; align-items: center;">
+                                <strong>${exec.workflow_name}</strong>
+                                <span style="background: ${statusColor}; color: white; padding: 2px 8px; border-radius: 10px; font-size: 0.8em;">${exec.status}</span>
+                            </div>
+                            <div style="font-size: 0.85em; color: #666; margin-top: 5px;">
+                                ${exec.steps_completed}/${exec.steps_total} steps • ${exec.duration_ms ? (exec.duration_ms/1000).toFixed(2) + 's' : 'N/A'} • ${new Date(exec.created_at).toLocaleTimeString()}
+                            </div>
+                        </div>
+                    `;
+                }
+                html += '</div>';
+                document.getElementById('recentOrchestrations').innerHTML = html;
+            } catch (error) {
+                document.getElementById('recentOrchestrations').innerHTML = `<p style="color: #ef4444;">Error: ${error.message}</p>`;
+            }
+        }
+
+        // Load AI Processing Tab
+        async function loadAITab() {
+            await Promise.all([
+                loadAIStatus(),
+                loadAIAgents()
+            ]);
+        }
+
+        // Load AI Status
+        async function loadAIStatus() {
+            try {
+                const response = await fetch(`${API_URL}/api/ai/status`);
+                const data = await response.json();
+
+                const statusHtml = `
+                    <div style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 15px;">
+                        <div style="background: ${data.available ? '#d1fae5' : '#fee2e2'}; padding: 12px; border-radius: 8px;">
+                            <strong>Status:</strong> ${data.available ? '✅ Available' : '❌ Unavailable'}
+                        </div>
+                        <div style="background: #f3f4f6; padding: 12px; border-radius: 8px;">
+                            <strong>Version:</strong> ${data.version || 'N/A'}
+                        </div>
+                        <div style="background: #f3f4f6; padding: 12px; border-radius: 8px;">
+                            <strong>AI Agents:</strong> ${data.smart_agents_count || 0}
+                        </div>
+                        <div style="background: #f3f4f6; padding: 12px; border-radius: 8px;">
+                            <strong>Providers:</strong> ${(data.ai_providers || []).join(', ')}
+                        </div>
+                    </div>
+                    <div style="margin-top: 15px;">
+                        <strong>Capabilities:</strong>
+                        <div style="display: flex; flex-wrap: wrap; gap: 8px; margin-top: 8px;">
+                            ${(data.capabilities || []).map(c => `<span style="background: #e0e7ff; color: #4338ca; padding: 4px 10px; border-radius: 12px; font-size: 0.85em;">${c}</span>`).join('')}
+                        </div>
+                    </div>
+                `;
+                document.getElementById('aiStatusContent').innerHTML = statusHtml;
+            } catch (error) {
+                document.getElementById('aiStatusContent').innerHTML = `<p style="color: #ef4444;">Error loading AI status: ${error.message}</p>`;
+            }
+        }
+
+        // Load AI Agents List
+        async function loadAIAgents() {
+            try {
+                const response = await fetch(`${API_URL}/api/ai/agents`);
+                const data = await response.json();
+
+                // Group by domain folder
+                const byDomain = {};
+                data.ai_powered_agents.forEach(agent => {
+                    const domain = agent.domain_folder;
+                    if (!byDomain[domain]) byDomain[domain] = [];
+                    byDomain[domain].push(agent);
+                });
+
+                let html = '<div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 15px;">';
+                for (const [domain, agents] of Object.entries(byDomain)) {
+                    html += `
+                        <div style="background: #f8f9fa; padding: 12px; border-radius: 8px;">
+                            <strong style="color: #374151; text-transform: capitalize;">${domain}</strong>
+                            <span style="background: #10b981; color: white; padding: 2px 8px; border-radius: 10px; font-size: 0.8em; margin-left: 8px;">${agents.length}</span>
+                            <ul style="margin-top: 8px; padding-left: 20px; font-size: 0.85em; color: #6b7280;">
+                                ${agents.slice(0, 3).map(a => `<li>${a.class_name}</li>`).join('')}
+                                ${agents.length > 3 ? `<li style="color: #9ca3af;">...and ${agents.length - 3} more</li>` : ''}
+                            </ul>
+                        </div>
+                    `;
+                }
+                html += '</div>';
+
+                document.getElementById('aiAgentsContent').innerHTML = html;
+            } catch (error) {
+                document.getElementById('aiAgentsContent').innerHTML = `<p style="color: #ef4444;">Error loading AI agents: ${error.message}</p>`;
+            }
+        }
+
+        // Run AI Demo
+        async function runAIDemo(domain) {
+            const resultsDiv = document.getElementById('aiDemoResults');
+            resultsDiv.innerHTML = '<div class="spinner"></div><p style="text-align: center; color: #666;">Running demo...</p>';
+
+            try {
+                const response = await fetch(`${API_URL}/api/ai/demo/${domain}`, { method: 'POST' });
+                const data = await response.json();
+
+                if (response.ok) {
+                    const resultHtml = `
+                        <div style="background: #d1fae5; padding: 12px; border-radius: 8px; margin-bottom: 15px;">
+                            <strong>✅ ${data.domain} Demo Completed</strong>
+                            <span style="float: right; color: #666; font-size: 0.85em;">${new Date(data.timestamp).toLocaleTimeString()}</span>
+                        </div>
+                        <div style="margin-bottom: 10px;">
+                            <strong>Scenario:</strong> ${data.demo_scenario}
+                        </div>
+                        <div style="margin-bottom: 10px;">
+                            <strong>Input Data:</strong>
+                            <pre style="background: #f3f4f6; padding: 10px; border-radius: 6px; font-size: 0.85em; overflow-x: auto; max-height: 150px;">${JSON.stringify(data.input_data, null, 2)}</pre>
+                        </div>
+                        <div>
+                            <strong>Result:</strong>
+                            <pre style="background: #f3f4f6; padding: 10px; border-radius: 6px; font-size: 0.85em; overflow-x: auto; max-height: 200px;">${JSON.stringify(data.result, null, 2)}</pre>
+                        </div>
+                    `;
+                    resultsDiv.innerHTML = resultHtml;
+                } else {
+                    resultsDiv.innerHTML = `<p style="color: #ef4444;">❌ Error: ${data.detail || 'Unknown error'}</p>`;
+                }
+            } catch (error) {
+                resultsDiv.innerHTML = `<p style="color: #ef4444;">❌ Error: ${error.message}</p>`;
             }
         }
 

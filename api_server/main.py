@@ -2248,6 +2248,663 @@ async def get_agent_card_integrations(apqc_code: str):
 
 
 # ============================================================================
+# AI-Powered Smart Processing Endpoints
+# ============================================================================
+
+# Import smart processing services
+try:
+    from superstandard.services.smart_processing import get_processor, ProcessorFactory
+    from superstandard.services.ai_service import get_ai_service, AIService
+    AI_SERVICES_AVAILABLE = True
+except ImportError:
+    AI_SERVICES_AVAILABLE = False
+    ProcessorFactory = None
+
+
+class AIProcessRequest(BaseModel):
+    """Request model for AI processing"""
+    domain: str = Field(..., description="Domain processor to use (finance, hr, operations, customer_service, it)")
+    task_type: str = Field(default="default", description="Type of task to perform")
+    data: Dict[str, Any] = Field(default_factory=dict, description="Input data for processing")
+    context: Dict[str, Any] = Field(default_factory=dict, description="Additional context")
+    options: Dict[str, Any] = Field(default_factory=dict, description="Processing options")
+
+
+class AIAnalyzeRequest(BaseModel):
+    """Request model for AI analysis"""
+    prompt: str = Field(..., description="Analysis prompt")
+    data: Optional[Dict[str, Any]] = Field(default=None, description="Data to analyze")
+    domain: Optional[str] = Field(default=None, description="Optional domain context")
+
+
+class AIRecommendRequest(BaseModel):
+    """Request model for AI recommendations"""
+    context: Dict[str, Any] = Field(..., description="Context for recommendations")
+    constraints: List[str] = Field(default_factory=list, description="Constraints to consider")
+    max_recommendations: int = Field(default=5, description="Maximum recommendations to return")
+
+
+@app.get("/api/ai/status")
+async def get_ai_status():
+    """
+    Get AI services status and available capabilities.
+    """
+    if not AI_SERVICES_AVAILABLE:
+        return {
+            "available": False,
+            "message": "AI services not available. Install required dependencies.",
+            "domains": [],
+            "capabilities": []
+        }
+
+    # Get available domains
+    domains = ["finance", "hr", "operations", "customer_service", "it"]
+
+    return {
+        "available": True,
+        "version": "1.0.0",
+        "domains": domains,
+        "capabilities": [
+            "analyze",
+            "process",
+            "recommend",
+            "decide",
+            "assess_risk",
+            "extract_entities"
+        ],
+        "ai_providers": ["openai", "anthropic", "ollama", "mock"],
+        "smart_agents_count": 78
+    }
+
+
+@app.get("/api/ai/domains")
+async def list_ai_domains():
+    """
+    List available domain processors and their capabilities.
+    """
+    if not AI_SERVICES_AVAILABLE:
+        raise HTTPException(status_code=503, detail="AI services not available")
+
+    domains = {
+        "finance": {
+            "name": "Finance Processor",
+            "description": "Financial analysis, risk assessment, forecasting",
+            "task_types": ["default", "risk_assessment", "forecasting", "anomaly_detection"],
+            "capabilities": [
+                "analyze_financial_data",
+                "assess_financial_risk",
+                "forecast_metrics",
+                "detect_anomalies"
+            ]
+        },
+        "hr": {
+            "name": "HR Processor",
+            "description": "Human resources, recruitment, workforce planning",
+            "task_types": ["default", "recruitment", "performance", "workforce_planning"],
+            "capabilities": [
+                "evaluate_candidate",
+                "assess_performance",
+                "plan_workforce",
+                "analyze_engagement"
+            ]
+        },
+        "operations": {
+            "name": "Operations Processor",
+            "description": "Supply chain, manufacturing, logistics optimization",
+            "task_types": ["default", "supply_chain", "inventory", "production"],
+            "capabilities": [
+                "optimize_supply_chain",
+                "manage_inventory",
+                "plan_production",
+                "analyze_efficiency"
+            ]
+        },
+        "customer_service": {
+            "name": "Customer Service Processor",
+            "description": "Ticket handling, sentiment analysis, customer insights",
+            "task_types": ["default", "ticket_routing", "sentiment_analysis", "customer_insights"],
+            "capabilities": [
+                "route_ticket",
+                "analyze_sentiment",
+                "generate_response",
+                "assess_satisfaction"
+            ]
+        },
+        "it": {
+            "name": "IT Processor",
+            "description": "System monitoring, incident management, capacity planning",
+            "task_types": ["default", "incident", "monitoring", "capacity"],
+            "capabilities": [
+                "analyze_incident",
+                "monitor_systems",
+                "plan_capacity",
+                "assess_security"
+            ]
+        }
+    }
+
+    return {
+        "total": len(domains),
+        "domains": domains
+    }
+
+
+@app.post("/api/ai/process")
+async def ai_process(request: AIProcessRequest):
+    """
+    Process data using domain-specific AI processor.
+
+    This endpoint routes requests to the appropriate domain processor
+    (Finance, HR, Operations, Customer Service, IT) for intelligent analysis.
+
+    Example:
+        POST /api/ai/process
+        {
+            "domain": "finance",
+            "task_type": "risk_assessment",
+            "data": {"portfolio": [...], "market_conditions": "volatile"},
+            "context": {"risk_tolerance": "moderate"}
+        }
+    """
+    if not AI_SERVICES_AVAILABLE:
+        raise HTTPException(status_code=503, detail="AI services not available")
+
+    try:
+        processor = get_processor(request.domain)
+
+        processing_context = {
+            "data": request.data,
+            "context": request.context,
+            "options": request.options,
+            "timestamp": datetime.now().isoformat()
+        }
+
+        result = await processor.process(processing_context, request.task_type)
+
+        return {
+            "status": "completed",
+            "domain": request.domain,
+            "task_type": request.task_type,
+            "timestamp": datetime.now().isoformat(),
+            "ai_powered": True,
+            "result": result
+        }
+    except Exception as e:
+        logger.error(f"AI processing error: {str(e)}")
+        raise HTTPException(status_code=500, detail=f"AI processing failed: {str(e)}")
+
+
+@app.post("/api/ai/analyze")
+async def ai_analyze(request: AIAnalyzeRequest):
+    """
+    Perform AI-powered analysis on provided data.
+
+    This endpoint uses the AI service to analyze data and extract insights.
+
+    Example:
+        POST /api/ai/analyze
+        {
+            "prompt": "Analyze this sales data and identify trends",
+            "data": {"sales": [...], "period": "Q4 2024"}
+        }
+    """
+    if not AI_SERVICES_AVAILABLE:
+        raise HTTPException(status_code=503, detail="AI services not available")
+
+    try:
+        ai_service = get_ai_service()
+        result = await ai_service.analyze(
+            prompt=request.prompt,
+            data=request.data
+        )
+
+        return {
+            "status": "completed",
+            "timestamp": datetime.now().isoformat(),
+            "ai_powered": True,
+            "analysis": result
+        }
+    except Exception as e:
+        logger.error(f"AI analysis error: {str(e)}")
+        raise HTTPException(status_code=500, detail=f"AI analysis failed: {str(e)}")
+
+
+@app.post("/api/ai/recommend")
+async def ai_recommend(request: AIRecommendRequest):
+    """
+    Generate AI-powered recommendations.
+
+    This endpoint generates actionable recommendations based on context and constraints.
+
+    Example:
+        POST /api/ai/recommend
+        {
+            "context": {"issue": "high customer churn", "segment": "enterprise"},
+            "constraints": ["budget under $50k", "implement within 30 days"],
+            "max_recommendations": 3
+        }
+    """
+    if not AI_SERVICES_AVAILABLE:
+        raise HTTPException(status_code=503, detail="AI services not available")
+
+    try:
+        ai_service = get_ai_service()
+        recommendations = await ai_service.generate_recommendations(
+            context=request.context,
+            constraints=request.constraints
+        )
+
+        return {
+            "status": "completed",
+            "timestamp": datetime.now().isoformat(),
+            "ai_powered": True,
+            "recommendations": recommendations[:request.max_recommendations]
+        }
+    except Exception as e:
+        logger.error(f"AI recommendation error: {str(e)}")
+        raise HTTPException(status_code=500, detail=f"AI recommendation failed: {str(e)}")
+
+
+@app.get("/api/ai/agents")
+async def list_ai_agents():
+    """
+    List all agents with AI-powered smart processing capabilities.
+    """
+    # Find all agents with smart processing
+    agents_dir = Path(__file__).parent.parent / "src" / "superstandard" / "agents"
+    ai_agents = []
+
+    if agents_dir.exists():
+        for domain_dir in agents_dir.iterdir():
+            if domain_dir.is_dir() and not domain_dir.name.startswith('_'):
+                for agent_file in domain_dir.glob("*_agent.py"):
+                    try:
+                        content = agent_file.read_text()
+                        if "smart_processing" in content:
+                            # Extract agent info
+                            import re
+                            class_match = re.search(r'class\s+(\w+Agent)', content)
+                            apqc_match = re.search(r'APQC_PROCESS_ID\s*=\s*["\']([^"\']+)["\']', content)
+                            domain_match = re.search(r'domain:\s*str\s*=\s*["\']([^"\']+)["\']', content)
+
+                            ai_agents.append({
+                                "file": agent_file.name,
+                                "domain_folder": domain_dir.name,
+                                "class_name": class_match.group(1) if class_match else "Unknown",
+                                "apqc_process_id": apqc_match.group(1) if apqc_match else "Unknown",
+                                "domain": domain_match.group(1) if domain_match else domain_dir.name,
+                                "ai_powered": True
+                            })
+                    except Exception:
+                        pass
+
+    return {
+        "total": len(ai_agents),
+        "ai_powered_agents": ai_agents
+    }
+
+
+@app.post("/api/ai/demo/{domain}")
+async def ai_demo(domain: str):
+    """
+    Run a demo of AI-powered processing for a specific domain.
+
+    Available domains: finance, hr, operations, customer_service, it
+
+    This endpoint uses sample data to demonstrate the AI capabilities.
+    """
+    if not AI_SERVICES_AVAILABLE:
+        raise HTTPException(status_code=503, detail="AI services not available")
+
+    demo_data = {
+        "finance": {
+            "task_type": "risk_assessment",
+            "data": {
+                "portfolio_value": 500000,
+                "holdings": [
+                    {"symbol": "AAPL", "allocation": 0.25},
+                    {"symbol": "MSFT", "allocation": 0.20},
+                    {"symbol": "GOOGL", "allocation": 0.15},
+                    {"symbol": "BND", "allocation": 0.40}
+                ],
+                "risk_tolerance": "moderate"
+            },
+            "context": {"market_conditions": "volatile"}
+        },
+        "hr": {
+            "task_type": "recruitment",
+            "data": {
+                "position": "Senior Software Engineer",
+                "candidates": 15,
+                "requirements": ["Python", "AWS", "5+ years experience"]
+            },
+            "context": {"urgency": "high"}
+        },
+        "operations": {
+            "task_type": "supply_chain",
+            "data": {
+                "inventory_level": 1500,
+                "demand_forecast": 2000,
+                "lead_time_days": 14
+            },
+            "context": {"season": "peak"}
+        },
+        "customer_service": {
+            "task_type": "ticket_routing",
+            "data": {
+                "ticket_subject": "Cannot login to my account",
+                "ticket_content": "I've been trying for 2 hours and getting error 403",
+                "customer_tier": "premium"
+            },
+            "context": {"channel": "email"}
+        },
+        "it": {
+            "task_type": "incident",
+            "data": {
+                "incident_type": "service_degradation",
+                "affected_systems": ["api-gateway", "auth-service"],
+                "error_rate": 0.15
+            },
+            "context": {"severity": "high"}
+        }
+    }
+
+    if domain not in demo_data:
+        raise HTTPException(
+            status_code=400,
+            detail=f"Unknown domain: {domain}. Available: {list(demo_data.keys())}"
+        )
+
+    try:
+        processor = get_processor(domain)
+        demo = demo_data[domain]
+
+        result = await processor.process(
+            {"data": demo["data"], "context": demo["context"]},
+            demo["task_type"]
+        )
+
+        return {
+            "status": "completed",
+            "domain": domain,
+            "demo_scenario": demo["task_type"],
+            "input_data": demo["data"],
+            "timestamp": datetime.now().isoformat(),
+            "ai_powered": True,
+            "result": result
+        }
+    except Exception as e:
+        logger.error(f"AI demo error: {str(e)}")
+        raise HTTPException(status_code=500, detail=f"AI demo failed: {str(e)}")
+
+
+# ============================================================================
+# Workflow Orchestration Endpoints
+# ============================================================================
+
+# Import orchestration engine
+try:
+    from superstandard.engine.orchestration_engine import get_orchestration_engine
+    ORCHESTRATION_AVAILABLE = True
+except ImportError:
+    ORCHESTRATION_AVAILABLE = False
+
+
+class OrchestrationRequest(BaseModel):
+    """Request model for workflow orchestration"""
+    workflow_id: str = Field(..., description="Workflow identifier (e.g., APQC level)")
+    workflow_name: str = Field(..., description="Human-readable workflow name")
+    agent_ids: List[str] = Field(..., description="List of agent IDs to execute")
+    input_data: Dict[str, Any] = Field(default_factory=dict, description="Initial input data")
+    options: Dict[str, Any] = Field(default_factory=dict, description="Execution options")
+
+
+class CompositeExecuteRequest(BaseModel):
+    """Request to execute a composite agent workflow"""
+    composite_level: int = Field(..., ge=1, le=2, description="Composite level (1 or 2)")
+    composite_id: str = Field(..., description="Composite agent ID (e.g., '1', '8')")
+    input_data: Dict[str, Any] = Field(default_factory=dict, description="Input data")
+    max_agents: int = Field(default=10, ge=1, le=50, description="Max agents to execute")
+
+
+@app.get("/api/orchestration/status")
+async def get_orchestration_status():
+    """
+    Get orchestration engine status.
+    """
+    if not ORCHESTRATION_AVAILABLE:
+        return {
+            "available": False,
+            "message": "Orchestration engine not available"
+        }
+
+    engine = get_orchestration_engine()
+    executions = engine.list_executions(limit=10)
+
+    return {
+        "available": True,
+        "active_executions": len([e for e in executions if e["status"] == "running"]),
+        "total_executions": len(engine.executions),
+        "recent_executions": executions[:5]
+    }
+
+
+@app.post("/api/orchestration/execute")
+async def execute_orchestrated_workflow(request: OrchestrationRequest):
+    """
+    Execute a workflow with AI-powered orchestration.
+
+    The orchestration engine will:
+    - Analyze the workflow for optimal execution
+    - Execute agents sequentially or in parallel
+    - Handle errors with AI-powered recovery
+    - Provide real-time progress tracking
+
+    Example:
+        POST /api/orchestration/execute
+        {
+            "workflow_id": "8",
+            "workflow_name": "Manage Financial Resources",
+            "agent_ids": ["8.1.1", "8.1.2", "8.2.1"],
+            "input_data": {"amount": 10000},
+            "options": {"allow_parallel": true}
+        }
+    """
+    if not ORCHESTRATION_AVAILABLE:
+        raise HTTPException(status_code=503, detail="Orchestration engine not available")
+
+    try:
+        engine = get_orchestration_engine()
+
+        execution = await engine.execute_workflow(
+            workflow_id=request.workflow_id,
+            workflow_name=request.workflow_name,
+            agent_ids=request.agent_ids,
+            input_data=request.input_data,
+            options=request.options
+        )
+
+        return execution.to_dict()
+
+    except Exception as e:
+        logger.error(f"Orchestration error: {str(e)}")
+        raise HTTPException(status_code=500, detail=f"Orchestration failed: {str(e)}")
+
+
+@app.post("/api/orchestration/composite/{level}/{composite_id}")
+async def execute_composite_workflow(level: int, composite_id: str, request: CompositeExecuteRequest):
+    """
+    Execute a composite agent workflow.
+
+    This loads and executes a predefined composite agent with AI orchestration.
+
+    Args:
+        level: Composite level (1 or 2)
+        composite_id: The composite ID (e.g., "1" for "Develop Vision and Strategy")
+
+    Example:
+        POST /api/orchestration/composite/1/8
+        {
+            "composite_level": 1,
+            "composite_id": "8",
+            "input_data": {"fiscal_year": 2024},
+            "max_agents": 10
+        }
+    """
+    if not ORCHESTRATION_AVAILABLE:
+        raise HTTPException(status_code=503, detail="Orchestration engine not available")
+
+    # Load composite agent definition
+    composite_path = Path(__file__).parent.parent / "generated_composite_agents" / f"level{level}_agents" / f"composite_{composite_id}_level{level}.py"
+
+    if not composite_path.exists():
+        raise HTTPException(status_code=404, detail=f"Composite agent not found: level{level}/{composite_id}")
+
+    try:
+        # Read composite agent to get child agent IDs
+        content = composite_path.read_text()
+        import re
+
+        # Extract child agent IDs
+        match = re.search(r'self\.child_agent_ids\s*=\s*\[([\s\S]*?)\]', content)
+        if not match:
+            raise HTTPException(status_code=500, detail="Could not parse composite agent")
+
+        agent_ids_str = match.group(1)
+        agent_ids = re.findall(r'"([^"]+)"', agent_ids_str)
+
+        # Limit agents
+        agent_ids = agent_ids[:request.max_agents]
+
+        # Extract workflow name
+        name_match = re.search(r'Category:\s*([^\n]+)', content)
+        workflow_name = name_match.group(1).strip() if name_match else f"Composite {composite_id}"
+
+        # Execute with orchestration
+        engine = get_orchestration_engine()
+
+        execution = await engine.execute_workflow(
+            workflow_id=f"composite-L{level}-{composite_id}",
+            workflow_name=workflow_name,
+            agent_ids=agent_ids,
+            input_data=request.input_data,
+            options={"max_agents": request.max_agents, "allow_parallel": True}
+        )
+
+        return {
+            "composite_level": level,
+            "composite_id": composite_id,
+            "workflow_name": workflow_name,
+            "agents_executed": len(agent_ids),
+            "execution": execution.to_dict()
+        }
+
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.error(f"Composite execution error: {str(e)}")
+        raise HTTPException(status_code=500, detail=f"Composite execution failed: {str(e)}")
+
+
+@app.get("/api/orchestration/executions")
+async def list_orchestration_executions(limit: int = 50):
+    """
+    List recent workflow executions.
+    """
+    if not ORCHESTRATION_AVAILABLE:
+        raise HTTPException(status_code=503, detail="Orchestration engine not available")
+
+    engine = get_orchestration_engine()
+    return {
+        "total": len(engine.executions),
+        "executions": engine.list_executions(limit=limit)
+    }
+
+
+@app.get("/api/orchestration/executions/{execution_id}")
+async def get_orchestration_execution(execution_id: str):
+    """
+    Get details of a specific workflow execution.
+    """
+    if not ORCHESTRATION_AVAILABLE:
+        raise HTTPException(status_code=503, detail="Orchestration engine not available")
+
+    engine = get_orchestration_engine()
+    execution = engine.get_execution(execution_id)
+
+    if not execution:
+        raise HTTPException(status_code=404, detail=f"Execution {execution_id} not found")
+
+    return execution.to_dict()
+
+
+@app.post("/api/orchestration/executions/{execution_id}/cancel")
+async def cancel_orchestration_execution(execution_id: str):
+    """
+    Cancel a running workflow execution.
+    """
+    if not ORCHESTRATION_AVAILABLE:
+        raise HTTPException(status_code=503, detail="Orchestration engine not available")
+
+    engine = get_orchestration_engine()
+    success = await engine.cancel_execution(execution_id)
+
+    if success:
+        return {"status": "cancelled", "execution_id": execution_id}
+    else:
+        raise HTTPException(status_code=400, detail="Could not cancel execution (may not be running)")
+
+
+@app.get("/api/orchestration/composites")
+async def list_composite_agents():
+    """
+    List available composite agents that can be orchestrated.
+    """
+    composites = []
+
+    # Level 1 composites
+    level1_dir = Path(__file__).parent.parent / "generated_composite_agents" / "level1_agents"
+    if level1_dir.exists():
+        for f in level1_dir.glob("composite_*_level1.py"):
+            import re
+            content = f.read_text()
+            name_match = re.search(r'Category:\s*([^\n]+)', content)
+            child_match = re.search(r'orchestrates\s+(\d+)\s+child', content)
+
+            composites.append({
+                "level": 1,
+                "id": f.stem.replace("composite_", "").replace("_level1", ""),
+                "name": name_match.group(1).strip() if name_match else f.stem,
+                "child_agents": int(child_match.group(1)) if child_match else 0,
+                "file": f.name
+            })
+
+    # Level 2 composites
+    level2_dir = Path(__file__).parent.parent / "generated_composite_agents" / "level2_agents"
+    if level2_dir.exists():
+        for f in level2_dir.glob("composite_*_level2.py"):
+            import re
+            content = f.read_text()
+            name_match = re.search(r'Category:\s*([^\n]+)', content)
+            child_match = re.search(r'orchestrates\s+(\d+)\s+child', content)
+
+            composites.append({
+                "level": 2,
+                "id": f.stem.replace("composite_", "").replace("_level2", ""),
+                "name": name_match.group(1).strip() if name_match else f.stem,
+                "child_agents": int(child_match.group(1)) if child_match else 0,
+                "file": f.name
+            })
+
+    return {
+        "total": len(composites),
+        "level1_count": len([c for c in composites if c["level"] == 1]),
+        "level2_count": len([c for c in composites if c["level"] == 2]),
+        "composites": sorted(composites, key=lambda x: (x["level"], x["id"]))
+    }
+
+
+# ============================================================================
 # Run Server
 # ============================================================================
 

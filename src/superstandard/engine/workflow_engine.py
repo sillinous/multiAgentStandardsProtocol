@@ -19,8 +19,10 @@ Version: 1.0.0
 Date: 2025-11-25
 """
 
+import ast
 import asyncio
 import json
+import operator
 import uuid
 import time
 import random
@@ -418,30 +420,173 @@ class DecisionEvaluator:
             }
 
     def _safe_eval(self, condition: str, context: Dict) -> bool:
-        """Safely evaluate a condition string"""
-        # Replace common operators
-        condition = condition.replace("==", " == ")
-        condition = condition.replace("!=", " != ")
-        condition = condition.replace(">=", " >= ")
-        condition = condition.replace("<=", " <= ")
+        """
+        Safely evaluate a condition string using AST parsing.
+
+        This method parses the condition into an AST and evaluates it
+        without using eval(), preventing code injection attacks.
+
+        Supports:
+        - Comparisons: ==, !=, <, >, <=, >=
+        - Boolean operators: and, or, not
+        - Literals: numbers, strings, True, False, None
+        - Names: variables from context
+        """
+        # Normalize operators
         condition = condition.replace(" AND ", " and ")
         condition = condition.replace(" OR ", " or ")
+        condition = condition.replace(" NOT ", " not ")
 
-        # Only allow safe operations
+        # Build context with standard boolean values
         allowed_names = {
             "True": True,
             "False": False,
             "true": True,
             "false": False,
+            "None": None,
+            "none": None,
             **context
         }
 
         try:
-            # Use eval with restricted globals
-            return eval(condition, {"__builtins__": {}}, allowed_names)
-        except:
-            # Default to True if evaluation fails
+            # Parse the condition into an AST
+            tree = ast.parse(condition, mode='eval')
+
+            # Evaluate using our safe evaluator
+            return self._eval_node(tree.body, allowed_names)
+        except Exception as e:
+            # Log the error and default to True
+            print(f"[WARNING] Safe eval failed for condition '{condition}': {e}")
             return True
+
+    def _eval_node(self, node: ast.AST, context: Dict) -> Any:
+        """
+        Recursively evaluate an AST node safely.
+
+        Only allows safe operations - no function calls, attribute access,
+        or other potentially dangerous operations.
+        """
+        # Comparison operators mapping
+        COMPARE_OPS = {
+            ast.Eq: operator.eq,
+            ast.NotEq: operator.ne,
+            ast.Lt: operator.lt,
+            ast.LtE: operator.le,
+            ast.Gt: operator.gt,
+            ast.GtE: operator.ge,
+            ast.Is: operator.is_,
+            ast.IsNot: operator.is_not,
+            ast.In: lambda a, b: a in b,
+            ast.NotIn: lambda a, b: a not in b,
+        }
+
+        # Boolean operators mapping
+        BOOL_OPS = {
+            ast.And: lambda vals: all(vals),
+            ast.Or: lambda vals: any(vals),
+        }
+
+        # Unary operators mapping
+        UNARY_OPS = {
+            ast.Not: operator.not_,
+            ast.UAdd: operator.pos,
+            ast.USub: operator.neg,
+        }
+
+        # Binary operators mapping
+        BIN_OPS = {
+            ast.Add: operator.add,
+            ast.Sub: operator.sub,
+            ast.Mult: operator.mul,
+            ast.Div: operator.truediv,
+            ast.Mod: operator.mod,
+        }
+
+        # Handle different node types
+        if isinstance(node, ast.Constant):
+            # Literal values (Python 3.8+)
+            return node.value
+
+        elif isinstance(node, ast.Num):
+            # Numbers (Python 3.7 compatibility)
+            return node.n
+
+        elif isinstance(node, ast.Str):
+            # Strings (Python 3.7 compatibility)
+            return node.s
+
+        elif isinstance(node, ast.NameConstant):
+            # True, False, None (Python 3.7 compatibility)
+            return node.value
+
+        elif isinstance(node, ast.Name):
+            # Variable lookup
+            name = node.id
+            if name not in context:
+                raise ValueError(f"Unknown variable: {name}")
+            return context[name]
+
+        elif isinstance(node, ast.Compare):
+            # Comparison operations (e.g., a == b, a < b < c)
+            left = self._eval_node(node.left, context)
+            for op, comparator in zip(node.ops, node.comparators):
+                op_func = COMPARE_OPS.get(type(op))
+                if op_func is None:
+                    raise ValueError(f"Unsupported comparison operator: {type(op).__name__}")
+                right = self._eval_node(comparator, context)
+                if not op_func(left, right):
+                    return False
+                left = right
+            return True
+
+        elif isinstance(node, ast.BoolOp):
+            # Boolean operations (and, or)
+            op_func = BOOL_OPS.get(type(node.op))
+            if op_func is None:
+                raise ValueError(f"Unsupported boolean operator: {type(node.op).__name__}")
+            # Evaluate values lazily for short-circuit behavior
+            if isinstance(node.op, ast.And):
+                for value in node.values:
+                    if not self._eval_node(value, context):
+                        return False
+                return True
+            else:  # Or
+                for value in node.values:
+                    if self._eval_node(value, context):
+                        return True
+                return False
+
+        elif isinstance(node, ast.UnaryOp):
+            # Unary operations (not, -, +)
+            op_func = UNARY_OPS.get(type(node.op))
+            if op_func is None:
+                raise ValueError(f"Unsupported unary operator: {type(node.op).__name__}")
+            return op_func(self._eval_node(node.operand, context))
+
+        elif isinstance(node, ast.BinOp):
+            # Binary operations (+, -, *, /, %)
+            op_func = BIN_OPS.get(type(node.op))
+            if op_func is None:
+                raise ValueError(f"Unsupported binary operator: {type(node.op).__name__}")
+            left = self._eval_node(node.left, context)
+            right = self._eval_node(node.right, context)
+            return op_func(left, right)
+
+        elif isinstance(node, ast.IfExp):
+            # Ternary operator (a if condition else b)
+            test = self._eval_node(node.test, context)
+            if test:
+                return self._eval_node(node.body, context)
+            else:
+                return self._eval_node(node.orelse, context)
+
+        elif isinstance(node, (ast.List, ast.Tuple)):
+            # List and tuple literals
+            return [self._eval_node(elem, context) for elem in node.elts]
+
+        else:
+            # Reject all other node types (function calls, attribute access, etc.)
+            raise ValueError(f"Unsupported expression type: {type(node).__name__}")
 
 
 class IntegrationClient:
