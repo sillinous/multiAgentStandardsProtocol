@@ -1187,11 +1187,40 @@
                     </div>
                 </div>
 
+                <!-- Workflow Stats -->
+                <div style="display: grid; grid-template-columns: repeat(4, 1fr); gap: 15px; margin-top: 30px;">
+                    <div style="background: linear-gradient(135deg, #667eea15, #764ba215); padding: 20px; border-radius: 12px; text-align: center;">
+                        <div id="wfStatTotal" style="font-size: 2em; font-weight: bold; color: #667eea;">--</div>
+                        <div style="color: #666; font-size: 0.85em;">Total Executions</div>
+                    </div>
+                    <div style="background: linear-gradient(135deg, #27ae6015, #2ecc7115); padding: 20px; border-radius: 12px; text-align: center;">
+                        <div id="wfStatSuccess" style="font-size: 2em; font-weight: bold; color: #27ae60;">--%</div>
+                        <div style="color: #666; font-size: 0.85em;">Success Rate</div>
+                    </div>
+                    <div style="background: linear-gradient(135deg, #3498db15, #2980b915); padding: 20px; border-radius: 12px; text-align: center;">
+                        <div id="wfStatRunning" style="font-size: 2em; font-weight: bold; color: #3498db;">--</div>
+                        <div style="color: #666; font-size: 0.85em;">Running</div>
+                    </div>
+                    <div style="background: linear-gradient(135deg, #f39c1215, #e67e2215); padding: 20px; border-radius: 12px; text-align: center;">
+                        <div id="wfStatAvgTime" style="font-size: 2em; font-weight: bold; color: #f39c12;">--</div>
+                        <div style="color: #666; font-size: 0.85em;">Avg Time (ms)</div>
+                    </div>
+                </div>
+
                 <!-- Recent Executions -->
-                <div style="margin-top: 30px; background: white; padding: 20px; border-radius: 12px; border: 1px solid #e0e0e0;">
+                <div style="margin-top: 20px; background: white; padding: 20px; border-radius: 12px; border: 1px solid #e0e0e0;">
                     <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px;">
                         <h3 style="color: #667eea; margin: 0;">Recent Executions</h3>
-                        <button class="btn secondary" onclick="loadRecentExecutions()" style="padding: 8px 16px; font-size: 0.9em;">Refresh</button>
+                        <div style="display: flex; gap: 10px;">
+                            <select id="wfStatusFilter" onchange="loadRecentExecutions()" style="padding: 8px 12px; border: 1px solid #ddd; border-radius: 6px;">
+                                <option value="">All Status</option>
+                                <option value="completed">Completed</option>
+                                <option value="running">Running</option>
+                                <option value="pending">Pending</option>
+                                <option value="failed">Failed</option>
+                            </select>
+                            <button class="btn secondary" onclick="loadRecentExecutions()" style="padding: 8px 16px; font-size: 0.9em;">Refresh</button>
+                        </div>
                     </div>
                     <div id="recentExecutions">
                         <div style="text-align: center; padding: 20px; color: #888;">Loading...</div>
@@ -4432,56 +4461,96 @@
 
         async function loadRecentExecutions() {
             const container = document.getElementById('recentExecutions');
+            const statusFilter = document.getElementById('wfStatusFilter')?.value || '';
 
             try {
-                const response = await fetch(`${API_URL}/api/executions?limit=10`);
-                const data = await response.json();
+                // Load stats and history in parallel
+                const [statsResponse, historyResponse] = await Promise.all([
+                    fetch(`${API_URL}/api/workflows/stats`),
+                    fetch(`${API_URL}/api/workflows/history?limit=15${statusFilter ? '&status=' + statusFilter : ''}`)
+                ]);
 
-                if (data.executions.length === 0) {
-                    container.innerHTML = '<div style="text-align: center; padding: 20px; color: #888;">No recent executions</div>';
-                    return;
+                // Update stats
+                if (statsResponse.ok) {
+                    const stats = await statsResponse.json();
+                    document.getElementById('wfStatTotal').textContent = stats.total_workflows || 0;
+                    document.getElementById('wfStatSuccess').textContent = (stats.success_rate || 0) + '%';
+                    document.getElementById('wfStatRunning').textContent = stats.by_status?.running || 0;
+                    document.getElementById('wfStatAvgTime').textContent = Math.round(stats.average_execution_time_ms || 0);
                 }
 
-                container.innerHTML = `
-                    <table style="width: 100%; border-collapse: collapse; font-size: 0.9em;">
-                        <thead>
-                            <tr style="border-bottom: 2px solid #e0e0e0;">
-                                <th style="text-align: left; padding: 10px;">Status</th>
-                                <th style="text-align: left; padding: 10px;">Workflow</th>
-                                <th style="text-align: left; padding: 10px;">Steps</th>
-                                <th style="text-align: left; padding: 10px;">Duration</th>
-                                <th style="text-align: left; padding: 10px;">Started</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            ${data.executions.map(exec => {
-                                const statusColors = {
-                                    'completed': '#27ae60',
-                                    'failed': '#e74c3c',
-                                    'running': '#3498db',
-                                    'waiting_approval': '#f39c12'
-                                };
-                                const color = statusColors[exec.status] || '#888';
-                                return `
-                                    <tr style="border-bottom: 1px solid #f0f0f0;">
-                                        <td style="padding: 10px;">
-                                            <span style="background: ${color}20; color: ${color}; padding: 3px 10px; border-radius: 12px; font-size: 0.85em; font-weight: 600;">
-                                                ${exec.status}
-                                            </span>
-                                        </td>
-                                        <td style="padding: 10px;">${exec.apqc_code || exec.workflow_id?.split('_')[1] || 'N/A'}</td>
-                                        <td style="padding: 10px;">${exec.steps_completed || exec.current_step || '-'}/${exec.total_steps || '-'}</td>
-                                        <td style="padding: 10px;">${exec.total_duration_ms ? exec.total_duration_ms + 'ms' : '-'}</td>
-                                        <td style="padding: 10px; color: #888;">${new Date(exec.started_at).toLocaleTimeString()}</td>
-                                    </tr>
-                                `;
-                            }).join('')}
-                        </tbody>
-                    </table>
-                `;
+                // Render history
+                if (historyResponse.ok) {
+                    const data = await historyResponse.json();
+                    const workflows = data.workflows || [];
+
+                    if (workflows.length === 0) {
+                        container.innerHTML = '<div style="text-align: center; padding: 20px; color: #888;">No workflow executions found</div>';
+                        return;
+                    }
+
+                    container.innerHTML = `
+                        <table style="width: 100%; border-collapse: collapse; font-size: 0.9em;">
+                            <thead>
+                                <tr style="border-bottom: 2px solid #e0e0e0;">
+                                    <th style="text-align: left; padding: 10px;">Status</th>
+                                    <th style="text-align: left; padding: 10px;">Workflow</th>
+                                    <th style="text-align: left; padding: 10px;">Type</th>
+                                    <th style="text-align: left; padding: 10px;">Agents</th>
+                                    <th style="text-align: left; padding: 10px;">Duration</th>
+                                    <th style="text-align: left; padding: 10px;">Started</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                ${workflows.map(wf => {
+                                    const statusColors = {
+                                        'completed': '#27ae60',
+                                        'failed': '#e74c3c',
+                                        'running': '#3498db',
+                                        'pending': '#f39c12'
+                                    };
+                                    const color = statusColors[wf.status] || '#888';
+                                    const statusIcon = wf.success ? '✓' : wf.status === 'failed' ? '✗' : wf.status === 'running' ? '⟳' : '○';
+                                    return `
+                                        <tr style="border-bottom: 1px solid #f0f0f0; cursor: pointer;" onclick="viewWorkflowDetails('${wf.workflow_id}')" onmouseover="this.style.background='#f8f9fa'" onmouseout="this.style.background='white'">
+                                            <td style="padding: 10px;">
+                                                <span style="background: ${color}20; color: ${color}; padding: 3px 10px; border-radius: 12px; font-size: 0.85em; font-weight: 600;">
+                                                    ${statusIcon} ${wf.status}
+                                                </span>
+                                            </td>
+                                            <td style="padding: 10px; font-weight: 500;">${wf.workflow_name || 'N/A'}</td>
+                                            <td style="padding: 10px; color: #666;">${wf.workflow_type || '-'}</td>
+                                            <td style="padding: 10px;">
+                                                <span style="color: #27ae60;">${wf.agents_succeeded || 0}</span>/<span style="color: ${wf.agents_failed ? '#e74c3c' : '#666'}">${wf.agents_failed || 0}</span>/${wf.total_agents || 0}
+                                            </td>
+                                            <td style="padding: 10px;">${wf.execution_time_ms ? wf.execution_time_ms + 'ms' : '-'}</td>
+                                            <td style="padding: 10px; color: #888; font-size: 0.85em;">${wf.started_at ? new Date(wf.started_at).toLocaleString() : '-'}</td>
+                                        </tr>
+                                    `;
+                                }).join('')}
+                            </tbody>
+                        </table>
+                        <div style="text-align: center; margin-top: 10px; color: #888; font-size: 0.85em;">
+                            Showing ${workflows.length} of ${data.total} total workflows
+                        </div>
+                    `;
+                } else {
+                    // Fallback to old API
+                    const fallbackResponse = await fetch(`${API_URL}/api/executions?limit=10`);
+                    const fallbackData = await fallbackResponse.json();
+                    if (fallbackData.executions?.length === 0) {
+                        container.innerHTML = '<div style="text-align: center; padding: 20px; color: #888;">No recent executions</div>';
+                    }
+                }
             } catch (error) {
+                console.error('Error loading executions:', error);
                 container.innerHTML = '<div style="text-align: center; padding: 20px; color: #e74c3c;">Error loading executions</div>';
             }
+        }
+
+        function viewWorkflowDetails(workflowId) {
+            // Open workflow details modal or navigate to details
+            window.open(`${API_URL}/api/workflows/${workflowId}`, '_blank');
         }
 
         // ========================================

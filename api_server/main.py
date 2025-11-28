@@ -1483,6 +1483,99 @@ async def get_process_diagram(process_id: str, db: Session = Depends(get_db)):
 
 
 # ============================================================================
+# Workflow History Endpoints
+# ============================================================================
+
+@app.get("/api/workflows/history", tags=["Workflows"])
+async def get_workflow_history(
+    limit: int = 20,
+    offset: int = 0,
+    status: Optional[str] = None,
+    db: Session = Depends(get_db)
+):
+    """
+    Get paginated workflow execution history.
+
+    - **limit**: Maximum number of workflows to return (default: 20)
+    - **offset**: Number of workflows to skip (for pagination)
+    - **status**: Filter by status (pending, running, completed, failed)
+    """
+    query = db.query(Workflow)
+
+    if status:
+        query = query.filter(Workflow.status == status)
+
+    total = query.count()
+    workflows = query.order_by(Workflow.created_at.desc()).offset(offset).limit(limit).all()
+
+    return {
+        "total": total,
+        "limit": limit,
+        "offset": offset,
+        "workflows": [
+            {
+                "workflow_id": w.workflow_id,
+                "workflow_name": w.workflow_name,
+                "workflow_type": w.workflow_type,
+                "status": w.status,
+                "success": w.success,
+                "started_at": w.started_at.isoformat() if w.started_at else None,
+                "completed_at": w.completed_at.isoformat() if w.completed_at else None,
+                "execution_time_ms": w.execution_time_ms,
+                "total_agents": w.total_agents,
+                "agents_succeeded": w.agents_succeeded or 0,
+                "agents_failed": w.agents_failed or 0,
+                "created_at": w.created_at.isoformat() if w.created_at else None,
+                "error_message": w.error_message
+            }
+            for w in workflows
+        ]
+    }
+
+
+@app.get("/api/workflows/stats", tags=["Workflows"])
+async def get_workflow_stats(db: Session = Depends(get_db)):
+    """
+    Get workflow execution statistics.
+
+    Returns counts by status, success rate, and average execution time.
+    """
+    total = db.query(Workflow).count()
+    if total == 0:
+        return {
+            "total_workflows": 0,
+            "by_status": {},
+            "success_rate": 0,
+            "average_execution_time_ms": 0
+        }
+
+    # Count by status
+    status_counts = db.query(
+        Workflow.status,
+        func.count(Workflow.id)
+    ).group_by(Workflow.status).all()
+
+    by_status = {status: count for status, count in status_counts}
+
+    # Success rate (completed workflows only)
+    completed = db.query(Workflow).filter(Workflow.status == "completed").count()
+    successful = db.query(Workflow).filter(Workflow.success == True).count()
+    success_rate = round((successful / completed * 100), 1) if completed > 0 else 0
+
+    # Average execution time
+    avg_time = db.query(func.avg(Workflow.execution_time_ms)).filter(
+        Workflow.execution_time_ms.isnot(None)
+    ).scalar() or 0
+
+    return {
+        "total_workflows": total,
+        "by_status": by_status,
+        "success_rate": success_rate,
+        "average_execution_time_ms": round(avg_time, 0)
+    }
+
+
+# ============================================================================
 # Admin Endpoints
 # ============================================================================
 
