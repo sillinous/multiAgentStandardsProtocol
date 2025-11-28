@@ -1553,6 +1553,30 @@
                 <span class="close-btn" onclick="closeCardGeneratorModal()">&times;</span>
             </div>
             <div class="modal-body">
+                <!-- Template Selector -->
+                <div style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); padding: 15px; border-radius: 8px; margin-bottom: 20px;">
+                    <div style="display: flex; align-items: center; gap: 15px;">
+                        <div style="flex: 1;">
+                            <label style="display: block; margin-bottom: 5px; font-weight: 600; color: white;">Start from Template</label>
+                            <select id="gen_template" onchange="applyTemplate(this.value)"
+                                style="width: 100%; padding: 10px; border: none; border-radius: 6px; font-size: 14px; background: white;">
+                                <option value="">-- Select a template to get started --</option>
+                                <option value="approval_workflow">Approval Workflow (4 steps)</option>
+                                <option value="data_processing">Data Processing Pipeline (5 steps)</option>
+                                <option value="customer_service">Customer Service Flow (6 steps)</option>
+                                <option value="compliance_audit">Compliance & Audit (7 steps)</option>
+                                <option value="procurement">Procurement Process (5 steps)</option>
+                                <option value="onboarding">Employee Onboarding (6 steps)</option>
+                                <option value="incident_response">Incident Response (7 steps)</option>
+                                <option value="product_development">Product Development (5 steps)</option>
+                            </select>
+                        </div>
+                        <div style="color: rgba(255,255,255,0.8); font-size: 13px; max-width: 300px;">
+                            Select a template to pre-fill the form with a common workflow pattern, then customize as needed.
+                        </div>
+                    </div>
+                </div>
+
                 <form id="cardGeneratorForm" onsubmit="generateAgentCard(event)">
                     <!-- Basic Information -->
                     <div style="background: rgba(52, 152, 219, 0.1); padding: 15px; border-radius: 8px; margin-bottom: 20px;">
@@ -4652,6 +4676,220 @@
 
         function closeCardGeneratorModal() {
             document.getElementById('cardGeneratorModal').style.display = 'none';
+        }
+
+        // Agent Card Templates
+        const AGENT_CARD_TEMPLATES = {
+            approval_workflow: {
+                name: "Approval workflow",
+                category: "13.0 - Develop and Manage Business Capabilities",
+                description: "Multi-level approval workflow with request submission, review stages, and final approval/rejection.",
+                pattern: "sequential",
+                duration: 86400,
+                compliance: "SOX, Internal Controls",
+                retention: 730,
+                steps: [
+                    { name: "Request Submission", purpose: "Capture and validate request", capabilities: "request_capture, validation, routing" },
+                    { name: "Initial Review", purpose: "First-level review and assessment", capabilities: "review, assessment, recommendation" },
+                    { name: "Manager Approval", purpose: "Manager-level decision making", capabilities: "approval, rejection, escalation" },
+                    { name: "Final Processing", purpose: "Execute approved action", capabilities: "execution, notification, audit_logging" }
+                ],
+                kpis: [
+                    { metric: "approval_time", target: "< 24 hours", measurement: "request_to_approval_duration" },
+                    { metric: "approval_rate", target: "> 85%", measurement: "approved_vs_total_requests" }
+                ]
+            },
+            data_processing: {
+                name: "Data processing pipeline",
+                category: "8.0 - Manage Information Technology",
+                description: "End-to-end data pipeline for extraction, transformation, validation, and loading of business data.",
+                pattern: "sequential",
+                duration: 3600,
+                compliance: "GDPR, Data Governance",
+                retention: 365,
+                steps: [
+                    { name: "Data Extraction", purpose: "Extract from source systems", capabilities: "data_extraction, connection_management, incremental_load" },
+                    { name: "Data Validation", purpose: "Validate data quality", capabilities: "schema_validation, quality_checks, anomaly_detection" },
+                    { name: "Data Transformation", purpose: "Transform to target format", capabilities: "transformation, mapping, enrichment" },
+                    { name: "Data Loading", purpose: "Load to destination", capabilities: "bulk_load, upsert, transaction_management" },
+                    { name: "Verification", purpose: "Verify successful load", capabilities: "reconciliation, audit_logging, notification" }
+                ],
+                kpis: [
+                    { metric: "processing_time", target: "< 1 hour", measurement: "pipeline_duration" },
+                    { metric: "data_quality_score", target: "> 99%", measurement: "valid_records_percentage" }
+                ]
+            },
+            customer_service: {
+                name: "Customer service request",
+                category: "6.0 - Manage Customer Service",
+                description: "Customer service workflow from initial contact through resolution and follow-up.",
+                pattern: "sequential",
+                duration: 14400,
+                compliance: "SLA, Customer Service Standards",
+                retention: 1095,
+                steps: [
+                    { name: "Request Intake", purpose: "Capture customer request", capabilities: "intake, categorization, priority_assignment" },
+                    { name: "Triage & Assignment", purpose: "Route to appropriate team", capabilities: "triage, routing, workload_balancing" },
+                    { name: "Investigation", purpose: "Research and analyze issue", capabilities: "investigation, knowledge_lookup, root_cause_analysis" },
+                    { name: "Resolution", purpose: "Implement solution", capabilities: "resolution, action_execution, documentation" },
+                    { name: "Customer Communication", purpose: "Notify customer of resolution", capabilities: "notification, feedback_collection, satisfaction_survey" },
+                    { name: "Case Closure", purpose: "Close and archive case", capabilities: "closure, archival, metrics_update" }
+                ],
+                kpis: [
+                    { metric: "resolution_time", target: "< 4 hours", measurement: "case_open_to_close_duration" },
+                    { metric: "customer_satisfaction", target: "> 4.5/5", measurement: "average_csat_score" },
+                    { metric: "first_contact_resolution", target: "> 70%", measurement: "fcr_rate" }
+                ]
+            },
+            compliance_audit: {
+                name: "Compliance audit process",
+                category: "11.0 - Manage Enterprise Risk, Compliance, Remediation, & Resiliency",
+                description: "Comprehensive compliance audit workflow from planning through remediation tracking.",
+                pattern: "sequential",
+                duration: 604800,
+                compliance: "SOX, ISO27001, SOC2",
+                retention: 2555,
+                steps: [
+                    { name: "Audit Planning", purpose: "Define audit scope and plan", capabilities: "planning, scoping, resource_allocation" },
+                    { name: "Evidence Collection", purpose: "Gather audit evidence", capabilities: "evidence_collection, documentation, sampling" },
+                    { name: "Control Testing", purpose: "Test control effectiveness", capabilities: "control_testing, walkthrough, substantive_testing" },
+                    { name: "Finding Documentation", purpose: "Document audit findings", capabilities: "finding_documentation, risk_rating, recommendation" },
+                    { name: "Management Response", purpose: "Obtain management responses", capabilities: "response_collection, action_plan_review, timeline_validation" },
+                    { name: "Report Generation", purpose: "Generate audit report", capabilities: "report_generation, executive_summary, distribution" },
+                    { name: "Remediation Tracking", purpose: "Track remediation progress", capabilities: "tracking, follow_up, closure_verification" }
+                ],
+                kpis: [
+                    { metric: "audit_completion", target: "100% on-time", measurement: "audits_completed_on_schedule" },
+                    { metric: "remediation_rate", target: "> 95%", measurement: "findings_remediated_on_time" }
+                ]
+            },
+            procurement: {
+                name: "Procurement process",
+                category: "4.0 - Deliver Physical Products",
+                description: "End-to-end procurement workflow from requisition through receipt and payment.",
+                pattern: "sequential",
+                duration: 432000,
+                compliance: "Procurement Policy, SOX",
+                retention: 1825,
+                steps: [
+                    { name: "Requisition", purpose: "Create purchase request", capabilities: "requisition_creation, budget_check, approval_routing" },
+                    { name: "Vendor Selection", purpose: "Select and negotiate with vendor", capabilities: "vendor_evaluation, rfq_management, negotiation" },
+                    { name: "Purchase Order", purpose: "Create and issue PO", capabilities: "po_creation, approval, vendor_notification" },
+                    { name: "Receipt & Inspection", purpose: "Receive and verify goods", capabilities: "receiving, inspection, discrepancy_handling" },
+                    { name: "Invoice Processing", purpose: "Process vendor invoice", capabilities: "invoice_matching, approval, payment_scheduling" }
+                ],
+                kpis: [
+                    { metric: "cycle_time", target: "< 5 days", measurement: "requisition_to_po_duration" },
+                    { metric: "cost_savings", target: "> 5%", measurement: "negotiated_savings_percentage" }
+                ]
+            },
+            onboarding: {
+                name: "Employee onboarding",
+                category: "7.0 - Develop and Manage Human Capital",
+                description: "New employee onboarding workflow from offer acceptance through first-day readiness.",
+                pattern: "parallel",
+                duration: 604800,
+                compliance: "HR Policy, Labor Law",
+                retention: 2555,
+                steps: [
+                    { name: "Pre-boarding Setup", purpose: "Prepare for new hire", capabilities: "account_provisioning, equipment_ordering, workspace_setup" },
+                    { name: "Documentation", purpose: "Collect required documents", capabilities: "document_collection, verification, compliance_check" },
+                    { name: "IT Setup", purpose: "Configure IT access", capabilities: "system_access, email_setup, software_installation" },
+                    { name: "Orientation Scheduling", purpose: "Plan orientation activities", capabilities: "calendar_scheduling, trainer_assignment, material_preparation" },
+                    { name: "Training Assignment", purpose: "Assign required training", capabilities: "training_enrollment, compliance_tracking, certification" },
+                    { name: "First Day Coordination", purpose: "Coordinate first day activities", capabilities: "welcome_coordination, buddy_assignment, checklist_completion" }
+                ],
+                kpis: [
+                    { metric: "time_to_productivity", target: "< 2 weeks", measurement: "hire_date_to_first_task_completion" },
+                    { metric: "onboarding_satisfaction", target: "> 4.5/5", measurement: "new_hire_survey_score" }
+                ]
+            },
+            incident_response: {
+                name: "Incident response",
+                category: "11.0 - Manage Enterprise Risk, Compliance, Remediation, & Resiliency",
+                description: "Security incident response workflow from detection through post-incident review.",
+                pattern: "sequential",
+                duration: 172800,
+                compliance: "NIST CSF, ISO27001, SOC2",
+                retention: 2555,
+                steps: [
+                    { name: "Detection & Logging", purpose: "Detect and log incident", capabilities: "alert_processing, logging, categorization" },
+                    { name: "Triage & Assessment", purpose: "Assess incident severity", capabilities: "triage, impact_analysis, resource_assignment" },
+                    { name: "Containment", purpose: "Contain the incident", capabilities: "network_isolation, account_lockout, traffic_blocking" },
+                    { name: "Investigation", purpose: "Investigate root cause", capabilities: "forensic_analysis, log_analysis, timeline_reconstruction" },
+                    { name: "Eradication", purpose: "Remove threat", capabilities: "malware_removal, patching, credential_reset" },
+                    { name: "Recovery", purpose: "Restore operations", capabilities: "system_restoration, data_recovery, monitoring" },
+                    { name: "Post-Incident Review", purpose: "Learn and improve", capabilities: "retrospective, lesson_documentation, playbook_update" }
+                ],
+                kpis: [
+                    { metric: "mean_time_to_detect", target: "< 1 hour", measurement: "detection_to_logging_time" },
+                    { metric: "mean_time_to_contain", target: "< 4 hours", measurement: "logging_to_containment_time" }
+                ]
+            },
+            product_development: {
+                name: "Product development",
+                category: "2.0 - Develop and Manage Products and Services",
+                description: "Product development lifecycle from ideation through launch readiness.",
+                pattern: "sequential",
+                duration: 7776000,
+                compliance: "Stage-Gate, ISO 56001",
+                retention: 1825,
+                steps: [
+                    { name: "Ideation", purpose: "Generate and capture ideas", capabilities: "idea_capture, feasibility_assessment, prioritization" },
+                    { name: "Concept Development", purpose: "Develop product concept", capabilities: "concept_design, market_research, business_case" },
+                    { name: "Design & Prototyping", purpose: "Create design and prototype", capabilities: "design, prototyping, user_testing" },
+                    { name: "Development", purpose: "Build the product", capabilities: "development, integration, quality_assurance" },
+                    { name: "Launch Preparation", purpose: "Prepare for market launch", capabilities: "marketing_prep, training, documentation" }
+                ],
+                kpis: [
+                    { metric: "time_to_market", target: "< 12 months", measurement: "concept_to_launch_duration" },
+                    { metric: "success_rate", target: "> 60%", measurement: "products_meeting_success_criteria" }
+                ]
+            }
+        };
+
+        function applyTemplate(templateId) {
+            if (!templateId) return;
+
+            const template = AGENT_CARD_TEMPLATES[templateId];
+            if (!template) return;
+
+            // Fill basic information
+            document.getElementById('gen_name').value = template.name;
+            document.getElementById('gen_category').value = template.category;
+            document.getElementById('gen_description').value = template.description;
+
+            // Fill workflow configuration
+            document.getElementById('gen_pattern').value = template.pattern;
+            document.getElementById('gen_steps').value = template.steps.length;
+            document.getElementById('gen_duration').value = template.duration;
+            document.getElementById('gen_compliance').value = template.compliance;
+            document.getElementById('gen_retention').value = template.retention;
+
+            // Clear and regenerate step fields
+            document.getElementById('stepFieldsContainer').innerHTML = '';
+            template.steps.forEach((step, idx) => {
+                addStepField(idx + 1);
+                const stepFields = document.querySelectorAll('.step-field');
+                const lastStep = stepFields[stepFields.length - 1];
+                lastStep.querySelector('.step-name').value = step.name;
+                lastStep.querySelector('.step-purpose').value = step.purpose;
+                lastStep.querySelector('.step-capabilities').value = step.capabilities;
+            });
+
+            // Clear and regenerate KPI fields
+            document.getElementById('kpiFieldsContainer').innerHTML = '';
+            template.kpis.forEach((kpi, idx) => {
+                addKpiField();
+                const kpiFields = document.querySelectorAll('.kpi-field');
+                const lastKpi = kpiFields[kpiFields.length - 1];
+                lastKpi.querySelector('.kpi-metric').value = kpi.metric;
+                lastKpi.querySelector('.kpi-target').value = kpi.target;
+                lastKpi.querySelector('.kpi-measurement').value = kpi.measurement;
+            });
+
+            // Reset template selector
+            document.getElementById('gen_template').value = '';
         }
 
         function generateStepFields() {
