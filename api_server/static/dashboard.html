@@ -1345,7 +1345,14 @@
                     </select>
                     <button class="btn" onclick="filterAgentCards()">🔍 Filter</button>
                     <button class="btn secondary" onclick="resetAgentCardsFilter()">↻ Reset</button>
-                    <button class="btn" onclick="openCardGeneratorModal()" style="background: linear-gradient(135deg, #27ae60, #2ecc71); margin-left: auto;">➕ Create Agent Card</button>
+                    <div style="margin-left: auto; display: flex; gap: 8px;">
+                        <button class="btn" onclick="exportAgentCards()" style="background: linear-gradient(135deg, #3498db, #2980b9);">📤 Export</button>
+                        <label class="btn" style="background: linear-gradient(135deg, #9b59b6, #8e44ad); cursor: pointer; margin: 0;">
+                            📥 Import
+                            <input type="file" id="importCardInput" accept=".json,.zip" onchange="importAgentCards(this)" style="display: none;" multiple>
+                        </label>
+                        <button class="btn" onclick="openCardGeneratorModal()" style="background: linear-gradient(135deg, #27ae60, #2ecc71);">➕ Create</button>
+                    </div>
                 </div>
 
                 <!-- Agent Cards Grid -->
@@ -5148,6 +5155,99 @@
 
                 alert(`Agent card downloaded as ${filename}. Place it in the agent_cards/ directory.`);
                 closeCardGeneratorModal();
+            }
+        }
+
+        // ========================================
+        // AGENT CARD EXPORT/IMPORT FUNCTIONS
+        // ========================================
+
+        async function exportAgentCards() {
+            try {
+                // Use bulk export endpoint for efficiency
+                const response = await fetch(`${API_URL}/api/agent-cards-export`);
+                if (!response.ok) throw new Error('Failed to fetch agent cards');
+
+                const exportData = await response.json();
+
+                if (!exportData.agent_cards || exportData.agent_cards.length === 0) {
+                    alert('No agent cards to export');
+                    return;
+                }
+
+                // Create and download JSON file
+                const blob = new Blob([JSON.stringify(exportData, null, 2)], { type: 'application/json' });
+                const url = URL.createObjectURL(blob);
+                const a = document.createElement('a');
+                a.href = url;
+                a.download = `agent_cards_export_${new Date().toISOString().split('T')[0]}.json`;
+                a.click();
+                URL.revokeObjectURL(url);
+
+                alert(`Successfully exported ${exportData.agent_cards.length} agent cards`);
+            } catch (error) {
+                console.error('Export error:', error);
+                alert(`Export failed: ${error.message}`);
+            }
+        }
+
+        async function importAgentCards(input) {
+            const files = input.files;
+            if (!files || files.length === 0) return;
+
+            let totalImported = 0;
+            let totalSkipped = 0;
+            let totalErrors = 0;
+            const allErrors = [];
+
+            for (const file of files) {
+                try {
+                    const text = await file.text();
+                    const data = JSON.parse(text);
+
+                    // Use the bulk import API endpoint
+                    const response = await fetch(`${API_URL}/api/agent-cards-import`, {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify(data)
+                    });
+
+                    if (response.ok) {
+                        const results = await response.json();
+                        totalImported += results.imported;
+                        totalSkipped += results.skipped;
+                        totalErrors += results.errors;
+
+                        // Collect error details
+                        results.details.filter(d => d.status === 'error').forEach(d => {
+                            allErrors.push(`${d.apqc_id || 'Unknown'}: ${d.error}`);
+                        });
+                    } else {
+                        const errorData = await response.json();
+                        allErrors.push(`${file.name}: ${errorData.detail || 'Import failed'}`);
+                        totalErrors++;
+                    }
+                } catch (e) {
+                    allErrors.push(`${file.name}: ${e.message}`);
+                    totalErrors++;
+                }
+            }
+
+            // Clear the file input
+            input.value = '';
+
+            // Show results
+            let message = `Import complete:\n• Imported: ${totalImported}\n• Skipped (already exists): ${totalSkipped}\n• Errors: ${totalErrors}`;
+            if (allErrors.length > 0 && allErrors.length <= 5) {
+                message += `\n\nErrors:\n${allErrors.join('\n')}`;
+            } else if (allErrors.length > 5) {
+                message += `\n\nFirst 5 errors:\n${allErrors.slice(0, 5).join('\n')}\n... and ${allErrors.length - 5} more`;
+            }
+            alert(message);
+
+            // Refresh the agent cards display
+            if (totalImported > 0 && typeof loadAgentCardsTab === 'function') {
+                loadAgentCardsTab();
             }
         }
 

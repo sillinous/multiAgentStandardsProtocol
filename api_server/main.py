@@ -1769,6 +1769,111 @@ async def list_agent_cards():
     return {"total": len(cards), "agent_cards": cards}
 
 
+@app.get("/api/agent-cards-export", tags=["Agent Cards"])
+async def export_all_agent_cards():
+    """
+    Export all agent cards as a complete package.
+
+    Returns all agent cards with full details in a single response,
+    suitable for backup or migration purposes.
+    """
+    if not AGENT_CARDS_DIR.exists():
+        return {
+            "export_info": {
+                "exported_at": datetime.utcnow().isoformat(),
+                "total_cards": 0,
+                "platform": "SuperStandard v1.0",
+                "format_version": "1.0"
+            },
+            "agent_cards": []
+        }
+
+    cards = []
+    for filepath in AGENT_CARDS_DIR.glob("*.json"):
+        try:
+            with open(filepath, 'r') as f:
+                data = json.load(f)
+                cards.append(data)
+        except Exception as e:
+            logger.warning(f"Failed to read agent card {filepath}: {e}")
+            continue
+
+    # Sort by APQC ID
+    cards.sort(key=lambda x: x.get("apqc_id", ""))
+
+    return {
+        "export_info": {
+            "exported_at": datetime.utcnow().isoformat(),
+            "total_cards": len(cards),
+            "platform": "SuperStandard v1.0",
+            "format_version": "1.0"
+        },
+        "agent_cards": cards
+    }
+
+
+@app.post("/api/agent-cards-import", tags=["Agent Cards"])
+async def import_agent_cards(import_data: Dict[str, Any]):
+    """
+    Import agent cards from an export package.
+
+    Accepts either:
+    - A single agent card object
+    - An export package with multiple cards
+
+    Returns import statistics including success/skip/error counts.
+    """
+    results = {
+        "imported": 0,
+        "skipped": 0,
+        "errors": 0,
+        "details": []
+    }
+
+    # Determine format
+    cards_to_import = []
+    if "agent_cards" in import_data and "export_info" in import_data:
+        # Export package format
+        cards_to_import = import_data.get("agent_cards", [])
+    elif "apqc_id" in import_data and "agent_cards" in import_data:
+        # Single card format
+        cards_to_import = [import_data]
+    else:
+        raise HTTPException(status_code=400, detail="Invalid import format")
+
+    # Ensure directory exists
+    AGENT_CARDS_DIR.mkdir(parents=True, exist_ok=True)
+
+    for card in cards_to_import:
+        apqc_id = card.get("apqc_id")
+        apqc_name = card.get("apqc_name")
+
+        if not apqc_id or not apqc_name:
+            results["errors"] += 1
+            results["details"].append({"error": "Missing apqc_id or apqc_name"})
+            continue
+
+        filename = f"apqc_{apqc_id.replace('.', '_')}_{apqc_name.lower().replace(' ', '_')[:30]}.json"
+        filepath = AGENT_CARDS_DIR / filename
+
+        if filepath.exists():
+            results["skipped"] += 1
+            results["details"].append({"apqc_id": apqc_id, "status": "skipped", "reason": "already exists"})
+            continue
+
+        try:
+            card["imported_at"] = datetime.utcnow().isoformat()
+            with open(filepath, 'w') as f:
+                json.dump(card, f, indent=2)
+            results["imported"] += 1
+            results["details"].append({"apqc_id": apqc_id, "status": "imported", "filename": filename})
+        except Exception as e:
+            results["errors"] += 1
+            results["details"].append({"apqc_id": apqc_id, "status": "error", "error": str(e)})
+
+    return results
+
+
 @app.get("/api/agent-cards/{apqc_code:path}", tags=["Agent Cards"])
 async def get_agent_card(apqc_code: str):
     """
