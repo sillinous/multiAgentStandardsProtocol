@@ -1,0 +1,640 @@
+{
+  "apqc_id": "4.1.1.1",
+  "apqc_name": "Receive and process customer orders",
+  "category": "4.0 - Deliver Products and Services",
+  "description": "End-to-end order management workflow from order receipt through fulfillment handoff, including validation, inventory check, pricing, credit check, and order confirmation.",
+  "orchestration_pattern": "sequential",
+  "total_steps": 7,
+  "estimated_duration_seconds": 300,
+  "compliance_frameworks": ["SOC2", "PCI-DSS"],
+  "data_retention_days": 2555,
+
+  "agent_cards": [
+    {
+      "id": "agent_4_1_1_1_step1",
+      "apqc_id": "4.1.1.1",
+      "step_number": 1,
+      "step_name": "Order Intake and Validation",
+      "description": "Receive orders from multiple channels and validate order data completeness",
+      "purpose": "Capture orders accurately from all sales channels",
+      "business_value": "Reduces order errors by 90% through automated validation",
+
+      "capabilities": [
+        "receive_web_order",
+        "receive_edi_order",
+        "receive_phone_order",
+        "receive_api_order",
+        "validate_order_data",
+        "validate_customer_info",
+        "check_product_codes"
+      ],
+
+      "input_schema": [
+        {
+          "name": "order_source",
+          "type": "string",
+          "description": "Channel order was received from",
+          "required": true,
+          "validation": {"enum": ["web", "edi", "phone", "api", "email", "marketplace"]}
+        },
+        {
+          "name": "customer_id",
+          "type": "string",
+          "description": "Customer account ID",
+          "required": false
+        },
+        {
+          "name": "customer_info",
+          "type": "object",
+          "description": "Customer details for new customers",
+          "required": true
+        },
+        {
+          "name": "line_items",
+          "type": "array",
+          "description": "Order line items",
+          "required": true,
+          "example": [
+            {"sku": "PROD-001", "quantity": 5, "price": 99.99}
+          ]
+        },
+        {
+          "name": "shipping_address",
+          "type": "object",
+          "required": true
+        },
+        {
+          "name": "billing_address",
+          "type": "object",
+          "required": true
+        }
+      ],
+
+      "output_schema": [
+        {
+          "name": "order_id",
+          "type": "string",
+          "description": "Assigned order number",
+          "required": true,
+          "example": "ORD-2025-001234"
+        },
+        {
+          "name": "validation_status",
+          "type": "string",
+          "required": true,
+          "validation": {"enum": ["valid", "needs_review", "rejected"]}
+        },
+        {
+          "name": "validation_errors",
+          "type": "array",
+          "required": false
+        },
+        {
+          "name": "customer_id",
+          "type": "string",
+          "description": "Customer ID (existing or newly created)",
+          "required": true
+        }
+      ],
+
+      "required_integrations": ["shopify", "salesforce"],
+      "optional_integrations": ["magento", "amazon_mws"],
+
+      "decision_rules": [
+        {
+          "id": "rule_new_customer",
+          "name": "New Customer Detection",
+          "description": "Route new customers for account creation",
+          "condition": "customer_exists == true",
+          "action_if_true": "use_existing_account",
+          "action_if_false": "create_new_account",
+          "configurable": false
+        }
+      ],
+
+      "next_step_on_success": "agent_4_1_1_1_step2",
+      "expected_duration_seconds": 10,
+      "timeout_seconds": 60,
+      "requires_audit_log": true,
+      "version": "1.0.0",
+      "status": "active"
+    },
+
+    {
+      "id": "agent_4_1_1_1_step2",
+      "apqc_id": "4.1.1.1",
+      "step_number": 2,
+      "step_name": "Inventory Availability Check",
+      "description": "Check real-time inventory availability across warehouses and fulfillment centers",
+      "purpose": "Ensure ordered items are available for fulfillment",
+      "business_value": "Prevents overselling and improves customer satisfaction",
+
+      "capabilities": [
+        "check_inventory_levels",
+        "check_multiple_locations",
+        "calculate_available_to_promise",
+        "reserve_inventory",
+        "find_alternate_locations",
+        "check_backorder_status"
+      ],
+
+      "input_schema": [
+        {
+          "name": "order_id",
+          "type": "string",
+          "required": true
+        },
+        {
+          "name": "line_items",
+          "type": "array",
+          "required": true
+        },
+        {
+          "name": "shipping_address",
+          "type": "object",
+          "required": true
+        }
+      ],
+
+      "output_schema": [
+        {
+          "name": "availability_status",
+          "type": "string",
+          "required": true,
+          "validation": {"enum": ["all_available", "partial_available", "none_available", "backorder"]}
+        },
+        {
+          "name": "fulfillment_location",
+          "type": "string",
+          "description": "Optimal fulfillment warehouse",
+          "required": true
+        },
+        {
+          "name": "item_availability",
+          "type": "array",
+          "description": "Availability per line item",
+          "required": true
+        },
+        {
+          "name": "estimated_ship_date",
+          "type": "date",
+          "required": true
+        },
+        {
+          "name": "inventory_reserved",
+          "type": "boolean",
+          "required": true
+        }
+      ],
+
+      "required_integrations": ["netsuite", "shopify"],
+      "optional_integrations": ["shipbob", "amazon_fba"],
+
+      "decision_rules": [
+        {
+          "id": "rule_partial_fulfillment",
+          "name": "Partial Fulfillment Policy",
+          "description": "Allow partial shipment if some items unavailable",
+          "condition": "availability_status == 'all_available'",
+          "action_if_true": "proceed_to_pricing",
+          "action_if_false": "offer_partial_or_backorder",
+          "configurable": true
+        }
+      ],
+
+      "next_step_on_success": "agent_4_1_1_1_step3",
+      "expected_duration_seconds": 15,
+      "requires_audit_log": true,
+      "version": "1.0.0",
+      "status": "active"
+    },
+
+    {
+      "id": "agent_4_1_1_1_step3",
+      "apqc_id": "4.1.1.1",
+      "step_number": 3,
+      "step_name": "Pricing and Discount Calculation",
+      "description": "Calculate final pricing including discounts, promotions, and customer-specific pricing",
+      "purpose": "Apply correct pricing and maximize margin",
+      "business_value": "Ensures pricing accuracy and captures promotional revenue",
+
+      "capabilities": [
+        "apply_list_prices",
+        "apply_customer_pricing",
+        "apply_volume_discounts",
+        "apply_promotional_codes",
+        "calculate_shipping_cost",
+        "calculate_taxes"
+      ],
+
+      "input_schema": [
+        {
+          "name": "order_id",
+          "type": "string",
+          "required": true
+        },
+        {
+          "name": "customer_id",
+          "type": "string",
+          "required": true
+        },
+        {
+          "name": "line_items",
+          "type": "array",
+          "required": true
+        },
+        {
+          "name": "promo_code",
+          "type": "string",
+          "required": false
+        },
+        {
+          "name": "shipping_address",
+          "type": "object",
+          "required": true
+        }
+      ],
+
+      "output_schema": [
+        {
+          "name": "subtotal",
+          "type": "currency",
+          "required": true
+        },
+        {
+          "name": "discount_total",
+          "type": "currency",
+          "required": true
+        },
+        {
+          "name": "shipping_cost",
+          "type": "currency",
+          "required": true
+        },
+        {
+          "name": "tax_amount",
+          "type": "currency",
+          "required": true
+        },
+        {
+          "name": "order_total",
+          "type": "currency",
+          "required": true
+        },
+        {
+          "name": "applied_discounts",
+          "type": "array",
+          "description": "List of applied discounts",
+          "required": true
+        },
+        {
+          "name": "margin_percent",
+          "type": "number",
+          "description": "Order margin percentage",
+          "required": false
+        }
+      ],
+
+      "required_integrations": ["shopify", "avalara"],
+
+      "decision_rules": [
+        {
+          "id": "rule_margin_check",
+          "name": "Minimum Margin Check",
+          "description": "Flag orders below minimum margin threshold",
+          "condition": "margin_percent >= minimum_margin",
+          "action_if_true": "proceed_to_credit_check",
+          "action_if_false": "route_to_sales_approval",
+          "configurable": true,
+          "default_threshold": 15
+        }
+      ],
+
+      "next_step_on_success": "agent_4_1_1_1_step4",
+      "expected_duration_seconds": 10,
+      "requires_audit_log": true,
+      "version": "1.0.0",
+      "status": "active"
+    },
+
+    {
+      "id": "agent_4_1_1_1_step4",
+      "apqc_id": "4.1.1.1",
+      "step_number": 4,
+      "step_name": "Credit and Payment Verification",
+      "description": "Verify customer credit status and process payment authorization",
+      "purpose": "Ensure payment before fulfillment commitment",
+      "business_value": "Reduces bad debt and chargebacks",
+
+      "capabilities": [
+        "check_credit_limit",
+        "check_payment_history",
+        "authorize_credit_card",
+        "verify_payment_method",
+        "apply_payment_terms",
+        "hold_order_for_credit"
+      ],
+
+      "input_schema": [
+        {
+          "name": "order_id",
+          "type": "string",
+          "required": true
+        },
+        {
+          "name": "customer_id",
+          "type": "string",
+          "required": true
+        },
+        {
+          "name": "order_total",
+          "type": "currency",
+          "required": true
+        },
+        {
+          "name": "payment_method",
+          "type": "object",
+          "required": true
+        }
+      ],
+
+      "output_schema": [
+        {
+          "name": "payment_status",
+          "type": "string",
+          "required": true,
+          "validation": {"enum": ["authorized", "captured", "pending", "declined", "on_terms"]}
+        },
+        {
+          "name": "authorization_code",
+          "type": "string",
+          "required": false
+        },
+        {
+          "name": "credit_status",
+          "type": "string",
+          "required": true,
+          "validation": {"enum": ["approved", "review_required", "over_limit", "hold"]}
+        },
+        {
+          "name": "payment_terms",
+          "type": "string",
+          "required": false,
+          "example": "NET30"
+        }
+      ],
+
+      "required_integrations": ["stripe", "netsuite"],
+      "optional_integrations": ["braintree", "authorize_net"],
+
+      "decision_rules": [
+        {
+          "id": "rule_credit_hold",
+          "name": "Credit Hold Check",
+          "description": "Place order on hold if over credit limit",
+          "condition": "credit_status == 'approved'",
+          "action_if_true": "proceed_to_confirmation",
+          "action_if_false": "place_on_credit_hold",
+          "configurable": false
+        }
+      ],
+
+      "compliance_frameworks": ["PCI-DSS"],
+      "next_step_on_success": "agent_4_1_1_1_step5",
+      "expected_duration_seconds": 30,
+      "requires_audit_log": true,
+      "version": "1.0.0",
+      "status": "active"
+    },
+
+    {
+      "id": "agent_4_1_1_1_step5",
+      "apqc_id": "4.1.1.1",
+      "step_number": 5,
+      "step_name": "Order Confirmation",
+      "description": "Finalize order and send confirmation to customer",
+      "purpose": "Commit order and set customer expectations",
+      "business_value": "Improves customer experience and reduces inquiries",
+
+      "capabilities": [
+        "finalize_order",
+        "generate_order_number",
+        "send_confirmation_email",
+        "update_order_status",
+        "create_customer_portal_entry"
+      ],
+
+      "input_schema": [
+        {
+          "name": "order_id",
+          "type": "string",
+          "required": true
+        },
+        {
+          "name": "customer_email",
+          "type": "string",
+          "required": true
+        },
+        {
+          "name": "order_total",
+          "type": "currency",
+          "required": true
+        },
+        {
+          "name": "estimated_ship_date",
+          "type": "date",
+          "required": true
+        }
+      ],
+
+      "output_schema": [
+        {
+          "name": "confirmation_number",
+          "type": "string",
+          "required": true
+        },
+        {
+          "name": "confirmation_sent",
+          "type": "boolean",
+          "required": true
+        },
+        {
+          "name": "order_status",
+          "type": "string",
+          "required": true,
+          "validation": {"enum": ["confirmed", "processing", "pending_review"]}
+        },
+        {
+          "name": "estimated_delivery_date",
+          "type": "date",
+          "required": true
+        }
+      ],
+
+      "required_integrations": ["sendgrid", "shopify"],
+
+      "next_step_on_success": "agent_4_1_1_1_step6",
+      "expected_duration_seconds": 10,
+      "requires_audit_log": true,
+      "version": "1.0.0",
+      "status": "active"
+    },
+
+    {
+      "id": "agent_4_1_1_1_step6",
+      "apqc_id": "4.1.1.1",
+      "step_number": 6,
+      "step_name": "Revenue Recognition Booking",
+      "description": "Book revenue and create accounting entries per revenue recognition standards",
+      "purpose": "Ensure proper revenue accounting",
+      "business_value": "Maintains compliant financial records",
+
+      "capabilities": [
+        "book_deferred_revenue",
+        "create_ar_entry",
+        "link_to_contract",
+        "apply_rev_rec_rules"
+      ],
+
+      "input_schema": [
+        {
+          "name": "order_id",
+          "type": "string",
+          "required": true
+        },
+        {
+          "name": "order_total",
+          "type": "currency",
+          "required": true
+        },
+        {
+          "name": "line_items",
+          "type": "array",
+          "required": true
+        }
+      ],
+
+      "output_schema": [
+        {
+          "name": "accounting_entries",
+          "type": "array",
+          "description": "GL entries created",
+          "required": true
+        },
+        {
+          "name": "revenue_schedule",
+          "type": "object",
+          "description": "Revenue recognition schedule",
+          "required": false
+        },
+        {
+          "name": "booking_status",
+          "type": "string",
+          "required": true,
+          "validation": {"enum": ["booked", "pending", "manual_review"]}
+        }
+      ],
+
+      "required_integrations": ["netsuite"],
+
+      "compliance_frameworks": ["ASC 606", "GAAP"],
+      "next_step_on_success": "agent_4_1_1_1_step7",
+      "expected_duration_seconds": 15,
+      "requires_audit_log": true,
+      "version": "1.0.0",
+      "status": "active"
+    },
+
+    {
+      "id": "agent_4_1_1_1_step7",
+      "apqc_id": "4.1.1.1",
+      "step_number": 7,
+      "step_name": "Fulfillment Release",
+      "description": "Release order to fulfillment and create pick/pack instructions",
+      "purpose": "Hand off order for physical fulfillment",
+      "business_value": "Enables timely shipping and customer satisfaction",
+
+      "capabilities": [
+        "release_to_warehouse",
+        "create_pick_list",
+        "assign_shipping_method",
+        "generate_packing_slip",
+        "notify_fulfillment_team"
+      ],
+
+      "input_schema": [
+        {
+          "name": "order_id",
+          "type": "string",
+          "required": true
+        },
+        {
+          "name": "fulfillment_location",
+          "type": "string",
+          "required": true
+        },
+        {
+          "name": "shipping_method",
+          "type": "string",
+          "required": true
+        }
+      ],
+
+      "output_schema": [
+        {
+          "name": "fulfillment_order_id",
+          "type": "string",
+          "required": true
+        },
+        {
+          "name": "pick_list_id",
+          "type": "string",
+          "required": true
+        },
+        {
+          "name": "release_status",
+          "type": "string",
+          "required": true,
+          "validation": {"enum": ["released", "queued", "held"]}
+        },
+        {
+          "name": "processing_complete",
+          "type": "boolean",
+          "required": true
+        }
+      ],
+
+      "required_integrations": ["shipstation", "netsuite"],
+      "optional_integrations": ["shipbob", "amazon_fba"],
+
+      "next_step_on_success": null,
+      "expected_duration_seconds": 15,
+      "requires_audit_log": true,
+      "version": "1.0.0",
+      "status": "active"
+    }
+  ],
+
+  "integration_summary": {
+    "required": [
+      {"id": "shopify", "purpose": "E-commerce platform"},
+      {"id": "netsuite", "purpose": "ERP - inventory, accounting"},
+      {"id": "stripe", "purpose": "Payment processing"},
+      {"id": "sendgrid", "purpose": "Order confirmations"},
+      {"id": "shipstation", "purpose": "Shipping and fulfillment"}
+    ],
+    "optional": [
+      {"id": "salesforce", "purpose": "CRM integration"},
+      {"id": "avalara", "purpose": "Tax calculation"},
+      {"id": "amazon_mws", "purpose": "Marketplace integration"}
+    ]
+  },
+
+  "kpis": [
+    {"name": "Order Processing Time (minutes)", "target": "< 5", "current": null},
+    {"name": "Order Accuracy Rate", "target": "> 99.5%", "current": null},
+    {"name": "Inventory Allocation Rate", "target": "> 98%", "current": null},
+    {"name": "Payment Authorization Rate", "target": "> 95%", "current": null},
+    {"name": "Same-Day Ship Rate", "target": "> 90%", "current": null}
+  ]
+}

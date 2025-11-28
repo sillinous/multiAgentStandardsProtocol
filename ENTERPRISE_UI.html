@@ -1,0 +1,750 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>APQC Agentic Platform - Enterprise Control Center</title>
+    <style>
+        :root {
+            --primary: #667eea;
+            --primary-dark: #5568d3;
+            --secondary: #764ba2;
+            --accent: #f093fb;
+            --success: #10b981;
+            --warning: #f59e0b;
+            --error: #ef4444;
+            --bg-dark: #0f172a;
+            --bg-card: #1e293b;
+            --bg-card-hover: #334155;
+            --text-primary: #f1f5f9;
+            --text-secondary: #cbd5e1;
+            --border: #334155;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Inter', 'Segoe UI', sans-serif;
+            background: var(--bg-dark);
+            color: var(--text-primary);
+            overflow-x: hidden;
+        }
+
+        /* Header */
+        .header {
+            background: linear-gradient(135deg, var(--primary) 0%, var(--secondary) 100%);
+            padding: 20px 40px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.3);
+            position: sticky;
+            top: 0;
+            z-index: 1000;
+        }
+
+        .logo {
+            font-size: 1.8em;
+            font-weight: 700;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .status-indicator {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            background: rgba(255,255,255,0.1);
+            padding: 10px 20px;
+            border-radius: 25px;
+            backdrop-filter: blur(10px);
+        }
+
+        .status-dot {
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
+            background: var(--success);
+            animation: pulse 2s infinite;
+        }
+
+        @keyframes pulse {
+            0%, 100% { opacity: 1; transform: scale(1); }
+            50% { opacity: 0.7; transform: scale(1.1); }
+        }
+
+        /* Sidebar */
+        .sidebar {
+            position: fixed;
+            left: 0;
+            top: 70px;
+            width: 280px;
+            height: calc(100vh - 70px);
+            background: var(--bg-card);
+            border-right: 1px solid var(--border);
+            padding: 20px 0;
+            overflow-y: auto;
+        }
+
+        .nav-item {
+            padding: 15px 30px;
+            cursor: pointer;
+            transition: all 0.3s;
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            color: var(--text-secondary);
+        }
+
+        .nav-item:hover, .nav-item.active {
+            background: var(--bg-card-hover);
+            color: var(--text-primary);
+            border-left: 3px solid var(--primary);
+        }
+
+        .nav-icon {
+            font-size: 1.3em;
+        }
+
+        /* Main Content */
+        .main-content {
+            margin-left: 280px;
+            padding: 30px;
+            min-height: calc(100vh - 70px);
+        }
+
+        /* Dashboard Grid */
+        .dashboard-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 25px;
+            margin-bottom: 30px;
+        }
+
+        .metric-card {
+            background: var(--bg-card);
+            border-radius: 15px;
+            padding: 25px;
+            border: 1px solid var(--border);
+            transition: all 0.3s;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .metric-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 3px;
+            background: linear-gradient(90deg, var(--primary), var(--accent));
+        }
+
+        .metric-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 30px rgba(0,0,0,0.3);
+            border-color: var(--primary);
+        }
+
+        .metric-label {
+            color: var(--text-secondary);
+            font-size: 0.9em;
+            margin-bottom: 10px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .metric-value {
+            font-size: 2.5em;
+            font-weight: 700;
+            background: linear-gradient(135deg, var(--primary) 0%, var(--accent) 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            margin-bottom: 10px;
+        }
+
+        .metric-change {
+            font-size: 0.85em;
+            color: var(--success);
+            display: flex;
+            align-items: center;
+            gap: 5px;
+        }
+
+        /* Agent List */
+        .agent-list {
+            background: var(--bg-card);
+            border-radius: 15px;
+            border: 1px solid var(--border);
+            overflow: hidden;
+        }
+
+        .agent-list-header {
+            padding: 20px 25px;
+            background: linear-gradient(135deg, var(--primary) 0%, var(--secondary) 100%);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .search-box {
+            background: rgba(255,255,255,0.1);
+            border: 1px solid rgba(255,255,255,0.2);
+            border-radius: 25px;
+            padding: 10px 20px;
+            color: var(--text-primary);
+            width: 300px;
+            outline: none;
+            backdrop-filter: blur(10px);
+        }
+
+        .search-box::placeholder {
+            color: rgba(255,255,255,0.6);
+        }
+
+        .agent-item {
+            padding: 20px 25px;
+            border-bottom: 1px solid var(--border);
+            display: grid;
+            grid-template-columns: 2fr 1fr 1fr 150px 100px;
+            gap: 15px;
+            align-items: center;
+            transition: all 0.2s;
+        }
+
+        .agent-item:hover {
+            background: var(--bg-card-hover);
+            cursor: pointer;
+        }
+
+        .agent-name {
+            font-weight: 600;
+            display: flex;
+            flex-direction: column;
+            gap: 5px;
+        }
+
+        .agent-id {
+            font-size: 0.8em;
+            color: var(--text-secondary);
+        }
+
+        .badge {
+            display: inline-block;
+            padding: 5px 12px;
+            border-radius: 15px;
+            font-size: 0.8em;
+            font-weight: 600;
+        }
+
+        .badge-expert {
+            background: rgba(16, 185, 129, 0.2);
+            color: var(--success);
+        }
+
+        .badge-advanced {
+            background: rgba(59, 130, 246, 0.2);
+            color: #3b82f6;
+        }
+
+        .badge-finance {
+            background: rgba(245, 158, 11, 0.2);
+            color: var(--warning);
+        }
+
+        .badge-strategy {
+            background: rgba(147, 51, 234, 0.2);
+            color: #9333ea;
+        }
+
+        .status-active {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            color: var(--success);
+        }
+
+        .status-active::before {
+            content: '';
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            background: var(--success);
+        }
+
+        /* Live Monitor */
+        .live-monitor {
+            background: var(--bg-card);
+            border-radius: 15px;
+            border: 1px solid var(--border);
+            padding: 25px;
+            margin-top: 30px;
+        }
+
+        .monitor-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+        }
+
+        .event-stream {
+            max-height: 500px;
+            overflow-y: auto;
+            padding-right: 10px;
+        }
+
+        .event-item {
+            background: var(--bg-dark);
+            padding: 15px;
+            border-radius: 10px;
+            margin-bottom: 10px;
+            border-left: 3px solid var(--primary);
+            animation: slideIn 0.3s ease-out;
+        }
+
+        @keyframes slideIn {
+            from {
+                opacity: 0;
+                transform: translateX(-20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateX(0);
+            }
+        }
+
+        .event-time {
+            font-size: 0.8em;
+            color: var(--text-secondary);
+            margin-bottom: 5px;
+        }
+
+        .event-message {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .event-icon-success {
+            color: var(--success);
+            font-size: 1.2em;
+        }
+
+        .event-icon-info {
+            color: var(--primary);
+            font-size: 1.2em;
+        }
+
+        /* Buttons */
+        .btn {
+            padding: 10px 20px;
+            border-radius: 8px;
+            border: none;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, var(--primary) 0%, var(--secondary) 100%);
+            color: white;
+        }
+
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(102, 126, 234, 0.4);
+        }
+
+        .btn-outline {
+            background: transparent;
+            border: 1px solid var(--primary);
+            color: var(--primary);
+        }
+
+        .btn-outline:hover {
+            background: var(--primary);
+            color: white;
+        }
+
+        /* Scrollbar */
+        ::-webkit-scrollbar {
+            width: 8px;
+            height: 8px;
+        }
+
+        ::-webkit-scrollbar-track {
+            background: var(--bg-dark);
+        }
+
+        ::-webkit-scrollbar-thumb {
+            background: var(--primary);
+            border-radius: 4px;
+        }
+
+        ::-webkit-scrollbar-thumb:hover {
+            background: var(--primary-dark);
+        }
+
+        /* Loading Animation */
+        .loading {
+            display: inline-block;
+            width: 12px;
+            height: 12px;
+            border: 2px solid var(--text-secondary);
+            border-top-color: var(--primary);
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+        }
+
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+
+        /* View Sections */
+        .view {
+            display: none;
+        }
+
+        .view.active {
+            display: block;
+        }
+
+        /* Chart Container */
+        .chart-container {
+            background: var(--bg-dark);
+            border-radius: 10px;
+            padding: 20px;
+            margin-top: 20px;
+            height: 300px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: var(--text-secondary);
+        }
+    </style>
+</head>
+<body>
+    <!-- Header -->
+    <header class="header">
+        <div class="logo">
+            🏭 APQC Agentic Platform
+            <span style="font-size: 0.5em; opacity: 0.8;">v2.0 Enterprise</span>
+        </div>
+        <div class="status-indicator">
+            <div class="status-dot"></div>
+            <span>System Online</span>
+            <span style="opacity: 0.7;">|</span>
+            <span id="agent-count">610 Agents Active</span>
+        </div>
+    </header>
+
+    <!-- Sidebar -->
+    <nav class="sidebar">
+        <div class="nav-item active" onclick="showView('dashboard')">
+            <span class="nav-icon">📊</span>
+            <span>Dashboard</span>
+        </div>
+        <div class="nav-item" onclick="showView('agents')">
+            <span class="nav-icon">🤖</span>
+            <span>Agent Registry</span>
+        </div>
+        <div class="nav-item" onclick="showView('workflows')">
+            <span class="nav-icon">🔄</span>
+            <span>Workflow Composer</span>
+        </div>
+        <div class="nav-item" onclick="showView('monitor')">
+            <span class="nav-icon">📡</span>
+            <span>Live Monitor</span>
+        </div>
+        <div class="nav-item" onclick="showView('protocols')">
+            <span class="nav-icon">🌐</span>
+            <span>Protocol Traffic</span>
+        </div>
+        <div class="nav-item" onclick="showView('metrics')">
+            <span class="nav-icon">📈</span>
+            <span>Metrics & Analytics</span>
+        </div>
+        <div class="nav-item" onclick="showView('settings')">
+            <span class="nav-icon">⚙️</span>
+            <span>Settings</span>
+        </div>
+    </nav>
+
+    <!-- Main Content -->
+    <main class="main-content">
+        <!-- Dashboard View -->
+        <div id="dashboard" class="view active">
+            <h1 style="margin-bottom: 30px;">🏭 Enterprise Control Center</h1>
+
+            <div class="dashboard-grid">
+                <div class="metric-card">
+                    <div class="metric-label">
+                        🤖 Active Agents
+                    </div>
+                    <div class="metric-value">610</div>
+                    <div class="metric-change">
+                        ↑ 100% Available
+                    </div>
+                </div>
+
+                <div class="metric-card">
+                    <div class="metric-label">
+                        📂 Business Domains
+                    </div>
+                    <div class="metric-value">11</div>
+                    <div class="metric-change">
+                        ✓ Full Coverage
+                    </div>
+                </div>
+
+                <div class="metric-card">
+                    <div class="metric-label">
+                        ⚡ Executions Today
+                    </div>
+                    <div class="metric-value" id="exec-count">2,847</div>
+                    <div class="metric-change">
+                        ↑ +15% from yesterday
+                    </div>
+                </div>
+
+                <div class="metric-card">
+                    <div class="metric-label">
+                        ✅ Success Rate
+                    </div>
+                    <div class="metric-value">99.7%</div>
+                    <div class="metric-change">
+                        ↑ +0.2% improvement
+                    </div>
+                </div>
+            </div>
+
+            <div class="live-monitor">
+                <div class="monitor-header">
+                    <h2>📡 Live Activity Feed</h2>
+                    <button class="btn btn-outline">
+                        <span class="loading"></span>
+                        Live
+                    </button>
+                </div>
+                <div class="event-stream" id="activity-feed">
+                    <!-- Events will be added here -->
+                </div>
+            </div>
+        </div>
+
+        <!-- Agent Registry View -->
+        <div id="agents" class="view">
+            <h1 style="margin-bottom: 30px;">🤖 Agent Registry</h1>
+
+            <div class="agent-list">
+                <div class="agent-list-header">
+                    <h2>All Agents</h2>
+                    <input type="text" class="search-box" placeholder="Search agents by name, capability, or domain..." id="agent-search">
+                </div>
+                <div id="agent-list-body">
+                    <!-- Agents will be populated here -->
+                </div>
+            </div>
+        </div>
+
+        <!-- Workflow Composer View -->
+        <div id="workflows" class="view">
+            <h1 style="margin-bottom: 30px;">🔄 Workflow Composer</h1>
+
+            <div class="metric-card">
+                <h2>Visual Workflow Builder</h2>
+                <p style="margin-top: 15px; color: var(--text-secondary);">
+                    Drag and drop agents to create complex workflows.
+                    Compose atomic agents into powerful multi-step processes.
+                </p>
+                <div class="chart-container">
+                    <div>
+                        <p style="font-size: 3em; margin-bottom: 10px;">🎨</p>
+                        <p>Interactive Workflow Canvas</p>
+                        <p style="margin-top: 10px; opacity: 0.7;">Coming in next version</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Live Monitor View -->
+        <div id="monitor" class="view">
+            <h1 style="margin-bottom: 30px;">📡 Live Execution Monitor</h1>
+
+            <div class="live-monitor">
+                <div class="monitor-header">
+                    <h2>Real-Time Agent Executions</h2>
+                    <div>
+                        <button class="btn btn-primary">
+                            <span class="loading"></span>
+                            Monitoring
+                        </button>
+                    </div>
+                </div>
+                <div class="event-stream" id="execution-monitor">
+                    <!-- Real-time executions -->
+                </div>
+            </div>
+        </div>
+
+        <!-- Protocol Traffic View -->
+        <div id="protocols" class="view">
+            <h1 style="margin-bottom: 30px;">🌐 Protocol Traffic Monitor</h1>
+
+            <div class="dashboard-grid">
+                <div class="metric-card">
+                    <div class="metric-label">A2A Messages</div>
+                    <div class="metric-value">1,234</div>
+                </div>
+                <div class="metric-card">
+                    <div class="metric-label">BPP Workflows</div>
+                    <div class="metric-value">56</div>
+                </div>
+                <div class="metric-card">
+                    <div class="metric-label">BDP Data Exchanges</div>
+                    <div class="metric-value">890</div>
+                </div>
+                <div class="metric-card">
+                    <div class="metric-label">Protocol Errors</div>
+                    <div class="metric-value">3</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Metrics View -->
+        <div id="metrics" class="view">
+            <h1 style="margin-bottom: 30px;">📈 Metrics & Analytics</h1>
+
+            <div class="metric-card">
+                <h2>Performance Analytics</h2>
+                <div class="chart-container">
+                    <div>
+                        <p style="font-size: 3em; margin-bottom: 10px;">📊</p>
+                        <p>Advanced Analytics Dashboard</p>
+                        <p style="margin-top: 10px; opacity: 0.7;">Real-time metrics visualization</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Settings View -->
+        <div id="settings" class="view">
+            <h1 style="margin-bottom: 30px;">⚙️ Settings</h1>
+
+            <div class="metric-card">
+                <h2>System Configuration</h2>
+                <p style="margin-top: 15px; color: var(--text-secondary);">
+                    Configure system settings, manage integrations, and customize your workspace.
+                </p>
+            </div>
+        </div>
+    </main>
+
+    <script>
+        // Sample agent data
+        const agents = [
+            { name: 'Calculate Gross Pay', id: 'apqc_9_5_2_1', domain: 'finance', proficiency: 'expert', category: 'Finance', status: 'active' },
+            { name: 'Process Invoices', id: 'apqc_9_2_1_1', domain: 'finance', proficiency: 'expert', category: 'Finance', status: 'active' },
+            { name: 'Analyze Competition', id: 'apqc_1_1_1_1', domain: 'strategy', proficiency: 'advanced', category: 'Strategy', status: 'active' },
+            { name: 'Recruit Candidates', id: 'apqc_7_1_1_1', domain: 'human_resources', proficiency: 'advanced', category: 'HR', status: 'active' },
+            { name: 'Manage Inventory', id: 'apqc_4_2_1_1', domain: 'product_management', proficiency: 'expert', category: 'Operations', status: 'active' },
+        ];
+
+        // View switching
+        function showView(viewId) {
+            document.querySelectorAll('.view').forEach(v => v.classList.remove('active'));
+            document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
+            document.getElementById(viewId).classList.add('active');
+            event.target.closest('.nav-item').classList.add('active');
+        }
+
+        // Populate agent list
+        function populateAgents() {
+            const container = document.getElementById('agent-list-body');
+            agents.forEach(agent => {
+                const item = document.createElement('div');
+                item.className = 'agent-item';
+                item.innerHTML = `
+                    <div class="agent-name">
+                        ${agent.name}
+                        <span class="agent-id">${agent.id}</span>
+                    </div>
+                    <div>
+                        <span class="badge badge-${agent.domain}">${agent.category}</span>
+                    </div>
+                    <div>
+                        <span class="badge badge-${agent.proficiency}">${agent.proficiency.toUpperCase()}</span>
+                    </div>
+                    <div class="status-active">READY</div>
+                    <div>
+                        <button class="btn btn-outline" style="padding: 5px 15px; font-size: 0.9em;">
+                            Execute
+                        </button>
+                    </div>
+                `;
+                container.appendChild(item);
+            });
+        }
+
+        // Simulate live activity
+        function addActivity(message, type = 'info') {
+            const feed = document.getElementById('activity-feed');
+            const event = document.createElement('div');
+            event.className = 'event-item';
+            const time = new Date().toLocaleTimeString();
+            event.innerHTML = `
+                <div class="event-time">${time}</div>
+                <div class="event-message">
+                    <span class="event-icon-${type}">${type === 'success' ? '✓' : 'ℹ'}</span>
+                    <span>${message}</span>
+                </div>
+            `;
+            feed.insertBefore(event, feed.firstChild);
+            if (feed.children.length > 10) {
+                feed.removeChild(feed.lastChild);
+            }
+        }
+
+        // Simulated execution counter
+        let execCount = 2847;
+        setInterval(() => {
+            execCount += Math.floor(Math.random() * 3);
+            document.getElementById('exec-count').textContent = execCount.toLocaleString();
+        }, 3000);
+
+        // Simulated activity feed
+        const activities = [
+            'Agent "Calculate Gross Pay" executed successfully (127ms)',
+            'Agent "Process Invoices" completed task (203ms)',
+            'Agent "Analyze Competition" discovered 3 new insights',
+            'Workflow "Monthly Payroll" started with 5 agents',
+            'Agent "Manage Inventory" updated 47 records',
+            'Protocol BPP message sent: workflow.step.complete',
+            'Agent "Forecast Cash Flows" generated prediction',
+            'System health check: All services operational'
+        ];
+
+        setInterval(() => {
+            const activity = activities[Math.floor(Math.random() * activities.length)];
+            addActivity(activity, Math.random() > 0.3 ? 'success' : 'info');
+        }, 2000);
+
+        // Initialize
+        populateAgents();
+        addActivity('System initialized with 610 standardized agents', 'success');
+        addActivity('All business logic templates loaded', 'success');
+        addActivity('Protocol stack ready (A2A, ANP, ACP, BPP, BDP, BRP, BMP, BCP, BIP)', 'info');
+    </script>
+</body>
+</html>

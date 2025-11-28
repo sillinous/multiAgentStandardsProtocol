@@ -1,0 +1,894 @@
+{
+  "apqc_id": "12.1.1.1",
+  "apqc_name": "Manage contracts and legal agreements",
+  "category": "12.0 - Manage External Relationships",
+  "description": "End-to-end contract lifecycle management from request through expiration, including drafting, negotiation, execution, compliance monitoring, and renewal.",
+  "orchestration_pattern": "sequential",
+  "total_steps": 7,
+  "estimated_duration_seconds": 604800,
+  "compliance_frameworks": ["SOX", "GDPR", "FCPA", "Export Controls"],
+  "data_retention_days": 3650,
+
+  "agent_cards": [
+    {
+      "id": "agent_12_1_1_1_step1",
+      "apqc_id": "12.1.1.1",
+      "step_number": 1,
+      "step_name": "Contract Request and Intake",
+      "description": "Receive and process contract requests from business stakeholders",
+      "purpose": "Capture contract requirements and prioritize workload",
+      "business_value": "Streamline contract initiation and reduce turnaround time",
+
+      "capabilities": [
+        "receive_contract_request",
+        "validate_requirements",
+        "classify_contract_type",
+        "assign_priority",
+        "route_to_appropriate_team",
+        "check_existing_templates"
+      ],
+
+      "input_schema": [
+        {
+          "name": "requester_id",
+          "type": "string",
+          "required": true
+        },
+        {
+          "name": "contract_type",
+          "type": "string",
+          "required": true,
+          "validation": {"enum": ["nda", "msa", "sow", "sla", "license", "employment", "vendor", "customer", "partnership"]}
+        },
+        {
+          "name": "counterparty",
+          "type": "object",
+          "required": true
+        },
+        {
+          "name": "business_purpose",
+          "type": "string",
+          "required": true
+        },
+        {
+          "name": "estimated_value",
+          "type": "currency",
+          "required": false
+        },
+        {
+          "name": "urgency",
+          "type": "string",
+          "required": true,
+          "validation": {"enum": ["standard", "expedited", "urgent"]}
+        }
+      ],
+
+      "output_schema": [
+        {
+          "name": "request_id",
+          "type": "string",
+          "required": true,
+          "example": "CR-2025-001234"
+        },
+        {
+          "name": "assigned_attorney",
+          "type": "string",
+          "required": true
+        },
+        {
+          "name": "priority_level",
+          "type": "string",
+          "required": true
+        },
+        {
+          "name": "template_recommendation",
+          "type": "string",
+          "required": false
+        },
+        {
+          "name": "estimated_completion",
+          "type": "date",
+          "required": true
+        },
+        {
+          "name": "risk_flags",
+          "type": "array",
+          "required": true
+        }
+      ],
+
+      "required_integrations": [
+        {"system": "CLM Platform", "type": "bidirectional", "protocol": "REST API", "examples": ["Icertis", "DocuSign CLM", "Agiloft", "Ironclad"]},
+        {"system": "Legal Intake System", "type": "bidirectional", "protocol": "API"},
+        {"system": "Matter Management", "type": "bidirectional", "protocol": "API", "examples": ["SimpleLegal", "LegalTracker"]},
+        {"system": "CRM", "type": "read", "protocol": "API"}
+      ],
+
+      "decision_rules": [
+        {
+          "rule_id": "DR-LG-001",
+          "name": "High Value Contract",
+          "condition": "estimated_value > 1000000",
+          "action": "assign_to_senior_counsel",
+          "priority": 1
+        },
+        {
+          "rule_id": "DR-LG-002",
+          "name": "Standard NDA",
+          "condition": "contract_type == 'nda' AND mutual == true",
+          "action": "use_self_service_template",
+          "priority": 2
+        },
+        {
+          "rule_id": "DR-LG-003",
+          "name": "New Counterparty",
+          "condition": "counterparty NOT IN existing_relationships",
+          "action": "trigger_due_diligence_check",
+          "priority": 1
+        },
+        {
+          "rule_id": "DR-LG-004",
+          "name": "International Contract",
+          "condition": "counterparty.country != company.country",
+          "action": "flag_for_international_review",
+          "priority": 1
+        }
+      ],
+
+      "error_handlers": [
+        {
+          "error_type": "incomplete_request",
+          "severity": "medium",
+          "action": "return_to_requester_for_info",
+          "notification": ["requester"]
+        },
+        {
+          "error_type": "no_attorney_available",
+          "severity": "high",
+          "action": "escalate_to_general_counsel",
+          "notification": ["general_counsel"]
+        }
+      ]
+    },
+
+    {
+      "id": "agent_12_1_1_1_step2",
+      "apqc_id": "12.1.1.1",
+      "step_number": 2,
+      "step_name": "Contract Drafting",
+      "description": "Draft contract using templates and clause libraries",
+      "purpose": "Create initial contract draft efficiently",
+      "business_value": "Reduce drafting time and ensure consistency",
+
+      "capabilities": [
+        "select_template",
+        "populate_variables",
+        "insert_clauses",
+        "apply_playbook_rules",
+        "generate_first_draft",
+        "check_consistency"
+      ],
+
+      "input_schema": [
+        {
+          "name": "request_id",
+          "type": "string",
+          "required": true
+        },
+        {
+          "name": "template_id",
+          "type": "string",
+          "required": false
+        },
+        {
+          "name": "contract_variables",
+          "type": "object",
+          "required": true
+        },
+        {
+          "name": "special_requirements",
+          "type": "array",
+          "required": false
+        }
+      ],
+
+      "output_schema": [
+        {
+          "name": "draft_id",
+          "type": "string",
+          "required": true
+        },
+        {
+          "name": "draft_document",
+          "type": "binary",
+          "required": true
+        },
+        {
+          "name": "template_used",
+          "type": "string",
+          "required": true
+        },
+        {
+          "name": "deviations_from_standard",
+          "type": "array",
+          "required": true
+        },
+        {
+          "name": "review_required",
+          "type": "boolean",
+          "required": true
+        }
+      ],
+
+      "required_integrations": [
+        {"system": "CLM Platform", "type": "bidirectional", "protocol": "API"},
+        {"system": "Clause Library", "type": "read", "protocol": "API"},
+        {"system": "Document Assembly", "type": "execute", "protocol": "API", "examples": ["HotDocs", "ContractExpress"]},
+        {"system": "AI Drafting", "type": "processing", "protocol": "API", "examples": ["Kira", "Evisort"]}
+      ],
+
+      "decision_rules": [
+        {
+          "rule_id": "DR-LG-010",
+          "name": "Use Customer Paper",
+          "condition": "counterparty.paper_preference == 'customer_paper'",
+          "action": "request_customer_template",
+          "priority": 1
+        },
+        {
+          "rule_id": "DR-LG-011",
+          "name": "Include Standard Clauses",
+          "condition": "contract_type IN ['msa', 'vendor', 'customer']",
+          "action": "auto_insert_mandatory_clauses",
+          "priority": 1
+        },
+        {
+          "rule_id": "DR-LG-012",
+          "name": "Data Privacy Addendum",
+          "condition": "involves_personal_data == true",
+          "action": "include_dpa_attachment",
+          "priority": 1
+        }
+      ],
+
+      "error_handlers": [
+        {
+          "error_type": "template_not_found",
+          "severity": "medium",
+          "action": "escalate_for_custom_drafting",
+          "notification": ["assigned_attorney"]
+        },
+        {
+          "error_type": "clause_conflict",
+          "severity": "high",
+          "action": "flag_for_attorney_review",
+          "notification": ["assigned_attorney"]
+        }
+      ]
+    },
+
+    {
+      "id": "agent_12_1_1_1_step3",
+      "apqc_id": "12.1.1.1",
+      "step_number": 3,
+      "step_name": "Contract Review and Risk Assessment",
+      "description": "Analyze contract for risks, non-standard terms, and compliance issues",
+      "purpose": "Identify and mitigate contractual risks",
+      "business_value": "Protect company from unfavorable terms and liability",
+
+      "capabilities": [
+        "analyze_contract_ai",
+        "compare_to_playbook",
+        "identify_risks",
+        "score_risk_level",
+        "flag_non_standard_terms",
+        "generate_review_summary"
+      ],
+
+      "input_schema": [
+        {
+          "name": "contract_id",
+          "type": "string",
+          "required": true
+        },
+        {
+          "name": "contract_document",
+          "type": "binary",
+          "required": true
+        },
+        {
+          "name": "review_type",
+          "type": "string",
+          "required": true,
+          "validation": {"enum": ["initial_draft", "counterparty_paper", "redline", "final"]}
+        }
+      ],
+
+      "output_schema": [
+        {
+          "name": "review_id",
+          "type": "string",
+          "required": true
+        },
+        {
+          "name": "overall_risk_score",
+          "type": "integer",
+          "required": true
+        },
+        {
+          "name": "risk_items",
+          "type": "array",
+          "required": true
+        },
+        {
+          "name": "playbook_deviations",
+          "type": "array",
+          "required": true
+        },
+        {
+          "name": "required_approvals",
+          "type": "array",
+          "required": true
+        },
+        {
+          "name": "recommendation",
+          "type": "string",
+          "required": true,
+          "validation": {"enum": ["approve", "negotiate", "escalate", "reject"]}
+        }
+      ],
+
+      "required_integrations": [
+        {"system": "AI Contract Analysis", "type": "processing", "protocol": "API", "examples": ["Kira", "Evisort", "Luminance", "LawGeex"]},
+        {"system": "CLM Platform", "type": "bidirectional", "protocol": "API"},
+        {"system": "Playbook Engine", "type": "read", "protocol": "API"},
+        {"system": "Risk Management", "type": "bidirectional", "protocol": "API"}
+      ],
+
+      "decision_rules": [
+        {
+          "rule_id": "DR-LG-020",
+          "name": "Unlimited Liability",
+          "condition": "liability_cap == 'unlimited' OR liability_cap > contract_value * 3",
+          "action": "escalate_to_general_counsel",
+          "priority": 1
+        },
+        {
+          "rule_id": "DR-LG-021",
+          "name": "Non-Standard Indemnity",
+          "condition": "indemnity_deviation > threshold",
+          "action": "flag_for_negotiation",
+          "priority": 1
+        },
+        {
+          "rule_id": "DR-LG-022",
+          "name": "Unusual Governing Law",
+          "condition": "governing_law NOT IN approved_jurisdictions",
+          "action": "require_legal_approval",
+          "priority": 1
+        },
+        {
+          "rule_id": "DR-LG-023",
+          "name": "IP Assignment Clause",
+          "condition": "ip_assignment_present == true",
+          "action": "escalate_to_ip_counsel",
+          "priority": 1
+        }
+      ],
+
+      "error_handlers": [
+        {
+          "error_type": "ai_confidence_low",
+          "severity": "medium",
+          "action": "require_manual_review",
+          "notification": ["assigned_attorney"]
+        },
+        {
+          "error_type": "document_unreadable",
+          "severity": "high",
+          "action": "request_clean_copy",
+          "notification": ["requester", "counterparty"]
+        }
+      ]
+    },
+
+    {
+      "id": "agent_12_1_1_1_step4",
+      "apqc_id": "12.1.1.1",
+      "step_number": 4,
+      "step_name": "Negotiation Management",
+      "description": "Manage contract negotiation rounds with counterparty",
+      "purpose": "Achieve favorable terms through structured negotiation",
+      "business_value": "Protect company interests while closing deals",
+
+      "capabilities": [
+        "track_redlines",
+        "compare_versions",
+        "suggest_counter_positions",
+        "manage_negotiation_rounds",
+        "document_concessions",
+        "track_approval_escalations"
+      ],
+
+      "input_schema": [
+        {
+          "name": "contract_id",
+          "type": "string",
+          "required": true
+        },
+        {
+          "name": "negotiation_round",
+          "type": "integer",
+          "required": true
+        },
+        {
+          "name": "counterparty_redline",
+          "type": "binary",
+          "required": false
+        },
+        {
+          "name": "our_positions",
+          "type": "array",
+          "required": true
+        }
+      ],
+
+      "output_schema": [
+        {
+          "name": "round_summary",
+          "type": "object",
+          "required": true
+        },
+        {
+          "name": "open_issues",
+          "type": "array",
+          "required": true
+        },
+        {
+          "name": "concessions_made",
+          "type": "array",
+          "required": true
+        },
+        {
+          "name": "updated_document",
+          "type": "binary",
+          "required": true
+        },
+        {
+          "name": "negotiation_status",
+          "type": "string",
+          "required": true,
+          "validation": {"enum": ["ongoing", "agreement_reached", "stalled", "terminated"]}
+        }
+      ],
+
+      "required_integrations": [
+        {"system": "CLM Platform", "type": "bidirectional", "protocol": "API"},
+        {"system": "Document Comparison", "type": "processing", "protocol": "API", "examples": ["Workshare", "Litera Compare"]},
+        {"system": "Email Integration", "type": "bidirectional", "protocol": "API"},
+        {"system": "Collaboration Platform", "type": "bidirectional", "protocol": "API"}
+      ],
+
+      "decision_rules": [
+        {
+          "rule_id": "DR-LG-030",
+          "name": "Negotiation Stalled",
+          "condition": "no_response_days > 10 AND deal_priority == 'high'",
+          "action": "escalate_to_business_sponsor",
+          "priority": 1
+        },
+        {
+          "rule_id": "DR-LG-031",
+          "name": "Excessive Rounds",
+          "condition": "negotiation_round > 5",
+          "action": "recommend_executive_discussion",
+          "priority": 2
+        },
+        {
+          "rule_id": "DR-LG-032",
+          "name": "Material Concession",
+          "condition": "concession_value > threshold",
+          "action": "require_business_approval",
+          "priority": 1
+        }
+      ],
+
+      "error_handlers": [
+        {
+          "error_type": "version_conflict",
+          "severity": "medium",
+          "action": "reconcile_versions",
+          "notification": ["assigned_attorney"]
+        },
+        {
+          "error_type": "unauthorized_changes",
+          "severity": "high",
+          "action": "alert_and_revert",
+          "notification": ["assigned_attorney", "requester"]
+        }
+      ]
+    },
+
+    {
+      "id": "agent_12_1_1_1_step5",
+      "apqc_id": "12.1.1.1",
+      "step_number": 5,
+      "step_name": "Approval and Execution",
+      "description": "Route for approvals and execute the contract",
+      "purpose": "Obtain proper authorization and binding signatures",
+      "business_value": "Ensure valid, enforceable contracts",
+
+      "capabilities": [
+        "route_for_approval",
+        "track_approval_status",
+        "generate_signature_package",
+        "execute_via_e_signature",
+        "validate_signatures",
+        "archive_executed_contract"
+      ],
+
+      "input_schema": [
+        {
+          "name": "contract_id",
+          "type": "string",
+          "required": true
+        },
+        {
+          "name": "final_document",
+          "type": "binary",
+          "required": true
+        },
+        {
+          "name": "required_approvers",
+          "type": "array",
+          "required": true
+        },
+        {
+          "name": "signature_method",
+          "type": "string",
+          "required": true,
+          "validation": {"enum": ["e_signature", "wet_signature", "hybrid"]}
+        }
+      ],
+
+      "output_schema": [
+        {
+          "name": "approval_status",
+          "type": "string",
+          "required": true,
+          "validation": {"enum": ["pending", "approved", "rejected"]}
+        },
+        {
+          "name": "approval_history",
+          "type": "array",
+          "required": true
+        },
+        {
+          "name": "execution_status",
+          "type": "string",
+          "required": true,
+          "validation": {"enum": ["pending_signatures", "partially_executed", "fully_executed"]}
+        },
+        {
+          "name": "executed_document",
+          "type": "binary",
+          "required": false
+        },
+        {
+          "name": "effective_date",
+          "type": "date",
+          "required": false
+        }
+      ],
+
+      "required_integrations": [
+        {"system": "E-Signature", "type": "bidirectional", "protocol": "API", "examples": ["DocuSign", "Adobe Sign", "PandaDoc"]},
+        {"system": "CLM Platform", "type": "bidirectional", "protocol": "API"},
+        {"system": "Approval Workflow", "type": "bidirectional", "protocol": "API"},
+        {"system": "Document Repository", "type": "write", "protocol": "API"}
+      ],
+
+      "decision_rules": [
+        {
+          "rule_id": "DR-LG-040",
+          "name": "DOA Threshold",
+          "condition": "contract_value > doa_limit[approver_level]",
+          "action": "escalate_to_next_level",
+          "priority": 1
+        },
+        {
+          "rule_id": "DR-LG-041",
+          "name": "Counterparty First",
+          "condition": "signing_order == 'counterparty_first'",
+          "action": "send_for_counterparty_signature",
+          "priority": 1
+        },
+        {
+          "rule_id": "DR-LG-042",
+          "name": "Wet Signature Required",
+          "condition": "jurisdiction IN wet_signature_required_countries",
+          "action": "prepare_physical_signing",
+          "priority": 1
+        }
+      ],
+
+      "error_handlers": [
+        {
+          "error_type": "signature_declined",
+          "severity": "high",
+          "action": "notify_requester_and_legal",
+          "notification": ["requester", "assigned_attorney"]
+        },
+        {
+          "error_type": "approver_unavailable",
+          "severity": "medium",
+          "action": "route_to_delegate",
+          "notification": ["delegate"]
+        }
+      ]
+    },
+
+    {
+      "id": "agent_12_1_1_1_step6",
+      "apqc_id": "12.1.1.1",
+      "step_number": 6,
+      "step_name": "Obligation Management",
+      "description": "Track and manage contractual obligations and milestones",
+      "purpose": "Ensure compliance with contract terms",
+      "business_value": "Avoid breaches and maximize contract value",
+
+      "capabilities": [
+        "extract_obligations",
+        "assign_owners",
+        "track_milestones",
+        "send_reminders",
+        "document_compliance",
+        "manage_amendments"
+      ],
+
+      "input_schema": [
+        {
+          "name": "contract_id",
+          "type": "string",
+          "required": true
+        },
+        {
+          "name": "obligation_type",
+          "type": "string",
+          "required": true,
+          "validation": {"enum": ["delivery", "payment", "reporting", "insurance", "audit", "renewal"]}
+        },
+        {
+          "name": "due_date",
+          "type": "date",
+          "required": true
+        }
+      ],
+
+      "output_schema": [
+        {
+          "name": "obligation_id",
+          "type": "string",
+          "required": true
+        },
+        {
+          "name": "obligation_status",
+          "type": "string",
+          "required": true,
+          "validation": {"enum": ["upcoming", "due_soon", "overdue", "completed", "waived"]}
+        },
+        {
+          "name": "assigned_owner",
+          "type": "string",
+          "required": true
+        },
+        {
+          "name": "completion_evidence",
+          "type": "object",
+          "required": false
+        }
+      ],
+
+      "required_integrations": [
+        {"system": "CLM Platform", "type": "bidirectional", "protocol": "API"},
+        {"system": "Calendar/Task System", "type": "bidirectional", "protocol": "API"},
+        {"system": "ERP", "type": "read", "protocol": "API"},
+        {"system": "Document Repository", "type": "bidirectional", "protocol": "API"}
+      ],
+
+      "decision_rules": [
+        {
+          "rule_id": "DR-LG-050",
+          "name": "Obligation Due Soon",
+          "condition": "days_until_due <= 30",
+          "action": "send_reminder_to_owner",
+          "priority": 2
+        },
+        {
+          "rule_id": "DR-LG-051",
+          "name": "Obligation Overdue",
+          "condition": "days_overdue > 0",
+          "action": "escalate_to_manager_and_legal",
+          "priority": 1
+        },
+        {
+          "rule_id": "DR-LG-052",
+          "name": "Insurance Expiring",
+          "condition": "obligation_type == 'insurance' AND expiry_days <= 60",
+          "action": "request_updated_certificate",
+          "priority": 1
+        }
+      ],
+
+      "error_handlers": [
+        {
+          "error_type": "owner_not_found",
+          "severity": "medium",
+          "action": "assign_to_contract_owner",
+          "notification": ["contract_owner"]
+        },
+        {
+          "error_type": "breach_risk",
+          "severity": "critical",
+          "action": "alert_legal_and_business",
+          "notification": ["general_counsel", "business_owner"]
+        }
+      ]
+    },
+
+    {
+      "id": "agent_12_1_1_1_step7",
+      "apqc_id": "12.1.1.1",
+      "step_number": 7,
+      "step_name": "Renewal and Expiration Management",
+      "description": "Manage contract renewals, expirations, and terminations",
+      "purpose": "Optimize contract portfolio and prevent unwanted renewals",
+      "business_value": "Control spend and maintain strategic relationships",
+
+      "capabilities": [
+        "track_expiration_dates",
+        "send_renewal_alerts",
+        "evaluate_renewal_terms",
+        "initiate_renegotiation",
+        "process_termination",
+        "archive_expired_contracts"
+      ],
+
+      "input_schema": [
+        {
+          "name": "contract_id",
+          "type": "string",
+          "required": true
+        },
+        {
+          "name": "action_type",
+          "type": "string",
+          "required": true,
+          "validation": {"enum": ["renew", "renegotiate", "terminate", "let_expire"]}
+        },
+        {
+          "name": "business_recommendation",
+          "type": "string",
+          "required": true
+        }
+      ],
+
+      "output_schema": [
+        {
+          "name": "renewal_status",
+          "type": "string",
+          "required": true
+        },
+        {
+          "name": "new_contract_id",
+          "type": "string",
+          "required": false
+        },
+        {
+          "name": "termination_date",
+          "type": "date",
+          "required": false
+        },
+        {
+          "name": "transition_plan",
+          "type": "object",
+          "required": false
+        }
+      ],
+
+      "required_integrations": [
+        {"system": "CLM Platform", "type": "bidirectional", "protocol": "API"},
+        {"system": "Procurement", "type": "bidirectional", "protocol": "API"},
+        {"system": "Finance", "type": "bidirectional", "protocol": "API"},
+        {"system": "Vendor Management", "type": "bidirectional", "protocol": "API"}
+      ],
+
+      "decision_rules": [
+        {
+          "rule_id": "DR-LG-060",
+          "name": "Auto-Renewal Warning",
+          "condition": "auto_renew == true AND days_until_notice_deadline <= 90",
+          "action": "alert_business_owner",
+          "priority": 1
+        },
+        {
+          "rule_id": "DR-LG-061",
+          "name": "Performance Review",
+          "condition": "days_until_expiry <= 180 AND contract_value > 100000",
+          "action": "trigger_vendor_performance_review",
+          "priority": 2
+        },
+        {
+          "rule_id": "DR-LG-062",
+          "name": "Competitive Bid",
+          "condition": "contract_term > 3_years OR value_increase > 10%",
+          "action": "recommend_competitive_bidding",
+          "priority": 2
+        }
+      ],
+
+      "error_handlers": [
+        {
+          "error_type": "missed_notice_deadline",
+          "severity": "critical",
+          "action": "escalate_for_emergency_action",
+          "notification": ["general_counsel", "cfo"]
+        },
+        {
+          "error_type": "transition_incomplete",
+          "severity": "high",
+          "action": "request_extension",
+          "notification": ["business_owner", "legal"]
+        }
+      ]
+    }
+  ],
+
+  "integration_summary": {
+    "clm_platforms": ["Icertis", "DocuSign CLM", "Agiloft", "Ironclad", "Conga"],
+    "ai_contract_analysis": ["Kira", "Evisort", "Luminance", "LawGeex", "SpotDraft"],
+    "e_signature": ["DocuSign", "Adobe Sign", "PandaDoc", "HelloSign"],
+    "matter_management": ["SimpleLegal", "LegalTracker", "Brightflag", "Onit"],
+    "document_comparison": ["Workshare", "Litera Compare", "DraftCompare"],
+    "document_repository": ["SharePoint", "iManage", "NetDocuments"]
+  },
+
+  "kpis": [
+    {
+      "name": "Contract Cycle Time",
+      "description": "Average days from request to execution",
+      "target": "< 14 days (standard), < 5 days (NDA)",
+      "measurement": "avg(execution_date - request_date)"
+    },
+    {
+      "name": "Contracts Renewed on Time",
+      "description": "Percentage of renewals processed before expiration",
+      "target": "> 95%",
+      "measurement": "on_time_renewals / total_renewals"
+    },
+    {
+      "name": "Template Usage Rate",
+      "description": "Percentage of contracts using standard templates",
+      "target": "> 80%",
+      "measurement": "template_contracts / total_contracts"
+    },
+    {
+      "name": "Playbook Compliance",
+      "description": "Percentage of terms within playbook guidelines",
+      "target": "> 90%",
+      "measurement": "compliant_terms / total_terms"
+    },
+    {
+      "name": "Obligation Compliance Rate",
+      "description": "Percentage of obligations met on time",
+      "target": "> 98%",
+      "measurement": "on_time_obligations / total_obligations"
+    },
+    {
+      "name": "Self-Service Adoption",
+      "description": "Percentage of low-risk contracts handled via self-service",
+      "target": "> 40%",
+      "measurement": "self_service_contracts / eligible_contracts"
+    }
+  ]
+}

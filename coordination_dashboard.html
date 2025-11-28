@@ -1,0 +1,1487 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Coordination Dashboard - Multi-Agent Task Orchestration</title>
+    <link rel="stylesheet" href="design-system.css">
+    <style>
+        /* Page-specific styles */
+        body {
+            margin: 0;
+            padding: 0;
+        }
+
+        .coordination-layout {
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .coordination-container {
+            flex: 1;
+            padding: var(--spacing-8);
+            max-width: 1920px;
+            margin: 0 auto;
+            width: 100%;
+        }
+
+        /* Header Section */
+        .page-header {
+            margin-bottom: var(--spacing-8);
+        }
+
+        .page-title {
+            font-size: var(--font-size-3xl);
+            font-weight: var(--font-weight-bold);
+            color: var(--color-neutral-900);
+            margin-bottom: var(--spacing-2);
+            display: flex;
+            align-items: center;
+            gap: var(--spacing-3);
+        }
+
+        .live-pulse {
+            width: 12px;
+            height: 12px;
+            background: var(--color-success-500);
+            border-radius: var(--radius-full);
+            animation: pulse 2s infinite;
+            box-shadow: 0 0 0 4px var(--color-success-100);
+        }
+
+        .page-subtitle {
+            font-size: var(--font-size-md);
+            color: var(--color-neutral-600);
+        }
+
+        /* Metrics Grid */
+        .metrics-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: var(--spacing-6);
+            margin-bottom: var(--spacing-8);
+        }
+
+        .metric-card {
+            background: var(--color-white);
+            border: 1px solid var(--color-neutral-200);
+            border-radius: var(--radius-lg);
+            padding: var(--spacing-6);
+            transition: var(--transition-base);
+        }
+
+        .metric-card:hover {
+            transform: translateY(-2px);
+            box-shadow: var(--shadow-md);
+        }
+
+        .metric-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            margin-bottom: var(--spacing-4);
+        }
+
+        .metric-icon {
+            width: 48px;
+            height: 48px;
+            border-radius: var(--radius-md);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: var(--font-size-2xl);
+        }
+
+        .metric-icon.primary {
+            background: var(--color-primary-100);
+            color: var(--color-primary-700);
+        }
+
+        .metric-icon.success {
+            background: var(--color-success-100);
+            color: var(--color-success-700);
+        }
+
+        .metric-icon.warning {
+            background: var(--color-warning-100);
+            color: var(--color-warning-700);
+        }
+
+        .metric-icon.info {
+            background: var(--color-info-100);
+            color: var(--color-info-700);
+        }
+
+        .metric-value {
+            font-size: var(--font-size-3xl);
+            font-weight: var(--font-weight-bold);
+            color: var(--color-neutral-900);
+            line-height: 1;
+        }
+
+        .metric-label {
+            font-size: var(--font-size-sm);
+            color: var(--color-neutral-600);
+            margin-top: var(--spacing-2);
+            text-transform: uppercase;
+            letter-spacing: var(--letter-spacing-wide);
+            font-weight: var(--font-weight-medium);
+        }
+
+        .metric-trend {
+            display: flex;
+            align-items: center;
+            gap: var(--spacing-1);
+            font-size: var(--font-size-sm);
+            margin-top: var(--spacing-3);
+        }
+
+        .metric-trend.positive {
+            color: var(--color-success-600);
+        }
+
+        .metric-trend.negative {
+            color: var(--color-error-600);
+        }
+
+        /* Main Content Grid */
+        .content-grid {
+            display: grid;
+            grid-template-columns: 2fr 1fr;
+            gap: var(--spacing-6);
+            margin-bottom: var(--spacing-6);
+        }
+
+        /* Sessions Section */
+        .sessions-grid {
+            display: grid;
+            gap: var(--spacing-4);
+        }
+
+        .session-card {
+            background: var(--color-white);
+            border: 1px solid var(--color-neutral-200);
+            border-left: 4px solid var(--color-primary-600);
+            border-radius: var(--radius-lg);
+            padding: var(--spacing-5);
+            cursor: pointer;
+            transition: var(--transition-base);
+        }
+
+        .session-card:hover {
+            box-shadow: var(--shadow-md);
+            transform: translateX(4px);
+        }
+
+        .session-card.selected {
+            background: var(--color-primary-50);
+            border-left-color: var(--color-primary-700);
+            box-shadow: var(--shadow-md);
+        }
+
+        .session-card.pipeline {
+            border-left-color: var(--color-chart-1);
+        }
+
+        .session-card.swarm {
+            border-left-color: var(--color-chart-4);
+        }
+
+        .session-card.supervisor {
+            border-left-color: var(--color-chart-2);
+        }
+
+        .session-card.negotiation {
+            border-left-color: var(--color-chart-3);
+        }
+
+        .session-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            margin-bottom: var(--spacing-3);
+        }
+
+        .session-title {
+            font-size: var(--font-size-md);
+            font-weight: var(--font-weight-semibold);
+            color: var(--color-neutral-900);
+        }
+
+        .session-meta {
+            display: flex;
+            gap: var(--spacing-4);
+            font-size: var(--font-size-sm);
+            color: var(--color-neutral-600);
+            margin-bottom: var(--spacing-3);
+        }
+
+        .session-meta-item {
+            display: flex;
+            align-items: center;
+            gap: var(--spacing-1);
+        }
+
+        .session-progress-container {
+            margin-top: var(--spacing-3);
+        }
+
+        .session-progress-label {
+            display: flex;
+            justify-content: space-between;
+            font-size: var(--font-size-xs);
+            color: var(--color-neutral-600);
+            margin-bottom: var(--spacing-1);
+        }
+
+        /* Task Queue */
+        .task-filters {
+            display: flex;
+            gap: var(--spacing-2);
+            margin-bottom: var(--spacing-4);
+            flex-wrap: wrap;
+        }
+
+        .filter-btn {
+            padding: var(--spacing-2) var(--spacing-4);
+            border: 1px solid var(--color-neutral-300);
+            background: var(--color-white);
+            border-radius: var(--radius-md);
+            font-size: var(--font-size-sm);
+            font-weight: var(--font-weight-medium);
+            cursor: pointer;
+            transition: var(--transition-base);
+        }
+
+        .filter-btn:hover {
+            background: var(--color-neutral-50);
+            border-color: var(--color-neutral-400);
+        }
+
+        .filter-btn.active {
+            background: var(--color-primary-700);
+            color: var(--color-white);
+            border-color: var(--color-primary-700);
+        }
+
+        .task-item {
+            background: var(--color-white);
+            border: 1px solid var(--color-neutral-200);
+            border-left: 3px solid var(--color-neutral-400);
+            border-radius: var(--radius-md);
+            padding: var(--spacing-4);
+            margin-bottom: var(--spacing-3);
+            transition: var(--transition-base);
+        }
+
+        .task-item:hover {
+            box-shadow: var(--shadow-sm);
+        }
+
+        .task-item.todo {
+            border-left-color: var(--color-neutral-400);
+        }
+
+        .task-item.in-progress {
+            border-left-color: var(--color-warning-500);
+            background: var(--color-warning-50);
+        }
+
+        .task-item.done {
+            border-left-color: var(--color-success-500);
+            opacity: 0.7;
+        }
+
+        .task-item.failed {
+            border-left-color: var(--color-error-500);
+            background: var(--color-error-50);
+        }
+
+        .task-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            margin-bottom: var(--spacing-2);
+        }
+
+        .task-title {
+            font-weight: var(--font-weight-semibold);
+            color: var(--color-neutral-900);
+            font-size: var(--font-size-sm);
+        }
+
+        .task-info {
+            font-size: var(--font-size-xs);
+            color: var(--color-neutral-600);
+            margin-bottom: var(--spacing-2);
+        }
+
+        .task-actions {
+            display: flex;
+            gap: var(--spacing-2);
+            margin-top: var(--spacing-3);
+        }
+
+        .task-assign-select {
+            flex: 1;
+            max-width: 200px;
+        }
+
+        /* Workflow Visualization */
+        .workflow-container {
+            background: var(--color-neutral-900);
+            border-radius: var(--radius-lg);
+            padding: var(--spacing-6);
+            position: relative;
+            overflow: hidden;
+        }
+
+        #workflowCanvas {
+            width: 100%;
+            height: 400px;
+            border-radius: var(--radius-md);
+        }
+
+        .workflow-legend {
+            display: flex;
+            gap: var(--spacing-4);
+            margin-top: var(--spacing-4);
+            font-size: var(--font-size-sm);
+        }
+
+        .legend-item {
+            display: flex;
+            align-items: center;
+            gap: var(--spacing-2);
+            color: var(--color-white);
+        }
+
+        .legend-dot {
+            width: 12px;
+            height: 12px;
+            border-radius: var(--radius-full);
+        }
+
+        /* Modal Styles */
+        .modal-form {
+            display: grid;
+            gap: var(--spacing-4);
+        }
+
+        .form-row {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: var(--spacing-4);
+        }
+
+        /* Participant List */
+        .participant-card {
+            background: var(--color-white);
+            border: 1px solid var(--color-neutral-200);
+            border-radius: var(--radius-md);
+            padding: var(--spacing-4);
+            margin-bottom: var(--spacing-3);
+            display: flex;
+            align-items: center;
+            gap: var(--spacing-3);
+        }
+
+        .participant-avatar {
+            width: 40px;
+            height: 40px;
+            border-radius: var(--radius-full);
+            background: var(--gradient-primary);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: var(--color-white);
+            font-weight: var(--font-weight-bold);
+            font-size: var(--font-size-sm);
+        }
+
+        .participant-info {
+            flex: 1;
+        }
+
+        .participant-name {
+            font-weight: var(--font-weight-semibold);
+            color: var(--color-neutral-900);
+            font-size: var(--font-size-sm);
+        }
+
+        .participant-role {
+            font-size: var(--font-size-xs);
+            color: var(--color-neutral-600);
+        }
+
+        .participant-stats {
+            text-align: right;
+            font-size: var(--font-size-xs);
+            color: var(--color-neutral-600);
+        }
+
+        /* Scrollable containers */
+        .scrollable {
+            max-height: 500px;
+            overflow-y: auto;
+        }
+
+        .scrollable::-webkit-scrollbar {
+            width: 8px;
+        }
+
+        .scrollable::-webkit-scrollbar-track {
+            background: var(--color-neutral-100);
+            border-radius: var(--radius-base);
+        }
+
+        .scrollable::-webkit-scrollbar-thumb {
+            background: var(--color-neutral-400);
+            border-radius: var(--radius-base);
+        }
+
+        .scrollable::-webkit-scrollbar-thumb:hover {
+            background: var(--color-neutral-500);
+        }
+
+        /* Responsive */
+        @media (max-width: 1024px) {
+            .content-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        @media (max-width: 640px) {
+            .metrics-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="coordination-layout">
+        <!-- Navigation -->
+        <nav class="nav-bar">
+            <a href="#" class="nav-logo">
+                Multi-Agent Platform
+            </a>
+            <div class="nav-links">
+                <a href="admin_dashboard.html" class="nav-link">Admin</a>
+                <a href="network_dashboard.html" class="nav-link">Network</a>
+                <a href="coordination_dashboard.html" class="nav-link active">Coordination</a>
+                <a href="consciousness_dashboard.html" class="nav-link">Consciousness</a>
+                <a href="user_control_panel.html" class="nav-link">User Panel</a>
+            </div>
+        </nav>
+
+        <!-- Main Content -->
+        <div class="coordination-container">
+            <!-- Page Header -->
+            <div class="page-header">
+                <h1 class="page-title">
+                    <span class="live-pulse"></span>
+                    Coordination Dashboard
+                </h1>
+                <p class="page-subtitle">Multi-agent task orchestration and workflow management</p>
+            </div>
+
+            <!-- Coordination Metrics -->
+            <div class="metrics-grid">
+                <div class="metric-card">
+                    <div class="metric-header">
+                        <div>
+                            <div class="metric-value" id="metricActiveSessions">0</div>
+                            <div class="metric-label">Active Sessions</div>
+                        </div>
+                        <div class="metric-icon primary">⚡</div>
+                    </div>
+                    <div class="metric-trend positive">
+                        <span>↑ 12%</span>
+                        <span>vs last hour</span>
+                    </div>
+                </div>
+
+                <div class="metric-card">
+                    <div class="metric-header">
+                        <div>
+                            <div class="metric-value" id="metricCompletionRate">0%</div>
+                            <div class="metric-label">Task Completion</div>
+                        </div>
+                        <div class="metric-icon success">✓</div>
+                    </div>
+                    <div class="metric-trend positive">
+                        <span>↑ 8%</span>
+                        <span>from baseline</span>
+                    </div>
+                </div>
+
+                <div class="metric-card">
+                    <div class="metric-header">
+                        <div>
+                            <div class="metric-value" id="metricAvgDuration">0m</div>
+                            <div class="metric-label">Avg Session Duration</div>
+                        </div>
+                        <div class="metric-icon warning">⏱</div>
+                    </div>
+                    <div class="metric-trend negative">
+                        <span>↓ 5%</span>
+                        <span>improvement</span>
+                    </div>
+                </div>
+
+                <div class="metric-card">
+                    <div class="metric-header">
+                        <div>
+                            <div class="metric-value" id="metricAgentUtil">0%</div>
+                            <div class="metric-label">Agent Utilization</div>
+                        </div>
+                        <div class="metric-icon info">👥</div>
+                    </div>
+                    <div class="metric-trend positive">
+                        <span>↑ 15%</span>
+                        <span>efficiency gain</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Main Content Grid -->
+            <div class="content-grid">
+                <!-- Active Sessions -->
+                <div class="panel">
+                    <div class="panel-header">
+                        <h2 class="panel-title">Active Sessions</h2>
+                        <div class="panel-actions">
+                            <button class="btn btn-primary btn-sm" onclick="showCreateSessionModal()">
+                                + New Session
+                            </button>
+                        </div>
+                    </div>
+                    <div class="panel-body">
+                        <div class="sessions-grid scrollable" id="sessionsList">
+                            <!-- Sessions will be populated here -->
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Session Details & Participants -->
+                <div>
+                    <div class="panel" style="margin-bottom: var(--spacing-6);">
+                        <div class="panel-header">
+                            <h2 class="panel-title">Session Participants</h2>
+                            <span class="badge badge-neutral" id="participantCount">0</span>
+                        </div>
+                        <div class="panel-body">
+                            <div class="scrollable" style="max-height: 300px;" id="participantsList">
+                                <div class="empty-state">
+                                    <div class="empty-state-icon">👥</div>
+                                    <div class="empty-state-message">Select a session to view participants</div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Quick Actions -->
+                    <div class="panel">
+                        <div class="panel-header">
+                            <h2 class="panel-title">Quick Actions</h2>
+                        </div>
+                        <div class="panel-body">
+                            <div class="btn-group" style="flex-direction: column; width: 100%;">
+                                <button class="btn btn-primary btn-block" onclick="createSession('pipeline')">
+                                    🔗 Create Pipeline Session
+                                </button>
+                                <button class="btn btn-primary btn-block" onclick="createSession('swarm')">
+                                    🐝 Create Swarm Session
+                                </button>
+                                <button class="btn btn-secondary btn-block" onclick="pauseAllSessions()">
+                                    ⏸ Pause All Sessions
+                                </button>
+                                <button class="btn btn-secondary btn-block" onclick="exportMetrics()">
+                                    📊 Export Metrics
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Task Queue -->
+            <div class="panel">
+                <div class="panel-header">
+                    <h2 class="panel-title">Global Task Queue</h2>
+                    <div class="panel-actions">
+                        <button class="btn btn-primary btn-sm" onclick="showCreateTaskModal()">
+                            + New Task
+                        </button>
+                    </div>
+                </div>
+                <div class="panel-body">
+                    <!-- Task Filters -->
+                    <div class="task-filters">
+                        <button class="filter-btn active" data-filter="all" onclick="filterTasks('all')">
+                            All Tasks
+                        </button>
+                        <button class="filter-btn" data-filter="todo" onclick="filterTasks('todo')">
+                            To Do
+                        </button>
+                        <button class="filter-btn" data-filter="in-progress" onclick="filterTasks('in-progress')">
+                            In Progress
+                        </button>
+                        <button class="filter-btn" data-filter="done" onclick="filterTasks('done')">
+                            Done
+                        </button>
+                        <button class="filter-btn" data-filter="failed" onclick="filterTasks('failed')">
+                            Failed
+                        </button>
+                    </div>
+
+                    <!-- Task List -->
+                    <div class="scrollable" id="taskQueue">
+                        <!-- Tasks will be populated here -->
+                    </div>
+                </div>
+            </div>
+
+            <!-- Workflow Visualization -->
+            <div class="panel" style="margin-top: var(--spacing-6);">
+                <div class="panel-header">
+                    <h2 class="panel-title">Session Workflow Visualization</h2>
+                </div>
+                <div class="panel-body no-padding">
+                    <div class="workflow-container">
+                        <canvas id="workflowCanvas"></canvas>
+                        <div class="workflow-legend">
+                            <div class="legend-item">
+                                <div class="legend-dot" style="background: #60a5fa;"></div>
+                                <span>Pending</span>
+                            </div>
+                            <div class="legend-item">
+                                <div class="legend-dot" style="background: #f59e0b;"></div>
+                                <span>In Progress</span>
+                            </div>
+                            <div class="legend-item">
+                                <div class="legend-dot" style="background: #4ade80;"></div>
+                                <span>Completed</span>
+                            </div>
+                            <div class="legend-item">
+                                <div class="legend-dot" style="background: #f87171;"></div>
+                                <span>Failed</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Create Session Modal -->
+    <div class="modal-overlay" id="createSessionModal" style="display: none;">
+        <div class="modal">
+            <div class="modal-header">
+                <h3 class="modal-title">Create New Session</h3>
+                <button class="modal-close" onclick="closeModal('createSessionModal')">&times;</button>
+            </div>
+            <div class="modal-body">
+                <form class="modal-form" id="createSessionForm">
+                    <div class="form-group">
+                        <label class="form-label required">Session Name</label>
+                        <input type="text" class="form-input" id="sessionName" required placeholder="Enter session name">
+                    </div>
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label class="form-label required">Coordination Type</label>
+                            <select class="form-select" id="coordinationType" required>
+                                <option value="pipeline">Pipeline</option>
+                                <option value="swarm">Swarm</option>
+                                <option value="supervisor">Supervisor</option>
+                                <option value="negotiation">Negotiation</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">Priority</label>
+                            <select class="form-select" id="sessionPriority">
+                                <option value="low">Low</option>
+                                <option value="medium" selected>Medium</option>
+                                <option value="high">High</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Description</label>
+                        <textarea class="form-textarea" id="sessionDescription" rows="3" placeholder="Describe the session purpose"></textarea>
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button class="btn btn-secondary" onclick="closeModal('createSessionModal')">Cancel</button>
+                <button class="btn btn-primary" onclick="submitCreateSession()">Create Session</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Create Task Modal -->
+    <div class="modal-overlay" id="createTaskModal" style="display: none;">
+        <div class="modal">
+            <div class="modal-header">
+                <h3 class="modal-title">Create New Task</h3>
+                <button class="modal-close" onclick="closeModal('createTaskModal')">&times;</button>
+            </div>
+            <div class="modal-body">
+                <form class="modal-form" id="createTaskForm">
+                    <div class="form-group">
+                        <label class="form-label required">Task Description</label>
+                        <input type="text" class="form-input" id="taskDescription" required placeholder="Enter task description">
+                    </div>
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label class="form-label required">Session</label>
+                            <select class="form-select" id="taskSession" required>
+                                <option value="">Select session...</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">Task Type</label>
+                            <select class="form-select" id="taskType">
+                                <option value="processing">Processing</option>
+                                <option value="analysis">Analysis</option>
+                                <option value="coordination">Coordination</option>
+                                <option value="validation">Validation</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label class="form-label">Priority</label>
+                            <select class="form-select" id="taskPriority">
+                                <option value="3">Low</option>
+                                <option value="5" selected>Medium</option>
+                                <option value="8">High</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">Assign To</label>
+                            <select class="form-select" id="taskAssignee">
+                                <option value="">Unassigned</option>
+                            </select>
+                        </div>
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button class="btn btn-secondary" onclick="closeModal('createTaskModal')">Cancel</button>
+                <button class="btn btn-primary" onclick="submitCreateTask()">Create Task</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Configuration
+        const API_BASE = window.location.origin;
+        const WS_BASE = window.location.protocol === 'https:' ? 'wss://' : 'ws://';
+        const WS_URL = WS_BASE + window.location.host + '/ws/coordination';
+
+        // State
+        let sessions = [];
+        let tasks = [];
+        let participants = [];
+        let selectedSessionId = null;
+        let currentFilter = 'all';
+        let ws = null;
+
+        // API Functions
+        async function fetchSessions() {
+            try {
+                const response = await fetch(`${API_BASE}/api/acp/sessions`);
+                const data = await response.json();
+
+                if (data.success) {
+                    sessions = (data.sessions || []).map(s => ({
+                        id: s.session_id,
+                        name: s.name || `Session ${s.session_id}`,
+                        type: s.coordination_type || 'pipeline',
+                        status: s.status || 'active',
+                        totalTasks: s.task_count || 0,
+                        completedTasks: s.completed_tasks || 0,
+                        participantCount: s.participant_count || 0,
+                        createdAt: s.created_at || new Date().toISOString(),
+                        priority: s.priority || 'medium',
+                        description: s.description || ''
+                    }));
+
+                    console.log(`[Coordination] Loaded ${sessions.length} sessions`);
+                    renderSessions();
+                    updateMetrics();
+                    populateSessionDropdown();
+                }
+            } catch (error) {
+                console.error('[Coordination] Error fetching sessions:', error);
+                showToast('Failed to load sessions', 'error');
+            }
+        }
+
+        async function fetchAllTasks() {
+            try {
+                tasks = [];
+                for (const session of sessions) {
+                    const response = await fetch(`${API_BASE}/api/acp/sessions/${session.id}/tasks`);
+                    const data = await response.json();
+
+                    if (data.success) {
+                        const sessionTasks = (data.tasks || []).map(t => ({
+                            id: t.task_id,
+                            sessionId: session.id,
+                            sessionName: session.name,
+                            type: t.task_type || 'processing',
+                            description: t.description || `Task ${t.task_id}`,
+                            status: mapTaskStatus(t.status),
+                            priority: mapTaskPriority(t.priority),
+                            assignee: t.assigned_to || null,
+                            progress: t.progress || 0,
+                            dependencies: t.dependencies || []
+                        }));
+                        tasks.push(...sessionTasks);
+                    }
+                }
+
+                console.log(`[Coordination] Loaded ${tasks.length} tasks`);
+                renderTasks();
+                updateMetrics();
+            } catch (error) {
+                console.error('[Coordination] Error fetching tasks:', error);
+                showToast('Failed to load tasks', 'error');
+            }
+        }
+
+        async function fetchParticipants(sessionId) {
+            try {
+                const response = await fetch(`${API_BASE}/api/acp/sessions/${sessionId}/participants`);
+                const data = await response.json();
+
+                if (data.success) {
+                    participants = (data.participants || []).map(p => ({
+                        agentId: p.agent_id || p,
+                        sessionId: sessionId,
+                        role: p.role || 'participant',
+                        tasksCompleted: p.tasks_completed || 0,
+                        activeTask: p.active_task || false
+                    }));
+
+                    console.log(`[Coordination] Loaded ${participants.length} participants for session ${sessionId}`);
+                    renderParticipants();
+                }
+            } catch (error) {
+                console.error('[Coordination] Error fetching participants:', error);
+            }
+        }
+
+        // Helper Functions
+        function mapTaskStatus(status) {
+            const mapping = {
+                'pending': 'todo',
+                'assigned': 'todo',
+                'in_progress': 'in-progress',
+                'running': 'in-progress',
+                'completed': 'done',
+                'success': 'done',
+                'failed': 'failed',
+                'error': 'failed'
+            };
+            return mapping[status] || 'todo';
+        }
+
+        function mapTaskPriority(priority) {
+            if (priority >= 8) return 'high';
+            if (priority >= 5) return 'medium';
+            return 'low';
+        }
+
+        // Render Functions
+        function renderSessions() {
+            const container = document.getElementById('sessionsList');
+            if (sessions.length === 0) {
+                container.innerHTML = `
+                    <div class="empty-state">
+                        <div class="empty-state-icon">📋</div>
+                        <div class="empty-state-title">No Active Sessions</div>
+                        <div class="empty-state-message">Create a new coordination session to get started</div>
+                        <div class="empty-state-actions">
+                            <button class="btn btn-primary" onclick="showCreateSessionModal()">Create Session</button>
+                        </div>
+                    </div>
+                `;
+                return;
+            }
+
+            container.innerHTML = sessions.map(session => {
+                const progress = session.totalTasks > 0
+                    ? Math.round((session.completedTasks / session.totalTasks) * 100)
+                    : 0;
+
+                return `
+                    <div class="session-card ${session.type} ${selectedSessionId === session.id ? 'selected' : ''}"
+                         onclick="selectSession('${session.id}')">
+                        <div class="session-header">
+                            <div class="session-title">${session.name}</div>
+                            <span class="badge badge-${session.status === 'active' ? 'success' : 'neutral'}">
+                                ${session.status}
+                            </span>
+                        </div>
+                        <div class="session-meta">
+                            <div class="session-meta-item">
+                                <span class="badge badge-${session.type === 'pipeline' ? 'primary' : session.type === 'swarm' ? 'warning' : 'info'} badge-sm">
+                                    ${session.type}
+                                </span>
+                            </div>
+                            <div class="session-meta-item">
+                                👥 ${session.participantCount}
+                            </div>
+                            <div class="session-meta-item">
+                                📋 ${session.totalTasks} tasks
+                            </div>
+                        </div>
+                        <div class="session-progress-container">
+                            <div class="session-progress-label">
+                                <span>Progress</span>
+                                <span>${session.completedTasks}/${session.totalTasks} (${progress}%)</span>
+                            </div>
+                            <div class="progress-bar ${progress === 100 ? 'success' : ''}">
+                                <div class="progress-fill" style="width: ${progress}%"></div>
+                            </div>
+                        </div>
+                    </div>
+                `;
+            }).join('');
+        }
+
+        function renderTasks() {
+            const container = document.getElementById('taskQueue');
+
+            // Filter tasks
+            let filteredTasks = currentFilter === 'all'
+                ? tasks
+                : tasks.filter(t => t.status === currentFilter);
+
+            // Sort by priority
+            filteredTasks.sort((a, b) => {
+                const priorityOrder = { high: 0, medium: 1, low: 2 };
+                return priorityOrder[a.priority] - priorityOrder[b.priority];
+            });
+
+            if (filteredTasks.length === 0) {
+                container.innerHTML = `
+                    <div class="empty-state">
+                        <div class="empty-state-icon">✓</div>
+                        <div class="empty-state-message">No ${currentFilter === 'all' ? '' : currentFilter} tasks found</div>
+                    </div>
+                `;
+                return;
+            }
+
+            container.innerHTML = filteredTasks.map(task => `
+                <div class="task-item ${task.status}">
+                    <div class="task-header">
+                        <div class="task-title">${task.description}</div>
+                        <span class="badge badge-${task.priority === 'high' ? 'error' : task.priority === 'medium' ? 'warning' : 'neutral'}">
+                            ${task.priority}
+                        </span>
+                    </div>
+                    <div class="task-info">
+                        Session: ${task.sessionName} | Type: ${task.type} | Status: ${task.status}
+                        ${task.progress > 0 ? ` | Progress: ${task.progress}%` : ''}
+                    </div>
+                    ${task.assignee ? `
+                        <div class="task-info">
+                            <span class="badge badge-primary">Assigned to: ${task.assignee}</span>
+                        </div>
+                    ` : ''}
+                    ${task.dependencies.length > 0 ? `
+                        <div class="task-info">
+                            ↳ Dependencies: ${task.dependencies.join(', ')}
+                        </div>
+                    ` : ''}
+                    <div class="task-actions">
+                        ${task.status === 'todo' ? `
+                            <button class="btn btn-sm btn-primary" onclick="markTaskInProgress('${task.id}')">
+                                Start Task
+                            </button>
+                        ` : ''}
+                        ${task.status === 'in-progress' ? `
+                            <button class="btn btn-sm btn-success" onclick="markTaskComplete('${task.id}')">
+                                Mark Complete
+                            </button>
+                            <button class="btn btn-sm btn-danger" onclick="markTaskFailed('${task.id}')">
+                                Mark Failed
+                            </button>
+                        ` : ''}
+                        ${!task.assignee && task.status === 'todo' ? `
+                            <select class="form-select task-assign-select" onchange="assignTask('${task.id}', this.value)">
+                                <option value="">Assign to...</option>
+                            </select>
+                        ` : ''}
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        function renderParticipants() {
+            const container = document.getElementById('participantsList');
+            document.getElementById('participantCount').textContent = participants.length;
+
+            if (participants.length === 0) {
+                container.innerHTML = `
+                    <div class="empty-state">
+                        <div class="empty-state-icon">👥</div>
+                        <div class="empty-state-message">No participants in this session</div>
+                    </div>
+                `;
+                return;
+            }
+
+            container.innerHTML = participants.map(p => `
+                <div class="participant-card">
+                    <div class="participant-avatar">
+                        ${p.agentId.substring(0, 2).toUpperCase()}
+                    </div>
+                    <div class="participant-info">
+                        <div class="participant-name">${p.agentId}</div>
+                        <div class="participant-role">${p.role}</div>
+                    </div>
+                    <div class="participant-stats">
+                        <div>${p.tasksCompleted} tasks</div>
+                        <div>
+                            ${p.activeTask
+                                ? '<span class="status-indicator status-online"><span class="status-dot"></span>Active</span>'
+                                : '<span class="status-indicator status-offline"><span class="status-dot"></span>Idle</span>'}
+                        </div>
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        function updateMetrics() {
+            const activeSessions = sessions.filter(s => s.status === 'active').length;
+            const totalTasksCount = sessions.reduce((sum, s) => sum + s.totalTasks, 0);
+            const completedTasksCount = sessions.reduce((sum, s) => sum + s.completedTasks, 0);
+            const completionRate = totalTasksCount > 0
+                ? Math.round((completedTasksCount / totalTasksCount) * 100)
+                : 0;
+
+            // Calculate average duration (mock for now)
+            const avgDuration = Math.round(Math.random() * 60) + 15;
+
+            // Calculate agent utilization (mock for now)
+            const agentUtil = Math.round(Math.random() * 40) + 60;
+
+            document.getElementById('metricActiveSessions').textContent = activeSessions;
+            document.getElementById('metricCompletionRate').textContent = completionRate + '%';
+            document.getElementById('metricAvgDuration').textContent = avgDuration + 'm';
+            document.getElementById('metricAgentUtil').textContent = agentUtil + '%';
+        }
+
+        // Session Actions
+        function selectSession(sessionId) {
+            selectedSessionId = sessionId;
+            renderSessions();
+            fetchParticipants(sessionId);
+            drawWorkflow();
+        }
+
+        async function createSession(type) {
+            const name = prompt(`Enter name for new ${type} session:`, `${type.charAt(0).toUpperCase() + type.slice(1)} Session`);
+            if (!name) return;
+
+            const description = prompt('Enter description (optional):', '');
+
+            try {
+                const response = await fetch(`${API_BASE}/api/acp/sessions`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        name: name,
+                        coordination_type: type,
+                        description: description || `${type} coordination session`
+                    })
+                });
+
+                const result = await response.json();
+
+                if (result.success) {
+                    showToast(`Session created: ${result.session_id}`, 'success');
+                    await fetchSessions();
+                } else {
+                    showToast(`Failed to create session: ${result.message}`, 'error');
+                }
+            } catch (error) {
+                showToast(`Error creating session: ${error.message}`, 'error');
+            }
+        }
+
+        function pauseAllSessions() {
+            showToast('Pause functionality coming soon', 'info');
+        }
+
+        function exportMetrics() {
+            const metrics = {
+                sessions: sessions,
+                tasks: tasks,
+                participants: participants,
+                timestamp: new Date().toISOString(),
+                metrics: {
+                    activeSessions: sessions.filter(s => s.status === 'active').length,
+                    totalTasks: tasks.length,
+                    completionRate: document.getElementById('metricCompletionRate').textContent
+                }
+            };
+
+            const blob = new Blob([JSON.stringify(metrics, null, 2)], { type: 'application/json' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = `coordination_metrics_${Date.now()}.json`;
+            a.click();
+            URL.revokeObjectURL(url);
+
+            showToast('Metrics exported successfully', 'success');
+        }
+
+        // Task Actions
+        function filterTasks(filter) {
+            currentFilter = filter;
+
+            // Update filter buttons
+            document.querySelectorAll('.filter-btn').forEach(btn => {
+                btn.classList.toggle('active', btn.dataset.filter === filter);
+            });
+
+            renderTasks();
+        }
+
+        async function markTaskInProgress(taskId) {
+            // API call would go here
+            showToast('Task started', 'success');
+        }
+
+        async function markTaskComplete(taskId) {
+            // API call would go here
+            showToast('Task completed', 'success');
+        }
+
+        async function markTaskFailed(taskId) {
+            // API call would go here
+            showToast('Task marked as failed', 'error');
+        }
+
+        async function assignTask(taskId, agentId) {
+            if (!agentId) return;
+            // API call would go here
+            showToast(`Task assigned to ${agentId}`, 'success');
+        }
+
+        // Modal Functions
+        function showCreateSessionModal() {
+            document.getElementById('createSessionModal').style.display = 'flex';
+        }
+
+        function showCreateTaskModal() {
+            document.getElementById('createTaskModal').style.display = 'flex';
+            populateSessionDropdown();
+        }
+
+        function closeModal(modalId) {
+            document.getElementById(modalId).style.display = 'none';
+        }
+
+        async function submitCreateSession() {
+            const name = document.getElementById('sessionName').value;
+            const type = document.getElementById('coordinationType').value;
+            const priority = document.getElementById('sessionPriority').value;
+            const description = document.getElementById('sessionDescription').value;
+
+            try {
+                const response = await fetch(`${API_BASE}/api/acp/sessions`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        name: name,
+                        coordination_type: type,
+                        priority: priority,
+                        description: description
+                    })
+                });
+
+                const result = await response.json();
+
+                if (result.success) {
+                    showToast(`Session created: ${result.session_id}`, 'success');
+                    closeModal('createSessionModal');
+                    await fetchSessions();
+                    document.getElementById('createSessionForm').reset();
+                } else {
+                    showToast(`Failed to create session: ${result.message}`, 'error');
+                }
+            } catch (error) {
+                showToast(`Error creating session: ${error.message}`, 'error');
+            }
+        }
+
+        async function submitCreateTask() {
+            const description = document.getElementById('taskDescription').value;
+            const sessionId = document.getElementById('taskSession').value;
+            const type = document.getElementById('taskType').value;
+            const priority = parseInt(document.getElementById('taskPriority').value);
+            const assignee = document.getElementById('taskAssignee').value;
+
+            if (!sessionId) {
+                showToast('Please select a session', 'error');
+                return;
+            }
+
+            try {
+                const response = await fetch(`${API_BASE}/api/acp/sessions/${sessionId}/tasks`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        description: description,
+                        task_type: type,
+                        priority: priority,
+                        assigned_to: assignee || null
+                    })
+                });
+
+                const result = await response.json();
+
+                if (result.success) {
+                    showToast(`Task created: ${result.task_id}`, 'success');
+                    closeModal('createTaskModal');
+                    await fetchAllTasks();
+                    document.getElementById('createTaskForm').reset();
+                } else {
+                    showToast(`Failed to create task: ${result.message}`, 'error');
+                }
+            } catch (error) {
+                showToast(`Error creating task: ${error.message}`, 'error');
+            }
+        }
+
+        function populateSessionDropdown() {
+            const select = document.getElementById('taskSession');
+            select.innerHTML = '<option value="">Select session...</option>' +
+                sessions.map(s => `<option value="${s.id}">${s.name}</option>`).join('');
+        }
+
+        // Workflow Visualization
+        const canvas = document.getElementById('workflowCanvas');
+        const ctx = canvas.getContext('2d');
+
+        function resizeCanvas() {
+            const rect = canvas.getBoundingClientRect();
+            canvas.width = rect.width;
+            canvas.height = rect.height;
+        }
+        resizeCanvas();
+        window.addEventListener('resize', resizeCanvas);
+
+        function drawWorkflow() {
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+            if (!selectedSessionId) {
+                // Draw placeholder
+                ctx.fillStyle = 'rgba(255, 255, 255, 0.5)';
+                ctx.font = '16px Inter';
+                ctx.textAlign = 'center';
+                ctx.fillText('Select a session to view workflow', canvas.width / 2, canvas.height / 2);
+                return;
+            }
+
+            // Get tasks for selected session
+            const sessionTasks = tasks.filter(t => t.sessionId === selectedSessionId);
+            const nodeCount = Math.min(sessionTasks.length, 8);
+
+            if (nodeCount === 0) return;
+
+            const nodeRadius = 30;
+            const spacing = canvas.width / (nodeCount + 1);
+            const y = canvas.height / 2;
+
+            sessionTasks.slice(0, nodeCount).forEach((task, i) => {
+                const x = spacing * (i + 1);
+
+                // Connection line
+                if (i > 0) {
+                    ctx.strokeStyle = 'rgba(255, 255, 255, 0.3)';
+                    ctx.lineWidth = 2;
+                    ctx.beginPath();
+                    ctx.moveTo(spacing * i, y);
+                    ctx.lineTo(x - nodeRadius, y);
+                    ctx.stroke();
+
+                    // Arrow
+                    ctx.fillStyle = 'rgba(255, 255, 255, 0.3)';
+                    ctx.beginPath();
+                    ctx.moveTo(x - nodeRadius - 10, y - 5);
+                    ctx.lineTo(x - nodeRadius, y);
+                    ctx.lineTo(x - nodeRadius - 10, y + 5);
+                    ctx.fill();
+                }
+
+                // Node color based on status
+                const colors = {
+                    'todo': '#60a5fa',
+                    'in-progress': '#f59e0b',
+                    'done': '#4ade80',
+                    'failed': '#f87171'
+                };
+                const color = colors[task.status] || '#94a3b8';
+
+                // Node
+                ctx.fillStyle = color;
+                ctx.shadowColor = color;
+                ctx.shadowBlur = 15;
+                ctx.beginPath();
+                ctx.arc(x, y, nodeRadius, 0, Math.PI * 2);
+                ctx.fill();
+                ctx.shadowBlur = 0;
+
+                // Status icon
+                ctx.fillStyle = '#fff';
+                ctx.font = 'bold 20px Inter';
+                ctx.textAlign = 'center';
+                ctx.textBaseline = 'middle';
+                const icons = {
+                    'todo': '○',
+                    'in-progress': '◐',
+                    'done': '✓',
+                    'failed': '✕'
+                };
+                ctx.fillText(icons[task.status] || '○', x, y);
+
+                // Label
+                ctx.fillStyle = '#fff';
+                ctx.font = '11px Inter';
+                ctx.textAlign = 'center';
+                ctx.textBaseline = 'top';
+                const label = task.description.length > 15
+                    ? task.description.substring(0, 12) + '...'
+                    : task.description;
+                ctx.fillText(label, x, y + nodeRadius + 10);
+
+                // Priority indicator
+                if (task.priority === 'high') {
+                    ctx.fillStyle = '#f87171';
+                    ctx.beginPath();
+                    ctx.arc(x + nodeRadius - 5, y - nodeRadius + 5, 5, 0, Math.PI * 2);
+                    ctx.fill();
+                }
+            });
+        }
+
+        // WebSocket Connection
+        function connectWebSocket() {
+            console.log(`[Coordination] Connecting to ${WS_URL}...`);
+
+            ws = new WebSocket(WS_URL);
+
+            ws.onopen = () => {
+                console.log('[Coordination] WebSocket connected');
+                showToast('Real-time updates enabled', 'success');
+            };
+
+            ws.onmessage = (event) => {
+                const data = JSON.parse(event.data);
+                console.log('[Coordination] WebSocket message:', data);
+
+                if (data.type === 'session_created' || data.type === 'session_updated') {
+                    fetchSessions();
+                } else if (data.type === 'task_added' || data.type === 'task_status_changed') {
+                    fetchAllTasks();
+                }
+
+                drawWorkflow();
+            };
+
+            ws.onerror = (error) => {
+                console.error('[Coordination] WebSocket error:', error);
+            };
+
+            ws.onclose = () => {
+                console.log('[Coordination] WebSocket disconnected, reconnecting...');
+                setTimeout(connectWebSocket, 5000);
+            };
+        }
+
+        // Toast Notifications
+        function showToast(message, type = 'info') {
+            const container = document.querySelector('.toast-container') || createToastContainer();
+
+            const toast = document.createElement('div');
+            toast.className = 'toast';
+
+            const icons = {
+                success: '✓',
+                error: '✕',
+                warning: '⚠',
+                info: 'ℹ'
+            };
+
+            const colors = {
+                success: 'var(--color-success-600)',
+                error: 'var(--color-error-600)',
+                warning: 'var(--color-warning-600)',
+                info: 'var(--color-info-600)'
+            };
+
+            toast.innerHTML = `
+                <div class="toast-icon" style="color: ${colors[type]}">${icons[type]}</div>
+                <div class="toast-content">
+                    <div class="toast-message">${message}</div>
+                </div>
+                <button class="toast-close" onclick="this.parentElement.remove()">&times;</button>
+            `;
+
+            container.appendChild(toast);
+
+            setTimeout(() => toast.remove(), 5000);
+        }
+
+        function createToastContainer() {
+            const container = document.createElement('div');
+            container.className = 'toast-container';
+            document.body.appendChild(container);
+            return container;
+        }
+
+        // Initialize Dashboard
+        async function initializeDashboard() {
+            console.log('[Coordination] Initializing dashboard...');
+
+            await fetchSessions();
+            await fetchAllTasks();
+
+            connectWebSocket();
+            drawWorkflow();
+
+            // Periodic refresh
+            setInterval(async () => {
+                await fetchSessions();
+                await fetchAllTasks();
+                drawWorkflow();
+            }, 30000); // Every 30 seconds
+
+            console.log('[Coordination] Dashboard initialized');
+        }
+
+        // Start
+        initializeDashboard();
+
+        // Close modals on overlay click
+        document.querySelectorAll('.modal-overlay').forEach(overlay => {
+            overlay.addEventListener('click', (e) => {
+                if (e.target === overlay) {
+                    overlay.style.display = 'none';
+                }
+            });
+        });
+    </script>
+</body>
+</html>

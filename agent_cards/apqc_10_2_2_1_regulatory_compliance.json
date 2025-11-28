@@ -1,0 +1,260 @@
+{
+  "apqc_id": "10.2.2.1",
+  "apqc_name": "Manage regulatory compliance",
+  "category": "10.0 - Manage Enterprise Risk, Compliance, Remediation, & Resiliency",
+  "description": "End-to-end regulatory compliance management workflow including compliance monitoring, assessment, remediation tracking, and regulatory reporting.",
+  "orchestration_pattern": "sequential",
+  "total_steps": 6,
+  "estimated_duration_seconds": 604800,
+  "compliance_frameworks": ["SOX", "GDPR", "HIPAA", "PCI-DSS", "SOC2", "ISO27001", "CCPA"],
+  "data_retention_days": 2555,
+
+  "agent_cards": [
+    {
+      "id": "agent_10_2_2_1_step1",
+      "apqc_id": "10.2.2.1",
+      "step_number": 1,
+      "step_name": "Regulatory Monitoring",
+      "description": "Monitor regulatory changes and assess applicability",
+      "purpose": "Stay current with regulations",
+      "business_value": "Proactive compliance management",
+
+      "capabilities": ["regulatory_tracking", "change_assessment", "impact_analysis", "applicability_determination", "alert_generation"],
+
+      "input_schema": [
+        {"name": "regulatory_sources", "type": "array", "required": true},
+        {"name": "business_operations", "type": "object", "required": true},
+        {"name": "jurisdictions", "type": "array", "required": true},
+        {"name": "existing_obligations", "type": "array", "required": false}
+      ],
+
+      "output_schema": [
+        {"name": "regulatory_changes", "type": "array", "required": true},
+        {"name": "applicability_matrix", "type": "object", "required": true},
+        {"name": "impact_assessment", "type": "object", "required": true},
+        {"name": "action_items", "type": "array", "required": true}
+      ],
+
+      "required_integrations": [
+        {"system": "Regulatory Intelligence", "type": "read", "protocol": "API", "examples": ["Thomson Reuters Regulatory Intelligence", "Wolters Kluwer"]},
+        {"system": "GRC Platform", "type": "bidirectional", "protocol": "API", "examples": ["ServiceNow GRC", "SAP GRC", "MetricStream"]}
+      ],
+
+      "decision_rules": [
+        {"rule_id": "DR-RC-001", "name": "High Impact Change", "condition": "impact_score > 8", "action": "escalate_to_compliance_officer", "priority": 1}
+      ],
+
+      "error_handlers": [
+        {"error_type": "source_unavailable", "severity": "high", "action": "use_cached_data_and_alert", "notification": ["compliance_team"]}
+      ]
+    },
+
+    {
+      "id": "agent_10_2_2_1_step2",
+      "apqc_id": "10.2.2.1",
+      "step_number": 2,
+      "step_name": "Compliance Assessment",
+      "description": "Assess current compliance posture against requirements",
+      "purpose": "Identify compliance gaps",
+      "business_value": "Risk visibility",
+
+      "capabilities": ["control_mapping", "gap_analysis", "evidence_collection", "compliance_scoring", "benchmark_comparison"],
+
+      "input_schema": [
+        {"name": "regulatory_requirements", "type": "array", "required": true},
+        {"name": "current_controls", "type": "array", "required": true},
+        {"name": "evidence_documents", "type": "array", "required": true},
+        {"name": "assessment_scope", "type": "object", "required": true}
+      ],
+
+      "output_schema": [
+        {"name": "compliance_score", "type": "number", "required": true},
+        {"name": "gap_analysis", "type": "array", "required": true},
+        {"name": "control_effectiveness", "type": "object", "required": true},
+        {"name": "remediation_requirements", "type": "array", "required": true}
+      ],
+
+      "required_integrations": [
+        {"system": "GRC Platform", "type": "bidirectional", "protocol": "API"},
+        {"system": "Document Management", "type": "read", "protocol": "API", "examples": ["SharePoint", "Box"]},
+        {"system": "Control Testing Tool", "type": "read", "protocol": "API", "examples": ["AuditBoard", "Workiva"]}
+      ],
+
+      "decision_rules": [
+        {"rule_id": "DR-CA-001", "name": "Critical Gap", "condition": "gap.severity == 'critical'", "action": "immediate_escalation", "priority": 1}
+      ],
+
+      "error_handlers": [
+        {"error_type": "evidence_missing", "severity": "high", "action": "request_evidence", "notification": ["control_owner"]}
+      ]
+    },
+
+    {
+      "id": "agent_10_2_2_1_step3",
+      "apqc_id": "10.2.2.1",
+      "step_number": 3,
+      "step_name": "Remediation Planning",
+      "description": "Develop remediation plans for compliance gaps",
+      "purpose": "Address compliance deficiencies",
+      "business_value": "Structured remediation",
+
+      "capabilities": ["plan_development", "resource_allocation", "timeline_creation", "owner_assignment", "priority_ranking"],
+
+      "input_schema": [
+        {"name": "gap_analysis", "type": "array", "required": true},
+        {"name": "available_resources", "type": "object", "required": true},
+        {"name": "regulatory_deadlines", "type": "array", "required": true},
+        {"name": "budget_constraints", "type": "object", "required": false}
+      ],
+
+      "output_schema": [
+        {"name": "remediation_plans", "type": "array", "required": true},
+        {"name": "resource_requirements", "type": "object", "required": true},
+        {"name": "milestone_schedule", "type": "array", "required": true},
+        {"name": "risk_adjusted_priority", "type": "array", "required": true}
+      ],
+
+      "required_integrations": [
+        {"system": "GRC Platform", "type": "bidirectional", "protocol": "API"},
+        {"system": "Project Management", "type": "bidirectional", "protocol": "API", "examples": ["Jira", "ServiceNow"]}
+      ],
+
+      "decision_rules": [
+        {"rule_id": "DR-RP-001", "name": "Resource Conflict", "condition": "resource_utilization > 120%", "action": "prioritize_and_defer", "priority": 1}
+      ],
+
+      "error_handlers": [
+        {"error_type": "deadline_conflict", "severity": "high", "action": "escalate_for_extension", "notification": ["compliance_officer", "legal"]}
+      ]
+    },
+
+    {
+      "id": "agent_10_2_2_1_step4",
+      "apqc_id": "10.2.2.1",
+      "step_number": 4,
+      "step_name": "Remediation Execution",
+      "description": "Execute and track remediation activities",
+      "purpose": "Implement compliance controls",
+      "business_value": "Gap closure",
+
+      "capabilities": ["task_tracking", "progress_monitoring", "blocker_management", "evidence_collection", "status_reporting"],
+
+      "input_schema": [
+        {"name": "remediation_plans", "type": "array", "required": true},
+        {"name": "assigned_owners", "type": "array", "required": true},
+        {"name": "milestone_dates", "type": "array", "required": true}
+      ],
+
+      "output_schema": [
+        {"name": "task_status", "type": "array", "required": true},
+        {"name": "completion_percentage", "type": "number", "required": true},
+        {"name": "blockers", "type": "array", "required": false},
+        {"name": "evidence_collected", "type": "array", "required": true}
+      ],
+
+      "required_integrations": [
+        {"system": "Project Management", "type": "bidirectional", "protocol": "API"},
+        {"system": "GRC Platform", "type": "bidirectional", "protocol": "API"},
+        {"system": "Document Management", "type": "write", "protocol": "API"}
+      ],
+
+      "decision_rules": [
+        {"rule_id": "DR-RE-001", "name": "Milestone Slippage", "condition": "days_behind > 5", "action": "escalate_and_replan", "priority": 1}
+      ],
+
+      "error_handlers": [
+        {"error_type": "owner_unavailable", "severity": "medium", "action": "reassign_task", "notification": ["manager"]}
+      ]
+    },
+
+    {
+      "id": "agent_10_2_2_1_step5",
+      "apqc_id": "10.2.2.1",
+      "step_number": 5,
+      "step_name": "Control Testing",
+      "description": "Test control effectiveness and validate remediation",
+      "purpose": "Verify compliance",
+      "business_value": "Assured compliance",
+
+      "capabilities": ["test_execution", "evidence_review", "effectiveness_rating", "exception_management", "retest_scheduling"],
+
+      "input_schema": [
+        {"name": "controls_to_test", "type": "array", "required": true},
+        {"name": "test_procedures", "type": "array", "required": true},
+        {"name": "evidence_samples", "type": "array", "required": true}
+      ],
+
+      "output_schema": [
+        {"name": "test_results", "type": "array", "required": true},
+        {"name": "effectiveness_scores", "type": "object", "required": true},
+        {"name": "exceptions", "type": "array", "required": false},
+        {"name": "retest_requirements", "type": "array", "required": false}
+      ],
+
+      "required_integrations": [
+        {"system": "GRC Platform", "type": "bidirectional", "protocol": "API"},
+        {"system": "Audit Tool", "type": "bidirectional", "protocol": "API", "examples": ["AuditBoard", "Workiva"]}
+      ],
+
+      "decision_rules": [
+        {"rule_id": "DR-CT-001", "name": "Test Failure", "condition": "effectiveness_score < 70", "action": "require_remediation_review", "priority": 1}
+      ],
+
+      "error_handlers": [
+        {"error_type": "insufficient_sample", "severity": "medium", "action": "expand_sample_size", "notification": ["auditor"]}
+      ]
+    },
+
+    {
+      "id": "agent_10_2_2_1_step6",
+      "apqc_id": "10.2.2.1",
+      "step_number": 6,
+      "step_name": "Regulatory Reporting",
+      "description": "Generate and submit required regulatory reports",
+      "purpose": "Meet reporting obligations",
+      "business_value": "Regulatory satisfaction",
+
+      "capabilities": ["report_generation", "data_aggregation", "submission_tracking", "acknowledgment_management", "archive_management"],
+
+      "input_schema": [
+        {"name": "reporting_requirements", "type": "array", "required": true},
+        {"name": "compliance_data", "type": "object", "required": true},
+        {"name": "reporting_period", "type": "object", "required": true},
+        {"name": "submission_deadlines", "type": "array", "required": true}
+      ],
+
+      "output_schema": [
+        {"name": "generated_reports", "type": "array", "required": true},
+        {"name": "submission_confirmations", "type": "array", "required": true},
+        {"name": "next_reporting_dates", "type": "array", "required": true},
+        {"name": "archive_references", "type": "array", "required": true}
+      ],
+
+      "required_integrations": [
+        {"system": "GRC Platform", "type": "read", "protocol": "API"},
+        {"system": "Regulatory Portal", "type": "write", "protocol": "API", "examples": ["SEC EDGAR", "FCA Gabriel"]},
+        {"system": "Document Management", "type": "write", "protocol": "API"}
+      ],
+
+      "decision_rules": [
+        {"rule_id": "DR-RR-001", "name": "Deadline Approaching", "condition": "days_to_deadline < 3", "action": "urgent_review_required", "priority": 1}
+      ],
+
+      "error_handlers": [
+        {"error_type": "submission_failed", "severity": "critical", "action": "retry_and_escalate", "notification": ["compliance_officer", "legal", "executive"]}
+      ]
+    }
+  ],
+
+  "workflow_rules": {
+    "entry_criteria": ["regulatory_framework_identified", "compliance_scope_defined"],
+    "exit_criteria": ["compliance_verified", "reports_submitted", "evidence_archived"],
+    "escalation_path": ["compliance_analyst", "compliance_manager", "compliance_officer", "general_counsel", "audit_committee"]
+  },
+
+  "kpis": [
+    {"metric": "compliance_score", "target": "> 95%", "measurement": "weighted_control_effectiveness"},
+    {"metric": "remediation_timeliness", "target": "< 30 days", "measurement": "average_gap_closure_time"},
+    {"metric": "regulatory_submissions", "target": "100% on-time", "measurement": "submissions_meeting_deadline"}
+  ]
+}

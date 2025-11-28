@@ -1,0 +1,126 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>APQC Agent Platform - Welcome</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+        }
+        .container {
+            background: white;
+            border-radius: 30px;
+            padding: 60px;
+            max-width: 800px;
+            box-shadow: 0 20px 80px rgba(0,0,0,0.3);
+        }
+        h1 {
+            color: #2c3e50;
+            font-size: 3em;
+            margin-bottom: 20px;
+            text-align: center;
+        }
+        .subtitle {
+            text-align: center;
+            color: #7f8c8d;
+            font-size: 1.3em;
+            margin-bottom: 50px;
+        }
+        .links {
+            display: grid;
+            gap: 25px;
+        }
+        .link-card {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            padding: 30px;
+            border-radius: 20px;
+            text-decoration: none;
+            transition: all 0.3s ease;
+            display: block;
+        }
+        .link-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 15px 40px rgba(102, 126, 234, 0.4);
+        }
+        .link-card h2 {
+            color: white;
+            font-size: 1.8em;
+            margin-bottom: 10px;
+        }
+        .link-card p {
+            color: rgba(255,255,255,0.9);
+            font-size: 1.1em;
+            line-height: 1.6;
+        }
+        .link-card.green {
+            background: linear-gradient(135deg, #56ab2f 0%, #a8e063 100%);
+        }
+        .link-card.blue {
+            background: linear-gradient(135deg, #3498db 0%, #2980b9 100%);
+        }
+        .link-card.orange {
+            background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+        }
+        .status {
+            background: #d4fc79;
+            padding: 20px;
+            border-radius: 15px;
+            margin-bottom: 40px;
+            text-align: center;
+        }
+        .status h3 {
+            color: #56ab2f;
+            font-size: 1.5em;
+        }
+        .emoji {
+            font-size: 2.5em;
+            margin-bottom: 10px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="emoji">🚀</div>
+        <h1>APQC Agent Platform</h1>
+        <p class="subtitle">Complete Multi-Agent Workflow System</p>
+
+        <div class="status">
+            <h3>✅ Server Running on Port 8005</h3>
+        </div>
+
+        <div class="links">
+            <a href="/dashboard" class="link-card">
+                <h2>🏠 User Dashboard</h2>
+                <p>Submit invoices and watch the 4-agent workflow execute in real-time with beautiful animations</p>
+            </a>
+
+            <a href="/admin" class="link-card green">
+                <h2>🎛️ Admin Panel</h2>
+                <p>Manage all 1,100 agents, view workflow history, analytics, and system health</p>
+            </a>
+
+            <a href="/docs" class="link-card blue">
+                <h2>📚 API Documentation</h2>
+                <p>Interactive Swagger UI - explore and test all REST API endpoints</p>
+            </a>
+
+            <a href="/api/health" class="link-card orange">
+                <h2>⚕️ Health Check</h2>
+                <p>View server status and API health information</p>
+            </a>
+        </div>
+    </div>
+</body>
+</html>

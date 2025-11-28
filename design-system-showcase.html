@@ -1,0 +1,808 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Design System Showcase - SuperStandard Platform</title>
+  <link rel="stylesheet" href="design-system.css">
+  <style>
+    .showcase-section {
+      margin-bottom: var(--spacing-12);
+    }
+
+    .showcase-header {
+      margin-bottom: var(--spacing-6);
+      padding-bottom: var(--spacing-4);
+      border-bottom: 2px solid var(--color-neutral-200);
+    }
+
+    .showcase-title {
+      font-size: var(--font-size-3xl);
+      font-weight: var(--font-weight-bold);
+      color: var(--color-neutral-900);
+      margin-bottom: var(--spacing-2);
+    }
+
+    .showcase-description {
+      font-size: var(--font-size-base);
+      color: var(--color-neutral-600);
+    }
+
+    .component-group {
+      background: var(--color-white);
+      border: 1px solid var(--color-neutral-200);
+      border-radius: var(--radius-lg);
+      padding: var(--spacing-6);
+      margin-bottom: var(--spacing-6);
+    }
+
+    .component-group-title {
+      font-size: var(--font-size-lg);
+      font-weight: var(--font-weight-semibold);
+      color: var(--color-neutral-900);
+      margin-bottom: var(--spacing-4);
+    }
+
+    .color-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+      gap: var(--spacing-4);
+    }
+
+    .color-swatch {
+      text-align: center;
+    }
+
+    .color-box {
+      height: 80px;
+      border-radius: var(--radius-md);
+      margin-bottom: var(--spacing-2);
+      border: 1px solid var(--color-neutral-200);
+    }
+
+    .color-name {
+      font-size: var(--font-size-xs);
+      font-weight: var(--font-weight-medium);
+      color: var(--color-neutral-700);
+    }
+
+    .typography-sample {
+      margin-bottom: var(--spacing-4);
+      padding-bottom: var(--spacing-4);
+      border-bottom: 1px solid var(--color-neutral-200);
+    }
+
+    .typography-sample:last-child {
+      border-bottom: none;
+    }
+
+    .typography-label {
+      font-size: var(--font-size-xs);
+      color: var(--color-neutral-500);
+      font-weight: var(--font-weight-medium);
+      text-transform: uppercase;
+      letter-spacing: var(--letter-spacing-wider);
+      margin-bottom: var(--spacing-2);
+    }
+  </style>
+</head>
+<body>
+  <!-- Top Navigation -->
+  <nav class="nav-bar">
+    <a href="/" class="nav-logo">
+      <span class="logo-icon">🎨</span>
+      <span>Design System</span>
+    </a>
+    <div class="nav-links">
+      <a href="#colors" class="nav-link">Colors</a>
+      <a href="#typography" class="nav-link">Typography</a>
+      <a href="#components" class="nav-link active">Components</a>
+      <a href="#layouts" class="nav-link">Layouts</a>
+    </div>
+    <div class="nav-actions">
+      <button class="btn btn-sm btn-secondary">Download</button>
+      <button class="btn btn-sm btn-primary">Get Started</button>
+    </div>
+  </nav>
+
+  <div class="app-layout">
+    <!-- Sidebar -->
+    <aside class="sidebar">
+      <div class="sidebar-section">
+        <h3 class="sidebar-section-title">Foundation</h3>
+        <a href="#colors" class="sidebar-item">
+          <span class="sidebar-item-icon">🎨</span>
+          <span>Colors</span>
+        </a>
+        <a href="#typography" class="sidebar-item">
+          <span class="sidebar-item-icon">📝</span>
+          <span>Typography</span>
+        </a>
+        <a href="#spacing" class="sidebar-item">
+          <span class="sidebar-item-icon">📏</span>
+          <span>Spacing</span>
+        </a>
+      </div>
+
+      <div class="sidebar-section">
+        <h3 class="sidebar-section-title">Components</h3>
+        <a href="#buttons" class="sidebar-item active">
+          <span class="sidebar-item-icon">🔘</span>
+          <span>Buttons</span>
+        </a>
+        <a href="#forms" class="sidebar-item">
+          <span class="sidebar-item-icon">📋</span>
+          <span>Forms</span>
+        </a>
+        <a href="#cards" class="sidebar-item">
+          <span class="sidebar-item-icon">🃏</span>
+          <span>Cards</span>
+        </a>
+        <a href="#tables" class="sidebar-item">
+          <span class="sidebar-item-icon">📊</span>
+          <span>Tables</span>
+        </a>
+        <a href="#alerts" class="sidebar-item">
+          <span class="sidebar-item-icon">⚠️</span>
+          <span>Alerts</span>
+        </a>
+      </div>
+    </aside>
+
+    <!-- Main Content -->
+    <main class="app-main">
+      <div class="app-content">
+        <!-- Introduction -->
+        <div class="showcase-section">
+          <div class="showcase-header">
+            <h1 class="showcase-title">SuperStandard Design System</h1>
+            <p class="showcase-description">
+              A comprehensive, enterprise-grade design system for the Multi-Agent Platform.
+              Built with accessibility, performance, and scalability in mind.
+            </p>
+          </div>
+        </div>
+
+        <!-- Colors Section -->
+        <div id="colors" class="showcase-section">
+          <div class="showcase-header">
+            <h2 class="showcase-title">Color System</h2>
+            <p class="showcase-description">
+              Carefully selected color palettes for professional, trustworthy interfaces
+            </p>
+          </div>
+
+          <div class="component-group">
+            <h3 class="component-group-title">Primary Colors</h3>
+            <div class="color-grid">
+              <div class="color-swatch">
+                <div class="color-box" style="background: var(--color-primary-700);"></div>
+                <div class="color-name">Primary 700</div>
+              </div>
+              <div class="color-swatch">
+                <div class="color-box" style="background: var(--color-primary-600);"></div>
+                <div class="color-name">Primary 600</div>
+              </div>
+              <div class="color-swatch">
+                <div class="color-box" style="background: var(--color-primary-500);"></div>
+                <div class="color-name">Primary 500</div>
+              </div>
+              <div class="color-swatch">
+                <div class="color-box" style="background: var(--color-primary-400);"></div>
+                <div class="color-name">Primary 400</div>
+              </div>
+              <div class="color-swatch">
+                <div class="color-box" style="background: var(--color-primary-100);"></div>
+                <div class="color-name">Primary 100</div>
+              </div>
+            </div>
+          </div>
+
+          <div class="component-group">
+            <h3 class="component-group-title">Semantic Colors</h3>
+            <div class="color-grid">
+              <div class="color-swatch">
+                <div class="color-box" style="background: var(--color-success-600);"></div>
+                <div class="color-name">Success</div>
+              </div>
+              <div class="color-swatch">
+                <div class="color-box" style="background: var(--color-warning-600);"></div>
+                <div class="color-name">Warning</div>
+              </div>
+              <div class="color-swatch">
+                <div class="color-box" style="background: var(--color-error-600);"></div>
+                <div class="color-name">Error</div>
+              </div>
+              <div class="color-swatch">
+                <div class="color-box" style="background: var(--color-info-600);"></div>
+                <div class="color-name">Info</div>
+              </div>
+            </div>
+          </div>
+
+          <div class="component-group">
+            <h3 class="component-group-title">Neutral Colors</h3>
+            <div class="color-grid">
+              <div class="color-swatch">
+                <div class="color-box" style="background: var(--color-neutral-900);"></div>
+                <div class="color-name">Neutral 900</div>
+              </div>
+              <div class="color-swatch">
+                <div class="color-box" style="background: var(--color-neutral-700);"></div>
+                <div class="color-name">Neutral 700</div>
+              </div>
+              <div class="color-swatch">
+                <div class="color-box" style="background: var(--color-neutral-500);"></div>
+                <div class="color-name">Neutral 500</div>
+              </div>
+              <div class="color-swatch">
+                <div class="color-box" style="background: var(--color-neutral-300);"></div>
+                <div class="color-name">Neutral 300</div>
+              </div>
+              <div class="color-swatch">
+                <div class="color-box" style="background: var(--color-neutral-100);"></div>
+                <div class="color-name">Neutral 100</div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Typography Section -->
+        <div id="typography" class="showcase-section">
+          <div class="showcase-header">
+            <h2 class="showcase-title">Typography</h2>
+            <p class="showcase-description">
+              Type scale and hierarchy for clear, readable interfaces
+            </p>
+          </div>
+
+          <div class="component-group">
+            <h3 class="component-group-title">Headings</h3>
+            <div class="typography-sample">
+              <div class="typography-label">Display Heading (48px)</div>
+              <h1 style="font-size: var(--font-size-4xl); font-weight: var(--font-weight-bold);">
+                Multi-Agent Platform Dashboard
+              </h1>
+            </div>
+            <div class="typography-sample">
+              <div class="typography-label">Heading 1 (36px)</div>
+              <h1 style="font-size: var(--font-size-3xl); font-weight: var(--font-weight-bold);">
+                System Overview
+              </h1>
+            </div>
+            <div class="typography-sample">
+              <div class="typography-label">Heading 2 (30px)</div>
+              <h2 style="font-size: var(--font-size-2xl); font-weight: var(--font-weight-semibold);">
+                Agent Statistics
+              </h2>
+            </div>
+            <div class="typography-sample">
+              <div class="typography-label">Heading 3 (24px)</div>
+              <h3 style="font-size: var(--font-size-xl); font-weight: var(--font-weight-semibold);">
+                Recent Activity
+              </h3>
+            </div>
+          </div>
+
+          <div class="component-group">
+            <h3 class="component-group-title">Body Text</h3>
+            <div class="typography-sample">
+              <div class="typography-label">Body Large (18px)</div>
+              <p style="font-size: var(--font-size-md);">
+                The SuperStandard platform provides comprehensive multi-agent orchestration with real-time monitoring and coordination.
+              </p>
+            </div>
+            <div class="typography-sample">
+              <div class="typography-label">Body (16px)</div>
+              <p style="font-size: var(--font-size-base);">
+                Monitor agent performance, track sessions, and visualize network topology in real-time.
+              </p>
+            </div>
+            <div class="typography-sample">
+              <div class="typography-label">Body Small (14px)</div>
+              <p style="font-size: var(--font-size-sm);">
+                Comprehensive analytics and insights for enterprise-grade agent management.
+              </p>
+            </div>
+          </div>
+        </div>
+
+        <!-- Buttons Section -->
+        <div id="buttons" class="showcase-section">
+          <div class="showcase-header">
+            <h2 class="showcase-title">Buttons</h2>
+            <p class="showcase-description">
+              Interactive elements for user actions
+            </p>
+          </div>
+
+          <div class="component-group">
+            <h3 class="component-group-title">Button Variants</h3>
+            <div style="display: flex; gap: var(--spacing-3); flex-wrap: wrap;">
+              <button class="btn btn-primary">Primary Button</button>
+              <button class="btn btn-secondary">Secondary Button</button>
+              <button class="btn btn-ghost">Ghost Button</button>
+              <button class="btn btn-success">Success Button</button>
+              <button class="btn btn-danger">Danger Button</button>
+              <button class="btn btn-primary" disabled>Disabled</button>
+            </div>
+          </div>
+
+          <div class="component-group">
+            <h3 class="component-group-title">Button Sizes</h3>
+            <div style="display: flex; gap: var(--spacing-3); align-items: center;">
+              <button class="btn btn-primary btn-sm">Small</button>
+              <button class="btn btn-primary">Default</button>
+              <button class="btn btn-primary btn-lg">Large</button>
+            </div>
+          </div>
+
+          <div class="component-group">
+            <h3 class="component-group-title">Button with Icons</h3>
+            <div style="display: flex; gap: var(--spacing-3); flex-wrap: wrap;">
+              <button class="btn btn-primary">
+                <span>➕</span>
+                <span>New Agent</span>
+              </button>
+              <button class="btn btn-secondary">
+                <span>⚙️</span>
+                <span>Settings</span>
+              </button>
+              <button class="btn btn-success">
+                <span>▶️</span>
+                <span>Start Session</span>
+              </button>
+            </div>
+          </div>
+        </div>
+
+        <!-- Forms Section -->
+        <div id="forms" class="showcase-section">
+          <div class="showcase-header">
+            <h2 class="showcase-title">Form Components</h2>
+            <p class="showcase-description">
+              Input elements for data collection
+            </p>
+          </div>
+
+          <div class="component-group">
+            <h3 class="component-group-title">Text Inputs</h3>
+            <div style="max-width: 500px;">
+              <div class="form-group">
+                <label class="form-label required">Agent Name</label>
+                <input type="text" class="form-input" placeholder="Enter agent name">
+                <div class="form-help">Choose a unique, descriptive name for your agent</div>
+              </div>
+
+              <div class="form-group">
+                <label class="form-label">Agent Description</label>
+                <textarea class="form-textarea" rows="3" placeholder="Describe the agent's purpose"></textarea>
+              </div>
+
+              <div class="form-group">
+                <label class="form-label">Agent Type</label>
+                <select class="form-select">
+                  <option>Select agent type...</option>
+                  <option>Worker</option>
+                  <option>Coordinator</option>
+                  <option>Analyzer</option>
+                </select>
+              </div>
+            </div>
+          </div>
+
+          <div class="component-group">
+            <h3 class="component-group-title">Checkboxes & Radios</h3>
+            <div style="display: flex; flex-direction: column; gap: var(--spacing-3);">
+              <label class="form-checkbox">
+                <input type="checkbox" class="form-checkbox-input">
+                <span class="form-checkbox-label">Enable real-time monitoring</span>
+              </label>
+              <label class="form-checkbox">
+                <input type="checkbox" class="form-checkbox-input" checked>
+                <span class="form-checkbox-label">Auto-restart on failure</span>
+              </label>
+              <label class="form-checkbox">
+                <input type="checkbox" class="form-checkbox-input">
+                <span class="form-checkbox-label">Send notifications</span>
+              </label>
+            </div>
+
+            <div style="display: flex; flex-direction: column; gap: var(--spacing-3); margin-top: var(--spacing-6);">
+              <label class="form-radio">
+                <input type="radio" name="priority" class="form-radio-input" checked>
+                <span class="form-radio-label">High Priority</span>
+              </label>
+              <label class="form-radio">
+                <input type="radio" name="priority" class="form-radio-input">
+                <span class="form-radio-label">Normal Priority</span>
+              </label>
+              <label class="form-radio">
+                <input type="radio" name="priority" class="form-radio-input">
+                <span class="form-radio-label">Low Priority</span>
+              </label>
+            </div>
+          </div>
+        </div>
+
+        <!-- Cards Section -->
+        <div id="cards" class="showcase-section">
+          <div class="showcase-header">
+            <h2 class="showcase-title">Cards & Panels</h2>
+            <p class="showcase-description">
+              Content containers and data displays
+            </p>
+          </div>
+
+          <div class="component-group">
+            <h3 class="component-group-title">Stat Cards</h3>
+            <div class="dashboard-grid">
+              <div class="col-span-3">
+                <div class="stat-card">
+                  <div class="stat-icon">👥</div>
+                  <div class="stat-value">1,247</div>
+                  <div class="stat-label">Total Agents</div>
+                  <div class="stat-change positive">↑ +12% this week</div>
+                </div>
+              </div>
+
+              <div class="col-span-3">
+                <div class="stat-card">
+                  <div class="stat-icon">🔄</div>
+                  <div class="stat-value">89</div>
+                  <div class="stat-label">Active Sessions</div>
+                  <div class="stat-change positive">↑ +5% this week</div>
+                </div>
+              </div>
+
+              <div class="col-span-3">
+                <div class="stat-card">
+                  <div class="stat-icon">💭</div>
+                  <div class="stat-value">15.2k</div>
+                  <div class="stat-label">Thoughts Shared</div>
+                  <div class="stat-change positive">↑ +23% this week</div>
+                </div>
+              </div>
+
+              <div class="col-span-3">
+                <div class="stat-card">
+                  <div class="stat-icon">🎯</div>
+                  <div class="stat-value">342</div>
+                  <div class="stat-label">Patterns Found</div>
+                  <div class="stat-change negative">↓ -2% this week</div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div class="component-group">
+            <h3 class="component-group-title">Standard Card</h3>
+            <div class="card">
+              <div class="card-header">
+                <div>
+                  <h3 class="card-title">Agent Configuration</h3>
+                  <p class="card-subtitle">Manage agent settings and behavior</p>
+                </div>
+                <button class="btn btn-sm btn-ghost">Edit</button>
+              </div>
+              <div class="card-body">
+                <p>Configure your agent's capabilities, endpoints, and operational parameters. Changes will take effect immediately.</p>
+              </div>
+              <div class="card-footer">
+                <span style="font-size: var(--font-size-sm); color: var(--color-neutral-600);">
+                  Last updated: 2 hours ago
+                </span>
+                <button class="btn btn-sm btn-primary">Save Changes</button>
+              </div>
+            </div>
+          </div>
+
+          <div class="component-group">
+            <h3 class="component-group-title">Panel with Header</h3>
+            <div class="panel">
+              <div class="panel-header">
+                <h3 class="panel-title">Recent Activity</h3>
+                <div class="panel-actions">
+                  <button class="btn btn-sm btn-ghost">Refresh</button>
+                  <button class="btn btn-sm btn-ghost">Filter</button>
+                </div>
+              </div>
+              <div class="panel-body">
+                <div style="display: flex; flex-direction: column; gap: var(--spacing-4);">
+                  <div style="display: flex; gap: var(--spacing-3); align-items: center;">
+                    <span class="badge badge-success">New</span>
+                    <div>
+                      <div style="font-weight: var(--font-weight-medium);">Agent registered</div>
+                      <div style="font-size: var(--font-size-sm); color: var(--color-neutral-600);">
+                        DataAnalyzer-42 • 2m ago
+                      </div>
+                    </div>
+                  </div>
+                  <div style="display: flex; gap: var(--spacing-3); align-items: center;">
+                    <span class="badge badge-info">Update</span>
+                    <div>
+                      <div style="font-weight: var(--font-weight-medium);">Session created</div>
+                      <div style="font-size: var(--font-size-sm); color: var(--color-neutral-600);">
+                        Pipeline-001 • 5m ago
+                      </div>
+                    </div>
+                  </div>
+                  <div style="display: flex; gap: var(--spacing-3); align-items: center;">
+                    <span class="badge badge-warning">Alert</span>
+                    <div>
+                      <div style="font-weight: var(--font-weight-medium);">High memory usage</div>
+                      <div style="font-size: var(--font-size-sm); color: var(--color-neutral-600);">
+                        Processor-12 • 10m ago
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Tables Section -->
+        <div id="tables" class="showcase-section">
+          <div class="showcase-header">
+            <h2 class="showcase-title">Tables</h2>
+            <p class="showcase-description">
+              Structured data displays
+            </p>
+          </div>
+
+          <div class="component-group">
+            <h3 class="component-group-title">Standard Table</h3>
+            <div class="table-container">
+              <table class="table">
+                <thead>
+                  <tr>
+                    <th class="sortable">Agent ID</th>
+                    <th class="sortable">Name</th>
+                    <th>Type</th>
+                    <th>Status</th>
+                    <th>Last Active</th>
+                    <th>Actions</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <tr>
+                    <td><code>agent-001</code></td>
+                    <td>DataCollector</td>
+                    <td><span class="badge badge-primary">Worker</span></td>
+                    <td>
+                      <div class="status-indicator status-online">
+                        <span class="status-dot"></span>
+                        <span>Online</span>
+                      </div>
+                    </td>
+                    <td>2 minutes ago</td>
+                    <td>
+                      <div class="btn-group">
+                        <button class="btn btn-sm btn-ghost">View</button>
+                        <button class="btn btn-sm btn-ghost">Edit</button>
+                      </div>
+                    </td>
+                  </tr>
+                  <tr>
+                    <td><code>agent-002</code></td>
+                    <td>Coordinator</td>
+                    <td><span class="badge badge-success">Manager</span></td>
+                    <td>
+                      <div class="status-indicator status-online">
+                        <span class="status-dot"></span>
+                        <span>Online</span>
+                      </div>
+                    </td>
+                    <td>5 minutes ago</td>
+                    <td>
+                      <div class="btn-group">
+                        <button class="btn btn-sm btn-ghost">View</button>
+                        <button class="btn btn-sm btn-ghost">Edit</button>
+                      </div>
+                    </td>
+                  </tr>
+                  <tr>
+                    <td><code>agent-003</code></td>
+                    <td>Analyzer</td>
+                    <td><span class="badge badge-info">Worker</span></td>
+                    <td>
+                      <div class="status-indicator status-offline">
+                        <span class="status-dot"></span>
+                        <span>Offline</span>
+                      </div>
+                    </td>
+                    <td>1 hour ago</td>
+                    <td>
+                      <div class="btn-group">
+                        <button class="btn btn-sm btn-ghost">View</button>
+                        <button class="btn btn-sm btn-ghost">Edit</button>
+                      </div>
+                    </td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+
+        <!-- Alerts Section -->
+        <div id="alerts" class="showcase-section">
+          <div class="showcase-header">
+            <h2 class="showcase-title">Alerts & Notifications</h2>
+            <p class="showcase-description">
+              User feedback and status messages
+            </p>
+          </div>
+
+          <div class="component-group">
+            <h3 class="component-group-title">Alert Banners</h3>
+            <div class="alert alert-success">
+              <div class="alert-icon">✅</div>
+              <div class="alert-content">
+                <div class="alert-title">Agent successfully registered</div>
+                <div class="alert-message">
+                  Your agent "DataAnalyzer-42" has been registered and is now online.
+                </div>
+              </div>
+            </div>
+
+            <div class="alert alert-warning">
+              <div class="alert-icon">⚠️</div>
+              <div class="alert-content">
+                <div class="alert-title">High memory usage detected</div>
+                <div class="alert-message">
+                  Agent "Processor-12" is using 85% of available memory. Consider scaling resources.
+                </div>
+              </div>
+            </div>
+
+            <div class="alert alert-error">
+              <div class="alert-icon">❌</div>
+              <div class="alert-content">
+                <div class="alert-title">Connection failed</div>
+                <div class="alert-message">
+                  Unable to connect to agent "Worker-05". Retrying in 30 seconds.
+                </div>
+              </div>
+            </div>
+
+            <div class="alert alert-info">
+              <div class="alert-icon">ℹ️</div>
+              <div class="alert-content">
+                <div class="alert-title">System maintenance scheduled</div>
+                <div class="alert-message">
+                  Platform will undergo maintenance on Sunday at 2:00 AM UTC. Expected downtime: 1 hour.
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div class="component-group">
+            <h3 class="component-group-title">Badges</h3>
+            <div style="display: flex; gap: var(--spacing-3); flex-wrap: wrap;">
+              <span class="badge badge-primary">Primary</span>
+              <span class="badge badge-success">Success</span>
+              <span class="badge badge-warning">Warning</span>
+              <span class="badge badge-error">Error</span>
+              <span class="badge badge-info">Info</span>
+              <span class="badge badge-neutral">Neutral</span>
+            </div>
+
+            <div style="display: flex; gap: var(--spacing-3); flex-wrap: wrap; margin-top: var(--spacing-4);">
+              <span class="badge badge-success with-dot">Online</span>
+              <span class="badge badge-error with-dot">Offline</span>
+              <span class="badge badge-warning with-dot">Pending</span>
+            </div>
+          </div>
+
+          <div class="component-group">
+            <h3 class="component-group-title">Status Indicators</h3>
+            <div style="display: flex; flex-direction: column; gap: var(--spacing-3);">
+              <div class="status-indicator status-online">
+                <span class="status-dot"></span>
+                <span>All systems operational</span>
+              </div>
+              <div class="status-indicator status-warning">
+                <span class="status-dot"></span>
+                <span>Degraded performance</span>
+              </div>
+              <div class="status-indicator status-error">
+                <span class="status-dot"></span>
+                <span>System error</span>
+              </div>
+              <div class="status-indicator status-offline">
+                <span class="status-dot"></span>
+                <span>Offline</span>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Loading States Section -->
+        <div id="loading" class="showcase-section">
+          <div class="showcase-header">
+            <h2 class="showcase-title">Loading States</h2>
+            <p class="showcase-description">
+              Visual feedback for asynchronous operations
+            </p>
+          </div>
+
+          <div class="component-group">
+            <h3 class="component-group-title">Spinners</h3>
+            <div style="display: flex; gap: var(--spacing-6); align-items: center;">
+              <div class="spinner"></div>
+              <div class="spinner-lg"></div>
+              <button class="btn btn-primary" disabled>
+                <div class="spinner"></div>
+                <span>Loading...</span>
+              </button>
+            </div>
+          </div>
+
+          <div class="component-group">
+            <h3 class="component-group-title">Progress Bars</h3>
+            <div style="display: flex; flex-direction: column; gap: var(--spacing-4);">
+              <div>
+                <div style="font-size: var(--font-size-sm); margin-bottom: var(--spacing-2);">Upload progress: 75%</div>
+                <div class="progress-bar">
+                  <div class="progress-fill" style="width: 75%;"></div>
+                </div>
+              </div>
+
+              <div>
+                <div style="font-size: var(--font-size-sm); margin-bottom: var(--spacing-2);">Processing...</div>
+                <div class="progress-bar indeterminate">
+                  <div class="progress-fill"></div>
+                </div>
+              </div>
+
+              <div>
+                <div style="font-size: var(--font-size-sm); margin-bottom: var(--spacing-2);">Success: 100%</div>
+                <div class="progress-bar success">
+                  <div class="progress-fill" style="width: 100%;"></div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div class="component-group">
+            <h3 class="component-group-title">Skeleton Loaders</h3>
+            <div style="max-width: 500px;">
+              <div class="skeleton skeleton-title"></div>
+              <div class="skeleton skeleton-text"></div>
+              <div class="skeleton skeleton-text"></div>
+              <div class="skeleton skeleton-text" style="width: 70%;"></div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Empty State Section -->
+        <div id="empty" class="showcase-section">
+          <div class="showcase-header">
+            <h2 class="showcase-title">Empty States</h2>
+            <p class="showcase-description">
+              Helpful messaging when no data is available
+            </p>
+          </div>
+
+          <div class="component-group">
+            <div class="empty-state">
+              <div class="empty-state-icon">📭</div>
+              <h3 class="empty-state-title">No agents registered</h3>
+              <p class="empty-state-message">
+                Get started by registering your first agent. Agents can be workers, coordinators, or analyzers.
+              </p>
+              <div class="empty-state-actions">
+                <button class="btn btn-primary">Register Agent</button>
+                <button class="btn btn-secondary">View Documentation</button>
+              </div>
+            </div>
+          </div>
+        </div>
+
+      </div>
+    </main>
+  </div>
+</body>
+</html>

@@ -1,0 +1,978 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'unsafe-eval' 'unsafe-inline' https://cdn.jsdelivr.net https://unpkg.com https://cdnjs.cloudflare.com; style-src 'self' 'unsafe-inline' https://cdn.jsdelivr.net https://unpkg.com https://cdnjs.cloudflare.com https://fonts.googleapis.com; img-src 'self' data: https: blob:; font-src 'self' https://fonts.gstatic.com https://fonts.googleapis.com data: https:; connect-src 'self' https: wss:; media-src 'self' https: data: blob:; object-src 'none'; frame-src 'self'; base-uri 'self'; form-action 'self'">
+    <title>APQC Process Testing & Debugging Platform</title>
+    <!-- BPMN Viewer Library - bpmn-js exports as BpmnJS -->
+    <script src="https://unpkg.com/bpmn-js@17.11.1/dist/bpmn-viewer.production.min.js"></script>
+    <script>
+        // bpmn-js UMD build exports as BpmnJS, create alias for BpmnViewer
+        window.BpmnViewer = window.BpmnViewer || window.BpmnJS;
+
+        // Fallback if primary CDN fails
+        if (!window.BpmnViewer && !window.BpmnJS) {
+            console.log('Primary CDN failed, trying fallback...');
+            var script = document.createElement('script');
+            script.src = 'https://cdn.jsdelivr.net/npm/bpmn-js@17/dist/bpmn-viewer.production.min.js';
+            script.onload = function() {
+                window.BpmnViewer = window.BpmnViewer || window.BpmnJS;
+                console.log('Fallback CDN loaded:', !!window.BpmnViewer);
+            };
+            document.head.appendChild(script);
+        }
+    </script>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+            color: #333;
+            min-height: 100vh;
+        }
+
+        .header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 25px 40px;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.2);
+            position: sticky;
+            top: 0;
+            z-index: 100;
+        }
+
+        .header h1 {
+            font-size: 2.2em;
+            margin-bottom: 8px;
+        }
+
+        .header p {
+            opacity: 0.95;
+            font-size: 1.05em;
+        }
+
+        .main-container {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            max-width: 1800px;
+            margin: 20px auto;
+            gap: 20px;
+            padding: 0 20px;
+            min-height: calc(100vh - 120px);
+        }
+
+        .panel {
+            background: white;
+            border-radius: 12px;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.1);
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .panel-header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 20px;
+            font-weight: 600;
+            font-size: 1.1em;
+        }
+
+        .panel-content {
+            flex: 1;
+            overflow-y: auto;
+            padding: 20px;
+        }
+
+        /* Hierarchy Navigator */
+        .hierarchy-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+            gap: 12px;
+        }
+
+        .hierarchy-card {
+            background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+            border: 2px solid #e0e0e0;
+            border-radius: 8px;
+            padding: 16px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            text-align: center;
+            position: relative;
+        }
+
+        .hierarchy-card:hover {
+            border-color: #667eea;
+            box-shadow: 0 8px 25px rgba(102, 126, 234, 0.25);
+            transform: translateY(-3px);
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+        }
+
+        .pcf-code {
+            background: #667eea;
+            color: white;
+            padding: 6px 12px;
+            border-radius: 4px;
+            font-weight: 700;
+            font-size: 0.9em;
+            margin-bottom: 8px;
+            display: inline-block;
+        }
+
+        .hierarchy-card:hover .pcf-code {
+            background: white;
+            color: #667eea;
+        }
+
+        .card-title {
+            font-weight: 600;
+            margin: 8px 0;
+            font-size: 0.95em;
+        }
+
+        .card-count {
+            font-size: 0.85em;
+            opacity: 0.7;
+            margin-top: 6px;
+        }
+
+        .test-button {
+            background: #4CAF50;
+            color: white;
+            border: none;
+            padding: 8px 16px;
+            border-radius: 4px;
+            cursor: pointer;
+            font-weight: 600;
+            margin-top: 10px;
+            width: 100%;
+            transition: all 0.3s;
+            font-size: 0.85em;
+        }
+
+        .test-button:hover {
+            background: #45a049;
+            transform: scale(1.02);
+        }
+
+        /* Process Execution Panel */
+        .execution-panel {
+            display: flex;
+            flex-direction: column;
+        }
+
+        .breadcrumb {
+            display: flex;
+            gap: 8px;
+            padding: 12px;
+            background: #f8f9fa;
+            border-bottom: 1px solid #e0e0e0;
+            flex-wrap: wrap;
+            font-size: 0.9em;
+        }
+
+        .breadcrumb span {
+            cursor: pointer;
+            padding: 4px 8px;
+            border-radius: 4px;
+            transition: background 0.2s;
+        }
+
+        .breadcrumb span:hover {
+            background: #e0e0e0;
+        }
+
+        .breadcrumb span.separator {
+            cursor: default;
+            color: #999;
+        }
+
+        /* Process Flow Display */
+        .process-flow {
+            padding: 20px;
+            border-bottom: 1px solid #e0e0e0;
+        }
+
+        .step-indicator {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            margin-bottom: 15px;
+        }
+
+        .step-number {
+            background: #667eea;
+            color: white;
+            width: 32px;
+            height: 32px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 700;
+            font-size: 0.9em;
+        }
+
+        .step-info {
+            flex: 1;
+        }
+
+        .step-title {
+            font-weight: 600;
+            color: #333;
+            margin-bottom: 4px;
+        }
+
+        .step-role {
+            font-size: 0.85em;
+            color: #666;
+            background: #f0f0f0;
+            padding: 4px 8px;
+            border-radius: 3px;
+            display: inline-block;
+        }
+
+        /* Data Display */
+        .data-section {
+            margin: 15px 0;
+        }
+
+        .data-label {
+            font-weight: 600;
+            margin-bottom: 8px;
+            color: #667eea;
+            font-size: 0.95em;
+        }
+
+        .data-view {
+            background: #f8f9fa;
+            border: 1px solid #e0e0e0;
+            border-radius: 6px;
+            padding: 12px;
+            font-family: 'Courier New', monospace;
+            font-size: 0.85em;
+            max-height: 200px;
+            overflow-y: auto;
+            white-space: pre-wrap;
+            word-wrap: break-word;
+        }
+
+        .data-toggle {
+            display: flex;
+            gap: 10px;
+            margin: 10px 0;
+        }
+
+        .data-toggle button {
+            padding: 6px 12px;
+            border: 1px solid #ddd;
+            background: white;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 0.85em;
+            transition: all 0.2s;
+        }
+
+        .data-toggle button.active {
+            background: #667eea;
+            color: white;
+            border-color: #667eea;
+        }
+
+        /* Action Buttons */
+        .action-buttons {
+            display: flex;
+            gap: 10px;
+            padding: 20px;
+            border-top: 1px solid #e0e0e0;
+        }
+
+        .btn {
+            flex: 1;
+            padding: 12px 20px;
+            border: none;
+            border-radius: 6px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s;
+            font-size: 0.95em;
+        }
+
+        .btn-primary {
+            background: #4CAF50;
+            color: white;
+        }
+
+        .btn-primary:hover {
+            background: #45a049;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(76, 175, 80, 0.3);
+        }
+
+        .btn-secondary {
+            background: #2196F3;
+            color: white;
+        }
+
+        .btn-secondary:hover {
+            background: #0b7dda;
+            transform: translateY(-2px);
+        }
+
+        .btn:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        /* BPMN Diagram */
+        #bpmn-container {
+            background: white;
+            border-radius: 8px;
+            height: 400px;
+            margin: 15px 0;
+            border: 1px solid #e0e0e0;
+        }
+
+        .bpmn-viewer {
+            width: 100%;
+            height: 100%;
+        }
+
+        /* Results Display */
+        .execution-result {
+            background: #f0f7ff;
+            border-left: 4px solid #4CAF50;
+            padding: 15px;
+            border-radius: 4px;
+            margin: 15px 0;
+        }
+
+        .execution-result.error {
+            background: #fff0f0;
+            border-left-color: #f44336;
+        }
+
+        .result-status {
+            font-weight: 600;
+            margin-bottom: 8px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .status-icon {
+            font-size: 1.2em;
+        }
+
+        /* Empty State */
+        .empty-state {
+            text-align: center;
+            padding: 40px 20px;
+            color: #999;
+        }
+
+        .empty-state-icon {
+            font-size: 3em;
+            margin-bottom: 15px;
+        }
+
+        /* Responsive */
+        @media (max-width: 1200px) {
+            .main-container {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        .loading {
+            text-align: center;
+            padding: 20px;
+            color: #666;
+        }
+
+        .spinner {
+            border: 3px solid #f3f3f3;
+            border-top: 3px solid #667eea;
+            border-radius: 50%;
+            width: 30px;
+            height: 30px;
+            animation: spin 1s linear infinite;
+            margin: 20px auto;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <h1>⚙️ APQC Process Testing & Debugging Platform</h1>
+        <p>Interactive process execution with step-by-step debugging and BPMN2 visualization</p>
+    </div>
+
+    <div class="main-container">
+        <!-- Left Panel: APQC Hierarchy Navigator -->
+        <div class="panel">
+            <div class="panel-header">📊 APQC Process Hierarchy (Level 1-5)</div>
+            <div class="panel-content">
+                <div class="breadcrumb" id="navigator-breadcrumb">
+                    <span class="separator">📍</span>
+                    <span onclick="navigateToRoot()" style="cursor: pointer; font-weight: 600;">Root</span>
+                </div>
+                <div class="hierarchy-grid" id="hierarchyContainer">
+                    <div class="empty-state">
+                        <div class="empty-state-icon">📂</div>
+                        <p>Loading APQC hierarchy...</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Right Panel: Process Execution & Testing -->
+        <div class="panel execution-panel">
+            <div class="panel-header">▶️ Process Execution & Testing</div>
+            <div class="panel-content">
+                <div id="executionContent">
+                    <div class="empty-state">
+                        <div class="empty-state-icon">▶️</div>
+                        <p>Select a process to test from the left panel</p>
+                        <p style="font-size: 0.9em; margin-top: 10px; color: #666;">Click "Test This Process" on any APQC item to begin step-by-step execution</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const API_URL = 'http://localhost:8000';
+        let hierarchyPath = [];
+        let currentProcessId = null;
+        let currentStepIndex = 0;
+        let processDefinition = null;
+        let executionHistory = [];
+
+        // Initialize
+        async function init() {
+            await loadHierarchyLevel();
+        }
+
+        // Load hierarchy at current level
+        async function loadHierarchyLevel() {
+            const container = document.getElementById('hierarchyContainer');
+            container.innerHTML = '<div class="loading"><div class="spinner"></div></div>';
+
+            try {
+                const currentLevel = hierarchyPath.length + 1;
+                const parentId = hierarchyPath.length > 0 ? hierarchyPath[hierarchyPath.length - 1].id : null;
+
+                let url = `${API_URL}/api/agents/by-apqc-level?level=${currentLevel}`;
+                if (parentId) {
+                    url += `&parent_id=${encodeURIComponent(parentId)}`;
+                }
+
+                const response = await fetch(url);
+                const data = await response.json();
+
+                if (!data.items || data.items.length === 0) {
+                    container.innerHTML = '<div class="empty-state"><p>No items found at this level</p></div>';
+                    return;
+                }
+
+                // Display items - different buttons for different types
+                container.innerHTML = data.items.map(item => `
+                    <div class="hierarchy-card" onclick="selectHierarchyItem('${item.id}', '${item.type}', '${item.name}')">
+                        <div class="pcf-code">${item.id.split('_')[0] || 'N/A'}.${currentLevel}</div>
+                        <div class="card-title">${item.name}</div>
+                        <div class="card-count">${item.children_count || 0} items</div>
+                        ${item.type === 'agent' ? `<button class="test-button" onclick="startProcessTest('${item.id}', '${item.name}', event)">▶️ Execute</button>` : `<button class="test-button" onclick="selectHierarchyItem('${item.id}', '${item.type}', '${item.name}', event)">→ Explore</button>`}
+                    </div>
+                `).join('');
+
+                updateBreadcrumb();
+            } catch (error) {
+                console.error('Error loading hierarchy:', error);
+                container.innerHTML = '<div class="empty-state"><p>Error loading items</p></div>';
+            }
+        }
+
+        // Select hierarchy item and drill down
+        async function selectHierarchyItem(id, type, name, event) {
+            if (event) event.stopPropagation();
+
+            if (type === 'agent') {
+                // Show agent details and allow execution
+                const content = document.getElementById('executionContent');
+                content.innerHTML = `
+                    <div class="process-flow">
+                        <div class="step-indicator">
+                            <div class="step-number">●</div>
+                            <div class="step-info">
+                                <div class="step-title">${name}</div>
+                                <div class="step-role">Atomic Agent - Ready to Execute</div>
+                            </div>
+                        </div>
+                        <div class="data-section">
+                            <div class="data-label">📋 Agent Details</div>
+                            <div class="data-view">${JSON.stringify({id, type, name}, null, 2)}</div>
+                        </div>
+                    </div>
+                    <div class="action-buttons">
+                        <button class="btn btn-primary" onclick="performStep('${id}')">▶️ Execute Agent</button>
+                        <button class="btn btn-secondary" onclick="navigateBack()">← Back</button>
+                    </div>
+                `;
+            } else {
+                // Drill down one level AND show process group diagram
+                hierarchyPath.push({ id, name, level: hierarchyPath.length + 1 });
+                await loadHierarchyLevel();
+
+                // Show process group diagram in the right panel (for any level)
+                await showProcessGroupDiagram(id, name, type);
+            }
+        }
+
+        // Show BPMN diagram for a process group (Level 2+)
+        async function showProcessGroupDiagram(groupId, groupName, groupType) {
+            const content = document.getElementById('executionContent');
+
+            // Create the process ID from the group ID
+            const processId = groupId.replace(/\|/g, '_').replace(/ /g, '_');
+
+            content.innerHTML = `
+                <div class="process-flow">
+                    <div class="breadcrumb">
+                        <span class="separator">📊</span>
+                        <span style="font-weight: 600;">${groupName}</span>
+                        <span class="separator">›</span>
+                        <span>Process Flow Overview</span>
+                    </div>
+
+                    <div style="margin: 15px 0;">
+                        <div class="data-label">📋 Process Group: ${groupType}</div>
+                        <p style="color: #666; margin: 10px 0;">This diagram shows the sub-processes and activities within this process group.</p>
+                    </div>
+
+                    <!-- BPMN Diagram Container -->
+                    <div id="bpmn-container-group" style="background: white; border-radius: 8px; height: 350px; border: 1px solid #e0e0e0;">
+                        <div class="loading"><div class="spinner"></div>Loading process diagram...</div>
+                    </div>
+
+                    <div class="data-section" style="margin-top: 20px;">
+                        <div class="data-label">📍 Current Path</div>
+                        <div class="data-view">${JSON.stringify(hierarchyPath.map(p => p.name), null, 2)}</div>
+                    </div>
+                </div>
+
+                <div class="action-buttons">
+                    <button class="btn btn-secondary" onclick="clearExecutionPanel()">← Clear Panel</button>
+                </div>
+            `;
+
+            // Load and render BPMN diagram
+            await loadGroupBpmnDiagram(processId, groupName);
+        }
+
+        // Load BPMN diagram for a process group
+        async function loadGroupBpmnDiagram(processId, groupName) {
+            const container = document.getElementById('bpmn-container-group');
+            if (!container) return;
+
+            try {
+                // Wait for library
+                let retries = 0;
+                while (!window.BpmnViewer && !window.BpmnJS && retries < 10) {
+                    await new Promise(resolve => setTimeout(resolve, 200));
+                    retries++;
+                }
+
+                const ViewerClass = window.BpmnViewer || window.BpmnJS;
+                if (!ViewerClass) {
+                    throw new Error('BPMN library not loaded');
+                }
+
+                // Fetch diagram
+                const response = await fetch(`${API_URL}/api/processes/${processId}/diagram`);
+                if (!response.ok) throw new Error(`Failed to fetch: ${response.status}`);
+                const diagramData = await response.json();
+
+                console.log('✓ Group diagram fetched:', diagramData.task_count, 'tasks');
+
+                // Render
+                const viewer = new ViewerClass({ container: container });
+                await viewer.importXML(diagramData.content);
+
+                const canvas = viewer.get('canvas');
+                if (canvas) canvas.zoom('fit-viewport');
+
+                console.log('✓ Group BPMN diagram rendered');
+
+            } catch (error) {
+                console.error('Group BPMN error:', error);
+                container.innerHTML = `
+                    <div style="padding: 30px; text-align: center; color: #666;">
+                        <p style="font-size: 1.1em;">📊 ${groupName}</p>
+                        <p style="font-size: 0.9em; color: #999; margin-top: 10px;">
+                            Process flow visualization<br/>
+                            <small>${error.message}</small>
+                        </p>
+                    </div>
+                `;
+            }
+        }
+
+        // Clear the execution panel
+        function clearExecutionPanel() {
+            const content = document.getElementById('executionContent');
+            content.innerHTML = `
+                <div class="empty-state">
+                    <div class="empty-state-icon">▶️</div>
+                    <p>Select a process to test from the left panel</p>
+                    <p style="font-size: 0.9em; margin-top: 10px; color: #666;">Click "Test This Process" on any APQC item to begin step-by-step execution</p>
+                </div>
+            `;
+        }
+
+        // Start process testing
+        async function startProcessTest(processId, processName, event) {
+            event.stopPropagation();
+            currentProcessId = processId;
+            currentStepIndex = 0;
+            executionHistory = [];
+
+            const content = document.getElementById('executionContent');
+            content.innerHTML = '<div class="loading"><div class="spinner"></div>Loading process definition...</div>';
+
+            try {
+                const response = await fetch(`${API_URL}/api/processes/${processId}/definition`);
+                processDefinition = await response.json();
+
+                displayProcessExecution(processName);
+            } catch (error) {
+                console.error('Error loading process:', error);
+                content.innerHTML = '<div class="empty-state"><p>Error loading process definition</p></div>';
+            }
+        }
+
+        // Display process execution interface
+        async function displayProcessExecution(processName) {
+            const content = document.getElementById('executionContent');
+            const steps = processDefinition.steps || [];
+            const currentStep = steps[currentStepIndex];
+
+            if (!currentStep) {
+                // Process complete
+                content.innerHTML = `
+                    <div class="process-flow">
+                        <div class="execution-result">
+                            <div class="result-status">
+                                <span class="status-icon">✅</span>
+                                <span>Process Complete!</span>
+                            </div>
+                            <p style="margin-top: 10px;">All ${steps.length} steps executed successfully.</p>
+                        </div>
+                        <div style="padding: 20px;">
+                            <button class="btn btn-secondary" onclick="navigateBack()">← Back to Hierarchy</button>
+                        </div>
+                    </div>
+                `;
+                return;
+            }
+
+            // Build execution interface
+            let html = `
+                <div class="breadcrumb">
+                    <span class="separator">⚙️</span>
+                    <span style="font-weight: 600;">${processName}</span>
+                    <span class="separator">›</span>
+                    <span>Step ${currentStepIndex + 1} of ${steps.length}</span>
+                </div>
+
+                <div class="process-flow">
+                    <!-- BPMN Diagram -->
+                    <div class="data-label">📋 Process Flow</div>
+                    <div id="bpmn-container"></div>
+
+                    <!-- Step Information -->
+                    <div style="margin-top: 20px;">
+                        <div class="step-indicator">
+                            <div class="step-number">${currentStepIndex + 1}</div>
+                            <div class="step-info">
+                                <div class="step-title">${currentStep.name}</div>
+                                <div class="step-role">Role: ${currentStep.required_role}</div>
+                            </div>
+                        </div>
+                        <p style="margin-top: 10px; color: #666;">${currentStep.business_description}</p>
+                    </div>
+
+                    <!-- Input Data Display -->
+                    <div class="data-section">
+                        <div class="data-label">📥 Input Data</div>
+                        <div class="data-toggle">
+                            <button class="active" aria-label="Show technical input data" onclick="toggleDataView('input-technical', this)">Technical</button>
+                            <button aria-label="Show business input data" onclick="toggleDataView('input-business', this)">Business</button>
+                        </div>
+                        <div id="input-technical" class="data-view">${JSON.stringify(currentStep.input_schema.example, null, 2)}</div>
+                        <div id="input-business" class="data-view" style="display: none;">Expected input from previous process step or initiation data</div>
+                    </div>
+
+                    <!-- Output Data Display (after execution) -->
+                    <div class="data-section" id="outputSection" style="display: none;">
+                        <div class="data-label">📤 Output Data</div>
+                        <div class="data-toggle">
+                            <button class="active" aria-label="Show technical output data" onclick="toggleDataView('output-technical', this)">Technical</button>
+                            <button aria-label="Show business output data" onclick="toggleDataView('output-business', this)">Business</button>
+                        </div>
+                        <div id="output-technical" class="data-view" style="display: none;"></div>
+                        <div id="output-business" class="data-view" style="display: none;"></div>
+                    </div>
+
+                    <!-- Execution Status -->
+                    <div id="statusSection" style="display: none;">
+                        <div class="execution-result" id="executionStatus"></div>
+                    </div>
+                </div>
+
+                <div class="action-buttons">
+                    <button class="btn btn-primary" onclick="performStep('${currentStep.agent_id}')">▶️ Perform This Step</button>
+                    <button class="btn btn-secondary" onclick="skipStep()">⏩ Skip Step</button>
+                </div>
+            `;
+
+            content.innerHTML = html;
+
+            // Load BPMN diagram
+            const container = document.getElementById('bpmn-container');
+            if (!container) return;
+
+            try {
+                // Wait for BpmnViewer/BpmnJS library to load with multiple retries
+                let retries = 0;
+                const maxRetries = 15;
+                while (!window.BpmnViewer && !window.BpmnJS && retries < maxRetries) {
+                    await new Promise(resolve => setTimeout(resolve, 300));
+                    retries++;
+                }
+
+                // Get the viewer class (bpmn-js exports as BpmnJS in UMD build)
+                const ViewerClass = window.BpmnViewer || window.BpmnJS;
+
+                if (!ViewerClass) {
+                    console.warn('BPMN library failed to load after', maxRetries, 'retries');
+                    console.warn('window.BpmnViewer:', window.BpmnViewer);
+                    console.warn('window.BpmnJS:', window.BpmnJS);
+                    throw new Error('BPMN Viewer library not loaded - please check network connection');
+                }
+
+                console.log('✓ BPMN library loaded successfully:', ViewerClass.name || 'BpmnJS');
+
+                const diagramResponse = await fetch(`${API_URL}/api/processes/${currentProcessId}/diagram`);
+                if (!diagramResponse.ok) {
+                    throw new Error(`Failed to fetch diagram: ${diagramResponse.status}`);
+                }
+                const diagramData = await diagramResponse.json();
+
+                console.log('✓ Diagram data fetched, rendering...', diagramData.task_count, 'tasks');
+
+                // Create viewer instance
+                const viewer = new ViewerClass({
+                    container: container,
+                    keyboard: { bindTo: window }
+                });
+
+                // Import and render the diagram
+                const result = await viewer.importXML(diagramData.content);
+                if (result.warnings && result.warnings.length > 0) {
+                    console.warn('BPMN import warnings:', result.warnings);
+                }
+
+                // Zoom to fit viewport
+                const canvas = viewer.get('canvas');
+                if (canvas) {
+                    canvas.zoom('fit-viewport');
+                }
+
+                console.log('✓ BPMN diagram loaded and rendered successfully');
+            } catch (error) {
+                console.error('BPMN diagram error:', error);
+                container.innerHTML = `
+                    <div style="padding: 20px; text-align: center; color: #666;">
+                        <p>📊 Process Flow Diagram</p>
+                        <p style="font-size: 0.9em; color: #999;">
+                            ⚠️ ${error.message || 'BPMN diagram unavailable'}
+                        </p>
+                        <p style="font-size: 0.85em; color: #bbb; margin-top: 10px;">
+                            Check browser console (F12) for details<br/>
+                            See Input/Output Data sections below for process information
+                        </p>
+                    </div>
+                `;
+            }
+        }
+
+        // Perform a process step or execute an agent
+        async function performStep(agentId) {
+            const button = event.target;
+            button.disabled = true;
+            button.textContent = '⏳ Executing...';
+
+            try {
+                // Prepare the execution request
+                const executionData = {
+                    step_id: `step_${agentId}`,
+                    step_number: 1,
+                    agent_id: agentId,
+                    input_data: {
+                        process_data: "Agent execution request",
+                        context: { agent_id: agentId },
+                        parameters: {}
+                    }
+                };
+
+                const response = await fetch(`${API_URL}/api/processes/${agentId}/execute-step`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(executionData)
+                });
+
+                const result = await response.json();
+                executionHistory.push(result);
+
+                // Create output display
+                const content = document.getElementById('executionContent');
+                const outputHtml = `
+                    <div class="process-flow">
+                        <div class="step-indicator">
+                            <div class="step-number">✓</div>
+                            <div class="step-info">
+                                <div class="step-title">Execution Complete</div>
+                                <div class="step-role">Execution Time: ${result.execution.execution_time_ms}ms</div>
+                            </div>
+                        </div>
+
+                        <div class="data-section">
+                            <div class="data-label">📤 Output Data</div>
+                            <div class="data-toggle">
+                                <button class="active" aria-label="Show technical execution output" onclick="toggleDataView('exec-output-technical', this)">Technical</button>
+                                <button aria-label="Show business execution output" onclick="toggleDataView('exec-output-business', this)">Business</button>
+                            </div>
+                            <div id="exec-output-technical" class="data-view">${JSON.stringify(result.output.technical, null, 2)}</div>
+                            <div id="exec-output-business" class="data-view" style="display: none;">${result.output.business_summary}</div>
+                        </div>
+
+                        <div class="execution-result">
+                            <div class="result-status">
+                                <span class="status-icon">✅</span>
+                                <span>${result.output.business_summary}</span>
+                            </div>
+                            <div style="margin-top: 15px; padding: 15px; background: #f5f5f5; border-radius: 6px;">
+                                <p><strong>Execution Metrics:</strong></p>
+                                <ul style="margin-top: 8px; padding-left: 20px;">
+                                    <li>Status: ${result.execution.status}</li>
+                                    <li>Time: ${result.execution.execution_time_ms}ms</li>
+                                    <li>Items Processed: ${result.output.technical.result.processed_items}</li>
+                                    <li>Quality Score: ${(result.output.technical.result.data_quality_score * 100).toFixed(1)}%</li>
+                                </ul>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="action-buttons">
+                        <button class="btn btn-secondary" onclick="navigateBack()">← Back</button>
+                    </div>
+                `;
+
+                content.innerHTML = outputHtml;
+
+            } catch (error) {
+                console.error('Error executing agent:', error);
+                const content = document.getElementById('executionContent');
+                content.innerHTML = `
+                    <div class="process-flow">
+                        <div class="execution-result">
+                            <div class="result-status">
+                                <span class="status-icon" style="color: #f44336;">❌</span>
+                                <span>Execution Failed</span>
+                            </div>
+                            <p style="margin-top: 15px; color: #666;">${error.message}</p>
+                        </div>
+                    </div>
+                    <div class="action-buttons">
+                        <button class="btn btn-primary" onclick="location.reload()">Retry</button>
+                        <button class="btn btn-secondary" onclick="navigateBack()">← Back</button>
+                    </div>
+                `;
+            }
+
+            button.disabled = false;
+            button.textContent = '▶️ Execute Agent';
+        }
+
+        // Move to next step
+        async function nextStep() {
+            currentStepIndex++;
+            await displayProcessExecution(hierarchyPath[hierarchyPath.length - 1]?.name || 'Process');
+        }
+
+        // Skip current step
+        async function skipStep() {
+            currentStepIndex++;
+            await displayProcessExecution(hierarchyPath[hierarchyPath.length - 1]?.name || 'Process');
+        }
+
+        // Toggle between technical and business views
+        function toggleDataView(viewId, button) {
+            const container = document.getElementById(viewId).parentElement;
+            container.querySelectorAll('.data-view').forEach(v => v.style.display = 'none');
+            container.querySelectorAll('button').forEach(b => b.classList.remove('active'));
+
+            document.getElementById(viewId).style.display = 'block';
+            button.classList.add('active');
+        }
+
+        // Navigate back in hierarchy
+        function navigateBack() {
+            if (hierarchyPath.length > 0) {
+                hierarchyPath.pop();
+                loadHierarchyLevel();
+            }
+        }
+
+        // Navigate to root
+        function navigateToRoot() {
+            hierarchyPath = [];
+            loadHierarchyLevel();
+        }
+
+        // Update breadcrumb
+        function updateBreadcrumb() {
+            const breadcrumb = document.getElementById('navigator-breadcrumb');
+            let html = '<span class="separator">📍</span><span onclick="navigateToRoot()" style="cursor: pointer; font-weight: 600;">Root</span>';
+
+            hierarchyPath.forEach((item, index) => {
+                html += `<span class="separator">›</span><span onclick="navigateToLevel(${index})" style="cursor: pointer;">${item.name}</span>`;
+            });
+
+            breadcrumb.innerHTML = html;
+        }
+
+        // Navigate to specific level
+        async function navigateToLevel(levelIndex) {
+            hierarchyPath = hierarchyPath.slice(0, levelIndex);
+            await loadHierarchyLevel();
+        }
+
+        // Start on load
+        window.addEventListener('load', init);
+    </script>
+</body>
+</html>

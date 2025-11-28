@@ -24,7 +24,16 @@
       "Bash(rustup default:*)",
       "Bash(git commit:*)",
       "Bash(python scripts/fix_imports.py:*)",
+<<<<<<< Updated upstream
       "Bash(python:*)"
+=======
+      "Bash(python:*)",
+      "Bash(echo:*)",
+      "Bash(curl:*)",
+      "Bash(cat:*)",
+      "Bash(find:*)",
+      "Bash(nul)"
+>>>>>>> Stashed changes
     ],
     "deny": [],
     "ask": []

@@ -1,0 +1,973 @@
+{
+  "apqc_id": "9.2.1.1",
+  "apqc_name": "Process invoices and track accounts payable",
+  "category": "9.0 - Manage Financial Resources",
+  "description": "End-to-end invoice processing workflow from receipt to payment scheduling, including validation, matching, approval, and GL posting.",
+  "orchestration_pattern": "sequential",
+  "total_steps": 10,
+  "estimated_duration_seconds": 1800,
+  "compliance_frameworks": ["SOX", "GAAP", "IFRS"],
+  "data_retention_days": 2555,
+
+  "agent_cards": [
+    {
+      "id": "agent_9_2_1_1_step1",
+      "apqc_id": "9.2.1.1",
+      "apqc_name": "Process invoices and track accounts payable",
+      "step_number": 1,
+      "step_name": "Invoice Receipt and Validation",
+      "description": "Receive invoices from multiple channels (email, EDI, portal) and validate basic data completeness and format",
+      "purpose": "Capture invoices and ensure they contain minimum required information before processing",
+      "business_value": "Prevents processing errors and reduces manual data entry by 80%",
+
+      "capabilities": [
+        "receive_invoice_from_email",
+        "receive_invoice_from_edi",
+        "receive_invoice_from_portal",
+        "extract_invoice_data_ocr",
+        "validate_invoice_format",
+        "validate_required_fields",
+        "detect_duplicate_invoice"
+      ],
+
+      "input_schema": [
+        {
+          "name": "invoice_source",
+          "type": "string",
+          "description": "Source channel of the invoice",
+          "required": true,
+          "validation": {"enum": ["email", "edi", "portal", "manual_upload"]},
+          "example": "email"
+        },
+        {
+          "name": "invoice_file",
+          "type": "file",
+          "description": "Invoice document (PDF, image, or EDI file)",
+          "required": true,
+          "validation": {"max_size_mb": 25, "allowed_types": ["pdf", "png", "jpg", "edi", "xml"]}
+        },
+        {
+          "name": "sender_email",
+          "type": "string",
+          "description": "Email address of invoice sender (if email source)",
+          "required": false,
+          "example": "ap@vendor.com"
+        }
+      ],
+
+      "output_schema": [
+        {
+          "name": "invoice_id",
+          "type": "string",
+          "description": "Unique identifier assigned to this invoice",
+          "required": true,
+          "example": "INV-2025-001234"
+        },
+        {
+          "name": "extracted_data",
+          "type": "object",
+          "description": "Structured data extracted from invoice",
+          "required": true,
+          "example": {
+            "invoice_number": "VND-12345",
+            "invoice_date": "2025-11-20",
+            "due_date": "2025-12-20",
+            "vendor_name": "Acme Supplies Inc",
+            "total_amount": 15750.00,
+            "currency": "USD",
+            "line_items": []
+          }
+        },
+        {
+          "name": "validation_status",
+          "type": "string",
+          "description": "Result of validation checks",
+          "required": true,
+          "validation": {"enum": ["valid", "needs_review", "rejected"]},
+          "example": "valid"
+        },
+        {
+          "name": "validation_errors",
+          "type": "array",
+          "description": "List of validation errors if any",
+          "required": false,
+          "example": ["Missing PO number", "Invalid date format"]
+        },
+        {
+          "name": "confidence_score",
+          "type": "number",
+          "description": "OCR extraction confidence (0-100)",
+          "required": true,
+          "example": 95.5
+        }
+      ],
+
+      "required_integrations": ["aws_textract", "aws_s3"],
+      "optional_integrations": ["google_document_ai", "anthropic"],
+
+      "decision_rules": [
+        {
+          "id": "rule_confidence_threshold",
+          "name": "OCR Confidence Threshold",
+          "description": "Minimum confidence score to auto-process",
+          "condition": "confidence_score >= 85",
+          "action_if_true": "proceed_to_next_step",
+          "action_if_false": "route_to_manual_review",
+          "configurable": true,
+          "default_threshold": 85
+        },
+        {
+          "id": "rule_duplicate_check",
+          "name": "Duplicate Invoice Detection",
+          "description": "Check if invoice was already processed",
+          "condition": "duplicate_found == false",
+          "action_if_true": "proceed_to_next_step",
+          "action_if_false": "reject_as_duplicate",
+          "configurable": false
+        }
+      ],
+
+      "ai_config": {
+        "model": "claude-sonnet-4-20250514",
+        "prompt_template": "Extract invoice data from the following document. Return structured JSON with: invoice_number, invoice_date, due_date, vendor_name, vendor_address, line_items (description, quantity, unit_price, total), subtotal, tax, total_amount, currency, payment_terms, po_number (if present).",
+        "max_tokens": 4000,
+        "temperature": 0.1
+      },
+
+      "error_handlers": [
+        {
+          "error_type": "ocr_extraction_failed",
+          "description": "OCR could not extract text from document",
+          "action": "manual_review",
+          "max_retries": 2,
+          "escalation_target": "ap_clerk_queue",
+          "notification_channels": ["slack"]
+        },
+        {
+          "error_type": "invalid_file_format",
+          "description": "Uploaded file is not a supported format",
+          "action": "reject",
+          "max_retries": 0,
+          "escalation_target": null,
+          "notification_channels": ["email"]
+        }
+      ],
+
+      "next_step_on_success": "agent_9_2_1_1_step2",
+      "next_step_on_failure": null,
+      "expected_duration_seconds": 30,
+      "timeout_seconds": 120,
+      "sla_target_seconds": 60,
+      "requires_audit_log": true,
+      "user_configurable_fields": ["decision_rules.rule_confidence_threshold.default_threshold"],
+      "version": "1.0.0",
+      "status": "active"
+    },
+
+    {
+      "id": "agent_9_2_1_1_step2",
+      "apqc_id": "9.2.1.1",
+      "step_number": 2,
+      "step_name": "Vendor Verification",
+      "description": "Verify vendor exists in master data, validate tax ID, and check vendor status",
+      "purpose": "Ensure invoices are only processed for approved, active vendors",
+      "business_value": "Prevents fraud and ensures compliance with vendor management policies",
+
+      "capabilities": [
+        "lookup_vendor_master",
+        "validate_tax_id",
+        "check_vendor_status",
+        "verify_bank_details",
+        "flag_new_vendor"
+      ],
+
+      "input_schema": [
+        {
+          "name": "invoice_id",
+          "type": "string",
+          "description": "Invoice ID from previous step",
+          "required": true
+        },
+        {
+          "name": "vendor_name",
+          "type": "string",
+          "description": "Vendor name from invoice",
+          "required": true
+        },
+        {
+          "name": "vendor_tax_id",
+          "type": "string",
+          "description": "Vendor tax ID (EIN/VAT)",
+          "required": false
+        }
+      ],
+
+      "output_schema": [
+        {
+          "name": "vendor_id",
+          "type": "string",
+          "description": "Internal vendor ID from master data",
+          "required": true,
+          "example": "VND-00123"
+        },
+        {
+          "name": "vendor_status",
+          "type": "string",
+          "description": "Current vendor status",
+          "required": true,
+          "validation": {"enum": ["active", "inactive", "blocked", "pending_approval", "not_found"]},
+          "example": "active"
+        },
+        {
+          "name": "verification_result",
+          "type": "string",
+          "description": "Overall verification outcome",
+          "required": true,
+          "validation": {"enum": ["verified", "needs_review", "rejected"]},
+          "example": "verified"
+        },
+        {
+          "name": "payment_terms",
+          "type": "string",
+          "description": "Standard payment terms for this vendor",
+          "required": false,
+          "example": "NET30"
+        }
+      ],
+
+      "required_integrations": ["netsuite", "quickbooks_online"],
+      "optional_integrations": ["sap_s4hana"],
+
+      "decision_rules": [
+        {
+          "id": "rule_vendor_active",
+          "name": "Vendor Active Status",
+          "description": "Vendor must be active to process invoice",
+          "condition": "vendor_status == 'active'",
+          "action_if_true": "proceed_to_next_step",
+          "action_if_false": "route_to_vendor_management",
+          "configurable": false
+        },
+        {
+          "id": "rule_new_vendor",
+          "name": "New Vendor Handling",
+          "description": "Route new vendors for setup before processing",
+          "condition": "vendor_status != 'not_found'",
+          "action_if_true": "proceed_to_next_step",
+          "action_if_false": "initiate_vendor_onboarding",
+          "configurable": true
+        }
+      ],
+
+      "error_handlers": [
+        {
+          "error_type": "erp_connection_failed",
+          "description": "Cannot connect to ERP system",
+          "action": "retry",
+          "max_retries": 3,
+          "retry_delay_seconds": 60
+        }
+      ],
+
+      "next_step_on_success": "agent_9_2_1_1_step3",
+      "expected_duration_seconds": 15,
+      "timeout_seconds": 60,
+      "requires_audit_log": true,
+      "version": "1.0.0",
+      "status": "active"
+    },
+
+    {
+      "id": "agent_9_2_1_1_step3",
+      "apqc_id": "9.2.1.1",
+      "step_number": 3,
+      "step_name": "Purchase Order Matching (3-way)",
+      "description": "Match invoice to Purchase Order and Goods Receipt for 3-way verification",
+      "purpose": "Ensure invoices are only paid for goods/services that were ordered and received",
+      "business_value": "Prevents overpayment and ensures spend is authorized - critical SOX control",
+
+      "capabilities": [
+        "lookup_purchase_order",
+        "lookup_goods_receipt",
+        "match_line_items",
+        "calculate_matching_score",
+        "identify_discrepancies"
+      ],
+
+      "input_schema": [
+        {
+          "name": "invoice_id",
+          "type": "string",
+          "description": "Invoice ID",
+          "required": true
+        },
+        {
+          "name": "po_number",
+          "type": "string",
+          "description": "Purchase Order number from invoice",
+          "required": true
+        },
+        {
+          "name": "line_items",
+          "type": "array",
+          "description": "Invoice line items to match",
+          "required": true
+        }
+      ],
+
+      "output_schema": [
+        {
+          "name": "match_status",
+          "type": "string",
+          "description": "3-way match result",
+          "required": true,
+          "validation": {"enum": ["full_match", "partial_match", "no_match", "quantity_variance", "price_variance"]},
+          "example": "full_match"
+        },
+        {
+          "name": "po_details",
+          "type": "object",
+          "description": "Purchase order information",
+          "required": true
+        },
+        {
+          "name": "gr_details",
+          "type": "object",
+          "description": "Goods receipt information",
+          "required": true
+        },
+        {
+          "name": "variances",
+          "type": "array",
+          "description": "List of matching variances found",
+          "required": false
+        },
+        {
+          "name": "match_score",
+          "type": "number",
+          "description": "Overall matching score (0-100)",
+          "required": true
+        }
+      ],
+
+      "required_integrations": ["netsuite", "sap_s4hana"],
+
+      "decision_rules": [
+        {
+          "id": "rule_full_match",
+          "name": "Full 3-Way Match",
+          "description": "Invoice fully matches PO and GR",
+          "condition": "match_status == 'full_match'",
+          "action_if_true": "proceed_to_next_step",
+          "action_if_false": "evaluate_variance",
+          "configurable": false
+        }
+      ],
+
+      "next_step_on_success": "agent_9_2_1_1_step4",
+      "expected_duration_seconds": 45,
+      "timeout_seconds": 120,
+      "requires_audit_log": true,
+      "compliance_frameworks": ["SOX"],
+      "version": "1.0.0",
+      "status": "active"
+    },
+
+    {
+      "id": "agent_9_2_1_1_step4",
+      "apqc_id": "9.2.1.1",
+      "step_number": 4,
+      "step_name": "Goods Receipt Verification",
+      "description": "Verify goods/services were received and match invoice quantities",
+      "purpose": "Confirm delivery before authorizing payment",
+      "business_value": "Prevents payment for undelivered goods",
+
+      "capabilities": [
+        "verify_goods_receipt",
+        "check_delivery_status",
+        "validate_quantities",
+        "check_quality_status"
+      ],
+
+      "input_schema": [
+        {
+          "name": "invoice_id",
+          "type": "string",
+          "required": true
+        },
+        {
+          "name": "po_number",
+          "type": "string",
+          "required": true
+        },
+        {
+          "name": "gr_number",
+          "type": "string",
+          "required": false
+        }
+      ],
+
+      "output_schema": [
+        {
+          "name": "receipt_verified",
+          "type": "boolean",
+          "description": "Whether goods receipt is verified",
+          "required": true
+        },
+        {
+          "name": "quantity_matched",
+          "type": "boolean",
+          "description": "Whether quantities match",
+          "required": true
+        },
+        {
+          "name": "quality_approved",
+          "type": "boolean",
+          "description": "Whether quality inspection passed",
+          "required": false
+        }
+      ],
+
+      "required_integrations": ["netsuite"],
+      "next_step_on_success": "agent_9_2_1_1_step5",
+      "expected_duration_seconds": 20,
+      "version": "1.0.0",
+      "status": "active"
+    },
+
+    {
+      "id": "agent_9_2_1_1_step5",
+      "apqc_id": "9.2.1.1",
+      "step_number": 5,
+      "step_name": "Price Variance Check (5% tolerance)",
+      "description": "Check if invoice price is within acceptable variance from PO price",
+      "purpose": "Allow minor price differences while flagging significant variances for review",
+      "business_value": "Balances processing efficiency with cost control - reduces exception handling by 60%",
+
+      "capabilities": [
+        "calculate_price_variance",
+        "apply_tolerance_rules",
+        "escalate_variance"
+      ],
+
+      "input_schema": [
+        {
+          "name": "invoice_id",
+          "type": "string",
+          "required": true
+        },
+        {
+          "name": "invoice_amount",
+          "type": "currency",
+          "required": true
+        },
+        {
+          "name": "po_amount",
+          "type": "currency",
+          "required": true
+        }
+      ],
+
+      "output_schema": [
+        {
+          "name": "variance_percent",
+          "type": "number",
+          "description": "Price variance as percentage",
+          "required": true,
+          "example": 3.5
+        },
+        {
+          "name": "variance_amount",
+          "type": "currency",
+          "description": "Absolute variance amount",
+          "required": true,
+          "example": 525.00
+        },
+        {
+          "name": "within_tolerance",
+          "type": "boolean",
+          "description": "Whether variance is within configured tolerance",
+          "required": true,
+          "example": true
+        },
+        {
+          "name": "approval_required",
+          "type": "boolean",
+          "description": "Whether additional approval is needed",
+          "required": true
+        }
+      ],
+
+      "decision_rules": [
+        {
+          "id": "rule_variance_tolerance",
+          "name": "Price Variance Tolerance",
+          "description": "Maximum allowed price variance percentage",
+          "condition": "variance_percent <= tolerance_threshold",
+          "action_if_true": "auto_approve",
+          "action_if_false": "route_for_approval",
+          "configurable": true,
+          "default_threshold": 5.0
+        },
+        {
+          "id": "rule_variance_amount_cap",
+          "name": "Variance Amount Cap",
+          "description": "Maximum variance amount regardless of percentage",
+          "condition": "variance_amount <= amount_cap",
+          "action_if_true": "proceed",
+          "action_if_false": "require_management_approval",
+          "configurable": true,
+          "default_threshold": 1000.0
+        }
+      ],
+
+      "next_step_on_success": "agent_9_2_1_1_step6",
+      "expected_duration_seconds": 10,
+      "user_configurable_fields": [
+        "decision_rules.rule_variance_tolerance.default_threshold",
+        "decision_rules.rule_variance_amount_cap.default_threshold"
+      ],
+      "version": "1.0.0",
+      "status": "active"
+    },
+
+    {
+      "id": "agent_9_2_1_1_step6",
+      "apqc_id": "9.2.1.1",
+      "step_number": 6,
+      "step_name": "GL Coding Assignment",
+      "description": "Assign General Ledger account codes for expense categorization",
+      "purpose": "Ensure proper expense classification for financial reporting",
+      "business_value": "Automates 90% of GL coding, ensuring consistent categorization",
+
+      "capabilities": [
+        "suggest_gl_codes",
+        "validate_gl_code",
+        "apply_cost_center",
+        "apply_project_code"
+      ],
+
+      "input_schema": [
+        {
+          "name": "invoice_id",
+          "type": "string",
+          "required": true
+        },
+        {
+          "name": "line_items",
+          "type": "array",
+          "required": true
+        },
+        {
+          "name": "vendor_category",
+          "type": "string",
+          "required": false
+        }
+      ],
+
+      "output_schema": [
+        {
+          "name": "gl_assignments",
+          "type": "array",
+          "description": "GL code assignments for each line item",
+          "required": true,
+          "example": [
+            {"line": 1, "gl_code": "6100-100", "cost_center": "CC-MKTG", "amount": 5000.00}
+          ]
+        },
+        {
+          "name": "coding_confidence",
+          "type": "number",
+          "description": "Confidence in GL coding suggestions",
+          "required": true
+        }
+      ],
+
+      "required_integrations": ["netsuite", "quickbooks_online"],
+      "optional_integrations": ["anthropic"],
+
+      "ai_config": {
+        "model": "claude-sonnet-4-20250514",
+        "prompt_template": "Based on the invoice line items and vendor category, suggest appropriate GL codes from the chart of accounts. Consider: expense type, department, project associations.",
+        "temperature": 0.2
+      },
+
+      "next_step_on_success": "agent_9_2_1_1_step7",
+      "expected_duration_seconds": 20,
+      "version": "1.0.0",
+      "status": "active"
+    },
+
+    {
+      "id": "agent_9_2_1_1_step7",
+      "apqc_id": "9.2.1.1",
+      "step_number": 7,
+      "step_name": "Approval Workflow",
+      "description": "Route invoice for appropriate approval based on amount and type",
+      "purpose": "Ensure proper authorization before payment commitment",
+      "business_value": "Enforces spending controls and segregation of duties",
+
+      "capabilities": [
+        "determine_approval_matrix",
+        "route_to_approver",
+        "send_approval_request",
+        "track_approval_status",
+        "handle_delegation"
+      ],
+
+      "input_schema": [
+        {
+          "name": "invoice_id",
+          "type": "string",
+          "required": true
+        },
+        {
+          "name": "invoice_amount",
+          "type": "currency",
+          "required": true
+        },
+        {
+          "name": "cost_center",
+          "type": "string",
+          "required": true
+        },
+        {
+          "name": "expense_type",
+          "type": "string",
+          "required": false
+        }
+      ],
+
+      "output_schema": [
+        {
+          "name": "approval_status",
+          "type": "string",
+          "description": "Current approval status",
+          "required": true,
+          "validation": {"enum": ["approved", "rejected", "pending", "escalated"]}
+        },
+        {
+          "name": "approver_id",
+          "type": "string",
+          "description": "ID of the approver",
+          "required": true
+        },
+        {
+          "name": "approval_timestamp",
+          "type": "datetime",
+          "required": false
+        },
+        {
+          "name": "approval_notes",
+          "type": "string",
+          "required": false
+        }
+      ],
+
+      "required_integrations": ["slack", "microsoft_teams", "sendgrid"],
+
+      "decision_rules": [
+        {
+          "id": "rule_approval_matrix",
+          "name": "Approval Authority Matrix",
+          "description": "Route based on amount thresholds",
+          "condition": "amount <= manager_threshold",
+          "action_if_true": "route_to_manager",
+          "action_if_false": "route_to_director",
+          "configurable": true,
+          "default_threshold": 10000.0
+        },
+        {
+          "id": "rule_auto_approve",
+          "name": "Auto-Approval Threshold",
+          "description": "Skip approval for small recurring invoices",
+          "condition": "amount <= auto_approve_threshold AND vendor_is_trusted",
+          "action_if_true": "auto_approve",
+          "action_if_false": "require_approval",
+          "configurable": true,
+          "default_threshold": 500.0
+        }
+      ],
+
+      "error_handlers": [
+        {
+          "error_type": "approval_timeout",
+          "description": "Approver did not respond in time",
+          "action": "escalate",
+          "max_retries": 2,
+          "retry_delay_seconds": 86400,
+          "escalation_target": "backup_approver",
+          "notification_channels": ["email", "slack"]
+        }
+      ],
+
+      "next_step_on_success": "agent_9_2_1_1_step8",
+      "expected_duration_seconds": 3600,
+      "timeout_seconds": 259200,
+      "sla_target_seconds": 86400,
+      "user_configurable_fields": [
+        "decision_rules.rule_approval_matrix.default_threshold",
+        "decision_rules.rule_auto_approve.default_threshold"
+      ],
+      "version": "1.0.0",
+      "status": "active"
+    },
+
+    {
+      "id": "agent_9_2_1_1_step8",
+      "apqc_id": "9.2.1.1",
+      "step_number": 8,
+      "step_name": "Post to Accounts Payable",
+      "description": "Create AP voucher and post to Accounts Payable ledger",
+      "purpose": "Record the liability in the financial system",
+      "business_value": "Creates accurate financial records for reporting and cash management",
+
+      "capabilities": [
+        "create_ap_voucher",
+        "post_to_ledger",
+        "update_vendor_balance",
+        "calculate_due_date"
+      ],
+
+      "input_schema": [
+        {
+          "name": "invoice_id",
+          "type": "string",
+          "required": true
+        },
+        {
+          "name": "vendor_id",
+          "type": "string",
+          "required": true
+        },
+        {
+          "name": "gl_assignments",
+          "type": "array",
+          "required": true
+        },
+        {
+          "name": "payment_terms",
+          "type": "string",
+          "required": true
+        }
+      ],
+
+      "output_schema": [
+        {
+          "name": "voucher_number",
+          "type": "string",
+          "description": "AP voucher number",
+          "required": true,
+          "example": "AP-2025-00456"
+        },
+        {
+          "name": "posting_date",
+          "type": "date",
+          "required": true
+        },
+        {
+          "name": "due_date",
+          "type": "date",
+          "description": "Payment due date",
+          "required": true
+        },
+        {
+          "name": "posting_status",
+          "type": "string",
+          "validation": {"enum": ["posted", "pending", "failed"]},
+          "required": true
+        }
+      ],
+
+      "required_integrations": ["netsuite", "quickbooks_online", "sap_s4hana"],
+
+      "next_step_on_success": "agent_9_2_1_1_step9",
+      "expected_duration_seconds": 15,
+      "requires_audit_log": true,
+      "compliance_frameworks": ["SOX", "GAAP"],
+      "version": "1.0.0",
+      "status": "active"
+    },
+
+    {
+      "id": "agent_9_2_1_1_step9",
+      "apqc_id": "9.2.1.1",
+      "step_number": 9,
+      "step_name": "Payment Scheduling",
+      "description": "Schedule payment based on terms, cash position, and discount opportunities",
+      "purpose": "Optimize cash flow while maintaining vendor relationships",
+      "business_value": "Captures early payment discounts and optimizes working capital",
+
+      "capabilities": [
+        "calculate_payment_date",
+        "evaluate_discount",
+        "check_cash_position",
+        "add_to_payment_batch"
+      ],
+
+      "input_schema": [
+        {
+          "name": "voucher_number",
+          "type": "string",
+          "required": true
+        },
+        {
+          "name": "invoice_amount",
+          "type": "currency",
+          "required": true
+        },
+        {
+          "name": "due_date",
+          "type": "date",
+          "required": true
+        },
+        {
+          "name": "payment_terms",
+          "type": "string",
+          "required": true,
+          "example": "2/10 NET 30"
+        }
+      ],
+
+      "output_schema": [
+        {
+          "name": "scheduled_payment_date",
+          "type": "date",
+          "required": true
+        },
+        {
+          "name": "payment_amount",
+          "type": "currency",
+          "description": "Amount to pay (may include discount)",
+          "required": true
+        },
+        {
+          "name": "discount_taken",
+          "type": "boolean",
+          "required": true
+        },
+        {
+          "name": "discount_amount",
+          "type": "currency",
+          "required": false
+        },
+        {
+          "name": "payment_batch_id",
+          "type": "string",
+          "required": true
+        }
+      ],
+
+      "decision_rules": [
+        {
+          "id": "rule_early_payment_discount",
+          "name": "Early Payment Discount",
+          "description": "Take discount if APR equivalent exceeds threshold",
+          "condition": "discount_apr >= minimum_apr_threshold",
+          "action_if_true": "schedule_early_payment",
+          "action_if_false": "schedule_on_due_date",
+          "configurable": true,
+          "default_threshold": 18.0
+        }
+      ],
+
+      "required_integrations": ["netsuite", "plaid"],
+      "next_step_on_success": "agent_9_2_1_1_step10",
+      "expected_duration_seconds": 10,
+      "version": "1.0.0",
+      "status": "active"
+    },
+
+    {
+      "id": "agent_9_2_1_1_step10",
+      "apqc_id": "9.2.1.1",
+      "step_number": 10,
+      "step_name": "Audit Trail Recording",
+      "description": "Record complete audit trail of all processing steps and decisions",
+      "purpose": "Maintain compliance records and enable process analysis",
+      "business_value": "Ensures audit readiness and provides data for process improvement",
+
+      "capabilities": [
+        "record_audit_log",
+        "capture_timestamps",
+        "store_documents",
+        "generate_audit_report"
+      ],
+
+      "input_schema": [
+        {
+          "name": "invoice_id",
+          "type": "string",
+          "required": true
+        },
+        {
+          "name": "processing_history",
+          "type": "array",
+          "description": "Complete history of all processing steps",
+          "required": true
+        }
+      ],
+
+      "output_schema": [
+        {
+          "name": "audit_record_id",
+          "type": "string",
+          "required": true
+        },
+        {
+          "name": "processing_complete",
+          "type": "boolean",
+          "required": true
+        },
+        {
+          "name": "total_processing_time",
+          "type": "number",
+          "description": "Total processing time in seconds",
+          "required": true
+        },
+        {
+          "name": "audit_trail_url",
+          "type": "string",
+          "description": "URL to full audit trail document",
+          "required": true
+        }
+      ],
+
+      "required_integrations": ["aws_s3", "google_cloud_storage"],
+
+      "next_step_on_success": null,
+      "expected_duration_seconds": 5,
+      "requires_audit_log": true,
+      "compliance_frameworks": ["SOX", "GAAP", "IFRS"],
+      "data_retention_days": 2555,
+      "version": "1.0.0",
+      "status": "active"
+    }
+  ],
+
+  "integration_summary": {
+    "required": [
+      {"id": "aws_textract", "purpose": "Invoice OCR extraction"},
+      {"id": "aws_s3", "purpose": "Document storage"},
+      {"id": "netsuite", "purpose": "ERP - vendor master, PO, GL posting"},
+      {"id": "slack", "purpose": "Approval notifications"},
+      {"id": "sendgrid", "purpose": "Email notifications"}
+    ],
+    "optional": [
+      {"id": "quickbooks_online", "purpose": "Alternative ERP"},
+      {"id": "sap_s4hana", "purpose": "Alternative ERP"},
+      {"id": "anthropic", "purpose": "AI-powered GL coding"},
+      {"id": "google_document_ai", "purpose": "Alternative OCR"},
+      {"id": "microsoft_teams", "purpose": "Alternative notifications"},
+      {"id": "plaid", "purpose": "Cash position checking"}
+    ]
+  },
+
+  "kpis": [
+    {"name": "Invoice Processing Time", "target": "< 48 hours", "current": null},
+    {"name": "Straight-Through Processing Rate", "target": "> 70%", "current": null},
+    {"name": "First-Time Match Rate", "target": "> 85%", "current": null},
+    {"name": "Early Payment Discount Capture", "target": "> 90%", "current": null},
+    {"name": "Exception Rate", "target": "< 15%", "current": null}
+  ]
+}

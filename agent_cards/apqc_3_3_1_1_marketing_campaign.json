@@ -1,0 +1,896 @@
+{
+  "apqc_id": "3.3.1.1",
+  "apqc_name": "Develop and execute marketing campaigns",
+  "category": "3.0 - Market and Sell Products and Services",
+  "description": "End-to-end marketing campaign workflow from strategy through execution and measurement, including multi-channel orchestration, content management, and ROI analysis.",
+  "orchestration_pattern": "parallel",
+  "total_steps": 7,
+  "estimated_duration_seconds": 604800,
+  "compliance_frameworks": ["GDPR", "CCPA", "CAN-SPAM", "TCPA"],
+  "data_retention_days": 1095,
+
+  "agent_cards": [
+    {
+      "id": "agent_3_3_1_1_step1",
+      "apqc_id": "3.3.1.1",
+      "step_number": 1,
+      "step_name": "Campaign Strategy and Planning",
+      "description": "Define campaign objectives, target audience, and strategy",
+      "purpose": "Establish clear goals and approach for the campaign",
+      "business_value": "Align marketing activities with business objectives",
+
+      "capabilities": [
+        "define_objectives",
+        "identify_target_audience",
+        "select_channels",
+        "set_budget",
+        "create_timeline",
+        "define_success_metrics"
+      ],
+
+      "input_schema": [
+        {
+          "name": "campaign_name",
+          "type": "string",
+          "required": true
+        },
+        {
+          "name": "campaign_type",
+          "type": "string",
+          "required": true,
+          "validation": {"enum": ["brand_awareness", "lead_generation", "product_launch", "event_promotion", "retention", "upsell"]}
+        },
+        {
+          "name": "business_objective",
+          "type": "string",
+          "required": true
+        },
+        {
+          "name": "budget",
+          "type": "currency",
+          "required": true
+        },
+        {
+          "name": "start_date",
+          "type": "date",
+          "required": true
+        },
+        {
+          "name": "end_date",
+          "type": "date",
+          "required": true
+        },
+        {
+          "name": "target_segments",
+          "type": "array",
+          "required": true
+        }
+      ],
+
+      "output_schema": [
+        {
+          "name": "campaign_id",
+          "type": "string",
+          "required": true,
+          "example": "CAMP-2025-Q1-001"
+        },
+        {
+          "name": "campaign_brief",
+          "type": "object",
+          "required": true
+        },
+        {
+          "name": "target_audience_size",
+          "type": "integer",
+          "required": true
+        },
+        {
+          "name": "channel_mix",
+          "type": "array",
+          "required": true
+        },
+        {
+          "name": "kpi_targets",
+          "type": "object",
+          "required": true,
+          "example": {"leads": 5000, "cpl": 50, "conversion_rate": 0.03}
+        },
+        {
+          "name": "approval_status",
+          "type": "string",
+          "required": true
+        }
+      ],
+
+      "required_integrations": [
+        {"system": "Marketing Platform", "type": "bidirectional", "protocol": "REST API", "examples": ["Marketo", "HubSpot", "Salesforce Marketing Cloud"]},
+        {"system": "CRM", "type": "read", "protocol": "API", "examples": ["Salesforce", "Dynamics 365"]},
+        {"system": "CDP", "type": "read", "protocol": "API", "examples": ["Segment", "mParticle", "Tealium"]},
+        {"system": "Project Management", "type": "bidirectional", "protocol": "API", "examples": ["Asana", "Monday", "Wrike"]}
+      ],
+
+      "decision_rules": [
+        {
+          "rule_id": "DR-MK-001",
+          "name": "Budget Threshold",
+          "condition": "budget > 100000",
+          "action": "require_executive_approval",
+          "priority": 1
+        },
+        {
+          "rule_id": "DR-MK-002",
+          "name": "Multi-Channel Required",
+          "condition": "campaign_type == 'product_launch'",
+          "action": "enforce_minimum_3_channels",
+          "priority": 2
+        },
+        {
+          "rule_id": "DR-MK-003",
+          "name": "Seasonal Timing",
+          "condition": "target_segments INCLUDES 'retail' AND date IN holiday_season",
+          "action": "flag_for_competitive_analysis",
+          "priority": 2
+        }
+      ],
+
+      "error_handlers": [
+        {
+          "error_type": "insufficient_audience_size",
+          "severity": "high",
+          "action": "expand_targeting_criteria",
+          "notification": ["campaign_manager"]
+        },
+        {
+          "error_type": "budget_conflict",
+          "severity": "medium",
+          "action": "escalate_to_marketing_director",
+          "notification": ["marketing_director"]
+        }
+      ]
+    },
+
+    {
+      "id": "agent_3_3_1_1_step2",
+      "apqc_id": "3.3.1.1",
+      "step_number": 2,
+      "step_name": "Audience Segmentation",
+      "description": "Build and refine target audience segments",
+      "purpose": "Identify and qualify the right prospects for the campaign",
+      "business_value": "Improve targeting precision and reduce waste",
+
+      "capabilities": [
+        "build_segment",
+        "apply_filters",
+        "calculate_tam",
+        "exclude_suppressions",
+        "score_prospects",
+        "validate_data_quality"
+      ],
+
+      "input_schema": [
+        {
+          "name": "campaign_id",
+          "type": "string",
+          "required": true
+        },
+        {
+          "name": "segment_criteria",
+          "type": "object",
+          "required": true
+        },
+        {
+          "name": "suppression_lists",
+          "type": "array",
+          "required": true
+        },
+        {
+          "name": "enrichment_sources",
+          "type": "array",
+          "required": false
+        }
+      ],
+
+      "output_schema": [
+        {
+          "name": "segment_id",
+          "type": "string",
+          "required": true
+        },
+        {
+          "name": "segment_size",
+          "type": "integer",
+          "required": true
+        },
+        {
+          "name": "segment_breakdown",
+          "type": "object",
+          "required": true
+        },
+        {
+          "name": "data_quality_score",
+          "type": "number",
+          "required": true
+        },
+        {
+          "name": "estimated_reach",
+          "type": "object",
+          "required": true
+        }
+      ],
+
+      "required_integrations": [
+        {"system": "CDP", "type": "bidirectional", "protocol": "API", "examples": ["Segment", "mParticle", "Tealium"]},
+        {"system": "CRM", "type": "read", "protocol": "API"},
+        {"system": "Data Enrichment", "type": "read", "protocol": "API", "examples": ["ZoomInfo", "Clearbit", "D&B"]},
+        {"system": "Marketing Automation", "type": "bidirectional", "protocol": "API"}
+      ],
+
+      "decision_rules": [
+        {
+          "rule_id": "DR-MK-010",
+          "name": "Minimum Segment Size",
+          "condition": "segment_size < 1000",
+          "action": "warn_and_suggest_expansion",
+          "priority": 2
+        },
+        {
+          "rule_id": "DR-MK-011",
+          "name": "GDPR Consent Check",
+          "condition": "segment.region == 'EU'",
+          "action": "filter_to_consented_only",
+          "priority": 1
+        },
+        {
+          "rule_id": "DR-MK-012",
+          "name": "Recent Engagement",
+          "condition": "last_engagement > 180_days",
+          "action": "apply_reactivation_treatment",
+          "priority": 2
+        }
+      ],
+
+      "error_handlers": [
+        {
+          "error_type": "data_sync_lag",
+          "severity": "medium",
+          "action": "use_cached_with_timestamp",
+          "notification": ["data_ops"]
+        },
+        {
+          "error_type": "consent_data_missing",
+          "severity": "high",
+          "action": "exclude_from_segment",
+          "notification": ["privacy_team"]
+        }
+      ]
+    },
+
+    {
+      "id": "agent_3_3_1_1_step3",
+      "apqc_id": "3.3.1.1",
+      "step_number": 3,
+      "step_name": "Content Creation and Approval",
+      "description": "Create, review, and approve campaign content across channels",
+      "purpose": "Produce compelling content that resonates with target audience",
+      "business_value": "Drive engagement and conversion with quality content",
+
+      "capabilities": [
+        "create_email_content",
+        "create_landing_page",
+        "create_ad_creative",
+        "create_social_content",
+        "manage_approval_workflow",
+        "version_control"
+      ],
+
+      "input_schema": [
+        {
+          "name": "campaign_id",
+          "type": "string",
+          "required": true
+        },
+        {
+          "name": "content_type",
+          "type": "string",
+          "required": true,
+          "validation": {"enum": ["email", "landing_page", "display_ad", "social_post", "video", "webinar"]}
+        },
+        {
+          "name": "content_brief",
+          "type": "object",
+          "required": true
+        },
+        {
+          "name": "brand_guidelines",
+          "type": "object",
+          "required": true
+        }
+      ],
+
+      "output_schema": [
+        {
+          "name": "content_id",
+          "type": "string",
+          "required": true
+        },
+        {
+          "name": "content_assets",
+          "type": "array",
+          "required": true
+        },
+        {
+          "name": "approval_status",
+          "type": "string",
+          "required": true,
+          "validation": {"enum": ["draft", "in_review", "approved", "rejected", "published"]}
+        },
+        {
+          "name": "versions",
+          "type": "array",
+          "required": true
+        },
+        {
+          "name": "personalization_fields",
+          "type": "array",
+          "required": false
+        }
+      ],
+
+      "required_integrations": [
+        {"system": "DAM", "type": "bidirectional", "protocol": "API", "examples": ["Bynder", "Brandfolder", "Adobe AEM"]},
+        {"system": "CMS", "type": "bidirectional", "protocol": "API", "examples": ["WordPress", "Contentful", "Adobe Experience Manager"]},
+        {"system": "Email Builder", "type": "bidirectional", "protocol": "API"},
+        {"system": "Workflow/Approval", "type": "bidirectional", "protocol": "API", "examples": ["Workfront", "Wrike"]}
+      ],
+
+      "decision_rules": [
+        {
+          "rule_id": "DR-MK-020",
+          "name": "Legal Review Required",
+          "condition": "content CONTAINS ['pricing', 'guarantee', 'testimonial', 'claim']",
+          "action": "route_to_legal_review",
+          "priority": 1
+        },
+        {
+          "rule_id": "DR-MK-021",
+          "name": "Brand Compliance Check",
+          "condition": "content_type IN ['display_ad', 'social_post']",
+          "action": "run_brand_compliance_scan",
+          "priority": 2
+        },
+        {
+          "rule_id": "DR-MK-022",
+          "name": "A/B Test Variants",
+          "condition": "campaign.test_enabled == true",
+          "action": "create_variant_versions",
+          "priority": 2
+        }
+      ],
+
+      "error_handlers": [
+        {
+          "error_type": "brand_violation",
+          "severity": "high",
+          "action": "block_publication_and_notify",
+          "notification": ["brand_team", "campaign_manager"]
+        },
+        {
+          "error_type": "approval_timeout",
+          "severity": "medium",
+          "action": "escalate_to_manager",
+          "notification": ["marketing_director"]
+        }
+      ]
+    },
+
+    {
+      "id": "agent_3_3_1_1_step4",
+      "apqc_id": "3.3.1.1",
+      "step_number": 4,
+      "step_name": "Channel Execution",
+      "description": "Deploy campaign across all selected channels",
+      "purpose": "Launch coordinated multi-channel campaign execution",
+      "business_value": "Maximize reach and frequency across touchpoints",
+
+      "capabilities": [
+        "deploy_email_campaign",
+        "launch_paid_media",
+        "publish_social_content",
+        "activate_retargeting",
+        "sync_with_sales",
+        "coordinate_timing"
+      ],
+
+      "input_schema": [
+        {
+          "name": "campaign_id",
+          "type": "string",
+          "required": true
+        },
+        {
+          "name": "channels",
+          "type": "array",
+          "required": true
+        },
+        {
+          "name": "launch_schedule",
+          "type": "object",
+          "required": true
+        },
+        {
+          "name": "content_mapping",
+          "type": "object",
+          "required": true
+        }
+      ],
+
+      "output_schema": [
+        {
+          "name": "execution_id",
+          "type": "string",
+          "required": true
+        },
+        {
+          "name": "channel_status",
+          "type": "object",
+          "required": true
+        },
+        {
+          "name": "delivery_stats",
+          "type": "object",
+          "required": true
+        },
+        {
+          "name": "issues",
+          "type": "array",
+          "required": true
+        }
+      ],
+
+      "required_integrations": [
+        {"system": "Marketing Automation", "type": "execute", "protocol": "API", "examples": ["Marketo", "HubSpot", "Pardot"]},
+        {"system": "Ad Platforms", "type": "bidirectional", "protocol": "API", "examples": ["Google Ads", "Meta Ads", "LinkedIn Ads", "The Trade Desk"]},
+        {"system": "Social Management", "type": "execute", "protocol": "API", "examples": ["Sprout Social", "Hootsuite", "Buffer"]},
+        {"system": "CRM", "type": "bidirectional", "protocol": "API"}
+      ],
+
+      "decision_rules": [
+        {
+          "rule_id": "DR-MK-030",
+          "name": "Staggered Launch",
+          "condition": "audience_size > 100000",
+          "action": "implement_staged_rollout",
+          "priority": 2
+        },
+        {
+          "rule_id": "DR-MK-031",
+          "name": "Time Zone Optimization",
+          "condition": "channel == 'email'",
+          "action": "send_at_optimal_time_by_timezone",
+          "priority": 2
+        },
+        {
+          "rule_id": "DR-MK-032",
+          "name": "Budget Pacing",
+          "condition": "channel IN ['paid_search', 'display', 'social_ads']",
+          "action": "enable_budget_pacing",
+          "priority": 1
+        }
+      ],
+
+      "error_handlers": [
+        {
+          "error_type": "channel_api_failure",
+          "severity": "high",
+          "action": "retry_with_exponential_backoff",
+          "notification": ["campaign_manager", "martech_team"]
+        },
+        {
+          "error_type": "ad_rejected",
+          "severity": "high",
+          "action": "review_and_revise_creative",
+          "notification": ["creative_team", "campaign_manager"]
+        }
+      ]
+    },
+
+    {
+      "id": "agent_3_3_1_1_step5",
+      "apqc_id": "3.3.1.1",
+      "step_number": 5,
+      "step_name": "Lead Capture and Routing",
+      "description": "Capture leads from campaign and route to appropriate destinations",
+      "purpose": "Convert campaign engagement into qualified leads",
+      "business_value": "Maximize conversion from campaign investment",
+
+      "capabilities": [
+        "capture_form_submissions",
+        "score_leads",
+        "enrich_lead_data",
+        "route_to_sales",
+        "trigger_nurture_programs",
+        "deduplicate_leads"
+      ],
+
+      "input_schema": [
+        {
+          "name": "campaign_id",
+          "type": "string",
+          "required": true
+        },
+        {
+          "name": "lead_data",
+          "type": "object",
+          "required": true
+        },
+        {
+          "name": "source",
+          "type": "string",
+          "required": true
+        },
+        {
+          "name": "utm_parameters",
+          "type": "object",
+          "required": false
+        }
+      ],
+
+      "output_schema": [
+        {
+          "name": "lead_id",
+          "type": "string",
+          "required": true
+        },
+        {
+          "name": "lead_score",
+          "type": "integer",
+          "required": true
+        },
+        {
+          "name": "qualification_status",
+          "type": "string",
+          "required": true,
+          "validation": {"enum": ["mql", "sal", "sql", "nurture", "disqualified"]}
+        },
+        {
+          "name": "routing_destination",
+          "type": "string",
+          "required": true
+        },
+        {
+          "name": "enrichment_data",
+          "type": "object",
+          "required": false
+        }
+      ],
+
+      "required_integrations": [
+        {"system": "Marketing Automation", "type": "bidirectional", "protocol": "API"},
+        {"system": "CRM", "type": "bidirectional", "protocol": "API"},
+        {"system": "Lead Enrichment", "type": "enrich", "protocol": "API", "examples": ["Clearbit", "ZoomInfo", "6sense"]},
+        {"system": "Sales Engagement", "type": "bidirectional", "protocol": "API", "examples": ["Outreach", "SalesLoft", "Groove"]}
+      ],
+
+      "decision_rules": [
+        {
+          "rule_id": "DR-MK-040",
+          "name": "Hot Lead Routing",
+          "condition": "lead_score > 80 AND behavior_score > 70",
+          "action": "route_immediately_to_sales",
+          "priority": 1
+        },
+        {
+          "rule_id": "DR-MK-041",
+          "name": "Nurture Track",
+          "condition": "lead_score BETWEEN 40 AND 80",
+          "action": "enroll_in_nurture_program",
+          "priority": 2
+        },
+        {
+          "rule_id": "DR-MK-042",
+          "name": "Territory Assignment",
+          "condition": "lead.company_size > 1000 OR lead.revenue > 50000000",
+          "action": "route_to_enterprise_team",
+          "priority": 1
+        }
+      ],
+
+      "error_handlers": [
+        {
+          "error_type": "duplicate_lead",
+          "severity": "low",
+          "action": "merge_with_existing",
+          "notification": ["marketing_ops"]
+        },
+        {
+          "error_type": "enrichment_failed",
+          "severity": "low",
+          "action": "proceed_without_enrichment",
+          "notification": ["data_team"]
+        }
+      ]
+    },
+
+    {
+      "id": "agent_3_3_1_1_step6",
+      "apqc_id": "3.3.1.1",
+      "step_number": 6,
+      "step_name": "Campaign Optimization",
+      "description": "Monitor performance and optimize campaign in real-time",
+      "purpose": "Maximize campaign effectiveness through continuous improvement",
+      "business_value": "Improve ROI through data-driven optimization",
+
+      "capabilities": [
+        "monitor_real_time_metrics",
+        "run_ab_tests",
+        "optimize_bids",
+        "adjust_targeting",
+        "reallocate_budget",
+        "pause_underperformers"
+      ],
+
+      "input_schema": [
+        {
+          "name": "campaign_id",
+          "type": "string",
+          "required": true
+        },
+        {
+          "name": "optimization_type",
+          "type": "string",
+          "required": true,
+          "validation": {"enum": ["bid_optimization", "audience_optimization", "creative_optimization", "budget_reallocation"]}
+        },
+        {
+          "name": "current_metrics",
+          "type": "object",
+          "required": true
+        }
+      ],
+
+      "output_schema": [
+        {
+          "name": "optimization_id",
+          "type": "string",
+          "required": true
+        },
+        {
+          "name": "changes_made",
+          "type": "array",
+          "required": true
+        },
+        {
+          "name": "expected_improvement",
+          "type": "object",
+          "required": true
+        },
+        {
+          "name": "ab_test_results",
+          "type": "object",
+          "required": false
+        }
+      ],
+
+      "required_integrations": [
+        {"system": "Ad Platforms", "type": "bidirectional", "protocol": "API"},
+        {"system": "Analytics Platform", "type": "read", "protocol": "API", "examples": ["Google Analytics", "Adobe Analytics"]},
+        {"system": "A/B Testing", "type": "bidirectional", "protocol": "API", "examples": ["Optimizely", "VWO", "Google Optimize"]},
+        {"system": "Attribution Platform", "type": "read", "protocol": "API", "examples": ["Bizible", "Attribution"]}
+      ],
+
+      "decision_rules": [
+        {
+          "rule_id": "DR-MK-050",
+          "name": "Pause Low Performers",
+          "condition": "ad_ctr < 0.5% AND impressions > 10000",
+          "action": "pause_creative_and_notify",
+          "priority": 1
+        },
+        {
+          "rule_id": "DR-MK-051",
+          "name": "Scale Winners",
+          "condition": "ad_roas > 3x AND budget_remaining > 20%",
+          "action": "increase_budget_allocation",
+          "priority": 1
+        },
+        {
+          "rule_id": "DR-MK-052",
+          "name": "A/B Test Conclusion",
+          "condition": "statistical_significance >= 95%",
+          "action": "declare_winner_and_implement",
+          "priority": 1
+        }
+      ],
+
+      "error_handlers": [
+        {
+          "error_type": "insufficient_data",
+          "severity": "low",
+          "action": "continue_collecting_and_retry",
+          "notification": ["campaign_manager"]
+        },
+        {
+          "error_type": "budget_limit_reached",
+          "severity": "medium",
+          "action": "pause_and_request_approval",
+          "notification": ["marketing_director"]
+        }
+      ]
+    },
+
+    {
+      "id": "agent_3_3_1_1_step7",
+      "apqc_id": "3.3.1.1",
+      "step_number": 7,
+      "step_name": "Campaign Analytics and Reporting",
+      "description": "Measure campaign performance and generate insights",
+      "purpose": "Evaluate campaign success and inform future strategies",
+      "business_value": "Demonstrate ROI and improve future campaigns",
+
+      "capabilities": [
+        "aggregate_metrics",
+        "calculate_roi",
+        "attribution_analysis",
+        "generate_reports",
+        "benchmark_performance",
+        "identify_insights"
+      ],
+
+      "input_schema": [
+        {
+          "name": "campaign_id",
+          "type": "string",
+          "required": true
+        },
+        {
+          "name": "report_type",
+          "type": "string",
+          "required": true,
+          "validation": {"enum": ["executive_summary", "channel_performance", "conversion_analysis", "roi_analysis", "attribution_report"]}
+        },
+        {
+          "name": "date_range",
+          "type": "object",
+          "required": true
+        }
+      ],
+
+      "output_schema": [
+        {
+          "name": "report_id",
+          "type": "string",
+          "required": true
+        },
+        {
+          "name": "total_spend",
+          "type": "currency",
+          "required": true
+        },
+        {
+          "name": "total_leads",
+          "type": "integer",
+          "required": true
+        },
+        {
+          "name": "cost_per_lead",
+          "type": "currency",
+          "required": true
+        },
+        {
+          "name": "pipeline_generated",
+          "type": "currency",
+          "required": true
+        },
+        {
+          "name": "roi",
+          "type": "number",
+          "required": true
+        },
+        {
+          "name": "channel_attribution",
+          "type": "object",
+          "required": true
+        },
+        {
+          "name": "recommendations",
+          "type": "array",
+          "required": true
+        }
+      ],
+
+      "required_integrations": [
+        {"system": "Marketing Analytics", "type": "read", "protocol": "API", "examples": ["Marketo Analytics", "HubSpot Reports"]},
+        {"system": "Attribution Platform", "type": "read", "protocol": "API"},
+        {"system": "CRM", "type": "read", "protocol": "API"},
+        {"system": "BI Platform", "type": "publish", "protocol": "API", "examples": ["Tableau", "Looker", "Power BI"]}
+      ],
+
+      "decision_rules": [
+        {
+          "rule_id": "DR-MK-060",
+          "name": "Goal Achieved",
+          "condition": "leads_generated >= target_leads",
+          "action": "flag_as_successful",
+          "priority": 1
+        },
+        {
+          "rule_id": "DR-MK-061",
+          "name": "Underperformance Alert",
+          "condition": "roi < 0.5 AND spend > 50% of budget",
+          "action": "recommend_campaign_review",
+          "priority": 1
+        },
+        {
+          "rule_id": "DR-MK-062",
+          "name": "Best Practice Capture",
+          "condition": "campaign_performance > benchmark * 1.2",
+          "action": "document_as_best_practice",
+          "priority": 2
+        }
+      ],
+
+      "error_handlers": [
+        {
+          "error_type": "attribution_data_incomplete",
+          "severity": "medium",
+          "action": "use_last_touch_fallback",
+          "notification": ["marketing_ops"]
+        },
+        {
+          "error_type": "crm_sync_delay",
+          "severity": "low",
+          "action": "note_data_lag_in_report",
+          "notification": ["reporting_team"]
+        }
+      ]
+    }
+  ],
+
+  "integration_summary": {
+    "marketing_automation": ["Marketo", "HubSpot", "Pardot", "Eloqua", "Salesforce Marketing Cloud"],
+    "ad_platforms": ["Google Ads", "Meta Ads", "LinkedIn Ads", "The Trade Desk", "Amazon Ads"],
+    "analytics": ["Google Analytics", "Adobe Analytics", "Mixpanel", "Amplitude"],
+    "crm": ["Salesforce", "Microsoft Dynamics 365", "HubSpot CRM"],
+    "cdp": ["Segment", "mParticle", "Tealium", "Adobe Real-Time CDP"],
+    "content_management": ["Adobe Experience Manager", "Contentful", "WordPress", "Bynder"]
+  },
+
+  "kpis": [
+    {
+      "name": "Marketing Qualified Leads",
+      "description": "Number of leads meeting MQL criteria",
+      "target": "Campaign specific",
+      "measurement": "count(leads WHERE score >= mql_threshold)"
+    },
+    {
+      "name": "Cost Per Lead",
+      "description": "Total campaign spend divided by leads generated",
+      "target": "< $50 (B2B)",
+      "measurement": "total_spend / total_leads"
+    },
+    {
+      "name": "Marketing ROI",
+      "description": "Revenue attributed to marketing divided by spend",
+      "target": "> 5:1",
+      "measurement": "(attributed_revenue - spend) / spend"
+    },
+    {
+      "name": "Conversion Rate",
+      "description": "Percentage of visitors who become leads",
+      "target": "> 3%",
+      "measurement": "leads / unique_visitors"
+    },
+    {
+      "name": "Email Click-Through Rate",
+      "description": "Percentage of email recipients who click",
+      "target": "> 2%",
+      "measurement": "unique_clicks / delivered"
+    },
+    {
+      "name": "Ad Click-Through Rate",
+      "description": "Percentage of ad impressions that result in clicks",
+      "target": "> 1% (search), > 0.5% (display)",
+      "measurement": "clicks / impressions"
+    }
+  ]
+}

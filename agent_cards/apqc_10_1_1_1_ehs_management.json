@@ -1,0 +1,350 @@
+{
+  "apqc_id": "10.1.1.1",
+  "apqc_name": "Manage environmental health and safety",
+  "category": "10.0 - Manage Environmental Health and Safety",
+  "description": "End-to-end EHS management workflow from risk assessment through compliance reporting, including incident management, training, audits, and sustainability initiatives.",
+  "orchestration_pattern": "event_driven",
+  "total_steps": 8,
+  "estimated_duration_seconds": 172800,
+  "compliance_frameworks": ["OSHA", "EPA", "ISO 14001", "ISO 45001", "REACH", "GHS"],
+  "data_retention_days": 3650,
+
+  "agent_cards": [
+    {
+      "id": "agent_10_1_1_1_step1",
+      "apqc_id": "10.1.1.1",
+      "step_number": 1,
+      "step_name": "Risk Assessment",
+      "description": "Identify and assess EHS risks and hazards",
+      "purpose": "Proactive risk identification",
+      "business_value": "Prevention of incidents and compliance",
+
+      "capabilities": ["hazard_identification", "risk_rating", "job_safety_analysis", "risk_register", "control_assessment"],
+
+      "input_schema": [
+        {"name": "assessment_scope", "type": "string", "required": true, "validation": {"enum": ["facility", "process", "task", "chemical"]}},
+        {"name": "location", "type": "string", "required": true},
+        {"name": "activity_description", "type": "string", "required": true}
+      ],
+
+      "output_schema": [
+        {"name": "risk_assessment", "type": "object", "required": true},
+        {"name": "hazards_identified", "type": "array", "required": true},
+        {"name": "risk_ratings", "type": "array", "required": true},
+        {"name": "control_recommendations", "type": "array", "required": true}
+      ],
+
+      "required_integrations": [
+        {"system": "EHS Software", "type": "bidirectional", "protocol": "API", "examples": ["Intelex", "Enablon", "VelocityEHS", "Sphera"]},
+        {"system": "Document Management", "type": "read", "protocol": "API"},
+        {"system": "Asset Management", "type": "read", "protocol": "API"}
+      ],
+
+      "decision_rules": [
+        {"rule_id": "DR-EHS-001", "name": "High Risk", "condition": "risk.rating >= 15", "action": "require_immediate_controls", "priority": 1},
+        {"rule_id": "DR-EHS-002", "name": "New Hazard", "condition": "hazard.type == 'new'", "action": "escalate_to_ehs_manager", "priority": 1}
+      ],
+
+      "error_handlers": [
+        {"error_type": "incomplete_assessment", "severity": "high", "action": "block_activity_start", "notification": ["ehs_coordinator"]}
+      ]
+    },
+
+    {
+      "id": "agent_10_1_1_1_step2",
+      "apqc_id": "10.1.1.1",
+      "step_number": 2,
+      "step_name": "Incident Management",
+      "description": "Report, investigate, and manage EHS incidents",
+      "purpose": "Learn from incidents and prevent recurrence",
+      "business_value": "Reduced injuries and compliance with reporting",
+
+      "capabilities": ["incident_reporting", "investigation_management", "root_cause_analysis", "corrective_actions", "regulatory_reporting"],
+
+      "input_schema": [
+        {"name": "incident_report", "type": "object", "required": true},
+        {"name": "incident_type", "type": "string", "required": true, "validation": {"enum": ["injury", "near_miss", "property_damage", "spill", "fire"]}},
+        {"name": "severity", "type": "string", "required": true}
+      ],
+
+      "output_schema": [
+        {"name": "incident_record", "type": "object", "required": true},
+        {"name": "investigation_report", "type": "object", "required": true},
+        {"name": "root_causes", "type": "array", "required": true},
+        {"name": "corrective_actions", "type": "array", "required": true},
+        {"name": "regulatory_forms", "type": "array", "required": false}
+      ],
+
+      "required_integrations": [
+        {"system": "EHS Software", "type": "bidirectional", "protocol": "API"},
+        {"system": "HRIS", "type": "bidirectional", "protocol": "API"},
+        {"system": "Regulatory Portal", "type": "outbound", "protocol": "API", "examples": ["OSHA ITA", "EPA CDX"]}
+      ],
+
+      "decision_rules": [
+        {"rule_id": "DR-EHS-010", "name": "OSHA Recordable", "condition": "incident.meets_osha_criteria", "action": "log_to_300_and_notify", "priority": 1},
+        {"rule_id": "DR-EHS-011", "name": "Fatality/Amputation", "condition": "incident.type IN ['fatality', 'amputation', 'loss_of_eye', 'hospitalization']", "action": "notify_osha_within_hours", "priority": 1}
+      ],
+
+      "error_handlers": [
+        {"error_type": "late_reporting", "severity": "critical", "action": "escalate_to_ehs_director", "notification": ["ehs_director", "legal"]}
+      ]
+    },
+
+    {
+      "id": "agent_10_1_1_1_step3",
+      "apqc_id": "10.1.1.1",
+      "step_number": 3,
+      "step_name": "Permit and Compliance Management",
+      "description": "Manage environmental permits and regulatory compliance",
+      "purpose": "Maintain regulatory authorization",
+      "business_value": "License to operate",
+
+      "capabilities": ["permit_tracking", "compliance_calendar", "regulatory_monitoring", "submission_management", "audit_preparation"],
+
+      "input_schema": [
+        {"name": "permit_type", "type": "string", "required": true},
+        {"name": "facility_id", "type": "string", "required": true},
+        {"name": "regulatory_requirement", "type": "object", "required": true}
+      ],
+
+      "output_schema": [
+        {"name": "permit_status", "type": "object", "required": true},
+        {"name": "compliance_status", "type": "object", "required": true},
+        {"name": "upcoming_deadlines", "type": "array", "required": true},
+        {"name": "submission_records", "type": "array", "required": true}
+      ],
+
+      "required_integrations": [
+        {"system": "EHS Software", "type": "bidirectional", "protocol": "API"},
+        {"system": "Regulatory Database", "type": "read", "protocol": "API", "examples": ["RegScan", "SAI Global"]},
+        {"system": "Document Management", "type": "bidirectional", "protocol": "API"}
+      ],
+
+      "decision_rules": [
+        {"rule_id": "DR-EHS-020", "name": "Permit Expiry", "condition": "permit.days_to_expiry < 90", "action": "initiate_renewal", "priority": 1},
+        {"rule_id": "DR-EHS-021", "name": "New Regulation", "condition": "regulation.effective_date < today + 180", "action": "assess_impact", "priority": 1}
+      ],
+
+      "error_handlers": [
+        {"error_type": "submission_failed", "severity": "critical", "action": "manual_submission_required", "notification": ["ehs_manager", "legal"]}
+      ]
+    },
+
+    {
+      "id": "agent_10_1_1_1_step4",
+      "apqc_id": "10.1.1.1",
+      "step_number": 4,
+      "step_name": "Training Management",
+      "description": "Manage EHS training requirements and delivery",
+      "purpose": "Competent workforce",
+      "business_value": "Trained employees and compliance",
+
+      "capabilities": ["training_needs_analysis", "course_management", "certification_tracking", "compliance_monitoring", "refresher_scheduling"],
+
+      "input_schema": [
+        {"name": "employee_id", "type": "string", "required": true},
+        {"name": "job_role", "type": "string", "required": true},
+        {"name": "training_requirements", "type": "array", "required": true}
+      ],
+
+      "output_schema": [
+        {"name": "training_matrix", "type": "object", "required": true},
+        {"name": "compliance_status", "type": "object", "required": true},
+        {"name": "upcoming_training", "type": "array", "required": true},
+        {"name": "certifications", "type": "array", "required": true}
+      ],
+
+      "required_integrations": [
+        {"system": "EHS Software", "type": "bidirectional", "protocol": "API"},
+        {"system": "LMS", "type": "bidirectional", "protocol": "API"},
+        {"system": "HRIS", "type": "read", "protocol": "API"}
+      ],
+
+      "decision_rules": [
+        {"rule_id": "DR-EHS-030", "name": "Training Overdue", "condition": "training.days_overdue > 0", "action": "restrict_work_notify_supervisor", "priority": 1},
+        {"rule_id": "DR-EHS-031", "name": "Certification Expiring", "condition": "cert.days_to_expiry < 30", "action": "schedule_recertification", "priority": 1}
+      ],
+
+      "error_handlers": [
+        {"error_type": "training_not_available", "severity": "medium", "action": "schedule_makeup_session", "notification": ["ehs_coordinator"]}
+      ]
+    },
+
+    {
+      "id": "agent_10_1_1_1_step5",
+      "apqc_id": "10.1.1.1",
+      "step_number": 5,
+      "step_name": "Chemical Management",
+      "description": "Manage hazardous materials and chemical inventory",
+      "purpose": "Safe chemical handling",
+      "business_value": "Prevented exposures and compliance",
+
+      "capabilities": ["chemical_inventory", "sds_management", "exposure_monitoring", "hazard_communication", "waste_tracking"],
+
+      "input_schema": [
+        {"name": "chemical_id", "type": "string", "required": true},
+        {"name": "location", "type": "string", "required": true},
+        {"name": "quantity", "type": "object", "required": true}
+      ],
+
+      "output_schema": [
+        {"name": "inventory_status", "type": "object", "required": true},
+        {"name": "sds_record", "type": "object", "required": true},
+        {"name": "exposure_assessment", "type": "object", "required": false},
+        {"name": "ppe_requirements", "type": "array", "required": true}
+      ],
+
+      "required_integrations": [
+        {"system": "EHS Software", "type": "bidirectional", "protocol": "API"},
+        {"system": "SDS Database", "type": "read", "protocol": "API", "examples": ["3E", "VelocityEHS", "ChemWatch"]},
+        {"system": "Procurement", "type": "read", "protocol": "API"}
+      ],
+
+      "decision_rules": [
+        {"rule_id": "DR-EHS-040", "name": "Threshold Quantity", "condition": "chemical.quantity > threshold_quantity", "action": "notify_regulatory_agency", "priority": 1},
+        {"rule_id": "DR-EHS-041", "name": "SDS Missing", "condition": "sds.status == 'missing'", "action": "block_use_obtain_sds", "priority": 1}
+      ],
+
+      "error_handlers": [
+        {"error_type": "incompatible_storage", "severity": "critical", "action": "relocate_immediately", "notification": ["ehs_manager", "facility_manager"]}
+      ]
+    },
+
+    {
+      "id": "agent_10_1_1_1_step6",
+      "apqc_id": "10.1.1.1",
+      "step_number": 6,
+      "step_name": "Audit and Inspection Management",
+      "description": "Conduct and manage EHS audits and inspections",
+      "purpose": "Verify compliance and identify gaps",
+      "business_value": "Proactive compliance assurance",
+
+      "capabilities": ["audit_planning", "inspection_execution", "finding_management", "corrective_action_tracking", "audit_reporting"],
+
+      "input_schema": [
+        {"name": "audit_type", "type": "string", "required": true, "validation": {"enum": ["internal", "external", "regulatory", "insurance"]}},
+        {"name": "scope", "type": "object", "required": true},
+        {"name": "audit_protocol", "type": "string", "required": true}
+      ],
+
+      "output_schema": [
+        {"name": "audit_report", "type": "object", "required": true},
+        {"name": "findings", "type": "array", "required": true},
+        {"name": "corrective_actions", "type": "array", "required": true},
+        {"name": "compliance_score", "type": "number", "required": true}
+      ],
+
+      "required_integrations": [
+        {"system": "EHS Software", "type": "bidirectional", "protocol": "API"},
+        {"system": "Audit Management", "type": "bidirectional", "protocol": "API", "examples": ["AuditBoard", "SAI360"]},
+        {"system": "Action Tracking", "type": "bidirectional", "protocol": "API"}
+      ],
+
+      "decision_rules": [
+        {"rule_id": "DR-EHS-050", "name": "Critical Finding", "condition": "finding.severity == 'critical'", "action": "immediate_remediation_required", "priority": 1},
+        {"rule_id": "DR-EHS-051", "name": "Repeat Finding", "condition": "finding.repeat_count > 1", "action": "escalate_to_leadership", "priority": 1}
+      ],
+
+      "error_handlers": [
+        {"error_type": "audit_access_denied", "severity": "high", "action": "escalate_to_ehs_director", "notification": ["ehs_director", "site_manager"]}
+      ]
+    },
+
+    {
+      "id": "agent_10_1_1_1_step7",
+      "apqc_id": "10.1.1.1",
+      "step_number": 7,
+      "step_name": "Sustainability Management",
+      "description": "Track and improve environmental sustainability metrics",
+      "purpose": "Environmental stewardship",
+      "business_value": "Reduced environmental impact and costs",
+
+      "capabilities": ["emissions_tracking", "waste_reduction", "water_management", "sustainability_reporting", "goal_tracking"],
+
+      "input_schema": [
+        {"name": "reporting_period", "type": "object", "required": true},
+        {"name": "facility_id", "type": "string", "required": true},
+        {"name": "sustainability_goals", "type": "array", "required": true}
+      ],
+
+      "output_schema": [
+        {"name": "sustainability_report", "type": "object", "required": true},
+        {"name": "emissions_data", "type": "object", "required": true},
+        {"name": "waste_metrics", "type": "object", "required": true},
+        {"name": "goal_progress", "type": "object", "required": true}
+      ],
+
+      "required_integrations": [
+        {"system": "EHS Software", "type": "bidirectional", "protocol": "API"},
+        {"system": "Sustainability Platform", "type": "bidirectional", "protocol": "API", "examples": ["Enablon", "Sphera", "Watershedclimate"]},
+        {"system": "Energy Management", "type": "read", "protocol": "API"}
+      ],
+
+      "decision_rules": [
+        {"rule_id": "DR-EHS-060", "name": "Goal Off Track", "condition": "goal.progress < expected_progress * 0.9", "action": "initiate_improvement_project", "priority": 2},
+        {"rule_id": "DR-EHS-061", "name": "Emissions Spike", "condition": "emissions.variance > 20%", "action": "investigate_and_report", "priority": 1}
+      ],
+
+      "error_handlers": [
+        {"error_type": "data_quality_issue", "severity": "medium", "action": "validate_source_data", "notification": ["sustainability_analyst"]}
+      ]
+    },
+
+    {
+      "id": "agent_10_1_1_1_step8",
+      "apqc_id": "10.1.1.1",
+      "step_number": 8,
+      "step_name": "Emergency Preparedness",
+      "description": "Plan and manage emergency response capabilities",
+      "purpose": "Effective emergency response",
+      "business_value": "Protected employees and minimized business impact",
+
+      "capabilities": ["emergency_planning", "drill_management", "response_coordination", "business_continuity", "crisis_communication"],
+
+      "input_schema": [
+        {"name": "emergency_type", "type": "string", "required": true, "validation": {"enum": ["fire", "chemical_spill", "natural_disaster", "medical", "security"]}},
+        {"name": "facility_id", "type": "string", "required": true},
+        {"name": "drill_schedule", "type": "object", "required": false}
+      ],
+
+      "output_schema": [
+        {"name": "emergency_plan", "type": "object", "required": true},
+        {"name": "drill_results", "type": "object", "required": false},
+        {"name": "response_team", "type": "array", "required": true},
+        {"name": "readiness_score", "type": "number", "required": true}
+      ],
+
+      "required_integrations": [
+        {"system": "EHS Software", "type": "bidirectional", "protocol": "API"},
+        {"system": "Mass Notification", "type": "bidirectional", "protocol": "API", "examples": ["Everbridge", "AlertMedia", "OnSolve"]},
+        {"system": "Crisis Management", "type": "bidirectional", "protocol": "API"}
+      ],
+
+      "decision_rules": [
+        {"rule_id": "DR-EHS-070", "name": "Drill Overdue", "condition": "drill.days_since_last > required_frequency", "action": "schedule_drill", "priority": 1},
+        {"rule_id": "DR-EHS-071", "name": "Plan Update Needed", "condition": "plan.last_review > 365_days", "action": "initiate_plan_review", "priority": 2}
+      ],
+
+      "error_handlers": [
+        {"error_type": "notification_failure", "severity": "critical", "action": "activate_backup_communication", "notification": ["ehs_director", "security"]}
+      ]
+    }
+  ],
+
+  "integration_summary": {
+    "ehs_platforms": ["Intelex", "Enablon", "VelocityEHS", "Sphera", "Benchmark Gensuite"],
+    "regulatory_databases": ["RegScan", "SAI Global", "Enhesa"],
+    "sustainability_tools": ["Enablon", "Sphera", "Watershed", "Persefoni"],
+    "emergency_systems": ["Everbridge", "AlertMedia", "OnSolve"]
+  },
+
+  "kpis": [
+    {"name": "TRIR", "description": "Total Recordable Incident Rate", "target": "< industry average", "measurement": "(recordables * 200000) / hours_worked"},
+    {"name": "LTIR", "description": "Lost Time Incident Rate", "target": "< 1.0", "measurement": "(lost_time_cases * 200000) / hours_worked"},
+    {"name": "Near Miss Reporting", "description": "Near misses reported per employee", "target": "> 2/year", "measurement": "near_misses / employees"},
+    {"name": "Training Compliance", "description": "Employees with current training", "target": "> 98%", "measurement": "compliant_employees / total_employees"},
+    {"name": "Audit Finding Closure", "description": "Findings closed on time", "target": "> 95%", "measurement": "closed_on_time / total_findings"},
+    {"name": "GHG Reduction", "description": "Year-over-year emissions reduction", "target": "> 5%", "measurement": "(prior_year - current_year) / prior_year"}
+  ]
+}

@@ -1,0 +1,318 @@
+{
+  "apqc_id": "4.1.1.1",
+  "apqc_name": "Develop supply chain strategy and plan",
+  "category": "4.0 - Deliver Products and Services",
+  "description": "End-to-end supply chain planning workflow from demand planning through S&OP, including supply planning, inventory optimization, and capacity management.",
+  "orchestration_pattern": "sequential",
+  "total_steps": 7,
+  "estimated_duration_seconds": 604800,
+  "compliance_frameworks": ["ISO 28000", "CTPAT", "AEO", "SCOR"],
+  "data_retention_days": 1825,
+
+  "agent_cards": [
+    {
+      "id": "agent_4_1_1_1_step1",
+      "apqc_id": "4.1.1.1",
+      "step_number": 1,
+      "step_name": "Demand Planning",
+      "description": "Forecast customer demand using statistical models and market intelligence",
+      "purpose": "Accurate demand visibility for supply chain",
+      "business_value": "Reduced stockouts and excess inventory",
+
+      "capabilities": ["statistical_forecasting", "demand_sensing", "collaborative_forecasting", "forecast_accuracy_tracking", "promotion_planning"],
+
+      "input_schema": [
+        {"name": "planning_horizon", "type": "string", "required": true, "validation": {"enum": ["weekly", "monthly", "quarterly", "annual"]}},
+        {"name": "product_hierarchy", "type": "array", "required": true},
+        {"name": "historical_sales", "type": "object", "required": true},
+        {"name": "market_events", "type": "array", "required": false},
+        {"name": "customer_forecasts", "type": "array", "required": false}
+      ],
+
+      "output_schema": [
+        {"name": "demand_forecast", "type": "object", "required": true},
+        {"name": "forecast_confidence", "type": "object", "required": true},
+        {"name": "demand_drivers", "type": "array", "required": true},
+        {"name": "risk_factors", "type": "array", "required": true}
+      ],
+
+      "required_integrations": [
+        {"system": "Demand Planning", "type": "bidirectional", "protocol": "API", "examples": ["SAP IBP", "Blue Yonder", "o9 Solutions", "Kinaxis"]},
+        {"system": "ERP", "type": "read", "protocol": "API", "examples": ["SAP S/4HANA", "Oracle Cloud"]},
+        {"system": "POS Data", "type": "read", "protocol": "API"},
+        {"system": "Market Intelligence", "type": "read", "protocol": "API"}
+      ],
+
+      "decision_rules": [
+        {"rule_id": "DR-SC-001", "name": "Forecast Variance", "condition": "forecast_variance > 20%", "action": "flag_for_review", "priority": 2},
+        {"rule_id": "DR-SC-002", "name": "New Product", "condition": "product.age_months < 6", "action": "use_analogous_forecasting", "priority": 1}
+      ],
+
+      "error_handlers": [
+        {"error_type": "insufficient_history", "severity": "medium", "action": "use_market_proxy", "notification": ["demand_planner"]},
+        {"error_type": "data_quality_issue", "severity": "high", "action": "cleanse_and_retry", "notification": ["data_team"]}
+      ]
+    },
+
+    {
+      "id": "agent_4_1_1_1_step2",
+      "apqc_id": "4.1.1.1",
+      "step_number": 2,
+      "step_name": "Supply Planning",
+      "description": "Plan supply to meet demand considering constraints and costs",
+      "purpose": "Optimal supply network utilization",
+      "business_value": "Cost-effective supply fulfillment",
+
+      "capabilities": ["supply_optimization", "constraint_management", "sourcing_decisions", "make_vs_buy", "network_optimization"],
+
+      "input_schema": [
+        {"name": "demand_forecast", "type": "object", "required": true},
+        {"name": "supply_constraints", "type": "array", "required": true},
+        {"name": "cost_parameters", "type": "object", "required": true},
+        {"name": "lead_times", "type": "object", "required": true}
+      ],
+
+      "output_schema": [
+        {"name": "supply_plan", "type": "object", "required": true},
+        {"name": "sourcing_allocation", "type": "object", "required": true},
+        {"name": "capacity_utilization", "type": "object", "required": true},
+        {"name": "supply_gaps", "type": "array", "required": false}
+      ],
+
+      "required_integrations": [
+        {"system": "Supply Planning", "type": "bidirectional", "protocol": "API", "examples": ["SAP IBP", "Blue Yonder", "Kinaxis"]},
+        {"system": "MRP", "type": "bidirectional", "protocol": "API"},
+        {"system": "Supplier Portal", "type": "bidirectional", "protocol": "API"}
+      ],
+
+      "decision_rules": [
+        {"rule_id": "DR-SC-010", "name": "Capacity Exceeded", "condition": "capacity_utilization > 95%", "action": "evaluate_alternatives", "priority": 1},
+        {"rule_id": "DR-SC-011", "name": "Single Source Risk", "condition": "supplier.share > 80%", "action": "flag_concentration_risk", "priority": 2}
+      ],
+
+      "error_handlers": [
+        {"error_type": "infeasible_plan", "severity": "high", "action": "relax_constraints_with_approval", "notification": ["supply_planner", "operations_manager"]}
+      ]
+    },
+
+    {
+      "id": "agent_4_1_1_1_step3",
+      "apqc_id": "4.1.1.1",
+      "step_number": 3,
+      "step_name": "Inventory Planning",
+      "description": "Optimize inventory levels across the supply chain network",
+      "purpose": "Balance service levels with inventory investment",
+      "business_value": "Reduced working capital and improved availability",
+
+      "capabilities": ["safety_stock_optimization", "reorder_point_calculation", "inventory_segmentation", "slow_mover_analysis", "inventory_positioning"],
+
+      "input_schema": [
+        {"name": "demand_variability", "type": "object", "required": true},
+        {"name": "supply_variability", "type": "object", "required": true},
+        {"name": "service_level_targets", "type": "object", "required": true},
+        {"name": "inventory_costs", "type": "object", "required": true}
+      ],
+
+      "output_schema": [
+        {"name": "inventory_policy", "type": "object", "required": true},
+        {"name": "safety_stock_levels", "type": "object", "required": true},
+        {"name": "reorder_points", "type": "object", "required": true},
+        {"name": "inventory_investment", "type": "number", "required": true}
+      ],
+
+      "required_integrations": [
+        {"system": "Inventory Optimization", "type": "bidirectional", "protocol": "API", "examples": ["Blue Yonder", "ToolsGroup", "E2open"]},
+        {"system": "WMS", "type": "read", "protocol": "API", "examples": ["Manhattan", "Blue Yonder WMS", "SAP EWM"]},
+        {"system": "ERP", "type": "bidirectional", "protocol": "API"}
+      ],
+
+      "decision_rules": [
+        {"rule_id": "DR-SC-020", "name": "Excess Inventory", "condition": "inventory.months_on_hand > 6", "action": "initiate_disposition_review", "priority": 2},
+        {"rule_id": "DR-SC-021", "name": "Stockout Risk", "condition": "inventory.days_of_supply < safety_days", "action": "expedite_replenishment", "priority": 1}
+      ],
+
+      "error_handlers": [
+        {"error_type": "inventory_sync_error", "severity": "high", "action": "reconcile_systems", "notification": ["inventory_planner", "it_support"]}
+      ]
+    },
+
+    {
+      "id": "agent_4_1_1_1_step4",
+      "apqc_id": "4.1.1.1",
+      "step_number": 4,
+      "step_name": "Production Planning",
+      "description": "Plan production schedules to meet supply requirements",
+      "purpose": "Efficient production execution",
+      "business_value": "Optimized manufacturing costs and throughput",
+
+      "capabilities": ["master_scheduling", "rough_cut_capacity", "production_sequencing", "changeover_optimization", "batch_sizing"],
+
+      "input_schema": [
+        {"name": "supply_plan", "type": "object", "required": true},
+        {"name": "production_constraints", "type": "array", "required": true},
+        {"name": "resource_availability", "type": "object", "required": true}
+      ],
+
+      "output_schema": [
+        {"name": "master_production_schedule", "type": "object", "required": true},
+        {"name": "capacity_plan", "type": "object", "required": true},
+        {"name": "material_requirements", "type": "array", "required": true},
+        {"name": "production_calendar", "type": "object", "required": true}
+      ],
+
+      "required_integrations": [
+        {"system": "APS", "type": "bidirectional", "protocol": "API", "examples": ["SAP APO", "Blue Yonder", "Siemens Opcenter APS"]},
+        {"system": "MES", "type": "bidirectional", "protocol": "API", "examples": ["SAP ME", "Rockwell FactoryTalk"]},
+        {"system": "ERP", "type": "bidirectional", "protocol": "API"}
+      ],
+
+      "decision_rules": [
+        {"rule_id": "DR-SC-030", "name": "Overtime Required", "condition": "capacity_gap > 10%", "action": "evaluate_overtime_vs_outsource", "priority": 1},
+        {"rule_id": "DR-SC-031", "name": "Changeover Efficiency", "condition": "changeover_time > standard * 1.2", "action": "optimize_sequence", "priority": 2}
+      ],
+
+      "error_handlers": [
+        {"error_type": "schedule_conflict", "severity": "high", "action": "resequence_with_priority", "notification": ["production_planner"]}
+      ]
+    },
+
+    {
+      "id": "agent_4_1_1_1_step5",
+      "apqc_id": "4.1.1.1",
+      "step_number": 5,
+      "step_name": "S&OP Consensus",
+      "description": "Align demand, supply, and financial plans through S&OP process",
+      "purpose": "Cross-functional alignment on operating plan",
+      "business_value": "Integrated business planning",
+
+      "capabilities": ["scenario_analysis", "gap_identification", "trade_off_analysis", "financial_reconciliation", "executive_reporting"],
+
+      "input_schema": [
+        {"name": "demand_plan", "type": "object", "required": true},
+        {"name": "supply_plan", "type": "object", "required": true},
+        {"name": "financial_targets", "type": "object", "required": true},
+        {"name": "scenarios", "type": "array", "required": false}
+      ],
+
+      "output_schema": [
+        {"name": "consensus_plan", "type": "object", "required": true},
+        {"name": "gap_analysis", "type": "object", "required": true},
+        {"name": "financial_projection", "type": "object", "required": true},
+        {"name": "action_items", "type": "array", "required": true},
+        {"name": "executive_summary", "type": "object", "required": true}
+      ],
+
+      "required_integrations": [
+        {"system": "S&OP Platform", "type": "bidirectional", "protocol": "API", "examples": ["SAP IBP", "Anaplan", "o9 Solutions", "Kinaxis"]},
+        {"system": "Financial Planning", "type": "bidirectional", "protocol": "API", "examples": ["Anaplan", "Adaptive Insights"]},
+        {"system": "BI Platform", "type": "read", "protocol": "API", "examples": ["Tableau", "Power BI"]}
+      ],
+
+      "decision_rules": [
+        {"rule_id": "DR-SC-040", "name": "Plan Gap", "condition": "supply_demand_gap > 5%", "action": "require_resolution_plan", "priority": 1},
+        {"rule_id": "DR-SC-041", "name": "Financial Variance", "condition": "margin_variance > budget * 0.05", "action": "escalate_to_cfo", "priority": 1}
+      ],
+
+      "error_handlers": [
+        {"error_type": "consensus_not_reached", "severity": "high", "action": "escalate_to_executive_sop", "notification": ["vp_supply_chain", "vp_sales"]}
+      ]
+    },
+
+    {
+      "id": "agent_4_1_1_1_step6",
+      "apqc_id": "4.1.1.1",
+      "step_number": 6,
+      "step_name": "Supply Chain Risk Assessment",
+      "description": "Identify and assess risks to supply chain execution",
+      "purpose": "Proactive risk management",
+      "business_value": "Supply chain resilience",
+
+      "capabilities": ["risk_identification", "supplier_risk_assessment", "disruption_modeling", "contingency_planning", "risk_monitoring"],
+
+      "input_schema": [
+        {"name": "supply_chain_network", "type": "object", "required": true},
+        {"name": "supplier_data", "type": "array", "required": true},
+        {"name": "external_factors", "type": "array", "required": false}
+      ],
+
+      "output_schema": [
+        {"name": "risk_register", "type": "array", "required": true},
+        {"name": "risk_heat_map", "type": "object", "required": true},
+        {"name": "mitigation_plans", "type": "array", "required": true},
+        {"name": "contingency_options", "type": "array", "required": true}
+      ],
+
+      "required_integrations": [
+        {"system": "Supply Chain Risk", "type": "bidirectional", "protocol": "API", "examples": ["Resilinc", "Everstream", "riskmethods"]},
+        {"system": "Supplier Management", "type": "read", "protocol": "API", "examples": ["SAP Ariba", "Coupa"]},
+        {"system": "News/Events", "type": "read", "protocol": "API", "examples": ["Reuters", "Bloomberg"]}
+      ],
+
+      "decision_rules": [
+        {"rule_id": "DR-SC-050", "name": "High Risk Supplier", "condition": "supplier.risk_score > 8", "action": "activate_contingency", "priority": 1},
+        {"rule_id": "DR-SC-051", "name": "Geographic Concentration", "condition": "region.sourcing_share > 60%", "action": "diversification_review", "priority": 2}
+      ],
+
+      "error_handlers": [
+        {"error_type": "risk_data_unavailable", "severity": "medium", "action": "use_historical_proxy", "notification": ["risk_analyst"]}
+      ]
+    },
+
+    {
+      "id": "agent_4_1_1_1_step7",
+      "apqc_id": "4.1.1.1",
+      "step_number": 7,
+      "step_name": "Plan Performance Monitoring",
+      "description": "Monitor plan execution and adjust as needed",
+      "purpose": "Continuous plan optimization",
+      "business_value": "Improved planning accuracy and agility",
+
+      "capabilities": ["plan_vs_actual_tracking", "forecast_accuracy_measurement", "bias_analysis", "exception_management", "continuous_improvement"],
+
+      "input_schema": [
+        {"name": "planned_values", "type": "object", "required": true},
+        {"name": "actual_values", "type": "object", "required": true},
+        {"name": "monitoring_frequency", "type": "string", "required": true}
+      ],
+
+      "output_schema": [
+        {"name": "variance_report", "type": "object", "required": true},
+        {"name": "forecast_accuracy_metrics", "type": "object", "required": true},
+        {"name": "root_cause_analysis", "type": "array", "required": false},
+        {"name": "improvement_recommendations", "type": "array", "required": true}
+      ],
+
+      "required_integrations": [
+        {"system": "Planning Platform", "type": "read", "protocol": "API"},
+        {"system": "ERP", "type": "read", "protocol": "API"},
+        {"system": "BI Platform", "type": "bidirectional", "protocol": "API"}
+      ],
+
+      "decision_rules": [
+        {"rule_id": "DR-SC-060", "name": "Significant Variance", "condition": "variance > 15%", "action": "trigger_replan", "priority": 1},
+        {"rule_id": "DR-SC-061", "name": "Systematic Bias", "condition": "consecutive_over_forecast >= 3", "action": "adjust_forecast_model", "priority": 2}
+      ],
+
+      "error_handlers": [
+        {"error_type": "data_latency", "severity": "low", "action": "use_most_recent_available", "notification": ["planning_analyst"]}
+      ]
+    }
+  ],
+
+  "integration_summary": {
+    "planning_platforms": ["SAP IBP", "Blue Yonder", "o9 Solutions", "Kinaxis", "Anaplan"],
+    "erp_systems": ["SAP S/4HANA", "Oracle Cloud", "Microsoft Dynamics 365"],
+    "wms_systems": ["Manhattan", "Blue Yonder WMS", "SAP EWM", "HighJump"],
+    "risk_platforms": ["Resilinc", "Everstream", "riskmethods", "Interos"],
+    "analytics": ["Tableau", "Power BI", "Qlik"]
+  },
+
+  "kpis": [
+    {"name": "Forecast Accuracy", "description": "Demand forecast accuracy", "target": "> 80%", "measurement": "1 - (abs(forecast - actual) / actual)"},
+    {"name": "Plan Adherence", "description": "Execution vs plan", "target": "> 95%", "measurement": "actual_production / planned_production"},
+    {"name": "Inventory Turns", "description": "Annual inventory turnover", "target": "> 8x", "measurement": "cogs / avg_inventory"},
+    {"name": "Service Level", "description": "Order fill rate", "target": "> 98%", "measurement": "orders_filled_complete / total_orders"},
+    {"name": "Supply Chain Cost", "description": "Total SC cost as % of revenue", "target": "< 8%", "measurement": "total_sc_cost / revenue"},
+    {"name": "Perfect Order Rate", "description": "Orders delivered complete, on-time, undamaged", "target": "> 95%", "measurement": "perfect_orders / total_orders"}
+  ]
+}

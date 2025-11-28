@@ -1,0 +1,53 @@
+<?xml version='1.0' encoding='utf-8'?>
+<bpmn:definitions xmlns:bpmn="http://www.omg.org/spec/BPMN/20100524/MODEL" xmlns:bpmndi="http://www.omg.org/spec/BPMN/20100524/DI" xmlns:dc="http://www.omg.org/spec/DD/20100524/DC" id="Definitions_L2_13_4" targetNamespace="http://apqc.org/composite/level2/13.4" exporter="APQC Agentic Platform v3.0" exporterVersion="3.0.0">
+  <bpmn:process id="Process_13_4" name="Level 2: 13.4 - Manage change" isExecutable="true">
+    <bpmn:documentation>
+Level 2 Process Group Process
+Manage change
+APQC ID: 13.4
+
+Orchestrates 2 child processes:
+  1. 13.4.1: Plan change
+  2. 13.4.2: Implement change
+
+Orchestration Pattern: Sequential Workflow (Pipeline)
+Standards: BPMN 2.0, A2A Protocol
+
+Generated: 2025-11-25T11:51:05.946836
+Status: Production Ready
+</bpmn:documentation>
+    <bpmn:startEvent id="Start_13_4" name="Start">
+      <bpmn:outgoing>Flow_start_to_child1</bpmn:outgoing>
+    </bpmn:startEvent>
+    <bpmn:callActivity id="CallActivity_13_4_child1" name="13.4.1: Plan change" calledElement="Process_13_4_1">
+      <bpmn:incoming>Flow_start_to_child1</bpmn:incoming>
+      <bpmn:outgoing>Flow_child1_to_child2</bpmn:outgoing>
+    </bpmn:callActivity>
+    <bpmn:callActivity id="CallActivity_13_4_child2" name="13.4.2: Implement change" calledElement="Process_13_4_2">
+      <bpmn:incoming>Flow_child1_to_child2</bpmn:incoming>
+      <bpmn:outgoing>Flow_child2_to_end</bpmn:outgoing>
+    </bpmn:callActivity>
+    <bpmn:sequenceFlow id="Flow_start_to_child1" sourceRef="Start_13_4" targetRef="CallActivity_13_4_child1" />
+    <bpmn:sequenceFlow id="Flow_child1_to_child2" sourceRef="CallActivity_13_4_child1" targetRef="CallActivity_13_4_child2" />
+    <bpmn:sequenceFlow id="Flow_child2_to_end" sourceRef="CallActivity_13_4_child2" targetRef="End_13_4" />
+    <bpmn:endEvent id="End_13_4" name="Complete">
+      <bpmn:incoming>Flow_child2_to_end</bpmn:incoming>
+    </bpmn:endEvent>
+  </bpmn:process>
+  <bpmndi:BPMNDiagram id="Diagram_13_4">
+    <bpmndi:BPMNPlane id="Plane_13_4" bpmnElement="Process_13_4">
+      <bpmndi:BPMNShape id="Shape_Start_13_4" bpmnElement="Start_13_4">
+        <dc:Bounds x="150" y="50" width="36" height="36" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Shape_CallActivity_13_4_child1" bpmnElement="CallActivity_13_4_child1">
+        <dc:Bounds x="100" y="130" width="150" height="80" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Shape_CallActivity_13_4_child2" bpmnElement="CallActivity_13_4_child2">
+        <dc:Bounds x="100" y="230" width="150" height="80" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Shape_End_13_4" bpmnElement="End_13_4">
+        <dc:Bounds x="150" y="330" width="36" height="36" />
+      </bpmndi:BPMNShape>
+    </bpmndi:BPMNPlane>
+  </bpmndi:BPMNDiagram>
+</bpmn:definitions>

@@ -1,0 +1,309 @@
+{
+  "apqc_id": "8.3.1.1",
+  "apqc_name": "Manage treasury operations",
+  "category": "8.0 - Manage Financial Resources",
+  "description": "End-to-end treasury management workflow from cash positioning through investment management, including liquidity forecasting, bank relationship management, and foreign exchange.",
+  "orchestration_pattern": "parallel",
+  "total_steps": 7,
+  "estimated_duration_seconds": 86400,
+  "compliance_frameworks": ["SOX", "IFRS 9", "Basel III", "Dodd-Frank", "EMIR"],
+  "data_retention_days": 2555,
+
+  "agent_cards": [
+    {
+      "id": "agent_8_3_1_1_step1",
+      "apqc_id": "8.3.1.1",
+      "step_number": 1,
+      "step_name": "Cash Position Management",
+      "description": "Consolidate and manage daily cash positions across all accounts and entities",
+      "purpose": "Real-time visibility of global cash",
+      "business_value": "Optimized liquidity utilization",
+
+      "capabilities": ["bank_connectivity", "balance_aggregation", "multi_currency", "real_time_reporting", "intercompany_netting"],
+
+      "input_schema": [
+        {"name": "position_date", "type": "string", "required": true},
+        {"name": "entities", "type": "array", "required": true},
+        {"name": "currencies", "type": "array", "required": true},
+        {"name": "bank_accounts", "type": "array", "required": true}
+      ],
+
+      "output_schema": [
+        {"name": "global_cash_position", "type": "object", "required": true},
+        {"name": "position_by_entity", "type": "object", "required": true},
+        {"name": "position_by_currency", "type": "object", "required": true},
+        {"name": "available_cash", "type": "number", "required": true}
+      ],
+
+      "required_integrations": [
+        {"system": "TMS", "type": "bidirectional", "protocol": "API", "examples": ["Kyriba", "GTreasury", "SAP Treasury", "FIS Integrity"]},
+        {"system": "Bank Connectivity", "type": "bidirectional", "protocol": "SWIFT/API", "examples": ["SWIFT", "Host-to-Host", "API Banking"]},
+        {"system": "ERP", "type": "read", "protocol": "API"}
+      ],
+
+      "decision_rules": [
+        {"rule_id": "DR-TR-001", "name": "Low Balance Alert", "condition": "account.balance < minimum_threshold", "action": "trigger_funding_review", "priority": 1},
+        {"rule_id": "DR-TR-002", "name": "Excess Cash", "condition": "entity.balance > target_balance * 1.5", "action": "recommend_sweep", "priority": 2}
+      ],
+
+      "error_handlers": [
+        {"error_type": "bank_feed_delayed", "severity": "high", "action": "use_previous_day_estimate", "notification": ["treasury_analyst"]},
+        {"error_type": "currency_rate_unavailable", "severity": "medium", "action": "use_last_known_rate", "notification": ["treasury_analyst"]}
+      ]
+    },
+
+    {
+      "id": "agent_8_3_1_1_step2",
+      "apqc_id": "8.3.1.1",
+      "step_number": 2,
+      "step_name": "Cash Forecasting",
+      "description": "Forecast cash flows across planning horizons",
+      "purpose": "Anticipate liquidity needs",
+      "business_value": "Proactive liquidity management",
+
+      "capabilities": ["forecast_modeling", "scenario_analysis", "variance_tracking", "ml_forecasting", "rolling_forecast"],
+
+      "input_schema": [
+        {"name": "forecast_horizon", "type": "string", "required": true, "validation": {"enum": ["daily", "weekly", "monthly", "quarterly"]}},
+        {"name": "historical_data", "type": "object", "required": true},
+        {"name": "planned_transactions", "type": "array", "required": true}
+      ],
+
+      "output_schema": [
+        {"name": "cash_forecast", "type": "object", "required": true},
+        {"name": "forecast_confidence", "type": "object", "required": true},
+        {"name": "funding_gaps", "type": "array", "required": false},
+        {"name": "excess_periods", "type": "array", "required": false}
+      ],
+
+      "required_integrations": [
+        {"system": "TMS", "type": "bidirectional", "protocol": "API"},
+        {"system": "ERP", "type": "read", "protocol": "API"},
+        {"system": "AP/AR Systems", "type": "read", "protocol": "API"}
+      ],
+
+      "decision_rules": [
+        {"rule_id": "DR-TR-010", "name": "Funding Gap", "condition": "forecast.net_position < minimum_liquidity", "action": "initiate_borrowing_review", "priority": 1}
+      ],
+
+      "error_handlers": [
+        {"error_type": "forecast_data_incomplete", "severity": "medium", "action": "use_statistical_estimate", "notification": ["treasury_manager"]}
+      ]
+    },
+
+    {
+      "id": "agent_8_3_1_1_step3",
+      "apqc_id": "8.3.1.1",
+      "step_number": 3,
+      "step_name": "Payment Execution",
+      "description": "Execute and monitor payments across payment channels",
+      "purpose": "Secure and efficient payment processing",
+      "business_value": "Controlled cash outflows",
+
+      "capabilities": ["payment_initiation", "payment_approval", "fraud_detection", "payment_tracking", "payment_reconciliation"],
+
+      "input_schema": [
+        {"name": "payment_requests", "type": "array", "required": true},
+        {"name": "payment_method", "type": "string", "required": true, "validation": {"enum": ["wire", "ach", "check", "rtp", "swift"]}},
+        {"name": "value_date", "type": "string", "required": true}
+      ],
+
+      "output_schema": [
+        {"name": "payment_confirmations", "type": "array", "required": true},
+        {"name": "payment_status", "type": "object", "required": true},
+        {"name": "fees_charged", "type": "number", "required": true}
+      ],
+
+      "required_integrations": [
+        {"system": "TMS", "type": "bidirectional", "protocol": "API"},
+        {"system": "Payment Hub", "type": "bidirectional", "protocol": "API", "examples": ["Bottomline", "Finastra", "ACI"]},
+        {"system": "Bank", "type": "outbound", "protocol": "SWIFT/API"}
+      ],
+
+      "decision_rules": [
+        {"rule_id": "DR-TR-020", "name": "Large Payment", "condition": "payment.amount > threshold_amount", "action": "require_dual_approval", "priority": 1},
+        {"rule_id": "DR-TR-021", "name": "New Beneficiary", "condition": "beneficiary.is_new == true", "action": "enhanced_verification", "priority": 1}
+      ],
+
+      "error_handlers": [
+        {"error_type": "payment_rejected", "severity": "high", "action": "investigate_and_retry", "notification": ["treasury_analyst", "ap_team"]},
+        {"error_type": "fraud_alert", "severity": "critical", "action": "block_and_investigate", "notification": ["treasury_manager", "security"]}
+      ]
+    },
+
+    {
+      "id": "agent_8_3_1_1_step4",
+      "apqc_id": "8.3.1.1",
+      "step_number": 4,
+      "step_name": "Investment Management",
+      "description": "Manage short-term investments and money market instruments",
+      "purpose": "Optimize returns on excess cash",
+      "business_value": "Maximized yield on idle cash",
+
+      "capabilities": ["investment_selection", "portfolio_management", "yield_optimization", "maturity_management", "compliance_monitoring"],
+
+      "input_schema": [
+        {"name": "available_cash", "type": "number", "required": true},
+        {"name": "investment_policy", "type": "object", "required": true},
+        {"name": "maturity_requirements", "type": "object", "required": true}
+      ],
+
+      "output_schema": [
+        {"name": "investment_portfolio", "type": "array", "required": true},
+        {"name": "portfolio_yield", "type": "number", "required": true},
+        {"name": "maturity_ladder", "type": "object", "required": true}
+      ],
+
+      "required_integrations": [
+        {"system": "TMS", "type": "bidirectional", "protocol": "API"},
+        {"system": "Investment Platform", "type": "bidirectional", "protocol": "API", "examples": ["Bloomberg", "ICD Portal", "Clearwater"]},
+        {"system": "Custody", "type": "read", "protocol": "API"}
+      ],
+
+      "decision_rules": [
+        {"rule_id": "DR-TR-030", "name": "Concentration Limit", "condition": "issuer.exposure > policy.max_concentration", "action": "block_investment", "priority": 1},
+        {"rule_id": "DR-TR-031", "name": "Rating Downgrade", "condition": "issuer.rating < policy.min_rating", "action": "liquidate_position", "priority": 1}
+      ],
+
+      "error_handlers": [
+        {"error_type": "investment_failed", "severity": "medium", "action": "retry_alternate_instrument", "notification": ["treasury_analyst"]}
+      ]
+    },
+
+    {
+      "id": "agent_8_3_1_1_step5",
+      "apqc_id": "8.3.1.1",
+      "step_number": 5,
+      "step_name": "FX Management",
+      "description": "Manage foreign exchange exposure and execute hedging",
+      "purpose": "Mitigate currency risk",
+      "business_value": "Protected margins from FX volatility",
+
+      "capabilities": ["exposure_identification", "hedge_recommendation", "fx_execution", "hedge_accounting", "exposure_reporting"],
+
+      "input_schema": [
+        {"name": "fx_exposures", "type": "array", "required": true},
+        {"name": "hedge_policy", "type": "object", "required": true},
+        {"name": "currency_pairs", "type": "array", "required": true}
+      ],
+
+      "output_schema": [
+        {"name": "hedge_recommendations", "type": "array", "required": true},
+        {"name": "executed_trades", "type": "array", "required": true},
+        {"name": "net_exposure", "type": "object", "required": true},
+        {"name": "hedge_effectiveness", "type": "object", "required": true}
+      ],
+
+      "required_integrations": [
+        {"system": "TMS", "type": "bidirectional", "protocol": "API"},
+        {"system": "FX Platform", "type": "bidirectional", "protocol": "API", "examples": ["360T", "FXall", "Bloomberg FX"]},
+        {"system": "ERP", "type": "read", "protocol": "API"}
+      ],
+
+      "decision_rules": [
+        {"rule_id": "DR-TR-040", "name": "Unhedged Exposure", "condition": "exposure.unhedged > policy.max_unhedged", "action": "recommend_hedge", "priority": 1},
+        {"rule_id": "DR-TR-041", "name": "Rate Threshold", "condition": "rate.deviation > alert_threshold", "action": "opportunity_alert", "priority": 2}
+      ],
+
+      "error_handlers": [
+        {"error_type": "trade_rejected", "severity": "high", "action": "retry_with_alternate_counterparty", "notification": ["fx_dealer"]}
+      ]
+    },
+
+    {
+      "id": "agent_8_3_1_1_step6",
+      "apqc_id": "8.3.1.1",
+      "step_number": 6,
+      "step_name": "Debt Management",
+      "description": "Manage debt portfolio, covenants, and borrowing facilities",
+      "purpose": "Optimize capital structure",
+      "business_value": "Minimized cost of capital",
+
+      "capabilities": ["facility_management", "covenant_monitoring", "interest_rate_management", "debt_service", "refinancing_analysis"],
+
+      "input_schema": [
+        {"name": "debt_facilities", "type": "array", "required": true},
+        {"name": "covenant_requirements", "type": "array", "required": true},
+        {"name": "interest_rate_environment", "type": "object", "required": false}
+      ],
+
+      "output_schema": [
+        {"name": "debt_portfolio", "type": "object", "required": true},
+        {"name": "covenant_compliance", "type": "object", "required": true},
+        {"name": "debt_service_schedule", "type": "array", "required": true},
+        {"name": "refinancing_opportunities", "type": "array", "required": false}
+      ],
+
+      "required_integrations": [
+        {"system": "TMS", "type": "bidirectional", "protocol": "API"},
+        {"system": "Loan Administration", "type": "bidirectional", "protocol": "API", "examples": ["Finastra Loan IQ", "FIS"]},
+        {"system": "ERP", "type": "read", "protocol": "API"}
+      ],
+
+      "decision_rules": [
+        {"rule_id": "DR-TR-050", "name": "Covenant Breach Risk", "condition": "covenant.headroom < 10%", "action": "alert_cfo", "priority": 1},
+        {"rule_id": "DR-TR-051", "name": "Maturity Approaching", "condition": "facility.days_to_maturity < 180", "action": "initiate_refinancing", "priority": 1}
+      ],
+
+      "error_handlers": [
+        {"error_type": "covenant_breach", "severity": "critical", "action": "escalate_to_cfo", "notification": ["treasurer", "cfo", "legal"]}
+      ]
+    },
+
+    {
+      "id": "agent_8_3_1_1_step7",
+      "apqc_id": "8.3.1.1",
+      "step_number": 7,
+      "step_name": "Bank Relationship Management",
+      "description": "Manage bank relationships, services, and fees",
+      "purpose": "Optimize banking services and costs",
+      "business_value": "Reduced banking costs, improved service",
+
+      "capabilities": ["bank_scoring", "service_optimization", "fee_analysis", "rfp_management", "relationship_review"],
+
+      "input_schema": [
+        {"name": "bank_relationships", "type": "array", "required": true},
+        {"name": "services_utilized", "type": "array", "required": true},
+        {"name": "fee_data", "type": "object", "required": true}
+      ],
+
+      "output_schema": [
+        {"name": "bank_scorecard", "type": "object", "required": true},
+        {"name": "fee_analysis", "type": "object", "required": true},
+        {"name": "optimization_opportunities", "type": "array", "required": true},
+        {"name": "relationship_summary", "type": "object", "required": true}
+      ],
+
+      "required_integrations": [
+        {"system": "TMS", "type": "read", "protocol": "API"},
+        {"system": "Bank Fee Analysis", "type": "read", "protocol": "API", "examples": ["Redbridge", "TreasuryXpress"]},
+        {"system": "Procurement", "type": "bidirectional", "protocol": "API"}
+      ],
+
+      "decision_rules": [
+        {"rule_id": "DR-TR-060", "name": "Fee Anomaly", "condition": "fee.variance > 20%", "action": "investigate_and_dispute", "priority": 2},
+        {"rule_id": "DR-TR-061", "name": "Service Issue", "condition": "bank.service_score < 3.0", "action": "schedule_review_meeting", "priority": 2}
+      ],
+
+      "error_handlers": [
+        {"error_type": "fee_data_unavailable", "severity": "low", "action": "request_from_bank", "notification": ["treasury_analyst"]}
+      ]
+    }
+  ],
+
+  "integration_summary": {
+    "tms_platforms": ["Kyriba", "GTreasury", "SAP Treasury", "FIS Integrity", "ION Treasury"],
+    "bank_connectivity": ["SWIFT", "Host-to-Host", "API Banking", "Bottomline"],
+    "fx_platforms": ["360T", "FXall", "Bloomberg FX", "Refinitiv"],
+    "investment_platforms": ["ICD Portal", "Bloomberg", "Clearwater Analytics"]
+  },
+
+  "kpis": [
+    {"name": "Cash Visibility", "description": "Percentage of cash visible in real-time", "target": "> 95%", "measurement": "visible_cash / total_cash"},
+    {"name": "Forecast Accuracy", "description": "Cash forecast vs actual variance", "target": "< 10%", "measurement": "abs(forecast - actual) / actual"},
+    {"name": "Investment Yield", "description": "Return on short-term investments", "target": "> benchmark + 10bps", "measurement": "portfolio_yield - benchmark_yield"},
+    {"name": "Hedge Effectiveness", "description": "FX hedge effectiveness ratio", "target": "> 80%", "measurement": "hedge_gain_loss / exposure_gain_loss"},
+    {"name": "Bank Fee Ratio", "description": "Bank fees as % of revenue", "target": "< 0.1%", "measurement": "total_bank_fees / revenue"},
+    {"name": "Days Cash on Hand", "description": "Liquidity coverage", "target": "> 60 days", "measurement": "cash_available / daily_operating_expense"}
+  ]
+}

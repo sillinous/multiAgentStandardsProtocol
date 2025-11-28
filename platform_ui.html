@@ -1,0 +1,951 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>APQC Agentic Platform - Workflow Composer</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+            background: #f5f7fa;
+            height: 100vh;
+            overflow: hidden;
+        }
+
+        .container {
+            display: grid;
+            grid-template-columns: 320px 1fr;
+            grid-template-rows: 60px 1fr;
+            height: 100vh;
+        }
+
+        /* Header */
+        .header {
+            grid-column: 1 / -1;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 0 30px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+
+        .header-title {
+            font-size: 20px;
+            font-weight: 600;
+        }
+
+        .header-actions {
+            display: flex;
+            gap: 15px;
+            align-items: center;
+        }
+
+        .btn-go {
+            background: #48bb78;
+            color: white;
+            border: none;
+            padding: 12px 40px;
+            border-radius: 8px;
+            font-size: 18px;
+            font-weight: 700;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            box-shadow: 0 4px 12px rgba(72, 187, 120, 0.4);
+        }
+
+        .btn-go:hover {
+            background: #38a169;
+            transform: translateY(-2px);
+            box-shadow: 0 6px 16px rgba(72, 187, 120, 0.5);
+        }
+
+        .btn-go:active {
+            transform: translateY(0);
+        }
+
+        .btn-go:disabled {
+            background: #a0aec0;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        .btn-clear {
+            background: rgba(255,255,255,0.2);
+            color: white;
+            border: 1px solid rgba(255,255,255,0.3);
+            padding: 10px 24px;
+            border-radius: 8px;
+            font-size: 14px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+
+        .btn-clear:hover {
+            background: rgba(255,255,255,0.3);
+        }
+
+        /* Sidebar - APQC Navigation */
+        .sidebar {
+            background: white;
+            border-right: 1px solid #e2e8f0;
+            overflow-y: auto;
+            box-shadow: 2px 0 10px rgba(0,0,0,0.05);
+        }
+
+        .sidebar-header {
+            padding: 20px;
+            border-bottom: 1px solid #e2e8f0;
+            background: #f7fafc;
+        }
+
+        .sidebar-header h2 {
+            font-size: 16px;
+            color: #2d3748;
+            margin-bottom: 10px;
+        }
+
+        .search-box {
+            width: 100%;
+            padding: 10px 14px;
+            border: 2px solid #e2e8f0;
+            border-radius: 8px;
+            font-size: 14px;
+            transition: border-color 0.2s ease;
+        }
+
+        .search-box:focus {
+            outline: none;
+            border-color: #667eea;
+        }
+
+        .apqc-tree {
+            padding: 10px;
+        }
+
+        .apqc-category {
+            margin-bottom: 8px;
+        }
+
+        .category-header {
+            padding: 12px 14px;
+            background: #f7fafc;
+            border-radius: 8px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            transition: background 0.2s ease;
+            user-select: none;
+        }
+
+        .category-header:hover {
+            background: #edf2f7;
+        }
+
+        .category-icon {
+            font-size: 18px;
+            width: 20px;
+            text-align: center;
+        }
+
+        .category-name {
+            flex: 1;
+            font-size: 14px;
+            font-weight: 600;
+            color: #2d3748;
+        }
+
+        .category-count {
+            background: #667eea;
+            color: white;
+            padding: 2px 8px;
+            border-radius: 12px;
+            font-size: 11px;
+            font-weight: 600;
+        }
+
+        .category-agents {
+            max-height: 0;
+            overflow: hidden;
+            transition: max-height 0.3s ease;
+            padding-left: 30px;
+        }
+
+        .category-agents.expanded {
+            max-height: 2000px;
+            padding-top: 8px;
+        }
+
+        .agent-item {
+            padding: 10px 14px;
+            margin-bottom: 4px;
+            background: white;
+            border: 1px solid #e2e8f0;
+            border-radius: 6px;
+            cursor: grab;
+            transition: all 0.2s ease;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .agent-item:hover {
+            border-color: #667eea;
+            background: #f7fafc;
+            transform: translateX(4px);
+        }
+
+        .agent-item:active {
+            cursor: grabbing;
+        }
+
+        .agent-id {
+            font-size: 11px;
+            color: #a0aec0;
+            font-weight: 600;
+            min-width: 55px;
+        }
+
+        .agent-name {
+            font-size: 13px;
+            color: #4a5568;
+            flex: 1;
+            line-height: 1.4;
+        }
+
+        /* Main Canvas */
+        .canvas {
+            background: linear-gradient(90deg, #f5f7fa 1px, transparent 1px),
+                        linear-gradient(#f5f7fa 1px, transparent 1px);
+            background-size: 20px 20px;
+            position: relative;
+            overflow: auto;
+        }
+
+        .canvas-content {
+            min-height: 100%;
+            padding: 40px;
+        }
+
+        .workflow-area {
+            background: white;
+            border: 3px dashed #cbd5e0;
+            border-radius: 16px;
+            min-height: 400px;
+            padding: 30px;
+            position: relative;
+        }
+
+        .workflow-area.drag-over {
+            border-color: #667eea;
+            background: #f7fafc;
+        }
+
+        .workflow-placeholder {
+            text-align: center;
+            padding: 80px 40px;
+            color: #a0aec0;
+        }
+
+        .workflow-placeholder-icon {
+            font-size: 64px;
+            margin-bottom: 20px;
+        }
+
+        .workflow-placeholder h3 {
+            font-size: 24px;
+            margin-bottom: 10px;
+            color: #718096;
+        }
+
+        .workflow-placeholder p {
+            font-size: 16px;
+        }
+
+        /* Workflow Nodes */
+        .workflow-nodes {
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+            align-items: center;
+        }
+
+        .workflow-node {
+            background: white;
+            border: 2px solid #667eea;
+            border-radius: 12px;
+            padding: 20px;
+            min-width: 400px;
+            box-shadow: 0 4px 12px rgba(102, 126, 234, 0.15);
+            position: relative;
+            animation: nodeAppear 0.3s ease;
+        }
+
+        @keyframes nodeAppear {
+            from {
+                opacity: 0;
+                transform: scale(0.9);
+            }
+            to {
+                opacity: 1;
+                transform: scale(1);
+            }
+        }
+
+        .workflow-node-header {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            margin-bottom: 15px;
+        }
+
+        .node-number {
+            background: #667eea;
+            color: white;
+            width: 36px;
+            height: 36px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 700;
+            font-size: 16px;
+        }
+
+        .node-info {
+            flex: 1;
+        }
+
+        .node-id {
+            font-size: 12px;
+            color: #a0aec0;
+            font-weight: 600;
+        }
+
+        .node-name {
+            font-size: 16px;
+            color: #2d3748;
+            font-weight: 600;
+            margin-top: 4px;
+        }
+
+        .node-remove {
+            background: #fc8181;
+            color: white;
+            border: none;
+            width: 28px;
+            height: 28px;
+            border-radius: 50%;
+            cursor: pointer;
+            font-size: 16px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: background 0.2s ease;
+        }
+
+        .node-remove:hover {
+            background: #f56565;
+        }
+
+        .node-description {
+            font-size: 14px;
+            color: #718096;
+            line-height: 1.6;
+            padding: 15px;
+            background: #f7fafc;
+            border-radius: 8px;
+        }
+
+        .node-connector {
+            text-align: center;
+            color: #cbd5e0;
+            font-size: 24px;
+            margin: -10px 0;
+        }
+
+        /* Execution Panel */
+        .execution-panel {
+            position: fixed;
+            bottom: 0;
+            left: 320px;
+            right: 0;
+            background: white;
+            border-top: 2px solid #e2e8f0;
+            padding: 20px 40px;
+            transform: translateY(100%);
+            transition: transform 0.3s ease;
+            box-shadow: 0 -4px 20px rgba(0,0,0,0.1);
+            max-height: 400px;
+            overflow-y: auto;
+        }
+
+        .execution-panel.visible {
+            transform: translateY(0);
+        }
+
+        .execution-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 20px;
+        }
+
+        .execution-title {
+            font-size: 20px;
+            font-weight: 600;
+            color: #2d3748;
+        }
+
+        .execution-close {
+            background: #e2e8f0;
+            border: none;
+            width: 32px;
+            height: 32px;
+            border-radius: 50%;
+            cursor: pointer;
+            font-size: 18px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .execution-close:hover {
+            background: #cbd5e0;
+        }
+
+        .execution-steps {
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+        }
+
+        .execution-step {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            padding: 15px;
+            background: #f7fafc;
+            border-radius: 8px;
+            border-left: 4px solid #cbd5e0;
+        }
+
+        .execution-step.running {
+            border-left-color: #4299e1;
+            background: #ebf8ff;
+        }
+
+        .execution-step.completed {
+            border-left-color: #48bb78;
+            background: #c6f6d5;
+        }
+
+        .execution-step.failed {
+            border-left-color: #f56565;
+            background: #fed7d7;
+        }
+
+        .execution-step-icon {
+            font-size: 24px;
+            width: 32px;
+            text-align: center;
+        }
+
+        .execution-step-info {
+            flex: 1;
+        }
+
+        .execution-step-name {
+            font-size: 15px;
+            font-weight: 600;
+            color: #2d3748;
+            margin-bottom: 4px;
+        }
+
+        .execution-step-status {
+            font-size: 13px;
+            color: #718096;
+        }
+
+        .execution-step-duration {
+            font-size: 13px;
+            color: #a0aec0;
+        }
+
+        .workflow-stats {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 20px;
+            margin-top: 30px;
+            padding-top: 20px;
+            border-top: 1px solid #e2e8f0;
+        }
+
+        .stat-item {
+            text-align: center;
+        }
+
+        .stat-value {
+            font-size: 28px;
+            font-weight: 700;
+            color: #667eea;
+            margin-bottom: 4px;
+        }
+
+        .stat-label {
+            font-size: 13px;
+            color: #718096;
+        }
+
+        /* Scrollbar */
+        ::-webkit-scrollbar {
+            width: 8px;
+            height: 8px;
+        }
+
+        ::-webkit-scrollbar-track {
+            background: #f1f1f1;
+        }
+
+        ::-webkit-scrollbar-thumb {
+            background: #cbd5e0;
+            border-radius: 4px;
+        }
+
+        ::-webkit-scrollbar-thumb:hover {
+            background: #a0aec0;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <!-- Header -->
+        <div class="header">
+            <div class="header-title">🤖 APQC Agentic Platform - Workflow Composer</div>
+            <div class="header-actions">
+                <button class="btn-clear" onclick="clearWorkflow()">Clear Workflow</button>
+                <button class="btn-go" id="btnGo" onclick="executeWorkflow()" disabled>🚀 GO</button>
+            </div>
+        </div>
+
+        <!-- Sidebar - APQC Navigation -->
+        <div class="sidebar">
+            <div class="sidebar-header">
+                <h2>📊 APQC Process Framework</h2>
+                <input type="text" class="search-box" placeholder="Search agents..." id="searchBox" oninput="searchAgents()">
+            </div>
+            <div class="apqc-tree" id="apqcTree">
+                <!-- APQC categories will be populated here -->
+            </div>
+        </div>
+
+        <!-- Main Canvas -->
+        <div class="canvas">
+            <div class="canvas-content">
+                <div class="workflow-area" id="workflowArea" ondrop="dropAgent(event)" ondragover="allowDrop(event)">
+                    <div class="workflow-placeholder" id="workflowPlaceholder">
+                        <div class="workflow-placeholder-icon">🎯</div>
+                        <h3>Build Your Workflow</h3>
+                        <p>Drag agents from the left panel and drop them here to compose your workflow</p>
+                    </div>
+                    <div class="workflow-nodes" id="workflowNodes" style="display: none;"></div>
+                </div>
+
+                <div class="workflow-stats" id="workflowStats" style="display: none;">
+                    <div class="stat-item">
+                        <div class="stat-value" id="statAgents">0</div>
+                        <div class="stat-label">Agents in Workflow</div>
+                    </div>
+                    <div class="stat-item">
+                        <div class="stat-value" id="statCategories">0</div>
+                        <div class="stat-label">APQC Categories</div>
+                    </div>
+                    <div class="stat-item">
+                        <div class="stat-value" id="statEstTime">0s</div>
+                        <div class="stat-label">Est. Execution Time</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Execution Panel -->
+        <div class="execution-panel" id="executionPanel">
+            <div class="execution-header">
+                <div class="execution-title">⚡ Workflow Execution</div>
+                <button class="execution-close" onclick="closeExecutionPanel()">×</button>
+            </div>
+            <div class="execution-steps" id="executionSteps"></div>
+        </div>
+    </div>
+
+    <script>
+        // APQC Framework Data
+        const apqcCategories = {
+            "1.0": {
+                name: "Develop Vision and Strategy",
+                icon: "🎯",
+                agents: [
+                    { id: "1.1.1.1", name: "Define current state assessment" },
+                    { id: "1.2.1.1", name: "Develop strategic options" },
+                    { id: "1.3.1.1", name: "Create organizational design" }
+                ]
+            },
+            "2.0": {
+                name: "Develop and Manage Products and Services",
+                icon: "📦",
+                agents: [
+                    { id: "2.1.1.1", name: "Generate product ideas" },
+                    { id: "2.2.1.1", name: "Design and prototype products" },
+                    { id: "2.3.1.1", name: "Test and validate products" }
+                ]
+            },
+            "3.0": {
+                name: "Market and Sell Products and Services",
+                icon: "📈",
+                agents: [
+                    { id: "3.1.1.1", name: "Develop marketing strategy" },
+                    { id: "3.2.1.1", name: "Generate and qualify leads" },
+                    { id: "3.3.1.1", name: "Convert opportunities to orders" }
+                ]
+            },
+            "4.0": {
+                name: "Deliver Physical Products",
+                icon: "🚚",
+                agents: [
+                    { id: "4.1.1.1", name: "Plan supply chain" },
+                    { id: "4.2.1.1", name: "Procure materials" },
+                    { id: "4.3.1.1", name: "Manufacture products" },
+                    { id: "4.4.1.1", name: "Deliver products" }
+                ]
+            },
+            "5.0": {
+                name: "Deliver Services",
+                icon: "🛎️",
+                agents: [
+                    { id: "5.1.1.1", name: "Develop service strategy" },
+                    { id: "5.2.1.1", name: "Deliver service to customer" },
+                    { id: "5.3.1.1", name: "Ensure service quality" }
+                ]
+            },
+            "6.0": {
+                name: "Manage Customer Service",
+                icon: "💬",
+                agents: [
+                    { id: "6.1.1.1", name: "Develop customer care strategy" },
+                    { id: "6.2.1.1", name: "Handle customer inquiries" },
+                    { id: "6.3.1.1", name: "Resolve customer complaints" }
+                ]
+            },
+            "7.0": {
+                name: "Manage Human Capital",
+                icon: "👥",
+                agents: [
+                    { id: "7.1.1.1", name: "Plan workforce requirements" },
+                    { id: "7.2.1.1", name: "Recruit and select candidates" },
+                    { id: "7.3.1.1", name: "Develop employees" },
+                    { id: "7.5.1.1", name: "Process payroll" }
+                ]
+            },
+            "8.0": {
+                name: "Manage Information Technology",
+                icon: "💻",
+                agents: [
+                    { id: "8.1.1.1", name: "Develop IT strategy" },
+                    { id: "8.2.1.1", name: "Manage IT infrastructure" },
+                    { id: "8.3.1.1", name: "Develop and deploy applications" }
+                ]
+            },
+            "9.0": {
+                name: "Manage Financial Resources",
+                icon: "💰",
+                agents: [
+                    { id: "9.1.1.1", name: "Manage general ledger" },
+                    { id: "9.2.1.1", name: "Process accounts payable" },
+                    { id: "9.3.1.1", name: "Process accounts receivable" },
+                    { id: "9.6.1.1", name: "Process payments" }
+                ]
+            },
+            "10.0": {
+                name: "Acquire, Construct, and Manage Assets",
+                icon: "🏭",
+                agents: [
+                    { id: "10.1.1.1", name: "Plan asset acquisition" },
+                    { id: "10.2.1.1", name: "Manage asset lifecycle" },
+                    { id: "10.3.1.1", name: "Maintain assets" }
+                ]
+            },
+            "11.0": {
+                name: "Manage Enterprise Risk and Compliance",
+                icon: "🛡️",
+                agents: [
+                    { id: "11.1.1.1", name: "Identify and assess risks" },
+                    { id: "11.2.1.1", name: "Develop risk mitigation strategies" },
+                    { id: "11.3.1.1", name: "Ensure regulatory compliance" }
+                ]
+            },
+            "12.0": {
+                name: "Manage External Relationships",
+                icon: "🤝",
+                agents: [
+                    { id: "12.1.1.1", name: "Manage government relations" },
+                    { id: "12.2.1.1", name: "Manage community relations" },
+                    { id: "12.3.1.1", name: "Manage investor relations" }
+                ]
+            },
+            "13.0": {
+                name: "Develop and Manage Business Capabilities",
+                icon: "🎓",
+                agents: [
+                    { id: "13.1.1.1", name: "Manage knowledge and innovation" },
+                    { id: "13.2.1.1", name: "Manage change" },
+                    { id: "13.3.1.1", name: "Develop and manage quality" }
+                ]
+            }
+        };
+
+        let workflowAgents = [];
+
+        // Initialize
+        document.addEventListener('DOMContentLoaded', function() {
+            renderAPQCTree();
+        });
+
+        // Render APQC tree
+        function renderAPQCTree() {
+            const tree = document.getElementById('apqcTree');
+            let html = '';
+
+            Object.keys(apqcCategories).forEach(categoryId => {
+                const category = apqcCategories[categoryId];
+                html += `
+                    <div class="apqc-category">
+                        <div class="category-header" onclick="toggleCategory('${categoryId}')">
+                            <span class="category-icon">${category.icon}</span>
+                            <span class="category-name">${categoryId} - ${category.name}</span>
+                            <span class="category-count">${category.agents.length}</span>
+                        </div>
+                        <div class="category-agents" id="category-${categoryId}">
+                            ${category.agents.map(agent => `
+                                <div class="agent-item" draggable="true" ondragstart="dragAgent(event, '${agent.id}', '${agent.name.replace(/'/g, "\\'")}')">
+                                    <span class="agent-id">${agent.id}</span>
+                                    <span class="agent-name">${agent.name}</span>
+                                </div>
+                            `).join('')}
+                        </div>
+                    </div>
+                `;
+            });
+
+            tree.innerHTML = html;
+        }
+
+        // Toggle category
+        function toggleCategory(categoryId) {
+            const categoryAgents = document.getElementById(`category-${categoryId}`);
+            categoryAgents.classList.toggle('expanded');
+        }
+
+        // Search agents
+        function searchAgents() {
+            const query = document.getElementById('searchBox').value.toLowerCase();
+            const agents = document.querySelectorAll('.agent-item');
+
+            agents.forEach(agent => {
+                const text = agent.textContent.toLowerCase();
+                if (text.includes(query)) {
+                    agent.style.display = 'flex';
+                    agent.parentElement.classList.add('expanded');
+                } else {
+                    agent.style.display = 'none';
+                }
+            });
+        }
+
+        // Drag and Drop
+        function dragAgent(event, agentId, agentName) {
+            event.dataTransfer.setData('agentId', agentId);
+            event.dataTransfer.setData('agentName', agentName);
+        }
+
+        function allowDrop(event) {
+            event.preventDefault();
+            document.getElementById('workflowArea').classList.add('drag-over');
+        }
+
+        function dropAgent(event) {
+            event.preventDefault();
+            document.getElementById('workflowArea').classList.remove('drag-over');
+
+            const agentId = event.dataTransfer.getData('agentId');
+            const agentName = event.dataTransfer.getData('agentName');
+
+            if (agentId && agentName) {
+                addAgentToWorkflow(agentId, agentName);
+            }
+        }
+
+        document.getElementById('workflowArea').addEventListener('dragleave', function() {
+            this.classList.remove('drag-over');
+        });
+
+        // Add agent to workflow
+        function addAgentToWorkflow(agentId, agentName) {
+            workflowAgents.push({ id: agentId, name: agentName });
+            renderWorkflow();
+            updateStats();
+            document.getElementById('btnGo').disabled = workflowAgents.length === 0;
+        }
+
+        // Remove agent from workflow
+        function removeAgent(index) {
+            workflowAgents.splice(index, 1);
+            renderWorkflow();
+            updateStats();
+            document.getElementById('btnGo').disabled = workflowAgents.length === 0;
+        }
+
+        // Render workflow
+        function renderWorkflow() {
+            const placeholder = document.getElementById('workflowPlaceholder');
+            const nodes = document.getElementById('workflowNodes');
+
+            if (workflowAgents.length === 0) {
+                placeholder.style.display = 'block';
+                nodes.style.display = 'none';
+                return;
+            }
+
+            placeholder.style.display = 'none';
+            nodes.style.display = 'flex';
+
+            let html = '';
+            workflowAgents.forEach((agent, index) => {
+                html += `
+                    <div class="workflow-node">
+                        <div class="workflow-node-header">
+                            <div class="node-number">${index + 1}</div>
+                            <div class="node-info">
+                                <div class="node-id">${agent.id}</div>
+                                <div class="node-name">${agent.name}</div>
+                            </div>
+                            <button class="node-remove" onclick="removeAgent(${index})">×</button>
+                        </div>
+                        <div class="node-description">
+                            This agent will execute ${agent.name.toLowerCase()} using standardized business logic and integrated enterprise systems.
+                        </div>
+                    </div>
+                `;
+
+                if (index < workflowAgents.length - 1) {
+                    html += '<div class="node-connector">↓</div>';
+                }
+            });
+
+            nodes.innerHTML = html;
+        }
+
+        // Update stats
+        function updateStats() {
+            const stats = document.getElementById('workflowStats');
+            if (workflowAgents.length === 0) {
+                stats.style.display = 'none';
+                return;
+            }
+
+            stats.style.display = 'grid';
+
+            const categories = new Set(workflowAgents.map(a => a.id.split('.')[0]));
+
+            document.getElementById('statAgents').textContent = workflowAgents.length;
+            document.getElementById('statCategories').textContent = categories.size;
+            document.getElementById('statEstTime').textContent = (workflowAgents.length * 2) + 's';
+        }
+
+        // Clear workflow
+        function clearWorkflow() {
+            if (workflowAgents.length > 0 && !confirm('Are you sure you want to clear the workflow?')) {
+                return;
+            }
+            workflowAgents = [];
+            renderWorkflow();
+            updateStats();
+            document.getElementById('btnGo').disabled = true;
+            closeExecutionPanel();
+        }
+
+        // Execute workflow
+        async function executeWorkflow() {
+            if (workflowAgents.length === 0) return;
+
+            const panel = document.getElementById('executionPanel');
+            const steps = document.getElementById('executionSteps');
+            panel.classList.add('visible');
+
+            // Disable GO button
+            document.getElementById('btnGo').disabled = true;
+
+            // Create execution steps
+            let html = '';
+            workflowAgents.forEach((agent, index) => {
+                html += `
+                    <div class="execution-step" id="execStep-${index}">
+                        <div class="execution-step-icon">⏳</div>
+                        <div class="execution-step-info">
+                            <div class="execution-step-name">${index + 1}. ${agent.name}</div>
+                            <div class="execution-step-status">Waiting...</div>
+                        </div>
+                        <div class="execution-step-duration" id="execDuration-${index}"></div>
+                    </div>
+                `;
+            });
+            steps.innerHTML = html;
+
+            // Execute each agent sequentially
+            for (let i = 0; i < workflowAgents.length; i++) {
+                const agent = workflowAgents[i];
+                const stepElement = document.getElementById(`execStep-${i}`);
+                const durationElement = document.getElementById(`execDuration-${i}`);
+
+                // Start execution
+                stepElement.classList.add('running');
+                stepElement.querySelector('.execution-step-icon').textContent = '⚡';
+                stepElement.querySelector('.execution-step-status').textContent = 'Executing...';
+
+                const startTime = Date.now();
+
+                // Simulate agent execution (2-4 seconds)
+                const executionTime = 2000 + Math.random() * 2000;
+                await new Promise(resolve => setTimeout(resolve, executionTime));
+
+                const duration = Math.round((Date.now() - startTime) / 1000);
+
+                // Complete execution
+                stepElement.classList.remove('running');
+                stepElement.classList.add('completed');
+                stepElement.querySelector('.execution-step-icon').textContent = '✓';
+                stepElement.querySelector('.execution-step-status').textContent = 'Completed successfully';
+                durationElement.textContent = duration + 's';
+            }
+
+            // Re-enable GO button
+            setTimeout(() => {
+                document.getElementById('btnGo').disabled = false;
+            }, 1000);
+        }
+
+        // Close execution panel
+        function closeExecutionPanel() {
+            document.getElementById('executionPanel').classList.remove('visible');
+        }
+    </script>
+</body>
+</html>

@@ -1,0 +1,53 @@
+<?xml version='1.0' encoding='utf-8'?>
+<bpmn:definitions xmlns:bpmn="http://www.omg.org/spec/BPMN/20100524/MODEL" xmlns:bpmndi="http://www.omg.org/spec/BPMN/20100524/DI" xmlns:dc="http://www.omg.org/spec/DD/20100524/DC" id="Definitions_L2_13_7" targetNamespace="http://apqc.org/composite/level2/13.7" exporter="APQC Agentic Platform v3.0" exporterVersion="3.0.0">
+  <bpmn:process id="Process_13_7" name="Level 2: 13.7 - Manage health, safety, and environment" isExecutable="true">
+    <bpmn:documentation>
+Level 2 Process Group Process
+Manage health, safety, and environment
+APQC ID: 13.7
+
+Orchestrates 2 child processes:
+  1. 13.7.1: Develop HSE programs
+  2. 13.7.2: Manage environmental programs
+
+Orchestration Pattern: Sequential Workflow (Pipeline)
+Standards: BPMN 2.0, A2A Protocol
+
+Generated: 2025-11-25T11:51:05.958742
+Status: Production Ready
+</bpmn:documentation>
+    <bpmn:startEvent id="Start_13_7" name="Start">
+      <bpmn:outgoing>Flow_start_to_child1</bpmn:outgoing>
+    </bpmn:startEvent>
+    <bpmn:callActivity id="CallActivity_13_7_child1" name="13.7.1: Develop HSE programs" calledElement="Process_13_7_1">
+      <bpmn:incoming>Flow_start_to_child1</bpmn:incoming>
+      <bpmn:outgoing>Flow_child1_to_child2</bpmn:outgoing>
+    </bpmn:callActivity>
+    <bpmn:callActivity id="CallActivity_13_7_child2" name="13.7.2: Manage environmental programs" calledElement="Process_13_7_2">
+      <bpmn:incoming>Flow_child1_to_child2</bpmn:incoming>
+      <bpmn:outgoing>Flow_child2_to_end</bpmn:outgoing>
+    </bpmn:callActivity>
+    <bpmn:sequenceFlow id="Flow_start_to_child1" sourceRef="Start_13_7" targetRef="CallActivity_13_7_child1" />
+    <bpmn:sequenceFlow id="Flow_child1_to_child2" sourceRef="CallActivity_13_7_child1" targetRef="CallActivity_13_7_child2" />
+    <bpmn:sequenceFlow id="Flow_child2_to_end" sourceRef="CallActivity_13_7_child2" targetRef="End_13_7" />
+    <bpmn:endEvent id="End_13_7" name="Complete">
+      <bpmn:incoming>Flow_child2_to_end</bpmn:incoming>
+    </bpmn:endEvent>
+  </bpmn:process>
+  <bpmndi:BPMNDiagram id="Diagram_13_7">
+    <bpmndi:BPMNPlane id="Plane_13_7" bpmnElement="Process_13_7">
+      <bpmndi:BPMNShape id="Shape_Start_13_7" bpmnElement="Start_13_7">
+        <dc:Bounds x="150" y="50" width="36" height="36" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Shape_CallActivity_13_7_child1" bpmnElement="CallActivity_13_7_child1">
+        <dc:Bounds x="100" y="130" width="150" height="80" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Shape_CallActivity_13_7_child2" bpmnElement="CallActivity_13_7_child2">
+        <dc:Bounds x="100" y="230" width="150" height="80" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Shape_End_13_7" bpmnElement="End_13_7">
+        <dc:Bounds x="150" y="330" width="36" height="36" />
+      </bpmndi:BPMNShape>
+    </bpmndi:BPMNPlane>
+  </bpmndi:BPMNDiagram>
+</bpmn:definitions>

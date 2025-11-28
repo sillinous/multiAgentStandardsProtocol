@@ -1,0 +1,1046 @@
+{
+  "apqc_id": "8.1.1.1",
+  "apqc_name": "Process accounts receivable",
+  "category": "8.0 - Manage Financial Resources",
+  "description": "End-to-end accounts receivable workflow from invoice generation to cash application, including credit management, collections, and dispute resolution.",
+  "orchestration_pattern": "sequential",
+  "total_steps": 8,
+  "estimated_duration_seconds": 86400,
+  "compliance_frameworks": ["SOX", "GAAP", "Revenue Recognition ASC 606"],
+  "data_retention_days": 2555,
+
+  "agent_cards": [
+    {
+      "id": "agent_8_1_1_1_step1",
+      "apqc_id": "8.1.1.1",
+      "step_number": 1,
+      "step_name": "Invoice Generation",
+      "description": "Generate customer invoices from billing events and orders",
+      "purpose": "Create accurate invoices for goods/services delivered",
+      "business_value": "Timely billing accelerates cash collection",
+
+      "capabilities": [
+        "generate_invoice_from_order",
+        "generate_invoice_from_contract",
+        "generate_recurring_invoice",
+        "apply_pricing_rules",
+        "calculate_taxes",
+        "apply_discounts",
+        "format_per_customer_requirements"
+      ],
+
+      "input_schema": [
+        {
+          "name": "billing_trigger",
+          "type": "string",
+          "description": "Event triggering invoice generation",
+          "required": true,
+          "validation": {"enum": ["shipment", "milestone", "recurring", "manual", "usage"]}
+        },
+        {
+          "name": "customer_id",
+          "type": "string",
+          "required": true
+        },
+        {
+          "name": "order_id",
+          "type": "string",
+          "required": false
+        },
+        {
+          "name": "line_items",
+          "type": "array",
+          "required": true,
+          "example": [{"product": "Widget A", "quantity": 100, "unit_price": 25.00}]
+        },
+        {
+          "name": "billing_address",
+          "type": "object",
+          "required": true
+        },
+        {
+          "name": "currency",
+          "type": "string",
+          "required": true
+        }
+      ],
+
+      "output_schema": [
+        {
+          "name": "invoice_id",
+          "type": "string",
+          "required": true,
+          "example": "INV-2025-100234"
+        },
+        {
+          "name": "invoice_date",
+          "type": "date",
+          "required": true
+        },
+        {
+          "name": "due_date",
+          "type": "date",
+          "required": true
+        },
+        {
+          "name": "invoice_total",
+          "type": "currency",
+          "required": true
+        },
+        {
+          "name": "tax_amount",
+          "type": "currency",
+          "required": true
+        },
+        {
+          "name": "invoice_pdf",
+          "type": "binary",
+          "required": true
+        }
+      ],
+
+      "required_integrations": [
+        {"system": "ERP - Sales Order", "type": "read", "protocol": "API", "examples": ["SAP SD", "Oracle Order Management"]},
+        {"system": "Contract Management", "type": "read", "protocol": "API", "examples": ["Salesforce CPQ", "Apttus"]},
+        {"system": "Tax Engine", "type": "calculate", "protocol": "API", "examples": ["Vertex", "Avalara"]},
+        {"system": "Document Generation", "type": "create", "protocol": "API"}
+      ],
+
+      "decision_rules": [
+        {
+          "rule_id": "DR-AR-001",
+          "name": "Credit Hold Check",
+          "condition": "customer.credit_status == 'hold'",
+          "action": "block_invoice_pending_credit_review",
+          "priority": 1
+        },
+        {
+          "rule_id": "DR-AR-002",
+          "name": "Consolidated Billing",
+          "condition": "customer.billing_preference == 'consolidated'",
+          "action": "queue_for_consolidation",
+          "priority": 2
+        },
+        {
+          "rule_id": "DR-AR-003",
+          "name": "EDI Customer",
+          "condition": "customer.invoice_delivery == 'edi'",
+          "action": "format_for_edi_transmission",
+          "priority": 1
+        }
+      ],
+
+      "error_handlers": [
+        {
+          "error_type": "pricing_not_found",
+          "severity": "high",
+          "action": "route_to_pricing_team",
+          "notification": ["billing_team", "sales"]
+        },
+        {
+          "error_type": "tax_calculation_failure",
+          "severity": "medium",
+          "action": "retry_with_fallback_rates",
+          "notification": ["tax_team"]
+        }
+      ]
+    },
+
+    {
+      "id": "agent_8_1_1_1_step2",
+      "apqc_id": "8.1.1.1",
+      "step_number": 2,
+      "step_name": "Invoice Delivery",
+      "description": "Deliver invoices to customers through preferred channels",
+      "purpose": "Ensure customers receive invoices promptly",
+      "business_value": "Faster delivery reduces DSO",
+
+      "capabilities": [
+        "email_invoice",
+        "transmit_edi",
+        "upload_to_portal",
+        "print_and_mail",
+        "track_delivery_status",
+        "handle_bounces"
+      ],
+
+      "input_schema": [
+        {
+          "name": "invoice_id",
+          "type": "string",
+          "required": true
+        },
+        {
+          "name": "customer_id",
+          "type": "string",
+          "required": true
+        },
+        {
+          "name": "delivery_method",
+          "type": "string",
+          "required": true,
+          "validation": {"enum": ["email", "edi", "portal", "mail", "fax"]}
+        },
+        {
+          "name": "invoice_document",
+          "type": "binary",
+          "required": true
+        }
+      ],
+
+      "output_schema": [
+        {
+          "name": "delivery_status",
+          "type": "string",
+          "required": true,
+          "validation": {"enum": ["delivered", "pending", "failed", "bounced"]}
+        },
+        {
+          "name": "delivery_timestamp",
+          "type": "datetime",
+          "required": true
+        },
+        {
+          "name": "delivery_confirmation",
+          "type": "string",
+          "required": false
+        },
+        {
+          "name": "retry_count",
+          "type": "integer",
+          "required": true
+        }
+      ],
+
+      "required_integrations": [
+        {"system": "Email Service", "type": "outbound", "protocol": "SMTP/API", "examples": ["SendGrid", "Amazon SES"]},
+        {"system": "EDI Gateway", "type": "outbound", "protocol": "AS2/SFTP"},
+        {"system": "Customer Portal", "type": "publish", "protocol": "REST API"},
+        {"system": "Print/Mail Service", "type": "outbound", "protocol": "API", "examples": ["Pitney Bowes", "Lob"]}
+      ],
+
+      "decision_rules": [
+        {
+          "rule_id": "DR-AR-010",
+          "name": "Multi-Channel Delivery",
+          "condition": "invoice_amount > 50000",
+          "action": "send_via_email_and_mail",
+          "priority": 1
+        },
+        {
+          "rule_id": "DR-AR-011",
+          "name": "Retry Failed Delivery",
+          "condition": "delivery_status == 'failed' AND retry_count < 3",
+          "action": "retry_with_alternate_contact",
+          "priority": 1
+        }
+      ],
+
+      "error_handlers": [
+        {
+          "error_type": "email_bounce",
+          "severity": "medium",
+          "action": "update_contact_and_retry",
+          "notification": ["ar_team", "sales"]
+        },
+        {
+          "error_type": "edi_rejection",
+          "severity": "high",
+          "action": "review_format_and_resubmit",
+          "notification": ["edi_team", "ar_team"]
+        }
+      ]
+    },
+
+    {
+      "id": "agent_8_1_1_1_step3",
+      "apqc_id": "8.1.1.1",
+      "step_number": 3,
+      "step_name": "Credit Management",
+      "description": "Monitor and manage customer credit limits and terms",
+      "purpose": "Balance sales growth with credit risk",
+      "business_value": "Reduce bad debt while enabling sales",
+
+      "capabilities": [
+        "evaluate_credit_application",
+        "set_credit_limit",
+        "monitor_credit_exposure",
+        "calculate_credit_score",
+        "apply_credit_hold",
+        "release_credit_hold"
+      ],
+
+      "input_schema": [
+        {
+          "name": "customer_id",
+          "type": "string",
+          "required": true
+        },
+        {
+          "name": "action_type",
+          "type": "string",
+          "required": true,
+          "validation": {"enum": ["new_application", "limit_review", "exposure_check", "hold_review"]}
+        },
+        {
+          "name": "order_amount",
+          "type": "currency",
+          "required": false
+        },
+        {
+          "name": "financial_data",
+          "type": "object",
+          "required": false
+        }
+      ],
+
+      "output_schema": [
+        {
+          "name": "credit_decision",
+          "type": "string",
+          "required": true,
+          "validation": {"enum": ["approved", "declined", "conditional", "review_required"]}
+        },
+        {
+          "name": "credit_limit",
+          "type": "currency",
+          "required": true
+        },
+        {
+          "name": "available_credit",
+          "type": "currency",
+          "required": true
+        },
+        {
+          "name": "credit_score",
+          "type": "integer",
+          "required": true
+        },
+        {
+          "name": "risk_rating",
+          "type": "string",
+          "required": true,
+          "validation": {"enum": ["low", "medium", "high", "critical"]}
+        }
+      ],
+
+      "required_integrations": [
+        {"system": "Credit Bureau", "type": "inquiry", "protocol": "API", "examples": ["D&B", "Experian Business", "Equifax"]},
+        {"system": "Credit Insurance", "type": "bidirectional", "protocol": "API", "examples": ["Euler Hermes", "Coface"]},
+        {"system": "ERP - Customer Master", "type": "bidirectional", "protocol": "API"},
+        {"system": "Financial Statements", "type": "read", "protocol": "API"}
+      ],
+
+      "decision_rules": [
+        {
+          "rule_id": "DR-AR-020",
+          "name": "Auto-Approve Low Risk",
+          "condition": "credit_score > 750 AND requested_limit <= 50000",
+          "action": "auto_approve",
+          "priority": 1
+        },
+        {
+          "rule_id": "DR-AR-021",
+          "name": "Over Limit Hold",
+          "condition": "current_exposure + order_amount > credit_limit * 1.1",
+          "action": "apply_credit_hold",
+          "priority": 1
+        },
+        {
+          "rule_id": "DR-AR-022",
+          "name": "Past Due Hold",
+          "condition": "oldest_open_invoice > 60 days",
+          "action": "apply_credit_hold",
+          "priority": 1
+        },
+        {
+          "rule_id": "DR-AR-023",
+          "name": "Large Limit Review",
+          "condition": "requested_limit > 500000",
+          "action": "route_to_credit_committee",
+          "priority": 1
+        }
+      ],
+
+      "error_handlers": [
+        {
+          "error_type": "credit_bureau_unavailable",
+          "severity": "medium",
+          "action": "use_internal_scoring_model",
+          "notification": ["credit_team"]
+        },
+        {
+          "error_type": "financial_data_stale",
+          "severity": "medium",
+          "action": "request_updated_financials",
+          "notification": ["credit_team", "sales"]
+        }
+      ]
+    },
+
+    {
+      "id": "agent_8_1_1_1_step4",
+      "apqc_id": "8.1.1.1",
+      "step_number": 4,
+      "step_name": "Payment Processing",
+      "description": "Receive and process customer payments",
+      "purpose": "Capture payments across all channels",
+      "business_value": "Accelerate cash collection and improve visibility",
+
+      "capabilities": [
+        "process_check_payment",
+        "process_ach_payment",
+        "process_wire_transfer",
+        "process_credit_card",
+        "process_lockbox",
+        "handle_partial_payments"
+      ],
+
+      "input_schema": [
+        {
+          "name": "payment_source",
+          "type": "string",
+          "required": true,
+          "validation": {"enum": ["lockbox", "portal", "ach", "wire", "check", "credit_card"]}
+        },
+        {
+          "name": "payment_amount",
+          "type": "currency",
+          "required": true
+        },
+        {
+          "name": "customer_reference",
+          "type": "string",
+          "required": false
+        },
+        {
+          "name": "remittance_data",
+          "type": "object",
+          "required": false
+        }
+      ],
+
+      "output_schema": [
+        {
+          "name": "payment_id",
+          "type": "string",
+          "required": true
+        },
+        {
+          "name": "payment_status",
+          "type": "string",
+          "required": true,
+          "validation": {"enum": ["received", "pending_clearing", "cleared", "returned", "failed"]}
+        },
+        {
+          "name": "customer_id",
+          "type": "string",
+          "required": true
+        },
+        {
+          "name": "bank_reference",
+          "type": "string",
+          "required": true
+        },
+        {
+          "name": "deposit_date",
+          "type": "date",
+          "required": true
+        }
+      ],
+
+      "required_integrations": [
+        {"system": "Lockbox Service", "type": "inbound", "protocol": "BAI2/Custom", "examples": ["Bank of America", "J.P. Morgan"]},
+        {"system": "Payment Gateway", "type": "bidirectional", "protocol": "API", "examples": ["Stripe", "PayPal", "Square"]},
+        {"system": "Banking Portal", "type": "inbound", "protocol": "API/SFTP"},
+        {"system": "Customer Portal", "type": "bidirectional", "protocol": "REST API"}
+      ],
+
+      "decision_rules": [
+        {
+          "rule_id": "DR-AR-030",
+          "name": "Auto-Identify Customer",
+          "condition": "remittance_contains_invoice_number",
+          "action": "match_to_customer_and_invoice",
+          "priority": 1
+        },
+        {
+          "rule_id": "DR-AR-031",
+          "name": "Large Wire Notification",
+          "condition": "payment_amount > 100000 AND payment_source == 'wire'",
+          "action": "notify_ar_manager",
+          "priority": 2
+        },
+        {
+          "rule_id": "DR-AR-032",
+          "name": "Credit Card Fee Handling",
+          "condition": "payment_source == 'credit_card'",
+          "action": "apply_processing_fee_or_surcharge",
+          "priority": 1
+        }
+      ],
+
+      "error_handlers": [
+        {
+          "error_type": "check_returned_nsf",
+          "severity": "high",
+          "action": "reverse_application_and_notify_collections",
+          "notification": ["ar_team", "collections", "sales"]
+        },
+        {
+          "error_type": "unidentified_payment",
+          "severity": "medium",
+          "action": "post_to_unapplied_and_research",
+          "notification": ["cash_application_team"]
+        }
+      ]
+    },
+
+    {
+      "id": "agent_8_1_1_1_step5",
+      "apqc_id": "8.1.1.1",
+      "step_number": 5,
+      "step_name": "Cash Application",
+      "description": "Apply payments to open invoices and customer accounts",
+      "purpose": "Match payments to invoices accurately and efficiently",
+      "business_value": "Reduce unapplied cash and improve customer account accuracy",
+
+      "capabilities": [
+        "auto_match_payment",
+        "apply_to_specific_invoice",
+        "apply_to_oldest_first",
+        "handle_overpayment",
+        "handle_underpayment",
+        "process_deductions",
+        "manage_unapplied_cash"
+      ],
+
+      "input_schema": [
+        {
+          "name": "payment_id",
+          "type": "string",
+          "required": true
+        },
+        {
+          "name": "customer_id",
+          "type": "string",
+          "required": true
+        },
+        {
+          "name": "payment_amount",
+          "type": "currency",
+          "required": true
+        },
+        {
+          "name": "remittance_details",
+          "type": "array",
+          "required": false,
+          "example": [{"invoice": "INV-001", "amount": 5000.00}]
+        }
+      ],
+
+      "output_schema": [
+        {
+          "name": "application_status",
+          "type": "string",
+          "required": true,
+          "validation": {"enum": ["fully_applied", "partial", "unapplied", "exception"]}
+        },
+        {
+          "name": "applied_invoices",
+          "type": "array",
+          "required": true
+        },
+        {
+          "name": "remaining_amount",
+          "type": "currency",
+          "required": true
+        },
+        {
+          "name": "deductions_identified",
+          "type": "array",
+          "required": true
+        },
+        {
+          "name": "application_confidence",
+          "type": "number",
+          "description": "AI confidence score 0-100",
+          "required": true
+        }
+      ],
+
+      "required_integrations": [
+        {"system": "ERP - AR Subledger", "type": "bidirectional", "protocol": "API"},
+        {"system": "AI Cash Application", "type": "processing", "protocol": "API", "examples": ["HighRadius", "BlackLine", "Billtrust"]},
+        {"system": "Remittance Parser", "type": "processing", "protocol": "API"}
+      ],
+
+      "decision_rules": [
+        {
+          "rule_id": "DR-AR-040",
+          "name": "Exact Match Auto-Apply",
+          "condition": "payment_amount == open_invoice_total AND single_invoice",
+          "action": "auto_apply",
+          "priority": 1
+        },
+        {
+          "rule_id": "DR-AR-041",
+          "name": "Remittance Match",
+          "condition": "remittance_invoices_match AND amounts_match",
+          "action": "auto_apply_per_remittance",
+          "priority": 1
+        },
+        {
+          "rule_id": "DR-AR-042",
+          "name": "Short Pay Threshold",
+          "condition": "short_pay_amount <= 50 OR short_pay_percent <= 2%",
+          "action": "write_off_small_balance",
+          "priority": 2
+        },
+        {
+          "rule_id": "DR-AR-043",
+          "name": "Deduction Identified",
+          "condition": "short_pay_matches_known_deduction_pattern",
+          "action": "create_deduction_for_review",
+          "priority": 1
+        }
+      ],
+
+      "error_handlers": [
+        {
+          "error_type": "no_open_invoices",
+          "severity": "medium",
+          "action": "post_as_credit_balance",
+          "notification": ["ar_team"]
+        },
+        {
+          "error_type": "ambiguous_match",
+          "severity": "low",
+          "action": "queue_for_manual_review",
+          "notification": ["cash_application_team"]
+        }
+      ]
+    },
+
+    {
+      "id": "agent_8_1_1_1_step6",
+      "apqc_id": "8.1.1.1",
+      "step_number": 6,
+      "step_name": "Collections Management",
+      "description": "Manage collection activities for overdue accounts",
+      "purpose": "Recover past-due receivables while maintaining relationships",
+      "business_value": "Reduce DSO and bad debt expense",
+
+      "capabilities": [
+        "generate_aging_report",
+        "prioritize_collection_worklist",
+        "send_dunning_letters",
+        "schedule_collection_calls",
+        "log_collection_activity",
+        "escalate_to_third_party"
+      ],
+
+      "input_schema": [
+        {
+          "name": "customer_id",
+          "type": "string",
+          "required": true
+        },
+        {
+          "name": "aging_bucket",
+          "type": "string",
+          "required": true,
+          "validation": {"enum": ["current", "1-30", "31-60", "61-90", "90+"]}
+        },
+        {
+          "name": "past_due_amount",
+          "type": "currency",
+          "required": true
+        },
+        {
+          "name": "collection_history",
+          "type": "array",
+          "required": false
+        }
+      ],
+
+      "output_schema": [
+        {
+          "name": "collection_action_taken",
+          "type": "string",
+          "required": true
+        },
+        {
+          "name": "promise_to_pay",
+          "type": "object",
+          "required": false
+        },
+        {
+          "name": "next_action_date",
+          "type": "date",
+          "required": true
+        },
+        {
+          "name": "collection_status",
+          "type": "string",
+          "required": true,
+          "validation": {"enum": ["active", "promised", "dispute", "escalated", "write_off_candidate"]}
+        }
+      ],
+
+      "required_integrations": [
+        {"system": "Collections Platform", "type": "bidirectional", "protocol": "API", "examples": ["HighRadius", "Esker", "YayPay"]},
+        {"system": "Phone System", "type": "outbound", "protocol": "SIP/API"},
+        {"system": "Email Service", "type": "outbound", "protocol": "API"},
+        {"system": "Collection Agency", "type": "outbound", "protocol": "API/SFTP"}
+      ],
+
+      "decision_rules": [
+        {
+          "rule_id": "DR-AR-050",
+          "name": "Dunning Level 1",
+          "condition": "days_past_due > 7 AND dunning_count == 0",
+          "action": "send_friendly_reminder",
+          "priority": 1
+        },
+        {
+          "rule_id": "DR-AR-051",
+          "name": "Dunning Level 2",
+          "condition": "days_past_due > 30 AND dunning_count == 1",
+          "action": "send_formal_demand",
+          "priority": 1
+        },
+        {
+          "rule_id": "DR-AR-052",
+          "name": "Priority Collection",
+          "condition": "past_due_amount > 50000 OR days_past_due > 60",
+          "action": "assign_to_senior_collector",
+          "priority": 1
+        },
+        {
+          "rule_id": "DR-AR-053",
+          "name": "Third Party Escalation",
+          "condition": "days_past_due > 120 AND collection_attempts > 5",
+          "action": "escalate_to_collection_agency",
+          "priority": 1
+        }
+      ],
+
+      "error_handlers": [
+        {
+          "error_type": "customer_bankrupt",
+          "severity": "critical",
+          "action": "halt_collection_and_file_claim",
+          "notification": ["ar_manager", "legal", "credit_team"]
+        },
+        {
+          "error_type": "disputed_invoice",
+          "severity": "medium",
+          "action": "route_to_dispute_resolution",
+          "notification": ["ar_team", "sales"]
+        }
+      ]
+    },
+
+    {
+      "id": "agent_8_1_1_1_step7",
+      "apqc_id": "8.1.1.1",
+      "step_number": 7,
+      "step_name": "Dispute Resolution",
+      "description": "Manage and resolve customer billing disputes and deductions",
+      "purpose": "Resolve disputes quickly while protecting revenue",
+      "business_value": "Recover valid deductions and improve customer satisfaction",
+
+      "capabilities": [
+        "capture_dispute_details",
+        "categorize_dispute_type",
+        "investigate_root_cause",
+        "coordinate_resolution",
+        "approve_credit_memo",
+        "rebill_if_valid"
+      ],
+
+      "input_schema": [
+        {
+          "name": "dispute_id",
+          "type": "string",
+          "required": true
+        },
+        {
+          "name": "customer_id",
+          "type": "string",
+          "required": true
+        },
+        {
+          "name": "disputed_invoice",
+          "type": "string",
+          "required": true
+        },
+        {
+          "name": "dispute_amount",
+          "type": "currency",
+          "required": true
+        },
+        {
+          "name": "dispute_reason",
+          "type": "string",
+          "required": true,
+          "validation": {"enum": ["pricing", "quantity", "quality", "delivery", "duplicate", "returns", "promo", "other"]}
+        }
+      ],
+
+      "output_schema": [
+        {
+          "name": "resolution_status",
+          "type": "string",
+          "required": true,
+          "validation": {"enum": ["valid_credit_issued", "invalid_rebilled", "partial_resolution", "pending", "closed"]}
+        },
+        {
+          "name": "credit_memo_id",
+          "type": "string",
+          "required": false
+        },
+        {
+          "name": "rebill_invoice_id",
+          "type": "string",
+          "required": false
+        },
+        {
+          "name": "resolution_amount",
+          "type": "currency",
+          "required": true
+        },
+        {
+          "name": "root_cause",
+          "type": "string",
+          "required": true
+        },
+        {
+          "name": "days_to_resolve",
+          "type": "integer",
+          "required": true
+        }
+      ],
+
+      "required_integrations": [
+        {"system": "Dispute Management", "type": "bidirectional", "protocol": "API", "examples": ["HighRadius", "Billtrust"]},
+        {"system": "ERP - Credit Memo", "type": "create", "protocol": "API"},
+        {"system": "Order Management", "type": "read", "protocol": "API"},
+        {"system": "Shipping/TMS", "type": "read", "protocol": "API"}
+      ],
+
+      "decision_rules": [
+        {
+          "rule_id": "DR-AR-060",
+          "name": "Auto-Approve Small Dispute",
+          "condition": "dispute_amount <= 100 AND customer.payment_history == 'good'",
+          "action": "auto_issue_credit",
+          "priority": 1
+        },
+        {
+          "rule_id": "DR-AR-061",
+          "name": "POD Required",
+          "condition": "dispute_reason == 'delivery' AND pod_available",
+          "action": "request_pod_and_rebill",
+          "priority": 1
+        },
+        {
+          "rule_id": "DR-AR-062",
+          "name": "Quality Escalation",
+          "condition": "dispute_reason == 'quality' AND amount > 1000",
+          "action": "escalate_to_quality_team",
+          "priority": 1
+        },
+        {
+          "rule_id": "DR-AR-063",
+          "name": "Repeat Dispute Pattern",
+          "condition": "customer.dispute_rate > 10%",
+          "action": "flag_for_sales_review",
+          "priority": 2
+        }
+      ],
+
+      "error_handlers": [
+        {
+          "error_type": "documentation_unavailable",
+          "severity": "medium",
+          "action": "escalate_to_supervisor",
+          "notification": ["ar_manager"]
+        },
+        {
+          "error_type": "sla_breach_imminent",
+          "severity": "high",
+          "action": "expedite_resolution",
+          "notification": ["ar_manager", "customer_success"]
+        }
+      ]
+    },
+
+    {
+      "id": "agent_8_1_1_1_step8",
+      "apqc_id": "8.1.1.1",
+      "step_number": 8,
+      "step_name": "AR Reporting and Analytics",
+      "description": "Generate AR reports and analytics for decision-making",
+      "purpose": "Provide visibility into AR performance and trends",
+      "business_value": "Data-driven management of receivables portfolio",
+
+      "capabilities": [
+        "generate_aging_report",
+        "calculate_dso",
+        "forecast_collections",
+        "analyze_bad_debt_risk",
+        "benchmark_performance",
+        "generate_reserve_recommendation"
+      ],
+
+      "input_schema": [
+        {
+          "name": "report_type",
+          "type": "string",
+          "required": true,
+          "validation": {"enum": ["aging", "dso", "collection_forecast", "bad_debt", "customer_risk", "performance"]}
+        },
+        {
+          "name": "as_of_date",
+          "type": "date",
+          "required": true
+        },
+        {
+          "name": "filters",
+          "type": "object",
+          "required": false,
+          "example": {"business_unit": "North America", "customer_segment": "Enterprise"}
+        }
+      ],
+
+      "output_schema": [
+        {
+          "name": "report_data",
+          "type": "object",
+          "required": true
+        },
+        {
+          "name": "dso_current",
+          "type": "number",
+          "required": true
+        },
+        {
+          "name": "dso_best_possible",
+          "type": "number",
+          "required": true
+        },
+        {
+          "name": "collection_effectiveness_index",
+          "type": "number",
+          "required": true
+        },
+        {
+          "name": "recommended_reserve",
+          "type": "currency",
+          "required": true
+        },
+        {
+          "name": "risk_concentrations",
+          "type": "array",
+          "required": true
+        }
+      ],
+
+      "required_integrations": [
+        {"system": "ERP - AR Subledger", "type": "read", "protocol": "API"},
+        {"system": "Data Warehouse", "type": "read", "protocol": "SQL/API"},
+        {"system": "BI Platform", "type": "publish", "protocol": "API", "examples": ["Tableau", "Power BI", "Looker"]},
+        {"system": "Forecasting Engine", "type": "processing", "protocol": "API"}
+      ],
+
+      "decision_rules": [
+        {
+          "rule_id": "DR-AR-070",
+          "name": "Reserve Increase Alert",
+          "condition": "recommended_reserve > current_reserve * 1.2",
+          "action": "alert_controller",
+          "priority": 1
+        },
+        {
+          "rule_id": "DR-AR-071",
+          "name": "DSO Threshold Breach",
+          "condition": "dso_current > target_dso * 1.1",
+          "action": "generate_action_plan",
+          "priority": 1
+        },
+        {
+          "rule_id": "DR-AR-072",
+          "name": "Concentration Risk",
+          "condition": "top_5_customers > 50% of AR",
+          "action": "flag_concentration_risk",
+          "priority": 2
+        }
+      ],
+
+      "error_handlers": [
+        {
+          "error_type": "data_freshness_issue",
+          "severity": "medium",
+          "action": "use_cached_with_warning",
+          "notification": ["ar_manager", "it_support"]
+        },
+        {
+          "error_type": "forecast_model_failure",
+          "severity": "medium",
+          "action": "use_historical_average",
+          "notification": ["analytics_team"]
+        }
+      ]
+    }
+  ],
+
+  "integration_summary": {
+    "erp_systems": ["SAP S/4HANA", "Oracle Cloud Financials", "Microsoft Dynamics 365", "NetSuite"],
+    "ar_automation": ["HighRadius", "Billtrust", "Esker", "BlackLine"],
+    "payment_processors": ["Stripe", "PayPal", "Square", "Worldpay"],
+    "credit_bureaus": ["Dun & Bradstreet", "Experian Business", "Equifax Commercial"],
+    "banking_systems": ["J.P. Morgan", "Bank of America", "Wells Fargo", "Citi"],
+    "analytics_platforms": ["Tableau", "Power BI", "Looker", "Domo"]
+  },
+
+  "kpis": [
+    {
+      "name": "Days Sales Outstanding (DSO)",
+      "description": "Average days to collect receivables",
+      "target": "< 45 days",
+      "measurement": "(avg_ar_balance / revenue) * days_in_period"
+    },
+    {
+      "name": "Collection Effectiveness Index",
+      "description": "Effectiveness of collection efforts",
+      "target": "> 80%",
+      "measurement": "(beginning_ar + credit_sales - ending_ar) / (beginning_ar + credit_sales) * 100"
+    },
+    {
+      "name": "Bad Debt Ratio",
+      "description": "Write-offs as percentage of revenue",
+      "target": "< 0.5%",
+      "measurement": "bad_debt_expense / total_credit_sales"
+    },
+    {
+      "name": "Invoice Accuracy Rate",
+      "description": "Percentage of invoices without errors",
+      "target": "> 99%",
+      "measurement": "(total_invoices - disputed_invoices) / total_invoices"
+    },
+    {
+      "name": "Cash Application Rate",
+      "description": "Percentage of payments auto-applied",
+      "target": "> 85%",
+      "measurement": "auto_applied_payments / total_payments"
+    },
+    {
+      "name": "Dispute Resolution Time",
+      "description": "Average days to resolve disputes",
+      "target": "< 15 days",
+      "measurement": "avg(resolution_date - dispute_date)"
+    }
+  ]
+}

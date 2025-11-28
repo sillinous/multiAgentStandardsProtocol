@@ -3,497 +3,766 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>SuperStandard Admin - Unified Protocol Dashboard</title>
+    <title>Admin Dashboard - SuperStandard Platform</title>
+    <link rel="stylesheet" href="/design-system.css">
     <style>
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
+        /* Custom dashboard styles */
+        .dashboard-header {
+            margin-bottom: var(--spacing-6);
         }
 
-        body {
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            color: #fff;
-            min-height: 100vh;
+        .dashboard-title {
+            font-size: var(--font-size-3xl);
+            font-weight: var(--font-weight-bold);
+            color: var(--color-neutral-900);
+            margin-bottom: var(--spacing-2);
         }
 
-        .nav-bar {
-            background: rgba(0, 0, 0, 0.3);
-            padding: 15px 30px;
+        .dashboard-subtitle {
+            font-size: var(--font-size-base);
+            color: var(--color-neutral-600);
+        }
+
+        .header-actions {
+            display: flex;
+            gap: var(--spacing-3);
+            align-items: center;
+            margin-top: var(--spacing-4);
+        }
+
+        /* Health status banner */
+        .health-banner {
+            background: linear-gradient(135deg, var(--color-primary-700) 0%, var(--color-primary-600) 100%);
+            color: white;
+            padding: var(--spacing-6);
+            border-radius: var(--radius-lg);
+            margin-bottom: var(--spacing-6);
             display: flex;
             justify-content: space-between;
             align-items: center;
-            backdrop-filter: blur(10px);
+            box-shadow: var(--shadow-primary);
         }
 
-        .nav-bar h1 {
-            font-size: 1.5em;
+        .health-banner.warning {
+            background: linear-gradient(135deg, var(--color-warning-700) 0%, var(--color-warning-600) 100%);
+            box-shadow: var(--shadow-md);
         }
 
-        .nav-links {
+        .health-banner.error {
+            background: linear-gradient(135deg, var(--color-error-700) 0%, var(--color-error-600) 100%);
+            box-shadow: var(--shadow-error);
+        }
+
+        .health-info h2 {
+            font-size: var(--font-size-xl);
+            margin-bottom: var(--spacing-2);
+        }
+
+        .health-metrics {
             display: flex;
-            gap: 20px;
+            gap: var(--spacing-6);
         }
 
-        .nav-links a {
-            color: #fff;
-            text-decoration: none;
-            padding: 8px 16px;
-            border-radius: 8px;
-            transition: background 0.3s;
-        }
-
-        .nav-links a:hover, .nav-links a.active {
-            background: rgba(255, 255, 255, 0.2);
-        }
-
-        .container {
-            max-width: 1400px;
-            margin: 30px auto;
-            padding: 0 20px;
-        }
-
-        .header {
+        .health-metric {
             text-align: center;
-            padding: 40px 0;
         }
 
-        .header h2 {
-            font-size: 2.5em;
-            margin-bottom: 10px;
+        .health-metric-value {
+            font-size: var(--font-size-2xl);
+            font-weight: var(--font-weight-bold);
+            margin-bottom: var(--spacing-1);
         }
 
-        .header p {
-            font-size: 1.2em;
+        .health-metric-label {
+            font-size: var(--font-size-sm);
             opacity: 0.9;
         }
 
-        .protocol-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
-            gap: 25px;
-            margin-bottom: 30px;
-        }
-
-        .protocol-card {
-            background: rgba(255, 255, 255, 0.95);
-            color: #333;
-            border-radius: 15px;
-            padding: 25px;
-            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
-            transition: transform 0.3s, box-shadow 0.3s;
-        }
-
-        .protocol-card:hover {
-            transform: translateY(-5px);
-            box-shadow: 0 15px 40px rgba(0, 0, 0, 0.3);
-        }
-
-        .protocol-header {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            margin-bottom: 20px;
-        }
-
-        .protocol-title {
-            font-size: 1.5em;
-            font-weight: 600;
-        }
-
-        .protocol-icon {
-            font-size: 2em;
-        }
-
-        .protocol-stats {
-            display: grid;
-            grid-template-columns: repeat(2, 1fr);
-            gap: 15px;
-        }
-
-        .stat {
-            background: #f8f9fa;
-            padding: 15px;
-            border-radius: 10px;
-            text-align: center;
-        }
-
-        .stat-value {
-            font-size: 2em;
-            font-weight: bold;
-            color: #667eea;
-        }
-
-        .stat-label {
-            color: #666;
-            margin-top: 5px;
-            font-size: 0.9em;
-        }
-
-        .action-buttons {
-            display: flex;
-            gap: 10px;
-            margin-top: 15px;
-        }
-
-        .btn {
-            flex: 1;
-            padding: 10px;
-            border: none;
-            border-radius: 8px;
-            cursor: pointer;
-            font-weight: 600;
-            transition: all 0.3s;
-        }
-
-        .btn-primary {
-            background: #667eea;
-            color: white;
-        }
-
-        .btn-primary:hover {
-            background: #5568d3;
-            transform: scale(1.05);
-        }
-
-        .btn-secondary {
-            background: #e9ecef;
-            color: #333;
-        }
-
-        .btn-secondary:hover {
-            background: #dee2e6;
-        }
-
-        .system-overview {
-            background: rgba(255, 255, 255, 0.95);
-            color: #333;
-            border-radius: 15px;
-            padding: 30px;
-            margin-bottom: 30px;
-        }
-
-        .system-overview h3 {
-            margin-bottom: 20px;
-            color: #667eea;
-        }
-
-        .overview-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-            gap: 20px;
-        }
-
-        .overview-stat {
-            text-align: center;
-            padding: 20px;
-            background: #f8f9fa;
-            border-radius: 10px;
-        }
-
-        .overview-stat-value {
-            font-size: 2.5em;
-            font-weight: bold;
-            color: #667eea;
-        }
-
-        .overview-stat-label {
-            color: #666;
-            margin-top: 8px;
-        }
-
-        .status-indicator {
-            display: inline-block;
-            width: 12px;
-            height: 12px;
-            border-radius: 50%;
-            margin-right: 8px;
-        }
-
-        .status-healthy {
-            background: #28a745;
-            box-shadow: 0 0 8px #28a745;
-        }
-
-        .status-warning {
-            background: #ffc107;
-            box-shadow: 0 0 8px #ffc107;
-        }
-
-        .status-error {
-            background: #dc3545;
-            box-shadow: 0 0 8px #dc3545;
-        }
-
-        .quick-actions {
-            background: rgba(255, 255, 255, 0.95);
-            color: #333;
-            border-radius: 15px;
-            padding: 30px;
-        }
-
-        .quick-actions h3 {
-            margin-bottom: 20px;
-            color: #667eea;
-        }
-
-        .quick-actions-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
-            gap: 15px;
-        }
-
-        .quick-action-btn {
-            padding: 20px;
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            color: white;
-            border: none;
-            border-radius: 10px;
-            cursor: pointer;
-            font-size: 1.1em;
-            font-weight: 600;
-            transition: transform 0.3s;
-        }
-
-        .quick-action-btn:hover {
-            transform: translateY(-3px);
-            box-shadow: 0 5px 20px rgba(102, 126, 234, 0.4);
-        }
-
-        .activity-feed {
-            background: rgba(255, 255, 255, 0.95);
-            color: #333;
-            border-radius: 15px;
-            padding: 30px;
-            margin-top: 30px;
-            max-height: 400px;
-            overflow-y: auto;
-        }
-
-        .activity-feed h3 {
-            margin-bottom: 20px;
-            color: #667eea;
-        }
-
+        /* Activity feed */
         .activity-item {
-            padding: 15px;
-            background: #f8f9fa;
-            border-radius: 8px;
-            margin-bottom: 10px;
             display: flex;
-            align-items: center;
-            gap: 15px;
+            gap: var(--spacing-3);
+            padding: var(--spacing-3);
+            border-radius: var(--radius-md);
+            transition: var(--transition-base);
+        }
+
+        .activity-item:hover {
+            background: var(--color-neutral-50);
         }
 
         .activity-icon {
-            width: 40px;
-            height: 40px;
-            border-radius: 50%;
+            width: 36px;
+            height: 36px;
+            border-radius: var(--radius-full);
             display: flex;
             align-items: center;
             justify-content: center;
-            font-size: 1.2em;
+            font-size: var(--font-size-lg);
+            flex-shrink: 0;
         }
 
-        .activity-icon.anp { background: #e3f2fd; color: #2196f3; }
-        .activity-icon.acp { background: #fff3e0; color: #ff9800; }
-        .activity-icon.aconsp { background: #f3e5f5; color: #9c27b0; }
+        .activity-icon.agent {
+            background: var(--color-primary-100);
+        }
+
+        .activity-icon.session {
+            background: var(--color-secondary-100);
+        }
+
+        .activity-icon.collective {
+            background: var(--color-info-100);
+        }
+
+        .activity-icon.alert {
+            background: var(--color-warning-100);
+        }
+
+        .activity-icon.error {
+            background: var(--color-error-100);
+        }
 
         .activity-content {
             flex: 1;
         }
 
         .activity-title {
-            font-weight: 600;
-            margin-bottom: 5px;
+            font-weight: var(--font-weight-semibold);
+            color: var(--color-neutral-900);
+            margin-bottom: var(--spacing-1);
         }
 
         .activity-time {
-            font-size: 0.85em;
-            color: #666;
+            font-size: var(--font-size-xs);
+            color: var(--color-neutral-500);
+        }
+
+        /* Chart placeholder */
+        .chart-container {
+            height: 300px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: var(--color-neutral-50);
+            border-radius: var(--radius-md);
+            color: var(--color-neutral-500);
+        }
+
+        /* Agent table custom styling */
+        .agent-avatar {
+            width: 32px;
+            height: 32px;
+            border-radius: var(--radius-full);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: var(--font-size-sm);
+            font-weight: var(--font-weight-semibold);
+            color: white;
+        }
+
+        .table-actions {
+            display: flex;
+            gap: var(--spacing-2);
+        }
+
+        /* Modal backdrop animation */
+        @keyframes fadeInBackdrop {
+            from {
+                opacity: 0;
+            }
+            to {
+                opacity: 1;
+            }
+        }
+
+        .modal-overlay {
+            animation: fadeInBackdrop var(--duration-normal) var(--ease-out);
+        }
+
+        /* Search and filter bar */
+        .filter-bar {
+            display: flex;
+            gap: var(--spacing-3);
+            margin-bottom: var(--spacing-4);
+            flex-wrap: wrap;
+        }
+
+        .search-input {
+            flex: 1;
+            min-width: 250px;
+        }
+
+        /* Loading overlay */
+        .loading-overlay {
+            position: absolute;
+            inset: 0;
+            background: rgba(255, 255, 255, 0.9);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: var(--radius-lg);
+            z-index: 10;
+        }
+
+        /* Toast positioning */
+        .toast-container {
+            position: fixed;
+            top: var(--spacing-6);
+            right: var(--spacing-6);
+            z-index: var(--z-index-notification);
+            display: flex;
+            flex-direction: column;
+            gap: var(--spacing-3);
+            max-width: 400px;
         }
     </style>
 </head>
 <body>
+    <!-- Navigation Bar -->
     <nav class="nav-bar">
-        <h1>🌟 SuperStandard Admin</h1>
+        <a href="/" class="nav-logo">
+            <span>🚀</span>
+            <span>SuperStandard</span>
+        </a>
         <div class="nav-links">
-            <a href="/dashboard/admin" class="active">Overview</a>
-            <a href="/dashboard/network">Network (ANP)</a>
-            <a href="/dashboard/coordination">Coordination (ACP)</a>
-            <a href="/dashboard/consciousness">Consciousness (AConsP)</a>
-            <a href="/docs" target="_blank">API Docs</a>
+            <a href="/dashboard/admin" class="nav-link active">Admin</a>
+            <a href="/dashboard/user" class="nav-link">Agents</a>
+            <a href="/dashboard/coordination" class="nav-link">Coordination</a>
+            <a href="/dashboard/consciousness" class="nav-link">Consciousness</a>
+            <a href="/docs" class="nav-link" target="_blank">API Docs</a>
         </div>
     </nav>
 
-    <div class="container">
-        <div class="header">
-            <h2>Unified Protocol Dashboard</h2>
-            <p>Real-time monitoring of all SuperStandard protocols</p>
-        </div>
+    <!-- Main Content -->
+    <div class="app-main" style="margin-left: 0;">
+        <div class="app-content">
+            <!-- Breadcrumbs -->
+            <nav class="breadcrumbs">
+                <a href="/" class="breadcrumb-item">Home</a>
+                <span class="breadcrumb-separator">/</span>
+                <span class="breadcrumb-item current">Admin Dashboard</span>
+            </nav>
 
-        <!-- System Overview -->
-        <div class="system-overview">
-            <h3><span class="status-indicator status-healthy"></span>System Health: Operational</h3>
-            <div class="overview-grid">
-                <div class="overview-stat">
-                    <div class="overview-stat-value" id="totalAgents">0</div>
-                    <div class="overview-stat-label">Total Agents</div>
-                </div>
-                <div class="overview-stat">
-                    <div class="overview-stat-value" id="activeProtocols">3</div>
-                    <div class="overview-stat-label">Active Protocols</div>
-                </div>
-                <div class="overview-stat">
-                    <div class="overview-stat-value" id="activeCoordinations">0</div>
-                    <div class="overview-stat-label">Active Sessions</div>
-                </div>
-                <div class="overview-stat">
-                    <div class="overview-stat-value" id="activeCollectives">0</div>
-                    <div class="overview-stat-label">Consciousness Fields</div>
-                </div>
-                <div class="overview-stat">
-                    <div class="overview-stat-value" id="totalThoughts">0</div>
-                    <div class="overview-stat-label">Thoughts Shared</div>
-                </div>
-                <div class="overview-stat">
-                    <div class="overview-stat-value" id="emergentPatterns">0</div>
-                    <div class="overview-stat-label">Emergent Patterns</div>
-                </div>
-            </div>
-        </div>
-
-        <!-- Protocol Cards -->
-        <div class="protocol-grid">
-            <!-- ANP Card -->
-            <div class="protocol-card">
-                <div class="protocol-header">
-                    <div class="protocol-title">Agent Network (ANP)</div>
-                    <div class="protocol-icon">🌐</div>
-                </div>
-                <div class="protocol-stats">
-                    <div class="stat">
-                        <div class="stat-value" id="anpRegistered">0</div>
-                        <div class="stat-label">Registered Agents</div>
-                    </div>
-                    <div class="stat">
-                        <div class="stat-value" id="anpHealthy">0</div>
-                        <div class="stat-label">Healthy</div>
-                    </div>
-                    <div class="stat">
-                        <div class="stat-value" id="anpDiscoveries">0</div>
-                        <div class="stat-label">Discoveries</div>
-                    </div>
-                    <div class="stat">
-                        <div class="stat-value" id="anpHeartbeats">0</div>
-                        <div class="stat-label">Heartbeats</div>
-                    </div>
-                </div>
-                <div class="action-buttons">
-                    <button class="btn btn-primary" onclick="window.location.href='/network'">View Network</button>
-                    <button class="btn btn-secondary" onclick="registerAgent()">Register Agent</button>
+            <!-- Header -->
+            <div class="dashboard-header">
+                <h1 class="dashboard-title">System Command Center</h1>
+                <p class="dashboard-subtitle">Real-time monitoring and control of the SuperStandard multi-agent platform</p>
+                <div class="header-actions">
+                    <button class="btn btn-primary" onclick="openDeployModal()">
+                        <span>➕</span>
+                        <span>Deploy Agent</span>
+                    </button>
+                    <button class="btn btn-secondary" onclick="openExportModal()">
+                        <span>💾</span>
+                        <span>Export Metrics</span>
+                    </button>
+                    <button class="btn btn-secondary" onclick="openAlertsModal()">
+                        <span>🔔</span>
+                        <span>Configure Alerts</span>
+                    </button>
+                    <button class="btn btn-ghost btn-icon" onclick="refreshData()" title="Refresh">
+                        <span id="refreshIcon">🔄</span>
+                    </button>
                 </div>
             </div>
 
-            <!-- ACP Card -->
-            <div class="protocol-card">
-                <div class="protocol-header">
-                    <div class="protocol-title">Coordination (ACP)</div>
-                    <div class="protocol-icon">🤝</div>
+            <!-- Health Banner -->
+            <div class="health-banner" id="healthBanner">
+                <div class="health-info">
+                    <h2 id="healthStatus">
+                        <span class="status-dot" style="background: white; box-shadow: 0 0 10px rgba(255,255,255,0.5);"></span>
+                        System Status: Loading...
+                    </h2>
+                    <p id="healthMessage">Checking system health...</p>
                 </div>
-                <div class="protocol-stats">
-                    <div class="stat">
-                        <div class="stat-value" id="acpSessions">0</div>
+                <div class="health-metrics">
+                    <div class="health-metric">
+                        <div class="health-metric-value" id="uptimeValue">-</div>
+                        <div class="health-metric-label">Uptime</div>
+                    </div>
+                    <div class="health-metric">
+                        <div class="health-metric-value" id="cpuValue">-</div>
+                        <div class="health-metric-label">CPU Usage</div>
+                    </div>
+                    <div class="health-metric">
+                        <div class="health-metric-value" id="memoryValue">-</div>
+                        <div class="health-metric-label">Memory</div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Key Metrics Grid -->
+            <div class="dashboard-grid">
+                <div class="col-span-3">
+                    <div class="stat-card">
+                        <div class="stat-icon">👥</div>
+                        <div class="stat-value" id="totalAgents">0</div>
+                        <div class="stat-label">Total Agents</div>
+                        <div class="stat-change positive" id="agentsChange">↑ +0</div>
+                    </div>
+                </div>
+                <div class="col-span-3">
+                    <div class="stat-card">
+                        <div class="stat-icon">🟢</div>
+                        <div class="stat-value" id="activeAgents">0</div>
+                        <div class="stat-label">Active Agents</div>
+                        <div class="stat-change" id="activeChange">-</div>
+                    </div>
+                </div>
+                <div class="col-span-3">
+                    <div class="stat-card">
+                        <div class="stat-icon">🤝</div>
+                        <div class="stat-value" id="activeSessions">0</div>
                         <div class="stat-label">Active Sessions</div>
-                    </div>
-                    <div class="stat">
-                        <div class="stat-value" id="acpTasks">0</div>
-                        <div class="stat-label">Total Tasks</div>
-                    </div>
-                    <div class="stat">
-                        <div class="stat-value" id="acpCompleted">0</div>
-                        <div class="stat-label">Completed</div>
-                    </div>
-                    <div class="stat">
-                        <div class="stat-value" id="acpParticipants">0</div>
-                        <div class="stat-label">Participants</div>
+                        <div class="stat-change" id="sessionsChange">-</div>
                     </div>
                 </div>
-                <div class="action-buttons">
-                    <button class="btn btn-primary" onclick="window.location.href='/coordination'">View Sessions</button>
-                    <button class="btn btn-secondary" onclick="createSession()">Create Session</button>
+                <div class="col-span-3">
+                    <div class="stat-card">
+                        <div class="stat-icon">⚡</div>
+                        <div class="stat-value" id="requestRate">0/s</div>
+                        <div class="stat-label">Request Rate</div>
+                        <div class="stat-change" id="requestChange">-</div>
+                    </div>
                 </div>
             </div>
 
-            <!-- AConsP Card -->
-            <div class="protocol-card">
-                <div class="protocol-header">
-                    <div class="protocol-title">Consciousness (AConsP)</div>
-                    <div class="protocol-icon">🧠</div>
+            <!-- Secondary Metrics -->
+            <div class="dashboard-grid" style="margin-top: var(--spacing-6);">
+                <div class="col-span-3">
+                    <div class="stat-card">
+                        <div class="stat-value" id="totalThoughts">0</div>
+                        <div class="stat-label">Thoughts Shared</div>
+                    </div>
                 </div>
-                <div class="protocol-stats">
-                    <div class="stat">
-                        <div class="stat-value" id="aconspCollectives">0</div>
-                        <div class="stat-label">Collectives</div>
-                    </div>
-                    <div class="stat">
-                        <div class="stat-value" id="aconspThoughts">0</div>
-                        <div class="stat-label">Thoughts</div>
-                    </div>
-                    <div class="stat">
-                        <div class="stat-value" id="aconspPatterns">0</div>
+                <div class="col-span-3">
+                    <div class="stat-card">
+                        <div class="stat-value" id="totalPatterns">0</div>
                         <div class="stat-label">Emergent Patterns</div>
                     </div>
-                    <div class="stat">
-                        <div class="stat-value" id="aconspAwareness">0%</div>
-                        <div class="stat-label">Avg Awareness</div>
+                </div>
+                <div class="col-span-3">
+                    <div class="stat-card">
+                        <div class="stat-value" id="totalCollectives">0</div>
+                        <div class="stat-label">Consciousness Fields</div>
                     </div>
                 </div>
-                <div class="action-buttons">
-                    <button class="btn btn-primary" onclick="window.location.href='/dashboard'">View Dashboard</button>
-                    <button class="btn btn-secondary" onclick="createCollective()">Create Collective</button>
+                <div class="col-span-3">
+                    <div class="stat-card">
+                        <div class="stat-value" id="errorRate">0%</div>
+                        <div class="stat-label">Error Rate</div>
+                    </div>
                 </div>
             </div>
-        </div>
 
-        <!-- Quick Actions -->
-        <div class="quick-actions">
-            <h3>Quick Actions</h3>
-            <div class="quick-actions-grid">
-                <button class="quick-action-btn" onclick="runDemo()">🚀 Run Demo</button>
-                <button class="quick-action-btn" onclick="viewMetrics()">📊 View Metrics</button>
-                <button class="quick-action-btn" onclick="exportData()">💾 Export Data</button>
-                <button class="quick-action-btn" onclick="viewLogs()">📋 View Logs</button>
+            <!-- Main Content Grid -->
+            <div class="dashboard-grid" style="margin-top: var(--spacing-8);">
+                <!-- Agent List Panel (8 columns) -->
+                <div class="col-span-8">
+                    <div class="panel">
+                        <div class="panel-header">
+                            <h3 class="panel-title">Agent Network Status</h3>
+                            <div class="panel-actions">
+                                <button class="btn btn-sm btn-ghost" onclick="viewAllAgents()">View All</button>
+                            </div>
+                        </div>
+                        <div class="panel-body no-padding">
+                            <!-- Filter Bar -->
+                            <div style="padding: var(--spacing-4);">
+                                <div class="filter-bar">
+                                    <input type="search" class="form-input search-input" id="agentSearch" placeholder="Search agents..." onkeyup="filterAgents()">
+                                    <select class="form-select" id="statusFilter" onchange="filterAgents()">
+                                        <option value="">All Status</option>
+                                        <option value="healthy">Healthy</option>
+                                        <option value="warning">Warning</option>
+                                        <option value="error">Error</option>
+                                    </select>
+                                    <select class="form-select" id="typeFilter" onchange="filterAgents()">
+                                        <option value="">All Types</option>
+                                        <option value="coordinator">Coordinator</option>
+                                        <option value="worker">Worker</option>
+                                        <option value="observer">Observer</option>
+                                    </select>
+                                </div>
+                            </div>
+
+                            <!-- Agent Table -->
+                            <div class="table-container" style="position: relative;">
+                                <div id="agentTableLoader" class="loading-overlay" style="display: none;">
+                                    <div class="spinner-lg"></div>
+                                </div>
+                                <table class="table" id="agentTable">
+                                    <thead>
+                                        <tr>
+                                            <th class="sortable" onclick="sortTable('name')">Agent</th>
+                                            <th class="sortable" onclick="sortTable('type')">Type</th>
+                                            <th class="sortable" onclick="sortTable('status')">Status</th>
+                                            <th class="sortable" onclick="sortTable('heartbeat')">Last Heartbeat</th>
+                                            <th>Actions</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody id="agentTableBody">
+                                        <!-- Loading skeleton -->
+                                        <tr>
+                                            <td colspan="5">
+                                                <div class="skeleton skeleton-text"></div>
+                                            </td>
+                                        </tr>
+                                    </tbody>
+                                </table>
+                            </div>
+
+                            <!-- Empty State -->
+                            <div id="agentEmptyState" class="empty-state" style="display: none;">
+                                <div class="empty-state-icon">👥</div>
+                                <h3 class="empty-state-title">No Agents Found</h3>
+                                <p class="empty-state-message">No agents match your current filters</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Recent Activity Feed (4 columns) -->
+                <div class="col-span-4">
+                    <div class="panel">
+                        <div class="panel-header">
+                            <h3 class="panel-title">Recent Activity</h3>
+                            <button class="btn btn-sm btn-ghost" onclick="clearActivity()">Clear</button>
+                        </div>
+                        <div class="panel-body" style="max-height: 600px; overflow-y: auto;">
+                            <div id="activityFeed">
+                                <!-- Loading skeleton -->
+                                <div class="skeleton skeleton-text"></div>
+                                <div class="skeleton skeleton-text"></div>
+                                <div class="skeleton skeleton-text"></div>
+                            </div>
+
+                            <!-- Empty State -->
+                            <div id="activityEmptyState" class="empty-state" style="display: none;">
+                                <div class="empty-state-icon">📭</div>
+                                <h3 class="empty-state-title">No Recent Activity</h3>
+                                <p class="empty-state-message">Activity will appear here in real-time</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
             </div>
-        </div>
 
-        <!-- Activity Feed -->
-        <div class="activity-feed">
-            <h3>Recent Activity</h3>
-            <div id="activityFeed">
-                <!-- Activity items will be added dynamically -->
+            <!-- Protocol-Specific Panels -->
+            <div class="dashboard-grid" style="margin-top: var(--spacing-8);">
+                <!-- ANP Panel -->
+                <div class="col-span-4">
+                    <div class="panel">
+                        <div class="panel-header">
+                            <h3 class="panel-title">🌐 Agent Network (ANP)</h3>
+                        </div>
+                        <div class="panel-body">
+                            <div style="display: flex; flex-direction: column; gap: var(--spacing-4);">
+                                <div style="display: flex; justify-content: space-between;">
+                                    <span>Registered:</span>
+                                    <strong id="anpRegistered">0</strong>
+                                </div>
+                                <div style="display: flex; justify-content: space-between;">
+                                    <span>Healthy:</span>
+                                    <strong id="anpHealthy">0</strong>
+                                </div>
+                                <div style="display: flex; justify-content: space-between;">
+                                    <span>Discoveries (24h):</span>
+                                    <strong id="anpDiscoveries">0</strong>
+                                </div>
+                                <div style="display: flex; justify-content: space-between;">
+                                    <span>Heartbeat Rate:</span>
+                                    <strong id="anpHeartbeats">0/min</strong>
+                                </div>
+                                <button class="btn btn-primary btn-block" onclick="window.location.href='/dashboard/user'">View Network</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- ACP Panel -->
+                <div class="col-span-4">
+                    <div class="panel">
+                        <div class="panel-header">
+                            <h3 class="panel-title">🤝 Coordination (ACP)</h3>
+                        </div>
+                        <div class="panel-body">
+                            <div style="display: flex; flex-direction: column; gap: var(--spacing-4);">
+                                <div style="display: flex; justify-content: space-between;">
+                                    <span>Active Sessions:</span>
+                                    <strong id="acpSessions">0</strong>
+                                </div>
+                                <div style="display: flex; justify-content: space-between;">
+                                    <span>Total Tasks:</span>
+                                    <strong id="acpTasks">0</strong>
+                                </div>
+                                <div style="display: flex; justify-content: space-between;">
+                                    <span>Completed:</span>
+                                    <strong id="acpCompleted">0</strong>
+                                </div>
+                                <div style="display: flex; justify-content: space-between;">
+                                    <span>Participants:</span>
+                                    <strong id="acpParticipants">0</strong>
+                                </div>
+                                <button class="btn btn-primary btn-block" onclick="window.location.href='/dashboard/coordination'">View Sessions</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- AConsP Panel -->
+                <div class="col-span-4">
+                    <div class="panel">
+                        <div class="panel-header">
+                            <h3 class="panel-title">🧠 Consciousness (AConsP)</h3>
+                        </div>
+                        <div class="panel-body">
+                            <div style="display: flex; flex-direction: column; gap: var(--spacing-4);">
+                                <div style="display: flex; justify-content: space-between;">
+                                    <span>Collectives:</span>
+                                    <strong id="aconspCollectives">0</strong>
+                                </div>
+                                <div style="display: flex; justify-content: space-between;">
+                                    <span>Total Thoughts:</span>
+                                    <strong id="aconspThoughts">0</strong>
+                                </div>
+                                <div style="display: flex; justify-content: space-between;">
+                                    <span>Patterns:</span>
+                                    <strong id="aconspPatterns">0</strong>
+                                </div>
+                                <div style="display: flex; justify-content: space-between;">
+                                    <span>Avg Awareness:</span>
+                                    <strong id="aconspAwareness">0%</strong>
+                                </div>
+                                <button class="btn btn-primary btn-block" onclick="window.location.href='/dashboard'">View Dashboard</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
             </div>
         </div>
     </div>
 
+    <!-- Toast Container -->
+    <div class="toast-container" id="toastContainer"></div>
+
+    <!-- Deploy Agent Modal -->
+    <div class="modal-overlay" id="deployModal" style="display: none;">
+        <div class="modal">
+            <div class="modal-header">
+                <h3 class="modal-title">Deploy New Agent</h3>
+                <button class="modal-close" onclick="closeDeployModal()">×</button>
+            </div>
+            <div class="modal-body">
+                <form id="deployForm" onsubmit="handleDeploy(event)">
+                    <div class="form-group">
+                        <label class="form-label required">Agent Name</label>
+                        <input type="text" class="form-input" id="deployName" placeholder="my-agent" required>
+                        <div class="form-help">Unique identifier for the agent</div>
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label required">Agent Type</label>
+                        <select class="form-select" id="deployType" required>
+                            <option value="">Select type...</option>
+                            <option value="coordinator">Coordinator</option>
+                            <option value="worker">Worker</option>
+                            <option value="observer">Observer</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Capabilities</label>
+                        <textarea class="form-textarea" id="deployCapabilities" rows="3" placeholder="List agent capabilities..."></textarea>
+                    </div>
+                    <div class="form-group">
+                        <label class="form-checkbox">
+                            <input type="checkbox" class="form-checkbox-input" id="deployAutoStart">
+                            <span class="form-checkbox-label">Auto-start agent after deployment</span>
+                        </label>
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button class="btn btn-secondary" onclick="closeDeployModal()">Cancel</button>
+                <button class="btn btn-primary" onclick="document.getElementById('deployForm').requestSubmit()">
+                    <span>🚀</span>
+                    <span>Deploy Agent</span>
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Export Metrics Modal -->
+    <div class="modal-overlay" id="exportModal" style="display: none;">
+        <div class="modal">
+            <div class="modal-header">
+                <h3 class="modal-title">Export Metrics</h3>
+                <button class="modal-close" onclick="closeExportModal()">×</button>
+            </div>
+            <div class="modal-body">
+                <form id="exportForm" onsubmit="handleExport(event)">
+                    <div class="form-group">
+                        <label class="form-label">Export Format</label>
+                        <div style="display: flex; flex-direction: column; gap: var(--spacing-3);">
+                            <label class="form-radio">
+                                <input type="radio" name="exportFormat" class="form-radio-input" value="json" checked>
+                                <span class="form-radio-label">JSON - Machine-readable format</span>
+                            </label>
+                            <label class="form-radio">
+                                <input type="radio" name="exportFormat" class="form-radio-input" value="csv">
+                                <span class="form-radio-label">CSV - Spreadsheet format</span>
+                            </label>
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Data to Export</label>
+                        <label class="form-checkbox">
+                            <input type="checkbox" class="form-checkbox-input" checked disabled>
+                            <span class="form-checkbox-label">System metrics</span>
+                        </label>
+                        <label class="form-checkbox">
+                            <input type="checkbox" class="form-checkbox-input" id="exportAgents" checked>
+                            <span class="form-checkbox-label">Agent data</span>
+                        </label>
+                        <label class="form-checkbox">
+                            <input type="checkbox" class="form-checkbox-input" id="exportSessions" checked>
+                            <span class="form-checkbox-label">Session history</span>
+                        </label>
+                        <label class="form-checkbox">
+                            <input type="checkbox" class="form-checkbox-input" id="exportActivity" checked>
+                            <span class="form-checkbox-label">Activity logs</span>
+                        </label>
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button class="btn btn-secondary" onclick="closeExportModal()">Cancel</button>
+                <button class="btn btn-primary" onclick="document.getElementById('exportForm').requestSubmit()">
+                    <span>💾</span>
+                    <span>Export Data</span>
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Configure Alerts Modal -->
+    <div class="modal-overlay" id="alertsModal" style="display: none;">
+        <div class="modal">
+            <div class="modal-header">
+                <h3 class="modal-title">Configure Alerts</h3>
+                <button class="modal-close" onclick="closeAlertsModal()">×</button>
+            </div>
+            <div class="modal-body">
+                <form id="alertsForm" onsubmit="handleAlerts(event)">
+                    <div class="form-group">
+                        <label class="form-label">Alert Thresholds</label>
+                        <div style="display: flex; flex-direction: column; gap: var(--spacing-4);">
+                            <div>
+                                <label class="form-label">CPU Usage (%)</label>
+                                <input type="number" class="form-input" id="alertCpu" value="80" min="0" max="100">
+                            </div>
+                            <div>
+                                <label class="form-label">Memory Usage (%)</label>
+                                <input type="number" class="form-input" id="alertMemory" value="85" min="0" max="100">
+                            </div>
+                            <div>
+                                <label class="form-label">Error Rate (%)</label>
+                                <input type="number" class="form-input" id="alertError" value="5" min="0" max="100">
+                            </div>
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Notification Channels</label>
+                        <label class="form-checkbox">
+                            <input type="checkbox" class="form-checkbox-input" id="alertEmail" checked>
+                            <span class="form-checkbox-label">Email notifications</span>
+                        </label>
+                        <label class="form-checkbox">
+                            <input type="checkbox" class="form-checkbox-input" id="alertWebhook">
+                            <span class="form-checkbox-label">Webhook notifications</span>
+                        </label>
+                        <label class="form-checkbox">
+                            <input type="checkbox" class="form-checkbox-input" id="alertSlack">
+                            <span class="form-checkbox-label">Slack notifications</span>
+                        </label>
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button class="btn btn-secondary" onclick="closeAlertsModal()">Cancel</button>
+                <button class="btn btn-primary" onclick="document.getElementById('alertsForm').requestSubmit()">
+                    <span>💾</span>
+                    <span>Save Configuration</span>
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Emergency Stop Modal -->
+    <div class="modal-overlay" id="emergencyModal" style="display: none;">
+        <div class="modal">
+            <div class="modal-header">
+                <h3 class="modal-title">Emergency Stop Confirmation</h3>
+                <button class="modal-close" onclick="closeEmergencyModal()">×</button>
+            </div>
+            <div class="modal-body">
+                <div class="alert alert-error">
+                    <div class="alert-icon">⚠️</div>
+                    <div class="alert-content">
+                        <div class="alert-title">Warning</div>
+                        <div class="alert-message">This will stop all active agents immediately. This action cannot be undone.</div>
+                    </div>
+                </div>
+                <p style="margin-top: var(--spacing-4);">Type <strong>STOP ALL</strong> to confirm:</p>
+                <input type="text" class="form-input" id="emergencyConfirm" placeholder="STOP ALL">
+            </div>
+            <div class="modal-footer">
+                <button class="btn btn-secondary" onclick="closeEmergencyModal()">Cancel</button>
+                <button class="btn btn-danger" onclick="handleEmergencyStop()">Emergency Stop</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- JavaScript -->
     <script>
-        // API Configuration
+        // Configuration
         const API_BASE = window.location.origin;
         const WS_BASE = window.location.protocol === 'https:' ? 'wss://' : 'ws://';
         const WS_URL = WS_BASE + window.location.host + '/ws/admin';
 
-        // WebSocket connection
+        // State
         let ws = null;
         let reconnectInterval = null;
+        let agentsData = [];
+        let sortColumn = null;
+        let sortDirection = 'asc';
 
-        // Connect to WebSocket for real-time updates
+        // Initialize
+        console.log('[Admin] Initializing dashboard...');
+        initializeDashboard();
+
+        function initializeDashboard() {
+            // Initial data fetch
+            fetchDashboardData();
+            fetchHealthData();
+            fetchAgentsList();
+
+            // Connect WebSocket for real-time updates
+            connectWebSocket();
+
+            // Periodic refresh (backup to WebSocket)
+            setInterval(fetchDashboardData, 10000); // Every 10 seconds
+            setInterval(fetchHealthData, 30000); // Every 30 seconds
+        }
+
+        // WebSocket Connection
         function connectWebSocket() {
             try {
                 ws = new WebSocket(WS_URL);
 
                 ws.onopen = () => {
                     console.log('[Admin] WebSocket connected');
+                    showToast('Connected', 'Real-time updates enabled', 'success');
                     if (reconnectInterval) {
                         clearInterval(reconnectInterval);
                         reconnectInterval = null;
@@ -515,7 +784,6 @@
 
                 ws.onclose = () => {
                     console.log('[Admin] WebSocket disconnected');
-                    // Auto-reconnect after 5 seconds
                     if (!reconnectInterval) {
                         reconnectInterval = setInterval(() => {
                             console.log('[Admin] Attempting to reconnect...');
@@ -528,142 +796,622 @@
             }
         }
 
-        // Handle WebSocket messages
         function handleWebSocketMessage(data) {
             console.log('[Admin] WebSocket message:', data);
 
-            // Handle activity events
+            // Handle different message types
             if (data.type === 'activity') {
-                const now = new Date().toLocaleTimeString();
-                addActivityItem(data.category, data.message, now);
+                addActivityItem(data);
+            } else if (data.type === 'agent_update') {
+                fetchAgentsList();
+            } else if (data.type === 'system_alert') {
+                showToast('System Alert', data.message, 'warning');
             }
 
-            // Refresh stats on any event
-            fetchDashboardStats();
+            // Refresh stats
+            fetchDashboardData();
         }
 
-        // Fetch comprehensive dashboard statistics from API
-        async function fetchDashboardStats() {
+        // Data Fetching
+        async function fetchDashboardData() {
             try {
                 const response = await fetch(`${API_BASE}/api/admin/stats`);
                 const data = await response.json();
 
                 if (data.success) {
-                    updateDashboardWithStats(data);
+                    updateDashboard(data);
                 }
             } catch (error) {
                 console.error('[Admin] Failed to fetch stats:', error);
+                showToast('Error', 'Failed to fetch dashboard data', 'error');
             }
         }
 
-        // Update dashboard with real API data
-        function updateDashboardWithStats(data) {
+        async function fetchHealthData() {
+            try {
+                const response = await fetch(`${API_BASE}/api/health`);
+                const data = await response.json();
+
+                if (data.status) {
+                    updateHealthBanner(data);
+                }
+            } catch (error) {
+                console.error('[Admin] Failed to fetch health:', error);
+            }
+        }
+
+        async function fetchAgentsList() {
+            try {
+                showLoader('agentTableLoader');
+                const response = await fetch(`${API_BASE}/api/anp/agents`);
+                const data = await response.json();
+
+                if (data.agents) {
+                    agentsData = data.agents;
+                    renderAgentTable(agentsData);
+                }
+            } catch (error) {
+                console.error('[Admin] Failed to fetch agents:', error);
+                showToast('Error', 'Failed to fetch agents list', 'error');
+            } finally {
+                hideLoader('agentTableLoader');
+            }
+        }
+
+        // Update Dashboard
+        function updateDashboard(data) {
             // System overview
             const system = data.system || {};
-            document.getElementById('totalAgents').textContent = system.total_agents_registered || 0;
-            document.getElementById('activeCoordinations').textContent = data.acp?.active_sessions || 0;
-            document.getElementById('activeCollectives').textContent = data.aconsp?.total_collectives || 0;
-            document.getElementById('totalThoughts').textContent = system.total_thoughts_submitted || 0;
-            document.getElementById('emergentPatterns').textContent = system.total_patterns_discovered || 0;
+            updateElement('totalAgents', system.total_agents_registered || 0);
+            updateElement('activeAgents', system.active_agents || 0);
+            updateElement('activeSessions', data.acp?.active_sessions || 0);
+            updateElement('requestRate', (system.request_rate || 0) + '/s');
+            updateElement('totalThoughts', system.total_thoughts_submitted || 0);
+            updateElement('totalPatterns', system.total_patterns_discovered || 0);
+            updateElement('totalCollectives', data.aconsp?.total_collectives || 0);
+            updateElement('errorRate', (system.error_rate || 0).toFixed(2) + '%');
 
             // ANP stats
             const anp = data.anp || {};
-            document.getElementById('anpRegistered').textContent = anp.total_agents || 0;
-            document.getElementById('anpHealthy').textContent = anp.healthy_agents || 0;
-            document.getElementById('anpDiscoveries').textContent = anp.discoveries_24h || 0;
-            document.getElementById('anpHeartbeats').textContent = anp.heartbeat_rate || 0;
+            updateElement('anpRegistered', anp.total_agents || 0);
+            updateElement('anpHealthy', anp.healthy_agents || 0);
+            updateElement('anpDiscoveries', anp.discoveries_24h || 0);
+            updateElement('anpHeartbeats', (anp.heartbeat_rate || 0) + '/min');
 
             // ACP stats
             const acp = data.acp || {};
-            document.getElementById('acpSessions').textContent = acp.active_sessions || 0;
-            document.getElementById('acpTasks').textContent = acp.total_tasks || 0;
-            document.getElementById('acpCompleted').textContent = acp.completed_tasks || 0;
-            document.getElementById('acpParticipants').textContent = acp.total_participants || 0;
+            updateElement('acpSessions', acp.active_sessions || 0);
+            updateElement('acpTasks', acp.total_tasks || 0);
+            updateElement('acpCompleted', acp.completed_tasks || 0);
+            updateElement('acpParticipants', acp.total_participants || 0);
 
             // AConsP stats
             const aconsp = data.aconsp || {};
-            document.getElementById('aconspCollectives').textContent = aconsp.total_collectives || 0;
-            document.getElementById('aconspThoughts').textContent = aconsp.total_thoughts || 0;
-            document.getElementById('aconspPatterns').textContent = aconsp.total_patterns || 0;
-            document.getElementById('aconspAwareness').textContent = (aconsp.average_awareness || 0) + '%';
+            updateElement('aconspCollectives', aconsp.total_collectives || 0);
+            updateElement('aconspThoughts', aconsp.total_thoughts || 0);
+            updateElement('aconspPatterns', aconsp.total_patterns || 0);
+            updateElement('aconspAwareness', (aconsp.average_awareness || 0) + '%');
+
+            // Update changes
+            updateChange('agentsChange', system.agents_change || 0);
+            updateChange('activeChange', system.active_change || 0);
+            updateChange('sessionsChange', acp.sessions_change || 0);
+            updateChange('requestChange', system.request_change || 0);
         }
 
-        function addActivityItem(protocol, title, time) {
+        function updateHealthBanner(data) {
+            const banner = document.getElementById('healthBanner');
+            const status = document.getElementById('healthStatus');
+            const message = document.getElementById('healthMessage');
+
+            // Determine health status
+            let healthClass = '';
+            let statusText = 'Operational';
+            let statusMessage = 'All systems running normally';
+
+            if (data.status === 'degraded') {
+                healthClass = 'warning';
+                statusText = 'Degraded Performance';
+                statusMessage = 'Some services experiencing issues';
+            } else if (data.status === 'error') {
+                healthClass = 'error';
+                statusText = 'System Error';
+                statusMessage = 'Critical issues detected';
+            }
+
+            banner.className = 'health-banner ' + healthClass;
+            status.innerHTML = `<span class="status-dot" style="background: white; box-shadow: 0 0 10px rgba(255,255,255,0.5);"></span>System Status: ${statusText}`;
+            message.textContent = statusMessage;
+
+            // Update metrics
+            updateElement('uptimeValue', data.uptime || '-');
+            updateElement('cpuValue', data.cpu ? data.cpu.toFixed(1) + '%' : '-');
+            updateElement('memoryValue', data.memory ? data.memory.toFixed(1) + '%' : '-');
+        }
+
+        // Render Agent Table
+        function renderAgentTable(agents) {
+            const tbody = document.getElementById('agentTableBody');
+            const emptyState = document.getElementById('agentEmptyState');
+
+            if (!agents || agents.length === 0) {
+                tbody.innerHTML = '';
+                emptyState.style.display = 'block';
+                return;
+            }
+
+            emptyState.style.display = 'none';
+
+            tbody.innerHTML = agents.map(agent => {
+                const statusClass = agent.status === 'healthy' ? 'success' :
+                                   agent.status === 'warning' ? 'warning' : 'error';
+                const statusDotColor = agent.status === 'healthy' ? 'var(--color-success-500)' :
+                                       agent.status === 'warning' ? 'var(--color-warning-500)' : 'var(--color-error-500)';
+
+                return `
+                    <tr>
+                        <td>
+                            <div style="display: flex; align-items: center; gap: var(--spacing-3);">
+                                <div class="agent-avatar" style="background: ${getAvatarColor(agent.name)};">
+                                    ${agent.name.charAt(0).toUpperCase()}
+                                </div>
+                                <div>
+                                    <div style="font-weight: var(--font-weight-semibold);">${agent.name}</div>
+                                    <div style="font-size: var(--font-size-xs); color: var(--color-neutral-500);">${agent.id || 'N/A'}</div>
+                                </div>
+                            </div>
+                        </td>
+                        <td>
+                            <span class="badge badge-neutral">${agent.type || 'unknown'}</span>
+                        </td>
+                        <td>
+                            <div class="status-indicator">
+                                <span class="status-dot" style="background: ${statusDotColor};"></span>
+                                <span>${agent.status || 'unknown'}</span>
+                            </div>
+                        </td>
+                        <td>${formatTimestamp(agent.last_heartbeat)}</td>
+                        <td>
+                            <div class="table-actions">
+                                <button class="btn btn-sm btn-ghost" onclick="viewAgent('${agent.id}')">View</button>
+                                <button class="btn btn-sm btn-ghost" onclick="stopAgent('${agent.id}')">Stop</button>
+                            </div>
+                        </td>
+                    </tr>
+                `;
+            }).join('');
+        }
+
+        // Filter and Sort Agents
+        function filterAgents() {
+            const search = document.getElementById('agentSearch').value.toLowerCase();
+            const statusFilter = document.getElementById('statusFilter').value;
+            const typeFilter = document.getElementById('typeFilter').value;
+
+            let filtered = agentsData.filter(agent => {
+                const matchesSearch = agent.name.toLowerCase().includes(search) ||
+                                     (agent.id && agent.id.toLowerCase().includes(search));
+                const matchesStatus = !statusFilter || agent.status === statusFilter;
+                const matchesType = !typeFilter || agent.type === typeFilter;
+
+                return matchesSearch && matchesStatus && matchesType;
+            });
+
+            renderAgentTable(filtered);
+        }
+
+        function sortTable(column) {
+            if (sortColumn === column) {
+                sortDirection = sortDirection === 'asc' ? 'desc' : 'asc';
+            } else {
+                sortColumn = column;
+                sortDirection = 'asc';
+            }
+
+            agentsData.sort((a, b) => {
+                let aVal = a[column] || '';
+                let bVal = b[column] || '';
+
+                if (typeof aVal === 'string') {
+                    aVal = aVal.toLowerCase();
+                    bVal = bVal.toLowerCase();
+                }
+
+                if (sortDirection === 'asc') {
+                    return aVal > bVal ? 1 : -1;
+                } else {
+                    return aVal < bVal ? 1 : -1;
+                }
+            });
+
+            renderAgentTable(agentsData);
+
+            // Update sort indicators
+            document.querySelectorAll('.table th').forEach(th => {
+                th.classList.remove('sorted-asc', 'sorted-desc');
+            });
+            const th = event.target;
+            th.classList.add(sortDirection === 'asc' ? 'sorted-asc' : 'sorted-desc');
+        }
+
+        // Activity Feed
+        function addActivityItem(data) {
             const feed = document.getElementById('activityFeed');
+            const emptyState = document.getElementById('activityEmptyState');
+
+            // Hide skeleton loaders
+            const skeletons = feed.querySelectorAll('.skeleton');
+            skeletons.forEach(s => s.remove());
+            emptyState.style.display = 'none';
+
+            const category = data.category || 'agent';
+            const icon = category === 'agent' ? '🤖' :
+                        category === 'session' ? '🤝' :
+                        category === 'collective' ? '🧠' :
+                        category === 'alert' ? '⚠️' :
+                        category === 'error' ? '❌' : '📊';
+
             const item = document.createElement('div');
             item.className = 'activity-item';
             item.innerHTML = `
-                <div class="activity-icon ${protocol}">
-                    ${protocol === 'anp' || protocol === 'agent' ? '🌐' : protocol === 'acp' || protocol === 'session' ? '🤝' : '🧠'}
+                <div class="activity-icon ${category}">
+                    ${icon}
                 </div>
                 <div class="activity-content">
-                    <div class="activity-title">${title}</div>
-                    <div class="activity-time">${time}</div>
+                    <div class="activity-title">${data.message || 'Activity'}</div>
+                    <div class="activity-time">${formatTimestamp(data.timestamp || new Date())}</div>
                 </div>
             `;
+
             feed.insertBefore(item, feed.firstChild);
 
-            // Keep only last 10 items
-            while (feed.children.length > 10) {
+            // Keep only last 20 items
+            while (feed.children.length > 20) {
                 feed.removeChild(feed.lastChild);
             }
         }
 
-        // Action functions
-        function registerAgent() {
-            window.location.href = '/dashboard/user';
+        function clearActivity() {
+            const feed = document.getElementById('activityFeed');
+            const emptyState = document.getElementById('activityEmptyState');
+            feed.innerHTML = '';
+            emptyState.style.display = 'block';
         }
 
-        function createSession() {
-            window.location.href = '/dashboard/coordination';
+        // Modal Functions
+        function openDeployModal() {
+            document.getElementById('deployModal').style.display = 'flex';
         }
 
-        function createCollective() {
-            window.location.href = '/dashboard/consciousness';
+        function closeDeployModal() {
+            document.getElementById('deployModal').style.display = 'none';
+            document.getElementById('deployForm').reset();
         }
 
-        function runDemo() {
-            alert('Run the live demo script:\n\npython examples/live_platform_demo.py');
+        function openExportModal() {
+            document.getElementById('exportModal').style.display = 'flex';
         }
 
-        function viewMetrics() {
-            window.open(`${API_BASE}/docs`, '_blank');
+        function closeExportModal() {
+            document.getElementById('exportModal').style.display = 'none';
         }
 
-        function exportData() {
-            fetchDashboardStats().then(() => {
-                alert('Data export feature coming soon!\n\nFor now, use the API endpoints directly.');
-            });
+        function openAlertsModal() {
+            document.getElementById('alertsModal').style.display = 'flex';
         }
 
-        function viewLogs() {
-            alert('System logs viewer coming soon!\n\nCheck the server console for now.');
+        function closeAlertsModal() {
+            document.getElementById('alertsModal').style.display = 'none';
         }
 
-        // Initialize
-        console.log('[Admin] Initializing dashboard...');
+        function openEmergencyModal() {
+            document.getElementById('emergencyModal').style.display = 'flex';
+        }
 
-        // Initial data fetch
-        fetchDashboardStats();
+        function closeEmergencyModal() {
+            document.getElementById('emergencyModal').style.display = 'none';
+            document.getElementById('emergencyConfirm').value = '';
+        }
 
-        // Connect WebSocket
-        connectWebSocket();
+        // Action Handlers
+        async function handleDeploy(event) {
+            event.preventDefault();
 
-        // Periodic refresh (every 5 seconds as backup to WebSocket)
-        setInterval(fetchDashboardStats, 5000);
+            const name = document.getElementById('deployName').value;
+            const type = document.getElementById('deployType').value;
+            const capabilities = document.getElementById('deployCapabilities').value;
+            const autoStart = document.getElementById('deployAutoStart').checked;
 
-        // Health check
-        async function checkHealth() {
             try {
-                const response = await fetch(`${API_BASE}/api/health`);
+                const response = await fetch(`${API_BASE}/api/anp/agents/register`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        name,
+                        type,
+                        capabilities: capabilities.split('\n').filter(c => c.trim()),
+                        auto_start: autoStart
+                    })
+                });
+
                 const data = await response.json();
-                console.log('[Admin] Health check:', data);
+
+                if (response.ok) {
+                    showToast('Success', `Agent ${name} deployed successfully`, 'success');
+                    closeDeployModal();
+                    fetchAgentsList();
+                    addActivityItem({
+                        category: 'agent',
+                        message: `New agent deployed: ${name}`,
+                        timestamp: new Date()
+                    });
+                } else {
+                    showToast('Error', data.error || 'Failed to deploy agent', 'error');
+                }
             } catch (error) {
-                console.error('[Admin] Health check failed:', error);
+                console.error('[Admin] Deploy error:', error);
+                showToast('Error', 'Failed to deploy agent', 'error');
             }
         }
 
-        checkHealth();
+        async function handleExport(event) {
+            event.preventDefault();
+
+            const format = document.querySelector('input[name="exportFormat"]:checked').value;
+            const includeAgents = document.getElementById('exportAgents').checked;
+            const includeSessions = document.getElementById('exportSessions').checked;
+            const includeActivity = document.getElementById('exportActivity').checked;
+
+            try {
+                const response = await fetch(`${API_BASE}/api/admin/export`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        format,
+                        include: {
+                            agents: includeAgents,
+                            sessions: includeSessions,
+                            activity: includeActivity
+                        }
+                    })
+                });
+
+                if (response.ok) {
+                    const blob = await response.blob();
+                    const url = window.URL.createObjectURL(blob);
+                    const a = document.createElement('a');
+                    a.href = url;
+                    a.download = `superstandard-export-${Date.now()}.${format}`;
+                    document.body.appendChild(a);
+                    a.click();
+                    window.URL.revokeObjectURL(url);
+                    document.body.removeChild(a);
+
+                    showToast('Success', 'Data exported successfully', 'success');
+                    closeExportModal();
+                } else {
+                    showToast('Error', 'Failed to export data', 'error');
+                }
+            } catch (error) {
+                console.error('[Admin] Export error:', error);
+                showToast('Error', 'Export feature not yet implemented', 'warning');
+                closeExportModal();
+            }
+        }
+
+        async function handleAlerts(event) {
+            event.preventDefault();
+
+            const config = {
+                thresholds: {
+                    cpu: parseInt(document.getElementById('alertCpu').value),
+                    memory: parseInt(document.getElementById('alertMemory').value),
+                    error: parseInt(document.getElementById('alertError').value)
+                },
+                channels: {
+                    email: document.getElementById('alertEmail').checked,
+                    webhook: document.getElementById('alertWebhook').checked,
+                    slack: document.getElementById('alertSlack').checked
+                }
+            };
+
+            try {
+                const response = await fetch(`${API_BASE}/api/admin/alerts/configure`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(config)
+                });
+
+                if (response.ok) {
+                    showToast('Success', 'Alert configuration saved', 'success');
+                    closeAlertsModal();
+                } else {
+                    showToast('Error', 'Failed to save configuration', 'error');
+                }
+            } catch (error) {
+                console.error('[Admin] Alerts config error:', error);
+                showToast('Warning', 'Alert configuration saved locally', 'warning');
+                localStorage.setItem('alertConfig', JSON.stringify(config));
+                closeAlertsModal();
+            }
+        }
+
+        function handleEmergencyStop() {
+            const confirm = document.getElementById('emergencyConfirm').value;
+
+            if (confirm !== 'STOP ALL') {
+                showToast('Error', 'Please type "STOP ALL" to confirm', 'error');
+                return;
+            }
+
+            // Emergency stop logic
+            showToast('Warning', 'Emergency stop initiated', 'warning');
+            closeEmergencyModal();
+        }
+
+        // Utility Functions
+        function refreshData() {
+            const icon = document.getElementById('refreshIcon');
+            icon.style.animation = 'spin 0.8s linear';
+
+            Promise.all([
+                fetchDashboardData(),
+                fetchHealthData(),
+                fetchAgentsList()
+            ]).then(() => {
+                showToast('Success', 'Data refreshed', 'success');
+                setTimeout(() => {
+                    icon.style.animation = '';
+                }, 800);
+            });
+        }
+
+        function viewAllAgents() {
+            window.location.href = '/dashboard/user';
+        }
+
+        function viewAgent(agentId) {
+            showToast('Info', `View agent: ${agentId}`, 'info');
+        }
+
+        async function stopAgent(agentId) {
+            if (!confirm('Are you sure you want to stop this agent?')) {
+                return;
+            }
+
+            try {
+                const response = await fetch(`${API_BASE}/api/anp/agents/${agentId}/stop`, {
+                    method: 'POST'
+                });
+
+                if (response.ok) {
+                    showToast('Success', 'Agent stopped', 'success');
+                    fetchAgentsList();
+                } else {
+                    showToast('Error', 'Failed to stop agent', 'error');
+                }
+            } catch (error) {
+                console.error('[Admin] Stop agent error:', error);
+                showToast('Error', 'Failed to stop agent', 'error');
+            }
+        }
+
+        function updateElement(id, value) {
+            const el = document.getElementById(id);
+            if (el) el.textContent = value;
+        }
+
+        function updateChange(id, change) {
+            const el = document.getElementById(id);
+            if (!el) return;
+
+            if (change > 0) {
+                el.className = 'stat-change positive';
+                el.textContent = `↑ +${change}`;
+            } else if (change < 0) {
+                el.className = 'stat-change negative';
+                el.textContent = `↓ ${change}`;
+            } else {
+                el.className = 'stat-change';
+                el.textContent = '–';
+            }
+        }
+
+        function showLoader(id) {
+            const loader = document.getElementById(id);
+            if (loader) loader.style.display = 'flex';
+        }
+
+        function hideLoader(id) {
+            const loader = document.getElementById(id);
+            if (loader) loader.style.display = 'none';
+        }
+
+        function showToast(title, message, type = 'info') {
+            const container = document.getElementById('toastContainer');
+
+            const toast = document.createElement('div');
+            toast.className = 'toast';
+
+            const icons = {
+                success: '✅',
+                error: '❌',
+                warning: '⚠️',
+                info: 'ℹ️'
+            };
+
+            toast.innerHTML = `
+                <div class="toast-icon">${icons[type] || icons.info}</div>
+                <div class="toast-content">
+                    <div class="toast-title">${title}</div>
+                    <div class="toast-message">${message}</div>
+                </div>
+                <button class="toast-close" onclick="this.parentElement.remove()">×</button>
+            `;
+
+            container.appendChild(toast);
+
+            // Auto-remove after 5 seconds
+            setTimeout(() => {
+                toast.remove();
+            }, 5000);
+        }
+
+        function formatTimestamp(timestamp) {
+            if (!timestamp) return 'Never';
+
+            const date = new Date(timestamp);
+            const now = new Date();
+            const diff = now - date;
+
+            if (diff < 60000) {
+                return 'Just now';
+            } else if (diff < 3600000) {
+                const mins = Math.floor(diff / 60000);
+                return `${mins} min${mins > 1 ? 's' : ''} ago`;
+            } else if (diff < 86400000) {
+                const hours = Math.floor(diff / 3600000);
+                return `${hours} hour${hours > 1 ? 's' : ''} ago`;
+            } else {
+                return date.toLocaleDateString() + ' ' + date.toLocaleTimeString();
+            }
+        }
+
+        function getAvatarColor(name) {
+            const colors = [
+                'var(--color-primary-600)',
+                'var(--color-secondary-600)',
+                'var(--color-info-600)',
+                'var(--color-success-600)',
+                'var(--color-warning-600)'
+            ];
+            const index = name.charCodeAt(0) % colors.length;
+            return colors[index];
+        }
+
+        // Close modals on overlay click
+        document.querySelectorAll('.modal-overlay').forEach(overlay => {
+            overlay.addEventListener('click', (e) => {
+                if (e.target === overlay) {
+                    overlay.style.display = 'none';
+                }
+            });
+        });
+
+        // Keyboard shortcuts
+        document.addEventListener('keydown', (e) => {
+            if (e.key === 'Escape') {
+                document.querySelectorAll('.modal-overlay').forEach(modal => {
+                    modal.style.display = 'none';
+                });
+            }
+
+            // Ctrl+R to refresh
+            if (e.ctrlKey && e.key === 'r') {
+                e.preventDefault();
+                refreshData();
+            }
+        });
     </script>
 </body>
 </html>

@@ -1,0 +1,224 @@
+{
+  "apqc_id": "2.3.1.1",
+  "apqc_name": "Manage innovation portfolio",
+  "category": "2.0 - Develop and Manage Products and Services",
+  "description": "End-to-end innovation management workflow from idea capture through portfolio optimization, including innovation challenges, incubation, and commercialization tracking.",
+  "orchestration_pattern": "parallel",
+  "total_steps": 5,
+  "estimated_duration_seconds": 5184000,
+  "compliance_frameworks": ["ISO 56001", "Stage-Gate"],
+  "data_retention_days": 1825,
+
+  "agent_cards": [
+    {
+      "id": "agent_2_3_1_1_step1",
+      "apqc_id": "2.3.1.1",
+      "step_number": 1,
+      "step_name": "Idea Capture & Crowdsourcing",
+      "description": "Capture ideas from multiple sources and run innovation challenges",
+      "purpose": "Build innovation pipeline",
+      "business_value": "Diverse idea generation",
+
+      "capabilities": ["idea_submission", "challenge_management", "crowdsourcing", "idea_categorization", "duplicate_detection"],
+
+      "input_schema": [
+        {"name": "idea_source", "type": "string", "required": true, "validation": {"enum": ["employee", "customer", "partner", "external", "challenge"]}},
+        {"name": "idea_title", "type": "string", "required": true},
+        {"name": "idea_description", "type": "string", "required": true},
+        {"name": "problem_statement", "type": "string", "required": true},
+        {"name": "target_outcome", "type": "string", "required": false}
+      ],
+
+      "output_schema": [
+        {"name": "idea_id", "type": "string", "required": true},
+        {"name": "similarity_score", "type": "number", "required": true},
+        {"name": "initial_category", "type": "string", "required": true},
+        {"name": "submission_status", "type": "string", "required": true}
+      ],
+
+      "required_integrations": [
+        {"system": "Innovation Platform", "type": "bidirectional", "protocol": "API", "examples": ["Brightidea", "IdeaScale", "Spigit", "HYPE Innovation"]},
+        {"system": "Collaboration", "type": "read", "protocol": "API", "examples": ["Microsoft Teams", "Slack"]}
+      ],
+
+      "decision_rules": [
+        {"rule_id": "DR-IC-001", "name": "Duplicate Check", "condition": "similarity_score > 0.85", "action": "merge_with_existing", "priority": 1}
+      ],
+
+      "error_handlers": [
+        {"error_type": "incomplete_submission", "severity": "low", "action": "request_additional_info", "notification": ["submitter"]}
+      ]
+    },
+
+    {
+      "id": "agent_2_3_1_1_step2",
+      "apqc_id": "2.3.1.1",
+      "step_number": 2,
+      "step_name": "Idea Evaluation & Scoring",
+      "description": "Evaluate ideas against strategic criteria and score for prioritization",
+      "purpose": "Identify high-potential ideas",
+      "business_value": "Resource focus on winners",
+
+      "capabilities": ["criteria_evaluation", "expert_review", "voting_management", "score_aggregation", "ranking"],
+
+      "input_schema": [
+        {"name": "idea_id", "type": "string", "required": true},
+        {"name": "evaluation_criteria", "type": "array", "required": true},
+        {"name": "expert_reviewers", "type": "array", "required": true},
+        {"name": "strategic_alignment", "type": "object", "required": false}
+      ],
+
+      "output_schema": [
+        {"name": "evaluation_scores", "type": "object", "required": true},
+        {"name": "weighted_score", "type": "number", "required": true},
+        {"name": "expert_feedback", "type": "array", "required": true},
+        {"name": "recommendation", "type": "string", "required": true, "validation": {"enum": ["advance", "incubate", "park", "reject"]}}
+      ],
+
+      "required_integrations": [
+        {"system": "Innovation Platform", "type": "bidirectional", "protocol": "API"},
+        {"system": "Expert Network", "type": "read", "protocol": "API"}
+      ],
+
+      "decision_rules": [
+        {"rule_id": "DR-IE-001", "name": "High Potential", "condition": "weighted_score > 8.0 AND strategic_fit > 80%", "action": "fast_track_to_incubation", "priority": 1},
+        {"rule_id": "DR-IE-002", "name": "Disruptive Potential", "condition": "market_disruption_score > 9.0", "action": "executive_review", "priority": 1}
+      ],
+
+      "error_handlers": [
+        {"error_type": "reviewer_conflict", "severity": "medium", "action": "assign_alternate_reviewer", "notification": ["innovation_lead"]}
+      ]
+    },
+
+    {
+      "id": "agent_2_3_1_1_step3",
+      "apqc_id": "2.3.1.1",
+      "step_number": 3,
+      "step_name": "Incubation & Prototyping",
+      "description": "Develop prototypes and validate innovation hypotheses",
+      "purpose": "De-risk innovations",
+      "business_value": "Validated concepts",
+
+      "capabilities": ["prototype_tracking", "experiment_management", "hypothesis_testing", "pivot_tracking", "resource_allocation"],
+
+      "input_schema": [
+        {"name": "approved_ideas", "type": "array", "required": true},
+        {"name": "incubation_budget", "type": "number", "required": true},
+        {"name": "validation_criteria", "type": "array", "required": true},
+        {"name": "timeline", "type": "object", "required": true}
+      ],
+
+      "output_schema": [
+        {"name": "prototype_status", "type": "array", "required": true},
+        {"name": "validation_results", "type": "object", "required": true},
+        {"name": "pivot_recommendations", "type": "array", "required": false},
+        {"name": "commercialization_readiness", "type": "number", "required": true}
+      ],
+
+      "required_integrations": [
+        {"system": "Innovation Platform", "type": "bidirectional", "protocol": "API"},
+        {"system": "Project Management", "type": "bidirectional", "protocol": "API", "examples": ["Jira", "Monday.com"]},
+        {"system": "Lab Management", "type": "bidirectional", "protocol": "API"}
+      ],
+
+      "decision_rules": [
+        {"rule_id": "DR-IP-001", "name": "Pivot Decision", "condition": "validation_failure_count > 2", "action": "pivot_or_kill_review", "priority": 1}
+      ],
+
+      "error_handlers": [
+        {"error_type": "budget_exceeded", "severity": "high", "action": "pause_and_review", "notification": ["innovation_lead", "finance"]}
+      ]
+    },
+
+    {
+      "id": "agent_2_3_1_1_step4",
+      "apqc_id": "2.3.1.1",
+      "step_number": 4,
+      "step_name": "Portfolio Optimization",
+      "description": "Manage innovation portfolio balance and resource allocation",
+      "purpose": "Optimize innovation ROI",
+      "business_value": "Balanced innovation investments",
+
+      "capabilities": ["portfolio_analysis", "resource_reallocation", "risk_balancing", "horizon_planning", "synergy_identification"],
+
+      "input_schema": [
+        {"name": "active_innovations", "type": "array", "required": true},
+        {"name": "total_budget", "type": "number", "required": true},
+        {"name": "strategic_priorities", "type": "array", "required": true},
+        {"name": "risk_appetite", "type": "object", "required": true}
+      ],
+
+      "output_schema": [
+        {"name": "portfolio_balance", "type": "object", "required": true},
+        {"name": "allocation_recommendations", "type": "array", "required": true},
+        {"name": "risk_exposure", "type": "object", "required": true},
+        {"name": "horizon_distribution", "type": "object", "required": true}
+      ],
+
+      "required_integrations": [
+        {"system": "Innovation Platform", "type": "bidirectional", "protocol": "API"},
+        {"system": "Financial Planning", "type": "bidirectional", "protocol": "API", "examples": ["Anaplan", "Workday Adaptive"]},
+        {"system": "PPM", "type": "bidirectional", "protocol": "API", "examples": ["Planview", "ServiceNow SPM"]}
+      ],
+
+      "decision_rules": [
+        {"rule_id": "DR-PO-001", "name": "Horizon Imbalance", "condition": "horizon1_allocation < 50%", "action": "rebalance_portfolio", "priority": 1}
+      ],
+
+      "error_handlers": [
+        {"error_type": "data_stale", "severity": "medium", "action": "refresh_from_source", "notification": ["portfolio_manager"]}
+      ]
+    },
+
+    {
+      "id": "agent_2_3_1_1_step5",
+      "apqc_id": "2.3.1.1",
+      "step_number": 5,
+      "step_name": "Commercialization Tracking",
+      "description": "Track innovation commercialization and measure outcomes",
+      "purpose": "Measure innovation success",
+      "business_value": "Innovation ROI visibility",
+
+      "capabilities": ["launch_tracking", "outcome_measurement", "roi_calculation", "learning_capture", "success_metrics"],
+
+      "input_schema": [
+        {"name": "launched_innovations", "type": "array", "required": true},
+        {"name": "success_criteria", "type": "array", "required": true},
+        {"name": "measurement_period", "type": "object", "required": true}
+      ],
+
+      "output_schema": [
+        {"name": "commercialization_status", "type": "array", "required": true},
+        {"name": "outcome_metrics", "type": "object", "required": true},
+        {"name": "roi_analysis", "type": "object", "required": true},
+        {"name": "lessons_learned", "type": "array", "required": true}
+      ],
+
+      "required_integrations": [
+        {"system": "Innovation Platform", "type": "bidirectional", "protocol": "API"},
+        {"system": "BI Platform", "type": "read", "protocol": "API", "examples": ["Tableau", "Power BI"]},
+        {"system": "Product Analytics", "type": "read", "protocol": "API", "examples": ["Amplitude", "Mixpanel"]}
+      ],
+
+      "decision_rules": [
+        {"rule_id": "DR-CT-001", "name": "Underperforming Launch", "condition": "roi < target_roi * 0.5 AND months_since_launch > 6", "action": "pivot_or_sunset_review", "priority": 1}
+      ],
+
+      "error_handlers": [
+        {"error_type": "metrics_unavailable", "severity": "medium", "action": "use_proxy_metrics", "notification": ["analytics_team"]}
+      ]
+    }
+  ],
+
+  "workflow_rules": {
+    "entry_criteria": ["innovation_strategy_defined", "budget_allocated"],
+    "exit_criteria": ["innovation_commercialized_or_archived", "outcomes_measured", "learnings_captured"],
+    "escalation_path": ["innovation_analyst", "innovation_lead", "chief_innovation_officer", "executive_committee"]
+  },
+
+  "kpis": [
+    {"metric": "idea_to_launch_time", "target": "< 18 months", "measurement": "average_cycle_time"},
+    {"metric": "innovation_success_rate", "target": "> 30%", "measurement": "launched_innovations_meeting_targets"},
+    {"metric": "innovation_roi", "target": "> 3x", "measurement": "revenue_from_innovations_vs_investment"}
+  ]
+}

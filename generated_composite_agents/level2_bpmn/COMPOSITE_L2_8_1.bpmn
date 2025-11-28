@@ -1,0 +1,62 @@
+<?xml version='1.0' encoding='utf-8'?>
+<bpmn:definitions xmlns:bpmn="http://www.omg.org/spec/BPMN/20100524/MODEL" xmlns:bpmndi="http://www.omg.org/spec/BPMN/20100524/DI" xmlns:dc="http://www.omg.org/spec/DD/20100524/DC" id="Definitions_L2_8_1" targetNamespace="http://apqc.org/composite/level2/8.1" exporter="APQC Agentic Platform v3.0" exporterVersion="3.0.0">
+  <bpmn:process id="Process_8_1" name="Level 2: 8.1 - Manage the business of IT" isExecutable="true">
+    <bpmn:documentation>
+Level 2 Process Group Process
+Manage the business of IT
+APQC ID: 8.1
+
+Orchestrates 3 child processes:
+  1. 8.1.1: Develop IT strategy
+  2. 8.1.2: Manage IT portfolio
+  3. 8.1.3: Manage IT budget
+
+Orchestration Pattern: Sequential Workflow (Pipeline)
+Standards: BPMN 2.0, A2A Protocol
+
+Generated: 2025-11-25T11:51:05.835549
+Status: Production Ready
+</bpmn:documentation>
+    <bpmn:startEvent id="Start_8_1" name="Start">
+      <bpmn:outgoing>Flow_start_to_child1</bpmn:outgoing>
+    </bpmn:startEvent>
+    <bpmn:callActivity id="CallActivity_8_1_child1" name="8.1.1: Develop IT strategy" calledElement="Process_8_1_1">
+      <bpmn:incoming>Flow_start_to_child1</bpmn:incoming>
+      <bpmn:outgoing>Flow_child1_to_child2</bpmn:outgoing>
+    </bpmn:callActivity>
+    <bpmn:callActivity id="CallActivity_8_1_child2" name="8.1.2: Manage IT portfolio" calledElement="Process_8_1_2">
+      <bpmn:incoming>Flow_child1_to_child2</bpmn:incoming>
+      <bpmn:outgoing>Flow_child2_to_child3</bpmn:outgoing>
+    </bpmn:callActivity>
+    <bpmn:callActivity id="CallActivity_8_1_child3" name="8.1.3: Manage IT budget" calledElement="Process_8_1_3">
+      <bpmn:incoming>Flow_child2_to_child3</bpmn:incoming>
+      <bpmn:outgoing>Flow_child3_to_end</bpmn:outgoing>
+    </bpmn:callActivity>
+    <bpmn:sequenceFlow id="Flow_start_to_child1" sourceRef="Start_8_1" targetRef="CallActivity_8_1_child1" />
+    <bpmn:sequenceFlow id="Flow_child1_to_child2" sourceRef="CallActivity_8_1_child1" targetRef="CallActivity_8_1_child2" />
+    <bpmn:sequenceFlow id="Flow_child2_to_child3" sourceRef="CallActivity_8_1_child2" targetRef="CallActivity_8_1_child3" />
+    <bpmn:sequenceFlow id="Flow_child3_to_end" sourceRef="CallActivity_8_1_child3" targetRef="End_8_1" />
+    <bpmn:endEvent id="End_8_1" name="Complete">
+      <bpmn:incoming>Flow_child3_to_end</bpmn:incoming>
+    </bpmn:endEvent>
+  </bpmn:process>
+  <bpmndi:BPMNDiagram id="Diagram_8_1">
+    <bpmndi:BPMNPlane id="Plane_8_1" bpmnElement="Process_8_1">
+      <bpmndi:BPMNShape id="Shape_Start_8_1" bpmnElement="Start_8_1">
+        <dc:Bounds x="150" y="50" width="36" height="36" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Shape_CallActivity_8_1_child1" bpmnElement="CallActivity_8_1_child1">
+        <dc:Bounds x="100" y="130" width="150" height="80" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Shape_CallActivity_8_1_child2" bpmnElement="CallActivity_8_1_child2">
+        <dc:Bounds x="100" y="230" width="150" height="80" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Shape_CallActivity_8_1_child3" bpmnElement="CallActivity_8_1_child3">
+        <dc:Bounds x="100" y="330" width="150" height="80" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Shape_End_8_1" bpmnElement="End_8_1">
+        <dc:Bounds x="150" y="430" width="36" height="36" />
+      </bpmndi:BPMNShape>
+    </bpmndi:BPMNPlane>
+  </bpmndi:BPMNDiagram>
+</bpmn:definitions>

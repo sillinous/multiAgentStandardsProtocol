@@ -1,0 +1,323 @@
+{
+  "apqc_id": "2.1.1.1",
+  "apqc_name": "Develop products and services",
+  "category": "2.0 - Develop and Manage Products and Services",
+  "description": "End-to-end product development workflow from concept ideation through launch, including requirements, design, development, testing, and release management.",
+  "orchestration_pattern": "parallel",
+  "total_steps": 7,
+  "estimated_duration_seconds": 7776000,
+  "compliance_frameworks": ["ISO 9001", "ISO 13485", "FDA 21 CFR Part 820", "SOC 2"],
+  "data_retention_days": 3650,
+
+  "agent_cards": [
+    {
+      "id": "agent_2_1_1_1_step1",
+      "apqc_id": "2.1.1.1",
+      "step_number": 1,
+      "step_name": "Ideation and Concept Development",
+      "description": "Generate and evaluate product ideas and concepts",
+      "purpose": "Identify market opportunities and innovative product concepts",
+      "business_value": "Build products customers want",
+
+      "capabilities": ["capture_ideas", "evaluate_market_fit", "assess_feasibility", "prioritize_concepts", "create_business_case", "validate_with_customers"],
+
+      "input_schema": [
+        {"name": "idea_source", "type": "string", "required": true, "validation": {"enum": ["customer_feedback", "market_research", "internal_innovation", "competitor_analysis", "technology_push"]}},
+        {"name": "problem_statement", "type": "string", "required": true},
+        {"name": "target_market", "type": "object", "required": true},
+        {"name": "initial_concept", "type": "string", "required": true}
+      ],
+
+      "output_schema": [
+        {"name": "concept_id", "type": "string", "required": true, "example": "CONCEPT-2025-001"},
+        {"name": "market_potential_score", "type": "number", "required": true},
+        {"name": "feasibility_score", "type": "number", "required": true},
+        {"name": "business_case", "type": "object", "required": true},
+        {"name": "recommendation", "type": "string", "required": true, "validation": {"enum": ["proceed", "pivot", "hold", "reject"]}}
+      ],
+
+      "required_integrations": [
+        {"system": "Idea Management", "type": "bidirectional", "protocol": "API", "examples": ["Aha!", "Productboard", "Brightidea"]},
+        {"system": "Market Research", "type": "read", "protocol": "API"},
+        {"system": "Customer Feedback", "type": "read", "protocol": "API", "examples": ["UserVoice", "Pendo", "Intercom"]}
+      ],
+
+      "decision_rules": [
+        {"rule_id": "DR-PD-001", "name": "Strategic Alignment", "condition": "concept.strategic_fit < 70%", "action": "require_executive_sponsor", "priority": 1},
+        {"rule_id": "DR-PD-002", "name": "High Investment", "condition": "estimated_investment > 1000000", "action": "require_board_approval", "priority": 1},
+        {"rule_id": "DR-PD-003", "name": "Fast Track", "condition": "competitor_threat == 'high' AND market_potential_score > 80", "action": "accelerate_evaluation", "priority": 1}
+      ],
+
+      "error_handlers": [
+        {"error_type": "insufficient_market_data", "severity": "medium", "action": "commission_research", "notification": ["product_manager"]},
+        {"error_type": "duplicate_concept", "severity": "low", "action": "link_to_existing", "notification": ["innovation_team"]}
+      ]
+    },
+
+    {
+      "id": "agent_2_1_1_1_step2",
+      "apqc_id": "2.1.1.1",
+      "step_number": 2,
+      "step_name": "Requirements Definition",
+      "description": "Define and manage product requirements",
+      "purpose": "Capture what the product must do",
+      "business_value": "Build the right product features",
+
+      "capabilities": ["gather_requirements", "write_user_stories", "manage_backlog", "prioritize_features", "trace_requirements", "validate_completeness"],
+
+      "input_schema": [
+        {"name": "concept_id", "type": "string", "required": true},
+        {"name": "stakeholder_input", "type": "array", "required": true},
+        {"name": "constraints", "type": "object", "required": true}
+      ],
+
+      "output_schema": [
+        {"name": "prd_id", "type": "string", "required": true},
+        {"name": "epic_list", "type": "array", "required": true},
+        {"name": "user_stories", "type": "array", "required": true},
+        {"name": "acceptance_criteria", "type": "object", "required": true},
+        {"name": "mvp_scope", "type": "object", "required": true}
+      ],
+
+      "required_integrations": [
+        {"system": "Product Management", "type": "bidirectional", "protocol": "API", "examples": ["Jira", "Aha!", "Productboard", "Azure DevOps"]},
+        {"system": "Collaboration", "type": "bidirectional", "protocol": "API", "examples": ["Confluence", "Notion"]},
+        {"system": "Design Tools", "type": "read", "protocol": "API", "examples": ["Figma", "Miro"]}
+      ],
+
+      "decision_rules": [
+        {"rule_id": "DR-PD-010", "name": "Scope Creep", "condition": "requirement_count > initial_estimate * 1.3", "action": "trigger_scope_review", "priority": 1},
+        {"rule_id": "DR-PD-011", "name": "Regulatory Requirement", "condition": "requirement.regulatory == true", "action": "flag_for_compliance_review", "priority": 1}
+      ],
+
+      "error_handlers": [
+        {"error_type": "conflicting_requirements", "severity": "high", "action": "escalate_to_product_owner", "notification": ["product_owner"]},
+        {"error_type": "incomplete_acceptance_criteria", "severity": "medium", "action": "request_clarification", "notification": ["business_analyst"]}
+      ]
+    },
+
+    {
+      "id": "agent_2_1_1_1_step3",
+      "apqc_id": "2.1.1.1",
+      "step_number": 3,
+      "step_name": "Design and Architecture",
+      "description": "Design the product solution and technical architecture",
+      "purpose": "Define how the product will be built",
+      "business_value": "Ensure scalable, maintainable solutions",
+
+      "capabilities": ["create_ux_design", "design_architecture", "define_apis", "select_technology", "document_design", "conduct_design_reviews"],
+
+      "input_schema": [
+        {"name": "prd_id", "type": "string", "required": true},
+        {"name": "technical_constraints", "type": "object", "required": true},
+        {"name": "integration_requirements", "type": "array", "required": false}
+      ],
+
+      "output_schema": [
+        {"name": "design_document_id", "type": "string", "required": true},
+        {"name": "ux_designs", "type": "array", "required": true},
+        {"name": "architecture_diagram", "type": "binary", "required": true},
+        {"name": "api_specifications", "type": "object", "required": false},
+        {"name": "technology_stack", "type": "object", "required": true}
+      ],
+
+      "required_integrations": [
+        {"system": "Design Tools", "type": "bidirectional", "protocol": "API", "examples": ["Figma", "Sketch", "Adobe XD"]},
+        {"system": "Architecture Tools", "type": "bidirectional", "protocol": "API", "examples": ["Lucidchart", "Draw.io", "Miro"]},
+        {"system": "API Documentation", "type": "bidirectional", "protocol": "API", "examples": ["Swagger", "Postman"]}
+      ],
+
+      "decision_rules": [
+        {"rule_id": "DR-PD-020", "name": "Security Review", "condition": "handles_sensitive_data == true", "action": "require_security_architecture_review", "priority": 1},
+        {"rule_id": "DR-PD-021", "name": "New Technology", "condition": "technology NOT IN approved_stack", "action": "require_architecture_board_approval", "priority": 1}
+      ],
+
+      "error_handlers": [
+        {"error_type": "design_rejected", "severity": "high", "action": "revise_with_feedback", "notification": ["design_lead"]},
+        {"error_type": "usability_issues", "severity": "medium", "action": "schedule_user_testing", "notification": ["ux_researcher"]}
+      ]
+    },
+
+    {
+      "id": "agent_2_1_1_1_step4",
+      "apqc_id": "2.1.1.1",
+      "step_number": 4,
+      "step_name": "Development and Build",
+      "description": "Build the product according to specifications",
+      "purpose": "Transform designs into working product",
+      "business_value": "Efficient, quality development",
+
+      "capabilities": ["manage_sprints", "track_progress", "review_code", "manage_branches", "automate_builds", "integrate_continuously"],
+
+      "input_schema": [
+        {"name": "design_document_id", "type": "string", "required": true},
+        {"name": "sprint_scope", "type": "array", "required": true},
+        {"name": "team_allocation", "type": "object", "required": true}
+      ],
+
+      "output_schema": [
+        {"name": "build_version", "type": "string", "required": true},
+        {"name": "features_completed", "type": "array", "required": true},
+        {"name": "code_coverage", "type": "number", "required": true},
+        {"name": "build_status", "type": "string", "required": true, "validation": {"enum": ["success", "failed", "unstable"]}}
+      ],
+
+      "required_integrations": [
+        {"system": "Project Management", "type": "bidirectional", "protocol": "API", "examples": ["Jira", "Azure DevOps", "Asana"]},
+        {"system": "Source Control", "type": "bidirectional", "protocol": "API", "examples": ["GitHub", "GitLab", "Bitbucket"]},
+        {"system": "CI/CD", "type": "bidirectional", "protocol": "API", "examples": ["Jenkins", "GitHub Actions", "CircleCI"]}
+      ],
+
+      "decision_rules": [
+        {"rule_id": "DR-PD-030", "name": "Sprint Velocity", "condition": "completed_points < planned_points * 0.7", "action": "review_impediments", "priority": 1},
+        {"rule_id": "DR-PD-031", "name": "Code Quality Gate", "condition": "code_coverage < 80% OR critical_issues > 0", "action": "block_merge", "priority": 1}
+      ],
+
+      "error_handlers": [
+        {"error_type": "build_failure", "severity": "high", "action": "notify_and_revert", "notification": ["developer", "tech_lead"]},
+        {"error_type": "dependency_vulnerability", "severity": "critical", "action": "block_release_and_patch", "notification": ["security_team"]}
+      ]
+    },
+
+    {
+      "id": "agent_2_1_1_1_step5",
+      "apqc_id": "2.1.1.1",
+      "step_number": 5,
+      "step_name": "Testing and Quality Assurance",
+      "description": "Verify product quality through comprehensive testing",
+      "purpose": "Ensure product meets requirements and quality standards",
+      "business_value": "Reduce defects and ensure reliability",
+
+      "capabilities": ["execute_test_plans", "automate_testing", "perform_uat", "conduct_performance_testing", "manage_defects", "track_test_coverage"],
+
+      "input_schema": [
+        {"name": "build_version", "type": "string", "required": true},
+        {"name": "test_type", "type": "string", "required": true, "validation": {"enum": ["unit", "integration", "system", "uat", "performance", "security"]}},
+        {"name": "test_scope", "type": "object", "required": true}
+      ],
+
+      "output_schema": [
+        {"name": "test_run_id", "type": "string", "required": true},
+        {"name": "pass_rate", "type": "number", "required": true},
+        {"name": "defects_found", "type": "array", "required": true},
+        {"name": "test_report", "type": "object", "required": true},
+        {"name": "release_recommendation", "type": "string", "required": true, "validation": {"enum": ["go", "conditional", "no_go"]}}
+      ],
+
+      "required_integrations": [
+        {"system": "Test Management", "type": "bidirectional", "protocol": "API", "examples": ["TestRail", "Zephyr", "qTest"]},
+        {"system": "Test Automation", "type": "bidirectional", "protocol": "API", "examples": ["Selenium", "Cypress", "Playwright"]},
+        {"system": "Performance Testing", "type": "execute", "protocol": "API", "examples": ["JMeter", "LoadRunner", "k6"]}
+      ],
+
+      "decision_rules": [
+        {"rule_id": "DR-PD-040", "name": "Critical Defects", "condition": "critical_defects > 0", "action": "block_release", "priority": 1},
+        {"rule_id": "DR-PD-041", "name": "Coverage Threshold", "condition": "test_coverage < 85%", "action": "require_additional_tests", "priority": 2}
+      ],
+
+      "error_handlers": [
+        {"error_type": "test_environment_failure", "severity": "high", "action": "escalate_to_devops", "notification": ["qa_lead", "devops"]},
+        {"error_type": "uat_rejected", "severity": "high", "action": "return_to_development", "notification": ["product_owner", "dev_lead"]}
+      ]
+    },
+
+    {
+      "id": "agent_2_1_1_1_step6",
+      "apqc_id": "2.1.1.1",
+      "step_number": 6,
+      "step_name": "Release Management",
+      "description": "Plan and execute product releases",
+      "purpose": "Deliver product to market safely and efficiently",
+      "business_value": "Smooth deployments with minimal disruption",
+
+      "capabilities": ["plan_release", "manage_rollout", "coordinate_go_live", "execute_deployment", "monitor_release", "manage_rollback"],
+
+      "input_schema": [
+        {"name": "release_version", "type": "string", "required": true},
+        {"name": "release_type", "type": "string", "required": true, "validation": {"enum": ["major", "minor", "patch", "hotfix"]}},
+        {"name": "target_environment", "type": "string", "required": true},
+        {"name": "rollout_strategy", "type": "string", "required": true, "validation": {"enum": ["big_bang", "phased", "canary", "blue_green"]}}
+      ],
+
+      "output_schema": [
+        {"name": "release_id", "type": "string", "required": true},
+        {"name": "deployment_status", "type": "string", "required": true, "validation": {"enum": ["success", "partial", "failed", "rolled_back"]}},
+        {"name": "release_notes", "type": "object", "required": true},
+        {"name": "deployment_time", "type": "datetime", "required": true}
+      ],
+
+      "required_integrations": [
+        {"system": "Release Management", "type": "bidirectional", "protocol": "API", "examples": ["Azure DevOps", "Octopus Deploy"]},
+        {"system": "Change Management", "type": "bidirectional", "protocol": "API", "examples": ["ServiceNow"]},
+        {"system": "Monitoring", "type": "read", "protocol": "API", "examples": ["Datadog", "New Relic", "Splunk"]}
+      ],
+
+      "decision_rules": [
+        {"rule_id": "DR-PD-050", "name": "Release Window", "condition": "target_time NOT IN approved_release_windows", "action": "require_exception_approval", "priority": 1},
+        {"rule_id": "DR-PD-051", "name": "Error Rate Spike", "condition": "error_rate > baseline * 2", "action": "trigger_automatic_rollback", "priority": 1}
+      ],
+
+      "error_handlers": [
+        {"error_type": "deployment_failure", "severity": "critical", "action": "rollback_immediately", "notification": ["release_manager", "dev_lead", "on_call"]},
+        {"error_type": "health_check_failed", "severity": "high", "action": "pause_rollout", "notification": ["release_manager"]}
+      ]
+    },
+
+    {
+      "id": "agent_2_1_1_1_step7",
+      "apqc_id": "2.1.1.1",
+      "step_number": 7,
+      "step_name": "Post-Launch and Iteration",
+      "description": "Monitor product performance and plan iterations",
+      "purpose": "Continuous improvement based on real-world feedback",
+      "business_value": "Maximize product success and user satisfaction",
+
+      "capabilities": ["monitor_adoption", "collect_feedback", "analyze_usage", "plan_iterations", "measure_success", "sunset_features"],
+
+      "input_schema": [
+        {"name": "product_id", "type": "string", "required": true},
+        {"name": "measurement_period", "type": "object", "required": true}
+      ],
+
+      "output_schema": [
+        {"name": "adoption_metrics", "type": "object", "required": true},
+        {"name": "user_satisfaction", "type": "number", "required": true},
+        {"name": "business_impact", "type": "object", "required": true},
+        {"name": "iteration_backlog", "type": "array", "required": true}
+      ],
+
+      "required_integrations": [
+        {"system": "Product Analytics", "type": "read", "protocol": "API", "examples": ["Amplitude", "Mixpanel", "Pendo"]},
+        {"system": "Customer Feedback", "type": "read", "protocol": "API"},
+        {"system": "Revenue Analytics", "type": "read", "protocol": "API"}
+      ],
+
+      "decision_rules": [
+        {"rule_id": "DR-PD-060", "name": "Low Adoption", "condition": "feature_adoption < 20% AND days_since_launch > 30", "action": "investigate_and_plan_changes", "priority": 1},
+        {"rule_id": "DR-PD-061", "name": "Sunset Candidate", "condition": "usage_declining_3_months AND maintenance_cost > revenue", "action": "evaluate_for_sunset", "priority": 2}
+      ],
+
+      "error_handlers": [
+        {"error_type": "analytics_gap", "severity": "medium", "action": "implement_additional_tracking", "notification": ["product_analyst"]}
+      ]
+    }
+  ],
+
+  "integration_summary": {
+    "product_management": ["Jira", "Aha!", "Productboard", "Azure DevOps", "Asana"],
+    "design": ["Figma", "Sketch", "Adobe XD", "Miro", "InVision"],
+    "development": ["GitHub", "GitLab", "Bitbucket", "Jenkins", "CircleCI"],
+    "testing": ["TestRail", "Selenium", "Cypress", "JMeter"],
+    "analytics": ["Amplitude", "Mixpanel", "Pendo", "Google Analytics"],
+    "collaboration": ["Confluence", "Notion", "Slack", "Microsoft Teams"]
+  },
+
+  "kpis": [
+    {"name": "Time to Market", "description": "Days from concept approval to launch", "target": "< 180 days", "measurement": "launch_date - concept_approval_date"},
+    {"name": "Feature Adoption Rate", "description": "Percentage of users using new features", "target": "> 40%", "measurement": "users_using_feature / total_active_users"},
+    {"name": "Defect Escape Rate", "description": "Production defects per release", "target": "< 5 critical", "measurement": "production_defects / release"},
+    {"name": "Sprint Velocity", "description": "Story points completed per sprint", "target": "Consistent +/- 10%", "measurement": "avg(completed_story_points)"},
+    {"name": "Customer Satisfaction", "description": "Product NPS score", "target": "> 50", "measurement": "promoters% - detractors%"},
+    {"name": "Revenue Impact", "description": "Revenue attributable to product", "target": "Meet business case", "measurement": "product_revenue / projected_revenue"}
+  ]
+}

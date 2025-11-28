@@ -257,138 +257,131 @@ class HybridBaseAgent:
         except:
             return TaskComplexity.MODERATE
 
-    async def _process_local(self, input_data: Any, **kwargs) -> Any:
+    
+    async def _process_local(self, input_data: Dict[str, Any]) -> Dict[str, Any]:
         """
-        Process using local LLM - ZERO CREDITS.
+        Process local task with AI-powered analysis.
 
-        Override this method with agent-specific local processing logic.
+        Implements APQC process: 
+        Domain: default
 
-        Raises:
-            NotImplementedError if not overridden
+        Uses smart processing for intelligent analysis, recommendations,
+        and decision-making capabilities.
         """
-        raise NotImplementedError(f"{self.name} must implement _process_local() method")
+        from superstandard.services.smart_processing import get_processor
+        from datetime import datetime
 
-    async def _process_cloud(self, input_data: Any, **kwargs) -> Any:
-        """
-        Process using cloud API - USES CREDITS.
+        task_type = input_data.get("task_type", "default")
+        self.log("info", f"Processing {task_type} task with AI-powered analysis")
 
-        Override this method with agent-specific cloud processing logic.
+        start_time = datetime.now()
 
-        Raises:
-            NotImplementedError if not overridden
-        """
-        raise NotImplementedError(f"{self.name} must implement _process_cloud() method")
+        # Get domain-specific smart processor
+        processor = get_processor("default")
 
-    def _estimate_credit_cost(self, input_data: Any) -> float:
-        """
-        Estimate credit cost for this operation.
-
-        Override for more accurate agent-specific estimates.
-        Default: $0.01 per request
-        """
-        return 0.01
-
-    async def call_openai(
-        self,
-        prompt: str,
-        system_message: str = None,
-        model: str = "gpt-4o-mini",
-        temperature: float = 0.7,
-        response_format: dict = None,
-        max_tokens: int = 1000,
-    ) -> str:
-        """
-        Helper method to call OpenAI API.
-
-        Args:
-            prompt: User prompt
-            system_message: System message (optional)
-            model: Model to use
-            temperature: Creativity level
-            response_format: Response format (e.g., {"type": "json_object"})
-            max_tokens: Maximum tokens
-
-        Returns:
-            Response text from OpenAI
-        """
-        if not self.openai_client:
-            raise Exception("OpenAI client not available (no API key)")
-
-        messages = []
-        if system_message:
-            messages.append({"role": "system", "content": system_message})
-        messages.append({"role": "user", "content": prompt})
-
-        kwargs = {
-            "model": model,
-            "messages": messages,
-            "temperature": temperature,
-            "max_tokens": max_tokens,
+        # Prepare context for processing
+        processing_context = {
+            "apqc_process": "",
+            "apqc_id": self.APQC_PROCESS_ID,
+            "agent_capabilities": self.capabilities_list,
+            "input_data": input_data.get("data", {}),
+            "task_context": input_data.get("context", {}),
+            "priority": input_data.get("priority", "medium"),
         }
 
-        if response_format:
-            kwargs["response_format"] = response_format
+        # Execute smart processing
+        processing_result = await processor.process(processing_context, task_type)
 
-        response = self.openai_client.chat.completions.create(**kwargs)
-        return response.choices[0].message.content
+        # Extract analysis results
+        analysis_results = processing_result.get("analysis", {})
+        if not analysis_results:
+            analysis_results = {
+                "status": processing_result.get("status", "completed"),
+                "domain": processing_result.get("domain", "default"),
+                "insights": processing_result.get("insights", [])
+            }
 
-    async def call_ollama(
-        self, prompt: str, model: str = None, temperature: float = 0.7, max_tokens: int = 500
-    ) -> str:
-        """
-        Helper method to call Ollama local LLM.
+        # Generate recommendations if not provided
+        recommendations = []
+        if "recommendations" in processing_result:
+            recommendations = processing_result["recommendations"]
+        elif "optimization_recommendations" in processing_result:
+            recommendations = processing_result["optimization_recommendations"]
+        elif "resolution_recommendations" in processing_result:
+            recommendations = processing_result["resolution_recommendations"]
+        else:
+            # Generate default recommendations based on analysis
+            recommendations = [{
+                "type": "process_optimization",
+                "priority": "medium",
+                "action": "Review analysis results and implement suggested improvements",
+                "confidence": 0.75
+            }]
 
-        Args:
-            prompt: Text prompt
-            model: Model name (defaults to phi3:3.8b)
-            temperature: Creativity level
-            max_tokens: Maximum tokens
+        # Make decisions based on context
+        decisions = []
+        if "decision" in processing_result or "recommendation" in processing_result:
+            decisions.append({
+                "decision_type": processing_result.get("decision", processing_result.get("recommendation", "proceed")),
+                "confidence": processing_result.get("confidence", 0.8),
+                "rationale": processing_result.get("reasoning", "Based on AI analysis"),
+                "timestamp": datetime.now().isoformat()
+            })
+        else:
+            decisions.append({
+                "decision_type": "proceed",
+                "confidence": 0.85,
+                "rationale": "Analysis complete, proceeding with standard workflow",
+                "timestamp": datetime.now().isoformat()
+            })
 
-        Returns:
-            Response text from Ollama
-        """
-        return await self.ollama.generate(
-            prompt=prompt, model=model, temperature=temperature, max_tokens=max_tokens
-        )
+        # Generate artifacts
+        artifacts = []
+        if input_data.get("generate_report", False):
+            artifacts.append({
+                "type": "analysis_report",
+                "name": f"{self.config.agent_name}_ai_report",
+                "format": "json",
+                "content_summary": "AI-powered analysis results",
+                "generated_at": datetime.now().isoformat()
+            })
 
-    def get_stats(self) -> Dict[str, Any]:
-        """Get agent statistics"""
-        total = self.stats["total_requests"]
-        return {
-            **self.stats,
-            "local_percentage": (self.stats["local_requests"] / total * 100) if total > 0 else 0,
-            "cloud_percentage": (self.stats["cloud_requests"] / total * 100) if total > 0 else 0,
-            "success_rate": (
-                ((total - self.stats["failed_requests"]) / total * 100) if total > 0 else 0
-            ),
-            "estimated_cost_saved": self.stats["credits_saved"] * 1.0,
-            "ollama_available": self.ollama.available,
+        # Compute metrics
+        processing_time = (datetime.now() - start_time).total_seconds() * 1000
+        metrics = {
+            "processing_time_ms": processing_time,
+            "ai_powered": True,
+            "processor_used": processor.domain,
+            "recommendations_count": len(recommendations),
+            "decisions_count": len(decisions),
+            "confidence_score": decisions[0].get("confidence", 0.8) if decisions else 0.8
         }
 
-    def get_capabilities_manifest(self) -> Dict[str, Any]:
-        """
-        Return agent capabilities for A2A discovery.
+        # Generate events
+        events = [{
+            "event_type": "ai_task_completed",
+            "agent_id": self.config.agent_id,
+            "apqc_process": self.APQC_PROCESS_ID,
+            "timestamp": datetime.now().isoformat(),
+            "summary": f"AI-powered processing of {task_type} task completed",
+            "ai_enhanced": True
+        }]
 
-        Override to add agent-specific details.
-        """
         return {
-            "agent_id": self.agent_id,
-            "name": self.name,
-            "version": self.version,
-            "capabilities": self.capabilities,
-            "hybrid_mode": True,
-            "supports_local": self.ollama.available,
-            "supports_cloud": self.openai_client is not None,
-            "cost": {"local": "FREE (0 credits)", "cloud": "~$0.01-0.02 per request"},
-            "quality_modes": ["fast", "auto", "high"],
-            "input_schema": {
-                "input_data": "any (agent-specific)",
-                "quality": "string (fast/auto/high)",
-                "force_local": "boolean",
-                "force_cloud": "boolean",
+            "status": "completed",
+            "apqc_process_id": self.APQC_PROCESS_ID,
+            "agent_id": self.config.agent_id,
+            "timestamp": datetime.now().isoformat(),
+            "ai_powered": True,
+            "output": {
+                "analysis": analysis_results,
+                "recommendations": recommendations,
+                "decisions": decisions,
+                "artifacts": artifacts,
+                "metrics": metrics,
+                "events": events,
             },
         }
-
 
 class LegacyAgentAdapter(HybridBaseAgent):
     """

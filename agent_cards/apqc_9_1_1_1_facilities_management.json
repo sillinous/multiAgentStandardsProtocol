@@ -1,0 +1,308 @@
+{
+  "apqc_id": "9.1.1.1",
+  "apqc_name": "Manage facilities operations",
+  "category": "9.0 - Acquire, Construct, and Manage Assets",
+  "description": "End-to-end facilities management workflow from space planning through maintenance operations, including energy management, workplace services, and sustainability initiatives.",
+  "orchestration_pattern": "event_driven",
+  "total_steps": 7,
+  "estimated_duration_seconds": 86400,
+  "compliance_frameworks": ["ISO 41001", "ISO 50001", "OSHA", "ADA", "LEED", "WELL"],
+  "data_retention_days": 2555,
+
+  "agent_cards": [
+    {
+      "id": "agent_9_1_1_1_step1",
+      "apqc_id": "9.1.1.1",
+      "step_number": 1,
+      "step_name": "Space Management",
+      "description": "Plan and manage space allocation and utilization",
+      "purpose": "Optimize space utilization",
+      "business_value": "Reduced real estate costs",
+
+      "capabilities": ["space_planning", "occupancy_tracking", "move_management", "floor_plan_management", "utilization_analytics"],
+
+      "input_schema": [
+        {"name": "facility_id", "type": "string", "required": true},
+        {"name": "space_request", "type": "object", "required": false},
+        {"name": "occupancy_data", "type": "object", "required": true}
+      ],
+
+      "output_schema": [
+        {"name": "space_allocation", "type": "object", "required": true},
+        {"name": "utilization_report", "type": "object", "required": true},
+        {"name": "optimization_recommendations", "type": "array", "required": false},
+        {"name": "floor_plans", "type": "array", "required": true}
+      ],
+
+      "required_integrations": [
+        {"system": "IWMS", "type": "bidirectional", "protocol": "API", "examples": ["Planon", "Archibus", "IBM Tririga", "Nuvolo"]},
+        {"system": "HRIS", "type": "read", "protocol": "API"},
+        {"system": "Occupancy Sensors", "type": "read", "protocol": "API/IoT", "examples": ["Vergesense", "Density", "Locatee"]}
+      ],
+
+      "decision_rules": [
+        {"rule_id": "DR-FM-001", "name": "Low Utilization", "condition": "utilization < 40%", "action": "recommend_consolidation", "priority": 2},
+        {"rule_id": "DR-FM-002", "name": "Over Capacity", "condition": "occupancy > capacity * 0.9", "action": "initiate_expansion_review", "priority": 1}
+      ],
+
+      "error_handlers": [
+        {"error_type": "sensor_data_gap", "severity": "low", "action": "use_badge_data_estimate", "notification": ["facilities_analyst"]}
+      ]
+    },
+
+    {
+      "id": "agent_9_1_1_1_step2",
+      "apqc_id": "9.1.1.1",
+      "step_number": 2,
+      "step_name": "Work Order Management",
+      "description": "Manage facility maintenance and service requests",
+      "purpose": "Responsive facility services",
+      "business_value": "Maintained asset value and occupant satisfaction",
+
+      "capabilities": ["request_intake", "work_order_routing", "technician_dispatch", "completion_tracking", "feedback_collection"],
+
+      "input_schema": [
+        {"name": "service_request", "type": "object", "required": true},
+        {"name": "request_type", "type": "string", "required": true, "validation": {"enum": ["maintenance", "cleaning", "security", "move", "other"]}},
+        {"name": "priority", "type": "string", "required": true}
+      ],
+
+      "output_schema": [
+        {"name": "work_order", "type": "object", "required": true},
+        {"name": "assigned_technician", "type": "object", "required": true},
+        {"name": "completion_time", "type": "object", "required": true},
+        {"name": "satisfaction_score", "type": "number", "required": false}
+      ],
+
+      "required_integrations": [
+        {"system": "CMMS", "type": "bidirectional", "protocol": "API", "examples": ["Maximo", "ServiceChannel", "UpKeep"]},
+        {"system": "Service Desk", "type": "bidirectional", "protocol": "API", "examples": ["ServiceNow", "Zendesk"]},
+        {"system": "Mobile Workforce", "type": "bidirectional", "protocol": "API"}
+      ],
+
+      "decision_rules": [
+        {"rule_id": "DR-FM-010", "name": "Emergency Request", "condition": "priority == 'emergency'", "action": "immediate_dispatch", "priority": 1},
+        {"rule_id": "DR-FM-011", "name": "Recurring Issue", "condition": "same_asset_requests > 3_in_30_days", "action": "escalate_for_assessment", "priority": 1}
+      ],
+
+      "error_handlers": [
+        {"error_type": "no_technician_available", "severity": "high", "action": "escalate_to_contractor", "notification": ["facilities_manager"]}
+      ]
+    },
+
+    {
+      "id": "agent_9_1_1_1_step3",
+      "apqc_id": "9.1.1.1",
+      "step_number": 3,
+      "step_name": "Preventive Maintenance",
+      "description": "Schedule and execute preventive maintenance programs",
+      "purpose": "Asset reliability and longevity",
+      "business_value": "Reduced equipment failures and costs",
+
+      "capabilities": ["pm_scheduling", "maintenance_planning", "asset_tracking", "compliance_management", "vendor_coordination"],
+
+      "input_schema": [
+        {"name": "asset_id", "type": "string", "required": true},
+        {"name": "maintenance_schedule", "type": "object", "required": true},
+        {"name": "asset_criticality", "type": "string", "required": true}
+      ],
+
+      "output_schema": [
+        {"name": "pm_work_orders", "type": "array", "required": true},
+        {"name": "maintenance_history", "type": "array", "required": true},
+        {"name": "compliance_status", "type": "object", "required": true},
+        {"name": "asset_condition", "type": "string", "required": true}
+      ],
+
+      "required_integrations": [
+        {"system": "CMMS", "type": "bidirectional", "protocol": "API"},
+        {"system": "BMS", "type": "read", "protocol": "BACnet/API", "examples": ["Honeywell", "Siemens", "Johnson Controls"]},
+        {"system": "Vendor Portal", "type": "bidirectional", "protocol": "API"}
+      ],
+
+      "decision_rules": [
+        {"rule_id": "DR-FM-020", "name": "Overdue PM", "condition": "pm.days_overdue > 7", "action": "escalate_and_prioritize", "priority": 1},
+        {"rule_id": "DR-FM-021", "name": "Condition-Based", "condition": "sensor.degradation_detected", "action": "schedule_inspection", "priority": 1}
+      ],
+
+      "error_handlers": [
+        {"error_type": "parts_unavailable", "severity": "medium", "action": "order_parts_reschedule", "notification": ["maintenance_planner"]}
+      ]
+    },
+
+    {
+      "id": "agent_9_1_1_1_step4",
+      "apqc_id": "9.1.1.1",
+      "step_number": 4,
+      "step_name": "Energy Management",
+      "description": "Monitor and optimize building energy consumption",
+      "purpose": "Energy efficiency and sustainability",
+      "business_value": "Reduced energy costs and carbon footprint",
+
+      "capabilities": ["energy_monitoring", "demand_management", "hvac_optimization", "lighting_control", "renewable_integration"],
+
+      "input_schema": [
+        {"name": "building_id", "type": "string", "required": true},
+        {"name": "energy_data", "type": "object", "required": true},
+        {"name": "weather_forecast", "type": "object", "required": false}
+      ],
+
+      "output_schema": [
+        {"name": "energy_report", "type": "object", "required": true},
+        {"name": "optimization_actions", "type": "array", "required": true},
+        {"name": "savings_achieved", "type": "number", "required": true},
+        {"name": "carbon_footprint", "type": "object", "required": true}
+      ],
+
+      "required_integrations": [
+        {"system": "BMS", "type": "bidirectional", "protocol": "BACnet/API"},
+        {"system": "Energy Management", "type": "bidirectional", "protocol": "API", "examples": ["EnerNOC", "Schneider EcoStruxure", "Siemens Navigator"]},
+        {"system": "Utility Metering", "type": "read", "protocol": "API"}
+      ],
+
+      "decision_rules": [
+        {"rule_id": "DR-FM-030", "name": "Peak Demand", "condition": "demand > peak_threshold", "action": "initiate_load_shedding", "priority": 1},
+        {"rule_id": "DR-FM-031", "name": "After Hours", "condition": "occupancy == 0 AND systems_active", "action": "reduce_to_setback", "priority": 2}
+      ],
+
+      "error_handlers": [
+        {"error_type": "meter_offline", "severity": "medium", "action": "estimate_from_historical", "notification": ["energy_manager"]}
+      ]
+    },
+
+    {
+      "id": "agent_9_1_1_1_step5",
+      "apqc_id": "9.1.1.1",
+      "step_number": 5,
+      "step_name": "Security and Access Control",
+      "description": "Manage building security and access systems",
+      "purpose": "Secure facilities and occupants",
+      "business_value": "Protected assets and personnel",
+
+      "capabilities": ["access_control", "visitor_management", "surveillance_monitoring", "incident_response", "security_reporting"],
+
+      "input_schema": [
+        {"name": "access_request", "type": "object", "required": false},
+        {"name": "security_event", "type": "object", "required": false},
+        {"name": "facility_id", "type": "string", "required": true}
+      ],
+
+      "output_schema": [
+        {"name": "access_decision", "type": "object", "required": false},
+        {"name": "security_status", "type": "object", "required": true},
+        {"name": "incident_report", "type": "object", "required": false},
+        {"name": "access_log", "type": "array", "required": true}
+      ],
+
+      "required_integrations": [
+        {"system": "Access Control", "type": "bidirectional", "protocol": "API", "examples": ["Lenel", "CCURE", "Genetec"]},
+        {"system": "VMS", "type": "read", "protocol": "API", "examples": ["Milestone", "Genetec", "Avigilon"]},
+        {"system": "Visitor Management", "type": "bidirectional", "protocol": "API", "examples": ["Envoy", "Traction Guest"]}
+      ],
+
+      "decision_rules": [
+        {"rule_id": "DR-FM-040", "name": "Unauthorized Access", "condition": "access.denied AND attempts > 3", "action": "alert_security_investigate", "priority": 1},
+        {"rule_id": "DR-FM-041", "name": "After Hours Access", "condition": "access.time NOT IN business_hours", "action": "require_supervisor_approval", "priority": 2}
+      ],
+
+      "error_handlers": [
+        {"error_type": "system_offline", "severity": "critical", "action": "activate_manual_procedures", "notification": ["security_manager", "facilities_director"]}
+      ]
+    },
+
+    {
+      "id": "agent_9_1_1_1_step6",
+      "apqc_id": "9.1.1.1",
+      "step_number": 6,
+      "step_name": "Vendor and Contract Management",
+      "description": "Manage facility service vendors and contracts",
+      "purpose": "Quality service delivery",
+      "business_value": "Cost-effective facility services",
+
+      "capabilities": ["vendor_selection", "contract_management", "performance_monitoring", "invoice_verification", "sla_tracking"],
+
+      "input_schema": [
+        {"name": "service_category", "type": "string", "required": true},
+        {"name": "vendor_id", "type": "string", "required": false},
+        {"name": "contract_id", "type": "string", "required": false}
+      ],
+
+      "output_schema": [
+        {"name": "vendor_scorecard", "type": "object", "required": true},
+        {"name": "contract_status", "type": "object", "required": true},
+        {"name": "sla_performance", "type": "object", "required": true},
+        {"name": "cost_analysis", "type": "object", "required": true}
+      ],
+
+      "required_integrations": [
+        {"system": "IWMS", "type": "bidirectional", "protocol": "API"},
+        {"system": "Procurement", "type": "bidirectional", "protocol": "API"},
+        {"system": "AP System", "type": "read", "protocol": "API"}
+      ],
+
+      "decision_rules": [
+        {"rule_id": "DR-FM-050", "name": "SLA Breach", "condition": "sla.performance < threshold", "action": "initiate_vendor_review", "priority": 1},
+        {"rule_id": "DR-FM-051", "name": "Contract Expiry", "condition": "contract.days_to_expiry < 90", "action": "initiate_renewal_process", "priority": 2}
+      ],
+
+      "error_handlers": [
+        {"error_type": "vendor_no_response", "severity": "high", "action": "escalate_and_find_backup", "notification": ["facilities_manager", "procurement"]}
+      ]
+    },
+
+    {
+      "id": "agent_9_1_1_1_step7",
+      "apqc_id": "9.1.1.1",
+      "step_number": 7,
+      "step_name": "Workplace Experience",
+      "description": "Enhance occupant experience and workplace services",
+      "purpose": "Employee satisfaction and productivity",
+      "business_value": "Engaged and productive workforce",
+
+      "capabilities": ["amenity_booking", "room_scheduling", "wayfinding", "feedback_collection", "experience_analytics"],
+
+      "input_schema": [
+        {"name": "service_request", "type": "object", "required": false},
+        {"name": "booking_request", "type": "object", "required": false},
+        {"name": "feedback", "type": "object", "required": false}
+      ],
+
+      "output_schema": [
+        {"name": "booking_confirmation", "type": "object", "required": false},
+        {"name": "experience_metrics", "type": "object", "required": true},
+        {"name": "satisfaction_score", "type": "number", "required": true},
+        {"name": "improvement_actions", "type": "array", "required": false}
+      ],
+
+      "required_integrations": [
+        {"system": "Workplace App", "type": "bidirectional", "protocol": "API", "examples": ["Robin", "OfficeSpace", "Condeco"]},
+        {"system": "Room Booking", "type": "bidirectional", "protocol": "API"},
+        {"system": "Survey Platform", "type": "bidirectional", "protocol": "API"}
+      ],
+
+      "decision_rules": [
+        {"rule_id": "DR-FM-060", "name": "Low Satisfaction", "condition": "satisfaction_score < 3.5", "action": "prioritize_improvements", "priority": 1}
+      ],
+
+      "error_handlers": [
+        {"error_type": "booking_conflict", "severity": "low", "action": "suggest_alternatives", "notification": ["requestor"]}
+      ]
+    }
+  ],
+
+  "integration_summary": {
+    "iwms_platforms": ["Planon", "Archibus", "IBM Tririga", "Nuvolo", "FM:Systems"],
+    "bms_systems": ["Honeywell", "Siemens", "Johnson Controls", "Schneider Electric"],
+    "cmms_systems": ["Maximo", "ServiceChannel", "UpKeep", "Fiix"],
+    "workplace_apps": ["Robin", "OfficeSpace", "Condeco", "Envoy"]
+  },
+
+  "kpis": [
+    {"name": "Space Utilization", "description": "Average space utilization rate", "target": "> 70%", "measurement": "occupied_space / total_space"},
+    {"name": "Work Order Completion", "description": "Work orders completed on time", "target": "> 90%", "measurement": "completed_on_time / total_work_orders"},
+    {"name": "PM Compliance", "description": "Preventive maintenance on schedule", "target": "> 95%", "measurement": "completed_pm / scheduled_pm"},
+    {"name": "Energy Use Intensity", "description": "Energy per square foot", "target": "< benchmark - 10%", "measurement": "total_energy / gross_sqft"},
+    {"name": "Occupant Satisfaction", "description": "Workplace satisfaction score", "target": "> 4.0/5.0", "measurement": "avg(satisfaction_scores)"},
+    {"name": "Cost per SF", "description": "Operating cost per square foot", "target": "< market benchmark", "measurement": "total_fm_cost / gross_sqft"}
+  ]
+}

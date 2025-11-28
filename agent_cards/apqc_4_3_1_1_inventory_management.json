@@ -1,0 +1,957 @@
+{
+  "apqc_id": "4.3.1.1",
+  "apqc_name": "Manage inventory operations",
+  "category": "4.0 - Deliver Products and Services",
+  "description": "End-to-end inventory management workflow from demand planning to cycle counting, including replenishment, warehouse operations, and inventory valuation.",
+  "orchestration_pattern": "event_driven",
+  "total_steps": 7,
+  "estimated_duration_seconds": 3600,
+  "compliance_frameworks": ["SOX", "GAAP", "FDA 21 CFR Part 11"],
+  "data_retention_days": 2555,
+
+  "agent_cards": [
+    {
+      "id": "agent_4_3_1_1_step1",
+      "apqc_id": "4.3.1.1",
+      "step_number": 1,
+      "step_name": "Demand Forecasting",
+      "description": "Analyze historical data and market signals to forecast demand",
+      "purpose": "Predict future inventory needs accurately",
+      "business_value": "Reduce stockouts and overstock situations",
+
+      "capabilities": [
+        "analyze_historical_sales",
+        "incorporate_seasonality",
+        "apply_promotional_uplift",
+        "detect_demand_patterns",
+        "generate_forecast",
+        "calculate_safety_stock"
+      ],
+
+      "input_schema": [
+        {
+          "name": "sku",
+          "type": "string",
+          "description": "Stock keeping unit identifier",
+          "required": true
+        },
+        {
+          "name": "location_id",
+          "type": "string",
+          "description": "Warehouse or store location",
+          "required": true
+        },
+        {
+          "name": "forecast_horizon_days",
+          "type": "integer",
+          "required": true,
+          "default": 90
+        },
+        {
+          "name": "historical_sales",
+          "type": "array",
+          "description": "Historical sales data",
+          "required": true
+        },
+        {
+          "name": "promotional_calendar",
+          "type": "array",
+          "required": false
+        },
+        {
+          "name": "market_signals",
+          "type": "object",
+          "required": false
+        }
+      ],
+
+      "output_schema": [
+        {
+          "name": "forecast_id",
+          "type": "string",
+          "required": true
+        },
+        {
+          "name": "forecasted_demand",
+          "type": "array",
+          "required": true,
+          "example": [{"week": 1, "quantity": 500}, {"week": 2, "quantity": 550}]
+        },
+        {
+          "name": "confidence_interval",
+          "type": "object",
+          "required": true
+        },
+        {
+          "name": "recommended_safety_stock",
+          "type": "integer",
+          "required": true
+        },
+        {
+          "name": "forecast_accuracy_score",
+          "type": "number",
+          "required": true
+        }
+      ],
+
+      "required_integrations": [
+        {"system": "Demand Planning", "type": "bidirectional", "protocol": "API", "examples": ["SAP IBP", "Oracle Demantra", "Blue Yonder"]},
+        {"system": "Point of Sale", "type": "read", "protocol": "API"},
+        {"system": "E-commerce Platform", "type": "read", "protocol": "API", "examples": ["Shopify", "Magento", "Salesforce Commerce"]},
+        {"system": "Weather Data", "type": "read", "protocol": "API"}
+      ],
+
+      "decision_rules": [
+        {
+          "rule_id": "DR-INV-001",
+          "name": "New Product Forecast",
+          "condition": "sales_history_days < 90",
+          "action": "use_analogous_product_forecast",
+          "priority": 1
+        },
+        {
+          "rule_id": "DR-INV-002",
+          "name": "High Variability SKU",
+          "condition": "coefficient_of_variation > 0.5",
+          "action": "increase_safety_stock_multiplier",
+          "priority": 1
+        },
+        {
+          "rule_id": "DR-INV-003",
+          "name": "Promotional Period",
+          "condition": "sku IN promotional_calendar.skus",
+          "action": "apply_promotion_uplift_factor",
+          "priority": 1
+        }
+      ],
+
+      "error_handlers": [
+        {
+          "error_type": "insufficient_history",
+          "severity": "medium",
+          "action": "use_category_average",
+          "notification": ["demand_planner"]
+        },
+        {
+          "error_type": "anomaly_detected",
+          "severity": "low",
+          "action": "flag_for_review_and_exclude",
+          "notification": ["demand_planner"]
+        }
+      ]
+    },
+
+    {
+      "id": "agent_4_3_1_1_step2",
+      "apqc_id": "4.3.1.1",
+      "step_number": 2,
+      "step_name": "Replenishment Planning",
+      "description": "Generate replenishment orders based on demand and inventory policies",
+      "purpose": "Maintain optimal inventory levels across locations",
+      "business_value": "Optimize working capital while meeting service levels",
+
+      "capabilities": [
+        "calculate_reorder_point",
+        "determine_order_quantity",
+        "evaluate_supplier_lead_times",
+        "consolidate_orders",
+        "apply_moq_constraints",
+        "optimize_order_timing"
+      ],
+
+      "input_schema": [
+        {
+          "name": "sku",
+          "type": "string",
+          "required": true
+        },
+        {
+          "name": "location_id",
+          "type": "string",
+          "required": true
+        },
+        {
+          "name": "current_on_hand",
+          "type": "integer",
+          "required": true
+        },
+        {
+          "name": "on_order",
+          "type": "integer",
+          "required": true
+        },
+        {
+          "name": "forecasted_demand",
+          "type": "array",
+          "required": true
+        },
+        {
+          "name": "inventory_policy",
+          "type": "object",
+          "required": true,
+          "example": {"reorder_method": "min_max", "min": 100, "max": 500}
+        }
+      ],
+
+      "output_schema": [
+        {
+          "name": "replenishment_needed",
+          "type": "boolean",
+          "required": true
+        },
+        {
+          "name": "suggested_order_qty",
+          "type": "integer",
+          "required": true
+        },
+        {
+          "name": "order_date",
+          "type": "date",
+          "required": true
+        },
+        {
+          "name": "expected_receipt_date",
+          "type": "date",
+          "required": true
+        },
+        {
+          "name": "projected_stockout_date",
+          "type": "date",
+          "required": false
+        },
+        {
+          "name": "days_of_supply",
+          "type": "integer",
+          "required": true
+        }
+      ],
+
+      "required_integrations": [
+        {"system": "ERP - Inventory", "type": "bidirectional", "protocol": "API", "examples": ["SAP MM", "Oracle SCM"]},
+        {"system": "Supplier Portal", "type": "read", "protocol": "API"},
+        {"system": "MRP System", "type": "bidirectional", "protocol": "API"}
+      ],
+
+      "decision_rules": [
+        {
+          "rule_id": "DR-INV-010",
+          "name": "Below Reorder Point",
+          "condition": "(on_hand + on_order) <= reorder_point",
+          "action": "generate_replenishment_order",
+          "priority": 1
+        },
+        {
+          "rule_id": "DR-INV-011",
+          "name": "Apply MOQ",
+          "condition": "suggested_qty < supplier.minimum_order_qty",
+          "action": "round_up_to_moq",
+          "priority": 2
+        },
+        {
+          "rule_id": "DR-INV-012",
+          "name": "Expedite Order",
+          "condition": "projected_stockout_date < lead_time_days",
+          "action": "flag_for_expedited_order",
+          "priority": 1
+        },
+        {
+          "rule_id": "DR-INV-013",
+          "name": "Consolidate Orders",
+          "condition": "multiple_skus_same_supplier AND order_date_within_3_days",
+          "action": "consolidate_into_single_po",
+          "priority": 2
+        }
+      ],
+
+      "error_handlers": [
+        {
+          "error_type": "supplier_inactive",
+          "severity": "high",
+          "action": "route_to_alternate_supplier",
+          "notification": ["buyer", "supply_chain_manager"]
+        },
+        {
+          "error_type": "lead_time_exceeded",
+          "severity": "high",
+          "action": "alert_and_suggest_alternatives",
+          "notification": ["buyer", "demand_planner"]
+        }
+      ]
+    },
+
+    {
+      "id": "agent_4_3_1_1_step3",
+      "apqc_id": "4.3.1.1",
+      "step_number": 3,
+      "step_name": "Receiving and Putaway",
+      "description": "Process inbound shipments and optimize storage locations",
+      "purpose": "Efficiently receive and store inventory",
+      "business_value": "Maximize warehouse utilization and accuracy",
+
+      "capabilities": [
+        "schedule_receiving",
+        "validate_asn",
+        "perform_receipt_inspection",
+        "allocate_storage_location",
+        "direct_putaway",
+        "handle_discrepancies"
+      ],
+
+      "input_schema": [
+        {
+          "name": "asn_id",
+          "type": "string",
+          "description": "Advance shipping notice ID",
+          "required": false
+        },
+        {
+          "name": "po_number",
+          "type": "string",
+          "required": true
+        },
+        {
+          "name": "carrier",
+          "type": "string",
+          "required": true
+        },
+        {
+          "name": "expected_items",
+          "type": "array",
+          "required": true
+        },
+        {
+          "name": "dock_door",
+          "type": "string",
+          "required": true
+        }
+      ],
+
+      "output_schema": [
+        {
+          "name": "receipt_id",
+          "type": "string",
+          "required": true
+        },
+        {
+          "name": "received_items",
+          "type": "array",
+          "required": true
+        },
+        {
+          "name": "variance_report",
+          "type": "object",
+          "required": true
+        },
+        {
+          "name": "putaway_tasks",
+          "type": "array",
+          "required": true
+        },
+        {
+          "name": "quality_hold_items",
+          "type": "array",
+          "required": false
+        }
+      ],
+
+      "required_integrations": [
+        {"system": "WMS", "type": "bidirectional", "protocol": "API", "examples": ["Manhattan", "Blue Yonder WMS", "SAP EWM"]},
+        {"system": "Yard Management", "type": "bidirectional", "protocol": "API"},
+        {"system": "Quality Management", "type": "bidirectional", "protocol": "API"},
+        {"system": "RF Scanning", "type": "bidirectional", "protocol": "API"}
+      ],
+
+      "decision_rules": [
+        {
+          "rule_id": "DR-INV-020",
+          "name": "Cross-Dock Eligible",
+          "condition": "pending_orders_for_sku AND no_quality_hold_required",
+          "action": "route_to_cross_dock",
+          "priority": 1
+        },
+        {
+          "rule_id": "DR-INV-021",
+          "name": "Quality Inspection Required",
+          "condition": "supplier.inspection_level == 'full' OR first_receipt",
+          "action": "route_to_qc_area",
+          "priority": 1
+        },
+        {
+          "rule_id": "DR-INV-022",
+          "name": "Quantity Variance",
+          "condition": "abs(received_qty - expected_qty) > tolerance",
+          "action": "create_variance_report",
+          "priority": 1
+        },
+        {
+          "rule_id": "DR-INV-023",
+          "name": "Zone Assignment",
+          "condition": "item.velocity == 'A'",
+          "action": "assign_to_fast_pick_zone",
+          "priority": 2
+        }
+      ],
+
+      "error_handlers": [
+        {
+          "error_type": "no_asn",
+          "severity": "low",
+          "action": "require_blind_receipt",
+          "notification": ["receiving_supervisor"]
+        },
+        {
+          "error_type": "damaged_goods",
+          "severity": "high",
+          "action": "quarantine_and_document",
+          "notification": ["receiving_supervisor", "buyer", "vendor"]
+        },
+        {
+          "error_type": "no_storage_space",
+          "severity": "high",
+          "action": "overflow_to_backup_location",
+          "notification": ["warehouse_manager"]
+        }
+      ]
+    },
+
+    {
+      "id": "agent_4_3_1_1_step4",
+      "apqc_id": "4.3.1.1",
+      "step_number": 4,
+      "step_name": "Inventory Tracking",
+      "description": "Maintain real-time visibility of inventory across locations",
+      "purpose": "Provide accurate inventory data for decisions",
+      "business_value": "Enable promising, reduce stockouts, and prevent overselling",
+
+      "capabilities": [
+        "track_lot_serial",
+        "manage_expiration_dates",
+        "track_inventory_movements",
+        "calculate_available_to_promise",
+        "manage_allocations",
+        "track_inventory_status"
+      ],
+
+      "input_schema": [
+        {
+          "name": "sku",
+          "type": "string",
+          "required": true
+        },
+        {
+          "name": "location_id",
+          "type": "string",
+          "required": true
+        },
+        {
+          "name": "transaction_type",
+          "type": "string",
+          "required": true,
+          "validation": {"enum": ["receipt", "issue", "transfer", "adjustment", "allocation", "return"]}
+        },
+        {
+          "name": "quantity",
+          "type": "integer",
+          "required": true
+        },
+        {
+          "name": "lot_number",
+          "type": "string",
+          "required": false
+        },
+        {
+          "name": "serial_numbers",
+          "type": "array",
+          "required": false
+        }
+      ],
+
+      "output_schema": [
+        {
+          "name": "transaction_id",
+          "type": "string",
+          "required": true
+        },
+        {
+          "name": "updated_on_hand",
+          "type": "integer",
+          "required": true
+        },
+        {
+          "name": "available_to_promise",
+          "type": "integer",
+          "required": true
+        },
+        {
+          "name": "allocated_qty",
+          "type": "integer",
+          "required": true
+        },
+        {
+          "name": "inventory_value",
+          "type": "currency",
+          "required": true
+        }
+      ],
+
+      "required_integrations": [
+        {"system": "WMS", "type": "bidirectional", "protocol": "API"},
+        {"system": "ERP - Inventory", "type": "bidirectional", "protocol": "API"},
+        {"system": "Order Management", "type": "read", "protocol": "API"},
+        {"system": "RFID/IoT Platform", "type": "inbound", "protocol": "MQTT/API"}
+      ],
+
+      "decision_rules": [
+        {
+          "rule_id": "DR-INV-030",
+          "name": "FEFO for Perishables",
+          "condition": "item.perishable == true",
+          "action": "apply_first_expire_first_out",
+          "priority": 1
+        },
+        {
+          "rule_id": "DR-INV-031",
+          "name": "Expiration Warning",
+          "condition": "days_to_expiration < 30",
+          "action": "flag_for_markdown_or_donation",
+          "priority": 1
+        },
+        {
+          "rule_id": "DR-INV-032",
+          "name": "Serial Required",
+          "condition": "item.serial_tracked == true",
+          "action": "require_serial_capture",
+          "priority": 1
+        },
+        {
+          "rule_id": "DR-INV-033",
+          "name": "Negative Inventory",
+          "condition": "calculated_on_hand < 0",
+          "action": "block_transaction_and_alert",
+          "priority": 1
+        }
+      ],
+
+      "error_handlers": [
+        {
+          "error_type": "inventory_sync_failure",
+          "severity": "high",
+          "action": "retry_and_queue_for_reconciliation",
+          "notification": ["inventory_control", "it_support"]
+        },
+        {
+          "error_type": "lot_not_found",
+          "severity": "medium",
+          "action": "create_new_lot_with_warning",
+          "notification": ["inventory_control"]
+        }
+      ]
+    },
+
+    {
+      "id": "agent_4_3_1_1_step5",
+      "apqc_id": "4.3.1.1",
+      "step_number": 5,
+      "step_name": "Cycle Counting",
+      "description": "Execute ongoing inventory counts to maintain accuracy",
+      "purpose": "Ensure inventory records match physical counts",
+      "business_value": "Maintain high inventory accuracy without full physical inventory",
+
+      "capabilities": [
+        "generate_count_schedule",
+        "assign_count_tasks",
+        "process_count_results",
+        "investigate_variances",
+        "approve_adjustments",
+        "track_accuracy_metrics"
+      ],
+
+      "input_schema": [
+        {
+          "name": "count_type",
+          "type": "string",
+          "required": true,
+          "validation": {"enum": ["abc_cycle", "location", "sku", "blind", "full_physical"]}
+        },
+        {
+          "name": "location_ids",
+          "type": "array",
+          "required": false
+        },
+        {
+          "name": "skus",
+          "type": "array",
+          "required": false
+        },
+        {
+          "name": "count_date",
+          "type": "date",
+          "required": true
+        }
+      ],
+
+      "output_schema": [
+        {
+          "name": "count_id",
+          "type": "string",
+          "required": true
+        },
+        {
+          "name": "count_results",
+          "type": "array",
+          "required": true
+        },
+        {
+          "name": "variance_summary",
+          "type": "object",
+          "required": true
+        },
+        {
+          "name": "adjustments_pending",
+          "type": "array",
+          "required": true
+        },
+        {
+          "name": "accuracy_rate",
+          "type": "number",
+          "required": true
+        }
+      ],
+
+      "required_integrations": [
+        {"system": "WMS", "type": "bidirectional", "protocol": "API"},
+        {"system": "RF Scanning", "type": "bidirectional", "protocol": "API"},
+        {"system": "ERP - Inventory", "type": "bidirectional", "protocol": "API"},
+        {"system": "Workflow Engine", "type": "orchestration", "protocol": "API"}
+      ],
+
+      "decision_rules": [
+        {
+          "rule_id": "DR-INV-040",
+          "name": "ABC Count Frequency",
+          "condition": "item.abc_class == 'A'",
+          "action": "schedule_monthly_count",
+          "priority": 1
+        },
+        {
+          "rule_id": "DR-INV-041",
+          "name": "Auto-Adjust Small Variance",
+          "condition": "abs(variance_value) <= 50 AND variance_percent <= 5%",
+          "action": "auto_approve_adjustment",
+          "priority": 2
+        },
+        {
+          "rule_id": "DR-INV-042",
+          "name": "Recount Required",
+          "condition": "variance_percent > 20% AND first_count",
+          "action": "schedule_recount",
+          "priority": 1
+        },
+        {
+          "rule_id": "DR-INV-043",
+          "name": "Root Cause Analysis",
+          "condition": "same_sku_variance_3_consecutive_counts",
+          "action": "trigger_root_cause_investigation",
+          "priority": 1
+        }
+      ],
+
+      "error_handlers": [
+        {
+          "error_type": "location_inaccessible",
+          "severity": "medium",
+          "action": "reschedule_count",
+          "notification": ["warehouse_supervisor"]
+        },
+        {
+          "error_type": "count_discrepancy_unresolved",
+          "severity": "high",
+          "action": "escalate_to_inventory_control",
+          "notification": ["inventory_manager", "finance"]
+        }
+      ]
+    },
+
+    {
+      "id": "agent_4_3_1_1_step6",
+      "apqc_id": "4.3.1.1",
+      "step_number": 6,
+      "step_name": "Inventory Valuation",
+      "description": "Calculate and maintain inventory values for financial reporting",
+      "purpose": "Ensure accurate inventory valuation on balance sheet",
+      "business_value": "Accurate financial reporting and COGS calculation",
+
+      "capabilities": [
+        "calculate_standard_cost",
+        "calculate_weighted_average",
+        "calculate_fifo_value",
+        "process_cost_updates",
+        "apply_lower_of_cost_or_market",
+        "generate_valuation_report"
+      ],
+
+      "input_schema": [
+        {
+          "name": "valuation_date",
+          "type": "date",
+          "required": true
+        },
+        {
+          "name": "costing_method",
+          "type": "string",
+          "required": true,
+          "validation": {"enum": ["standard", "weighted_average", "fifo", "lifo", "specific_id"]}
+        },
+        {
+          "name": "scope",
+          "type": "object",
+          "required": false,
+          "example": {"location": "all", "category": "finished_goods"}
+        }
+      ],
+
+      "output_schema": [
+        {
+          "name": "valuation_id",
+          "type": "string",
+          "required": true
+        },
+        {
+          "name": "total_inventory_value",
+          "type": "currency",
+          "required": true
+        },
+        {
+          "name": "valuation_by_category",
+          "type": "object",
+          "required": true
+        },
+        {
+          "name": "lcm_adjustments",
+          "type": "currency",
+          "required": true
+        },
+        {
+          "name": "obsolescence_reserve",
+          "type": "currency",
+          "required": true
+        },
+        {
+          "name": "variance_to_standard",
+          "type": "currency",
+          "required": false
+        }
+      ],
+
+      "required_integrations": [
+        {"system": "ERP - Cost Accounting", "type": "bidirectional", "protocol": "API"},
+        {"system": "ERP - General Ledger", "type": "write", "protocol": "API"},
+        {"system": "Financial Reporting", "type": "publish", "protocol": "API"}
+      ],
+
+      "decision_rules": [
+        {
+          "rule_id": "DR-INV-050",
+          "name": "LCM Writedown",
+          "condition": "market_value < cost_basis",
+          "action": "apply_lcm_adjustment",
+          "priority": 1
+        },
+        {
+          "rule_id": "DR-INV-051",
+          "name": "Obsolescence Reserve",
+          "condition": "no_movement_days > 365",
+          "action": "apply_obsolescence_reserve",
+          "priority": 1
+        },
+        {
+          "rule_id": "DR-INV-052",
+          "name": "Standard Cost Variance",
+          "condition": "abs(standard_cost_variance) > 10%",
+          "action": "review_standard_cost",
+          "priority": 2
+        }
+      ],
+
+      "error_handlers": [
+        {
+          "error_type": "missing_cost",
+          "severity": "high",
+          "action": "use_replacement_cost_with_flag",
+          "notification": ["cost_accounting", "purchasing"]
+        },
+        {
+          "error_type": "negative_margin_items",
+          "severity": "high",
+          "action": "flag_for_pricing_review",
+          "notification": ["finance", "product_management"]
+        }
+      ]
+    },
+
+    {
+      "id": "agent_4_3_1_1_step7",
+      "apqc_id": "4.3.1.1",
+      "step_number": 7,
+      "step_name": "Inventory Analytics and Optimization",
+      "description": "Analyze inventory performance and optimize policies",
+      "purpose": "Continuously improve inventory management effectiveness",
+      "business_value": "Reduce carrying costs while improving service levels",
+
+      "capabilities": [
+        "calculate_inventory_turns",
+        "analyze_slow_movers",
+        "optimize_safety_stock",
+        "identify_excess_inventory",
+        "model_service_levels",
+        "recommend_policy_changes"
+      ],
+
+      "input_schema": [
+        {
+          "name": "analysis_period",
+          "type": "object",
+          "required": true,
+          "example": {"start_date": "2025-01-01", "end_date": "2025-03-31"}
+        },
+        {
+          "name": "analysis_type",
+          "type": "string",
+          "required": true,
+          "validation": {"enum": ["turns", "slow_mover", "excess", "service_level", "optimization"]}
+        },
+        {
+          "name": "scope",
+          "type": "object",
+          "required": false
+        }
+      ],
+
+      "output_schema": [
+        {
+          "name": "inventory_turns",
+          "type": "number",
+          "required": true
+        },
+        {
+          "name": "days_on_hand",
+          "type": "number",
+          "required": true
+        },
+        {
+          "name": "fill_rate",
+          "type": "number",
+          "required": true
+        },
+        {
+          "name": "slow_movers",
+          "type": "array",
+          "required": true
+        },
+        {
+          "name": "excess_inventory_value",
+          "type": "currency",
+          "required": true
+        },
+        {
+          "name": "optimization_recommendations",
+          "type": "array",
+          "required": true
+        }
+      ],
+
+      "required_integrations": [
+        {"system": "Data Warehouse", "type": "read", "protocol": "SQL/API"},
+        {"system": "BI Platform", "type": "publish", "protocol": "API", "examples": ["Tableau", "Power BI"]},
+        {"system": "Optimization Engine", "type": "processing", "protocol": "API"}
+      ],
+
+      "decision_rules": [
+        {
+          "rule_id": "DR-INV-060",
+          "name": "Slow Mover Action",
+          "condition": "turns < 2 AND on_hand_value > 10000",
+          "action": "recommend_markdown_or_liquidation",
+          "priority": 1
+        },
+        {
+          "rule_id": "DR-INV-061",
+          "name": "Safety Stock Adjustment",
+          "condition": "actual_service_level < target - 5%",
+          "action": "increase_safety_stock",
+          "priority": 1
+        },
+        {
+          "rule_id": "DR-INV-062",
+          "name": "Overstocked Alert",
+          "condition": "days_of_supply > 180",
+          "action": "create_excess_disposition_plan",
+          "priority": 1
+        }
+      ],
+
+      "error_handlers": [
+        {
+          "error_type": "data_quality_issue",
+          "severity": "medium",
+          "action": "flag_analysis_with_caveats",
+          "notification": ["inventory_analyst", "data_team"]
+        },
+        {
+          "error_type": "model_convergence_failure",
+          "severity": "medium",
+          "action": "use_simplified_model",
+          "notification": ["analytics_team"]
+        }
+      ]
+    }
+  ],
+
+  "integration_summary": {
+    "erp_systems": ["SAP S/4HANA", "Oracle SCM Cloud", "Microsoft Dynamics 365", "NetSuite"],
+    "wms_systems": ["Manhattan Associates", "Blue Yonder WMS", "SAP EWM", "Körber"],
+    "demand_planning": ["SAP IBP", "Oracle Demantra", "Blue Yonder Demand", "Kinaxis"],
+    "rf_scanning": ["Zebra", "Honeywell", "Datalogic"],
+    "iot_platforms": ["Azure IoT", "AWS IoT", "PTC ThingWorx"],
+    "analytics": ["Tableau", "Power BI", "Looker"]
+  },
+
+  "kpis": [
+    {
+      "name": "Inventory Turnover",
+      "description": "Annual COGS divided by average inventory",
+      "target": "> 6x",
+      "measurement": "cogs / avg_inventory_value"
+    },
+    {
+      "name": "Inventory Accuracy",
+      "description": "Percentage of locations with accurate counts",
+      "target": "> 99%",
+      "measurement": "accurate_locations / total_locations_counted"
+    },
+    {
+      "name": "Fill Rate",
+      "description": "Percentage of demand fulfilled from stock",
+      "target": "> 97%",
+      "measurement": "units_fulfilled / units_ordered"
+    },
+    {
+      "name": "Days of Supply",
+      "description": "Average days of inventory on hand",
+      "target": "< 45 days",
+      "measurement": "avg_inventory / daily_demand"
+    },
+    {
+      "name": "Slow Mover Percentage",
+      "description": "Percentage of SKUs with no movement in 90 days",
+      "target": "< 10%",
+      "measurement": "slow_mover_skus / total_skus"
+    },
+    {
+      "name": "Carrying Cost Rate",
+      "description": "Annual cost to carry inventory as percentage of value",
+      "target": "< 25%",
+      "measurement": "carrying_costs / avg_inventory_value"
+    }
+  ]
+}

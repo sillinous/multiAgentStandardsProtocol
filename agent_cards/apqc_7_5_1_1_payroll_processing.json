@@ -1,0 +1,708 @@
+{
+  "apqc_id": "7.5.1.1",
+  "apqc_name": "Manage payroll processing and administration",
+  "category": "7.0 - Develop and Manage Human Capital",
+  "description": "End-to-end payroll processing workflow from time capture to payment disbursement, including tax calculations, deductions, compliance reporting, and direct deposit execution.",
+  "orchestration_pattern": "sequential",
+  "total_steps": 8,
+  "estimated_duration_seconds": 7200,
+  "compliance_frameworks": ["FLSA", "IRS", "State Labor Laws", "SOC2"],
+  "data_retention_days": 2555,
+
+  "agent_cards": [
+    {
+      "id": "agent_7_5_1_1_step1",
+      "apqc_id": "7.5.1.1",
+      "apqc_name": "Manage payroll processing and administration",
+      "step_number": 1,
+      "step_name": "Time and Attendance Data Collection",
+      "description": "Collect and validate time records from multiple sources including time clocks, timesheets, and PTO systems",
+      "purpose": "Aggregate all employee work hours and leave data for accurate pay calculation",
+      "business_value": "Ensures accurate pay based on actual time worked, reducing disputes by 85%",
+
+      "capabilities": [
+        "import_time_clock_data",
+        "import_timesheet_entries",
+        "import_pto_records",
+        "validate_time_entries",
+        "detect_anomalies",
+        "calculate_regular_hours",
+        "calculate_overtime_hours"
+      ],
+
+      "input_schema": [
+        {
+          "name": "pay_period",
+          "type": "object",
+          "description": "Pay period date range",
+          "required": true,
+          "example": {"start_date": "2025-11-01", "end_date": "2025-11-15"}
+        },
+        {
+          "name": "employee_ids",
+          "type": "array",
+          "description": "List of employee IDs to process (empty for all)",
+          "required": false
+        },
+        {
+          "name": "time_source",
+          "type": "string",
+          "description": "Primary time tracking system",
+          "required": true,
+          "validation": {"enum": ["kronos", "adp", "workday", "manual"]}
+        }
+      ],
+
+      "output_schema": [
+        {
+          "name": "payroll_batch_id",
+          "type": "string",
+          "description": "Unique identifier for this payroll run",
+          "required": true,
+          "example": "PR-2025-11-15-001"
+        },
+        {
+          "name": "employee_time_records",
+          "type": "array",
+          "description": "Validated time records per employee",
+          "required": true
+        },
+        {
+          "name": "validation_status",
+          "type": "string",
+          "required": true,
+          "validation": {"enum": ["valid", "needs_review", "errors_found"]}
+        },
+        {
+          "name": "total_employees",
+          "type": "integer",
+          "description": "Number of employees in batch",
+          "required": true
+        },
+        {
+          "name": "anomalies_detected",
+          "type": "array",
+          "description": "List of flagged anomalies for review",
+          "required": false
+        }
+      ],
+
+      "required_integrations": ["workday", "adp_workforce"],
+      "optional_integrations": ["kronos", "deputy"],
+
+      "decision_rules": [
+        {
+          "id": "rule_overtime_threshold",
+          "name": "Overtime Detection",
+          "description": "Flag employees exceeding standard hours",
+          "condition": "weekly_hours > 40",
+          "action_if_true": "calculate_overtime",
+          "action_if_false": "proceed_with_regular_hours",
+          "configurable": true,
+          "default_threshold": 40
+        },
+        {
+          "id": "rule_missing_entries",
+          "name": "Missing Time Entry Check",
+          "description": "Flag employees with missing time entries",
+          "condition": "days_with_entries >= expected_work_days",
+          "action_if_true": "proceed_to_next_step",
+          "action_if_false": "route_to_supervisor_review",
+          "configurable": false
+        }
+      ],
+
+      "error_handlers": [
+        {
+          "error_type": "time_system_unavailable",
+          "description": "Cannot connect to time tracking system",
+          "action": "retry",
+          "max_retries": 3,
+          "retry_delay_seconds": 300,
+          "escalation_target": "payroll_admin"
+        }
+      ],
+
+      "next_step_on_success": "agent_7_5_1_1_step2",
+      "expected_duration_seconds": 600,
+      "timeout_seconds": 1800,
+      "requires_audit_log": true,
+      "version": "1.0.0",
+      "status": "active"
+    },
+
+    {
+      "id": "agent_7_5_1_1_step2",
+      "apqc_id": "7.5.1.1",
+      "step_number": 2,
+      "step_name": "Gross Pay Calculation",
+      "description": "Calculate gross pay including base salary, hourly wages, overtime, shift differentials, and bonuses",
+      "purpose": "Compute total earnings before deductions",
+      "business_value": "Ensures accurate compensation calculation across all pay types",
+
+      "capabilities": [
+        "calculate_salary_pay",
+        "calculate_hourly_pay",
+        "calculate_overtime_pay",
+        "apply_shift_differentials",
+        "add_bonuses",
+        "add_commissions",
+        "calculate_retro_pay"
+      ],
+
+      "input_schema": [
+        {
+          "name": "payroll_batch_id",
+          "type": "string",
+          "required": true
+        },
+        {
+          "name": "employee_time_records",
+          "type": "array",
+          "required": true
+        }
+      ],
+
+      "output_schema": [
+        {
+          "name": "gross_pay_records",
+          "type": "array",
+          "description": "Gross pay breakdown per employee",
+          "required": true,
+          "example": [{
+            "employee_id": "EMP-001",
+            "regular_pay": 3000.00,
+            "overtime_pay": 450.00,
+            "bonus": 500.00,
+            "total_gross": 3950.00
+          }]
+        },
+        {
+          "name": "total_gross_payroll",
+          "type": "currency",
+          "description": "Sum of all gross pay",
+          "required": true
+        }
+      ],
+
+      "required_integrations": ["workday", "adp_workforce"],
+
+      "next_step_on_success": "agent_7_5_1_1_step3",
+      "expected_duration_seconds": 300,
+      "requires_audit_log": true,
+      "version": "1.0.0",
+      "status": "active"
+    },
+
+    {
+      "id": "agent_7_5_1_1_step3",
+      "apqc_id": "7.5.1.1",
+      "step_number": 3,
+      "step_name": "Tax Calculation and Withholding",
+      "description": "Calculate federal, state, and local tax withholdings based on employee W-4 elections and current tax tables",
+      "purpose": "Ensure accurate tax compliance and withholding",
+      "business_value": "Prevents IRS penalties and ensures employee tax compliance",
+
+      "capabilities": [
+        "calculate_federal_income_tax",
+        "calculate_state_income_tax",
+        "calculate_local_taxes",
+        "calculate_fica",
+        "calculate_medicare",
+        "apply_w4_elections",
+        "handle_supplemental_wages"
+      ],
+
+      "input_schema": [
+        {
+          "name": "payroll_batch_id",
+          "type": "string",
+          "required": true
+        },
+        {
+          "name": "gross_pay_records",
+          "type": "array",
+          "required": true
+        }
+      ],
+
+      "output_schema": [
+        {
+          "name": "tax_withholding_records",
+          "type": "array",
+          "description": "Tax calculations per employee",
+          "required": true,
+          "example": [{
+            "employee_id": "EMP-001",
+            "federal_tax": 592.50,
+            "state_tax": 198.00,
+            "social_security": 245.10,
+            "medicare": 57.28,
+            "total_taxes": 1092.88
+          }]
+        },
+        {
+          "name": "employer_taxes",
+          "type": "object",
+          "description": "Employer's portion of payroll taxes",
+          "required": true
+        }
+      ],
+
+      "required_integrations": ["adp_tax_services", "paychex"],
+      "optional_integrations": ["avalara"],
+
+      "decision_rules": [
+        {
+          "id": "rule_ytd_limit_check",
+          "name": "Social Security YTD Limit",
+          "description": "Check if employee has reached SS wage base",
+          "condition": "ytd_earnings < ss_wage_base",
+          "action_if_true": "withhold_full_ss",
+          "action_if_false": "stop_ss_withholding",
+          "configurable": false
+        }
+      ],
+
+      "next_step_on_success": "agent_7_5_1_1_step4",
+      "expected_duration_seconds": 300,
+      "compliance_frameworks": ["IRS", "State Tax Authorities"],
+      "requires_audit_log": true,
+      "version": "1.0.0",
+      "status": "active"
+    },
+
+    {
+      "id": "agent_7_5_1_1_step4",
+      "apqc_id": "7.5.1.1",
+      "step_number": 4,
+      "step_name": "Benefits Deduction Processing",
+      "description": "Apply all benefit deductions including health insurance, retirement contributions, HSA/FSA, and voluntary deductions",
+      "purpose": "Deduct employee benefit contributions accurately",
+      "business_value": "Ensures accurate benefit administration and enrollment compliance",
+
+      "capabilities": [
+        "deduct_health_insurance",
+        "deduct_dental_vision",
+        "deduct_401k_contributions",
+        "deduct_hsa_fsa",
+        "deduct_life_insurance",
+        "apply_pretax_deductions",
+        "apply_posttax_deductions"
+      ],
+
+      "input_schema": [
+        {
+          "name": "payroll_batch_id",
+          "type": "string",
+          "required": true
+        },
+        {
+          "name": "gross_pay_records",
+          "type": "array",
+          "required": true
+        },
+        {
+          "name": "tax_withholding_records",
+          "type": "array",
+          "required": true
+        }
+      ],
+
+      "output_schema": [
+        {
+          "name": "deduction_records",
+          "type": "array",
+          "description": "All deductions per employee",
+          "required": true
+        },
+        {
+          "name": "total_pretax_deductions",
+          "type": "currency",
+          "required": true
+        },
+        {
+          "name": "total_posttax_deductions",
+          "type": "currency",
+          "required": true
+        }
+      ],
+
+      "required_integrations": ["workday", "benefitfocus"],
+
+      "decision_rules": [
+        {
+          "id": "rule_401k_limit",
+          "name": "401k Contribution Limit",
+          "description": "Stop contributions at IRS annual limit",
+          "condition": "ytd_401k < annual_401k_limit",
+          "action_if_true": "apply_full_deduction",
+          "action_if_false": "cap_at_remaining_limit",
+          "configurable": false
+        }
+      ],
+
+      "next_step_on_success": "agent_7_5_1_1_step5",
+      "expected_duration_seconds": 200,
+      "requires_audit_log": true,
+      "version": "1.0.0",
+      "status": "active"
+    },
+
+    {
+      "id": "agent_7_5_1_1_step5",
+      "apqc_id": "7.5.1.1",
+      "step_number": 5,
+      "step_name": "Net Pay Calculation and Validation",
+      "description": "Calculate final net pay and perform validation checks before payment",
+      "purpose": "Ensure accuracy before disbursement",
+      "business_value": "Catches calculation errors before payment, reducing corrections by 95%",
+
+      "capabilities": [
+        "calculate_net_pay",
+        "validate_calculations",
+        "compare_to_previous_period",
+        "flag_large_variances",
+        "check_minimum_wage_compliance"
+      ],
+
+      "input_schema": [
+        {
+          "name": "payroll_batch_id",
+          "type": "string",
+          "required": true
+        },
+        {
+          "name": "gross_pay_records",
+          "type": "array",
+          "required": true
+        },
+        {
+          "name": "tax_withholding_records",
+          "type": "array",
+          "required": true
+        },
+        {
+          "name": "deduction_records",
+          "type": "array",
+          "required": true
+        }
+      ],
+
+      "output_schema": [
+        {
+          "name": "net_pay_records",
+          "type": "array",
+          "description": "Final net pay per employee",
+          "required": true
+        },
+        {
+          "name": "validation_status",
+          "type": "string",
+          "required": true,
+          "validation": {"enum": ["passed", "needs_review", "failed"]}
+        },
+        {
+          "name": "variance_alerts",
+          "type": "array",
+          "description": "Pay variances exceeding threshold",
+          "required": false
+        },
+        {
+          "name": "total_net_payroll",
+          "type": "currency",
+          "required": true
+        }
+      ],
+
+      "decision_rules": [
+        {
+          "id": "rule_variance_check",
+          "name": "Pay Variance Alert",
+          "description": "Flag significant changes from prior period",
+          "condition": "variance_percent <= 20",
+          "action_if_true": "proceed_to_approval",
+          "action_if_false": "route_to_payroll_review",
+          "configurable": true,
+          "default_threshold": 20
+        },
+        {
+          "id": "rule_negative_net",
+          "name": "Negative Net Pay Check",
+          "description": "Prevent negative net pay",
+          "condition": "net_pay >= 0",
+          "action_if_true": "proceed",
+          "action_if_false": "escalate_to_hr",
+          "configurable": false
+        }
+      ],
+
+      "next_step_on_success": "agent_7_5_1_1_step6",
+      "expected_duration_seconds": 300,
+      "compliance_frameworks": ["FLSA"],
+      "requires_audit_log": true,
+      "version": "1.0.0",
+      "status": "active"
+    },
+
+    {
+      "id": "agent_7_5_1_1_step6",
+      "apqc_id": "7.5.1.1",
+      "step_number": 6,
+      "step_name": "Payroll Approval and Authorization",
+      "description": "Route payroll batch for management approval before payment execution",
+      "purpose": "Ensure proper authorization of payroll disbursement",
+      "business_value": "Maintains financial controls and segregation of duties",
+
+      "capabilities": [
+        "generate_payroll_summary",
+        "route_to_approvers",
+        "capture_approval",
+        "handle_rejection",
+        "track_approval_status"
+      ],
+
+      "input_schema": [
+        {
+          "name": "payroll_batch_id",
+          "type": "string",
+          "required": true
+        },
+        {
+          "name": "net_pay_records",
+          "type": "array",
+          "required": true
+        },
+        {
+          "name": "total_net_payroll",
+          "type": "currency",
+          "required": true
+        }
+      ],
+
+      "output_schema": [
+        {
+          "name": "approval_status",
+          "type": "string",
+          "required": true,
+          "validation": {"enum": ["approved", "rejected", "pending"]}
+        },
+        {
+          "name": "approver_id",
+          "type": "string",
+          "required": true
+        },
+        {
+          "name": "approval_timestamp",
+          "type": "datetime",
+          "required": false
+        }
+      ],
+
+      "required_integrations": ["slack", "microsoft_teams", "docusign"],
+
+      "decision_rules": [
+        {
+          "id": "rule_approval_level",
+          "name": "Approval Authority Level",
+          "description": "Route to appropriate approver based on payroll amount",
+          "condition": "total_payroll <= manager_limit",
+          "action_if_true": "route_to_payroll_manager",
+          "action_if_false": "route_to_cfo",
+          "configurable": true,
+          "default_threshold": 500000
+        }
+      ],
+
+      "next_step_on_success": "agent_7_5_1_1_step7",
+      "expected_duration_seconds": 3600,
+      "timeout_seconds": 86400,
+      "requires_audit_log": true,
+      "version": "1.0.0",
+      "status": "active"
+    },
+
+    {
+      "id": "agent_7_5_1_1_step7",
+      "apqc_id": "7.5.1.1",
+      "step_number": 7,
+      "step_name": "Payment Execution",
+      "description": "Execute payment disbursement via direct deposit, checks, or pay cards",
+      "purpose": "Distribute employee pay accurately and on time",
+      "business_value": "Ensures employees are paid on time with correct amounts",
+
+      "capabilities": [
+        "execute_direct_deposit",
+        "generate_paychecks",
+        "fund_pay_cards",
+        "create_nacha_file",
+        "submit_to_bank",
+        "confirm_transmission"
+      ],
+
+      "input_schema": [
+        {
+          "name": "payroll_batch_id",
+          "type": "string",
+          "required": true
+        },
+        {
+          "name": "net_pay_records",
+          "type": "array",
+          "required": true
+        },
+        {
+          "name": "pay_date",
+          "type": "date",
+          "required": true
+        }
+      ],
+
+      "output_schema": [
+        {
+          "name": "payment_confirmation",
+          "type": "object",
+          "description": "Bank transmission confirmation",
+          "required": true
+        },
+        {
+          "name": "nacha_file_id",
+          "type": "string",
+          "description": "ACH file reference",
+          "required": true
+        },
+        {
+          "name": "payments_executed",
+          "type": "integer",
+          "description": "Number of payments processed",
+          "required": true
+        },
+        {
+          "name": "total_disbursed",
+          "type": "currency",
+          "required": true
+        }
+      ],
+
+      "required_integrations": ["plaid", "bank_of_america_api", "wells_fargo_api"],
+
+      "error_handlers": [
+        {
+          "error_type": "bank_transmission_failed",
+          "description": "ACH file transmission failed",
+          "action": "retry",
+          "max_retries": 3,
+          "retry_delay_seconds": 600,
+          "escalation_target": "treasury_team",
+          "notification_channels": ["email", "sms"]
+        },
+        {
+          "error_type": "insufficient_funds",
+          "description": "Payroll account has insufficient funds",
+          "action": "escalate",
+          "max_retries": 0,
+          "escalation_target": "cfo",
+          "notification_channels": ["email", "sms", "phone"]
+        }
+      ],
+
+      "next_step_on_success": "agent_7_5_1_1_step8",
+      "expected_duration_seconds": 300,
+      "requires_audit_log": true,
+      "version": "1.0.0",
+      "status": "active"
+    },
+
+    {
+      "id": "agent_7_5_1_1_step8",
+      "apqc_id": "7.5.1.1",
+      "step_number": 8,
+      "step_name": "Post-Payroll Reporting and GL Posting",
+      "description": "Generate payroll reports, post to general ledger, and create compliance filings",
+      "purpose": "Complete payroll cycle with proper recording and reporting",
+      "business_value": "Ensures accurate financial records and regulatory compliance",
+
+      "capabilities": [
+        "post_to_general_ledger",
+        "generate_payroll_register",
+        "generate_tax_liability_report",
+        "create_941_data",
+        "archive_pay_stubs",
+        "send_pay_statements"
+      ],
+
+      "input_schema": [
+        {
+          "name": "payroll_batch_id",
+          "type": "string",
+          "required": true
+        },
+        {
+          "name": "payment_confirmation",
+          "type": "object",
+          "required": true
+        }
+      ],
+
+      "output_schema": [
+        {
+          "name": "gl_posting_id",
+          "type": "string",
+          "description": "General ledger journal entry ID",
+          "required": true
+        },
+        {
+          "name": "payroll_register",
+          "type": "object",
+          "description": "Complete payroll register report",
+          "required": true
+        },
+        {
+          "name": "tax_liability_summary",
+          "type": "object",
+          "description": "Tax deposits due",
+          "required": true
+        },
+        {
+          "name": "processing_complete",
+          "type": "boolean",
+          "required": true
+        }
+      ],
+
+      "required_integrations": ["netsuite", "quickbooks_online", "aws_s3"],
+
+      "next_step_on_success": null,
+      "expected_duration_seconds": 600,
+      "compliance_frameworks": ["IRS", "GAAP", "SOC2"],
+      "requires_audit_log": true,
+      "data_retention_days": 2555,
+      "version": "1.0.0",
+      "status": "active"
+    }
+  ],
+
+  "integration_summary": {
+    "required": [
+      {"id": "workday", "purpose": "HRIS - employee data, time tracking"},
+      {"id": "adp_workforce", "purpose": "Payroll processing engine"},
+      {"id": "adp_tax_services", "purpose": "Tax calculation and filing"},
+      {"id": "plaid", "purpose": "Bank account verification and payment"},
+      {"id": "netsuite", "purpose": "GL posting and financial reporting"}
+    ],
+    "optional": [
+      {"id": "kronos", "purpose": "Time and attendance"},
+      {"id": "benefitfocus", "purpose": "Benefits administration"},
+      {"id": "docusign", "purpose": "Approval signatures"},
+      {"id": "slack", "purpose": "Notifications"}
+    ]
+  },
+
+  "kpis": [
+    {"name": "Payroll Accuracy Rate", "target": "> 99.5%", "current": null},
+    {"name": "On-Time Payment Rate", "target": "100%", "current": null},
+    {"name": "Processing Time (hours)", "target": "< 4", "current": null},
+    {"name": "Tax Filing Accuracy", "target": "100%", "current": null},
+    {"name": "Employee Inquiry Rate", "target": "< 2%", "current": null}
+  ]
+}

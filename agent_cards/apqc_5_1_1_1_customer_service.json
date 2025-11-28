@@ -1,0 +1,271 @@
+{
+  "apqc_id": "5.1.1.1",
+  "apqc_name": "Manage customer service requests",
+  "category": "5.0 - Manage Customer Service",
+  "description": "End-to-end customer service workflow from inquiry intake to resolution, including omnichannel support, case management, and customer satisfaction measurement.",
+  "orchestration_pattern": "event_driven",
+  "total_steps": 6,
+  "estimated_duration_seconds": 86400,
+  "compliance_frameworks": ["GDPR", "CCPA", "PCI-DSS", "TCPA"],
+  "data_retention_days": 1095,
+
+  "agent_cards": [
+    {
+      "id": "agent_5_1_1_1_step1",
+      "apqc_id": "5.1.1.1",
+      "step_number": 1,
+      "step_name": "Inquiry Intake and Classification",
+      "description": "Receive customer inquiries across all channels and classify by type",
+      "purpose": "Capture and route all customer contacts efficiently",
+      "business_value": "Consistent customer experience across channels",
+
+      "capabilities": ["receive_phone_call", "receive_email", "receive_chat", "receive_social", "auto_classify", "sentiment_analysis", "language_detection"],
+
+      "input_schema": [
+        {"name": "customer_id", "type": "string", "required": false},
+        {"name": "channel", "type": "string", "required": true, "validation": {"enum": ["phone", "email", "chat", "social", "self_service"]}},
+        {"name": "inquiry_content", "type": "string", "required": true},
+        {"name": "attachments", "type": "array", "required": false}
+      ],
+
+      "output_schema": [
+        {"name": "case_id", "type": "string", "required": true, "example": "CASE-2025-001234"},
+        {"name": "case_type", "type": "string", "required": true, "validation": {"enum": ["inquiry", "complaint", "request", "feedback", "technical"]}},
+        {"name": "priority", "type": "string", "required": true},
+        {"name": "sentiment", "type": "string", "required": true, "validation": {"enum": ["positive", "neutral", "negative", "urgent"]}},
+        {"name": "assigned_queue", "type": "string", "required": true}
+      ],
+
+      "required_integrations": [
+        {"system": "CRM", "type": "bidirectional", "protocol": "API", "examples": ["Salesforce Service Cloud", "Zendesk", "ServiceNow CSM"]},
+        {"system": "CCaaS", "type": "bidirectional", "protocol": "API", "examples": ["Genesys", "Five9", "Amazon Connect"]},
+        {"system": "AI NLP", "type": "processing", "protocol": "API"}
+      ],
+
+      "decision_rules": [
+        {"rule_id": "DR-CS-001", "name": "VIP Customer", "condition": "customer.tier == 'platinum'", "action": "route_to_dedicated_team", "priority": 1},
+        {"rule_id": "DR-CS-002", "name": "Negative Sentiment", "condition": "sentiment == 'negative' AND case_type == 'complaint'", "action": "escalate_priority", "priority": 1},
+        {"rule_id": "DR-CS-003", "name": "Self-Service Candidate", "condition": "case_type == 'inquiry' AND kb_match.confidence > 90%", "action": "suggest_self_service", "priority": 2}
+      ],
+
+      "error_handlers": [
+        {"error_type": "customer_not_identified", "severity": "low", "action": "create_anonymous_case", "notification": ["service_agent"]},
+        {"error_type": "channel_overload", "severity": "high", "action": "activate_overflow_routing", "notification": ["contact_center_manager"]}
+      ]
+    },
+
+    {
+      "id": "agent_5_1_1_1_step2",
+      "apqc_id": "5.1.1.1",
+      "step_number": 2,
+      "step_name": "Case Assignment and Routing",
+      "description": "Route cases to the best available agent based on skills and workload",
+      "purpose": "Match customers with the right agent quickly",
+      "business_value": "Reduce wait times and improve first contact resolution",
+
+      "capabilities": ["skill_based_routing", "workload_balancing", "priority_routing", "callback_scheduling", "warm_transfer"],
+
+      "input_schema": [
+        {"name": "case_id", "type": "string", "required": true},
+        {"name": "required_skills", "type": "array", "required": true},
+        {"name": "priority", "type": "string", "required": true},
+        {"name": "customer_preference", "type": "object", "required": false}
+      ],
+
+      "output_schema": [
+        {"name": "assigned_agent", "type": "string", "required": true},
+        {"name": "estimated_wait_time", "type": "integer", "required": true},
+        {"name": "assignment_method", "type": "string", "required": true},
+        {"name": "queue_position", "type": "integer", "required": false}
+      ],
+
+      "required_integrations": [
+        {"system": "CCaaS", "type": "bidirectional", "protocol": "API"},
+        {"system": "Workforce Management", "type": "read", "protocol": "API", "examples": ["NICE WFM", "Verint", "Calabrio"]}
+      ],
+
+      "decision_rules": [
+        {"rule_id": "DR-CS-010", "name": "Preferred Agent", "condition": "customer.preferred_agent EXISTS AND agent.available", "action": "route_to_preferred", "priority": 1},
+        {"rule_id": "DR-CS-011", "name": "Language Match", "condition": "customer.language != 'English'", "action": "route_to_multilingual_agent", "priority": 1}
+      ],
+
+      "error_handlers": [
+        {"error_type": "no_agents_available", "severity": "high", "action": "offer_callback", "notification": ["customer"]},
+        {"error_type": "skill_not_available", "severity": "medium", "action": "queue_with_escalation_timer", "notification": ["supervisor"]}
+      ]
+    },
+
+    {
+      "id": "agent_5_1_1_1_step3",
+      "apqc_id": "5.1.1.1",
+      "step_number": 3,
+      "step_name": "Case Investigation and Resolution",
+      "description": "Investigate the issue and provide resolution to the customer",
+      "purpose": "Solve customer problems effectively",
+      "business_value": "High first contact resolution and customer satisfaction",
+
+      "capabilities": ["search_knowledge_base", "access_customer_history", "process_transactions", "issue_refunds", "update_account", "coordinate_escalation"],
+
+      "input_schema": [
+        {"name": "case_id", "type": "string", "required": true},
+        {"name": "customer_id", "type": "string", "required": true},
+        {"name": "issue_description", "type": "string", "required": true}
+      ],
+
+      "output_schema": [
+        {"name": "resolution_status", "type": "string", "required": true, "validation": {"enum": ["resolved", "escalated", "pending_action", "follow_up_required"]}},
+        {"name": "resolution_summary", "type": "string", "required": true},
+        {"name": "actions_taken", "type": "array", "required": true},
+        {"name": "customer_effort_score", "type": "integer", "required": false}
+      ],
+
+      "required_integrations": [
+        {"system": "Knowledge Base", "type": "read", "protocol": "API"},
+        {"system": "Order Management", "type": "bidirectional", "protocol": "API"},
+        {"system": "Billing System", "type": "bidirectional", "protocol": "API"},
+        {"system": "Product/Technical Teams", "type": "collaboration", "protocol": "API"}
+      ],
+
+      "decision_rules": [
+        {"rule_id": "DR-CS-020", "name": "Auto-Resolve KB Match", "condition": "kb_article_match.confidence > 95% AND case_type == 'inquiry'", "action": "provide_kb_response", "priority": 1},
+        {"rule_id": "DR-CS-021", "name": "Refund Authority", "condition": "refund_amount <= agent.refund_limit", "action": "process_refund_immediately", "priority": 1},
+        {"rule_id": "DR-CS-022", "name": "Technical Escalation", "condition": "case_type == 'technical' AND first_attempt_failed", "action": "escalate_to_tier2", "priority": 1}
+      ],
+
+      "error_handlers": [
+        {"error_type": "system_unavailable", "severity": "high", "action": "manual_workaround_and_ticket", "notification": ["it_support"]},
+        {"error_type": "policy_exception_needed", "severity": "medium", "action": "escalate_for_approval", "notification": ["supervisor"]}
+      ]
+    },
+
+    {
+      "id": "agent_5_1_1_1_step4",
+      "apqc_id": "5.1.1.1",
+      "step_number": 4,
+      "step_name": "Case Documentation and Closure",
+      "description": "Document the resolution and close the case properly",
+      "purpose": "Maintain accurate records for future reference",
+      "business_value": "Enable analytics and continuous improvement",
+
+      "capabilities": ["document_resolution", "update_kb_if_needed", "send_confirmation", "trigger_survey", "close_case"],
+
+      "input_schema": [
+        {"name": "case_id", "type": "string", "required": true},
+        {"name": "resolution_summary", "type": "string", "required": true},
+        {"name": "root_cause", "type": "string", "required": false}
+      ],
+
+      "output_schema": [
+        {"name": "closure_confirmation", "type": "boolean", "required": true},
+        {"name": "survey_sent", "type": "boolean", "required": true},
+        {"name": "kb_article_created", "type": "boolean", "required": false}
+      ],
+
+      "required_integrations": [
+        {"system": "CRM", "type": "bidirectional", "protocol": "API"},
+        {"system": "Survey Platform", "type": "outbound", "protocol": "API", "examples": ["Qualtrics", "Medallia", "SurveyMonkey"]}
+      ],
+
+      "decision_rules": [
+        {"rule_id": "DR-CS-030", "name": "Create KB Article", "condition": "resolution_novel AND resolution_successful", "action": "draft_kb_article", "priority": 2},
+        {"rule_id": "DR-CS-031", "name": "Skip Survey", "condition": "case_duration < 2_minutes OR customer.survey_fatigue", "action": "skip_survey", "priority": 2}
+      ],
+
+      "error_handlers": [
+        {"error_type": "closure_rejected", "severity": "medium", "action": "reopen_case", "notification": ["assigned_agent"]}
+      ]
+    },
+
+    {
+      "id": "agent_5_1_1_1_step5",
+      "apqc_id": "5.1.1.1",
+      "step_number": 5,
+      "step_name": "Quality Monitoring",
+      "description": "Monitor and evaluate service quality across interactions",
+      "purpose": "Ensure consistent service quality standards",
+      "business_value": "Continuous improvement in customer experience",
+
+      "capabilities": ["record_interactions", "evaluate_calls", "score_quality", "identify_coaching_opportunities", "track_compliance"],
+
+      "input_schema": [
+        {"name": "case_id", "type": "string", "required": true},
+        {"name": "evaluation_type", "type": "string", "required": true, "validation": {"enum": ["random_sample", "customer_complaint", "new_agent", "calibration"]}}
+      ],
+
+      "output_schema": [
+        {"name": "quality_score", "type": "number", "required": true},
+        {"name": "evaluation_feedback", "type": "object", "required": true},
+        {"name": "coaching_items", "type": "array", "required": false}
+      ],
+
+      "required_integrations": [
+        {"system": "Quality Management", "type": "bidirectional", "protocol": "API", "examples": ["NICE CXone", "Verint", "Calabrio"]},
+        {"system": "Speech Analytics", "type": "processing", "protocol": "API"}
+      ],
+
+      "decision_rules": [
+        {"rule_id": "DR-CS-040", "name": "Compliance Fail", "condition": "compliance_violation_detected", "action": "immediate_review_required", "priority": 1}
+      ],
+
+      "error_handlers": [
+        {"error_type": "recording_unavailable", "severity": "low", "action": "skip_with_note", "notification": ["qa_team"]}
+      ]
+    },
+
+    {
+      "id": "agent_5_1_1_1_step6",
+      "apqc_id": "5.1.1.1",
+      "step_number": 6,
+      "step_name": "Service Analytics and Reporting",
+      "description": "Analyze service performance and generate insights",
+      "purpose": "Enable data-driven service improvement",
+      "business_value": "Optimize operations and improve customer satisfaction",
+
+      "capabilities": ["calculate_metrics", "analyze_trends", "identify_root_causes", "forecast_volume", "generate_reports"],
+
+      "input_schema": [
+        {"name": "report_type", "type": "string", "required": true, "validation": {"enum": ["daily_ops", "csat_analysis", "agent_performance", "volume_forecast", "root_cause"]}},
+        {"name": "date_range", "type": "object", "required": true}
+      ],
+
+      "output_schema": [
+        {"name": "average_handle_time", "type": "number", "required": true},
+        {"name": "first_contact_resolution", "type": "number", "required": true},
+        {"name": "csat_score", "type": "number", "required": true},
+        {"name": "nps", "type": "number", "required": true},
+        {"name": "service_level", "type": "number", "required": true},
+        {"name": "recommendations", "type": "array", "required": true}
+      ],
+
+      "required_integrations": [
+        {"system": "BI Platform", "type": "publish", "protocol": "API", "examples": ["Tableau", "Power BI"]},
+        {"system": "CRM Analytics", "type": "read", "protocol": "API"}
+      ],
+
+      "decision_rules": [
+        {"rule_id": "DR-CS-050", "name": "SLA Breach Alert", "condition": "service_level < 80%", "action": "alert_management", "priority": 1}
+      ],
+
+      "error_handlers": [
+        {"error_type": "data_latency", "severity": "low", "action": "use_cached_with_timestamp", "notification": ["analytics_team"]}
+      ]
+    }
+  ],
+
+  "integration_summary": {
+    "crm_platforms": ["Salesforce Service Cloud", "Zendesk", "ServiceNow CSM", "Microsoft Dynamics 365"],
+    "contact_center": ["Genesys Cloud", "Five9", "Amazon Connect", "NICE CXone", "Talkdesk"],
+    "workforce_management": ["NICE WFM", "Verint", "Calabrio", "Assembled"],
+    "knowledge_management": ["Guru", "Confluence", "Salesforce Knowledge"],
+    "analytics": ["Tableau", "Power BI", "Looker"]
+  },
+
+  "kpis": [
+    {"name": "First Contact Resolution", "description": "Percentage resolved on first contact", "target": "> 75%", "measurement": "first_contact_resolutions / total_contacts"},
+    {"name": "Average Handle Time", "description": "Average time per interaction", "target": "< 6 minutes", "measurement": "total_handle_time / total_interactions"},
+    {"name": "Customer Satisfaction (CSAT)", "description": "Post-interaction satisfaction score", "target": "> 4.2 / 5.0", "measurement": "avg(survey_scores)"},
+    {"name": "Net Promoter Score (NPS)", "description": "Customer loyalty metric", "target": "> 50", "measurement": "promoters% - detractors%"},
+    {"name": "Service Level", "description": "Percentage of calls answered within target time", "target": "> 80% in 20 seconds", "measurement": "calls_answered_in_time / total_calls"},
+    {"name": "Agent Occupancy", "description": "Time spent handling contacts vs. available", "target": "75-85%", "measurement": "handle_time / (handle_time + idle_time)"}
+  ]
+}

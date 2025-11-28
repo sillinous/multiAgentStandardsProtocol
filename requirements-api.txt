@@ -16,3 +16,7 @@ python-multipart==0.0.6
 
 # Additional utilities
 python-dateutil==2.8.2
+
+# Data analysis and trading functionality
+pandas>=2.0.0
+numpy>=1.24.0

@@ -1,0 +1,216 @@
+<?xml version='1.0' encoding='utf-8'?>
+<bpmn:definitions xmlns:bpmn="http://www.omg.org/spec/BPMN/20100524/MODEL" xmlns:bpmndi="http://www.omg.org/spec/BPMN/20100524/DI" xmlns:dc="http://www.omg.org/spec/DD/20100524/DC" id="Definitions_L3_3_4" targetNamespace="http://apqc.org/composite/level3/3.4" exporter="APQC Agentic Platform v3.0" exporterVersion="3.0.0">
+  <bpmn:process id="Process_L3_3_4" name="Level 3: 3.4" isExecutable="true">
+    <bpmn:documentation>
+Level 3 Composite Process
+Market and Sell Products and Services
+APQC ID: 3.4
+
+Orchestrates 20 child agents:
+  1. 3.4.1.7: Document marketing
+  2. 3.4.2.5: Review campaigns
+  3. 3.4.1.5: Review marketing
+  4. 3.4.1.6: Optimize marketing
+  5. 3.4.3.1: Negotiate terms
+  6. 3.4.1.3: Prioritize leads
+  7. 3.4.4.3: Identify upsell/cross-sell opportunities
+  8. 3.4.1.1: Identify potential customers
+  9. 3.4.1.2: Qualify leads
+  10. 3.4.2.1: Understand customer needs
+  11. 3.4.3.3: Finalize contracts
+  12. 3.4.4.4: Ensure customer success
+  13. 3.4.4.2: Manage relationships
+  14. 3.4.1.4: Distribute leads to sales
+  15. 3.4.4.1: Onboard customers
+  16. 3.4.2.2: Develop solutions
+  17. 3.4.3.2: Address objections
+  18. 3.4.2.4: Present solutions
+  19. 3.4.2.3: Create proposals
+  20. 3.4.3.4: Close deals
+
+
+Orchestration Pattern: Sequential Workflow (Pipeline)
+Standards: BPMN 2.0, A2A Protocol
+
+Generated: 2025-11-18T01:38:33.557975
+Status: Production Ready
+</bpmn:documentation>
+    <bpmn:startEvent id="Start_L3_3_4" name="Start Composite">
+      <bpmn:outgoing>Flow_start_to_child1</bpmn:outgoing>
+    </bpmn:startEvent>
+    <bpmn:callActivity id="CallActivity_L3_child1" name="3.4.1.7: Document marketing" calledElement="Process_3_4_1_7">
+      <bpmn:incoming>Flow_start_to_child1</bpmn:incoming>
+      <bpmn:outgoing>Flow_child1_to_child2</bpmn:outgoing>
+    </bpmn:callActivity>
+    <bpmn:callActivity id="CallActivity_L3_child2" name="3.4.2.5: Review campaigns" calledElement="Process_3_4_2_5">
+      <bpmn:incoming>Flow_child1_to_child2</bpmn:incoming>
+      <bpmn:outgoing>Flow_child2_to_child3</bpmn:outgoing>
+    </bpmn:callActivity>
+    <bpmn:callActivity id="CallActivity_L3_child3" name="3.4.1.5: Review marketing" calledElement="Process_3_4_1_5">
+      <bpmn:incoming>Flow_child2_to_child3</bpmn:incoming>
+      <bpmn:outgoing>Flow_child3_to_child4</bpmn:outgoing>
+    </bpmn:callActivity>
+    <bpmn:callActivity id="CallActivity_L3_child4" name="3.4.1.6: Optimize marketing" calledElement="Process_3_4_1_6">
+      <bpmn:incoming>Flow_child3_to_child4</bpmn:incoming>
+      <bpmn:outgoing>Flow_child4_to_child5</bpmn:outgoing>
+    </bpmn:callActivity>
+    <bpmn:callActivity id="CallActivity_L3_child5" name="3.4.3.1: Negotiate terms" calledElement="Process_3_4_3_1">
+      <bpmn:incoming>Flow_child4_to_child5</bpmn:incoming>
+      <bpmn:outgoing>Flow_child5_to_child6</bpmn:outgoing>
+    </bpmn:callActivity>
+    <bpmn:callActivity id="CallActivity_L3_child6" name="3.4.1.3: Prioritize leads" calledElement="Process_3_4_1_3">
+      <bpmn:incoming>Flow_child5_to_child6</bpmn:incoming>
+      <bpmn:outgoing>Flow_child6_to_child7</bpmn:outgoing>
+    </bpmn:callActivity>
+    <bpmn:callActivity id="CallActivity_L3_child7" name="3.4.4.3: Identify upsell/cross-sell opp..." calledElement="Process_3_4_4_3">
+      <bpmn:incoming>Flow_child6_to_child7</bpmn:incoming>
+      <bpmn:outgoing>Flow_child7_to_child8</bpmn:outgoing>
+    </bpmn:callActivity>
+    <bpmn:callActivity id="CallActivity_L3_child8" name="3.4.1.1: Identify potential customers" calledElement="Process_3_4_1_1">
+      <bpmn:incoming>Flow_child7_to_child8</bpmn:incoming>
+      <bpmn:outgoing>Flow_child8_to_child9</bpmn:outgoing>
+    </bpmn:callActivity>
+    <bpmn:callActivity id="CallActivity_L3_child9" name="3.4.1.2: Qualify leads" calledElement="Process_3_4_1_2">
+      <bpmn:incoming>Flow_child8_to_child9</bpmn:incoming>
+      <bpmn:outgoing>Flow_child9_to_child10</bpmn:outgoing>
+    </bpmn:callActivity>
+    <bpmn:callActivity id="CallActivity_L3_child10" name="3.4.2.1: Understand customer needs" calledElement="Process_3_4_2_1">
+      <bpmn:incoming>Flow_child9_to_child10</bpmn:incoming>
+      <bpmn:outgoing>Flow_child10_to_child11</bpmn:outgoing>
+    </bpmn:callActivity>
+    <bpmn:callActivity id="CallActivity_L3_child11" name="3.4.3.3: Finalize contracts" calledElement="Process_3_4_3_3">
+      <bpmn:incoming>Flow_child10_to_child11</bpmn:incoming>
+      <bpmn:outgoing>Flow_child11_to_child12</bpmn:outgoing>
+    </bpmn:callActivity>
+    <bpmn:callActivity id="CallActivity_L3_child12" name="3.4.4.4: Ensure customer success" calledElement="Process_3_4_4_4">
+      <bpmn:incoming>Flow_child11_to_child12</bpmn:incoming>
+      <bpmn:outgoing>Flow_child12_to_child13</bpmn:outgoing>
+    </bpmn:callActivity>
+    <bpmn:callActivity id="CallActivity_L3_child13" name="3.4.4.2: Manage relationships" calledElement="Process_3_4_4_2">
+      <bpmn:incoming>Flow_child12_to_child13</bpmn:incoming>
+      <bpmn:outgoing>Flow_child13_to_child14</bpmn:outgoing>
+    </bpmn:callActivity>
+    <bpmn:callActivity id="CallActivity_L3_child14" name="3.4.1.4: Distribute leads to sales" calledElement="Process_3_4_1_4">
+      <bpmn:incoming>Flow_child13_to_child14</bpmn:incoming>
+      <bpmn:outgoing>Flow_child14_to_child15</bpmn:outgoing>
+    </bpmn:callActivity>
+    <bpmn:callActivity id="CallActivity_L3_child15" name="3.4.4.1: Onboard customers" calledElement="Process_3_4_4_1">
+      <bpmn:incoming>Flow_child14_to_child15</bpmn:incoming>
+      <bpmn:outgoing>Flow_child15_to_child16</bpmn:outgoing>
+    </bpmn:callActivity>
+    <bpmn:callActivity id="CallActivity_L3_child16" name="3.4.2.2: Develop solutions" calledElement="Process_3_4_2_2">
+      <bpmn:incoming>Flow_child15_to_child16</bpmn:incoming>
+      <bpmn:outgoing>Flow_child16_to_child17</bpmn:outgoing>
+    </bpmn:callActivity>
+    <bpmn:callActivity id="CallActivity_L3_child17" name="3.4.3.2: Address objections" calledElement="Process_3_4_3_2">
+      <bpmn:incoming>Flow_child16_to_child17</bpmn:incoming>
+      <bpmn:outgoing>Flow_child17_to_child18</bpmn:outgoing>
+    </bpmn:callActivity>
+    <bpmn:callActivity id="CallActivity_L3_child18" name="3.4.2.4: Present solutions" calledElement="Process_3_4_2_4">
+      <bpmn:incoming>Flow_child17_to_child18</bpmn:incoming>
+      <bpmn:outgoing>Flow_child18_to_child19</bpmn:outgoing>
+    </bpmn:callActivity>
+    <bpmn:callActivity id="CallActivity_L3_child19" name="3.4.2.3: Create proposals" calledElement="Process_3_4_2_3">
+      <bpmn:incoming>Flow_child18_to_child19</bpmn:incoming>
+      <bpmn:outgoing>Flow_child19_to_child20</bpmn:outgoing>
+    </bpmn:callActivity>
+    <bpmn:callActivity id="CallActivity_L3_child20" name="3.4.3.4: Close deals" calledElement="Process_3_4_3_4">
+      <bpmn:incoming>Flow_child19_to_child20</bpmn:incoming>
+      <bpmn:outgoing>Flow_child20_to_end</bpmn:outgoing>
+    </bpmn:callActivity>
+    <bpmn:sequenceFlow id="Flow_start_to_child1" sourceRef="Start_L3_3_4" targetRef="CallActivity_L3_child1" />
+    <bpmn:sequenceFlow id="Flow_child1_to_child2" sourceRef="CallActivity_L3_child1" targetRef="CallActivity_L3_child2" />
+    <bpmn:sequenceFlow id="Flow_child2_to_child3" sourceRef="CallActivity_L3_child2" targetRef="CallActivity_L3_child3" />
+    <bpmn:sequenceFlow id="Flow_child3_to_child4" sourceRef="CallActivity_L3_child3" targetRef="CallActivity_L3_child4" />
+    <bpmn:sequenceFlow id="Flow_child4_to_child5" sourceRef="CallActivity_L3_child4" targetRef="CallActivity_L3_child5" />
+    <bpmn:sequenceFlow id="Flow_child5_to_child6" sourceRef="CallActivity_L3_child5" targetRef="CallActivity_L3_child6" />
+    <bpmn:sequenceFlow id="Flow_child6_to_child7" sourceRef="CallActivity_L3_child6" targetRef="CallActivity_L3_child7" />
+    <bpmn:sequenceFlow id="Flow_child7_to_child8" sourceRef="CallActivity_L3_child7" targetRef="CallActivity_L3_child8" />
+    <bpmn:sequenceFlow id="Flow_child8_to_child9" sourceRef="CallActivity_L3_child8" targetRef="CallActivity_L3_child9" />
+    <bpmn:sequenceFlow id="Flow_child9_to_child10" sourceRef="CallActivity_L3_child9" targetRef="CallActivity_L3_child10" />
+    <bpmn:sequenceFlow id="Flow_child10_to_child11" sourceRef="CallActivity_L3_child10" targetRef="CallActivity_L3_child11" />
+    <bpmn:sequenceFlow id="Flow_child11_to_child12" sourceRef="CallActivity_L3_child11" targetRef="CallActivity_L3_child12" />
+    <bpmn:sequenceFlow id="Flow_child12_to_child13" sourceRef="CallActivity_L3_child12" targetRef="CallActivity_L3_child13" />
+    <bpmn:sequenceFlow id="Flow_child13_to_child14" sourceRef="CallActivity_L3_child13" targetRef="CallActivity_L3_child14" />
+    <bpmn:sequenceFlow id="Flow_child14_to_child15" sourceRef="CallActivity_L3_child14" targetRef="CallActivity_L3_child15" />
+    <bpmn:sequenceFlow id="Flow_child15_to_child16" sourceRef="CallActivity_L3_child15" targetRef="CallActivity_L3_child16" />
+    <bpmn:sequenceFlow id="Flow_child16_to_child17" sourceRef="CallActivity_L3_child16" targetRef="CallActivity_L3_child17" />
+    <bpmn:sequenceFlow id="Flow_child17_to_child18" sourceRef="CallActivity_L3_child17" targetRef="CallActivity_L3_child18" />
+    <bpmn:sequenceFlow id="Flow_child18_to_child19" sourceRef="CallActivity_L3_child18" targetRef="CallActivity_L3_child19" />
+    <bpmn:sequenceFlow id="Flow_child19_to_child20" sourceRef="CallActivity_L3_child19" targetRef="CallActivity_L3_child20" />
+    <bpmn:sequenceFlow id="Flow_child20_to_end" sourceRef="CallActivity_L3_child20" targetRef="End_L3_3_4" />
+    <bpmn:endEvent id="End_L3_3_4" name="Composite Complete">
+      <bpmn:incoming>Flow_child20_to_end</bpmn:incoming>
+    </bpmn:endEvent>
+  </bpmn:process>
+  <bpmndi:BPMNDiagram id="Diagram_L3_3_4">
+    <bpmndi:BPMNPlane id="Plane_L3_3_4" bpmnElement="Process_L3_3_4">
+      <bpmndi:BPMNShape id="Shape_Start_L3_3_4" bpmnElement="Start_L3_3_4">
+        <dc:Bounds x="150" y="50" width="36" height="36" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Shape_CallActivity_L3_child1" bpmnElement="CallActivity_L3_child1">
+        <dc:Bounds x="100" y="130" width="150" height="80" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Shape_CallActivity_L3_child2" bpmnElement="CallActivity_L3_child2">
+        <dc:Bounds x="100" y="230" width="150" height="80" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Shape_CallActivity_L3_child3" bpmnElement="CallActivity_L3_child3">
+        <dc:Bounds x="100" y="330" width="150" height="80" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Shape_CallActivity_L3_child4" bpmnElement="CallActivity_L3_child4">
+        <dc:Bounds x="100" y="430" width="150" height="80" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Shape_CallActivity_L3_child5" bpmnElement="CallActivity_L3_child5">
+        <dc:Bounds x="100" y="530" width="150" height="80" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Shape_CallActivity_L3_child6" bpmnElement="CallActivity_L3_child6">
+        <dc:Bounds x="100" y="630" width="150" height="80" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Shape_CallActivity_L3_child7" bpmnElement="CallActivity_L3_child7">
+        <dc:Bounds x="100" y="730" width="150" height="80" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Shape_CallActivity_L3_child8" bpmnElement="CallActivity_L3_child8">
+        <dc:Bounds x="100" y="830" width="150" height="80" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Shape_CallActivity_L3_child9" bpmnElement="CallActivity_L3_child9">
+        <dc:Bounds x="100" y="930" width="150" height="80" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Shape_CallActivity_L3_child10" bpmnElement="CallActivity_L3_child10">
+        <dc:Bounds x="100" y="1030" width="150" height="80" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Shape_CallActivity_L3_child11" bpmnElement="CallActivity_L3_child11">
+        <dc:Bounds x="100" y="1130" width="150" height="80" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Shape_CallActivity_L3_child12" bpmnElement="CallActivity_L3_child12">
+        <dc:Bounds x="100" y="1230" width="150" height="80" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Shape_CallActivity_L3_child13" bpmnElement="CallActivity_L3_child13">
+        <dc:Bounds x="100" y="1330" width="150" height="80" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Shape_CallActivity_L3_child14" bpmnElement="CallActivity_L3_child14">
+        <dc:Bounds x="100" y="1430" width="150" height="80" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Shape_CallActivity_L3_child15" bpmnElement="CallActivity_L3_child15">
+        <dc:Bounds x="100" y="1530" width="150" height="80" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Shape_CallActivity_L3_child16" bpmnElement="CallActivity_L3_child16">
+        <dc:Bounds x="100" y="1630" width="150" height="80" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Shape_CallActivity_L3_child17" bpmnElement="CallActivity_L3_child17">
+        <dc:Bounds x="100" y="1730" width="150" height="80" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Shape_CallActivity_L3_child18" bpmnElement="CallActivity_L3_child18">
+        <dc:Bounds x="100" y="1830" width="150" height="80" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Shape_CallActivity_L3_child19" bpmnElement="CallActivity_L3_child19">
+        <dc:Bounds x="100" y="1930" width="150" height="80" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Shape_CallActivity_L3_child20" bpmnElement="CallActivity_L3_child20">
+        <dc:Bounds x="100" y="2030" width="150" height="80" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Shape_End_L3_3_4" bpmnElement="End_L3_3_4">
+        <dc:Bounds x="150" y="2130" width="36" height="36" />
+      </bpmndi:BPMNShape>
+    </bpmndi:BPMNPlane>
+  </bpmndi:BPMNDiagram>
+</bpmn:definitions>

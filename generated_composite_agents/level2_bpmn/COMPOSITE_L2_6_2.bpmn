@@ -1,0 +1,53 @@
+<?xml version='1.0' encoding='utf-8'?>
+<bpmn:definitions xmlns:bpmn="http://www.omg.org/spec/BPMN/20100524/MODEL" xmlns:bpmndi="http://www.omg.org/spec/BPMN/20100524/DI" xmlns:dc="http://www.omg.org/spec/DD/20100524/DC" id="Definitions_L2_6_2" targetNamespace="http://apqc.org/composite/level2/6.2" exporter="APQC Agentic Platform v3.0" exporterVersion="3.0.0">
+  <bpmn:process id="Process_6_2" name="Level 2: 6.2 - Plan and manage customer service operations" isExecutable="true">
+    <bpmn:documentation>
+Level 2 Process Group Process
+Plan and manage customer service operations
+APQC ID: 6.2
+
+Orchestrates 2 child processes:
+  1. 6.2.1: Plan and manage customer service workfor
+  2. 6.2.2: Manage customer service requests
+
+Orchestration Pattern: Sequential Workflow (Pipeline)
+Standards: BPMN 2.0, A2A Protocol
+
+Generated: 2025-11-25T11:51:05.799043
+Status: Production Ready
+</bpmn:documentation>
+    <bpmn:startEvent id="Start_6_2" name="Start">
+      <bpmn:outgoing>Flow_start_to_child1</bpmn:outgoing>
+    </bpmn:startEvent>
+    <bpmn:callActivity id="CallActivity_6_2_child1" name="6.2.1: Plan and manage customer service workfor..." calledElement="Process_6_2_1">
+      <bpmn:incoming>Flow_start_to_child1</bpmn:incoming>
+      <bpmn:outgoing>Flow_child1_to_child2</bpmn:outgoing>
+    </bpmn:callActivity>
+    <bpmn:callActivity id="CallActivity_6_2_child2" name="6.2.2: Manage customer service requests" calledElement="Process_6_2_2">
+      <bpmn:incoming>Flow_child1_to_child2</bpmn:incoming>
+      <bpmn:outgoing>Flow_child2_to_end</bpmn:outgoing>
+    </bpmn:callActivity>
+    <bpmn:sequenceFlow id="Flow_start_to_child1" sourceRef="Start_6_2" targetRef="CallActivity_6_2_child1" />
+    <bpmn:sequenceFlow id="Flow_child1_to_child2" sourceRef="CallActivity_6_2_child1" targetRef="CallActivity_6_2_child2" />
+    <bpmn:sequenceFlow id="Flow_child2_to_end" sourceRef="CallActivity_6_2_child2" targetRef="End_6_2" />
+    <bpmn:endEvent id="End_6_2" name="Complete">
+      <bpmn:incoming>Flow_child2_to_end</bpmn:incoming>
+    </bpmn:endEvent>
+  </bpmn:process>
+  <bpmndi:BPMNDiagram id="Diagram_6_2">
+    <bpmndi:BPMNPlane id="Plane_6_2" bpmnElement="Process_6_2">
+      <bpmndi:BPMNShape id="Shape_Start_6_2" bpmnElement="Start_6_2">
+        <dc:Bounds x="150" y="50" width="36" height="36" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Shape_CallActivity_6_2_child1" bpmnElement="CallActivity_6_2_child1">
+        <dc:Bounds x="100" y="130" width="150" height="80" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Shape_CallActivity_6_2_child2" bpmnElement="CallActivity_6_2_child2">
+        <dc:Bounds x="100" y="230" width="150" height="80" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Shape_End_6_2" bpmnElement="End_6_2">
+        <dc:Bounds x="150" y="330" width="36" height="36" />
+      </bpmndi:BPMNShape>
+    </bpmndi:BPMNPlane>
+  </bpmndi:BPMNDiagram>
+</bpmn:definitions>

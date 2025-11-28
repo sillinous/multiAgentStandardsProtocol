@@ -1,0 +1,676 @@
+{
+  "apqc_id": "10.1.1.1",
+  "apqc_name": "Prepare and publish financial statements",
+  "category": "10.0 - Manage Enterprise Risk, Compliance, and Resiliency",
+  "description": "End-to-end financial reporting workflow from trial balance extraction through financial statement publication, including consolidation, adjustments, analysis, review, and compliance filing.",
+  "orchestration_pattern": "sequential",
+  "total_steps": 8,
+  "estimated_duration_seconds": 172800,
+  "compliance_frameworks": ["SOX", "GAAP", "IFRS", "SEC"],
+  "data_retention_days": 2555,
+
+  "agent_cards": [
+    {
+      "id": "agent_10_1_1_1_step1",
+      "apqc_id": "10.1.1.1",
+      "step_number": 1,
+      "step_name": "Trial Balance Extraction",
+      "description": "Extract trial balances from all entities and consolidate for reporting",
+      "purpose": "Gather raw financial data for statement preparation",
+      "business_value": "Automates data collection, reducing close time by 40%",
+
+      "capabilities": [
+        "extract_trial_balance",
+        "extract_from_multiple_entities",
+        "convert_currencies",
+        "validate_account_balances",
+        "identify_out_of_balance",
+        "map_to_reporting_hierarchy"
+      ],
+
+      "input_schema": [
+        {
+          "name": "reporting_period",
+          "type": "object",
+          "description": "Financial reporting period",
+          "required": true,
+          "example": {"period_type": "monthly", "year": 2025, "month": 11}
+        },
+        {
+          "name": "entity_list",
+          "type": "array",
+          "description": "List of entities to include",
+          "required": true
+        },
+        {
+          "name": "reporting_currency",
+          "type": "string",
+          "description": "Consolidated reporting currency",
+          "required": true,
+          "example": "USD"
+        }
+      ],
+
+      "output_schema": [
+        {
+          "name": "trial_balance_id",
+          "type": "string",
+          "description": "Consolidated trial balance ID",
+          "required": true
+        },
+        {
+          "name": "entity_balances",
+          "type": "array",
+          "description": "Trial balances per entity",
+          "required": true
+        },
+        {
+          "name": "validation_status",
+          "type": "string",
+          "required": true,
+          "validation": {"enum": ["balanced", "out_of_balance", "needs_review"]}
+        },
+        {
+          "name": "currency_adjustments",
+          "type": "array",
+          "description": "FX translation adjustments",
+          "required": false
+        }
+      ],
+
+      "required_integrations": ["netsuite", "sap_s4hana"],
+      "optional_integrations": ["oracle_financials", "workday_financials"],
+
+      "decision_rules": [
+        {
+          "id": "rule_balance_check",
+          "name": "Trial Balance Check",
+          "description": "Ensure debits equal credits",
+          "condition": "total_debits == total_credits",
+          "action_if_true": "proceed_to_adjustments",
+          "action_if_false": "route_to_accounting_review",
+          "configurable": false
+        }
+      ],
+
+      "next_step_on_success": "agent_10_1_1_1_step2",
+      "expected_duration_seconds": 3600,
+      "timeout_seconds": 14400,
+      "requires_audit_log": true,
+      "compliance_frameworks": ["SOX"],
+      "version": "1.0.0",
+      "status": "active"
+    },
+
+    {
+      "id": "agent_10_1_1_1_step2",
+      "apqc_id": "10.1.1.1",
+      "step_number": 2,
+      "step_name": "Adjusting Journal Entries",
+      "description": "Process and post adjusting entries including accruals, deferrals, and reclassifications",
+      "purpose": "Ensure accurate period-end balances",
+      "business_value": "Standardizes adjustments and maintains audit trail",
+
+      "capabilities": [
+        "create_accrual_entries",
+        "create_deferral_entries",
+        "create_reclassifications",
+        "calculate_depreciation",
+        "calculate_amortization",
+        "process_intercompany_eliminations"
+      ],
+
+      "input_schema": [
+        {
+          "name": "trial_balance_id",
+          "type": "string",
+          "required": true
+        },
+        {
+          "name": "adjustment_templates",
+          "type": "array",
+          "description": "Recurring adjustment templates",
+          "required": false
+        },
+        {
+          "name": "manual_adjustments",
+          "type": "array",
+          "description": "One-time manual adjustments",
+          "required": false
+        }
+      ],
+
+      "output_schema": [
+        {
+          "name": "adjustment_entries",
+          "type": "array",
+          "description": "Posted adjusting entries",
+          "required": true
+        },
+        {
+          "name": "adjustment_total",
+          "type": "currency",
+          "description": "Net impact of adjustments",
+          "required": true
+        },
+        {
+          "name": "eliminations",
+          "type": "array",
+          "description": "Intercompany eliminations",
+          "required": false
+        },
+        {
+          "name": "adjusted_trial_balance",
+          "type": "object",
+          "required": true
+        }
+      ],
+
+      "required_integrations": ["netsuite", "blackline"],
+
+      "decision_rules": [
+        {
+          "id": "rule_materiality_threshold",
+          "name": "Materiality Threshold",
+          "description": "Flag adjustments exceeding materiality",
+          "condition": "adjustment_amount <= materiality_threshold",
+          "action_if_true": "auto_post",
+          "action_if_false": "require_controller_approval",
+          "configurable": true,
+          "default_threshold": 50000
+        }
+      ],
+
+      "next_step_on_success": "agent_10_1_1_1_step3",
+      "expected_duration_seconds": 7200,
+      "requires_audit_log": true,
+      "compliance_frameworks": ["SOX", "GAAP"],
+      "version": "1.0.0",
+      "status": "active"
+    },
+
+    {
+      "id": "agent_10_1_1_1_step3",
+      "apqc_id": "10.1.1.1",
+      "step_number": 3,
+      "step_name": "Financial Statement Generation",
+      "description": "Generate income statement, balance sheet, and cash flow statement",
+      "purpose": "Produce core financial statements",
+      "business_value": "Automates statement generation with consistent formatting",
+
+      "capabilities": [
+        "generate_income_statement",
+        "generate_balance_sheet",
+        "generate_cash_flow_statement",
+        "generate_statement_of_equity",
+        "apply_presentation_rules",
+        "calculate_ratios"
+      ],
+
+      "input_schema": [
+        {
+          "name": "adjusted_trial_balance",
+          "type": "object",
+          "required": true
+        },
+        {
+          "name": "comparative_periods",
+          "type": "array",
+          "description": "Prior periods for comparison",
+          "required": false
+        },
+        {
+          "name": "presentation_format",
+          "type": "string",
+          "required": true,
+          "validation": {"enum": ["GAAP", "IFRS", "internal"]}
+        }
+      ],
+
+      "output_schema": [
+        {
+          "name": "income_statement",
+          "type": "object",
+          "description": "Generated income statement",
+          "required": true
+        },
+        {
+          "name": "balance_sheet",
+          "type": "object",
+          "description": "Generated balance sheet",
+          "required": true
+        },
+        {
+          "name": "cash_flow_statement",
+          "type": "object",
+          "description": "Generated cash flow statement",
+          "required": true
+        },
+        {
+          "name": "financial_ratios",
+          "type": "object",
+          "description": "Calculated financial ratios",
+          "required": true
+        },
+        {
+          "name": "statement_package_id",
+          "type": "string",
+          "required": true
+        }
+      ],
+
+      "required_integrations": ["netsuite", "workiva"],
+
+      "next_step_on_success": "agent_10_1_1_1_step4",
+      "expected_duration_seconds": 1800,
+      "requires_audit_log": true,
+      "version": "1.0.0",
+      "status": "active"
+    },
+
+    {
+      "id": "agent_10_1_1_1_step4",
+      "apqc_id": "10.1.1.1",
+      "step_number": 4,
+      "step_name": "Variance Analysis",
+      "description": "Analyze variances vs. prior period, budget, and forecast with commentary",
+      "purpose": "Provide insights into financial performance",
+      "business_value": "Enables data-driven decision making",
+
+      "capabilities": [
+        "calculate_period_over_period",
+        "calculate_budget_variance",
+        "calculate_forecast_variance",
+        "identify_significant_variances",
+        "generate_variance_commentary",
+        "create_trend_analysis"
+      ],
+
+      "input_schema": [
+        {
+          "name": "statement_package_id",
+          "type": "string",
+          "required": true
+        },
+        {
+          "name": "prior_period_statements",
+          "type": "object",
+          "required": true
+        },
+        {
+          "name": "budget_data",
+          "type": "object",
+          "required": false
+        },
+        {
+          "name": "forecast_data",
+          "type": "object",
+          "required": false
+        }
+      ],
+
+      "output_schema": [
+        {
+          "name": "variance_analysis",
+          "type": "object",
+          "description": "Complete variance analysis",
+          "required": true
+        },
+        {
+          "name": "significant_variances",
+          "type": "array",
+          "description": "Variances requiring explanation",
+          "required": true
+        },
+        {
+          "name": "ai_commentary",
+          "type": "object",
+          "description": "AI-generated variance explanations",
+          "required": false
+        },
+        {
+          "name": "trend_charts",
+          "type": "array",
+          "description": "Visual trend analysis",
+          "required": false
+        }
+      ],
+
+      "required_integrations": ["netsuite", "adaptive_planning"],
+      "optional_integrations": ["anthropic"],
+
+      "ai_config": {
+        "model": "claude-sonnet-4-20250514",
+        "prompt_template": "Analyze the following financial variances and provide executive-level commentary explaining the key drivers of each significant variance. Focus on revenue, gross margin, and operating expenses.",
+        "temperature": 0.3
+      },
+
+      "decision_rules": [
+        {
+          "id": "rule_variance_threshold",
+          "name": "Significant Variance Detection",
+          "description": "Flag variances exceeding threshold",
+          "condition": "variance_percent <= variance_threshold",
+          "action_if_true": "auto_document",
+          "action_if_false": "require_explanation",
+          "configurable": true,
+          "default_threshold": 10
+        }
+      ],
+
+      "next_step_on_success": "agent_10_1_1_1_step5",
+      "expected_duration_seconds": 3600,
+      "requires_audit_log": true,
+      "version": "1.0.0",
+      "status": "active"
+    },
+
+    {
+      "id": "agent_10_1_1_1_step5",
+      "apqc_id": "10.1.1.1",
+      "step_number": 5,
+      "step_name": "Footnote and Disclosure Preparation",
+      "description": "Generate required financial statement footnotes and disclosures",
+      "purpose": "Ensure complete and compliant financial reporting",
+      "business_value": "Automates disclosure preparation, reducing manual effort",
+
+      "capabilities": [
+        "generate_accounting_policies",
+        "generate_segment_disclosures",
+        "generate_related_party_disclosures",
+        "generate_subsequent_events",
+        "generate_contingency_disclosures",
+        "validate_disclosure_completeness"
+      ],
+
+      "input_schema": [
+        {
+          "name": "statement_package_id",
+          "type": "string",
+          "required": true
+        },
+        {
+          "name": "disclosure_templates",
+          "type": "array",
+          "description": "Standard disclosure templates",
+          "required": true
+        },
+        {
+          "name": "significant_transactions",
+          "type": "array",
+          "description": "Transactions requiring disclosure",
+          "required": false
+        }
+      ],
+
+      "output_schema": [
+        {
+          "name": "footnotes",
+          "type": "array",
+          "description": "Generated footnotes",
+          "required": true
+        },
+        {
+          "name": "disclosure_checklist",
+          "type": "object",
+          "description": "Disclosure completeness checklist",
+          "required": true
+        },
+        {
+          "name": "disclosure_status",
+          "type": "string",
+          "required": true,
+          "validation": {"enum": ["complete", "pending_review", "incomplete"]}
+        }
+      ],
+
+      "required_integrations": ["workiva", "netsuite"],
+
+      "compliance_frameworks": ["GAAP", "IFRS", "SEC"],
+      "next_step_on_success": "agent_10_1_1_1_step6",
+      "expected_duration_seconds": 7200,
+      "requires_audit_log": true,
+      "version": "1.0.0",
+      "status": "active"
+    },
+
+    {
+      "id": "agent_10_1_1_1_step6",
+      "apqc_id": "10.1.1.1",
+      "step_number": 6,
+      "step_name": "Management Review and Sign-off",
+      "description": "Route financial package for management review and certification",
+      "purpose": "Ensure management accountability and SOX compliance",
+      "business_value": "Maintains SOX compliance and executive oversight",
+
+      "capabilities": [
+        "compile_review_package",
+        "route_to_reviewers",
+        "track_review_status",
+        "capture_sign_offs",
+        "document_review_comments",
+        "handle_revision_requests"
+      ],
+
+      "input_schema": [
+        {
+          "name": "statement_package_id",
+          "type": "string",
+          "required": true
+        },
+        {
+          "name": "review_workflow",
+          "type": "object",
+          "description": "Review and approval workflow",
+          "required": true
+        }
+      ],
+
+      "output_schema": [
+        {
+          "name": "review_status",
+          "type": "string",
+          "required": true,
+          "validation": {"enum": ["approved", "revisions_required", "pending", "rejected"]}
+        },
+        {
+          "name": "sign_offs",
+          "type": "array",
+          "description": "Management certifications",
+          "required": true
+        },
+        {
+          "name": "review_comments",
+          "type": "array",
+          "required": false
+        },
+        {
+          "name": "certification_date",
+          "type": "datetime",
+          "required": false
+        }
+      ],
+
+      "required_integrations": ["docusign", "workiva"],
+
+      "error_handlers": [
+        {
+          "error_type": "approval_timeout",
+          "description": "Reviewer did not respond in time",
+          "action": "escalate",
+          "max_retries": 2,
+          "escalation_target": "cfo"
+        }
+      ],
+
+      "compliance_frameworks": ["SOX"],
+      "next_step_on_success": "agent_10_1_1_1_step7",
+      "expected_duration_seconds": 86400,
+      "timeout_seconds": 259200,
+      "requires_audit_log": true,
+      "version": "1.0.0",
+      "status": "active"
+    },
+
+    {
+      "id": "agent_10_1_1_1_step7",
+      "apqc_id": "10.1.1.1",
+      "step_number": 7,
+      "step_name": "Audit Package Preparation",
+      "description": "Prepare supporting documentation for external audit",
+      "purpose": "Facilitate efficient audit process",
+      "business_value": "Reduces audit fees and accelerates audit completion",
+
+      "capabilities": [
+        "compile_audit_schedules",
+        "gather_supporting_docs",
+        "prepare_reconciliations",
+        "organize_by_audit_area",
+        "generate_pbc_list",
+        "upload_to_audit_portal"
+      ],
+
+      "input_schema": [
+        {
+          "name": "statement_package_id",
+          "type": "string",
+          "required": true
+        },
+        {
+          "name": "audit_request_list",
+          "type": "array",
+          "description": "Auditor's document request list",
+          "required": false
+        }
+      ],
+
+      "output_schema": [
+        {
+          "name": "audit_package",
+          "type": "object",
+          "description": "Complete audit support package",
+          "required": true
+        },
+        {
+          "name": "pbc_status",
+          "type": "object",
+          "description": "Prepared by client items status",
+          "required": true
+        },
+        {
+          "name": "audit_portal_url",
+          "type": "string",
+          "required": false
+        }
+      ],
+
+      "required_integrations": ["workiva", "aws_s3"],
+
+      "next_step_on_success": "agent_10_1_1_1_step8",
+      "expected_duration_seconds": 14400,
+      "requires_audit_log": true,
+      "version": "1.0.0",
+      "status": "active"
+    },
+
+    {
+      "id": "agent_10_1_1_1_step8",
+      "apqc_id": "10.1.1.1",
+      "step_number": 8,
+      "step_name": "Publication and Filing",
+      "description": "Publish financial statements and file with regulatory bodies as required",
+      "purpose": "Complete reporting cycle with compliant filings",
+      "business_value": "Ensures timely, compliant regulatory filings",
+
+      "capabilities": [
+        "format_for_publication",
+        "publish_to_investors",
+        "file_with_sec",
+        "file_10k_10q",
+        "generate_xbrl_tags",
+        "archive_final_documents"
+      ],
+
+      "input_schema": [
+        {
+          "name": "statement_package_id",
+          "type": "string",
+          "required": true
+        },
+        {
+          "name": "filing_type",
+          "type": "string",
+          "required": true,
+          "validation": {"enum": ["10-K", "10-Q", "8-K", "internal_only"]}
+        },
+        {
+          "name": "filing_deadline",
+          "type": "date",
+          "required": true
+        }
+      ],
+
+      "output_schema": [
+        {
+          "name": "publication_status",
+          "type": "string",
+          "required": true,
+          "validation": {"enum": ["published", "filed", "pending", "failed"]}
+        },
+        {
+          "name": "sec_filing_number",
+          "type": "string",
+          "required": false
+        },
+        {
+          "name": "publication_url",
+          "type": "string",
+          "required": false
+        },
+        {
+          "name": "archive_location",
+          "type": "string",
+          "required": true
+        },
+        {
+          "name": "reporting_complete",
+          "type": "boolean",
+          "required": true
+        }
+      ],
+
+      "required_integrations": ["workiva", "sec_edgar"],
+
+      "compliance_frameworks": ["SEC", "SOX"],
+      "next_step_on_success": null,
+      "expected_duration_seconds": 3600,
+      "requires_audit_log": true,
+      "data_retention_days": 2555,
+      "version": "1.0.0",
+      "status": "active"
+    }
+  ],
+
+  "integration_summary": {
+    "required": [
+      {"id": "netsuite", "purpose": "ERP - trial balance, GL, adjustments"},
+      {"id": "workiva", "purpose": "Financial reporting and SEC filing"},
+      {"id": "docusign", "purpose": "Management certifications"},
+      {"id": "aws_s3", "purpose": "Document archival"}
+    ],
+    "optional": [
+      {"id": "blackline", "purpose": "Account reconciliation"},
+      {"id": "adaptive_planning", "purpose": "Budget and forecast data"},
+      {"id": "anthropic", "purpose": "AI-powered variance analysis"},
+      {"id": "sap_s4hana", "purpose": "Alternative ERP"}
+    ]
+  },
+
+  "kpis": [
+    {"name": "Close Cycle Time (days)", "target": "< 5", "current": null},
+    {"name": "Adjustment Error Rate", "target": "< 1%", "current": null},
+    {"name": "Disclosure Completeness", "target": "100%", "current": null},
+    {"name": "Filing Timeliness", "target": "100%", "current": null},
+    {"name": "Audit Adjustment Rate", "target": "< 2%", "current": null}
+  ]
+}
