@@ -852,6 +852,13 @@
                 <h3>Success Rate</h3>
                 <div class="value" id="successRate">-</div>
             </div>
+            <div class="stat-card" id="apiHealthCard" style="cursor: pointer;" onclick="checkApiHealth()" title="Click to refresh">
+                <h3>API Status</h3>
+                <div class="value" id="apiHealth" style="display: flex; align-items: center; justify-content: center; gap: 5px;">
+                    <span id="apiHealthDot" style="width: 10px; height: 10px; border-radius: 50%; background: #f39c12;"></span>
+                    <span id="apiHealthText">Checking...</span>
+                </div>
+            </div>
         </div>
 
         <!-- Tab Navigation -->
@@ -871,7 +878,33 @@
         <!-- Agent Explorer Tab -->
         <div id="tab-agents" class="tab-content active">
             <div class="main-content">
-                <h2 style="margin-bottom: 20px;">🔍 Agent Explorer - Search & Filter</h2>
+                <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 20px;">
+                    <h2 style="margin: 0;">🔍 Agent Explorer - Search & Filter</h2>
+                    <!-- Quick Actions -->
+                    <div style="display: flex; gap: 8px; flex-wrap: wrap;">
+                        <button class="btn" onclick="switchTab('agentcards'); openCardGeneratorModal();" style="background: linear-gradient(135deg, #27ae60, #2ecc71); padding: 8px 14px; font-size: 0.85em;">
+                            ➕ New Agent Card
+                        </button>
+                        <button class="btn" onclick="switchTab('execute');" style="background: linear-gradient(135deg, #3498db, #2980b9); padding: 8px 14px; font-size: 0.85em;">
+                            🚀 Run Workflow
+                        </button>
+                        <button class="btn" onclick="switchTab('ai'); runAIDemo('finance');" style="background: linear-gradient(135deg, #9b59b6, #8e44ad); padding: 8px 14px; font-size: 0.85em;">
+                            🤖 AI Demo
+                        </button>
+                        <div class="dropdown" style="position: relative;">
+                            <button class="btn secondary" onclick="toggleQuickMenu()" style="padding: 8px 14px; font-size: 0.85em;">
+                                ⚡ More ▼
+                            </button>
+                            <div id="quickActionsMenu" style="display: none; position: absolute; right: 0; top: 100%; margin-top: 5px; background: white; border-radius: 8px; box-shadow: 0 4px 20px rgba(0,0,0,0.15); z-index: 100; min-width: 200px;">
+                                <a href="#" onclick="switchTab('agentcards'); exportAgentCards(); return false;" style="display: block; padding: 12px 16px; color: #333; text-decoration: none; border-bottom: 1px solid #eee;">📤 Export Agent Cards</a>
+                                <a href="#" onclick="switchTab('integrations'); return false;" style="display: block; padding: 12px 16px; color: #333; text-decoration: none; border-bottom: 1px solid #eee;">🔌 View Integrations</a>
+                                <a href="#" onclick="switchTab('bpmn'); return false;" style="display: block; padding: 12px 16px; color: #333; text-decoration: none; border-bottom: 1px solid #eee;">📊 BPMN Browser</a>
+                                <a href="#" onclick="switchTab('metrics'); return false;" style="display: block; padding: 12px 16px; color: #333; text-decoration: none; border-bottom: 1px solid #eee;">📈 Platform Metrics</a>
+                                <a href="/docs" target="_blank" style="display: block; padding: 12px 16px; color: #333; text-decoration: none;">📚 API Docs</a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
 
                 <div class="search-section">
                     <input type="text" id="agentSearch" class="search-input" placeholder="Search agents (use * for wildcard, e.g., manage*)" onkeypress="if(event.key==='Enter') searchAgents()">
@@ -1366,6 +1399,22 @@
                 <!-- Filter Controls -->
                 <div style="display: flex; gap: 15px; margin-bottom: 25px; flex-wrap: wrap; align-items: center;">
                     <input type="text" id="agentCardsSearchInput" class="search-input" placeholder="Search by APQC code or name (e.g., 8.2.1.1 or payroll)" style="flex: 1; min-width: 200px;" onkeypress="if(event.key==='Enter') filterAgentCards()">
+                    <select id="agentCardsCategoryFilter" class="filter-select" onchange="filterAgentCards()">
+                        <option value="">All Categories</option>
+                        <option value="1.0">1.0 - Vision & Strategy</option>
+                        <option value="2.0">2.0 - Products & Services</option>
+                        <option value="3.0">3.0 - Market & Sell</option>
+                        <option value="4.0">4.0 - Deliver Products</option>
+                        <option value="5.0">5.0 - Deliver Services</option>
+                        <option value="6.0">6.0 - Customer Service</option>
+                        <option value="7.0">7.0 - Human Capital</option>
+                        <option value="8.0">8.0 - IT</option>
+                        <option value="9.0">9.0 - Financial Resources</option>
+                        <option value="10.0">10.0 - Assets</option>
+                        <option value="11.0">11.0 - Risk & Compliance</option>
+                        <option value="12.0">12.0 - External Relations</option>
+                        <option value="13.0">13.0 - Business Capabilities</option>
+                    </select>
                     <select id="agentCardsPatternFilter" class="filter-select" onchange="filterAgentCards()">
                         <option value="">All Patterns</option>
                         <option value="sequential">Sequential</option>
@@ -1779,6 +1828,7 @@
             await loadStats();
             await loadCategories();
             await loadAllAgents();
+            await checkApiHealth();
 
             // Set default invoice date
             document.getElementById('invoiceDate').valueAsDate = new Date();
@@ -1786,6 +1836,56 @@
                 {"desc": "Software License", "qty": 10, "price": 450.00},
                 {"desc": "Support Contract", "qty": 1, "price": 500.00}
             ], null, 2);
+
+            // Close quick menu when clicking outside
+            document.addEventListener('click', function(e) {
+                const menu = document.getElementById('quickActionsMenu');
+                const btn = e.target.closest('.dropdown');
+                if (!btn && menu) {
+                    menu.style.display = 'none';
+                }
+            });
+
+            // Periodically check API health
+            setInterval(checkApiHealth, 60000); // Every 60 seconds
+        }
+
+        // Check API health status
+        async function checkApiHealth() {
+            const dot = document.getElementById('apiHealthDot');
+            const text = document.getElementById('apiHealthText');
+            const card = document.getElementById('apiHealthCard');
+
+            try {
+                const startTime = Date.now();
+                const response = await fetch(`${API_URL}/api/health`, {
+                    method: 'GET',
+                    signal: AbortSignal.timeout(5000)
+                });
+                const latency = Date.now() - startTime;
+
+                if (response.ok) {
+                    const data = await response.json();
+                    dot.style.background = '#27ae60';
+                    text.textContent = `${latency}ms`;
+                    card.title = `API Healthy - v${data.version || '1.0.0'}\nLatency: ${latency}ms\nClick to refresh`;
+                } else {
+                    dot.style.background = '#e74c3c';
+                    text.textContent = 'Error';
+                    card.title = `API returned ${response.status}. Click to retry.`;
+                }
+            } catch (error) {
+                dot.style.background = '#e74c3c';
+                text.textContent = 'Offline';
+                card.title = `API unreachable: ${error.message}. Click to retry.`;
+            }
+        }
+
+        // Toggle quick actions menu
+        function toggleQuickMenu() {
+            const menu = document.getElementById('quickActionsMenu');
+            menu.style.display = menu.style.display === 'none' ? 'block' : 'none';
+            event.stopPropagation();
         }
 
         // Switch tabs
@@ -3500,10 +3600,12 @@
 
         function filterAgentCards() {
             const searchTerm = document.getElementById('agentCardsSearchInput').value.toLowerCase().trim();
+            const categoryFilter = document.getElementById('agentCardsCategoryFilter')?.value || '';
             const patternFilter = document.getElementById('agentCardsPatternFilter').value;
 
             let filtered = allAgentCards;
 
+            // Search filter
             if (searchTerm) {
                 filtered = filtered.filter(card =>
                     card.apqc_id?.toLowerCase().includes(searchTerm) ||
@@ -3513,6 +3615,15 @@
                 );
             }
 
+            // Category filter
+            if (categoryFilter) {
+                filtered = filtered.filter(card => {
+                    const cardCategory = card.category?.split(' - ')[0] || '';
+                    return cardCategory === categoryFilter;
+                });
+            }
+
+            // Pattern filter
             if (patternFilter) {
                 filtered = filtered.filter(card => card.orchestration_pattern === patternFilter);
             }
@@ -3522,6 +3633,7 @@
 
         function resetAgentCardsFilter() {
             document.getElementById('agentCardsSearchInput').value = '';
+            document.getElementById('agentCardsCategoryFilter').value = '';
             document.getElementById('agentCardsPatternFilter').value = '';
             renderAgentCardsGrid();
         }
