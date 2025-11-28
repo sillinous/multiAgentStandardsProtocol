@@ -865,6 +865,7 @@
             <button class="tab-button" onclick="switchTab('workflow')">📋 Test Workflow</button>
             <button class="tab-button" onclick="switchTab('bpmn')">📊 BPMN Browser</button>
             <button class="tab-button" onclick="switchTab('agentcards')">🎴 Agent Cards</button>
+            <button class="tab-button" onclick="switchTab('metrics')">📈 Metrics</button>
         </div>
 
         <!-- Agent Explorer Tab -->
@@ -1357,6 +1358,69 @@
                 <div id="agentCardsResultsCount" style="text-align: center; margin-top: 20px; color: #999; font-size: 0.9em;"></div>
             </div>
         </div>
+
+        <!-- Metrics Tab -->
+        <div id="tab-metrics" class="tab-content">
+            <div class="main-content">
+                <h2 style="margin-bottom: 10px;">📈 Platform Metrics</h2>
+                <p style="color: #666; margin-bottom: 20px;">Real-time observability into agent executions, AI processing, and platform performance.</p>
+
+                <!-- Metrics Stats Cards -->
+                <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 15px; margin-bottom: 25px;">
+                    <div style="background: linear-gradient(135deg, #667eea15 0%, #764ba215 100%); border-radius: 12px; padding: 20px; text-align: center;">
+                        <div style="font-size: 2em; font-weight: bold; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); -webkit-background-clip: text; -webkit-text-fill-color: transparent;" id="metricsAgentExecutions">--</div>
+                        <div style="color: #666; font-size: 0.9em;">Agent Executions</div>
+                    </div>
+                    <div style="background: linear-gradient(135deg, #27ae6015 0%, #2ecc7115 100%); border-radius: 12px; padding: 20px; text-align: center;">
+                        <div style="font-size: 2em; font-weight: bold; color: #27ae60;" id="metricsAICalls">--</div>
+                        <div style="color: #666; font-size: 0.9em;">AI Processing Calls</div>
+                    </div>
+                    <div style="background: linear-gradient(135deg, #3498db15 0%, #2980b915 100%); border-radius: 12px; padding: 20px; text-align: center;">
+                        <div style="font-size: 2em; font-weight: bold; color: #3498db;" id="metricsOrchestrations">--</div>
+                        <div style="color: #666; font-size: 0.9em;">Orchestrations</div>
+                    </div>
+                    <div style="background: linear-gradient(135deg, #e74c3c15 0%, #c0392b15 100%); border-radius: 12px; padding: 20px; text-align: center;">
+                        <div style="font-size: 2em; font-weight: bold; color: #e74c3c;" id="metricsErrors">--</div>
+                        <div style="color: #666; font-size: 0.9em;">Errors</div>
+                    </div>
+                </div>
+
+                <!-- Refresh Button -->
+                <div style="text-align: right; margin-bottom: 15px;">
+                    <button class="btn secondary" onclick="loadMetricsTab()" style="font-size: 0.9em;">↻ Refresh Metrics</button>
+                </div>
+
+                <!-- Metrics Grid -->
+                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px;">
+                    <!-- Available Series -->
+                    <div style="background: #fff; border-radius: 12px; border: 1px solid #e0e0e0; padding: 20px;">
+                        <h3 style="margin-bottom: 15px; color: #333;">📊 Metric Series</h3>
+                        <div id="metricSeriesList" style="max-height: 400px; overflow-y: auto;">
+                            <div style="text-align: center; padding: 20px; color: #888;">Loading...</div>
+                        </div>
+                    </div>
+
+                    <!-- Recent Events -->
+                    <div style="background: #fff; border-radius: 12px; border: 1px solid #e0e0e0; padding: 20px;">
+                        <h3 style="margin-bottom: 15px; color: #333;">📋 Recent Events</h3>
+                        <div id="metricsEventsList" style="max-height: 400px; overflow-y: auto;">
+                            <div style="text-align: center; padding: 20px; color: #888;">Loading...</div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Counters Section -->
+                <div style="margin-top: 20px; background: #fff; border-radius: 12px; border: 1px solid #e0e0e0; padding: 20px;">
+                    <h3 style="margin-bottom: 15px; color: #333;">🔢 Counters</h3>
+                    <div id="metricsCountersList" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 10px;">
+                        <div style="text-align: center; padding: 20px; color: #888;">Loading...</div>
+                    </div>
+                </div>
+
+                <!-- Status -->
+                <div id="metricsStatus" style="text-align: center; margin-top: 20px; color: #999; font-size: 0.9em;"></div>
+            </div>
+        </div>
     </div>
 
     <!-- Agent Detail Modal -->
@@ -1530,6 +1594,93 @@
                 loadBpmnFiles();
             } else if (tabName === 'agentcards') {
                 loadAgentCards();
+            } else if (tabName === 'metrics') {
+                loadMetricsTab();
+            }
+        }
+
+        // Load Metrics Tab
+        async function loadMetricsTab() {
+            try {
+                // Check status first
+                const statusRes = await fetch(`${API_URL}/api/metrics/status`);
+                const status = await statusRes.json();
+
+                if (!status.available) {
+                    document.getElementById('metricsStatus').innerHTML = '<span style="color: #e74c3c;">⚠️ Metrics service not available</span>';
+                    return;
+                }
+
+                // Load dashboard metrics
+                const dashRes = await fetch(`${API_URL}/api/metrics/dashboard`);
+                if (dashRes.ok) {
+                    const data = await dashRes.json();
+
+                    // Update stat cards
+                    document.getElementById('metricsAgentExecutions').textContent = data.total_agent_executions || 0;
+                    document.getElementById('metricsAICalls').textContent = data.total_ai_calls || 0;
+                    document.getElementById('metricsOrchestrations').textContent = data.total_orchestrations || 0;
+                    document.getElementById('metricsErrors').textContent = data.total_errors || 0;
+                }
+
+                // Load series list
+                const seriesRes = await fetch(`${API_URL}/api/metrics/series`);
+                if (seriesRes.ok) {
+                    const seriesData = await seriesRes.json();
+                    const seriesHtml = seriesData.series.map(s => `
+                        <div style="padding: 12px; border-bottom: 1px solid #f0f0f0; display: flex; justify-content: space-between; align-items: center;">
+                            <div>
+                                <div style="font-weight: 600; color: #333;">${s.name.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase())}</div>
+                                <div style="font-size: 0.85em; color: #888;">${s.total_points} data points</div>
+                            </div>
+                            <div style="text-align: right;">
+                                <div style="font-weight: bold; color: #667eea;">${s.recent_stats?.count || 0}</div>
+                                <div style="font-size: 0.8em; color: #888;">last hour</div>
+                            </div>
+                        </div>
+                    `).join('') || '<div style="padding: 20px; color: #888; text-align: center;">No series data</div>';
+                    document.getElementById('metricSeriesList').innerHTML = seriesHtml;
+                }
+
+                // Load events
+                const eventsRes = await fetch(`${API_URL}/api/metrics/events?limit=20`);
+                if (eventsRes.ok) {
+                    const eventsData = await eventsRes.json();
+                    const eventsHtml = eventsData.events.length > 0
+                        ? eventsData.events.slice().reverse().map(e => `
+                            <div style="padding: 10px; border-bottom: 1px solid #f0f0f0; font-size: 0.9em;">
+                                <div style="display: flex; justify-content: space-between;">
+                                    <span style="font-weight: 500; color: #333;">${e.event || e.name || 'Event'}</span>
+                                    <span style="color: #888; font-size: 0.85em;">${new Date(e.timestamp).toLocaleTimeString()}</span>
+                                </div>
+                                ${e.details ? `<div style="color: #666; font-size: 0.85em; margin-top: 4px;">${e.details}</div>` : ''}
+                            </div>
+                        `).join('')
+                        : '<div style="padding: 20px; color: #888; text-align: center;">No recent events</div>';
+                    document.getElementById('metricsEventsList').innerHTML = eventsHtml;
+                }
+
+                // Load counters
+                const countersRes = await fetch(`${API_URL}/api/metrics/counters`);
+                if (countersRes.ok) {
+                    const countersData = await countersRes.json();
+                    const counters = Object.entries(countersData.counters || {});
+                    const countersHtml = counters.length > 0
+                        ? counters.map(([name, value]) => `
+                            <div style="background: #f8f9fa; padding: 15px; border-radius: 8px; text-align: center;">
+                                <div style="font-size: 1.5em; font-weight: bold; color: #333;">${value}</div>
+                                <div style="font-size: 0.85em; color: #666;">${name.replace(/_/g, ' ')}</div>
+                            </div>
+                        `).join('')
+                        : '<div style="padding: 20px; color: #888; text-align: center; grid-column: 1 / -1;">No counters recorded yet</div>';
+                    document.getElementById('metricsCountersList').innerHTML = countersHtml;
+                }
+
+                document.getElementById('metricsStatus').innerHTML = `<span style="color: #27ae60;">✓ Last updated: ${new Date().toLocaleTimeString()}</span>`;
+
+            } catch (error) {
+                console.error('Error loading metrics:', error);
+                document.getElementById('metricsStatus').innerHTML = `<span style="color: #e74c3c;">Error loading metrics: ${error.message}</span>`;
             }
         }
 

@@ -93,6 +93,15 @@ except ImportError:
     WorkflowEngine = None
     WORKFLOW_ENGINE_AVAILABLE = False
 
+# Import metrics service
+try:
+    from superstandard.services.metrics_service import MetricsService, get_metrics_service
+    METRICS_SERVICE_AVAILABLE = True
+    metrics_service = get_metrics_service()
+except ImportError:
+    METRICS_SERVICE_AVAILABLE = False
+    metrics_service = None
+
 
 # ============================================================================
 # FastAPI App Setup
@@ -2901,6 +2910,196 @@ async def list_composite_agents():
         "level1_count": len([c for c in composites if c["level"] == 1]),
         "level2_count": len([c for c in composites if c["level"] == 2]),
         "composites": sorted(composites, key=lambda x: (x["level"], x["id"]))
+    }
+
+
+# ============================================================================
+# Metrics API Endpoints
+# ============================================================================
+
+@app.get("/api/metrics/status")
+async def get_metrics_status():
+    """
+    Get metrics service status and availability.
+    """
+    return {
+        "available": METRICS_SERVICE_AVAILABLE,
+        "service": "metrics",
+        "features": [
+            "counters",
+            "gauges",
+            "time_series",
+            "events",
+            "dashboard_data"
+        ] if METRICS_SERVICE_AVAILABLE else []
+    }
+
+
+@app.get("/api/metrics/summary")
+async def get_metrics_summary():
+    """
+    Get a summary of all metrics for dashboard display.
+
+    Returns aggregated metrics across all domains.
+    """
+    if not METRICS_SERVICE_AVAILABLE:
+        raise HTTPException(status_code=503, detail="Metrics service not available")
+
+    return metrics_service.get_dashboard_data()
+
+
+@app.get("/api/metrics/counters")
+async def get_all_counters():
+    """
+    Get all counter metrics.
+    """
+    if not METRICS_SERVICE_AVAILABLE:
+        raise HTTPException(status_code=503, detail="Metrics service not available")
+
+    return {
+        "counters": dict(metrics_service.counters),
+        "total": len(metrics_service.counters)
+    }
+
+
+@app.get("/api/metrics/gauges")
+async def get_all_gauges():
+    """
+    Get all gauge metrics (current values).
+    """
+    if not METRICS_SERVICE_AVAILABLE:
+        raise HTTPException(status_code=503, detail="Metrics service not available")
+
+    return {
+        "gauges": metrics_service.gauges,
+        "total": len(metrics_service.gauges)
+    }
+
+
+@app.get("/api/metrics/series/{series_name}")
+async def get_metric_series(series_name: str, minutes: int = 60):
+    """
+    Get time series data for a specific metric.
+
+    Args:
+        series_name: Name of the metric series
+        minutes: How many minutes of data to return (default 60)
+    """
+    if not METRICS_SERVICE_AVAILABLE:
+        raise HTTPException(status_code=503, detail="Metrics service not available")
+
+    if series_name not in metrics_service.series:
+        raise HTTPException(status_code=404, detail=f"Series '{series_name}' not found")
+
+    series = metrics_service.series[series_name]
+    recent = series.get_recent(minutes)
+    stats = series.get_stats(minutes)
+
+    return {
+        "series_name": series_name,
+        "time_range_minutes": minutes,
+        "data_points": [p.to_dict() for p in recent],
+        "statistics": stats
+    }
+
+
+@app.get("/api/metrics/series")
+async def list_metric_series():
+    """
+    List all available metric series.
+    """
+    if not METRICS_SERVICE_AVAILABLE:
+        raise HTTPException(status_code=503, detail="Metrics service not available")
+
+    series_info = []
+    for name, series in metrics_service.series.items():
+        stats = series.get_stats(60)
+        series_info.append({
+            "name": name,
+            "total_points": len(series.points),
+            "recent_stats": stats
+        })
+
+    return {
+        "series": series_info,
+        "total": len(series_info)
+    }
+
+
+@app.get("/api/metrics/events")
+async def get_recent_events(limit: int = 100):
+    """
+    Get recent metric events.
+    """
+    if not METRICS_SERVICE_AVAILABLE:
+        raise HTTPException(status_code=503, detail="Metrics service not available")
+
+    events = metrics_service.events[-limit:] if metrics_service.events else []
+    return {
+        "events": events,
+        "total": len(events),
+        "limit": limit
+    }
+
+
+@app.post("/api/metrics/record")
+async def record_metric(
+    metric_type: str,
+    name: str,
+    value: float,
+    labels: Optional[Dict[str, str]] = None
+):
+    """
+    Record a metric (for internal use).
+
+    Args:
+        metric_type: Type of metric (counter, gauge, series)
+        name: Metric name
+        value: Metric value
+        labels: Optional labels for the metric
+    """
+    if not METRICS_SERVICE_AVAILABLE:
+        raise HTTPException(status_code=503, detail="Metrics service not available")
+
+    if metric_type == "counter":
+        metrics_service.increment(name, int(value), labels)
+    elif metric_type == "gauge":
+        metrics_service.set_gauge(name, value, labels)
+    elif metric_type == "series":
+        metrics_service.record(name, value, labels)
+    else:
+        raise HTTPException(status_code=400, detail=f"Unknown metric type: {metric_type}")
+
+    return {"status": "recorded", "metric_type": metric_type, "name": name, "value": value}
+
+
+@app.get("/api/metrics/dashboard")
+async def get_dashboard_metrics():
+    """
+    Get comprehensive metrics data for dashboard visualization.
+
+    Returns pre-aggregated data optimized for dashboard display.
+    """
+    if not METRICS_SERVICE_AVAILABLE:
+        raise HTTPException(status_code=503, detail="Metrics service not available")
+
+    dashboard_data = metrics_service.get_dashboard_data()
+
+    # Add chart data for key metrics
+    chart_data = {}
+    for series_name in ["agent_executions", "ai_processing_calls", "orchestration_executions", "errors"]:
+        if series_name in metrics_service.series:
+            series = metrics_service.series[series_name]
+            recent = series.get_recent(60)
+            chart_data[series_name] = {
+                "labels": [p.timestamp.strftime("%H:%M") for p in recent],
+                "values": [p.value for p in recent]
+            }
+
+    return {
+        **dashboard_data,
+        "chart_data": chart_data,
+        "last_updated": datetime.now().isoformat()
     }
 
 
