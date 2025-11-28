@@ -1345,6 +1345,7 @@
                     </select>
                     <button class="btn" onclick="filterAgentCards()">🔍 Filter</button>
                     <button class="btn secondary" onclick="resetAgentCardsFilter()">↻ Reset</button>
+                    <button class="btn" onclick="openCardGeneratorModal()" style="background: linear-gradient(135deg, #27ae60, #2ecc71); margin-left: auto;">➕ Create Agent Card</button>
                 </div>
 
                 <!-- Agent Cards Grid -->
@@ -1540,6 +1541,161 @@
             </div>
             <div style="text-align: right; margin-top: 15px;">
                 <button class="btn secondary" onclick="closeBpmnModal()">Close</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Agent Card Generator Modal -->
+    <div id="cardGeneratorModal" class="modal">
+        <div class="modal-content" style="max-width: 900px; max-height: 90vh; overflow-y: auto;">
+            <div class="modal-header">
+                <h3>Create New Agent Card</h3>
+                <span class="close-btn" onclick="closeCardGeneratorModal()">&times;</span>
+            </div>
+            <div class="modal-body">
+                <form id="cardGeneratorForm" onsubmit="generateAgentCard(event)">
+                    <!-- Basic Information -->
+                    <div style="background: rgba(52, 152, 219, 0.1); padding: 15px; border-radius: 8px; margin-bottom: 20px;">
+                        <h4 style="margin: 0 0 15px 0; color: #3498db;">Basic Information</h4>
+                        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px;">
+                            <div>
+                                <label style="display: block; margin-bottom: 5px; font-weight: 500;">APQC ID *</label>
+                                <input type="text" id="gen_apqc_id" required placeholder="e.g., 7.3.1.1"
+                                    style="width: 100%; padding: 10px; border: 1px solid #ddd; border-radius: 6px; font-size: 14px;">
+                                <small style="color: #888;">Format: X.X.X.X (matches APQC PCF structure)</small>
+                            </div>
+                            <div>
+                                <label style="display: block; margin-bottom: 5px; font-weight: 500;">Process Name *</label>
+                                <input type="text" id="gen_name" required placeholder="e.g., Manage vendor relationships"
+                                    style="width: 100%; padding: 10px; border: 1px solid #ddd; border-radius: 6px; font-size: 14px;">
+                            </div>
+                        </div>
+                        <div style="margin-top: 15px;">
+                            <label style="display: block; margin-bottom: 5px; font-weight: 500;">Category *</label>
+                            <select id="gen_category" required style="width: 100%; padding: 10px; border: 1px solid #ddd; border-radius: 6px; font-size: 14px;">
+                                <option value="">Select APQC Category...</option>
+                                <option value="1.0 - Develop Vision and Strategy">1.0 - Develop Vision and Strategy</option>
+                                <option value="2.0 - Develop and Manage Products and Services">2.0 - Develop and Manage Products and Services</option>
+                                <option value="3.0 - Market and Sell Products and Services">3.0 - Market and Sell Products and Services</option>
+                                <option value="4.0 - Deliver Physical Products">4.0 - Deliver Physical Products</option>
+                                <option value="5.0 - Deliver Services">5.0 - Deliver Services</option>
+                                <option value="6.0 - Manage Customer Service">6.0 - Manage Customer Service</option>
+                                <option value="7.0 - Develop and Manage Human Capital">7.0 - Develop and Manage Human Capital</option>
+                                <option value="8.0 - Manage Information Technology">8.0 - Manage Information Technology</option>
+                                <option value="9.0 - Manage Financial Resources">9.0 - Manage Financial Resources</option>
+                                <option value="10.0 - Acquire, Construct, and Manage Assets">10.0 - Acquire, Construct, and Manage Assets</option>
+                                <option value="11.0 - Manage Enterprise Risk, Compliance, Remediation, & Resiliency">11.0 - Manage Enterprise Risk, Compliance, Remediation, & Resiliency</option>
+                                <option value="12.0 - Manage External Relationships">12.0 - Manage External Relationships</option>
+                                <option value="13.0 - Develop and Manage Business Capabilities">13.0 - Develop and Manage Business Capabilities</option>
+                            </select>
+                        </div>
+                        <div style="margin-top: 15px;">
+                            <label style="display: block; margin-bottom: 5px; font-weight: 500;">Description *</label>
+                            <textarea id="gen_description" required rows="3" placeholder="Describe the end-to-end workflow..."
+                                style="width: 100%; padding: 10px; border: 1px solid #ddd; border-radius: 6px; font-size: 14px; resize: vertical;"></textarea>
+                        </div>
+                    </div>
+
+                    <!-- Workflow Configuration -->
+                    <div style="background: rgba(46, 204, 113, 0.1); padding: 15px; border-radius: 8px; margin-bottom: 20px;">
+                        <h4 style="margin: 0 0 15px 0; color: #27ae60;">Workflow Configuration</h4>
+                        <div style="display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 15px;">
+                            <div>
+                                <label style="display: block; margin-bottom: 5px; font-weight: 500;">Orchestration Pattern *</label>
+                                <select id="gen_pattern" required style="width: 100%; padding: 10px; border: 1px solid #ddd; border-radius: 6px; font-size: 14px;">
+                                    <option value="sequential">Sequential</option>
+                                    <option value="parallel">Parallel</option>
+                                    <option value="conditional">Conditional</option>
+                                    <option value="hybrid">Hybrid</option>
+                                </select>
+                            </div>
+                            <div>
+                                <label style="display: block; margin-bottom: 5px; font-weight: 500;">Number of Steps *</label>
+                                <input type="number" id="gen_steps" required min="1" max="20" value="5"
+                                    onchange="generateStepFields()"
+                                    style="width: 100%; padding: 10px; border: 1px solid #ddd; border-radius: 6px; font-size: 14px;">
+                            </div>
+                            <div>
+                                <label style="display: block; margin-bottom: 5px; font-weight: 500;">Est. Duration (seconds)</label>
+                                <input type="number" id="gen_duration" min="60" value="3600"
+                                    style="width: 100%; padding: 10px; border: 1px solid #ddd; border-radius: 6px; font-size: 14px;">
+                            </div>
+                        </div>
+                        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px; margin-top: 15px;">
+                            <div>
+                                <label style="display: block; margin-bottom: 5px; font-weight: 500;">Compliance Frameworks</label>
+                                <input type="text" id="gen_compliance" placeholder="SOX, GDPR, ISO27001 (comma-separated)"
+                                    style="width: 100%; padding: 10px; border: 1px solid #ddd; border-radius: 6px; font-size: 14px;">
+                            </div>
+                            <div>
+                                <label style="display: block; margin-bottom: 5px; font-weight: 500;">Data Retention (days)</label>
+                                <input type="number" id="gen_retention" min="30" value="365"
+                                    style="width: 100%; padding: 10px; border: 1px solid #ddd; border-radius: 6px; font-size: 14px;">
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Workflow Steps -->
+                    <div style="background: rgba(155, 89, 182, 0.1); padding: 15px; border-radius: 8px; margin-bottom: 20px;">
+                        <h4 style="margin: 0 0 15px 0; color: #9b59b6;">Workflow Steps</h4>
+                        <div id="stepFieldsContainer">
+                            <!-- Dynamic step fields will be generated here -->
+                        </div>
+                        <button type="button" onclick="addStepField()"
+                            style="margin-top: 10px; padding: 8px 15px; background: #9b59b6; color: white; border: none; border-radius: 6px; cursor: pointer;">
+                            + Add Step
+                        </button>
+                    </div>
+
+                    <!-- KPIs -->
+                    <div style="background: rgba(241, 196, 15, 0.1); padding: 15px; border-radius: 8px; margin-bottom: 20px;">
+                        <h4 style="margin: 0 0 15px 0; color: #f39c12;">Key Performance Indicators</h4>
+                        <div id="kpiFieldsContainer">
+                            <div class="kpi-field" style="display: grid; grid-template-columns: 1fr 1fr 1fr auto; gap: 10px; margin-bottom: 10px;">
+                                <input type="text" placeholder="Metric name" class="kpi-metric"
+                                    style="padding: 8px; border: 1px solid #ddd; border-radius: 6px;">
+                                <input type="text" placeholder="Target (e.g., < 24 hours)" class="kpi-target"
+                                    style="padding: 8px; border: 1px solid #ddd; border-radius: 6px;">
+                                <input type="text" placeholder="Measurement method" class="kpi-measurement"
+                                    style="padding: 8px; border: 1px solid #ddd; border-radius: 6px;">
+                                <button type="button" onclick="removeKpiField(this)"
+                                    style="padding: 8px 12px; background: #e74c3c; color: white; border: none; border-radius: 6px; cursor: pointer;">×</button>
+                            </div>
+                        </div>
+                        <button type="button" onclick="addKpiField()"
+                            style="margin-top: 10px; padding: 8px 15px; background: #f39c12; color: white; border: none; border-radius: 6px; cursor: pointer;">
+                            + Add KPI
+                        </button>
+                    </div>
+
+                    <!-- Form Actions -->
+                    <div style="display: flex; gap: 15px; justify-content: flex-end; margin-top: 20px;">
+                        <button type="button" onclick="previewAgentCard()"
+                            style="padding: 12px 25px; background: #3498db; color: white; border: none; border-radius: 6px; cursor: pointer; font-size: 14px;">
+                            Preview JSON
+                        </button>
+                        <button type="submit"
+                            style="padding: 12px 25px; background: linear-gradient(135deg, #27ae60, #2ecc71); color: white; border: none; border-radius: 6px; cursor: pointer; font-size: 14px; font-weight: 600;">
+                            Generate & Save
+                        </button>
+                        <button type="button" onclick="closeCardGeneratorModal()"
+                            style="padding: 12px 25px; background: #95a5a6; color: white; border: none; border-radius: 6px; cursor: pointer; font-size: 14px;">
+                            Cancel
+                        </button>
+                    </div>
+                </form>
+
+                <!-- Preview Panel -->
+                <div id="cardPreviewPanel" style="display: none; margin-top: 20px; background: #2c3e50; border-radius: 8px; padding: 15px;">
+                    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px;">
+                        <h4 style="margin: 0; color: #ecf0f1;">JSON Preview</h4>
+                        <button onclick="copyCardJson()"
+                            style="padding: 6px 12px; background: #3498db; color: white; border: none; border-radius: 4px; cursor: pointer; font-size: 12px;">
+                            Copy to Clipboard
+                        </button>
+                    </div>
+                    <pre id="cardJsonPreview" style="background: #1a252f; color: #2ecc71; padding: 15px; border-radius: 6px; overflow-x: auto; font-size: 12px; max-height: 400px; overflow-y: auto;"></pre>
+                </div>
             </div>
         </div>
     </div>
@@ -4460,6 +4616,301 @@
             if (!stored) return 0;
             const credentials = JSON.parse(stored);
             return Object.keys(credentials).filter(k => Object.keys(credentials[k]).length > 0).length;
+        }
+
+        // ========================================
+        // AGENT CARD GENERATOR FUNCTIONS
+        // ========================================
+        let generatedCardJson = null;
+        let stepCounter = 0;
+
+        function openCardGeneratorModal() {
+            document.getElementById('cardGeneratorModal').style.display = 'flex';
+            document.getElementById('cardPreviewPanel').style.display = 'none';
+            generatedCardJson = null;
+            stepCounter = 0;
+
+            // Reset form
+            document.getElementById('cardGeneratorForm').reset();
+            document.getElementById('stepFieldsContainer').innerHTML = '';
+            document.getElementById('kpiFieldsContainer').innerHTML = `
+                <div class="kpi-field" style="display: grid; grid-template-columns: 1fr 1fr 1fr auto; gap: 10px; margin-bottom: 10px;">
+                    <input type="text" placeholder="Metric name" class="kpi-metric"
+                        style="padding: 8px; border: 1px solid #ddd; border-radius: 6px;">
+                    <input type="text" placeholder="Target (e.g., < 24 hours)" class="kpi-target"
+                        style="padding: 8px; border: 1px solid #ddd; border-radius: 6px;">
+                    <input type="text" placeholder="Measurement method" class="kpi-measurement"
+                        style="padding: 8px; border: 1px solid #ddd; border-radius: 6px;">
+                    <button type="button" onclick="removeKpiField(this)"
+                        style="padding: 8px 12px; background: #e74c3c; color: white; border: none; border-radius: 6px; cursor: pointer;">×</button>
+                </div>
+            `;
+
+            // Generate initial step fields
+            generateStepFields();
+        }
+
+        function closeCardGeneratorModal() {
+            document.getElementById('cardGeneratorModal').style.display = 'none';
+        }
+
+        function generateStepFields() {
+            const numSteps = parseInt(document.getElementById('gen_steps').value) || 5;
+            const container = document.getElementById('stepFieldsContainer');
+            const currentSteps = container.querySelectorAll('.step-field').length;
+
+            // Add or remove steps to match
+            if (numSteps > currentSteps) {
+                for (let i = currentSteps; i < numSteps; i++) {
+                    addStepField(i + 1);
+                }
+            } else if (numSteps < currentSteps) {
+                const stepFields = container.querySelectorAll('.step-field');
+                for (let i = currentSteps - 1; i >= numSteps; i--) {
+                    stepFields[i].remove();
+                }
+            }
+        }
+
+        function addStepField(stepNum) {
+            stepCounter++;
+            const container = document.getElementById('stepFieldsContainer');
+            const actualStep = stepNum || container.querySelectorAll('.step-field').length + 1;
+
+            const stepDiv = document.createElement('div');
+            stepDiv.className = 'step-field';
+            stepDiv.style.cssText = 'background: rgba(255,255,255,0.5); padding: 12px; border-radius: 6px; margin-bottom: 10px; border-left: 3px solid #9b59b6;';
+            stepDiv.innerHTML = `
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px;">
+                    <strong style="color: #9b59b6;">Step ${actualStep}</strong>
+                    <button type="button" onclick="removeStepField(this)"
+                        style="padding: 4px 10px; background: #e74c3c; color: white; border: none; border-radius: 4px; cursor: pointer; font-size: 12px;">Remove</button>
+                </div>
+                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 10px;">
+                    <input type="text" class="step-name" placeholder="Step name (e.g., Data Collection)" required
+                        style="padding: 8px; border: 1px solid #ddd; border-radius: 6px;">
+                    <input type="text" class="step-purpose" placeholder="Purpose (e.g., Gather required data)"
+                        style="padding: 8px; border: 1px solid #ddd; border-radius: 6px;">
+                </div>
+                <textarea class="step-description" placeholder="Step description..." rows="2"
+                    style="width: 100%; padding: 8px; border: 1px solid #ddd; border-radius: 6px; resize: vertical;"></textarea>
+                <div style="margin-top: 10px;">
+                    <input type="text" class="step-capabilities" placeholder="Capabilities (comma-separated, e.g., data_extraction, validation)"
+                        style="width: 100%; padding: 8px; border: 1px solid #ddd; border-radius: 6px;">
+                </div>
+            `;
+            container.appendChild(stepDiv);
+
+            // Update step counter in gen_steps field
+            document.getElementById('gen_steps').value = container.querySelectorAll('.step-field').length;
+        }
+
+        function removeStepField(button) {
+            const container = document.getElementById('stepFieldsContainer');
+            if (container.querySelectorAll('.step-field').length > 1) {
+                button.closest('.step-field').remove();
+
+                // Renumber steps
+                container.querySelectorAll('.step-field').forEach((field, idx) => {
+                    field.querySelector('strong').textContent = `Step ${idx + 1}`;
+                });
+
+                // Update step counter
+                document.getElementById('gen_steps').value = container.querySelectorAll('.step-field').length;
+            }
+        }
+
+        function addKpiField() {
+            const container = document.getElementById('kpiFieldsContainer');
+            const kpiDiv = document.createElement('div');
+            kpiDiv.className = 'kpi-field';
+            kpiDiv.style.cssText = 'display: grid; grid-template-columns: 1fr 1fr 1fr auto; gap: 10px; margin-bottom: 10px;';
+            kpiDiv.innerHTML = `
+                <input type="text" placeholder="Metric name" class="kpi-metric"
+                    style="padding: 8px; border: 1px solid #ddd; border-radius: 6px;">
+                <input type="text" placeholder="Target (e.g., < 24 hours)" class="kpi-target"
+                    style="padding: 8px; border: 1px solid #ddd; border-radius: 6px;">
+                <input type="text" placeholder="Measurement method" class="kpi-measurement"
+                    style="padding: 8px; border: 1px solid #ddd; border-radius: 6px;">
+                <button type="button" onclick="removeKpiField(this)"
+                    style="padding: 8px 12px; background: #e74c3c; color: white; border: none; border-radius: 6px; cursor: pointer;">×</button>
+            `;
+            container.appendChild(kpiDiv);
+        }
+
+        function removeKpiField(button) {
+            const container = document.getElementById('kpiFieldsContainer');
+            if (container.querySelectorAll('.kpi-field').length > 1) {
+                button.closest('.kpi-field').remove();
+            }
+        }
+
+        function buildAgentCardJson() {
+            const apqcId = document.getElementById('gen_apqc_id').value.trim();
+            const name = document.getElementById('gen_name').value.trim();
+            const category = document.getElementById('gen_category').value;
+            const description = document.getElementById('gen_description').value.trim();
+            const pattern = document.getElementById('gen_pattern').value;
+            const duration = parseInt(document.getElementById('gen_duration').value) || 3600;
+            const retention = parseInt(document.getElementById('gen_retention').value) || 365;
+            const complianceRaw = document.getElementById('gen_compliance').value.trim();
+            const compliance = complianceRaw ? complianceRaw.split(',').map(c => c.trim()).filter(c => c) : [];
+
+            // Build steps
+            const steps = [];
+            document.querySelectorAll('.step-field').forEach((stepField, idx) => {
+                const stepName = stepField.querySelector('.step-name').value.trim();
+                const stepPurpose = stepField.querySelector('.step-purpose').value.trim();
+                const stepDesc = stepField.querySelector('.step-description').value.trim();
+                const capsRaw = stepField.querySelector('.step-capabilities').value.trim();
+                const capabilities = capsRaw ? capsRaw.split(',').map(c => c.trim().toLowerCase().replace(/\s+/g, '_')).filter(c => c) : [];
+
+                if (stepName) {
+                    steps.push({
+                        id: `agent_${apqcId.replace(/\./g, '_')}_step${idx + 1}`,
+                        apqc_id: apqcId,
+                        step_number: idx + 1,
+                        step_name: stepName,
+                        description: stepDesc || `Execute ${stepName}`,
+                        purpose: stepPurpose || stepName,
+                        business_value: `Delivers ${stepName.toLowerCase()} outcomes`,
+                        capabilities: capabilities.length > 0 ? capabilities : ['processing', 'validation'],
+                        input_schema: [
+                            { name: 'input_data', type: 'object', required: true }
+                        ],
+                        output_schema: [
+                            { name: 'output_data', type: 'object', required: true },
+                            { name: 'status', type: 'string', required: true }
+                        ],
+                        required_integrations: [],
+                        decision_rules: [],
+                        error_handlers: [
+                            { error_type: 'processing_error', severity: 'medium', action: 'retry_with_backoff', notification: ['operator'] }
+                        ]
+                    });
+                }
+            });
+
+            // Build KPIs
+            const kpis = [];
+            document.querySelectorAll('.kpi-field').forEach(kpiField => {
+                const metric = kpiField.querySelector('.kpi-metric').value.trim();
+                const target = kpiField.querySelector('.kpi-target').value.trim();
+                const measurement = kpiField.querySelector('.kpi-measurement').value.trim();
+
+                if (metric) {
+                    kpis.push({
+                        metric: metric.toLowerCase().replace(/\s+/g, '_'),
+                        target: target || 'TBD',
+                        measurement: measurement || metric.toLowerCase().replace(/\s+/g, '_') + '_measurement'
+                    });
+                }
+            });
+
+            // Build the complete agent card
+            return {
+                apqc_id: apqcId,
+                apqc_name: name,
+                category: category,
+                description: description,
+                orchestration_pattern: pattern,
+                total_steps: steps.length,
+                estimated_duration_seconds: duration,
+                compliance_frameworks: compliance,
+                data_retention_days: retention,
+                agent_cards: steps,
+                workflow_rules: {
+                    entry_criteria: ['workflow_initiated', 'inputs_validated'],
+                    exit_criteria: ['workflow_completed', 'outputs_validated'],
+                    escalation_path: ['operator', 'supervisor', 'manager', 'executive']
+                },
+                kpis: kpis.length > 0 ? kpis : [
+                    { metric: 'completion_time', target: '< 1 hour', measurement: 'end_to_end_duration' }
+                ]
+            };
+        }
+
+        function previewAgentCard() {
+            const card = buildAgentCardJson();
+            generatedCardJson = card;
+
+            document.getElementById('cardJsonPreview').textContent = JSON.stringify(card, null, 2);
+            document.getElementById('cardPreviewPanel').style.display = 'block';
+
+            // Scroll to preview
+            document.getElementById('cardPreviewPanel').scrollIntoView({ behavior: 'smooth' });
+        }
+
+        function copyCardJson() {
+            const jsonText = document.getElementById('cardJsonPreview').textContent;
+            navigator.clipboard.writeText(jsonText).then(() => {
+                const btn = event.target;
+                const originalText = btn.textContent;
+                btn.textContent = 'Copied!';
+                btn.style.background = '#27ae60';
+                setTimeout(() => {
+                    btn.textContent = originalText;
+                    btn.style.background = '#3498db';
+                }, 2000);
+            });
+        }
+
+        async function generateAgentCard(event) {
+            event.preventDefault();
+
+            const card = buildAgentCardJson();
+
+            // Validate
+            if (!card.apqc_id || !card.apqc_name || !card.category || card.agent_cards.length === 0) {
+                alert('Please fill in all required fields and add at least one step.');
+                return;
+            }
+
+            // Generate filename
+            const filename = `apqc_${card.apqc_id.replace(/\./g, '_')}_${card.apqc_name.toLowerCase().replace(/\s+/g, '_').substring(0, 30)}.json`;
+
+            try {
+                // Try to save via API
+                const response = await fetch(`${API_URL}/api/agent-cards`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ filename: filename, content: card })
+                });
+
+                if (response.ok) {
+                    alert(`Agent card saved successfully as ${filename}!`);
+                    closeCardGeneratorModal();
+
+                    // Refresh agent cards tab
+                    if (typeof loadAgentCardsTab === 'function') {
+                        loadAgentCardsTab();
+                    }
+                } else {
+                    // API not available, offer download
+                    const blob = new Blob([JSON.stringify(card, null, 2)], { type: 'application/json' });
+                    const url = URL.createObjectURL(blob);
+                    const a = document.createElement('a');
+                    a.href = url;
+                    a.download = filename;
+                    a.click();
+                    URL.revokeObjectURL(url);
+
+                    alert(`Agent card downloaded as ${filename}. Place it in the agent_cards/ directory.`);
+                    closeCardGeneratorModal();
+                }
+            } catch (error) {
+                // Network error, offer download
+                const blob = new Blob([JSON.stringify(card, null, 2)], { type: 'application/json' });
+                const url = URL.createObjectURL(blob);
+                const a = document.createElement('a');
+                a.href = url;
+                a.download = filename;
+                a.click();
+                URL.revokeObjectURL(url);
+
+                alert(`Agent card downloaded as ${filename}. Place it in the agent_cards/ directory.`);
+                closeCardGeneratorModal();
+            }
         }
 
         // Initialize on load

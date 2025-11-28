@@ -1695,6 +1695,149 @@ async def get_agent_card_step(apqc_code: str, step_number: int):
     )
 
 
+class AgentCardCreate(BaseModel):
+    """Request model for creating agent cards."""
+    filename: str = Field(..., description="Filename for the agent card (e.g., apqc_7_3_1_1_vendor_management.json)")
+    content: Dict[str, Any] = Field(..., description="The agent card JSON content")
+
+
+@app.post("/api/agent-cards")
+async def create_agent_card(card_request: AgentCardCreate):
+    """
+    Create a new agent card definition.
+
+    The agent card will be saved to the agent_cards directory.
+    """
+    # Ensure agent_cards directory exists
+    AGENT_CARDS_DIR.mkdir(parents=True, exist_ok=True)
+
+    # Sanitize filename
+    filename = card_request.filename
+    if not filename.endswith('.json'):
+        filename += '.json'
+
+    # Basic filename validation
+    if '..' in filename or '/' in filename or '\\' in filename:
+        raise HTTPException(
+            status_code=400,
+            detail="Invalid filename. Must not contain path separators or parent directory references."
+        )
+
+    filepath = AGENT_CARDS_DIR / filename
+
+    # Check if file already exists
+    if filepath.exists():
+        raise HTTPException(
+            status_code=409,
+            detail=f"Agent card with filename '{filename}' already exists. Use PUT to update."
+        )
+
+    # Validate required fields
+    content = card_request.content
+    required_fields = ["apqc_id", "apqc_name", "category", "agent_cards"]
+    missing = [f for f in required_fields if f not in content]
+    if missing:
+        raise HTTPException(
+            status_code=400,
+            detail=f"Missing required fields: {', '.join(missing)}"
+        )
+
+    # Add metadata
+    content["created_at"] = datetime.utcnow().isoformat()
+    content["created_by"] = "dashboard"
+
+    try:
+        with open(filepath, 'w') as f:
+            json.dump(content, f, indent=2)
+
+        logger.info(f"Created new agent card: {filename}")
+
+        return {
+            "success": True,
+            "message": f"Agent card created successfully",
+            "filename": filename,
+            "apqc_id": content.get("apqc_id"),
+            "apqc_name": content.get("apqc_name")
+        }
+    except Exception as e:
+        logger.error(f"Failed to create agent card: {e}")
+        raise HTTPException(
+            status_code=500,
+            detail=f"Failed to save agent card: {str(e)}"
+        )
+
+
+@app.put("/api/agent-cards/{filename}")
+async def update_agent_card(filename: str, card_request: Dict[str, Any]):
+    """
+    Update an existing agent card definition.
+    """
+    if not filename.endswith('.json'):
+        filename += '.json'
+
+    filepath = AGENT_CARDS_DIR / filename
+
+    if not filepath.exists():
+        raise HTTPException(
+            status_code=404,
+            detail=f"Agent card '{filename}' not found"
+        )
+
+    # Add update metadata
+    card_request["updated_at"] = datetime.utcnow().isoformat()
+
+    try:
+        with open(filepath, 'w') as f:
+            json.dump(card_request, f, indent=2)
+
+        logger.info(f"Updated agent card: {filename}")
+
+        return {
+            "success": True,
+            "message": "Agent card updated successfully",
+            "filename": filename
+        }
+    except Exception as e:
+        logger.error(f"Failed to update agent card: {e}")
+        raise HTTPException(
+            status_code=500,
+            detail=f"Failed to update agent card: {str(e)}"
+        )
+
+
+@app.delete("/api/agent-cards/{filename}")
+async def delete_agent_card(filename: str):
+    """
+    Delete an agent card definition.
+    """
+    if not filename.endswith('.json'):
+        filename += '.json'
+
+    filepath = AGENT_CARDS_DIR / filename
+
+    if not filepath.exists():
+        raise HTTPException(
+            status_code=404,
+            detail=f"Agent card '{filename}' not found"
+        )
+
+    try:
+        filepath.unlink()
+        logger.info(f"Deleted agent card: {filename}")
+
+        return {
+            "success": True,
+            "message": "Agent card deleted successfully",
+            "filename": filename
+        }
+    except Exception as e:
+        logger.error(f"Failed to delete agent card: {e}")
+        raise HTTPException(
+            status_code=500,
+            detail=f"Failed to delete agent card: {str(e)}"
+        )
+
+
 @app.get("/api/integrations")
 async def list_integrations():
     """
