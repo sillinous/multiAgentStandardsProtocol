@@ -107,13 +107,99 @@ except ImportError:
 # FastAPI App Setup
 # ============================================================================
 
+# API Tags for documentation organization
+tags_metadata = [
+    {
+        "name": "Health & Status",
+        "description": "System health checks and status endpoints"
+    },
+    {
+        "name": "Agents",
+        "description": "Browse and manage the 455 APQC-aligned enterprise agents"
+    },
+    {
+        "name": "Workflows",
+        "description": "Execute and monitor multi-agent workflows"
+    },
+    {
+        "name": "Agent Cards",
+        "description": "APQC Process Classification Framework agent card definitions with workflow orchestration"
+    },
+    {
+        "name": "Integrations",
+        "description": "Enterprise system integration catalog (ERP, CRM, HRIS, etc.)"
+    },
+    {
+        "name": "APQC Hierarchy",
+        "description": "Browse the APQC Process Classification Framework hierarchy"
+    },
+    {
+        "name": "Metrics",
+        "description": "Platform metrics and observability"
+    },
+    {
+        "name": "AI Execution",
+        "description": "AI-powered agent execution with LLM integration"
+    }
+]
+
 app = FastAPI(
     title="APQC Agent Platform API",
-    description="REST API for executing APQC agents and workflows with real business logic",
+    description="""
+## SuperStandard v1.0 Multi-Agent Protocol Suite
+
+Enterprise-grade REST API for orchestrating 455 APQC-aligned business process agents.
+
+### Key Features
+
+- **455 Enterprise Agents**: Aligned with APQC Process Classification Framework
+- **Multi-Agent Workflows**: Sequential, parallel, and conditional orchestration
+- **Agent Cards**: Structured workflow definitions with input/output schemas
+- **Enterprise Integrations**: 31+ pre-built connectors for ERP, CRM, HRIS systems
+- **AI-Powered Execution**: LLM-driven intelligent process automation
+- **Real-time Metrics**: Comprehensive observability and monitoring
+
+### APQC Categories Covered
+
+1. Develop Vision and Strategy
+2. Develop and Manage Products and Services
+3. Market and Sell Products and Services
+4. Deliver Physical Products
+5. Deliver Services
+6. Manage Customer Service
+7. Develop and Manage Human Capital
+8. Manage Information Technology
+9. Manage Financial Resources
+10. Acquire, Construct, and Manage Assets
+11. Manage Enterprise Risk, Compliance, Remediation, & Resiliency
+12. Manage External Relationships
+13. Develop and Manage Business Capabilities
+
+### Quick Start
+
+1. Browse agents: `GET /api/agents`
+2. Execute workflow: `POST /api/workflows/invoice`
+3. Check status: `GET /api/workflows/{workflow_id}`
+4. List integrations: `GET /api/integrations`
+
+### Documentation
+
+- [Swagger UI](/docs) - Interactive API documentation
+- [ReDoc](/redoc) - Alternative API documentation format
+    """,
     version="1.0.0",
     docs_url="/docs",
     redoc_url="/redoc",
-    debug=settings.DEBUG
+    debug=settings.DEBUG,
+    openapi_tags=tags_metadata,
+    contact={
+        "name": "SuperStandard Platform",
+        "url": "https://github.com/sillinous/multiAgentStandardsProtocol"
+    },
+    license_info={
+        "name": "MIT License",
+        "url": "https://opensource.org/licenses/MIT"
+    }
 )
 
 # Add request logging middleware (must be added before CORS)
@@ -285,9 +371,14 @@ async def process_testing_dashboard():
 # Health Check
 # ============================================================================
 
-@app.get("/api/health")
+@app.get("/api/health", tags=["Health & Status"])
 async def health_check():
-    """Health check endpoint"""
+    """
+    Health check endpoint.
+
+    Returns the current status of the API server including version and timestamp.
+    Use this endpoint for monitoring and load balancer health checks.
+    """
     return {
         "status": "healthy",
         "service": "APQC Agent Platform API",
@@ -300,7 +391,7 @@ async def health_check():
 # Agent Endpoints
 # ============================================================================
 
-@app.get("/api/agents")
+@app.get("/api/agents", tags=["Agents"])
 async def list_agents(
     category: Optional[str] = None,
     search: Optional[str] = None,
@@ -308,7 +399,16 @@ async def list_agents(
     offset: int = 0,
     db: Session = Depends(get_db)
 ):
-    """List all available agents with optional filtering and wildcard support"""
+    """
+    List all available agents with optional filtering.
+
+    - **category**: Filter by APQC category (e.g., "9.0 - Manage Financial Resources")
+    - **search**: Search term with wildcard support (* for any, ? for single char)
+    - **limit**: Maximum number of agents to return (default: 1000)
+    - **offset**: Number of agents to skip (for pagination)
+
+    Returns 455 APQC-aligned enterprise agents covering all 13 process categories.
+    """
     query = db.query(Agent).filter(Agent.is_active == True)
 
     # Category filter - exact match
@@ -347,9 +447,14 @@ async def list_agents(
     ]
 
 
-@app.get("/api/agents/categories/list")
+@app.get("/api/agents/categories/list", tags=["Agents"])
 async def list_categories(db: Session = Depends(get_db)):
-    """Get all available APQC categories with agent counts"""
+    """
+    Get all available APQC categories with agent counts.
+
+    Returns the 13 APQC Process Classification Framework categories
+    with the number of agents in each category.
+    """
     query = db.query(
         Agent.apqc_category,
         func.count(Agent.id).label("count")
@@ -648,19 +753,22 @@ async def get_agents_by_apqc_level(
 # APQC PCF Hierarchy Endpoint (using JSON file)
 # ============================================================================
 
-@app.get("/api/apqc/hierarchy")
+@app.get("/api/apqc/hierarchy", tags=["APQC Hierarchy"])
 async def get_apqc_hierarchy(
     level: int = 1,
     parent_code: Optional[str] = None
 ):
-    """Get APQC PCF hierarchy from the complete JSON file.
+    """
+    Get APQC PCF hierarchy from the complete JSON file.
 
-    This provides the full APQC PCF 7.4 structure with proper names at all levels.
+    This provides the full APQC Process Classification Framework v7.4 structure
+    with proper names at all levels. Use this for hierarchical navigation.
 
-    Level 1: 13 Categories (1.0 - 13.0)
-    Level 2: Process Groups (1.1, 1.2, etc.)
-    Level 3: Processes (1.1.1, 1.1.2, etc.)
-    Level 4: Activities (1.1.1.1, 1.1.1.2, etc.)
+    **Hierarchy Levels:**
+    - **Level 1**: 13 Categories (1.0 - 13.0)
+    - **Level 2**: Process Groups (1.1, 1.2, etc.)
+    - **Level 3**: Processes (1.1.1, 1.1.2, etc.)
+    - **Level 4**: Activities (1.1.1.1, 1.1.1.2, etc.)
     """
     if not APQC_HIERARCHY or "hierarchy" not in APQC_HIERARCHY:
         raise HTTPException(status_code=500, detail="APQC hierarchy data not loaded")
@@ -833,9 +941,14 @@ def get_category_color(category: str) -> str:
     return colors.get(category, "#667eea")
 
 
-@app.get("/api/agents/{agent_id}", response_model=AgentResponse)
+@app.get("/api/agents/{agent_id}", response_model=AgentResponse, tags=["Agents"])
 async def get_agent(agent_id: str, db: Session = Depends(get_db)):
-    """Get details for a specific agent"""
+    """
+    Get details for a specific agent.
+
+    Returns complete agent information including APQC alignment,
+    capabilities, and execution metadata.
+    """
     agent = db.query(Agent).filter(Agent.agent_id == agent_id).first()
     if not agent:
         raise HTTPException(status_code=404, detail=f"Agent {agent_id} not found")
@@ -887,13 +1000,24 @@ async def execute_custom_workflow(
 # Workflow Endpoints
 # ============================================================================
 
-@app.post("/api/workflows/invoice", response_model=WorkflowResponse)
+@app.post("/api/workflows/invoice", response_model=WorkflowResponse, tags=["Workflows"])
 async def execute_invoice_workflow(
     request: InvoiceWorkflowRequest,
     background_tasks: BackgroundTasks,
     db: Session = Depends(get_db)
 ):
-    """Execute invoice processing workflow (4-agent pipeline)"""
+    """
+    Execute invoice processing workflow (4-agent pipeline).
+
+    This is a complete end-to-end invoice processing workflow that:
+    1. Validates invoice data
+    2. Matches invoice to purchase orders
+    3. Applies business rules and approvals
+    4. Generates accounting entries
+
+    The workflow runs asynchronously in the background. Use the returned
+    `workflow_url` to check status and retrieve results.
+    """
 
     # Create workflow record
     workflow_id = f"wf_{uuid4().hex[:16]}"
@@ -928,9 +1052,14 @@ async def execute_invoice_workflow(
     )
 
 
-@app.get("/api/workflows/{workflow_id}", response_model=WorkflowStatusResponse)
+@app.get("/api/workflows/{workflow_id}", response_model=WorkflowStatusResponse, tags=["Workflows"])
 async def get_workflow_status(workflow_id: str, db: Session = Depends(get_db)):
-    """Get workflow status and results"""
+    """
+    Get workflow status and results.
+
+    Returns the current status, execution time, agent success/failure counts,
+    and output data for a workflow execution.
+    """
     workflow = db.query(Workflow).filter(Workflow.workflow_id == workflow_id).first()
     if not workflow:
         raise HTTPException(status_code=404, detail=f"Workflow {workflow_id} not found")
@@ -1603,10 +1732,13 @@ async def check_bpmn_available(apqc_code: str):
 
 AGENT_CARDS_DIR = Path(__file__).parent.parent / "agent_cards"
 
-@app.get("/api/agent-cards")
+@app.get("/api/agent-cards", tags=["Agent Cards"])
 async def list_agent_cards():
     """
     List all available agent card definitions.
+
+    Agent cards define structured workflow specifications aligned with APQC PCF.
+    Each card includes step definitions, input/output schemas, and orchestration rules.
     """
     if not AGENT_CARDS_DIR.exists():
         return {"total": 0, "agent_cards": []}
@@ -1637,13 +1769,15 @@ async def list_agent_cards():
     return {"total": len(cards), "agent_cards": cards}
 
 
-@app.get("/api/agent-cards/{apqc_code:path}")
+@app.get("/api/agent-cards/{apqc_code:path}", tags=["Agent Cards"])
 async def get_agent_card(apqc_code: str):
     """
     Get agent card definition for a specific APQC code.
 
-    Args:
-        apqc_code: APQC code (e.g., "9.2.1.1")
+    Returns the complete agent card including all workflow steps,
+    input/output schemas, decision rules, and error handlers.
+
+    - **apqc_code**: APQC code (e.g., "9.2.1.1")
     """
     # Convert code to filename format
     code_underscore = apqc_code.replace(".", "_")
@@ -1701,12 +1835,14 @@ class AgentCardCreate(BaseModel):
     content: Dict[str, Any] = Field(..., description="The agent card JSON content")
 
 
-@app.post("/api/agent-cards")
+@app.post("/api/agent-cards", tags=["Agent Cards"])
 async def create_agent_card(card_request: AgentCardCreate):
     """
     Create a new agent card definition.
 
-    The agent card will be saved to the agent_cards directory.
+    Creates a new APQC-aligned workflow specification that can be executed
+    by the orchestration engine. The agent card will be saved to the
+    agent_cards directory.
     """
     # Ensure agent_cards directory exists
     AGENT_CARDS_DIR.mkdir(parents=True, exist_ok=True)
@@ -1767,10 +1903,12 @@ async def create_agent_card(card_request: AgentCardCreate):
         )
 
 
-@app.put("/api/agent-cards/{filename}")
+@app.put("/api/agent-cards/{filename}", tags=["Agent Cards"])
 async def update_agent_card(filename: str, card_request: Dict[str, Any]):
     """
     Update an existing agent card definition.
+
+    Replaces the entire agent card content with the provided data.
     """
     if not filename.endswith('.json'):
         filename += '.json'
@@ -1805,10 +1943,12 @@ async def update_agent_card(filename: str, card_request: Dict[str, Any]):
         )
 
 
-@app.delete("/api/agent-cards/{filename}")
+@app.delete("/api/agent-cards/{filename}", tags=["Agent Cards"])
 async def delete_agent_card(filename: str):
     """
     Delete an agent card definition.
+
+    Permanently removes the agent card file from the system.
     """
     if not filename.endswith('.json'):
         filename += '.json'
@@ -1838,10 +1978,16 @@ async def delete_agent_card(filename: str):
         )
 
 
-@app.get("/api/integrations")
+@app.get("/api/integrations", tags=["Integrations"])
 async def list_integrations():
     """
     List all available integrations from the catalog.
+
+    Returns 31+ enterprise system connectors organized by category:
+    ERP, CRM, HRIS, Financial Systems, and more.
+
+    Each integration includes connection protocols, authentication methods,
+    and common use cases.
     """
     if not INTEGRATION_CATALOG_AVAILABLE:
         return {"total": 0, "categories": {}, "integrations": [], "error": "Integration catalog not found"}
