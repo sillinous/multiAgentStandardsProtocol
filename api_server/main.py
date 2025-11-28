@@ -1769,6 +1769,160 @@ async def list_agent_cards():
     return {"total": len(cards), "agent_cards": cards}
 
 
+@app.get("/api/agent-cards-stats", tags=["Agent Cards"])
+async def get_agent_card_stats():
+    """
+    Get statistics about agent cards.
+
+    Returns counts by category, orchestration patterns, compliance frameworks,
+    and overall coverage metrics.
+    """
+    if not AGENT_CARDS_DIR.exists():
+        return {
+            "total_cards": 0,
+            "total_steps": 0,
+            "by_category": {},
+            "by_pattern": {},
+            "compliance_frameworks": [],
+            "coverage": {}
+        }
+
+    cards = []
+    for filepath in AGENT_CARDS_DIR.glob("*.json"):
+        try:
+            with open(filepath, 'r') as f:
+                cards.append(json.load(f))
+        except Exception:
+            continue
+
+    # Calculate statistics
+    total_steps = sum(len(c.get("agent_cards", [])) for c in cards)
+
+    # By category
+    by_category = {}
+    for card in cards:
+        cat = card.get("category", "Unknown")
+        cat_short = cat.split(" - ")[0] if " - " in cat else cat
+        by_category[cat_short] = by_category.get(cat_short, 0) + 1
+
+    # By orchestration pattern
+    by_pattern = {}
+    for card in cards:
+        pattern = card.get("orchestration_pattern", "unknown")
+        by_pattern[pattern] = by_pattern.get(pattern, 0) + 1
+
+    # Compliance frameworks
+    frameworks = set()
+    for card in cards:
+        for fw in card.get("compliance_frameworks", []):
+            frameworks.add(fw)
+
+    # APQC Coverage (which categories have cards)
+    apqc_categories = [f"{i}.0" for i in range(1, 14)]
+    covered = set(by_category.keys())
+    coverage = {
+        "categories_covered": len(covered),
+        "total_categories": 13,
+        "coverage_percentage": round(len(covered) / 13 * 100, 1),
+        "missing_categories": [c for c in apqc_categories if c not in covered]
+    }
+
+    # Average steps per card
+    avg_steps = round(total_steps / len(cards), 1) if cards else 0
+
+    return {
+        "total_cards": len(cards),
+        "total_steps": total_steps,
+        "average_steps_per_card": avg_steps,
+        "by_category": dict(sorted(by_category.items())),
+        "by_pattern": by_pattern,
+        "compliance_frameworks": sorted(list(frameworks)),
+        "coverage": coverage
+    }
+
+
+@app.post("/api/agent-cards-validate", tags=["Agent Cards"])
+async def validate_agent_card(card_data: Dict[str, Any]):
+    """
+    Validate an agent card without saving it.
+
+    Checks for required fields, schema consistency, and best practices.
+    Returns validation results with errors, warnings, and suggestions.
+    """
+    errors = []
+    warnings = []
+    suggestions = []
+
+    # Required top-level fields
+    required_fields = ["apqc_id", "apqc_name", "category", "agent_cards"]
+    for field in required_fields:
+        if field not in card_data:
+            errors.append(f"Missing required field: {field}")
+
+    # Validate APQC ID format
+    apqc_id = card_data.get("apqc_id", "")
+    if apqc_id and not all(c.isdigit() or c == '.' for c in apqc_id):
+        errors.append(f"Invalid APQC ID format: {apqc_id}. Expected format: X.X.X.X")
+
+    # Validate orchestration pattern
+    valid_patterns = ["sequential", "parallel", "conditional", "hybrid", "event_driven"]
+    pattern = card_data.get("orchestration_pattern")
+    if pattern and pattern not in valid_patterns:
+        warnings.append(f"Non-standard orchestration pattern: {pattern}. Valid patterns: {', '.join(valid_patterns)}")
+
+    # Validate agent_cards array
+    agent_cards = card_data.get("agent_cards", [])
+    if not isinstance(agent_cards, list):
+        errors.append("agent_cards must be an array")
+    elif len(agent_cards) == 0:
+        errors.append("agent_cards array is empty - at least one step is required")
+    else:
+        # Validate each step
+        for idx, step in enumerate(agent_cards):
+            step_num = idx + 1
+            if not step.get("step_name"):
+                errors.append(f"Step {step_num}: missing step_name")
+            if not step.get("id"):
+                warnings.append(f"Step {step_num}: missing id field")
+            if not step.get("input_schema"):
+                suggestions.append(f"Step {step_num}: consider adding input_schema for better documentation")
+            if not step.get("output_schema"):
+                suggestions.append(f"Step {step_num}: consider adding output_schema for better documentation")
+
+        # Check step numbering
+        step_numbers = [s.get("step_number") for s in agent_cards if s.get("step_number")]
+        if step_numbers and len(set(step_numbers)) != len(step_numbers):
+            warnings.append("Duplicate step numbers detected")
+
+    # Check for KPIs
+    if not card_data.get("kpis"):
+        suggestions.append("Consider adding KPIs to measure workflow effectiveness")
+
+    # Check for compliance frameworks
+    if not card_data.get("compliance_frameworks"):
+        suggestions.append("Consider specifying applicable compliance frameworks")
+
+    # Check for workflow rules
+    if not card_data.get("workflow_rules"):
+        suggestions.append("Consider adding workflow_rules with entry/exit criteria")
+
+    # Determine validity
+    is_valid = len(errors) == 0
+
+    return {
+        "valid": is_valid,
+        "errors": errors,
+        "warnings": warnings,
+        "suggestions": suggestions,
+        "summary": {
+            "total_steps": len(agent_cards) if isinstance(agent_cards, list) else 0,
+            "has_kpis": bool(card_data.get("kpis")),
+            "has_compliance": bool(card_data.get("compliance_frameworks")),
+            "has_workflow_rules": bool(card_data.get("workflow_rules"))
+        }
+    }
+
+
 @app.get("/api/agent-cards-export", tags=["Agent Cards"])
 async def export_all_agent_cards():
     """

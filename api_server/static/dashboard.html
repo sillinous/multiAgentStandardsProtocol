@@ -3367,31 +3367,47 @@
         // AGENT CARDS TAB FUNCTIONS
         // ========================================
         let allAgentCards = [];
+        let agentCardStats = null;
 
         async function loadAgentCards() {
             const grid = document.getElementById('agentCardsGrid');
             grid.innerHTML = '<div class="loading"><div class="spinner"></div></div>';
 
             try {
-                const response = await fetch(`${API_URL}/api/agent-cards`);
-                if (!response.ok) throw new Error(`API returned ${response.status}`);
-                const data = await response.json();
+                // Fetch cards and stats in parallel
+                const [cardsResponse, statsResponse] = await Promise.all([
+                    fetch(`${API_URL}/api/agent-cards`),
+                    fetch(`${API_URL}/api/agent-cards-stats`)
+                ]);
+
+                if (!cardsResponse.ok) throw new Error(`API returned ${cardsResponse.status}`);
+
+                const data = await cardsResponse.json();
                 allAgentCards = data.agent_cards || [];
 
-                // Calculate stats
-                const totalSteps = allAgentCards.reduce((sum, card) => sum + (card.total_steps || 0), 0);
-                const categories = new Set(allAgentCards.map(c => c.category?.split(' - ')[0] || '').filter(c => c));
-                const integrations = new Set();
-                allAgentCards.forEach(card => {
-                    if (card.integration_summary) {
-                        Object.keys(card.integration_summary).forEach(k => integrations.add(k));
-                    }
-                });
+                // Use stats from API if available
+                if (statsResponse.ok) {
+                    agentCardStats = await statsResponse.json();
+                    document.getElementById('agentCardsTotalCount').textContent = agentCardStats.total_cards;
+                    document.getElementById('agentCardsTotalSteps').textContent = agentCardStats.total_steps;
+                    document.getElementById('agentCardsCategories').textContent = `${agentCardStats.coverage?.categories_covered || 0}/13`;
+                    document.getElementById('agentCardsIntegrations').textContent = agentCardStats.compliance_frameworks?.length || 0;
 
-                document.getElementById('agentCardsTotalCount').textContent = allAgentCards.length;
-                document.getElementById('agentCardsTotalSteps').textContent = totalSteps;
-                document.getElementById('agentCardsCategories').textContent = categories.size;
-                document.getElementById('agentCardsIntegrations').textContent = integrations.size;
+                    // Update the last stat label to say "Compliance Frameworks"
+                    const statsLabels = document.querySelectorAll('#tab-agentcards .main-content > div:first-of-type > div');
+                    if (statsLabels[3]) {
+                        const label = statsLabels[3].querySelector('div:last-child');
+                        if (label) label.textContent = 'Compliance Frameworks';
+                    }
+                } else {
+                    // Fallback to client-side calculation
+                    const totalSteps = allAgentCards.reduce((sum, card) => sum + (card.total_steps || 0), 0);
+                    const categories = new Set(allAgentCards.map(c => c.category?.split(' - ')[0] || '').filter(c => c));
+                    document.getElementById('agentCardsTotalCount').textContent = allAgentCards.length;
+                    document.getElementById('agentCardsTotalSteps').textContent = totalSteps;
+                    document.getElementById('agentCardsCategories').textContent = categories.size;
+                    document.getElementById('agentCardsIntegrations').textContent = '--';
+                }
 
                 renderAgentCardsGrid();
             } catch (error) {
