@@ -434,6 +434,183 @@ INTEGRATION_CATALOG: Dict[str, Dict[str, Any]] = {
         "base_url": "https://hook.us1.make.com",
         "rate_limit": {"operations_per_month": 1000},  # Free tier
         "documentation_url": "https://www.make.com/en/api-documentation"
+    },
+
+    # =========================================================================
+    # CUSTOMER SERVICE
+    # =========================================================================
+
+    "zendesk": {
+        "id": "zendesk",
+        "name": "Zendesk",
+        "category": "customer_service",
+        "type": "rest_api",
+        "description": "Customer service and engagement platform",
+        "capabilities": [
+            "create_ticket", "update_ticket", "read_ticket",
+            "create_user", "read_user", "search_tickets",
+            "add_comment", "read_satisfaction_ratings"
+        ],
+        "auth_type": "oauth2",
+        "required_credentials": ["subdomain", "client_id", "client_secret", "access_token"],
+        "base_url": "https://{subdomain}.zendesk.com/api/v2",
+        "rate_limit": {"requests_per_minute": 700},
+        "documentation_url": "https://developer.zendesk.com/api-reference"
+    },
+
+    "freshdesk": {
+        "id": "freshdesk",
+        "name": "Freshdesk",
+        "category": "customer_service",
+        "type": "rest_api",
+        "description": "Cloud-based customer support software",
+        "capabilities": [
+            "create_ticket", "update_ticket", "read_ticket",
+            "create_contact", "read_contact", "read_agents",
+            "add_note", "read_satisfaction_ratings"
+        ],
+        "auth_type": "api_key",
+        "required_credentials": ["domain", "api_key"],
+        "base_url": "https://{domain}.freshdesk.com/api/v2",
+        "rate_limit": {"requests_per_minute": 50},
+        "documentation_url": "https://developers.freshdesk.com/api/"
+    },
+
+    "intercom": {
+        "id": "intercom",
+        "name": "Intercom",
+        "category": "customer_service",
+        "type": "rest_api",
+        "description": "Customer messaging platform for sales, marketing, and support",
+        "capabilities": [
+            "create_conversation", "read_conversation", "reply_to_conversation",
+            "create_contact", "read_contact", "update_contact",
+            "send_message", "read_events"
+        ],
+        "auth_type": "oauth2",
+        "required_credentials": ["access_token"],
+        "base_url": "https://api.intercom.io",
+        "rate_limit": {"requests_per_minute": 1000},
+        "documentation_url": "https://developers.intercom.com/docs"
+    },
+
+    # =========================================================================
+    # IT SERVICE MANAGEMENT
+    # =========================================================================
+
+    "servicenow": {
+        "id": "servicenow",
+        "name": "ServiceNow",
+        "category": "it_service",
+        "type": "rest_api",
+        "description": "Enterprise IT service management platform",
+        "capabilities": [
+            "create_incident", "update_incident", "read_incident",
+            "create_change_request", "read_change_request",
+            "create_problem", "read_problem",
+            "read_cmdb", "update_cmdb"
+        ],
+        "auth_type": "oauth2",
+        "required_credentials": ["instance_url", "client_id", "client_secret"],
+        "base_url": "{instance_url}/api/now",
+        "rate_limit": {"requests_per_minute": 500},
+        "documentation_url": "https://developer.servicenow.com/dev.do#!/reference"
+    },
+
+    "jira": {
+        "id": "jira",
+        "name": "Atlassian Jira",
+        "category": "it_service",
+        "type": "rest_api",
+        "description": "Issue tracking and project management",
+        "capabilities": [
+            "create_issue", "update_issue", "read_issue",
+            "search_issues", "add_comment", "transition_issue",
+            "read_project", "read_sprint"
+        ],
+        "auth_type": "oauth2",
+        "required_credentials": ["cloud_id", "client_id", "client_secret", "access_token"],
+        "base_url": "https://api.atlassian.com/ex/jira/{cloud_id}/rest/api/3",
+        "rate_limit": {"requests_per_minute": 500},
+        "documentation_url": "https://developer.atlassian.com/cloud/jira/platform/rest/v3/"
+    },
+
+    "pagerduty": {
+        "id": "pagerduty",
+        "name": "PagerDuty",
+        "category": "it_service",
+        "type": "rest_api",
+        "description": "Incident response and on-call management platform",
+        "capabilities": [
+            "create_incident", "update_incident", "read_incident",
+            "acknowledge_incident", "resolve_incident",
+            "read_services", "read_schedules", "read_escalation_policies"
+        ],
+        "auth_type": "api_key",
+        "required_credentials": ["api_key"],
+        "base_url": "https://api.pagerduty.com",
+        "rate_limit": {"requests_per_minute": 900},
+        "documentation_url": "https://developer.pagerduty.com/api-reference/"
+    },
+
+    # =========================================================================
+    # OPERATIONS & SUPPLY CHAIN
+    # =========================================================================
+
+    "sap_ariba": {
+        "id": "sap_ariba",
+        "name": "SAP Ariba",
+        "category": "operations",
+        "type": "rest_api",
+        "description": "Procurement and supply chain collaboration network",
+        "capabilities": [
+            "create_purchase_order", "read_purchase_order",
+            "create_invoice", "read_invoice",
+            "supplier_management", "contract_management",
+            "sourcing_events"
+        ],
+        "auth_type": "oauth2",
+        "required_credentials": ["client_id", "client_secret", "realm"],
+        "base_url": "https://openapi.ariba.com/api",
+        "rate_limit": {"requests_per_minute": 100},
+        "documentation_url": "https://developer.ariba.com/"
+    },
+
+    "coupa": {
+        "id": "coupa",
+        "name": "Coupa",
+        "category": "operations",
+        "type": "rest_api",
+        "description": "Business spend management platform",
+        "capabilities": [
+            "create_requisition", "read_requisition",
+            "create_purchase_order", "read_purchase_order",
+            "create_invoice", "read_invoice",
+            "supplier_management", "expense_management"
+        ],
+        "auth_type": "oauth2",
+        "required_credentials": ["client_id", "client_secret", "instance_url"],
+        "base_url": "{instance_url}/api",
+        "rate_limit": {"requests_per_minute": 300},
+        "documentation_url": "https://compass.coupa.com/en-us/products/product-documentation/integration-technical-documentation/the-coupa-core-api"
+    },
+
+    "oracle_scm": {
+        "id": "oracle_scm",
+        "name": "Oracle SCM Cloud",
+        "category": "operations",
+        "type": "rest_api",
+        "description": "Supply chain management cloud application suite",
+        "capabilities": [
+            "inventory_management", "order_management",
+            "procurement", "manufacturing",
+            "logistics", "demand_planning"
+        ],
+        "auth_type": "oauth2",
+        "required_credentials": ["client_id", "client_secret", "pod_url"],
+        "base_url": "{pod_url}/fscmRestApi/resources",
+        "rate_limit": {"requests_per_minute": 200},
+        "documentation_url": "https://docs.oracle.com/en/cloud/saas/supply-chain-management/index.html"
     }
 }
 
@@ -484,5 +661,8 @@ CATEGORY_SUMMARY = {
     "communication": ["slack", "microsoft_teams", "sendgrid"],
     "ai": ["openai", "anthropic"],
     "storage": ["aws_s3", "google_cloud_storage"],
-    "automation": ["zapier", "make_integromat"]
+    "automation": ["zapier", "make_integromat"],
+    "customer_service": ["zendesk", "freshdesk", "intercom"],
+    "it_service": ["servicenow", "jira", "pagerduty"],
+    "operations": ["sap_ariba", "coupa", "oracle_scm"]
 }
