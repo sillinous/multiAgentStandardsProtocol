@@ -2330,6 +2330,881 @@ async def delete_agent_card(filename: str):
         )
 
 
+class AgentCardCopy(BaseModel):
+    """Request model for copying agent cards."""
+    new_apqc_id: str = Field(..., description="New APQC ID for the copy")
+    new_name: str = Field(..., description="New name for the copy")
+
+
+@app.post("/api/agent-cards/{apqc_code:path}/copy", tags=["Agent Cards"])
+async def copy_agent_card(apqc_code: str, copy_request: AgentCardCopy):
+    """
+    Create a copy of an existing agent card with a new APQC ID.
+
+    This is useful for creating variations of workflows or starting
+    new workflows based on existing templates.
+    """
+    # Get the source card
+    source_card = await get_agent_card(apqc_code)
+
+    # Create the copy
+    new_card = source_card.copy()
+    new_card["apqc_id"] = copy_request.new_apqc_id
+    new_card["apqc_name"] = copy_request.new_name
+    new_card["created_at"] = datetime.utcnow().isoformat()
+    new_card["copied_from"] = apqc_code
+
+    # Update step IDs to reflect new APQC ID
+    new_id_underscore = copy_request.new_apqc_id.replace(".", "_")
+    if "agent_cards" in new_card:
+        for idx, step in enumerate(new_card["agent_cards"]):
+            step["id"] = f"agent_{new_id_underscore}_step{idx + 1}"
+            step["apqc_id"] = copy_request.new_apqc_id
+
+    # Generate filename
+    filename = f"apqc_{new_id_underscore}_{copy_request.new_name.lower().replace(' ', '_')[:30]}.json"
+
+    # Check if already exists
+    filepath = AGENT_CARDS_DIR / filename
+    if filepath.exists():
+        raise HTTPException(
+            status_code=409,
+            detail=f"Agent card with APQC ID '{copy_request.new_apqc_id}' already exists"
+        )
+
+    # Save the copy
+    try:
+        AGENT_CARDS_DIR.mkdir(parents=True, exist_ok=True)
+        with open(filepath, 'w') as f:
+            json.dump(new_card, f, indent=2)
+
+        logger.info(f"Copied agent card {apqc_code} to {copy_request.new_apqc_id}")
+
+        return {
+            "success": True,
+            "message": "Agent card copied successfully",
+            "source_apqc_id": apqc_code,
+            "new_apqc_id": copy_request.new_apqc_id,
+            "new_name": copy_request.new_name,
+            "filename": filename
+        }
+    except Exception as e:
+        logger.error(f"Failed to copy agent card: {e}")
+        raise HTTPException(
+            status_code=500,
+            detail=f"Failed to copy agent card: {str(e)}"
+        )
+
+
+class BulkCopyItem(BaseModel):
+    """Single item in a bulk copy request."""
+    source_apqc_code: str = Field(..., description="Source APQC code to copy from")
+    new_apqc_id: str = Field(..., description="New APQC ID for the copy")
+    new_name: str = Field(..., description="New name for the copy")
+
+
+class BulkCopyRequest(BaseModel):
+    """Request model for bulk copying agent cards."""
+    copies: List[BulkCopyItem] = Field(..., description="List of cards to copy")
+    stop_on_error: bool = Field(default=False, description="Stop processing on first error")
+
+
+@app.post("/api/agent-cards/bulk/copy", tags=["Agent Cards"])
+async def bulk_copy_agent_cards(request: BulkCopyRequest):
+    """
+    Bulk copy multiple agent cards at once.
+
+    Useful for creating entire workflow sets or migrating card collections.
+    """
+    results = []
+    errors = []
+
+    for item in request.copies:
+        try:
+            copy_request = AgentCardCopy(
+                new_apqc_id=item.new_apqc_id,
+                new_name=item.new_name
+            )
+            result = await copy_agent_card(item.source_apqc_code, copy_request)
+            results.append({
+                "source": item.source_apqc_code,
+                "new_apqc_id": item.new_apqc_id,
+                "status": "success",
+                "filename": result.get("filename")
+            })
+        except HTTPException as e:
+            error_entry = {
+                "source": item.source_apqc_code,
+                "new_apqc_id": item.new_apqc_id,
+                "status": "error",
+                "error": e.detail
+            }
+            errors.append(error_entry)
+            results.append(error_entry)
+
+            if request.stop_on_error:
+                break
+        except Exception as e:
+            error_entry = {
+                "source": item.source_apqc_code,
+                "new_apqc_id": item.new_apqc_id,
+                "status": "error",
+                "error": str(e)
+            }
+            errors.append(error_entry)
+            results.append(error_entry)
+
+            if request.stop_on_error:
+                break
+
+    return {
+        "success": len(errors) == 0,
+        "total_requested": len(request.copies),
+        "successful": len(results) - len(errors),
+        "failed": len(errors),
+        "results": results
+    }
+
+
+class CloneWithModifications(BaseModel):
+    """Request model for cloning with inline modifications."""
+    new_apqc_id: str = Field(..., description="New APQC ID for the clone")
+    new_name: str = Field(..., description="New name for the clone")
+    modifications: Dict[str, Any] = Field(default={}, description="Fields to override in the clone")
+    step_modifications: Optional[List[Dict[str, Any]]] = Field(
+        default=None,
+        description="Modifications to apply to specific steps by index"
+    )
+
+
+@app.post("/api/agent-cards/{apqc_code:path}/clone", tags=["Agent Cards"])
+async def clone_agent_card_with_modifications(apqc_code: str, request: CloneWithModifications):
+    """
+    Clone an agent card with inline modifications.
+
+    Unlike copy, this allows modifying fields during the clone operation,
+    useful for creating variations without multiple API calls.
+    """
+    # Get the source card
+    source_card = await get_agent_card(apqc_code)
+
+    # Create base clone
+    new_card = source_card.copy()
+    new_card["apqc_id"] = request.new_apqc_id
+    new_card["apqc_name"] = request.new_name
+    new_card["created_at"] = datetime.utcnow().isoformat()
+    new_card["cloned_from"] = apqc_code
+    new_card["modifications_applied"] = list(request.modifications.keys())
+
+    # Apply top-level modifications
+    for key, value in request.modifications.items():
+        if key not in ["apqc_id", "apqc_name"]:  # Protect identity fields
+            new_card[key] = value
+
+    # Update step IDs
+    new_id_underscore = request.new_apqc_id.replace(".", "_")
+    if "agent_cards" in new_card:
+        for idx, step in enumerate(new_card["agent_cards"]):
+            step["id"] = f"agent_{new_id_underscore}_step{idx + 1}"
+            step["apqc_id"] = request.new_apqc_id
+
+            # Apply step-specific modifications
+            if request.step_modifications:
+                for step_mod in request.step_modifications:
+                    if step_mod.get("step_index") == idx:
+                        for key, value in step_mod.items():
+                            if key != "step_index":
+                                step[key] = value
+
+    # Generate filename
+    filename = f"apqc_{new_id_underscore}_{request.new_name.lower().replace(' ', '_')[:30]}.json"
+    filepath = AGENT_CARDS_DIR / filename
+
+    if filepath.exists():
+        raise HTTPException(
+            status_code=409,
+            detail=f"Agent card with APQC ID '{request.new_apqc_id}' already exists"
+        )
+
+    try:
+        AGENT_CARDS_DIR.mkdir(parents=True, exist_ok=True)
+        with open(filepath, 'w') as f:
+            json.dump(new_card, f, indent=2)
+
+        logger.info(f"Cloned agent card {apqc_code} to {request.new_apqc_id} with modifications")
+
+        return {
+            "success": True,
+            "message": "Agent card cloned with modifications",
+            "source_apqc_id": apqc_code,
+            "new_apqc_id": request.new_apqc_id,
+            "modifications_applied": list(request.modifications.keys()),
+            "filename": filename
+        }
+    except Exception as e:
+        logger.error(f"Failed to clone agent card: {e}")
+        raise HTTPException(
+            status_code=500,
+            detail=f"Failed to clone agent card: {str(e)}"
+        )
+
+
+# Version tracking storage (in production, use database)
+CARD_VERSION_HISTORY: Dict[str, List[Dict[str, Any]]] = {}
+VERSIONS_DIR = Path("data/agent_card_versions")
+
+
+@app.post("/api/agent-cards/{apqc_code:path}/versions", tags=["Agent Cards - Versioning"])
+async def create_agent_card_version(apqc_code: str, description: str = ""):
+    """
+    Create a versioned snapshot of an agent card.
+
+    Saves the current state as a version that can be restored later.
+    """
+    # Get current card
+    current_card = await get_agent_card(apqc_code)
+
+    # Initialize version history for this card if needed
+    if apqc_code not in CARD_VERSION_HISTORY:
+        CARD_VERSION_HISTORY[apqc_code] = []
+
+    # Create version entry
+    version_number = len(CARD_VERSION_HISTORY[apqc_code]) + 1
+    version_entry = {
+        "version": version_number,
+        "timestamp": datetime.utcnow().isoformat(),
+        "description": description or f"Version {version_number}",
+        "snapshot": current_card.copy()
+    }
+
+    CARD_VERSION_HISTORY[apqc_code].append(version_entry)
+
+    # Also persist to file system
+    VERSIONS_DIR.mkdir(parents=True, exist_ok=True)
+    version_file = VERSIONS_DIR / f"{apqc_code.replace('.', '_')}_v{version_number}.json"
+    with open(version_file, 'w') as f:
+        json.dump(version_entry, f, indent=2)
+
+    logger.info(f"Created version {version_number} for {apqc_code}")
+
+    return {
+        "success": True,
+        "apqc_id": apqc_code,
+        "version": version_number,
+        "timestamp": version_entry["timestamp"],
+        "description": version_entry["description"]
+    }
+
+
+@app.get("/api/agent-cards/{apqc_code:path}/versions", tags=["Agent Cards - Versioning"])
+async def list_agent_card_versions(apqc_code: str):
+    """
+    List all versions of an agent card.
+    """
+    # Load from file system if not in memory
+    if apqc_code not in CARD_VERSION_HISTORY:
+        CARD_VERSION_HISTORY[apqc_code] = []
+        # Try to load from files
+        if VERSIONS_DIR.exists():
+            pattern = f"{apqc_code.replace('.', '_')}_v*.json"
+            for version_file in VERSIONS_DIR.glob(pattern):
+                try:
+                    with open(version_file, 'r') as f:
+                        version_entry = json.load(f)
+                        CARD_VERSION_HISTORY[apqc_code].append(version_entry)
+                except Exception:
+                    pass
+            # Sort by version number
+            CARD_VERSION_HISTORY[apqc_code].sort(key=lambda x: x.get("version", 0))
+
+    versions = CARD_VERSION_HISTORY.get(apqc_code, [])
+
+    return {
+        "apqc_id": apqc_code,
+        "total_versions": len(versions),
+        "versions": [
+            {
+                "version": v["version"],
+                "timestamp": v["timestamp"],
+                "description": v["description"]
+            }
+            for v in versions
+        ]
+    }
+
+
+@app.get("/api/agent-cards/{apqc_code:path}/versions/{version}", tags=["Agent Cards - Versioning"])
+async def get_agent_card_version(apqc_code: str, version: int):
+    """
+    Get a specific version of an agent card.
+    """
+    # Ensure versions are loaded
+    await list_agent_card_versions(apqc_code)
+
+    versions = CARD_VERSION_HISTORY.get(apqc_code, [])
+    for v in versions:
+        if v["version"] == version:
+            return v
+
+    raise HTTPException(
+        status_code=404,
+        detail=f"Version {version} not found for agent card {apqc_code}"
+    )
+
+
+@app.post("/api/agent-cards/{apqc_code:path}/versions/{version}/restore", tags=["Agent Cards - Versioning"])
+async def restore_agent_card_version(apqc_code: str, version: int, create_backup: bool = True):
+    """
+    Restore an agent card to a previous version.
+
+    Optionally creates a backup of the current state before restoring.
+    """
+    # Get the version to restore
+    version_data = await get_agent_card_version(apqc_code, version)
+
+    # Create backup of current state if requested
+    if create_backup:
+        await create_agent_card_version(apqc_code, f"Backup before restoring to v{version}")
+
+    # Find and update the current card file
+    card_found = False
+    for file in AGENT_CARDS_DIR.iterdir():
+        if file.suffix == '.json':
+            try:
+                with open(file, 'r') as f:
+                    card = json.load(f)
+                if card.get("apqc_id") == apqc_code:
+                    # Restore from snapshot
+                    restored_card = version_data["snapshot"].copy()
+                    restored_card["restored_from_version"] = version
+                    restored_card["restored_at"] = datetime.utcnow().isoformat()
+
+                    with open(file, 'w') as f:
+                        json.dump(restored_card, f, indent=2)
+
+                    card_found = True
+                    break
+            except Exception:
+                pass
+
+    if not card_found:
+        raise HTTPException(
+            status_code=404,
+            detail=f"Agent card {apqc_code} not found"
+        )
+
+    logger.info(f"Restored {apqc_code} to version {version}")
+
+    return {
+        "success": True,
+        "apqc_id": apqc_code,
+        "restored_to_version": version,
+        "backup_created": create_backup
+    }
+
+
+# Template Management
+TEMPLATES_DIR = Path("data/agent_card_templates")
+
+
+class TemplateCreate(BaseModel):
+    """Request model for creating a template."""
+    template_name: str = Field(..., description="Name for the template")
+    description: str = Field(default="", description="Template description")
+    category: str = Field(default="general", description="Template category")
+    tags: List[str] = Field(default=[], description="Tags for searchability")
+
+
+@app.post("/api/agent-cards/{apqc_code:path}/template", tags=["Agent Cards - Templates"])
+async def create_template_from_card(apqc_code: str, template: TemplateCreate):
+    """
+    Create a reusable template from an existing agent card.
+
+    Templates strip instance-specific data and can be used to quickly
+    create new cards with consistent structure.
+    """
+    # Get the source card
+    source_card = await get_agent_card(apqc_code)
+
+    # Create template (remove instance-specific fields)
+    template_data = source_card.copy()
+    template_data.pop("apqc_id", None)
+    template_data.pop("created_at", None)
+    template_data.pop("copied_from", None)
+    template_data.pop("cloned_from", None)
+
+    # Add template metadata
+    template_entry = {
+        "template_id": f"tpl_{template.template_name.lower().replace(' ', '_')}",
+        "template_name": template.template_name,
+        "description": template.description,
+        "category": template.category,
+        "tags": template.tags,
+        "created_at": datetime.utcnow().isoformat(),
+        "source_apqc_id": apqc_code,
+        "card_template": template_data
+    }
+
+    # Save template
+    TEMPLATES_DIR.mkdir(parents=True, exist_ok=True)
+    template_file = TEMPLATES_DIR / f"{template_entry['template_id']}.json"
+
+    if template_file.exists():
+        raise HTTPException(
+            status_code=409,
+            detail=f"Template '{template.template_name}' already exists"
+        )
+
+    with open(template_file, 'w') as f:
+        json.dump(template_entry, f, indent=2)
+
+    logger.info(f"Created template '{template.template_name}' from {apqc_code}")
+
+    return {
+        "success": True,
+        "template_id": template_entry["template_id"],
+        "template_name": template.template_name,
+        "source_apqc_id": apqc_code
+    }
+
+
+@app.get("/api/templates", tags=["Agent Cards - Templates"])
+async def list_templates(category: Optional[str] = None, tag: Optional[str] = None):
+    """
+    List all available agent card templates.
+
+    Optionally filter by category or tag.
+    """
+    templates = []
+
+    if TEMPLATES_DIR.exists():
+        for template_file in TEMPLATES_DIR.glob("*.json"):
+            try:
+                with open(template_file, 'r') as f:
+                    template = json.load(f)
+
+                    # Apply filters
+                    if category and template.get("category") != category:
+                        continue
+                    if tag and tag not in template.get("tags", []):
+                        continue
+
+                    templates.append({
+                        "template_id": template["template_id"],
+                        "template_name": template["template_name"],
+                        "description": template.get("description", ""),
+                        "category": template.get("category", "general"),
+                        "tags": template.get("tags", []),
+                        "source_apqc_id": template.get("source_apqc_id")
+                    })
+            except Exception:
+                pass
+
+    return {
+        "total": len(templates),
+        "filters": {"category": category, "tag": tag},
+        "templates": templates
+    }
+
+
+@app.get("/api/templates/{template_id}", tags=["Agent Cards - Templates"])
+async def get_template(template_id: str):
+    """
+    Get a specific template by ID.
+    """
+    template_file = TEMPLATES_DIR / f"{template_id}.json"
+
+    if not template_file.exists():
+        raise HTTPException(
+            status_code=404,
+            detail=f"Template '{template_id}' not found"
+        )
+
+    with open(template_file, 'r') as f:
+        return json.load(f)
+
+
+class CardFromTemplate(BaseModel):
+    """Request model for creating a card from template."""
+    apqc_id: str = Field(..., description="APQC ID for the new card")
+    apqc_name: str = Field(..., description="Name for the new card")
+    overrides: Dict[str, Any] = Field(default={}, description="Field overrides")
+
+
+@app.post("/api/templates/{template_id}/instantiate", tags=["Agent Cards - Templates"])
+async def create_card_from_template(template_id: str, request: CardFromTemplate):
+    """
+    Create a new agent card from a template.
+
+    The template provides the base structure, and you can override
+    specific fields as needed.
+    """
+    # Get template
+    template = await get_template(template_id)
+
+    # Create new card from template
+    new_card = template["card_template"].copy()
+    new_card["apqc_id"] = request.apqc_id
+    new_card["apqc_name"] = request.apqc_name
+    new_card["created_at"] = datetime.utcnow().isoformat()
+    new_card["created_from_template"] = template_id
+
+    # Apply overrides
+    for key, value in request.overrides.items():
+        if key not in ["apqc_id", "apqc_name"]:
+            new_card[key] = value
+
+    # Update step IDs
+    new_id_underscore = request.apqc_id.replace(".", "_")
+    if "agent_cards" in new_card:
+        for idx, step in enumerate(new_card["agent_cards"]):
+            step["id"] = f"agent_{new_id_underscore}_step{idx + 1}"
+            step["apqc_id"] = request.apqc_id
+
+    # Generate filename and save
+    filename = f"apqc_{new_id_underscore}_{request.apqc_name.lower().replace(' ', '_')[:30]}.json"
+    filepath = AGENT_CARDS_DIR / filename
+
+    if filepath.exists():
+        raise HTTPException(
+            status_code=409,
+            detail=f"Agent card with APQC ID '{request.apqc_id}' already exists"
+        )
+
+    AGENT_CARDS_DIR.mkdir(parents=True, exist_ok=True)
+    with open(filepath, 'w') as f:
+        json.dump(new_card, f, indent=2)
+
+    logger.info(f"Created card {request.apqc_id} from template {template_id}")
+
+    return {
+        "success": True,
+        "apqc_id": request.apqc_id,
+        "apqc_name": request.apqc_name,
+        "template_id": template_id,
+        "filename": filename
+    }
+
+
+@app.delete("/api/templates/{template_id}", tags=["Agent Cards - Templates"])
+async def delete_template(template_id: str):
+    """
+    Delete a template.
+    """
+    template_file = TEMPLATES_DIR / f"{template_id}.json"
+
+    if not template_file.exists():
+        raise HTTPException(
+            status_code=404,
+            detail=f"Template '{template_id}' not found"
+        )
+
+    template_file.unlink()
+    logger.info(f"Deleted template {template_id}")
+
+    return {"success": True, "deleted_template": template_id}
+
+
+# Diff Comparison
+@app.get("/api/agent-cards/compare", tags=["Agent Cards - Comparison"])
+async def compare_agent_cards(apqc_code_1: str, apqc_code_2: str):
+    """
+    Compare two agent cards and show differences.
+
+    Useful for reviewing changes or comparing workflow variations.
+    """
+    card1 = await get_agent_card(apqc_code_1)
+    card2 = await get_agent_card(apqc_code_2)
+
+    def deep_diff(d1: Dict, d2: Dict, path: str = "") -> List[Dict]:
+        """Recursively find differences between two dictionaries."""
+        differences = []
+
+        all_keys = set(d1.keys()) | set(d2.keys())
+
+        for key in all_keys:
+            current_path = f"{path}.{key}" if path else key
+
+            if key not in d1:
+                differences.append({
+                    "path": current_path,
+                    "type": "added",
+                    "value": d2[key]
+                })
+            elif key not in d2:
+                differences.append({
+                    "path": current_path,
+                    "type": "removed",
+                    "value": d1[key]
+                })
+            elif d1[key] != d2[key]:
+                if isinstance(d1[key], dict) and isinstance(d2[key], dict):
+                    differences.extend(deep_diff(d1[key], d2[key], current_path))
+                elif isinstance(d1[key], list) and isinstance(d2[key], list):
+                    if len(d1[key]) != len(d2[key]):
+                        differences.append({
+                            "path": current_path,
+                            "type": "modified",
+                            "old_count": len(d1[key]),
+                            "new_count": len(d2[key])
+                        })
+                    else:
+                        for i, (item1, item2) in enumerate(zip(d1[key], d2[key])):
+                            if item1 != item2:
+                                if isinstance(item1, dict) and isinstance(item2, dict):
+                                    differences.extend(deep_diff(item1, item2, f"{current_path}[{i}]"))
+                                else:
+                                    differences.append({
+                                        "path": f"{current_path}[{i}]",
+                                        "type": "modified",
+                                        "old_value": item1,
+                                        "new_value": item2
+                                    })
+                else:
+                    differences.append({
+                        "path": current_path,
+                        "type": "modified",
+                        "old_value": d1[key],
+                        "new_value": d2[key]
+                    })
+
+        return differences
+
+    differences = deep_diff(card1, card2)
+
+    return {
+        "card_1": apqc_code_1,
+        "card_2": apqc_code_2,
+        "total_differences": len(differences),
+        "differences": differences,
+        "summary": {
+            "added": len([d for d in differences if d["type"] == "added"]),
+            "removed": len([d for d in differences if d["type"] == "removed"]),
+            "modified": len([d for d in differences if d["type"] == "modified"])
+        }
+    }
+
+
+@app.get("/api/agent-cards/{apqc_code:path}/versions/{v1}/compare/{v2}", tags=["Agent Cards - Versioning"])
+async def compare_card_versions(apqc_code: str, v1: int, v2: int):
+    """
+    Compare two versions of the same agent card.
+    """
+    version1 = await get_agent_card_version(apqc_code, v1)
+    version2 = await get_agent_card_version(apqc_code, v2)
+
+    # Reuse the compare logic
+    def deep_diff(d1: Dict, d2: Dict, path: str = "") -> List[Dict]:
+        differences = []
+        all_keys = set(d1.keys()) | set(d2.keys())
+
+        for key in all_keys:
+            current_path = f"{path}.{key}" if path else key
+
+            if key not in d1:
+                differences.append({"path": current_path, "type": "added", "value": d2[key]})
+            elif key not in d2:
+                differences.append({"path": current_path, "type": "removed", "value": d1[key]})
+            elif d1[key] != d2[key]:
+                if isinstance(d1[key], dict) and isinstance(d2[key], dict):
+                    differences.extend(deep_diff(d1[key], d2[key], current_path))
+                else:
+                    differences.append({
+                        "path": current_path,
+                        "type": "modified",
+                        "old_value": d1[key],
+                        "new_value": d2[key]
+                    })
+
+        return differences
+
+    differences = deep_diff(version1["snapshot"], version2["snapshot"])
+
+    return {
+        "apqc_id": apqc_code,
+        "version_1": v1,
+        "version_2": v2,
+        "timestamp_1": version1["timestamp"],
+        "timestamp_2": version2["timestamp"],
+        "total_differences": len(differences),
+        "differences": differences
+    }
+
+
+# Archive/Restore Functionality
+ARCHIVE_DIR = Path("data/agent_card_archive")
+
+
+@app.post("/api/agent-cards/{apqc_code:path}/archive", tags=["Agent Cards - Archive"])
+async def archive_agent_card(apqc_code: str, reason: str = ""):
+    """
+    Archive an agent card (soft delete).
+
+    The card is moved to the archive and can be restored later.
+    """
+    # Find and load the card
+    card_file = None
+    card_data = None
+
+    for file in AGENT_CARDS_DIR.iterdir():
+        if file.suffix == '.json':
+            try:
+                with open(file, 'r') as f:
+                    card = json.load(f)
+                if card.get("apqc_id") == apqc_code:
+                    card_file = file
+                    card_data = card
+                    break
+            except Exception:
+                pass
+
+    if not card_file:
+        raise HTTPException(
+            status_code=404,
+            detail=f"Agent card {apqc_code} not found"
+        )
+
+    # Add archive metadata
+    card_data["archived_at"] = datetime.utcnow().isoformat()
+    card_data["archive_reason"] = reason
+    card_data["original_filename"] = card_file.name
+
+    # Save to archive
+    ARCHIVE_DIR.mkdir(parents=True, exist_ok=True)
+    archive_file = ARCHIVE_DIR / card_file.name
+
+    with open(archive_file, 'w') as f:
+        json.dump(card_data, f, indent=2)
+
+    # Remove from active directory
+    card_file.unlink()
+
+    logger.info(f"Archived agent card {apqc_code}")
+
+    return {
+        "success": True,
+        "apqc_id": apqc_code,
+        "archived_at": card_data["archived_at"],
+        "reason": reason
+    }
+
+
+@app.get("/api/agent-cards/archived", tags=["Agent Cards - Archive"])
+async def list_archived_cards():
+    """
+    List all archived agent cards.
+    """
+    archived = []
+
+    if ARCHIVE_DIR.exists():
+        for file in ARCHIVE_DIR.glob("*.json"):
+            try:
+                with open(file, 'r') as f:
+                    card = json.load(f)
+                    archived.append({
+                        "apqc_id": card.get("apqc_id"),
+                        "apqc_name": card.get("apqc_name"),
+                        "archived_at": card.get("archived_at"),
+                        "archive_reason": card.get("archive_reason", ""),
+                        "filename": file.name
+                    })
+            except Exception:
+                pass
+
+    return {
+        "total": len(archived),
+        "archived_cards": archived
+    }
+
+
+@app.post("/api/agent-cards/archived/{apqc_code:path}/restore", tags=["Agent Cards - Archive"])
+async def restore_archived_card(apqc_code: str):
+    """
+    Restore an archived agent card.
+    """
+    # Find in archive
+    archived_file = None
+    card_data = None
+
+    if ARCHIVE_DIR.exists():
+        for file in ARCHIVE_DIR.glob("*.json"):
+            try:
+                with open(file, 'r') as f:
+                    card = json.load(f)
+                if card.get("apqc_id") == apqc_code:
+                    archived_file = file
+                    card_data = card
+                    break
+            except Exception:
+                pass
+
+    if not archived_file:
+        raise HTTPException(
+            status_code=404,
+            detail=f"Archived card {apqc_code} not found"
+        )
+
+    # Remove archive metadata
+    original_filename = card_data.pop("original_filename", archived_file.name)
+    card_data.pop("archived_at", None)
+    card_data.pop("archive_reason", None)
+    card_data["restored_at"] = datetime.utcnow().isoformat()
+
+    # Restore to active directory
+    AGENT_CARDS_DIR.mkdir(parents=True, exist_ok=True)
+    restore_path = AGENT_CARDS_DIR / original_filename
+
+    # Check for conflicts
+    if restore_path.exists():
+        raise HTTPException(
+            status_code=409,
+            detail=f"A card already exists at {original_filename}. Delete or rename it first."
+        )
+
+    with open(restore_path, 'w') as f:
+        json.dump(card_data, f, indent=2)
+
+    # Remove from archive
+    archived_file.unlink()
+
+    logger.info(f"Restored agent card {apqc_code} from archive")
+
+    return {
+        "success": True,
+        "apqc_id": apqc_code,
+        "restored_to": original_filename
+    }
+
+
+@app.delete("/api/agent-cards/archived/{apqc_code:path}", tags=["Agent Cards - Archive"])
+async def permanently_delete_archived_card(apqc_code: str):
+    """
+    Permanently delete an archived agent card.
+
+    This action cannot be undone.
+    """
+    if ARCHIVE_DIR.exists():
+        for file in ARCHIVE_DIR.glob("*.json"):
+            try:
+                with open(file, 'r') as f:
+                    card = json.load(f)
+                if card.get("apqc_id") == apqc_code:
+                    file.unlink()
+                    logger.info(f"Permanently deleted archived card {apqc_code}")
+                    return {
+                        "success": True,
+                        "apqc_id": apqc_code,
+                        "permanently_deleted": True
+                    }
+            except Exception:
+                pass
+
+    raise HTTPException(
+        status_code=404,
+        detail=f"Archived card {apqc_code} not found"
+    )
+
+
 @app.get("/api/integrations", tags=["Integrations"])
 async def list_integrations():
     """
