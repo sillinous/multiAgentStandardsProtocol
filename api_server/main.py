@@ -4620,6 +4620,954 @@ async def get_dashboard_metrics():
 
 
 # ============================================================================
+# Agent Execution Engine
+# ============================================================================
+
+# Execution queue and scheduler storage
+EXECUTION_QUEUE: List[Dict[str, Any]] = []
+SCHEDULED_JOBS: Dict[str, Dict[str, Any]] = {}
+EXECUTION_HISTORY: List[Dict[str, Any]] = []
+
+
+class ExecutionRequest(BaseModel):
+    """Request to execute an agent or workflow."""
+    agent_id: Optional[str] = None
+    workflow_id: Optional[str] = None
+    input_data: Dict[str, Any] = Field(default={})
+    priority: int = Field(default=5, ge=1, le=10, description="1=highest, 10=lowest")
+    scheduled_at: Optional[str] = Field(default=None, description="ISO datetime for scheduled execution")
+    callback_url: Optional[str] = Field(default=None, description="Webhook URL for completion notification")
+    timeout_seconds: int = Field(default=300, ge=30, le=3600)
+    retry_count: int = Field(default=0, ge=0, le=5)
+    tags: List[str] = Field(default=[])
+
+
+class ExecutionStatus(BaseModel):
+    """Status of an execution."""
+    execution_id: str
+    status: str  # queued, running, completed, failed, cancelled
+    progress: float = 0.0  # 0-100
+    current_step: Optional[str] = None
+    started_at: Optional[str] = None
+    completed_at: Optional[str] = None
+    result: Optional[Dict[str, Any]] = None
+    error: Optional[str] = None
+
+
+@app.post("/api/executions", tags=["Execution Engine"])
+async def create_execution(request: ExecutionRequest, background_tasks: BackgroundTasks):
+    """
+    Queue an agent or workflow for execution.
+
+    Supports immediate execution, scheduled execution, and priority queuing.
+    """
+    execution_id = f"exec_{uuid4().hex[:12]}"
+
+    execution = {
+        "execution_id": execution_id,
+        "agent_id": request.agent_id,
+        "workflow_id": request.workflow_id,
+        "input_data": request.input_data,
+        "priority": request.priority,
+        "status": "queued",
+        "progress": 0.0,
+        "current_step": None,
+        "queued_at": datetime.utcnow().isoformat(),
+        "scheduled_at": request.scheduled_at,
+        "started_at": None,
+        "completed_at": None,
+        "callback_url": request.callback_url,
+        "timeout_seconds": request.timeout_seconds,
+        "retry_count": request.retry_count,
+        "retries_remaining": request.retry_count,
+        "tags": request.tags,
+        "result": None,
+        "error": None
+    }
+
+    # Add to queue (sorted by priority)
+    EXECUTION_QUEUE.append(execution)
+    EXECUTION_QUEUE.sort(key=lambda x: x["priority"])
+
+    logger.info(f"Created execution {execution_id} for agent={request.agent_id} workflow={request.workflow_id}")
+
+    return {
+        "execution_id": execution_id,
+        "status": "queued",
+        "position": EXECUTION_QUEUE.index(execution) + 1,
+        "estimated_start": None  # Would calculate based on queue
+    }
+
+
+@app.get("/api/executions", tags=["Execution Engine"])
+async def list_executions(
+    status: Optional[str] = None,
+    agent_id: Optional[str] = None,
+    limit: int = 50,
+    include_history: bool = False
+):
+    """
+    List executions in the queue and optionally history.
+    """
+    results = []
+
+    # Add queued executions
+    for exec in EXECUTION_QUEUE:
+        if status and exec["status"] != status:
+            continue
+        if agent_id and exec.get("agent_id") != agent_id:
+            continue
+        results.append(exec)
+
+    # Add history if requested
+    if include_history:
+        for exec in EXECUTION_HISTORY:
+            if status and exec["status"] != status:
+                continue
+            if agent_id and exec.get("agent_id") != agent_id:
+                continue
+            results.append(exec)
+
+    return {
+        "total": len(results),
+        "executions": results[:limit],
+        "queue_length": len(EXECUTION_QUEUE)
+    }
+
+
+@app.get("/api/executions/{execution_id}", tags=["Execution Engine"])
+async def get_execution_status(execution_id: str):
+    """
+    Get detailed status of a specific execution.
+    """
+    # Check queue
+    for exec in EXECUTION_QUEUE:
+        if exec["execution_id"] == execution_id:
+            return ExecutionStatus(**exec)
+
+    # Check history
+    for exec in EXECUTION_HISTORY:
+        if exec["execution_id"] == execution_id:
+            return ExecutionStatus(**exec)
+
+    raise HTTPException(status_code=404, detail=f"Execution {execution_id} not found")
+
+
+@app.post("/api/executions/{execution_id}/cancel", tags=["Execution Engine"])
+async def cancel_execution(execution_id: str):
+    """
+    Cancel a queued or running execution.
+    """
+    for i, exec in enumerate(EXECUTION_QUEUE):
+        if exec["execution_id"] == execution_id:
+            exec["status"] = "cancelled"
+            exec["completed_at"] = datetime.utcnow().isoformat()
+            EXECUTION_HISTORY.append(EXECUTION_QUEUE.pop(i))
+            return {"success": True, "execution_id": execution_id, "status": "cancelled"}
+
+    raise HTTPException(status_code=404, detail=f"Execution {execution_id} not found in queue")
+
+
+@app.post("/api/executions/{execution_id}/retry", tags=["Execution Engine"])
+async def retry_execution(execution_id: str):
+    """
+    Retry a failed execution.
+    """
+    for exec in EXECUTION_HISTORY:
+        if exec["execution_id"] == execution_id and exec["status"] == "failed":
+            # Create new execution based on failed one
+            new_id = f"exec_{uuid4().hex[:12]}"
+            new_exec = exec.copy()
+            new_exec["execution_id"] = new_id
+            new_exec["status"] = "queued"
+            new_exec["progress"] = 0.0
+            new_exec["queued_at"] = datetime.utcnow().isoformat()
+            new_exec["started_at"] = None
+            new_exec["completed_at"] = None
+            new_exec["error"] = None
+            new_exec["retry_of"] = execution_id
+
+            EXECUTION_QUEUE.append(new_exec)
+            EXECUTION_QUEUE.sort(key=lambda x: x["priority"])
+
+            return {"success": True, "new_execution_id": new_id, "original_id": execution_id}
+
+    raise HTTPException(status_code=404, detail=f"Failed execution {execution_id} not found")
+
+
+class ScheduleRequest(BaseModel):
+    """Request to schedule recurring execution."""
+    name: str
+    agent_id: Optional[str] = None
+    workflow_id: Optional[str] = None
+    input_data: Dict[str, Any] = Field(default={})
+    cron_expression: str = Field(..., description="Cron expression (e.g., '0 9 * * *' for 9am daily)")
+    timezone: str = Field(default="UTC")
+    enabled: bool = Field(default=True)
+
+
+@app.post("/api/schedules", tags=["Execution Engine"])
+async def create_schedule(request: ScheduleRequest):
+    """
+    Create a scheduled/recurring execution.
+    """
+    schedule_id = f"sched_{uuid4().hex[:8]}"
+
+    schedule = {
+        "schedule_id": schedule_id,
+        "name": request.name,
+        "agent_id": request.agent_id,
+        "workflow_id": request.workflow_id,
+        "input_data": request.input_data,
+        "cron_expression": request.cron_expression,
+        "timezone": request.timezone,
+        "enabled": request.enabled,
+        "created_at": datetime.utcnow().isoformat(),
+        "last_run": None,
+        "next_run": None,  # Would calculate from cron
+        "run_count": 0
+    }
+
+    SCHEDULED_JOBS[schedule_id] = schedule
+
+    return {"success": True, "schedule_id": schedule_id, "schedule": schedule}
+
+
+@app.get("/api/schedules", tags=["Execution Engine"])
+async def list_schedules():
+    """
+    List all scheduled jobs.
+    """
+    return {
+        "total": len(SCHEDULED_JOBS),
+        "schedules": list(SCHEDULED_JOBS.values())
+    }
+
+
+@app.delete("/api/schedules/{schedule_id}", tags=["Execution Engine"])
+async def delete_schedule(schedule_id: str):
+    """
+    Delete a scheduled job.
+    """
+    if schedule_id not in SCHEDULED_JOBS:
+        raise HTTPException(status_code=404, detail=f"Schedule {schedule_id} not found")
+
+    del SCHEDULED_JOBS[schedule_id]
+    return {"success": True, "deleted": schedule_id}
+
+
+# ============================================================================
+# Search & Discovery
+# ============================================================================
+
+class SearchRequest(BaseModel):
+    """Full-text search request."""
+    query: str = Field(..., min_length=2)
+    types: List[str] = Field(default=["agents", "cards", "workflows", "templates"])
+    filters: Dict[str, Any] = Field(default={})
+    limit: int = Field(default=20, ge=1, le=100)
+    offset: int = Field(default=0, ge=0)
+
+
+@app.post("/api/search", tags=["Search & Discovery"])
+async def full_text_search(request: SearchRequest, db: Session = Depends(get_db)):
+    """
+    Full-text search across agents, cards, workflows, and templates.
+
+    Supports filtering by type, category, tags, and more.
+    """
+    results = []
+    query_lower = request.query.lower()
+
+    # Search agents
+    if "agents" in request.types:
+        agents = db.query(Agent).all()
+        for agent in agents:
+            score = 0
+            if query_lower in agent.name.lower():
+                score += 10
+            if agent.description and query_lower in agent.description.lower():
+                score += 5
+            if agent.apqc_id and query_lower in agent.apqc_id.lower():
+                score += 8
+
+            if score > 0:
+                results.append({
+                    "type": "agent",
+                    "id": agent.id,
+                    "name": agent.name,
+                    "description": agent.description,
+                    "apqc_id": agent.apqc_id,
+                    "score": score
+                })
+
+    # Search agent cards
+    if "cards" in request.types and AGENT_CARDS_DIR.exists():
+        for file in AGENT_CARDS_DIR.glob("*.json"):
+            try:
+                with open(file, 'r') as f:
+                    card = json.load(f)
+                score = 0
+                card_name = card.get("apqc_name", "")
+                card_id = card.get("apqc_id", "")
+
+                if query_lower in card_name.lower():
+                    score += 10
+                if query_lower in card_id.lower():
+                    score += 8
+                if query_lower in str(card).lower():
+                    score += 2
+
+                if score > 0:
+                    results.append({
+                        "type": "card",
+                        "id": card_id,
+                        "name": card_name,
+                        "filename": file.name,
+                        "score": score
+                    })
+            except Exception:
+                pass
+
+    # Search templates
+    if "templates" in request.types and TEMPLATES_DIR.exists():
+        for file in TEMPLATES_DIR.glob("*.json"):
+            try:
+                with open(file, 'r') as f:
+                    template = json.load(f)
+                score = 0
+                tpl_name = template.get("template_name", "")
+
+                if query_lower in tpl_name.lower():
+                    score += 10
+                if query_lower in template.get("description", "").lower():
+                    score += 5
+
+                if score > 0:
+                    results.append({
+                        "type": "template",
+                        "id": template.get("template_id"),
+                        "name": tpl_name,
+                        "category": template.get("category"),
+                        "score": score
+                    })
+            except Exception:
+                pass
+
+    # Sort by score
+    results.sort(key=lambda x: x["score"], reverse=True)
+
+    # Apply pagination
+    paginated = results[request.offset:request.offset + request.limit]
+
+    return {
+        "query": request.query,
+        "total": len(results),
+        "offset": request.offset,
+        "limit": request.limit,
+        "results": paginated
+    }
+
+
+@app.get("/api/search/suggestions", tags=["Search & Discovery"])
+async def get_search_suggestions(q: str, limit: int = 10, db: Session = Depends(get_db)):
+    """
+    Get autocomplete suggestions for search.
+    """
+    if len(q) < 2:
+        return {"suggestions": []}
+
+    suggestions = []
+    q_lower = q.lower()
+
+    # Get agent name suggestions
+    agents = db.query(Agent).filter(Agent.name.ilike(f"%{q}%")).limit(limit).all()
+    for agent in agents:
+        suggestions.append({
+            "text": agent.name,
+            "type": "agent",
+            "id": agent.id
+        })
+
+    # Get APQC ID suggestions
+    if AGENT_CARDS_DIR.exists():
+        for file in AGENT_CARDS_DIR.glob("*.json"):
+            try:
+                with open(file, 'r') as f:
+                    card = json.load(f)
+                if q_lower in card.get("apqc_id", "").lower():
+                    suggestions.append({
+                        "text": f"{card.get('apqc_id')} - {card.get('apqc_name', '')}",
+                        "type": "card",
+                        "id": card.get("apqc_id")
+                    })
+            except Exception:
+                pass
+
+    return {"suggestions": suggestions[:limit]}
+
+
+@app.get("/api/discover/categories", tags=["Search & Discovery"])
+async def discover_categories(db: Session = Depends(get_db)):
+    """
+    Get all available categories with counts.
+    """
+    categories = {}
+
+    # Count agents by APQC category
+    agents = db.query(Agent).all()
+    for agent in agents:
+        if agent.apqc_id:
+            cat = agent.apqc_id.split(".")[0] if "." in agent.apqc_id else "other"
+            categories[cat] = categories.get(cat, 0) + 1
+
+    # Map to APQC names
+    apqc_names = {
+        "1": "Develop Vision and Strategy",
+        "2": "Develop and Manage Products and Services",
+        "3": "Market and Sell Products and Services",
+        "4": "Deliver Physical Products",
+        "5": "Deliver Services",
+        "6": "Manage Customer Service",
+        "7": "Develop and Manage Human Capital",
+        "8": "Manage Information Technology",
+        "9": "Manage Financial Resources",
+        "10": "Acquire, Construct, and Manage Assets",
+        "11": "Manage Enterprise Risk, Compliance, Remediation, and Resiliency",
+        "12": "Manage External Relationships",
+        "13": "Develop and Manage Business Capabilities"
+    }
+
+    return {
+        "categories": [
+            {
+                "id": cat_id,
+                "name": apqc_names.get(cat_id, f"Category {cat_id}"),
+                "count": count
+            }
+            for cat_id, count in sorted(categories.items())
+        ]
+    }
+
+
+@app.get("/api/discover/recommendations", tags=["Search & Discovery"])
+async def get_recommendations(
+    based_on: Optional[str] = None,
+    category: Optional[str] = None,
+    limit: int = 5,
+    db: Session = Depends(get_db)
+):
+    """
+    Get smart recommendations for agents and workflows.
+
+    Can be based on a specific agent/card or category.
+    """
+    recommendations = []
+
+    if based_on:
+        # Find related agents in the same APQC category
+        base_parts = based_on.split(".")
+        if len(base_parts) >= 2:
+            prefix = f"{base_parts[0]}.{base_parts[1]}"
+            agents = db.query(Agent).filter(Agent.apqc_id.like(f"{prefix}%")).limit(limit).all()
+            for agent in agents:
+                if agent.apqc_id != based_on:
+                    recommendations.append({
+                        "type": "agent",
+                        "id": agent.id,
+                        "name": agent.name,
+                        "apqc_id": agent.apqc_id,
+                        "reason": f"Related to {based_on}"
+                    })
+
+    elif category:
+        # Get top agents in category
+        agents = db.query(Agent).filter(Agent.apqc_id.like(f"{category}.%")).limit(limit).all()
+        for agent in agents:
+            recommendations.append({
+                "type": "agent",
+                "id": agent.id,
+                "name": agent.name,
+                "apqc_id": agent.apqc_id,
+                "reason": f"Top in category {category}"
+            })
+
+    else:
+        # Get popular/recent agents
+        agents = db.query(Agent).order_by(Agent.created_at.desc()).limit(limit).all()
+        for agent in agents:
+            recommendations.append({
+                "type": "agent",
+                "id": agent.id,
+                "name": agent.name,
+                "apqc_id": agent.apqc_id,
+                "reason": "Recently added"
+            })
+
+    return {
+        "recommendations": recommendations,
+        "based_on": based_on,
+        "category": category
+    }
+
+
+# ============================================================================
+# Workflow Builder
+# ============================================================================
+
+# In-memory workflow definitions storage
+WORKFLOW_DEFINITIONS: Dict[str, Dict[str, Any]] = {}
+
+
+class WorkflowStep(BaseModel):
+    """A step in a workflow definition."""
+    step_id: str
+    name: str
+    agent_id: Optional[str] = None
+    card_id: Optional[str] = None
+    action: str = Field(default="execute")
+    inputs: Dict[str, Any] = Field(default={})
+    outputs: List[str] = Field(default=[])
+    dependencies: List[str] = Field(default=[], description="Step IDs this step depends on")
+    condition: Optional[str] = Field(default=None, description="Condition expression for conditional execution")
+    retry_policy: Optional[Dict[str, Any]] = None
+    timeout_seconds: int = Field(default=300)
+    position: Optional[Dict[str, int]] = Field(default=None, description="Visual position {x, y}")
+
+
+class WorkflowDefinition(BaseModel):
+    """Complete workflow definition."""
+    name: str
+    description: str = ""
+    steps: List[WorkflowStep]
+    triggers: List[Dict[str, Any]] = Field(default=[])
+    variables: Dict[str, Any] = Field(default={})
+    error_handling: Dict[str, Any] = Field(default={"strategy": "fail_fast"})
+    tags: List[str] = Field(default=[])
+
+
+@app.post("/api/workflow-builder/definitions", tags=["Workflow Builder"])
+async def create_workflow_definition(definition: WorkflowDefinition):
+    """
+    Create a new workflow definition.
+
+    The definition includes steps, dependencies, and visual layout information.
+    """
+    workflow_id = f"wf_def_{uuid4().hex[:10]}"
+
+    # Validate step dependencies
+    step_ids = {step.step_id for step in definition.steps}
+    for step in definition.steps:
+        for dep in step.dependencies:
+            if dep not in step_ids:
+                raise HTTPException(
+                    status_code=400,
+                    detail=f"Step '{step.step_id}' depends on non-existent step '{dep}'"
+                )
+
+    # Check for circular dependencies
+    def has_cycle(step_id: str, visited: set, path: set) -> bool:
+        visited.add(step_id)
+        path.add(step_id)
+        step = next((s for s in definition.steps if s.step_id == step_id), None)
+        if step:
+            for dep in step.dependencies:
+                if dep not in visited:
+                    if has_cycle(dep, visited, path):
+                        return True
+                elif dep in path:
+                    return True
+        path.remove(step_id)
+        return False
+
+    for step in definition.steps:
+        if has_cycle(step.step_id, set(), set()):
+            raise HTTPException(status_code=400, detail="Circular dependency detected in workflow")
+
+    workflow_def = {
+        "workflow_id": workflow_id,
+        "name": definition.name,
+        "description": definition.description,
+        "steps": [step.dict() for step in definition.steps],
+        "triggers": definition.triggers,
+        "variables": definition.variables,
+        "error_handling": definition.error_handling,
+        "tags": definition.tags,
+        "created_at": datetime.utcnow().isoformat(),
+        "updated_at": datetime.utcnow().isoformat(),
+        "version": 1
+    }
+
+    WORKFLOW_DEFINITIONS[workflow_id] = workflow_def
+
+    return {"success": True, "workflow_id": workflow_id, "definition": workflow_def}
+
+
+@app.get("/api/workflow-builder/definitions", tags=["Workflow Builder"])
+async def list_workflow_definitions(tag: Optional[str] = None):
+    """
+    List all workflow definitions.
+    """
+    definitions = list(WORKFLOW_DEFINITIONS.values())
+
+    if tag:
+        definitions = [d for d in definitions if tag in d.get("tags", [])]
+
+    return {
+        "total": len(definitions),
+        "definitions": definitions
+    }
+
+
+@app.get("/api/workflow-builder/definitions/{workflow_id}", tags=["Workflow Builder"])
+async def get_workflow_definition(workflow_id: str):
+    """
+    Get a specific workflow definition.
+    """
+    if workflow_id not in WORKFLOW_DEFINITIONS:
+        raise HTTPException(status_code=404, detail=f"Workflow definition {workflow_id} not found")
+
+    return WORKFLOW_DEFINITIONS[workflow_id]
+
+
+@app.put("/api/workflow-builder/definitions/{workflow_id}", tags=["Workflow Builder"])
+async def update_workflow_definition(workflow_id: str, definition: WorkflowDefinition):
+    """
+    Update a workflow definition.
+    """
+    if workflow_id not in WORKFLOW_DEFINITIONS:
+        raise HTTPException(status_code=404, detail=f"Workflow definition {workflow_id} not found")
+
+    existing = WORKFLOW_DEFINITIONS[workflow_id]
+
+    updated = {
+        "workflow_id": workflow_id,
+        "name": definition.name,
+        "description": definition.description,
+        "steps": [step.dict() for step in definition.steps],
+        "triggers": definition.triggers,
+        "variables": definition.variables,
+        "error_handling": definition.error_handling,
+        "tags": definition.tags,
+        "created_at": existing["created_at"],
+        "updated_at": datetime.utcnow().isoformat(),
+        "version": existing.get("version", 1) + 1
+    }
+
+    WORKFLOW_DEFINITIONS[workflow_id] = updated
+
+    return {"success": True, "workflow_id": workflow_id, "version": updated["version"]}
+
+
+@app.delete("/api/workflow-builder/definitions/{workflow_id}", tags=["Workflow Builder"])
+async def delete_workflow_definition(workflow_id: str):
+    """
+    Delete a workflow definition.
+    """
+    if workflow_id not in WORKFLOW_DEFINITIONS:
+        raise HTTPException(status_code=404, detail=f"Workflow definition {workflow_id} not found")
+
+    del WORKFLOW_DEFINITIONS[workflow_id]
+    return {"success": True, "deleted": workflow_id}
+
+
+@app.post("/api/workflow-builder/definitions/{workflow_id}/validate", tags=["Workflow Builder"])
+async def validate_workflow_definition(workflow_id: str, db: Session = Depends(get_db)):
+    """
+    Validate a workflow definition.
+
+    Checks that all referenced agents exist, dependencies are valid, etc.
+    """
+    if workflow_id not in WORKFLOW_DEFINITIONS:
+        raise HTTPException(status_code=404, detail=f"Workflow definition {workflow_id} not found")
+
+    definition = WORKFLOW_DEFINITIONS[workflow_id]
+    issues = []
+
+    for step in definition["steps"]:
+        # Check agent exists
+        if step.get("agent_id"):
+            agent = db.query(Agent).filter(Agent.id == step["agent_id"]).first()
+            if not agent:
+                issues.append({
+                    "step": step["step_id"],
+                    "severity": "error",
+                    "message": f"Agent '{step['agent_id']}' not found"
+                })
+
+        # Check card exists
+        if step.get("card_id") and AGENT_CARDS_DIR.exists():
+            card_found = False
+            for file in AGENT_CARDS_DIR.glob("*.json"):
+                try:
+                    with open(file, 'r') as f:
+                        card = json.load(f)
+                    if card.get("apqc_id") == step["card_id"]:
+                        card_found = True
+                        break
+                except Exception:
+                    pass
+            if not card_found:
+                issues.append({
+                    "step": step["step_id"],
+                    "severity": "warning",
+                    "message": f"Agent card '{step['card_id']}' not found"
+                })
+
+    return {
+        "valid": len([i for i in issues if i["severity"] == "error"]) == 0,
+        "issues": issues,
+        "workflow_id": workflow_id
+    }
+
+
+@app.post("/api/workflow-builder/definitions/{workflow_id}/execute", tags=["Workflow Builder"])
+async def execute_workflow_definition(workflow_id: str, input_data: Dict[str, Any] = {}):
+    """
+    Execute a workflow from its definition.
+    """
+    if workflow_id not in WORKFLOW_DEFINITIONS:
+        raise HTTPException(status_code=404, detail=f"Workflow definition {workflow_id} not found")
+
+    execution_id = f"exec_{uuid4().hex[:12]}"
+    definition = WORKFLOW_DEFINITIONS[workflow_id]
+
+    execution = {
+        "execution_id": execution_id,
+        "workflow_id": workflow_id,
+        "workflow_name": definition["name"],
+        "input_data": input_data,
+        "status": "queued",
+        "progress": 0.0,
+        "current_step": None,
+        "queued_at": datetime.utcnow().isoformat(),
+        "started_at": None,
+        "completed_at": None,
+        "step_results": {},
+        "result": None,
+        "error": None
+    }
+
+    EXECUTION_QUEUE.append(execution)
+
+    return {
+        "execution_id": execution_id,
+        "workflow_id": workflow_id,
+        "status": "queued"
+    }
+
+
+# ============================================================================
+# Analytics & Reporting
+# ============================================================================
+
+@app.get("/api/analytics/overview", tags=["Analytics & Reporting"])
+async def get_analytics_overview(db: Session = Depends(get_db)):
+    """
+    Get high-level analytics overview.
+    """
+    total_agents = db.query(Agent).count()
+    total_workflows = db.query(Workflow).count()
+    total_executions = len(EXECUTION_HISTORY)
+
+    # Calculate success rate
+    successful = len([e for e in EXECUTION_HISTORY if e.get("status") == "completed"])
+    success_rate = (successful / total_executions * 100) if total_executions > 0 else 0
+
+    return {
+        "summary": {
+            "total_agents": total_agents,
+            "total_workflows": total_workflows,
+            "total_workflow_definitions": len(WORKFLOW_DEFINITIONS),
+            "total_executions": total_executions,
+            "queued_executions": len(EXECUTION_QUEUE),
+            "scheduled_jobs": len(SCHEDULED_JOBS),
+            "success_rate": round(success_rate, 2)
+        },
+        "generated_at": datetime.utcnow().isoformat()
+    }
+
+
+@app.get("/api/analytics/executions", tags=["Analytics & Reporting"])
+async def get_execution_analytics(
+    period: str = "24h",
+    group_by: str = "hour"
+):
+    """
+    Get execution analytics over time.
+
+    Periods: 1h, 6h, 24h, 7d, 30d
+    Group by: minute, hour, day
+    """
+    # Would calculate from execution history
+    # Simulated data for now
+    data_points = []
+    now = datetime.utcnow()
+
+    for i in range(24):
+        data_points.append({
+            "timestamp": (now.replace(hour=i, minute=0, second=0)).isoformat(),
+            "total": len([e for e in EXECUTION_HISTORY]) // 24 + i % 5,
+            "successful": len([e for e in EXECUTION_HISTORY if e.get("status") == "completed"]) // 24,
+            "failed": len([e for e in EXECUTION_HISTORY if e.get("status") == "failed"]) // 24
+        })
+
+    return {
+        "period": period,
+        "group_by": group_by,
+        "data": data_points,
+        "summary": {
+            "total": sum(d["total"] for d in data_points),
+            "successful": sum(d["successful"] for d in data_points),
+            "failed": sum(d["failed"] for d in data_points)
+        }
+    }
+
+
+@app.get("/api/analytics/agents/performance", tags=["Analytics & Reporting"])
+async def get_agent_performance(limit: int = 10, db: Session = Depends(get_db)):
+    """
+    Get performance metrics for top agents.
+    """
+    agents = db.query(Agent).limit(limit).all()
+
+    performance = []
+    for agent in agents:
+        agent_executions = [e for e in EXECUTION_HISTORY if e.get("agent_id") == agent.id]
+        successful = len([e for e in agent_executions if e.get("status") == "completed"])
+
+        performance.append({
+            "agent_id": agent.id,
+            "name": agent.name,
+            "apqc_id": agent.apqc_id,
+            "total_executions": len(agent_executions),
+            "successful": successful,
+            "failed": len(agent_executions) - successful,
+            "success_rate": (successful / len(agent_executions) * 100) if agent_executions else 0,
+            "avg_duration_seconds": 0  # Would calculate from actual execution times
+        })
+
+    performance.sort(key=lambda x: x["total_executions"], reverse=True)
+
+    return {
+        "agents": performance,
+        "generated_at": datetime.utcnow().isoformat()
+    }
+
+
+@app.get("/api/analytics/workflows/performance", tags=["Analytics & Reporting"])
+async def get_workflow_performance():
+    """
+    Get performance metrics for workflows.
+    """
+    workflow_stats = {}
+
+    for exec in EXECUTION_HISTORY:
+        wf_id = exec.get("workflow_id")
+        if wf_id:
+            if wf_id not in workflow_stats:
+                workflow_stats[wf_id] = {
+                    "workflow_id": wf_id,
+                    "name": WORKFLOW_DEFINITIONS.get(wf_id, {}).get("name", wf_id),
+                    "total": 0,
+                    "successful": 0,
+                    "failed": 0,
+                    "cancelled": 0
+                }
+            workflow_stats[wf_id]["total"] += 1
+            if exec.get("status") == "completed":
+                workflow_stats[wf_id]["successful"] += 1
+            elif exec.get("status") == "failed":
+                workflow_stats[wf_id]["failed"] += 1
+            elif exec.get("status") == "cancelled":
+                workflow_stats[wf_id]["cancelled"] += 1
+
+    return {
+        "workflows": list(workflow_stats.values()),
+        "generated_at": datetime.utcnow().isoformat()
+    }
+
+
+class ReportRequest(BaseModel):
+    """Request to generate a report."""
+    report_type: str = Field(..., description="Type: execution_summary, agent_usage, workflow_analysis")
+    period: str = Field(default="7d")
+    format: str = Field(default="json", description="json or csv")
+    filters: Dict[str, Any] = Field(default={})
+
+
+@app.post("/api/reports/generate", tags=["Analytics & Reporting"])
+async def generate_report(request: ReportRequest, db: Session = Depends(get_db)):
+    """
+    Generate a detailed report.
+    """
+    report_id = f"rpt_{uuid4().hex[:8]}"
+
+    if request.report_type == "execution_summary":
+        data = {
+            "total_executions": len(EXECUTION_HISTORY),
+            "successful": len([e for e in EXECUTION_HISTORY if e.get("status") == "completed"]),
+            "failed": len([e for e in EXECUTION_HISTORY if e.get("status") == "failed"]),
+            "cancelled": len([e for e in EXECUTION_HISTORY if e.get("status") == "cancelled"]),
+            "executions": EXECUTION_HISTORY[-100:]  # Last 100
+        }
+    elif request.report_type == "agent_usage":
+        agents = db.query(Agent).all()
+        data = {
+            "total_agents": len(agents),
+            "agents": [
+                {
+                    "id": a.id,
+                    "name": a.name,
+                    "apqc_id": a.apqc_id,
+                    "execution_count": len([e for e in EXECUTION_HISTORY if e.get("agent_id") == a.id])
+                }
+                for a in agents
+            ]
+        }
+    elif request.report_type == "workflow_analysis":
+        data = {
+            "total_definitions": len(WORKFLOW_DEFINITIONS),
+            "definitions": list(WORKFLOW_DEFINITIONS.values()),
+            "execution_stats": await get_workflow_performance()
+        }
+    else:
+        raise HTTPException(status_code=400, detail=f"Unknown report type: {request.report_type}")
+
+    report = {
+        "report_id": report_id,
+        "report_type": request.report_type,
+        "period": request.period,
+        "generated_at": datetime.utcnow().isoformat(),
+        "data": data
+    }
+
+    return report
+
+
+@app.get("/api/analytics/real-time", tags=["Analytics & Reporting"])
+async def get_real_time_stats():
+    """
+    Get real-time statistics for live dashboards.
+    """
+    return {
+        "queue": {
+            "length": len(EXECUTION_QUEUE),
+            "oldest_wait_seconds": 0,  # Would calculate
+            "by_priority": {}
+        },
+        "active_executions": len([e for e in EXECUTION_QUEUE if e.get("status") == "running"]),
+        "completed_last_hour": len([
+            e for e in EXECUTION_HISTORY
+            if e.get("completed_at") and
+            datetime.fromisoformat(e["completed_at"]) > datetime.utcnow().replace(hour=datetime.utcnow().hour - 1)
+        ]),
+        "error_rate_last_hour": 0,  # Would calculate
+        "timestamp": datetime.utcnow().isoformat()
+    }
+
+
+# ============================================================================
 # Run Server
 # ============================================================================
 
