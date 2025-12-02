@@ -1,0 +1,307 @@
+{
+  "apqc_id": "8.1.1.1",
+  "apqc_name": "Develop and maintain budgets",
+  "category": "8.0 - Manage Financial Resources",
+  "description": "End-to-end budget planning and forecasting workflow from strategic planning alignment through budget monitoring, including rolling forecasts, variance analysis, and budget adjustments.",
+  "orchestration_pattern": "sequential",
+  "total_steps": 7,
+  "estimated_duration_seconds": 5184000,
+  "compliance_frameworks": ["SOX", "GAAP", "IFRS", "SEC"],
+  "data_retention_days": 2555,
+
+  "agent_cards": [
+    {
+      "id": "agent_8_1_1_1_step1",
+      "apqc_id": "8.1.1.1",
+      "step_number": 1,
+      "step_name": "Budget Planning Setup",
+      "description": "Configure budget structure, calendar, and planning parameters",
+      "purpose": "Establish budget framework",
+      "business_value": "Aligned budget process with strategy",
+
+      "capabilities": ["calendar_setup", "hierarchy_configuration", "template_creation", "assumption_setting", "workflow_definition"],
+
+      "input_schema": [
+        {"name": "fiscal_year", "type": "string", "required": true},
+        {"name": "budget_structure", "type": "object", "required": true},
+        {"name": "planning_assumptions", "type": "object", "required": true},
+        {"name": "strategic_priorities", "type": "array", "required": true}
+      ],
+
+      "output_schema": [
+        {"name": "budget_calendar", "type": "object", "required": true},
+        {"name": "budget_templates", "type": "array", "required": true},
+        {"name": "planning_guidelines", "type": "object", "required": true},
+        {"name": "approval_workflow", "type": "object", "required": true}
+      ],
+
+      "required_integrations": [
+        {"system": "EPM", "type": "bidirectional", "protocol": "API", "examples": ["Anaplan", "Oracle Hyperion", "SAP BPC", "Workday Adaptive"]},
+        {"system": "ERP", "type": "read", "protocol": "API"},
+        {"system": "Strategy Platform", "type": "read", "protocol": "API"}
+      ],
+
+      "decision_rules": [
+        {"rule_id": "DR-BP-001", "name": "Template Validation", "condition": "template.accounts != chart_of_accounts", "action": "require_alignment", "priority": 1}
+      ],
+
+      "error_handlers": [
+        {"error_type": "hierarchy_mismatch", "severity": "high", "action": "synchronize_with_erp", "notification": ["finance_admin"]}
+      ]
+    },
+
+    {
+      "id": "agent_8_1_1_1_step2",
+      "apqc_id": "8.1.1.1",
+      "step_number": 2,
+      "step_name": "Revenue Planning",
+      "description": "Develop revenue forecasts and sales budgets",
+      "purpose": "Project revenue streams",
+      "business_value": "Realistic revenue targets",
+
+      "capabilities": ["revenue_modeling", "pipeline_analysis", "pricing_scenarios", "market_assumptions", "customer_forecasting"],
+
+      "input_schema": [
+        {"name": "historical_revenue", "type": "object", "required": true},
+        {"name": "sales_pipeline", "type": "array", "required": true},
+        {"name": "market_assumptions", "type": "object", "required": true},
+        {"name": "pricing_strategy", "type": "object", "required": false}
+      ],
+
+      "output_schema": [
+        {"name": "revenue_budget", "type": "object", "required": true},
+        {"name": "revenue_by_product", "type": "object", "required": true},
+        {"name": "revenue_by_region", "type": "object", "required": true},
+        {"name": "revenue_scenarios", "type": "array", "required": true}
+      ],
+
+      "required_integrations": [
+        {"system": "EPM", "type": "bidirectional", "protocol": "API"},
+        {"system": "CRM", "type": "read", "protocol": "API", "examples": ["Salesforce", "HubSpot", "Microsoft Dynamics"]},
+        {"system": "Sales Analytics", "type": "read", "protocol": "API"}
+      ],
+
+      "decision_rules": [
+        {"rule_id": "DR-BP-010", "name": "Growth Rate Check", "condition": "growth_rate > historical_max * 1.5", "action": "require_justification", "priority": 1}
+      ],
+
+      "error_handlers": [
+        {"error_type": "pipeline_data_stale", "severity": "medium", "action": "refresh_crm_data", "notification": ["sales_ops"]}
+      ]
+    },
+
+    {
+      "id": "agent_8_1_1_1_step3",
+      "apqc_id": "8.1.1.1",
+      "step_number": 3,
+      "step_name": "Expense Budgeting",
+      "description": "Develop departmental and cost center budgets",
+      "purpose": "Control operational costs",
+      "business_value": "Optimized resource allocation",
+
+      "capabilities": ["departmental_budgeting", "headcount_planning", "opex_modeling", "capex_planning", "cost_allocation"],
+
+      "input_schema": [
+        {"name": "cost_centers", "type": "array", "required": true},
+        {"name": "headcount_plan", "type": "object", "required": true},
+        {"name": "expense_categories", "type": "array", "required": true},
+        {"name": "budget_targets", "type": "object", "required": false}
+      ],
+
+      "output_schema": [
+        {"name": "expense_budget", "type": "object", "required": true},
+        {"name": "budget_by_department", "type": "object", "required": true},
+        {"name": "headcount_budget", "type": "object", "required": true},
+        {"name": "capex_budget", "type": "object", "required": true}
+      ],
+
+      "required_integrations": [
+        {"system": "EPM", "type": "bidirectional", "protocol": "API"},
+        {"system": "HRIS", "type": "read", "protocol": "API"},
+        {"system": "Procurement", "type": "read", "protocol": "API"}
+      ],
+
+      "decision_rules": [
+        {"rule_id": "DR-BP-020", "name": "Budget Limit", "condition": "department_budget > target * 1.1", "action": "require_executive_approval", "priority": 1},
+        {"rule_id": "DR-BP-021", "name": "Headcount Change", "condition": "headcount_change > 10%", "action": "require_hr_review", "priority": 1}
+      ],
+
+      "error_handlers": [
+        {"error_type": "allocation_imbalance", "severity": "medium", "action": "rebalance_allocation", "notification": ["fp&a_analyst"]}
+      ]
+    },
+
+    {
+      "id": "agent_8_1_1_1_step4",
+      "apqc_id": "8.1.1.1",
+      "step_number": 4,
+      "step_name": "Budget Consolidation",
+      "description": "Consolidate budgets across entities and eliminate intercompany",
+      "purpose": "Unified financial plan",
+      "business_value": "Accurate consolidated budget",
+
+      "capabilities": ["multi_entity_consolidation", "currency_translation", "intercompany_elimination", "minority_interest", "segment_reporting"],
+
+      "input_schema": [
+        {"name": "entity_budgets", "type": "array", "required": true},
+        {"name": "consolidation_rules", "type": "object", "required": true},
+        {"name": "fx_rates", "type": "object", "required": true}
+      ],
+
+      "output_schema": [
+        {"name": "consolidated_budget", "type": "object", "required": true},
+        {"name": "elimination_entries", "type": "array", "required": true},
+        {"name": "segment_budgets", "type": "object", "required": true},
+        {"name": "fx_impact", "type": "object", "required": true}
+      ],
+
+      "required_integrations": [
+        {"system": "EPM", "type": "bidirectional", "protocol": "API"},
+        {"system": "Consolidation Tool", "type": "bidirectional", "protocol": "API", "examples": ["BlackLine", "OneStream"]},
+        {"system": "FX System", "type": "read", "protocol": "API"}
+      ],
+
+      "decision_rules": [
+        {"rule_id": "DR-BP-030", "name": "Intercompany Mismatch", "condition": "ic_variance > tolerance", "action": "flag_for_resolution", "priority": 1}
+      ],
+
+      "error_handlers": [
+        {"error_type": "consolidation_error", "severity": "high", "action": "manual_review_required", "notification": ["corporate_controller"]}
+      ]
+    },
+
+    {
+      "id": "agent_8_1_1_1_step5",
+      "apqc_id": "8.1.1.1",
+      "step_number": 5,
+      "step_name": "Budget Review and Approval",
+      "description": "Review, challenge, and approve budgets",
+      "purpose": "Governance and alignment",
+      "business_value": "Validated financial plan",
+
+      "capabilities": ["budget_presentation", "variance_analysis", "scenario_comparison", "approval_workflow", "documentation"],
+
+      "input_schema": [
+        {"name": "consolidated_budget", "type": "object", "required": true},
+        {"name": "prior_year_actuals", "type": "object", "required": true},
+        {"name": "approval_hierarchy", "type": "array", "required": true}
+      ],
+
+      "output_schema": [
+        {"name": "approved_budget", "type": "object", "required": true},
+        {"name": "approval_status", "type": "object", "required": true},
+        {"name": "revision_requests", "type": "array", "required": false},
+        {"name": "board_package", "type": "object", "required": true}
+      ],
+
+      "required_integrations": [
+        {"system": "EPM", "type": "bidirectional", "protocol": "API"},
+        {"system": "Workflow", "type": "bidirectional", "protocol": "API"},
+        {"system": "Document Management", "type": "bidirectional", "protocol": "API"}
+      ],
+
+      "decision_rules": [
+        {"rule_id": "DR-BP-040", "name": "Material Variance", "condition": "variance_to_target > 15%", "action": "require_cfo_approval", "priority": 1}
+      ],
+
+      "error_handlers": [
+        {"error_type": "approval_timeout", "severity": "medium", "action": "escalate_to_cfo", "notification": ["fp&a_director"]}
+      ]
+    },
+
+    {
+      "id": "agent_8_1_1_1_step6",
+      "apqc_id": "8.1.1.1",
+      "step_number": 6,
+      "step_name": "Rolling Forecast",
+      "description": "Maintain rolling forecasts and update projections",
+      "purpose": "Dynamic planning",
+      "business_value": "Agile financial planning",
+
+      "capabilities": ["rolling_forecast", "driver_based_planning", "trend_analysis", "forecast_accuracy", "reforecasting"],
+
+      "input_schema": [
+        {"name": "current_actuals", "type": "object", "required": true},
+        {"name": "forecast_horizon", "type": "string", "required": true},
+        {"name": "business_drivers", "type": "array", "required": true}
+      ],
+
+      "output_schema": [
+        {"name": "rolling_forecast", "type": "object", "required": true},
+        {"name": "forecast_vs_budget", "type": "object", "required": true},
+        {"name": "forecast_accuracy", "type": "object", "required": true},
+        {"name": "driver_impacts", "type": "array", "required": true}
+      ],
+
+      "required_integrations": [
+        {"system": "EPM", "type": "bidirectional", "protocol": "API"},
+        {"system": "ERP", "type": "read", "protocol": "API"},
+        {"system": "BI Platform", "type": "read", "protocol": "API", "examples": ["Tableau", "Power BI", "Looker"]}
+      ],
+
+      "decision_rules": [
+        {"rule_id": "DR-BP-050", "name": "Forecast Drift", "condition": "forecast_variance > 10%", "action": "trigger_reforecast_review", "priority": 1}
+      ],
+
+      "error_handlers": [
+        {"error_type": "actuals_delayed", "severity": "medium", "action": "use_estimates", "notification": ["fp&a_analyst"]}
+      ]
+    },
+
+    {
+      "id": "agent_8_1_1_1_step7",
+      "apqc_id": "8.1.1.1",
+      "step_number": 7,
+      "step_name": "Budget Monitoring and Variance Analysis",
+      "description": "Monitor budget performance and analyze variances",
+      "purpose": "Financial control",
+      "business_value": "Proactive budget management",
+
+      "capabilities": ["variance_reporting", "trend_monitoring", "exception_alerting", "corrective_actions", "performance_dashboards"],
+
+      "input_schema": [
+        {"name": "period", "type": "object", "required": true},
+        {"name": "actuals", "type": "object", "required": true},
+        {"name": "budget", "type": "object", "required": true}
+      ],
+
+      "output_schema": [
+        {"name": "variance_report", "type": "object", "required": true},
+        {"name": "variance_explanations", "type": "array", "required": true},
+        {"name": "corrective_actions", "type": "array", "required": false},
+        {"name": "ytd_performance", "type": "object", "required": true}
+      ],
+
+      "required_integrations": [
+        {"system": "EPM", "type": "read", "protocol": "API"},
+        {"system": "ERP", "type": "read", "protocol": "API"},
+        {"system": "BI Platform", "type": "bidirectional", "protocol": "API"}
+      ],
+
+      "decision_rules": [
+        {"rule_id": "DR-BP-060", "name": "Adverse Variance", "condition": "unfavorable_variance > threshold", "action": "require_explanation", "priority": 1},
+        {"rule_id": "DR-BP-061", "name": "Spending Freeze", "condition": "ytd_variance > 20%", "action": "initiate_cost_review", "priority": 1}
+      ],
+
+      "error_handlers": [
+        {"error_type": "data_reconciliation_issue", "severity": "high", "action": "investigate_source", "notification": ["controller", "fp&a_manager"]}
+      ]
+    }
+  ],
+
+  "integration_summary": {
+    "epm_platforms": ["Anaplan", "Oracle Hyperion", "SAP BPC", "Workday Adaptive", "OneStream"],
+    "erp_systems": ["SAP", "Oracle", "Microsoft Dynamics", "NetSuite"],
+    "bi_tools": ["Tableau", "Power BI", "Looker", "Qlik"],
+    "consolidation": ["BlackLine", "OneStream", "Trintech"]
+  },
+
+  "kpis": [
+    {"name": "Budget Accuracy", "description": "Budget vs actual variance", "target": "< 5%", "measurement": "abs(budget - actual) / budget"},
+    {"name": "Forecast Accuracy", "description": "Rolling forecast vs actual", "target": "< 3%", "measurement": "abs(forecast - actual) / actual"},
+    {"name": "Budget Cycle Time", "description": "Days to complete budget process", "target": "< 60 days", "measurement": "approval_date - kickoff_date"},
+    {"name": "Planning Efficiency", "description": "FTEs per $1B revenue planned", "target": "< 5", "measurement": "fp&a_ftes / (revenue / 1B)"},
+    {"name": "Variance Explanation Rate", "description": "Variances with explanations", "target": "> 95%", "measurement": "explained_variances / total_variances"},
+    {"name": "Reforecast Frequency", "description": "Forecast updates per year", "target": ">= 4", "measurement": "forecast_cycles / year"}
+  ]
+}

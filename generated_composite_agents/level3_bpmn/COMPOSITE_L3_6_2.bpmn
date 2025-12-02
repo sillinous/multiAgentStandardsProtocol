@@ -1,0 +1,180 @@
+<?xml version='1.0' encoding='utf-8'?>
+<bpmn:definitions xmlns:bpmn="http://www.omg.org/spec/BPMN/20100524/MODEL" xmlns:bpmndi="http://www.omg.org/spec/BPMN/20100524/DI" xmlns:dc="http://www.omg.org/spec/DD/20100524/DC" id="Definitions_L3_6_2" targetNamespace="http://apqc.org/composite/level3/6.2" exporter="APQC Agentic Platform v3.0" exporterVersion="3.0.0">
+  <bpmn:process id="Process_L3_6_2" name="Level 3: 6.2" isExecutable="true">
+    <bpmn:documentation>
+Level 3 Composite Process
+Manage Customer Service
+APQC ID: 6.2
+
+Orchestrates 16 child agents:
+  1. 6.2.1.2: Schedule agents
+  2. 6.2.1.1: Staff service centers
+  3. 6.2.1.5: Review resolutions
+  4. 6.2.1.8: Report resolutions
+  5. 6.2.2.8: Report satisfaction
+  6. 6.2.1.6: Optimize resolutions
+  7. 6.2.2.4: Support social media
+  8. 6.2.1.4: Manage service queues
+  9. 6.2.2.5: Review satisfaction
+  10. 6.2.2.2: Support email channel
+  11. 6.2.1.7: Document resolutions
+  12. 6.2.2.1: Support phone channel
+  13. 6.2.2.6: Optimize satisfaction
+  14. 6.2.1.3: Monitor call volumes
+  15. 6.2.2.7: Document satisfaction
+  16. 6.2.2.3: Support chat channel
+
+
+Orchestration Pattern: Sequential Workflow (Pipeline)
+Standards: BPMN 2.0, A2A Protocol
+
+Generated: 2025-11-18T01:38:33.572085
+Status: Production Ready
+</bpmn:documentation>
+    <bpmn:startEvent id="Start_L3_6_2" name="Start Composite">
+      <bpmn:outgoing>Flow_start_to_child1</bpmn:outgoing>
+    </bpmn:startEvent>
+    <bpmn:callActivity id="CallActivity_L3_child1" name="6.2.1.2: Schedule agents" calledElement="Process_6_2_1_2">
+      <bpmn:incoming>Flow_start_to_child1</bpmn:incoming>
+      <bpmn:outgoing>Flow_child1_to_child2</bpmn:outgoing>
+    </bpmn:callActivity>
+    <bpmn:callActivity id="CallActivity_L3_child2" name="6.2.1.1: Staff service centers" calledElement="Process_6_2_1_1">
+      <bpmn:incoming>Flow_child1_to_child2</bpmn:incoming>
+      <bpmn:outgoing>Flow_child2_to_child3</bpmn:outgoing>
+    </bpmn:callActivity>
+    <bpmn:callActivity id="CallActivity_L3_child3" name="6.2.1.5: Review resolutions" calledElement="Process_6_2_1_5">
+      <bpmn:incoming>Flow_child2_to_child3</bpmn:incoming>
+      <bpmn:outgoing>Flow_child3_to_child4</bpmn:outgoing>
+    </bpmn:callActivity>
+    <bpmn:callActivity id="CallActivity_L3_child4" name="6.2.1.8: Report resolutions" calledElement="Process_6_2_1_8">
+      <bpmn:incoming>Flow_child3_to_child4</bpmn:incoming>
+      <bpmn:outgoing>Flow_child4_to_child5</bpmn:outgoing>
+    </bpmn:callActivity>
+    <bpmn:callActivity id="CallActivity_L3_child5" name="6.2.2.8: Report satisfaction" calledElement="Process_6_2_2_8">
+      <bpmn:incoming>Flow_child4_to_child5</bpmn:incoming>
+      <bpmn:outgoing>Flow_child5_to_child6</bpmn:outgoing>
+    </bpmn:callActivity>
+    <bpmn:callActivity id="CallActivity_L3_child6" name="6.2.1.6: Optimize resolutions" calledElement="Process_6_2_1_6">
+      <bpmn:incoming>Flow_child5_to_child6</bpmn:incoming>
+      <bpmn:outgoing>Flow_child6_to_child7</bpmn:outgoing>
+    </bpmn:callActivity>
+    <bpmn:callActivity id="CallActivity_L3_child7" name="6.2.2.4: Support social media" calledElement="Process_6_2_2_4">
+      <bpmn:incoming>Flow_child6_to_child7</bpmn:incoming>
+      <bpmn:outgoing>Flow_child7_to_child8</bpmn:outgoing>
+    </bpmn:callActivity>
+    <bpmn:callActivity id="CallActivity_L3_child8" name="6.2.1.4: Manage service queues" calledElement="Process_6_2_1_4">
+      <bpmn:incoming>Flow_child7_to_child8</bpmn:incoming>
+      <bpmn:outgoing>Flow_child8_to_child9</bpmn:outgoing>
+    </bpmn:callActivity>
+    <bpmn:callActivity id="CallActivity_L3_child9" name="6.2.2.5: Review satisfaction" calledElement="Process_6_2_2_5">
+      <bpmn:incoming>Flow_child8_to_child9</bpmn:incoming>
+      <bpmn:outgoing>Flow_child9_to_child10</bpmn:outgoing>
+    </bpmn:callActivity>
+    <bpmn:callActivity id="CallActivity_L3_child10" name="6.2.2.2: Support email channel" calledElement="Process_6_2_2_2">
+      <bpmn:incoming>Flow_child9_to_child10</bpmn:incoming>
+      <bpmn:outgoing>Flow_child10_to_child11</bpmn:outgoing>
+    </bpmn:callActivity>
+    <bpmn:callActivity id="CallActivity_L3_child11" name="6.2.1.7: Document resolutions" calledElement="Process_6_2_1_7">
+      <bpmn:incoming>Flow_child10_to_child11</bpmn:incoming>
+      <bpmn:outgoing>Flow_child11_to_child12</bpmn:outgoing>
+    </bpmn:callActivity>
+    <bpmn:callActivity id="CallActivity_L3_child12" name="6.2.2.1: Support phone channel" calledElement="Process_6_2_2_1">
+      <bpmn:incoming>Flow_child11_to_child12</bpmn:incoming>
+      <bpmn:outgoing>Flow_child12_to_child13</bpmn:outgoing>
+    </bpmn:callActivity>
+    <bpmn:callActivity id="CallActivity_L3_child13" name="6.2.2.6: Optimize satisfaction" calledElement="Process_6_2_2_6">
+      <bpmn:incoming>Flow_child12_to_child13</bpmn:incoming>
+      <bpmn:outgoing>Flow_child13_to_child14</bpmn:outgoing>
+    </bpmn:callActivity>
+    <bpmn:callActivity id="CallActivity_L3_child14" name="6.2.1.3: Monitor call volumes" calledElement="Process_6_2_1_3">
+      <bpmn:incoming>Flow_child13_to_child14</bpmn:incoming>
+      <bpmn:outgoing>Flow_child14_to_child15</bpmn:outgoing>
+    </bpmn:callActivity>
+    <bpmn:callActivity id="CallActivity_L3_child15" name="6.2.2.7: Document satisfaction" calledElement="Process_6_2_2_7">
+      <bpmn:incoming>Flow_child14_to_child15</bpmn:incoming>
+      <bpmn:outgoing>Flow_child15_to_child16</bpmn:outgoing>
+    </bpmn:callActivity>
+    <bpmn:callActivity id="CallActivity_L3_child16" name="6.2.2.3: Support chat channel" calledElement="Process_6_2_2_3">
+      <bpmn:incoming>Flow_child15_to_child16</bpmn:incoming>
+      <bpmn:outgoing>Flow_child16_to_end</bpmn:outgoing>
+    </bpmn:callActivity>
+    <bpmn:sequenceFlow id="Flow_start_to_child1" sourceRef="Start_L3_6_2" targetRef="CallActivity_L3_child1" />
+    <bpmn:sequenceFlow id="Flow_child1_to_child2" sourceRef="CallActivity_L3_child1" targetRef="CallActivity_L3_child2" />
+    <bpmn:sequenceFlow id="Flow_child2_to_child3" sourceRef="CallActivity_L3_child2" targetRef="CallActivity_L3_child3" />
+    <bpmn:sequenceFlow id="Flow_child3_to_child4" sourceRef="CallActivity_L3_child3" targetRef="CallActivity_L3_child4" />
+    <bpmn:sequenceFlow id="Flow_child4_to_child5" sourceRef="CallActivity_L3_child4" targetRef="CallActivity_L3_child5" />
+    <bpmn:sequenceFlow id="Flow_child5_to_child6" sourceRef="CallActivity_L3_child5" targetRef="CallActivity_L3_child6" />
+    <bpmn:sequenceFlow id="Flow_child6_to_child7" sourceRef="CallActivity_L3_child6" targetRef="CallActivity_L3_child7" />
+    <bpmn:sequenceFlow id="Flow_child7_to_child8" sourceRef="CallActivity_L3_child7" targetRef="CallActivity_L3_child8" />
+    <bpmn:sequenceFlow id="Flow_child8_to_child9" sourceRef="CallActivity_L3_child8" targetRef="CallActivity_L3_child9" />
+    <bpmn:sequenceFlow id="Flow_child9_to_child10" sourceRef="CallActivity_L3_child9" targetRef="CallActivity_L3_child10" />
+    <bpmn:sequenceFlow id="Flow_child10_to_child11" sourceRef="CallActivity_L3_child10" targetRef="CallActivity_L3_child11" />
+    <bpmn:sequenceFlow id="Flow_child11_to_child12" sourceRef="CallActivity_L3_child11" targetRef="CallActivity_L3_child12" />
+    <bpmn:sequenceFlow id="Flow_child12_to_child13" sourceRef="CallActivity_L3_child12" targetRef="CallActivity_L3_child13" />
+    <bpmn:sequenceFlow id="Flow_child13_to_child14" sourceRef="CallActivity_L3_child13" targetRef="CallActivity_L3_child14" />
+    <bpmn:sequenceFlow id="Flow_child14_to_child15" sourceRef="CallActivity_L3_child14" targetRef="CallActivity_L3_child15" />
+    <bpmn:sequenceFlow id="Flow_child15_to_child16" sourceRef="CallActivity_L3_child15" targetRef="CallActivity_L3_child16" />
+    <bpmn:sequenceFlow id="Flow_child16_to_end" sourceRef="CallActivity_L3_child16" targetRef="End_L3_6_2" />
+    <bpmn:endEvent id="End_L3_6_2" name="Composite Complete">
+      <bpmn:incoming>Flow_child16_to_end</bpmn:incoming>
+    </bpmn:endEvent>
+  </bpmn:process>
+  <bpmndi:BPMNDiagram id="Diagram_L3_6_2">
+    <bpmndi:BPMNPlane id="Plane_L3_6_2" bpmnElement="Process_L3_6_2">
+      <bpmndi:BPMNShape id="Shape_Start_L3_6_2" bpmnElement="Start_L3_6_2">
+        <dc:Bounds x="150" y="50" width="36" height="36" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Shape_CallActivity_L3_child1" bpmnElement="CallActivity_L3_child1">
+        <dc:Bounds x="100" y="130" width="150" height="80" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Shape_CallActivity_L3_child2" bpmnElement="CallActivity_L3_child2">
+        <dc:Bounds x="100" y="230" width="150" height="80" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Shape_CallActivity_L3_child3" bpmnElement="CallActivity_L3_child3">
+        <dc:Bounds x="100" y="330" width="150" height="80" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Shape_CallActivity_L3_child4" bpmnElement="CallActivity_L3_child4">
+        <dc:Bounds x="100" y="430" width="150" height="80" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Shape_CallActivity_L3_child5" bpmnElement="CallActivity_L3_child5">
+        <dc:Bounds x="100" y="530" width="150" height="80" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Shape_CallActivity_L3_child6" bpmnElement="CallActivity_L3_child6">
+        <dc:Bounds x="100" y="630" width="150" height="80" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Shape_CallActivity_L3_child7" bpmnElement="CallActivity_L3_child7">
+        <dc:Bounds x="100" y="730" width="150" height="80" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Shape_CallActivity_L3_child8" bpmnElement="CallActivity_L3_child8">
+        <dc:Bounds x="100" y="830" width="150" height="80" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Shape_CallActivity_L3_child9" bpmnElement="CallActivity_L3_child9">
+        <dc:Bounds x="100" y="930" width="150" height="80" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Shape_CallActivity_L3_child10" bpmnElement="CallActivity_L3_child10">
+        <dc:Bounds x="100" y="1030" width="150" height="80" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Shape_CallActivity_L3_child11" bpmnElement="CallActivity_L3_child11">
+        <dc:Bounds x="100" y="1130" width="150" height="80" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Shape_CallActivity_L3_child12" bpmnElement="CallActivity_L3_child12">
+        <dc:Bounds x="100" y="1230" width="150" height="80" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Shape_CallActivity_L3_child13" bpmnElement="CallActivity_L3_child13">
+        <dc:Bounds x="100" y="1330" width="150" height="80" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Shape_CallActivity_L3_child14" bpmnElement="CallActivity_L3_child14">
+        <dc:Bounds x="100" y="1430" width="150" height="80" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Shape_CallActivity_L3_child15" bpmnElement="CallActivity_L3_child15">
+        <dc:Bounds x="100" y="1530" width="150" height="80" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Shape_CallActivity_L3_child16" bpmnElement="CallActivity_L3_child16">
+        <dc:Bounds x="100" y="1630" width="150" height="80" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Shape_End_L3_6_2" bpmnElement="End_L3_6_2">
+        <dc:Bounds x="150" y="1730" width="36" height="36" />
+      </bpmndi:BPMNShape>
+    </bpmndi:BPMNPlane>
+  </bpmndi:BPMNDiagram>
+</bpmn:definitions>

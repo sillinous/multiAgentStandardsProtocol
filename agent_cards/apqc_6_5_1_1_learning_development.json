@@ -1,0 +1,270 @@
+{
+  "apqc_id": "6.5.1.1",
+  "apqc_name": "Develop and train employees",
+  "category": "6.0 - Develop and Manage Human Capital",
+  "description": "End-to-end learning and development workflow from needs assessment through learning delivery and effectiveness measurement.",
+  "orchestration_pattern": "sequential",
+  "total_steps": 6,
+  "estimated_duration_seconds": 2592000,
+  "compliance_frameworks": ["SOX", "GDPR", "FDA 21 CFR Part 11", "ISO 9001"],
+  "data_retention_days": 2555,
+
+  "agent_cards": [
+    {
+      "id": "agent_6_5_1_1_step1",
+      "apqc_id": "6.5.1.1",
+      "step_number": 1,
+      "step_name": "Learning Needs Assessment",
+      "description": "Identify skill gaps and learning needs across the organization",
+      "purpose": "Target learning investments effectively",
+      "business_value": "Focused skill development",
+
+      "capabilities": ["skill_gap_analysis", "competency_assessment", "training_needs_survey", "strategic_alignment", "compliance_requirements"],
+
+      "input_schema": [
+        {"name": "assessment_scope", "type": "string", "required": true, "validation": {"enum": ["organization", "department", "role", "individual"]}},
+        {"name": "competency_framework", "type": "object", "required": true},
+        {"name": "business_priorities", "type": "array", "required": true},
+        {"name": "compliance_requirements", "type": "array", "required": false}
+      ],
+
+      "output_schema": [
+        {"name": "skill_gaps", "type": "array", "required": true},
+        {"name": "learning_priorities", "type": "array", "required": true},
+        {"name": "training_recommendations", "type": "array", "required": true},
+        {"name": "budget_estimate", "type": "number", "required": true}
+      ],
+
+      "required_integrations": [
+        {"system": "LMS", "type": "bidirectional", "protocol": "API", "examples": ["Cornerstone", "SAP SuccessFactors Learning", "Degreed"]},
+        {"system": "HRIS", "type": "read", "protocol": "API"},
+        {"system": "Skills Platform", "type": "read", "protocol": "API", "examples": ["Workday Skills Cloud", "Eightfold", "Gloat"]}
+      ],
+
+      "decision_rules": [
+        {"rule_id": "DR-LD-001", "name": "Critical Skill Gap", "condition": "gap.criticality == 'high' AND gap.prevalence > 30%", "action": "prioritize_program_development", "priority": 1},
+        {"rule_id": "DR-LD-002", "name": "Compliance Training Due", "condition": "compliance.due_date < today + 30", "action": "mandatory_enrollment", "priority": 1}
+      ],
+
+      "error_handlers": [
+        {"error_type": "insufficient_assessment_data", "severity": "medium", "action": "extend_assessment_period", "notification": ["l&d_manager"]}
+      ]
+    },
+
+    {
+      "id": "agent_6_5_1_1_step2",
+      "apqc_id": "6.5.1.1",
+      "step_number": 2,
+      "step_name": "Learning Program Design",
+      "description": "Design learning programs and curricula to address identified needs",
+      "purpose": "Effective learning solutions",
+      "business_value": "Impactful skill development programs",
+
+      "capabilities": ["curriculum_design", "content_curation", "modality_selection", "learning_path_creation", "assessment_design"],
+
+      "input_schema": [
+        {"name": "learning_objectives", "type": "array", "required": true},
+        {"name": "target_audience", "type": "object", "required": true},
+        {"name": "delivery_constraints", "type": "object", "required": false},
+        {"name": "budget", "type": "number", "required": true}
+      ],
+
+      "output_schema": [
+        {"name": "learning_program", "type": "object", "required": true},
+        {"name": "curriculum", "type": "array", "required": true},
+        {"name": "content_requirements", "type": "array", "required": true},
+        {"name": "delivery_plan", "type": "object", "required": true}
+      ],
+
+      "required_integrations": [
+        {"system": "LMS", "type": "bidirectional", "protocol": "API"},
+        {"system": "Content Library", "type": "read", "protocol": "API", "examples": ["LinkedIn Learning", "Udemy Business", "Pluralsight"]},
+        {"system": "Authoring Tools", "type": "bidirectional", "protocol": "API", "examples": ["Articulate", "Adobe Captivate"]}
+      ],
+
+      "decision_rules": [
+        {"rule_id": "DR-LD-010", "name": "Buy vs Build", "condition": "content.exists_externally AND quality_score > 4.0", "action": "recommend_curation", "priority": 2},
+        {"rule_id": "DR-LD-011", "name": "Blended Approach", "condition": "audience.size > 100 AND skill.complexity == 'high'", "action": "recommend_blended", "priority": 2}
+      ],
+
+      "error_handlers": [
+        {"error_type": "budget_exceeded", "severity": "high", "action": "revise_program_scope", "notification": ["l&d_manager", "hr_director"]}
+      ]
+    },
+
+    {
+      "id": "agent_6_5_1_1_step3",
+      "apqc_id": "6.5.1.1",
+      "step_number": 3,
+      "step_name": "Learning Content Development",
+      "description": "Develop or procure learning content",
+      "purpose": "Quality learning materials",
+      "business_value": "Engaging and effective content",
+
+      "capabilities": ["content_creation", "video_production", "interactive_development", "translation", "accessibility_compliance"],
+
+      "input_schema": [
+        {"name": "content_requirements", "type": "array", "required": true},
+        {"name": "brand_guidelines", "type": "object", "required": false},
+        {"name": "accessibility_standards", "type": "string", "required": true}
+      ],
+
+      "output_schema": [
+        {"name": "learning_content", "type": "array", "required": true},
+        {"name": "content_metadata", "type": "object", "required": true},
+        {"name": "scorm_packages", "type": "array", "required": false},
+        {"name": "quality_review_status", "type": "object", "required": true}
+      ],
+
+      "required_integrations": [
+        {"system": "LMS", "type": "bidirectional", "protocol": "API"},
+        {"system": "Content Management", "type": "bidirectional", "protocol": "API"},
+        {"system": "Video Platform", "type": "bidirectional", "protocol": "API", "examples": ["Kaltura", "Panopto", "Vidyard"]}
+      ],
+
+      "decision_rules": [
+        {"rule_id": "DR-LD-020", "name": "Quality Gate", "condition": "quality_score < 4.0", "action": "require_revision", "priority": 1}
+      ],
+
+      "error_handlers": [
+        {"error_type": "content_delivery_delayed", "severity": "medium", "action": "adjust_launch_timeline", "notification": ["program_manager"]}
+      ]
+    },
+
+    {
+      "id": "agent_6_5_1_1_step4",
+      "apqc_id": "6.5.1.1",
+      "step_number": 4,
+      "step_name": "Learning Delivery",
+      "description": "Deliver learning programs through appropriate channels",
+      "purpose": "Accessible learning experiences",
+      "business_value": "Skilled workforce",
+
+      "capabilities": ["enrollment_management", "session_scheduling", "virtual_facilitation", "progress_tracking", "reminder_automation"],
+
+      "input_schema": [
+        {"name": "learning_program", "type": "object", "required": true},
+        {"name": "target_learners", "type": "array", "required": true},
+        {"name": "delivery_schedule", "type": "object", "required": true}
+      ],
+
+      "output_schema": [
+        {"name": "enrollments", "type": "array", "required": true},
+        {"name": "completion_status", "type": "object", "required": true},
+        {"name": "attendance_records", "type": "array", "required": false},
+        {"name": "learner_feedback", "type": "array", "required": false}
+      ],
+
+      "required_integrations": [
+        {"system": "LMS", "type": "bidirectional", "protocol": "API"},
+        {"system": "Virtual Classroom", "type": "bidirectional", "protocol": "API", "examples": ["Zoom", "Webex", "Microsoft Teams"]},
+        {"system": "Calendar", "type": "bidirectional", "protocol": "API"}
+      ],
+
+      "decision_rules": [
+        {"rule_id": "DR-LD-030", "name": "Low Enrollment", "condition": "enrollment_rate < 50%", "action": "increase_communications", "priority": 2},
+        {"rule_id": "DR-LD-031", "name": "Completion Risk", "condition": "days_to_deadline < 7 AND completion < 50%", "action": "manager_notification", "priority": 1}
+      ],
+
+      "error_handlers": [
+        {"error_type": "session_cancelled", "severity": "medium", "action": "reschedule_and_notify", "notification": ["enrolled_learners", "facilitator"]}
+      ]
+    },
+
+    {
+      "id": "agent_6_5_1_1_step5",
+      "apqc_id": "6.5.1.1",
+      "step_number": 5,
+      "step_name": "Learning Assessment",
+      "description": "Assess learning outcomes and skill acquisition",
+      "purpose": "Validate learning effectiveness",
+      "business_value": "Verified skill development",
+
+      "capabilities": ["knowledge_testing", "skill_assessment", "certification_management", "proctoring", "credential_issuance"],
+
+      "input_schema": [
+        {"name": "learner_id", "type": "string", "required": true},
+        {"name": "assessment_type", "type": "string", "required": true, "validation": {"enum": ["quiz", "exam", "practical", "simulation", "certification"]}},
+        {"name": "passing_criteria", "type": "object", "required": true}
+      ],
+
+      "output_schema": [
+        {"name": "assessment_result", "type": "object", "required": true},
+        {"name": "score", "type": "number", "required": true},
+        {"name": "pass_fail", "type": "boolean", "required": true},
+        {"name": "credential_issued", "type": "object", "required": false}
+      ],
+
+      "required_integrations": [
+        {"system": "LMS", "type": "bidirectional", "protocol": "API"},
+        {"system": "Assessment Platform", "type": "bidirectional", "protocol": "API", "examples": ["SHL", "Codility", "HackerRank"]},
+        {"system": "Credentialing", "type": "outbound", "protocol": "API", "examples": ["Credly", "Accredible"]}
+      ],
+
+      "decision_rules": [
+        {"rule_id": "DR-LD-040", "name": "Remediation Required", "condition": "score < passing_score", "action": "assign_remediation", "priority": 1},
+        {"rule_id": "DR-LD-041", "name": "Certification Expiry", "condition": "certification.expiry < today + 90", "action": "recertification_reminder", "priority": 2}
+      ],
+
+      "error_handlers": [
+        {"error_type": "assessment_integrity_violation", "severity": "critical", "action": "invalidate_and_escalate", "notification": ["l&d_manager", "hr_partner"]}
+      ]
+    },
+
+    {
+      "id": "agent_6_5_1_1_step6",
+      "apqc_id": "6.5.1.1",
+      "step_number": 6,
+      "step_name": "Learning Effectiveness Evaluation",
+      "description": "Measure impact and ROI of learning programs",
+      "purpose": "Continuous improvement of learning",
+      "business_value": "Optimized learning investments",
+
+      "capabilities": ["kirkpatrick_evaluation", "roi_calculation", "impact_analysis", "feedback_synthesis", "benchmark_comparison"],
+
+      "input_schema": [
+        {"name": "program_id", "type": "string", "required": true},
+        {"name": "evaluation_level", "type": "string", "required": true, "validation": {"enum": ["reaction", "learning", "behavior", "results"]}},
+        {"name": "business_metrics", "type": "array", "required": false}
+      ],
+
+      "output_schema": [
+        {"name": "evaluation_report", "type": "object", "required": true},
+        {"name": "effectiveness_score", "type": "number", "required": true},
+        {"name": "roi", "type": "number", "required": false},
+        {"name": "recommendations", "type": "array", "required": true}
+      ],
+
+      "required_integrations": [
+        {"system": "LMS", "type": "read", "protocol": "API"},
+        {"system": "Survey Platform", "type": "bidirectional", "protocol": "API", "examples": ["Qualtrics", "SurveyMonkey", "Culture Amp"]},
+        {"system": "Business Intelligence", "type": "read", "protocol": "API"}
+      ],
+
+      "decision_rules": [
+        {"rule_id": "DR-LD-050", "name": "Low Effectiveness", "condition": "effectiveness_score < 3.0", "action": "program_review_required", "priority": 1},
+        {"rule_id": "DR-LD-051", "name": "Negative ROI", "condition": "roi < 0", "action": "discontinue_or_redesign", "priority": 1}
+      ],
+
+      "error_handlers": [
+        {"error_type": "insufficient_survey_response", "severity": "medium", "action": "extend_survey_period", "notification": ["l&d_analyst"]}
+      ]
+    }
+  ],
+
+  "integration_summary": {
+    "lms_platforms": ["Cornerstone", "SAP SuccessFactors Learning", "Degreed", "Docebo", "Absorb"],
+    "content_providers": ["LinkedIn Learning", "Udemy Business", "Pluralsight", "Coursera for Business"],
+    "assessment_tools": ["SHL", "Codility", "HackerRank", "Criteria Corp"],
+    "virtual_classroom": ["Zoom", "Webex", "Microsoft Teams", "Adobe Connect"]
+  },
+
+  "kpis": [
+    {"name": "Training Completion Rate", "description": "Percentage of assigned training completed", "target": "> 90%", "measurement": "completed / assigned"},
+    {"name": "Learner Satisfaction", "description": "Average satisfaction score", "target": "> 4.2/5.0", "measurement": "avg(satisfaction_scores)"},
+    {"name": "Skill Acquisition Rate", "description": "Learners demonstrating new skills", "target": "> 80%", "measurement": "skill_demonstrated / trained"},
+    {"name": "Training ROI", "description": "Return on learning investment", "target": "> 200%", "measurement": "(benefit - cost) / cost"},
+    {"name": "Time to Competency", "description": "Days to achieve competency", "target": "< 90 days", "measurement": "avg(competency_date - start_date)"},
+    {"name": "Compliance Training", "description": "On-time compliance completion", "target": "100%", "measurement": "compliant / required"}
+  ]
+}

@@ -1,0 +1,305 @@
+{
+  "apqc_id": "3.2.1.1",
+  "apqc_name": "Manage sales pipeline",
+  "category": "3.0 - Market and Sell Products and Services",
+  "description": "End-to-end sales pipeline management from lead qualification through deal closure, including opportunity tracking, forecasting, and win/loss analysis.",
+  "orchestration_pattern": "sequential",
+  "total_steps": 7,
+  "estimated_duration_seconds": 2592000,
+  "compliance_frameworks": ["Sales Best Practices", "CRM Standards"],
+  "data_retention_days": 1825,
+
+  "agent_cards": [
+    {
+      "id": "agent_3_2_1_1_step1",
+      "apqc_id": "3.2.1.1",
+      "step_number": 1,
+      "step_name": "Lead Qualification",
+      "description": "Qualify inbound leads using BANT/MEDDIC criteria",
+      "purpose": "Identify qualified opportunities",
+      "business_value": "Focus on high-value prospects",
+
+      "capabilities": ["lead_scoring", "qualification_criteria", "enrichment", "routing", "prioritization"],
+
+      "input_schema": [
+        {"name": "lead_id", "type": "string", "required": true},
+        {"name": "lead_source", "type": "string", "required": true},
+        {"name": "company_info", "type": "object", "required": true},
+        {"name": "contact_info", "type": "object", "required": true},
+        {"name": "initial_interest", "type": "string", "required": false}
+      ],
+
+      "output_schema": [
+        {"name": "qualification_score", "type": "number", "required": true},
+        {"name": "qualification_status", "type": "string", "required": true, "validation": {"enum": ["qualified", "nurture", "disqualified"]}},
+        {"name": "assigned_rep", "type": "string", "required": true},
+        {"name": "enriched_data", "type": "object", "required": true}
+      ],
+
+      "required_integrations": [
+        {"system": "CRM", "type": "bidirectional", "protocol": "API", "examples": ["Salesforce", "HubSpot", "Microsoft Dynamics"]},
+        {"system": "Data Enrichment", "type": "read", "protocol": "API", "examples": ["ZoomInfo", "Clearbit", "LinkedIn Sales Navigator"]}
+      ],
+
+      "decision_rules": [
+        {"rule_id": "DR-LQ-001", "name": "High Score Lead", "condition": "qualification_score > 80", "action": "assign_to_senior_rep", "priority": 1},
+        {"rule_id": "DR-LQ-002", "name": "Enterprise Lead", "condition": "company_size > 1000 AND budget_indicated", "action": "fast_track_qualification", "priority": 1}
+      ],
+
+      "error_handlers": [
+        {"error_type": "enrichment_failed", "severity": "low", "action": "proceed_with_basic_data", "notification": ["sales_ops"]}
+      ]
+    },
+
+    {
+      "id": "agent_3_2_1_1_step2",
+      "apqc_id": "3.2.1.1",
+      "step_number": 2,
+      "step_name": "Opportunity Creation",
+      "description": "Create and configure opportunity with deal parameters",
+      "purpose": "Establish deal structure",
+      "business_value": "Accurate pipeline tracking",
+
+      "capabilities": ["opportunity_creation", "product_configuration", "pricing_lookup", "competitor_tracking", "deal_sizing"],
+
+      "input_schema": [
+        {"name": "qualified_lead", "type": "object", "required": true},
+        {"name": "products_of_interest", "type": "array", "required": true},
+        {"name": "estimated_value", "type": "number", "required": true},
+        {"name": "expected_close_date", "type": "string", "required": true}
+      ],
+
+      "output_schema": [
+        {"name": "opportunity_id", "type": "string", "required": true},
+        {"name": "deal_stage", "type": "string", "required": true},
+        {"name": "product_configuration", "type": "object", "required": true},
+        {"name": "pricing_estimate", "type": "number", "required": true}
+      ],
+
+      "required_integrations": [
+        {"system": "CRM", "type": "bidirectional", "protocol": "API"},
+        {"system": "CPQ", "type": "read", "protocol": "API", "examples": ["Salesforce CPQ", "Oracle CPQ", "Conga"]}
+      ],
+
+      "decision_rules": [
+        {"rule_id": "DR-OC-001", "name": "Large Deal", "condition": "estimated_value > 100000", "action": "assign_deal_team", "priority": 1}
+      ],
+
+      "error_handlers": [
+        {"error_type": "pricing_unavailable", "severity": "medium", "action": "use_list_price", "notification": ["pricing_team"]}
+      ]
+    },
+
+    {
+      "id": "agent_3_2_1_1_step3",
+      "apqc_id": "3.2.1.1",
+      "step_number": 3,
+      "step_name": "Discovery & Needs Analysis",
+      "description": "Conduct discovery calls and document customer needs",
+      "purpose": "Understand requirements",
+      "business_value": "Solution alignment",
+
+      "capabilities": ["call_scheduling", "meeting_notes", "requirement_capture", "stakeholder_mapping", "pain_point_analysis"],
+
+      "input_schema": [
+        {"name": "opportunity_id", "type": "string", "required": true},
+        {"name": "discovery_questions", "type": "array", "required": true},
+        {"name": "stakeholders", "type": "array", "required": true}
+      ],
+
+      "output_schema": [
+        {"name": "discovery_summary", "type": "object", "required": true},
+        {"name": "key_requirements", "type": "array", "required": true},
+        {"name": "decision_makers", "type": "array", "required": true},
+        {"name": "competitive_landscape", "type": "object", "required": false}
+      ],
+
+      "required_integrations": [
+        {"system": "CRM", "type": "bidirectional", "protocol": "API"},
+        {"system": "Calendar", "type": "bidirectional", "protocol": "API", "examples": ["Google Calendar", "Outlook"]},
+        {"system": "Meeting Platform", "type": "read", "protocol": "API", "examples": ["Zoom", "Teams", "Gong"]}
+      ],
+
+      "decision_rules": [
+        {"rule_id": "DR-DN-001", "name": "Multi-Stakeholder", "condition": "stakeholders.length > 3", "action": "schedule_executive_sponsor", "priority": 1}
+      ],
+
+      "error_handlers": [
+        {"error_type": "no_show", "severity": "medium", "action": "reschedule_with_reminder", "notification": ["rep"]}
+      ]
+    },
+
+    {
+      "id": "agent_3_2_1_1_step4",
+      "apqc_id": "3.2.1.1",
+      "step_number": 4,
+      "step_name": "Solution Presentation",
+      "description": "Present tailored solution and value proposition",
+      "purpose": "Demonstrate value",
+      "business_value": "Compelling proposals",
+
+      "capabilities": ["demo_scheduling", "presentation_generation", "roi_calculation", "custom_demo", "value_messaging"],
+
+      "input_schema": [
+        {"name": "opportunity_id", "type": "string", "required": true},
+        {"name": "key_requirements", "type": "array", "required": true},
+        {"name": "presentation_type", "type": "string", "required": true}
+      ],
+
+      "output_schema": [
+        {"name": "presentation_delivered", "type": "boolean", "required": true},
+        {"name": "roi_analysis", "type": "object", "required": true},
+        {"name": "demo_feedback", "type": "object", "required": false},
+        {"name": "next_steps", "type": "array", "required": true}
+      ],
+
+      "required_integrations": [
+        {"system": "CRM", "type": "bidirectional", "protocol": "API"},
+        {"system": "Demo Environment", "type": "read", "protocol": "API"},
+        {"system": "Presentation Tool", "type": "read", "protocol": "API", "examples": ["PowerPoint", "Google Slides"]}
+      ],
+
+      "decision_rules": [
+        {"rule_id": "DR-SP-001", "name": "Technical Demo", "condition": "technical_stakeholders_present", "action": "include_se_in_demo", "priority": 1}
+      ],
+
+      "error_handlers": [
+        {"error_type": "demo_environment_down", "severity": "high", "action": "reschedule_demo", "notification": ["rep", "se", "customer"]}
+      ]
+    },
+
+    {
+      "id": "agent_3_2_1_1_step5",
+      "apqc_id": "3.2.1.1",
+      "step_number": 5,
+      "step_name": "Proposal & Negotiation",
+      "description": "Generate proposal and manage negotiation process",
+      "purpose": "Reach agreement",
+      "business_value": "Optimal deal terms",
+
+      "capabilities": ["proposal_generation", "discount_approval", "terms_negotiation", "competitive_positioning", "objection_handling"],
+
+      "input_schema": [
+        {"name": "opportunity_id", "type": "string", "required": true},
+        {"name": "product_configuration", "type": "object", "required": true},
+        {"name": "pricing_request", "type": "object", "required": true},
+        {"name": "contract_terms", "type": "object", "required": true}
+      ],
+
+      "output_schema": [
+        {"name": "proposal_id", "type": "string", "required": true},
+        {"name": "final_price", "type": "number", "required": true},
+        {"name": "discount_applied", "type": "number", "required": true},
+        {"name": "contract_terms", "type": "object", "required": true}
+      ],
+
+      "required_integrations": [
+        {"system": "CPQ", "type": "bidirectional", "protocol": "API"},
+        {"system": "Document Generation", "type": "write", "protocol": "API", "examples": ["Conga", "PandaDoc"]},
+        {"system": "Approval Workflow", "type": "bidirectional", "protocol": "API"}
+      ],
+
+      "decision_rules": [
+        {"rule_id": "DR-PN-001", "name": "Discount Approval", "condition": "discount > standard_discount_limit", "action": "escalate_for_approval", "priority": 1},
+        {"rule_id": "DR-PN-002", "name": "Non-Standard Terms", "condition": "custom_terms_requested", "action": "route_to_legal", "priority": 1}
+      ],
+
+      "error_handlers": [
+        {"error_type": "approval_rejected", "severity": "medium", "action": "revise_proposal", "notification": ["rep", "manager"]}
+      ]
+    },
+
+    {
+      "id": "agent_3_2_1_1_step6",
+      "apqc_id": "3.2.1.1",
+      "step_number": 6,
+      "step_name": "Contract & Close",
+      "description": "Execute contract and close the deal",
+      "purpose": "Finalize agreement",
+      "business_value": "Revenue recognition",
+
+      "capabilities": ["contract_execution", "e_signature", "booking_validation", "revenue_recognition", "handoff_initiation"],
+
+      "input_schema": [
+        {"name": "opportunity_id", "type": "string", "required": true},
+        {"name": "proposal_id", "type": "string", "required": true},
+        {"name": "contract_document", "type": "object", "required": true},
+        {"name": "signatories", "type": "array", "required": true}
+      ],
+
+      "output_schema": [
+        {"name": "contract_id", "type": "string", "required": true},
+        {"name": "deal_status", "type": "string", "required": true, "validation": {"enum": ["closed_won", "closed_lost"]}},
+        {"name": "booking_amount", "type": "number", "required": true},
+        {"name": "close_date", "type": "string", "required": true}
+      ],
+
+      "required_integrations": [
+        {"system": "CRM", "type": "bidirectional", "protocol": "API"},
+        {"system": "E-Signature", "type": "bidirectional", "protocol": "API", "examples": ["DocuSign", "Adobe Sign"]},
+        {"system": "ERP", "type": "write", "protocol": "API", "examples": ["SAP", "Oracle", "NetSuite"]}
+      ],
+
+      "decision_rules": [
+        {"rule_id": "DR-CC-001", "name": "Deal Desk Review", "condition": "booking_amount > deal_desk_threshold", "action": "require_deal_desk_approval", "priority": 1}
+      ],
+
+      "error_handlers": [
+        {"error_type": "signature_expired", "severity": "medium", "action": "resend_for_signature", "notification": ["rep", "customer"]}
+      ]
+    },
+
+    {
+      "id": "agent_3_2_1_1_step7",
+      "apqc_id": "3.2.1.1",
+      "step_number": 7,
+      "step_name": "Win/Loss Analysis",
+      "description": "Analyze deal outcome and capture learnings",
+      "purpose": "Improve sales effectiveness",
+      "business_value": "Continuous improvement",
+
+      "capabilities": ["outcome_analysis", "competitor_insights", "rep_feedback", "trend_detection", "coaching_recommendations"],
+
+      "input_schema": [
+        {"name": "opportunity_id", "type": "string", "required": true},
+        {"name": "deal_outcome", "type": "string", "required": true},
+        {"name": "deal_timeline", "type": "object", "required": true},
+        {"name": "competitive_context", "type": "object", "required": false}
+      ],
+
+      "output_schema": [
+        {"name": "analysis_report", "type": "object", "required": true},
+        {"name": "key_learnings", "type": "array", "required": true},
+        {"name": "improvement_recommendations", "type": "array", "required": true},
+        {"name": "competitor_intelligence", "type": "object", "required": false}
+      ],
+
+      "required_integrations": [
+        {"system": "CRM", "type": "read", "protocol": "API"},
+        {"system": "BI Platform", "type": "write", "protocol": "API", "examples": ["Tableau", "Power BI"]},
+        {"system": "Sales Analytics", "type": "bidirectional", "protocol": "API", "examples": ["Gong", "Clari"]}
+      ],
+
+      "decision_rules": [
+        {"rule_id": "DR-WL-001", "name": "Major Loss", "condition": "deal_outcome == 'closed_lost' AND booking_amount > major_deal_threshold", "action": "schedule_loss_review", "priority": 1}
+      ],
+
+      "error_handlers": [
+        {"error_type": "incomplete_data", "severity": "low", "action": "request_rep_feedback", "notification": ["rep", "manager"]}
+      ]
+    }
+  ],
+
+  "workflow_rules": {
+    "entry_criteria": ["lead_qualified", "opportunity_created"],
+    "exit_criteria": ["deal_closed", "win_loss_analysis_complete"],
+    "escalation_path": ["sales_rep", "sales_manager", "regional_director", "vp_sales", "cro"]
+  },
+
+  "kpis": [
+    {"metric": "win_rate", "target": "> 25%", "measurement": "closed_won_vs_total_opportunities"},
+    {"metric": "average_deal_size", "target": "> $50,000", "measurement": "total_bookings_divided_by_deals"},
+    {"metric": "sales_cycle_length", "target": "< 90 days", "measurement": "average_opportunity_age_at_close"},
+    {"metric": "pipeline_velocity", "target": "> $500K/month", "measurement": "pipeline_value_times_win_rate_divided_by_cycle"}
+  ]
+}

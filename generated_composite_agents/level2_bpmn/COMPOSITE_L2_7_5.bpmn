@@ -1,0 +1,62 @@
+<?xml version='1.0' encoding='utf-8'?>
+<bpmn:definitions xmlns:bpmn="http://www.omg.org/spec/BPMN/20100524/MODEL" xmlns:bpmndi="http://www.omg.org/spec/BPMN/20100524/DI" xmlns:dc="http://www.omg.org/spec/DD/20100524/DC" id="Definitions_L2_7_5" targetNamespace="http://apqc.org/composite/level2/7.5" exporter="APQC Agentic Platform v3.0" exporterVersion="3.0.0">
+  <bpmn:process id="Process_7_5" name="Level 2: 7.5 - Reward and retain employees" isExecutable="true">
+    <bpmn:documentation>
+Level 2 Process Group Process
+Reward and retain employees
+APQC ID: 7.5
+
+Orchestrates 3 child processes:
+  1. 7.5.1: Develop compensation and benefits progra
+  2. 7.5.2: Manage employee compensation
+  3. 7.5.3: Manage employee retention
+
+Orchestration Pattern: Sequential Workflow (Pipeline)
+Standards: BPMN 2.0, A2A Protocol
+
+Generated: 2025-11-25T11:51:05.824673
+Status: Production Ready
+</bpmn:documentation>
+    <bpmn:startEvent id="Start_7_5" name="Start">
+      <bpmn:outgoing>Flow_start_to_child1</bpmn:outgoing>
+    </bpmn:startEvent>
+    <bpmn:callActivity id="CallActivity_7_5_child1" name="7.5.1: Develop compensation and benefits progra..." calledElement="Process_7_5_1">
+      <bpmn:incoming>Flow_start_to_child1</bpmn:incoming>
+      <bpmn:outgoing>Flow_child1_to_child2</bpmn:outgoing>
+    </bpmn:callActivity>
+    <bpmn:callActivity id="CallActivity_7_5_child2" name="7.5.2: Manage employee compensation" calledElement="Process_7_5_2">
+      <bpmn:incoming>Flow_child1_to_child2</bpmn:incoming>
+      <bpmn:outgoing>Flow_child2_to_child3</bpmn:outgoing>
+    </bpmn:callActivity>
+    <bpmn:callActivity id="CallActivity_7_5_child3" name="7.5.3: Manage employee retention" calledElement="Process_7_5_3">
+      <bpmn:incoming>Flow_child2_to_child3</bpmn:incoming>
+      <bpmn:outgoing>Flow_child3_to_end</bpmn:outgoing>
+    </bpmn:callActivity>
+    <bpmn:sequenceFlow id="Flow_start_to_child1" sourceRef="Start_7_5" targetRef="CallActivity_7_5_child1" />
+    <bpmn:sequenceFlow id="Flow_child1_to_child2" sourceRef="CallActivity_7_5_child1" targetRef="CallActivity_7_5_child2" />
+    <bpmn:sequenceFlow id="Flow_child2_to_child3" sourceRef="CallActivity_7_5_child2" targetRef="CallActivity_7_5_child3" />
+    <bpmn:sequenceFlow id="Flow_child3_to_end" sourceRef="CallActivity_7_5_child3" targetRef="End_7_5" />
+    <bpmn:endEvent id="End_7_5" name="Complete">
+      <bpmn:incoming>Flow_child3_to_end</bpmn:incoming>
+    </bpmn:endEvent>
+  </bpmn:process>
+  <bpmndi:BPMNDiagram id="Diagram_7_5">
+    <bpmndi:BPMNPlane id="Plane_7_5" bpmnElement="Process_7_5">
+      <bpmndi:BPMNShape id="Shape_Start_7_5" bpmnElement="Start_7_5">
+        <dc:Bounds x="150" y="50" width="36" height="36" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Shape_CallActivity_7_5_child1" bpmnElement="CallActivity_7_5_child1">
+        <dc:Bounds x="100" y="130" width="150" height="80" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Shape_CallActivity_7_5_child2" bpmnElement="CallActivity_7_5_child2">
+        <dc:Bounds x="100" y="230" width="150" height="80" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Shape_CallActivity_7_5_child3" bpmnElement="CallActivity_7_5_child3">
+        <dc:Bounds x="100" y="330" width="150" height="80" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Shape_End_7_5" bpmnElement="End_7_5">
+        <dc:Bounds x="150" y="430" width="36" height="36" />
+      </bpmndi:BPMNShape>
+    </bpmndi:BPMNPlane>
+  </bpmndi:BPMNDiagram>
+</bpmn:definitions>

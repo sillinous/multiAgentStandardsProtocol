@@ -1,0 +1,346 @@
+{
+  "apqc_id": "4.3.1.1",
+  "apqc_name": "Manage manufacturing operations",
+  "category": "4.0 - Deliver Products and Services",
+  "description": "End-to-end manufacturing operations workflow from production planning through quality control, including shop floor execution, equipment management, and continuous improvement.",
+  "orchestration_pattern": "parallel",
+  "total_steps": 8,
+  "estimated_duration_seconds": 86400,
+  "compliance_frameworks": ["ISO 9001", "ISO 14001", "FDA 21 CFR Part 11", "GMP", "OSHA"],
+  "data_retention_days": 2555,
+
+  "agent_cards": [
+    {
+      "id": "agent_4_3_1_1_step1",
+      "apqc_id": "4.3.1.1",
+      "step_number": 1,
+      "step_name": "Production Planning",
+      "description": "Plan and schedule production based on demand and capacity",
+      "purpose": "Optimized production schedule",
+      "business_value": "Efficient resource utilization",
+
+      "capabilities": ["demand_planning", "capacity_planning", "production_scheduling", "material_planning", "constraint_management"],
+
+      "input_schema": [
+        {"name": "demand_forecast", "type": "object", "required": true},
+        {"name": "production_capacity", "type": "object", "required": true},
+        {"name": "material_availability", "type": "object", "required": true},
+        {"name": "planning_horizon", "type": "string", "required": true}
+      ],
+
+      "output_schema": [
+        {"name": "production_schedule", "type": "object", "required": true},
+        {"name": "material_requirements", "type": "array", "required": true},
+        {"name": "capacity_utilization", "type": "object", "required": true},
+        {"name": "constraint_alerts", "type": "array", "required": false}
+      ],
+
+      "required_integrations": [
+        {"system": "MES", "type": "bidirectional", "protocol": "API", "examples": ["Siemens Opcenter", "Rockwell FactoryTalk", "SAP ME"]},
+        {"system": "ERP", "type": "bidirectional", "protocol": "API"},
+        {"system": "APS", "type": "bidirectional", "protocol": "API", "examples": ["Kinaxis", "o9 Solutions", "Blue Yonder"]}
+      ],
+
+      "decision_rules": [
+        {"rule_id": "DR-MO-001", "name": "Capacity Constraint", "condition": "required_capacity > available_capacity", "action": "recommend_overtime_or_outsource", "priority": 1},
+        {"rule_id": "DR-MO-002", "name": "Material Shortage", "condition": "material.available < material.required", "action": "escalate_to_procurement", "priority": 1}
+      ],
+
+      "error_handlers": [
+        {"error_type": "schedule_conflict", "severity": "high", "action": "reschedule_with_priority", "notification": ["production_planner"]}
+      ]
+    },
+
+    {
+      "id": "agent_4_3_1_1_step2",
+      "apqc_id": "4.3.1.1",
+      "step_number": 2,
+      "step_name": "Work Order Management",
+      "description": "Create and manage production work orders",
+      "purpose": "Controlled production execution",
+      "business_value": "Traceable manufacturing",
+
+      "capabilities": ["work_order_creation", "routing_management", "bom_management", "batch_control", "work_instruction"],
+
+      "input_schema": [
+        {"name": "production_schedule", "type": "object", "required": true},
+        {"name": "product_bom", "type": "object", "required": true},
+        {"name": "routing", "type": "object", "required": true},
+        {"name": "batch_size", "type": "number", "required": true}
+      ],
+
+      "output_schema": [
+        {"name": "work_orders", "type": "array", "required": true},
+        {"name": "material_reservations", "type": "array", "required": true},
+        {"name": "work_instructions", "type": "array", "required": true},
+        {"name": "labor_assignments", "type": "array", "required": true}
+      ],
+
+      "required_integrations": [
+        {"system": "MES", "type": "bidirectional", "protocol": "API"},
+        {"system": "ERP", "type": "bidirectional", "protocol": "API"},
+        {"system": "PLM", "type": "read", "protocol": "API", "examples": ["Siemens Teamcenter", "PTC Windchill", "Dassault ENOVIA"]}
+      ],
+
+      "decision_rules": [
+        {"rule_id": "DR-MO-010", "name": "BOM Version", "condition": "bom.version != latest", "action": "alert_engineering", "priority": 2}
+      ],
+
+      "error_handlers": [
+        {"error_type": "routing_error", "severity": "high", "action": "halt_work_order", "notification": ["production_supervisor", "engineering"]}
+      ]
+    },
+
+    {
+      "id": "agent_4_3_1_1_step3",
+      "apqc_id": "4.3.1.1",
+      "step_number": 3,
+      "step_name": "Shop Floor Execution",
+      "description": "Execute production operations on the shop floor",
+      "purpose": "Real-time production control",
+      "business_value": "On-time production delivery",
+
+      "capabilities": ["operation_tracking", "labor_tracking", "material_consumption", "wip_tracking", "real_time_visibility"],
+
+      "input_schema": [
+        {"name": "work_order", "type": "object", "required": true},
+        {"name": "operator", "type": "string", "required": true},
+        {"name": "workstation", "type": "string", "required": true}
+      ],
+
+      "output_schema": [
+        {"name": "operation_status", "type": "object", "required": true},
+        {"name": "time_tracking", "type": "object", "required": true},
+        {"name": "material_usage", "type": "object", "required": true},
+        {"name": "production_events", "type": "array", "required": true}
+      ],
+
+      "required_integrations": [
+        {"system": "MES", "type": "bidirectional", "protocol": "API"},
+        {"system": "SCADA", "type": "read", "protocol": "OPC-UA", "examples": ["Ignition", "Wonderware", "GE iFIX"]},
+        {"system": "Time & Attendance", "type": "bidirectional", "protocol": "API"}
+      ],
+
+      "decision_rules": [
+        {"rule_id": "DR-MO-020", "name": "Cycle Time Variance", "condition": "actual_time > standard_time * 1.2", "action": "flag_for_investigation", "priority": 2},
+        {"rule_id": "DR-MO-021", "name": "Operation Sequence", "condition": "operation.sequence_violated", "action": "block_operation", "priority": 1}
+      ],
+
+      "error_handlers": [
+        {"error_type": "equipment_failure", "severity": "critical", "action": "stop_production_notify_maintenance", "notification": ["maintenance", "production_supervisor"]}
+      ]
+    },
+
+    {
+      "id": "agent_4_3_1_1_step4",
+      "apqc_id": "4.3.1.1",
+      "step_number": 4,
+      "step_name": "Quality Control",
+      "description": "Perform in-process and final quality inspections",
+      "purpose": "Product quality assurance",
+      "business_value": "Defect prevention and compliance",
+
+      "capabilities": ["inspection_management", "spc_monitoring", "ncr_management", "test_execution", "quality_hold"],
+
+      "input_schema": [
+        {"name": "inspection_point", "type": "string", "required": true},
+        {"name": "quality_plan", "type": "object", "required": true},
+        {"name": "sample_data", "type": "object", "required": true}
+      ],
+
+      "output_schema": [
+        {"name": "inspection_result", "type": "object", "required": true},
+        {"name": "quality_metrics", "type": "object", "required": true},
+        {"name": "ncr_records", "type": "array", "required": false},
+        {"name": "disposition", "type": "string", "required": true}
+      ],
+
+      "required_integrations": [
+        {"system": "QMS", "type": "bidirectional", "protocol": "API", "examples": ["ETQ", "MasterControl", "Veeva"]},
+        {"system": "MES", "type": "bidirectional", "protocol": "API"},
+        {"system": "LIMS", "type": "bidirectional", "protocol": "API", "examples": ["LabWare", "Thermo Fisher"]}
+      ],
+
+      "decision_rules": [
+        {"rule_id": "DR-MO-030", "name": "Out of Spec", "condition": "measurement NOT IN spec_limits", "action": "quarantine_and_investigate", "priority": 1},
+        {"rule_id": "DR-MO-031", "name": "SPC Alert", "condition": "spc.rule_violation", "action": "stop_and_adjust", "priority": 1}
+      ],
+
+      "error_handlers": [
+        {"error_type": "calibration_expired", "severity": "high", "action": "halt_inspection_calibrate", "notification": ["quality_engineer"]}
+      ]
+    },
+
+    {
+      "id": "agent_4_3_1_1_step5",
+      "apqc_id": "4.3.1.1",
+      "step_number": 5,
+      "step_name": "Equipment Management",
+      "description": "Monitor and maintain production equipment",
+      "purpose": "Equipment reliability",
+      "business_value": "Maximized equipment availability",
+
+      "capabilities": ["oee_monitoring", "predictive_maintenance", "maintenance_scheduling", "spare_parts_management", "equipment_history"],
+
+      "input_schema": [
+        {"name": "equipment_id", "type": "string", "required": true},
+        {"name": "sensor_data", "type": "object", "required": false},
+        {"name": "maintenance_type", "type": "string", "required": true, "validation": {"enum": ["preventive", "predictive", "corrective", "breakdown"]}}
+      ],
+
+      "output_schema": [
+        {"name": "oee_metrics", "type": "object", "required": true},
+        {"name": "maintenance_work_order", "type": "object", "required": false},
+        {"name": "equipment_status", "type": "string", "required": true},
+        {"name": "next_maintenance", "type": "object", "required": true}
+      ],
+
+      "required_integrations": [
+        {"system": "CMMS", "type": "bidirectional", "protocol": "API", "examples": ["Maximo", "SAP PM", "Fiix"]},
+        {"system": "IoT Platform", "type": "read", "protocol": "MQTT/API", "examples": ["Azure IoT", "AWS IoT", "PTC ThingWorx"]},
+        {"system": "MES", "type": "bidirectional", "protocol": "API"}
+      ],
+
+      "decision_rules": [
+        {"rule_id": "DR-MO-040", "name": "Predictive Alert", "condition": "failure_probability > 80%", "action": "schedule_preventive_maintenance", "priority": 1},
+        {"rule_id": "DR-MO-041", "name": "OEE Threshold", "condition": "oee < 75%", "action": "initiate_improvement_project", "priority": 2}
+      ],
+
+      "error_handlers": [
+        {"error_type": "sensor_offline", "severity": "medium", "action": "switch_to_manual_monitoring", "notification": ["maintenance_tech"]}
+      ]
+    },
+
+    {
+      "id": "agent_4_3_1_1_step6",
+      "apqc_id": "4.3.1.1",
+      "step_number": 6,
+      "step_name": "Material Handling",
+      "description": "Manage material flow and warehouse operations",
+      "purpose": "Efficient material movement",
+      "business_value": "Reduced material handling costs",
+
+      "capabilities": ["material_requisition", "picking_dispatch", "wip_storage", "material_tracking", "kanban_management"],
+
+      "input_schema": [
+        {"name": "material_request", "type": "object", "required": true},
+        {"name": "storage_locations", "type": "array", "required": true},
+        {"name": "delivery_point", "type": "string", "required": true}
+      ],
+
+      "output_schema": [
+        {"name": "material_movement", "type": "object", "required": true},
+        {"name": "inventory_update", "type": "object", "required": true},
+        {"name": "delivery_confirmation", "type": "object", "required": true}
+      ],
+
+      "required_integrations": [
+        {"system": "WMS", "type": "bidirectional", "protocol": "API", "examples": ["Manhattan", "Blue Yonder WMS", "SAP EWM"]},
+        {"system": "MES", "type": "bidirectional", "protocol": "API"},
+        {"system": "AGV System", "type": "bidirectional", "protocol": "API"}
+      ],
+
+      "decision_rules": [
+        {"rule_id": "DR-MO-050", "name": "FIFO Violation", "condition": "picked_batch.date > older_batch.date", "action": "alert_warehouse", "priority": 2}
+      ],
+
+      "error_handlers": [
+        {"error_type": "material_not_found", "severity": "high", "action": "cycle_count_location", "notification": ["warehouse_supervisor"]}
+      ]
+    },
+
+    {
+      "id": "agent_4_3_1_1_step7",
+      "apqc_id": "4.3.1.1",
+      "step_number": 7,
+      "step_name": "Production Reporting",
+      "description": "Report production performance and metrics",
+      "purpose": "Performance visibility",
+      "business_value": "Data-driven decision making",
+
+      "capabilities": ["production_dashboards", "shift_reporting", "kpi_tracking", "variance_analysis", "trend_analysis"],
+
+      "input_schema": [
+        {"name": "reporting_period", "type": "object", "required": true},
+        {"name": "production_area", "type": "string", "required": true},
+        {"name": "metrics_required", "type": "array", "required": true}
+      ],
+
+      "output_schema": [
+        {"name": "production_report", "type": "object", "required": true},
+        {"name": "kpi_dashboard", "type": "object", "required": true},
+        {"name": "variance_analysis", "type": "object", "required": true},
+        {"name": "recommendations", "type": "array", "required": false}
+      ],
+
+      "required_integrations": [
+        {"system": "MES", "type": "read", "protocol": "API"},
+        {"system": "BI Platform", "type": "bidirectional", "protocol": "API", "examples": ["Tableau", "Power BI", "Looker"]},
+        {"system": "ERP", "type": "read", "protocol": "API"}
+      ],
+
+      "decision_rules": [
+        {"rule_id": "DR-MO-060", "name": "Yield Alert", "condition": "yield < target * 0.95", "action": "trigger_investigation", "priority": 1}
+      ],
+
+      "error_handlers": [
+        {"error_type": "data_gap", "severity": "medium", "action": "estimate_from_historical", "notification": ["production_analyst"]}
+      ]
+    },
+
+    {
+      "id": "agent_4_3_1_1_step8",
+      "apqc_id": "4.3.1.1",
+      "step_number": 8,
+      "step_name": "Continuous Improvement",
+      "description": "Drive manufacturing process improvements",
+      "purpose": "Operational excellence",
+      "business_value": "Sustained performance improvement",
+
+      "capabilities": ["kaizen_management", "root_cause_analysis", "improvement_tracking", "best_practice_sharing", "standardization"],
+
+      "input_schema": [
+        {"name": "improvement_type", "type": "string", "required": true, "validation": {"enum": ["kaizen", "six_sigma", "lean", "tpm"]}},
+        {"name": "problem_statement", "type": "string", "required": true},
+        {"name": "baseline_metrics", "type": "object", "required": true}
+      ],
+
+      "output_schema": [
+        {"name": "improvement_project", "type": "object", "required": true},
+        {"name": "root_cause_analysis", "type": "object", "required": true},
+        {"name": "action_plan", "type": "array", "required": true},
+        {"name": "results_tracking", "type": "object", "required": true}
+      ],
+
+      "required_integrations": [
+        {"system": "CI Platform", "type": "bidirectional", "protocol": "API", "examples": ["KaiNexus", "iObeya", "Minitab"]},
+        {"system": "MES", "type": "read", "protocol": "API"},
+        {"system": "Project Management", "type": "bidirectional", "protocol": "API"}
+      ],
+
+      "decision_rules": [
+        {"rule_id": "DR-MO-070", "name": "High Impact", "condition": "potential_savings > $100K", "action": "prioritize_for_resources", "priority": 1}
+      ],
+
+      "error_handlers": [
+        {"error_type": "project_stalled", "severity": "medium", "action": "escalate_to_ci_leader", "notification": ["ci_manager"]}
+      ]
+    }
+  ],
+
+  "integration_summary": {
+    "mes_platforms": ["Siemens Opcenter", "Rockwell FactoryTalk", "SAP ME", "Plex", "AVEVA"],
+    "aps_systems": ["Kinaxis", "o9 Solutions", "Blue Yonder", "SAP IBP"],
+    "quality_systems": ["ETQ", "MasterControl", "Veeva", "Sparta TrackWise"],
+    "maintenance_systems": ["Maximo", "SAP PM", "Fiix", "UpKeep"]
+  },
+
+  "kpis": [
+    {"name": "OEE", "description": "Overall Equipment Effectiveness", "target": "> 85%", "measurement": "availability * performance * quality"},
+    {"name": "First Pass Yield", "description": "Units passing first inspection", "target": "> 98%", "measurement": "first_pass_good / total_produced"},
+    {"name": "Schedule Adherence", "description": "Production to schedule", "target": "> 95%", "measurement": "actual_production / scheduled_production"},
+    {"name": "Scrap Rate", "description": "Material scrapped percentage", "target": "< 2%", "measurement": "scrap_value / material_value"},
+    {"name": "Inventory Turns", "description": "WIP inventory turns", "target": "> 12", "measurement": "cogs / avg_wip_inventory"},
+    {"name": "Cycle Time", "description": "Average production cycle time", "target": "< standard + 5%", "measurement": "avg(actual_cycle_time)"}
+  ]
+}

@@ -1,0 +1,308 @@
+{
+  "apqc_id": "3.1.1.1",
+  "apqc_name": "Conduct market research and analysis",
+  "category": "3.0 - Market and Sell Products and Services",
+  "description": "End-to-end market research workflow from research design through insight delivery, including primary and secondary research, competitive intelligence, and customer analytics.",
+  "orchestration_pattern": "sequential",
+  "total_steps": 7,
+  "estimated_duration_seconds": 2592000,
+  "compliance_frameworks": ["GDPR", "CCPA", "ESOMAR", "MRS Code of Conduct"],
+  "data_retention_days": 1095,
+
+  "agent_cards": [
+    {
+      "id": "agent_3_1_1_1_step1",
+      "apqc_id": "3.1.1.1",
+      "step_number": 1,
+      "step_name": "Research Planning",
+      "description": "Define research objectives, methodology, and approach",
+      "purpose": "Aligned research with business needs",
+      "business_value": "Focused research investments",
+
+      "capabilities": ["objective_definition", "methodology_selection", "sample_design", "budget_estimation", "timeline_planning"],
+
+      "input_schema": [
+        {"name": "business_question", "type": "string", "required": true},
+        {"name": "research_objectives", "type": "array", "required": true},
+        {"name": "target_audience", "type": "object", "required": true},
+        {"name": "budget", "type": "number", "required": true}
+      ],
+
+      "output_schema": [
+        {"name": "research_brief", "type": "object", "required": true},
+        {"name": "methodology", "type": "object", "required": true},
+        {"name": "sample_plan", "type": "object", "required": true},
+        {"name": "project_timeline", "type": "object", "required": true}
+      ],
+
+      "required_integrations": [
+        {"system": "Research Platform", "type": "bidirectional", "protocol": "API", "examples": ["Qualtrics", "SurveyMonkey", "Medallia"]},
+        {"system": "Project Management", "type": "bidirectional", "protocol": "API"},
+        {"system": "Knowledge Base", "type": "read", "protocol": "API"}
+      ],
+
+      "decision_rules": [
+        {"rule_id": "DR-MR-001", "name": "Budget Constraint", "condition": "estimated_cost > budget", "action": "recommend_methodology_adjustment", "priority": 1},
+        {"rule_id": "DR-MR-002", "name": "Timeline Constraint", "condition": "required_duration > available_time", "action": "recommend_rapid_approach", "priority": 1}
+      ],
+
+      "error_handlers": [
+        {"error_type": "unclear_objectives", "severity": "high", "action": "stakeholder_workshop_required", "notification": ["research_manager"]}
+      ]
+    },
+
+    {
+      "id": "agent_3_1_1_1_step2",
+      "apqc_id": "3.1.1.1",
+      "step_number": 2,
+      "step_name": "Secondary Research",
+      "description": "Gather and analyze existing market data and research",
+      "purpose": "Leverage existing knowledge",
+      "business_value": "Cost-effective market intelligence",
+
+      "capabilities": ["data_sourcing", "literature_review", "syndicated_research", "market_data_analysis", "competitive_scanning"],
+
+      "input_schema": [
+        {"name": "research_topics", "type": "array", "required": true},
+        {"name": "data_sources", "type": "array", "required": true},
+        {"name": "geographic_scope", "type": "array", "required": true}
+      ],
+
+      "output_schema": [
+        {"name": "market_data", "type": "object", "required": true},
+        {"name": "competitive_landscape", "type": "object", "required": true},
+        {"name": "industry_trends", "type": "array", "required": true},
+        {"name": "knowledge_gaps", "type": "array", "required": true}
+      ],
+
+      "required_integrations": [
+        {"system": "Market Data", "type": "read", "protocol": "API", "examples": ["Statista", "IBISWorld", "Gartner", "Forrester"]},
+        {"system": "News/Media", "type": "read", "protocol": "API", "examples": ["Factiva", "LexisNexis"]},
+        {"system": "Competitive Intel", "type": "read", "protocol": "API", "examples": ["Crayon", "Klue", "Kompyte"]}
+      ],
+
+      "decision_rules": [
+        {"rule_id": "DR-MR-010", "name": "Data Freshness", "condition": "data.age > 2_years", "action": "flag_for_validation", "priority": 2},
+        {"rule_id": "DR-MR-011", "name": "Source Reliability", "condition": "source.rating < 3", "action": "seek_corroboration", "priority": 2}
+      ],
+
+      "error_handlers": [
+        {"error_type": "data_access_denied", "severity": "medium", "action": "request_subscription_or_alternative", "notification": ["research_analyst"]}
+      ]
+    },
+
+    {
+      "id": "agent_3_1_1_1_step3",
+      "apqc_id": "3.1.1.1",
+      "step_number": 3,
+      "step_name": "Primary Research Design",
+      "description": "Design surveys, interviews, and focus groups",
+      "purpose": "Custom research instruments",
+      "business_value": "Tailored insights for decisions",
+
+      "capabilities": ["survey_design", "discussion_guide", "stimulus_creation", "sampling_methodology", "pilot_testing"],
+
+      "input_schema": [
+        {"name": "research_method", "type": "string", "required": true, "validation": {"enum": ["survey", "interview", "focus_group", "ethnography", "usability"]}},
+        {"name": "research_objectives", "type": "array", "required": true},
+        {"name": "target_respondents", "type": "object", "required": true}
+      ],
+
+      "output_schema": [
+        {"name": "research_instrument", "type": "object", "required": true},
+        {"name": "screening_criteria", "type": "object", "required": true},
+        {"name": "stimulus_materials", "type": "array", "required": false},
+        {"name": "pilot_results", "type": "object", "required": false}
+      ],
+
+      "required_integrations": [
+        {"system": "Survey Platform", "type": "bidirectional", "protocol": "API", "examples": ["Qualtrics", "SurveyMonkey", "Typeform"]},
+        {"system": "Panel Provider", "type": "bidirectional", "protocol": "API", "examples": ["Cint", "Lucid", "Dynata"]},
+        {"system": "Qualitative Platform", "type": "bidirectional", "protocol": "API", "examples": ["Discuss.io", "UserTesting", "Dovetail"]}
+      ],
+
+      "decision_rules": [
+        {"rule_id": "DR-MR-020", "name": "Survey Length", "condition": "estimated_duration > 15_minutes", "action": "recommend_reduction", "priority": 2},
+        {"rule_id": "DR-MR-021", "name": "Bias Check", "condition": "bias_indicators_detected", "action": "revise_instrument", "priority": 1}
+      ],
+
+      "error_handlers": [
+        {"error_type": "low_pilot_completion", "severity": "high", "action": "revise_and_retest", "notification": ["research_lead"]}
+      ]
+    },
+
+    {
+      "id": "agent_3_1_1_1_step4",
+      "apqc_id": "3.1.1.1",
+      "step_number": 4,
+      "step_name": "Data Collection",
+      "description": "Execute fieldwork and collect research data",
+      "purpose": "Quality data collection",
+      "business_value": "Reliable research foundation",
+
+      "capabilities": ["fieldwork_management", "quota_management", "quality_control", "respondent_management", "incentive_management"],
+
+      "input_schema": [
+        {"name": "research_instrument", "type": "object", "required": true},
+        {"name": "sample_requirements", "type": "object", "required": true},
+        {"name": "collection_timeline", "type": "object", "required": true}
+      ],
+
+      "output_schema": [
+        {"name": "raw_data", "type": "object", "required": true},
+        {"name": "response_metrics", "type": "object", "required": true},
+        {"name": "quality_report", "type": "object", "required": true},
+        {"name": "fieldwork_summary", "type": "object", "required": true}
+      ],
+
+      "required_integrations": [
+        {"system": "Survey Platform", "type": "bidirectional", "protocol": "API"},
+        {"system": "Panel Provider", "type": "bidirectional", "protocol": "API"},
+        {"system": "Quality Tool", "type": "bidirectional", "protocol": "API", "examples": ["RelevantID", "Imperium"]}
+      ],
+
+      "decision_rules": [
+        {"rule_id": "DR-MR-030", "name": "Quota Shortfall", "condition": "quota.completion < 80% AND days_remaining < 3", "action": "expand_sample_sources", "priority": 1},
+        {"rule_id": "DR-MR-031", "name": "Quality Issue", "condition": "speeders_or_flatliners > 10%", "action": "increase_quality_filters", "priority": 1}
+      ],
+
+      "error_handlers": [
+        {"error_type": "incidence_rate_low", "severity": "high", "action": "revise_screening_or_expand_panel", "notification": ["research_manager"]}
+      ]
+    },
+
+    {
+      "id": "agent_3_1_1_1_step5",
+      "apqc_id": "3.1.1.1",
+      "step_number": 5,
+      "step_name": "Data Analysis",
+      "description": "Analyze research data and extract insights",
+      "purpose": "Meaningful insight generation",
+      "business_value": "Actionable market intelligence",
+
+      "capabilities": ["statistical_analysis", "text_analytics", "segmentation", "driver_analysis", "conjoint_analysis"],
+
+      "input_schema": [
+        {"name": "cleaned_data", "type": "object", "required": true},
+        {"name": "analysis_plan", "type": "object", "required": true},
+        {"name": "hypotheses", "type": "array", "required": false}
+      ],
+
+      "output_schema": [
+        {"name": "analysis_results", "type": "object", "required": true},
+        {"name": "statistical_tests", "type": "array", "required": true},
+        {"name": "key_findings", "type": "array", "required": true},
+        {"name": "visualizations", "type": "array", "required": true}
+      ],
+
+      "required_integrations": [
+        {"system": "Analytics Platform", "type": "bidirectional", "protocol": "API", "examples": ["SPSS", "R", "Python/Pandas"]},
+        {"system": "Text Analytics", "type": "read", "protocol": "API", "examples": ["Qualtrics Text iQ", "MonkeyLearn", "Relative Insight"]},
+        {"system": "Visualization", "type": "bidirectional", "protocol": "API", "examples": ["Tableau", "Power BI"]}
+      ],
+
+      "decision_rules": [
+        {"rule_id": "DR-MR-040", "name": "Significance", "condition": "p_value > 0.05", "action": "flag_directional_only", "priority": 2},
+        {"rule_id": "DR-MR-041", "name": "Sample Size", "condition": "subgroup.n < 30", "action": "caution_in_reporting", "priority": 2}
+      ],
+
+      "error_handlers": [
+        {"error_type": "analysis_error", "severity": "high", "action": "data_quality_review", "notification": ["senior_analyst"]}
+      ]
+    },
+
+    {
+      "id": "agent_3_1_1_1_step6",
+      "apqc_id": "3.1.1.1",
+      "step_number": 6,
+      "step_name": "Insight Synthesis",
+      "description": "Synthesize findings into actionable insights and recommendations",
+      "purpose": "Strategic insight development",
+      "business_value": "Decision-ready intelligence",
+
+      "capabilities": ["insight_development", "story_creation", "recommendation_formulation", "executive_summary", "implications_analysis"],
+
+      "input_schema": [
+        {"name": "analysis_results", "type": "object", "required": true},
+        {"name": "business_context", "type": "object", "required": true},
+        {"name": "stakeholder_needs", "type": "array", "required": true}
+      ],
+
+      "output_schema": [
+        {"name": "key_insights", "type": "array", "required": true},
+        {"name": "recommendations", "type": "array", "required": true},
+        {"name": "executive_summary", "type": "string", "required": true},
+        {"name": "narrative", "type": "object", "required": true}
+      ],
+
+      "required_integrations": [
+        {"system": "Knowledge Management", "type": "bidirectional", "protocol": "API"},
+        {"system": "Presentation Tools", "type": "bidirectional", "protocol": "API"},
+        {"system": "Collaboration", "type": "bidirectional", "protocol": "API"}
+      ],
+
+      "decision_rules": [
+        {"rule_id": "DR-MR-050", "name": "Conflicting Data", "condition": "findings.conflict_detected", "action": "reconcile_or_acknowledge", "priority": 1}
+      ],
+
+      "error_handlers": [
+        {"error_type": "stakeholder_disagreement", "severity": "medium", "action": "schedule_alignment_session", "notification": ["research_director"]}
+      ]
+    },
+
+    {
+      "id": "agent_3_1_1_1_step7",
+      "apqc_id": "3.1.1.1",
+      "step_number": 7,
+      "step_name": "Insight Delivery and Activation",
+      "description": "Present findings and enable organizational action",
+      "purpose": "Drive business impact",
+      "business_value": "Research-driven decisions",
+
+      "capabilities": ["presentation_delivery", "workshop_facilitation", "insight_distribution", "action_planning", "impact_tracking"],
+
+      "input_schema": [
+        {"name": "research_deliverables", "type": "object", "required": true},
+        {"name": "stakeholders", "type": "array", "required": true},
+        {"name": "delivery_format", "type": "string", "required": true}
+      ],
+
+      "output_schema": [
+        {"name": "presentation", "type": "object", "required": true},
+        {"name": "action_items", "type": "array", "required": true},
+        {"name": "knowledge_article", "type": "object", "required": true},
+        {"name": "impact_metrics", "type": "object", "required": false}
+      ],
+
+      "required_integrations": [
+        {"system": "Knowledge Management", "type": "bidirectional", "protocol": "API", "examples": ["Confluence", "SharePoint", "Bloomfire"]},
+        {"system": "Insight Platform", "type": "bidirectional", "protocol": "API", "examples": ["Qualtrics", "Medallia", "UserTesting"]},
+        {"system": "Project Management", "type": "bidirectional", "protocol": "API"}
+      ],
+
+      "decision_rules": [
+        {"rule_id": "DR-MR-060", "name": "Low Engagement", "condition": "presentation.attendance < 50%", "action": "reschedule_or_record", "priority": 2}
+      ],
+
+      "error_handlers": [
+        {"error_type": "no_action_taken", "severity": "medium", "action": "follow_up_with_sponsors", "notification": ["research_manager"]}
+      ]
+    }
+  ],
+
+  "integration_summary": {
+    "survey_platforms": ["Qualtrics", "SurveyMonkey", "Medallia", "Typeform"],
+    "panel_providers": ["Cint", "Lucid", "Dynata", "Prolific"],
+    "analytics_tools": ["SPSS", "R", "Python", "Tableau", "Power BI"],
+    "market_data": ["Statista", "IBISWorld", "Gartner", "Forrester", "Mintel"]
+  },
+
+  "kpis": [
+    {"name": "Research Utilization", "description": "Research informing decisions", "target": "> 80%", "measurement": "used_studies / total_studies"},
+    {"name": "Time to Insight", "description": "Average project duration", "target": "< 6 weeks", "measurement": "avg(completion_date - start_date)"},
+    {"name": "Stakeholder Satisfaction", "description": "Research quality rating", "target": "> 4.2/5.0", "measurement": "avg(satisfaction_scores)"},
+    {"name": "Data Quality", "description": "Responses passing quality checks", "target": "> 95%", "measurement": "quality_responses / total_responses"},
+    {"name": "Cost per Insight", "description": "Average cost per key insight", "target": "< $5,000", "measurement": "total_cost / key_insights_count"},
+    {"name": "Research ROI", "description": "Value generated vs investment", "target": "> 10x", "measurement": "business_impact / research_cost"}
+  ]
+}

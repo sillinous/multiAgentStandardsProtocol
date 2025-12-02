@@ -1,0 +1,1061 @@
+{
+  "apqc_id": "8.2.1.1",
+  "apqc_name": "Process accounts payable",
+  "category": "8.0 - Manage Financial Resources",
+  "description": "End-to-end accounts payable workflow from invoice receipt to payment execution, including 3-way matching, approval routing, payment scheduling, and vendor management.",
+  "orchestration_pattern": "sequential",
+  "total_steps": 8,
+  "estimated_duration_seconds": 7200,
+  "compliance_frameworks": ["SOX", "GAAP", "IRS 1099"],
+  "data_retention_days": 2555,
+
+  "agent_cards": [
+    {
+      "id": "agent_8_2_1_1_step1",
+      "apqc_id": "8.2.1.1",
+      "step_number": 1,
+      "step_name": "Invoice Receipt and Capture",
+      "description": "Receive invoices from multiple channels and extract key data using OCR/AI",
+      "purpose": "Digitize and standardize invoice data for processing",
+      "business_value": "Reduces manual data entry by 90% and eliminates transcription errors",
+
+      "capabilities": [
+        "receive_invoice_email",
+        "receive_invoice_edi",
+        "receive_invoice_portal",
+        "ocr_extraction",
+        "ai_field_mapping",
+        "duplicate_detection",
+        "format_validation"
+      ],
+
+      "input_schema": [
+        {
+          "name": "invoice_source",
+          "type": "string",
+          "description": "Channel through which invoice was received",
+          "required": true,
+          "validation": {"enum": ["email", "edi", "portal", "mail", "fax"]}
+        },
+        {
+          "name": "invoice_document",
+          "type": "binary",
+          "description": "Raw invoice file (PDF, image, XML)",
+          "required": true
+        },
+        {
+          "name": "vendor_id",
+          "type": "string",
+          "description": "Vendor identifier if known",
+          "required": false
+        },
+        {
+          "name": "received_timestamp",
+          "type": "datetime",
+          "required": true
+        }
+      ],
+
+      "output_schema": [
+        {
+          "name": "invoice_id",
+          "type": "string",
+          "description": "Internal invoice tracking number",
+          "required": true,
+          "example": "INV-2025-000123"
+        },
+        {
+          "name": "vendor_invoice_number",
+          "type": "string",
+          "required": true
+        },
+        {
+          "name": "vendor_id",
+          "type": "string",
+          "required": true
+        },
+        {
+          "name": "invoice_date",
+          "type": "date",
+          "required": true
+        },
+        {
+          "name": "due_date",
+          "type": "date",
+          "required": true
+        },
+        {
+          "name": "invoice_amount",
+          "type": "currency",
+          "required": true
+        },
+        {
+          "name": "line_items",
+          "type": "array",
+          "required": true,
+          "example": [{"description": "Consulting services", "quantity": 40, "unit_price": 150.00, "amount": 6000.00}]
+        },
+        {
+          "name": "extraction_confidence",
+          "type": "number",
+          "description": "AI confidence score 0-100",
+          "required": true
+        },
+        {
+          "name": "duplicate_check_result",
+          "type": "object",
+          "required": true
+        }
+      ],
+
+      "required_integrations": [
+        {"system": "Email Server", "type": "inbound", "protocol": "IMAP/Graph API"},
+        {"system": "EDI Gateway", "type": "inbound", "protocol": "AS2/SFTP"},
+        {"system": "Vendor Portal", "type": "bidirectional", "protocol": "REST API"},
+        {"system": "OCR Engine", "type": "processing", "protocol": "API", "examples": ["ABBYY", "Kofax", "Azure Form Recognizer"]}
+      ],
+
+      "decision_rules": [
+        {
+          "rule_id": "DR-AP-001",
+          "name": "Duplicate Invoice Check",
+          "condition": "vendor_invoice_number AND vendor_id exists in last 365 days",
+          "action": "flag_as_potential_duplicate",
+          "priority": 1
+        },
+        {
+          "rule_id": "DR-AP-002",
+          "name": "Low Confidence OCR",
+          "condition": "extraction_confidence < 85",
+          "action": "route_to_manual_review",
+          "priority": 2
+        },
+        {
+          "rule_id": "DR-AP-003",
+          "name": "Unknown Vendor",
+          "condition": "vendor_id NOT IN master_vendor_list",
+          "action": "route_to_vendor_onboarding",
+          "priority": 1
+        }
+      ],
+
+      "error_handlers": [
+        {
+          "error_type": "ocr_failure",
+          "severity": "medium",
+          "action": "route_to_manual_entry",
+          "notification": ["ap_team"]
+        },
+        {
+          "error_type": "duplicate_confirmed",
+          "severity": "high",
+          "action": "reject_with_reference",
+          "notification": ["ap_team", "vendor"]
+        }
+      ]
+    },
+
+    {
+      "id": "agent_8_2_1_1_step2",
+      "apqc_id": "8.2.1.1",
+      "step_number": 2,
+      "step_name": "Three-Way Matching",
+      "description": "Match invoice to purchase order and goods receipt",
+      "purpose": "Validate that billed items were ordered and received",
+      "business_value": "Prevents payment for unordered or unreceived goods",
+
+      "capabilities": [
+        "match_to_purchase_order",
+        "match_to_goods_receipt",
+        "quantity_variance_calculation",
+        "price_variance_calculation",
+        "tolerance_evaluation",
+        "partial_match_handling"
+      ],
+
+      "input_schema": [
+        {
+          "name": "invoice_id",
+          "type": "string",
+          "required": true
+        },
+        {
+          "name": "invoice_line_items",
+          "type": "array",
+          "required": true
+        },
+        {
+          "name": "po_number",
+          "type": "string",
+          "description": "Referenced purchase order",
+          "required": false
+        }
+      ],
+
+      "output_schema": [
+        {
+          "name": "match_status",
+          "type": "string",
+          "required": true,
+          "validation": {"enum": ["full_match", "partial_match", "no_match", "within_tolerance", "exception"]}
+        },
+        {
+          "name": "matched_po",
+          "type": "string",
+          "required": false
+        },
+        {
+          "name": "matched_gr",
+          "type": "string",
+          "description": "Goods receipt document",
+          "required": false
+        },
+        {
+          "name": "quantity_variance",
+          "type": "number",
+          "description": "Percentage variance in quantities",
+          "required": true
+        },
+        {
+          "name": "price_variance",
+          "type": "currency",
+          "description": "Dollar variance from PO price",
+          "required": true
+        },
+        {
+          "name": "line_match_details",
+          "type": "array",
+          "required": true
+        }
+      ],
+
+      "required_integrations": [
+        {"system": "ERP - Purchase Orders", "type": "read", "protocol": "API/BAPI", "examples": ["SAP MM", "Oracle Procurement"]},
+        {"system": "ERP - Goods Receipt", "type": "read", "protocol": "API/BAPI"},
+        {"system": "Inventory Management", "type": "read", "protocol": "REST API"}
+      ],
+
+      "decision_rules": [
+        {
+          "rule_id": "DR-AP-010",
+          "name": "Full Match",
+          "condition": "all_lines_match AND quantity_variance == 0 AND price_variance == 0",
+          "action": "auto_approve_matching",
+          "priority": 1
+        },
+        {
+          "rule_id": "DR-AP-011",
+          "name": "Within Tolerance",
+          "condition": "quantity_variance <= 2% AND price_variance <= $50",
+          "action": "auto_approve_with_note",
+          "priority": 2
+        },
+        {
+          "rule_id": "DR-AP-012",
+          "name": "Price Exception",
+          "condition": "price_variance > $50 OR price_variance > 5%",
+          "action": "route_to_buyer_review",
+          "priority": 1
+        },
+        {
+          "rule_id": "DR-AP-013",
+          "name": "Non-PO Invoice",
+          "condition": "po_number IS NULL",
+          "action": "route_to_department_approval",
+          "priority": 1
+        }
+      ],
+
+      "error_handlers": [
+        {
+          "error_type": "po_not_found",
+          "severity": "medium",
+          "action": "request_po_from_vendor",
+          "notification": ["requester", "vendor"]
+        },
+        {
+          "error_type": "gr_missing",
+          "severity": "medium",
+          "action": "hold_pending_receipt_confirmation",
+          "notification": ["receiving", "buyer"]
+        }
+      ]
+    },
+
+    {
+      "id": "agent_8_2_1_1_step3",
+      "apqc_id": "8.2.1.1",
+      "step_number": 3,
+      "step_name": "GL Coding and Cost Allocation",
+      "description": "Assign general ledger accounts and distribute costs",
+      "purpose": "Ensure proper expense classification and cost center allocation",
+      "business_value": "Accurate financial reporting and cost tracking",
+
+      "capabilities": [
+        "auto_gl_coding",
+        "cost_center_assignment",
+        "project_allocation",
+        "tax_code_determination",
+        "intercompany_handling",
+        "split_coding"
+      ],
+
+      "input_schema": [
+        {
+          "name": "invoice_id",
+          "type": "string",
+          "required": true
+        },
+        {
+          "name": "line_items",
+          "type": "array",
+          "required": true
+        },
+        {
+          "name": "vendor_default_coding",
+          "type": "object",
+          "required": false
+        },
+        {
+          "name": "po_coding",
+          "type": "object",
+          "description": "GL coding from purchase order",
+          "required": false
+        }
+      ],
+
+      "output_schema": [
+        {
+          "name": "coding_complete",
+          "type": "boolean",
+          "required": true
+        },
+        {
+          "name": "gl_entries",
+          "type": "array",
+          "required": true,
+          "example": [{"gl_account": "6100-00", "cost_center": "CC-1234", "amount": 5000.00, "tax_code": "V1"}]
+        },
+        {
+          "name": "tax_amounts",
+          "type": "object",
+          "required": true
+        },
+        {
+          "name": "intercompany_flag",
+          "type": "boolean",
+          "required": true
+        }
+      ],
+
+      "required_integrations": [
+        {"system": "ERP - General Ledger", "type": "read", "protocol": "API"},
+        {"system": "Chart of Accounts", "type": "read", "protocol": "API"},
+        {"system": "Cost Center Master", "type": "read", "protocol": "API"},
+        {"system": "Tax Engine", "type": "calculate", "protocol": "API", "examples": ["Vertex", "Avalara"]}
+      ],
+
+      "decision_rules": [
+        {
+          "rule_id": "DR-AP-020",
+          "name": "Use PO Coding",
+          "condition": "po_coding EXISTS AND is_valid",
+          "action": "apply_po_coding",
+          "priority": 1
+        },
+        {
+          "rule_id": "DR-AP-021",
+          "name": "Use Vendor Default",
+          "condition": "po_coding NOT EXISTS AND vendor_default_coding EXISTS",
+          "action": "apply_vendor_default",
+          "priority": 2
+        },
+        {
+          "rule_id": "DR-AP-022",
+          "name": "Capital vs Expense",
+          "condition": "line_item.amount > 5000 AND category IN ['Equipment', 'Furniture']",
+          "action": "route_to_fixed_asset_team",
+          "priority": 1
+        }
+      ],
+
+      "error_handlers": [
+        {
+          "error_type": "invalid_gl_account",
+          "severity": "high",
+          "action": "route_to_accounting",
+          "notification": ["ap_team", "accounting"]
+        },
+        {
+          "error_type": "closed_cost_center",
+          "severity": "high",
+          "action": "request_valid_cost_center",
+          "notification": ["requester"]
+        }
+      ]
+    },
+
+    {
+      "id": "agent_8_2_1_1_step4",
+      "apqc_id": "8.2.1.1",
+      "step_number": 4,
+      "step_name": "Invoice Approval Routing",
+      "description": "Route invoice through approval workflow based on amount and type",
+      "purpose": "Ensure proper authorization before payment",
+      "business_value": "Enforce spending controls and delegation of authority",
+
+      "capabilities": [
+        "determine_approval_chain",
+        "send_approval_requests",
+        "track_approval_status",
+        "handle_delegation",
+        "escalate_overdue",
+        "parallel_approval"
+      ],
+
+      "input_schema": [
+        {
+          "name": "invoice_id",
+          "type": "string",
+          "required": true
+        },
+        {
+          "name": "invoice_amount",
+          "type": "currency",
+          "required": true
+        },
+        {
+          "name": "expense_category",
+          "type": "string",
+          "required": true
+        },
+        {
+          "name": "cost_center",
+          "type": "string",
+          "required": true
+        },
+        {
+          "name": "match_status",
+          "type": "string",
+          "required": true
+        }
+      ],
+
+      "output_schema": [
+        {
+          "name": "approval_status",
+          "type": "string",
+          "required": true,
+          "validation": {"enum": ["approved", "rejected", "pending", "escalated"]}
+        },
+        {
+          "name": "approvers",
+          "type": "array",
+          "required": true
+        },
+        {
+          "name": "approval_timestamp",
+          "type": "datetime",
+          "required": false
+        },
+        {
+          "name": "rejection_reason",
+          "type": "string",
+          "required": false
+        },
+        {
+          "name": "audit_trail",
+          "type": "array",
+          "required": true
+        }
+      ],
+
+      "required_integrations": [
+        {"system": "Workflow Engine", "type": "orchestration", "protocol": "API"},
+        {"system": "HR System", "type": "read", "protocol": "API", "examples": ["Workday", "SAP SuccessFactors"]},
+        {"system": "Delegation Matrix", "type": "read", "protocol": "API"},
+        {"system": "Email/Notification", "type": "outbound", "protocol": "SMTP/API"}
+      ],
+
+      "decision_rules": [
+        {
+          "rule_id": "DR-AP-030",
+          "name": "Auto-Approve Matched",
+          "condition": "match_status == 'full_match' AND invoice_amount <= 1000",
+          "action": "auto_approve",
+          "priority": 1
+        },
+        {
+          "rule_id": "DR-AP-031",
+          "name": "Manager Approval",
+          "condition": "invoice_amount BETWEEN 1000 AND 10000",
+          "action": "route_to_cost_center_manager",
+          "priority": 2
+        },
+        {
+          "rule_id": "DR-AP-032",
+          "name": "Director Approval",
+          "condition": "invoice_amount BETWEEN 10000 AND 50000",
+          "action": "route_to_director",
+          "priority": 2
+        },
+        {
+          "rule_id": "DR-AP-033",
+          "name": "VP Approval",
+          "condition": "invoice_amount > 50000",
+          "action": "route_to_vp_and_finance",
+          "priority": 2
+        },
+        {
+          "rule_id": "DR-AP-034",
+          "name": "Escalation",
+          "condition": "approval_pending_days > 5",
+          "action": "escalate_to_next_level",
+          "priority": 1
+        }
+      ],
+
+      "error_handlers": [
+        {
+          "error_type": "approver_unavailable",
+          "severity": "medium",
+          "action": "apply_delegation_or_escalate",
+          "notification": ["backup_approver"]
+        },
+        {
+          "error_type": "rejection",
+          "severity": "high",
+          "action": "return_to_requester_with_reason",
+          "notification": ["requester", "ap_team", "vendor"]
+        }
+      ]
+    },
+
+    {
+      "id": "agent_8_2_1_1_step5",
+      "apqc_id": "8.2.1.1",
+      "step_number": 5,
+      "step_name": "Payment Scheduling",
+      "description": "Schedule payment based on terms, cash position, and discounts",
+      "purpose": "Optimize payment timing for cash flow and discount capture",
+      "business_value": "Maximize early payment discounts while maintaining cash position",
+
+      "capabilities": [
+        "calculate_due_date",
+        "evaluate_early_payment_discount",
+        "check_cash_position",
+        "batch_payments",
+        "prioritize_payments",
+        "hold_management"
+      ],
+
+      "input_schema": [
+        {
+          "name": "invoice_id",
+          "type": "string",
+          "required": true
+        },
+        {
+          "name": "invoice_amount",
+          "type": "currency",
+          "required": true
+        },
+        {
+          "name": "due_date",
+          "type": "date",
+          "required": true
+        },
+        {
+          "name": "payment_terms",
+          "type": "string",
+          "required": true,
+          "example": "2/10 Net 30"
+        },
+        {
+          "name": "vendor_priority",
+          "type": "string",
+          "required": false
+        }
+      ],
+
+      "output_schema": [
+        {
+          "name": "scheduled_payment_date",
+          "type": "date",
+          "required": true
+        },
+        {
+          "name": "payment_amount",
+          "type": "currency",
+          "required": true
+        },
+        {
+          "name": "discount_taken",
+          "type": "currency",
+          "required": false
+        },
+        {
+          "name": "payment_batch_id",
+          "type": "string",
+          "required": true
+        },
+        {
+          "name": "payment_method",
+          "type": "string",
+          "required": true,
+          "validation": {"enum": ["ACH", "Wire", "Check", "Virtual Card", "P-Card"]}
+        }
+      ],
+
+      "required_integrations": [
+        {"system": "Treasury Management", "type": "read", "protocol": "API", "examples": ["Kyriba", "GTreasury"]},
+        {"system": "Bank Portal", "type": "read", "protocol": "API"},
+        {"system": "Payment Terms Master", "type": "read", "protocol": "API"}
+      ],
+
+      "decision_rules": [
+        {
+          "rule_id": "DR-AP-040",
+          "name": "Take Early Discount",
+          "condition": "discount_available AND discount_apr > 15% AND cash_available",
+          "action": "schedule_for_discount_date",
+          "priority": 1
+        },
+        {
+          "rule_id": "DR-AP-041",
+          "name": "Strategic Vendor",
+          "condition": "vendor_priority == 'strategic'",
+          "action": "schedule_before_due_date",
+          "priority": 1
+        },
+        {
+          "rule_id": "DR-AP-042",
+          "name": "Cash Conservation",
+          "condition": "cash_position < threshold",
+          "action": "schedule_on_due_date",
+          "priority": 2
+        },
+        {
+          "rule_id": "DR-AP-043",
+          "name": "Virtual Card Eligible",
+          "condition": "vendor_accepts_card AND amount < 25000",
+          "action": "assign_virtual_card_payment",
+          "priority": 2
+        }
+      ],
+
+      "error_handlers": [
+        {
+          "error_type": "insufficient_funds_projected",
+          "severity": "high",
+          "action": "alert_treasury_and_prioritize",
+          "notification": ["treasury", "ap_manager"]
+        },
+        {
+          "error_type": "payment_hold",
+          "severity": "medium",
+          "action": "exclude_from_batch",
+          "notification": ["ap_team"]
+        }
+      ]
+    },
+
+    {
+      "id": "agent_8_2_1_1_step6",
+      "apqc_id": "8.2.1.1",
+      "step_number": 6,
+      "step_name": "Payment Execution",
+      "description": "Execute payments through appropriate channels",
+      "purpose": "Transfer funds to vendors securely and efficiently",
+      "business_value": "Timely and accurate vendor payments with full audit trail",
+
+      "capabilities": [
+        "generate_payment_file",
+        "execute_ach_payment",
+        "execute_wire_transfer",
+        "print_checks",
+        "process_virtual_card",
+        "positive_pay_file"
+      ],
+
+      "input_schema": [
+        {
+          "name": "payment_batch_id",
+          "type": "string",
+          "required": true
+        },
+        {
+          "name": "payments",
+          "type": "array",
+          "required": true
+        },
+        {
+          "name": "payment_method",
+          "type": "string",
+          "required": true
+        },
+        {
+          "name": "bank_account",
+          "type": "string",
+          "required": true
+        }
+      ],
+
+      "output_schema": [
+        {
+          "name": "payment_confirmation",
+          "type": "object",
+          "required": true
+        },
+        {
+          "name": "payment_reference",
+          "type": "string",
+          "description": "Bank reference number",
+          "required": true
+        },
+        {
+          "name": "payment_status",
+          "type": "string",
+          "required": true,
+          "validation": {"enum": ["executed", "pending_bank", "failed", "returned"]}
+        },
+        {
+          "name": "positive_pay_file_generated",
+          "type": "boolean",
+          "required": false
+        }
+      ],
+
+      "required_integrations": [
+        {"system": "Banking Portal", "type": "bidirectional", "protocol": "SFTP/API", "examples": ["J.P. Morgan ACCESS", "Bank of America CashPro"]},
+        {"system": "ACH Processor", "type": "outbound", "protocol": "NACHA"},
+        {"system": "SWIFT Network", "type": "outbound", "protocol": "SWIFT MT/MX"},
+        {"system": "Virtual Card Platform", "type": "outbound", "protocol": "API", "examples": ["Amex vPayment", "Mastercard B2B"]}
+      ],
+
+      "decision_rules": [
+        {
+          "rule_id": "DR-AP-050",
+          "name": "Dual Approval Wire",
+          "condition": "payment_method == 'wire' AND amount > 100000",
+          "action": "require_dual_authorization",
+          "priority": 1
+        },
+        {
+          "rule_id": "DR-AP-051",
+          "name": "Same-Day ACH",
+          "condition": "urgent_flag == true AND amount < 1000000",
+          "action": "use_same_day_ach",
+          "priority": 1
+        },
+        {
+          "rule_id": "DR-AP-052",
+          "name": "International Wire",
+          "condition": "vendor_country != 'US'",
+          "action": "use_international_wire",
+          "priority": 1
+        }
+      ],
+
+      "error_handlers": [
+        {
+          "error_type": "bank_rejection",
+          "severity": "critical",
+          "action": "reverse_booking_and_investigate",
+          "notification": ["treasury", "ap_manager", "vendor"]
+        },
+        {
+          "error_type": "ach_return",
+          "severity": "high",
+          "action": "update_vendor_banking_and_reprocess",
+          "notification": ["ap_team", "vendor"]
+        },
+        {
+          "error_type": "fraud_alert",
+          "severity": "critical",
+          "action": "stop_payment_and_investigate",
+          "notification": ["treasury", "security", "management"]
+        }
+      ]
+    },
+
+    {
+      "id": "agent_8_2_1_1_step7",
+      "apqc_id": "8.2.1.1",
+      "step_number": 7,
+      "step_name": "Payment Reconciliation",
+      "description": "Reconcile payments with bank statements and update vendor accounts",
+      "purpose": "Ensure all payments are properly recorded and reconciled",
+      "business_value": "Accurate cash reporting and vendor account balances",
+
+      "capabilities": [
+        "match_bank_transactions",
+        "clear_open_items",
+        "process_returns",
+        "update_vendor_ledger",
+        "generate_reconciliation_report"
+      ],
+
+      "input_schema": [
+        {
+          "name": "bank_statement",
+          "type": "object",
+          "required": true
+        },
+        {
+          "name": "payment_batch_id",
+          "type": "string",
+          "required": true
+        },
+        {
+          "name": "expected_payments",
+          "type": "array",
+          "required": true
+        }
+      ],
+
+      "output_schema": [
+        {
+          "name": "reconciliation_status",
+          "type": "string",
+          "required": true,
+          "validation": {"enum": ["fully_reconciled", "partial", "exceptions"]}
+        },
+        {
+          "name": "matched_items",
+          "type": "array",
+          "required": true
+        },
+        {
+          "name": "unmatched_items",
+          "type": "array",
+          "required": true
+        },
+        {
+          "name": "variance_amount",
+          "type": "currency",
+          "required": true
+        }
+      ],
+
+      "required_integrations": [
+        {"system": "Bank Statement Feed", "type": "inbound", "protocol": "BAI2/MT940"},
+        {"system": "ERP - AP Subledger", "type": "bidirectional", "protocol": "API"},
+        {"system": "Reconciliation Tool", "type": "processing", "protocol": "API", "examples": ["BlackLine", "Trintech"]}
+      ],
+
+      "decision_rules": [
+        {
+          "rule_id": "DR-AP-060",
+          "name": "Auto-Match",
+          "condition": "amount_match AND reference_match",
+          "action": "auto_clear_items",
+          "priority": 1
+        },
+        {
+          "rule_id": "DR-AP-061",
+          "name": "Partial Match",
+          "condition": "amount_match AND reference_partial_match",
+          "action": "suggest_match_for_review",
+          "priority": 2
+        },
+        {
+          "rule_id": "DR-AP-062",
+          "name": "Stale Check",
+          "condition": "check_age > 180 days AND not_cleared",
+          "action": "void_and_reissue_or_escheat",
+          "priority": 1
+        }
+      ],
+
+      "error_handlers": [
+        {
+          "error_type": "unreconciled_variance",
+          "severity": "high",
+          "action": "escalate_to_accounting",
+          "notification": ["ap_manager", "accounting"]
+        },
+        {
+          "error_type": "bank_feed_failure",
+          "severity": "medium",
+          "action": "retry_and_alert_treasury",
+          "notification": ["treasury", "it_support"]
+        }
+      ]
+    },
+
+    {
+      "id": "agent_8_2_1_1_step8",
+      "apqc_id": "8.2.1.1",
+      "step_number": 8,
+      "step_name": "1099 and Tax Reporting",
+      "description": "Track 1099-reportable payments and generate year-end forms",
+      "purpose": "Ensure compliance with IRS reporting requirements",
+      "business_value": "Avoid IRS penalties and maintain tax compliance",
+
+      "capabilities": [
+        "track_1099_payments",
+        "validate_tin_information",
+        "generate_1099_forms",
+        "efile_with_irs",
+        "deliver_to_vendors",
+        "handle_corrections"
+      ],
+
+      "input_schema": [
+        {
+          "name": "tax_year",
+          "type": "integer",
+          "required": true
+        },
+        {
+          "name": "vendor_payments",
+          "type": "array",
+          "description": "All payments to 1099-eligible vendors",
+          "required": true
+        },
+        {
+          "name": "threshold_amount",
+          "type": "currency",
+          "default": 600.00,
+          "required": true
+        }
+      ],
+
+      "output_schema": [
+        {
+          "name": "vendors_over_threshold",
+          "type": "array",
+          "required": true
+        },
+        {
+          "name": "forms_generated",
+          "type": "integer",
+          "required": true
+        },
+        {
+          "name": "tin_validation_results",
+          "type": "object",
+          "required": true
+        },
+        {
+          "name": "irs_submission_status",
+          "type": "string",
+          "required": true
+        },
+        {
+          "name": "correction_count",
+          "type": "integer",
+          "required": true
+        }
+      ],
+
+      "required_integrations": [
+        {"system": "IRS FIRE System", "type": "outbound", "protocol": "IRS e-file"},
+        {"system": "TIN Matching", "type": "validation", "protocol": "API"},
+        {"system": "Print/Mail Service", "type": "outbound", "protocol": "API"},
+        {"system": "Tax Compliance Platform", "type": "processing", "protocol": "API", "examples": ["Sovos", "Avalara"]}
+      ],
+
+      "decision_rules": [
+        {
+          "rule_id": "DR-AP-070",
+          "name": "1099-NEC Threshold",
+          "condition": "vendor.type == 'contractor' AND total_payments >= 600",
+          "action": "include_in_1099_nec",
+          "priority": 1
+        },
+        {
+          "rule_id": "DR-AP-071",
+          "name": "1099-MISC",
+          "condition": "vendor.type IN ['rent', 'royalties'] AND total_payments >= 600",
+          "action": "include_in_1099_misc",
+          "priority": 1
+        },
+        {
+          "rule_id": "DR-AP-072",
+          "name": "TIN Mismatch",
+          "condition": "tin_validation == 'mismatch'",
+          "action": "initiate_backup_withholding",
+          "priority": 1
+        },
+        {
+          "rule_id": "DR-AP-073",
+          "name": "Missing W-9",
+          "condition": "w9_on_file == false",
+          "action": "request_w9_before_filing",
+          "priority": 1
+        }
+      ],
+
+      "error_handlers": [
+        {
+          "error_type": "irs_rejection",
+          "severity": "critical",
+          "action": "correct_and_resubmit",
+          "notification": ["tax_team", "ap_manager"]
+        },
+        {
+          "error_type": "tin_verification_failure",
+          "severity": "high",
+          "action": "contact_vendor_for_correction",
+          "notification": ["ap_team", "vendor"]
+        },
+        {
+          "error_type": "missed_deadline",
+          "severity": "critical",
+          "action": "file_extension_and_calculate_penalties",
+          "notification": ["tax_team", "cfo"]
+        }
+      ]
+    }
+  ],
+
+  "integration_summary": {
+    "erp_systems": ["SAP S/4HANA", "Oracle Cloud Financials", "Microsoft Dynamics 365", "NetSuite"],
+    "ocr_platforms": ["ABBYY FlexiCapture", "Kofax", "Azure Form Recognizer", "Google Document AI"],
+    "banking_systems": ["J.P. Morgan ACCESS", "Bank of America CashPro", "Citi Treasury", "Wells Fargo CEO"],
+    "tax_platforms": ["Sovos", "Avalara", "Thomson Reuters ONESOURCE"],
+    "workflow_systems": ["ServiceNow", "Microsoft Power Automate", "Coupa"],
+    "reconciliation_tools": ["BlackLine", "Trintech Cadency", "FloQast"]
+  },
+
+  "kpis": [
+    {
+      "name": "Invoice Processing Time",
+      "description": "Average days from receipt to approval",
+      "target": "< 3 days",
+      "measurement": "avg(approval_date - receipt_date)"
+    },
+    {
+      "name": "Straight-Through Processing Rate",
+      "description": "Percentage of invoices processed without manual intervention",
+      "target": "> 70%",
+      "measurement": "count(auto_approved) / count(total_invoices)"
+    },
+    {
+      "name": "Early Payment Discount Capture",
+      "description": "Percentage of available discounts captured",
+      "target": "> 90%",
+      "measurement": "sum(discounts_taken) / sum(discounts_available)"
+    },
+    {
+      "name": "Cost Per Invoice",
+      "description": "Total AP cost divided by invoice volume",
+      "target": "< $3.00",
+      "measurement": "total_ap_cost / invoice_count"
+    },
+    {
+      "name": "Three-Way Match Rate",
+      "description": "Percentage of PO invoices matched on first attempt",
+      "target": "> 85%",
+      "measurement": "count(first_attempt_match) / count(po_invoices)"
+    },
+    {
+      "name": "1099 Accuracy Rate",
+      "description": "Percentage of 1099s filed without corrections",
+      "target": "> 98%",
+      "measurement": "(total_1099s - corrections) / total_1099s"
+    }
+  ]
+}

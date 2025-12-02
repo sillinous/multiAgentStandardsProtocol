@@ -1,0 +1,260 @@
+{
+  "apqc_id": "9.3.1.1",
+  "apqc_name": "Process expense reimbursements",
+  "category": "9.0 - Manage Financial Resources",
+  "description": "End-to-end expense management workflow from submission through reimbursement, including policy compliance, approval routing, and payment processing.",
+  "orchestration_pattern": "sequential",
+  "total_steps": 6,
+  "estimated_duration_seconds": 172800,
+  "compliance_frameworks": ["SOX", "IRS Regulations", "Corporate Policy"],
+  "data_retention_days": 2555,
+
+  "agent_cards": [
+    {
+      "id": "agent_9_3_1_1_step1",
+      "apqc_id": "9.3.1.1",
+      "step_number": 1,
+      "step_name": "Expense Submission",
+      "description": "Capture expense claims with receipts and categorization",
+      "purpose": "Submit expense claims",
+      "business_value": "Digital expense capture",
+
+      "capabilities": ["receipt_capture", "ocr_processing", "expense_categorization", "policy_lookup", "duplicate_detection"],
+
+      "input_schema": [
+        {"name": "employee_id", "type": "string", "required": true},
+        {"name": "expense_date", "type": "string", "required": true},
+        {"name": "category", "type": "string", "required": true},
+        {"name": "amount", "type": "number", "required": true},
+        {"name": "currency", "type": "string", "required": true},
+        {"name": "receipt_image", "type": "string", "required": false},
+        {"name": "description", "type": "string", "required": true}
+      ],
+
+      "output_schema": [
+        {"name": "expense_id", "type": "string", "required": true},
+        {"name": "ocr_data", "type": "object", "required": false},
+        {"name": "category_suggestion", "type": "string", "required": true},
+        {"name": "policy_match", "type": "object", "required": true}
+      ],
+
+      "required_integrations": [
+        {"system": "Expense Management", "type": "bidirectional", "protocol": "API", "examples": ["Concur", "Expensify", "Chrome River"]},
+        {"system": "OCR Service", "type": "read", "protocol": "API", "examples": ["ABBYY", "AWS Textract"]}
+      ],
+
+      "decision_rules": [
+        {"rule_id": "DR-ES-001", "name": "Duplicate Check", "condition": "similar_expense_within_7_days", "action": "flag_for_review", "priority": 1}
+      ],
+
+      "error_handlers": [
+        {"error_type": "ocr_failed", "severity": "low", "action": "request_manual_entry", "notification": ["submitter"]}
+      ]
+    },
+
+    {
+      "id": "agent_9_3_1_1_step2",
+      "apqc_id": "9.3.1.1",
+      "step_number": 2,
+      "step_name": "Policy Validation",
+      "description": "Validate expense against corporate policies and spending limits",
+      "purpose": "Ensure policy compliance",
+      "business_value": "Automated compliance checks",
+
+      "capabilities": ["policy_validation", "limit_checking", "category_rules", "exception_handling", "audit_logging"],
+
+      "input_schema": [
+        {"name": "expense_id", "type": "string", "required": true},
+        {"name": "expense_details", "type": "object", "required": true},
+        {"name": "employee_profile", "type": "object", "required": true}
+      ],
+
+      "output_schema": [
+        {"name": "validation_result", "type": "string", "required": true, "validation": {"enum": ["compliant", "exception", "violation"]}},
+        {"name": "policy_violations", "type": "array", "required": false},
+        {"name": "exception_justification_required", "type": "boolean", "required": true}
+      ],
+
+      "required_integrations": [
+        {"system": "Policy Engine", "type": "read", "protocol": "API"},
+        {"system": "HRIS", "type": "read", "protocol": "API", "examples": ["Workday", "SAP SuccessFactors"]}
+      ],
+
+      "decision_rules": [
+        {"rule_id": "DR-PV-001", "name": "Over Limit", "condition": "amount > category_limit", "action": "require_justification", "priority": 1},
+        {"rule_id": "DR-PV-002", "name": "Weekend Expense", "condition": "expense_date.is_weekend AND category == 'meals'", "action": "require_business_justification", "priority": 2}
+      ],
+
+      "error_handlers": [
+        {"error_type": "policy_not_found", "severity": "medium", "action": "use_default_policy", "notification": ["finance_admin"]}
+      ]
+    },
+
+    {
+      "id": "agent_9_3_1_1_step3",
+      "apqc_id": "9.3.1.1",
+      "step_number": 3,
+      "step_name": "Approval Routing",
+      "description": "Route expense for appropriate approval based on amount and policy",
+      "purpose": "Obtain approvals",
+      "business_value": "Proper authorization",
+
+      "capabilities": ["approval_routing", "delegation_handling", "escalation", "reminder_management", "mobile_approval"],
+
+      "input_schema": [
+        {"name": "expense_id", "type": "string", "required": true},
+        {"name": "validation_result", "type": "object", "required": true},
+        {"name": "approval_matrix", "type": "object", "required": true}
+      ],
+
+      "output_schema": [
+        {"name": "approval_status", "type": "string", "required": true, "validation": {"enum": ["approved", "rejected", "pending", "escalated"]}},
+        {"name": "approver_id", "type": "string", "required": true},
+        {"name": "approval_notes", "type": "string", "required": false}
+      ],
+
+      "required_integrations": [
+        {"system": "Expense Management", "type": "bidirectional", "protocol": "API"},
+        {"system": "Workflow Engine", "type": "bidirectional", "protocol": "API"},
+        {"system": "Email/Notification", "type": "write", "protocol": "API"}
+      ],
+
+      "decision_rules": [
+        {"rule_id": "DR-AR-001", "name": "Auto Approve", "condition": "amount < auto_approval_limit AND validation_result == 'compliant'", "action": "auto_approve", "priority": 1},
+        {"rule_id": "DR-AR-002", "name": "Escalate", "condition": "pending_days > 5", "action": "escalate_to_next_level", "priority": 2}
+      ],
+
+      "error_handlers": [
+        {"error_type": "approver_unavailable", "severity": "medium", "action": "route_to_delegate", "notification": ["submitter"]}
+      ]
+    },
+
+    {
+      "id": "agent_9_3_1_1_step4",
+      "apqc_id": "9.3.1.1",
+      "step_number": 4,
+      "step_name": "Audit & Compliance Check",
+      "description": "Perform audit sampling and compliance verification",
+      "purpose": "Ensure regulatory compliance",
+      "business_value": "Audit readiness",
+
+      "capabilities": ["audit_sampling", "receipt_verification", "fraud_detection", "compliance_reporting", "audit_trail"],
+
+      "input_schema": [
+        {"name": "expense_id", "type": "string", "required": true},
+        {"name": "approval_status", "type": "string", "required": true},
+        {"name": "audit_selection_criteria", "type": "object", "required": true}
+      ],
+
+      "output_schema": [
+        {"name": "audit_status", "type": "string", "required": true, "validation": {"enum": ["passed", "flagged", "rejected"]}},
+        {"name": "audit_findings", "type": "array", "required": false},
+        {"name": "requires_investigation", "type": "boolean", "required": true}
+      ],
+
+      "required_integrations": [
+        {"system": "Audit Management", "type": "bidirectional", "protocol": "API"},
+        {"system": "Document Storage", "type": "read", "protocol": "API"}
+      ],
+
+      "decision_rules": [
+        {"rule_id": "DR-AC-001", "name": "Random Audit", "condition": "random_sample_selected OR high_value_expense", "action": "full_audit_review", "priority": 1}
+      ],
+
+      "error_handlers": [
+        {"error_type": "missing_receipt", "severity": "high", "action": "request_documentation", "notification": ["submitter", "manager"]}
+      ]
+    },
+
+    {
+      "id": "agent_9_3_1_1_step5",
+      "apqc_id": "9.3.1.1",
+      "step_number": 5,
+      "step_name": "Payment Processing",
+      "description": "Process reimbursement through payroll or direct payment",
+      "purpose": "Reimburse employee",
+      "business_value": "Timely reimbursement",
+
+      "capabilities": ["payment_processing", "currency_conversion", "payroll_integration", "direct_deposit", "payment_confirmation"],
+
+      "input_schema": [
+        {"name": "expense_id", "type": "string", "required": true},
+        {"name": "approved_amount", "type": "number", "required": true},
+        {"name": "payment_method", "type": "string", "required": true},
+        {"name": "employee_payment_details", "type": "object", "required": true}
+      ],
+
+      "output_schema": [
+        {"name": "payment_id", "type": "string", "required": true},
+        {"name": "payment_status", "type": "string", "required": true},
+        {"name": "payment_date", "type": "string", "required": true},
+        {"name": "reimbursed_amount", "type": "number", "required": true}
+      ],
+
+      "required_integrations": [
+        {"system": "Payroll", "type": "bidirectional", "protocol": "API", "examples": ["ADP", "Workday Payroll"]},
+        {"system": "Banking", "type": "write", "protocol": "API"},
+        {"system": "ERP", "type": "bidirectional", "protocol": "API", "examples": ["SAP", "Oracle"]}
+      ],
+
+      "decision_rules": [
+        {"rule_id": "DR-PP-001", "name": "Next Payroll", "condition": "amount < direct_payment_threshold", "action": "add_to_next_payroll", "priority": 1},
+        {"rule_id": "DR-PP-002", "name": "Direct Payment", "condition": "amount >= direct_payment_threshold OR urgent_request", "action": "process_direct_payment", "priority": 1}
+      ],
+
+      "error_handlers": [
+        {"error_type": "payment_failed", "severity": "high", "action": "retry_with_alternate_method", "notification": ["finance_team", "submitter"]}
+      ]
+    },
+
+    {
+      "id": "agent_9_3_1_1_step6",
+      "apqc_id": "9.3.1.1",
+      "step_number": 6,
+      "step_name": "Reporting & Analytics",
+      "description": "Generate expense reports and analytics for management",
+      "purpose": "Provide visibility",
+      "business_value": "Spend analytics",
+
+      "capabilities": ["report_generation", "trend_analysis", "budget_tracking", "anomaly_detection", "dashboard_updates"],
+
+      "input_schema": [
+        {"name": "expense_records", "type": "array", "required": true},
+        {"name": "reporting_period", "type": "object", "required": true},
+        {"name": "report_type", "type": "string", "required": true}
+      ],
+
+      "output_schema": [
+        {"name": "expense_report", "type": "object", "required": true},
+        {"name": "trend_insights", "type": "array", "required": true},
+        {"name": "budget_variance", "type": "object", "required": true},
+        {"name": "anomalies_detected", "type": "array", "required": false}
+      ],
+
+      "required_integrations": [
+        {"system": "BI Platform", "type": "write", "protocol": "API", "examples": ["Power BI", "Tableau"]},
+        {"system": "Data Warehouse", "type": "read", "protocol": "API"}
+      ],
+
+      "decision_rules": [
+        {"rule_id": "DR-RA-001", "name": "Budget Alert", "condition": "category_spend > budget_threshold * 0.8", "action": "send_budget_alert", "priority": 1}
+      ],
+
+      "error_handlers": [
+        {"error_type": "data_incomplete", "severity": "low", "action": "generate_partial_report", "notification": ["analytics_team"]}
+      ]
+    }
+  ],
+
+  "workflow_rules": {
+    "entry_criteria": ["expense_submitted", "employee_active"],
+    "exit_criteria": ["payment_processed", "expense_archived"],
+    "escalation_path": ["submitter", "direct_manager", "department_head", "finance_controller", "cfo"]
+  },
+
+  "kpis": [
+    {"metric": "reimbursement_time", "target": "< 5 business days", "measurement": "submission_to_payment_duration"},
+    {"metric": "policy_compliance_rate", "target": "> 95%", "measurement": "compliant_expenses_percentage"},
+    {"metric": "auto_approval_rate", "target": "> 60%", "measurement": "auto_approved_vs_total"}
+  ]
+}

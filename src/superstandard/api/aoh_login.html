@@ -1,0 +1,803 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AOH - Agent Operations Hub</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+        }
+
+        .login-container {
+            background: rgba(255, 255, 255, 0.15);
+            backdrop-filter: blur(10px);
+            border-radius: 20px;
+            padding: 40px;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+            border: 2px solid rgba(255, 255, 255, 0.2);
+            max-width: 450px;
+            width: 100%;
+        }
+
+        .header {
+            text-align: center;
+            margin-bottom: 30px;
+        }
+
+        .header h1 {
+            color: #fff;
+            font-size: 2em;
+            margin-bottom: 5px;
+        }
+
+        .header .subtitle {
+            color: rgba(255, 255, 255, 0.9);
+            font-size: 1.1em;
+            margin-bottom: 10px;
+        }
+
+        .connection-status {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            padding: 8px 16px;
+            border-radius: 20px;
+            background: rgba(255, 255, 255, 0.1);
+            font-size: 0.9em;
+            margin-top: 10px;
+        }
+
+        .status-dot {
+            width: 10px;
+            height: 10px;
+            border-radius: 50%;
+            background: #4ade80;
+            animation: pulse 2s infinite;
+        }
+
+        .status-dot.offline {
+            background: #f87171;
+            animation: none;
+        }
+
+        .status-dot.checking {
+            background: #fbbf24;
+        }
+
+        @keyframes pulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.5; }
+        }
+
+        .form-group {
+            margin-bottom: 20px;
+        }
+
+        .form-group label {
+            display: block;
+            color: #fff;
+            font-weight: 500;
+            margin-bottom: 8px;
+            font-size: 0.95em;
+        }
+
+        .form-group input {
+            width: 100%;
+            padding: 12px 16px;
+            border: 2px solid rgba(255, 255, 255, 0.3);
+            border-radius: 10px;
+            background: rgba(255, 255, 255, 0.1);
+            color: #fff;
+            font-size: 1em;
+            transition: all 0.3s;
+        }
+
+        .form-group input:focus {
+            outline: none;
+            border-color: rgba(255, 255, 255, 0.6);
+            background: rgba(255, 255, 255, 0.15);
+        }
+
+        .form-group input::placeholder {
+            color: rgba(255, 255, 255, 0.5);
+        }
+
+        .form-hint {
+            font-size: 0.85em;
+            color: rgba(255, 255, 255, 0.7);
+            margin-top: 5px;
+        }
+
+        .login-button {
+            width: 100%;
+            padding: 14px;
+            background: linear-gradient(135deg, #4ade80 0%, #22c55e 100%);
+            color: #fff;
+            border: none;
+            border-radius: 10px;
+            font-size: 1.1em;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s;
+            box-shadow: 0 5px 20px rgba(74, 222, 128, 0.4);
+            margin-top: 10px;
+        }
+
+        .login-button:hover:not(:disabled) {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 30px rgba(74, 222, 128, 0.6);
+        }
+
+        .login-button:active:not(:disabled) {
+            transform: translateY(0);
+        }
+
+        .login-button:disabled {
+            background: rgba(255, 255, 255, 0.3);
+            cursor: not-allowed;
+            box-shadow: none;
+        }
+
+        .loading-spinner {
+            display: inline-block;
+            width: 16px;
+            height: 16px;
+            border: 3px solid rgba(255, 255, 255, 0.3);
+            border-top-color: #fff;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+            margin-right: 8px;
+        }
+
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+
+        .notification {
+            padding: 15px;
+            border-radius: 10px;
+            margin-bottom: 20px;
+            font-size: 0.95em;
+            line-height: 1.5;
+            animation: slideIn 0.3s ease;
+        }
+
+        @keyframes slideIn {
+            from {
+                opacity: 0;
+                transform: translateY(-10px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .notification.error {
+            background: rgba(248, 113, 113, 0.2);
+            border: 2px solid #f87171;
+            color: #fff;
+        }
+
+        .notification.success {
+            background: rgba(74, 222, 128, 0.2);
+            border: 2px solid #4ade80;
+            color: #fff;
+        }
+
+        .notification.info {
+            background: rgba(96, 165, 250, 0.2);
+            border: 2px solid #60a5fa;
+            color: #fff;
+        }
+
+        .notification.warning {
+            background: rgba(251, 191, 36, 0.2);
+            border: 2px solid #fbbf24;
+            color: #fff;
+        }
+
+        .demo-credentials {
+            background: rgba(255, 255, 255, 0.1);
+            padding: 15px;
+            border-radius: 10px;
+            margin-top: 20px;
+            font-size: 0.9em;
+        }
+
+        .demo-credentials h3 {
+            color: #fff;
+            font-size: 1em;
+            margin-bottom: 10px;
+        }
+
+        .demo-credentials p {
+            color: rgba(255, 255, 255, 0.9);
+            margin: 5px 0;
+        }
+
+        .demo-credentials code {
+            background: rgba(0, 0, 0, 0.2);
+            padding: 2px 6px;
+            border-radius: 4px;
+            font-family: 'Courier New', monospace;
+            color: #4ade80;
+        }
+
+        .server-info {
+            text-align: center;
+            color: rgba(255, 255, 255, 0.8);
+            font-size: 0.85em;
+            margin-top: 15px;
+        }
+
+        .diagnose-button {
+            display: block;
+            width: 100%;
+            padding: 10px;
+            margin-top: 10px;
+            background: rgba(255, 255, 255, 0.1);
+            color: #fff;
+            border: 2px solid rgba(255, 255, 255, 0.3);
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 0.9em;
+            transition: all 0.3s;
+        }
+
+        .diagnose-button:hover {
+            background: rgba(255, 255, 255, 0.2);
+            border-color: rgba(255, 255, 255, 0.5);
+        }
+
+        .diagnostic-results {
+            background: rgba(0, 0, 0, 0.3);
+            padding: 15px;
+            border-radius: 8px;
+            margin-top: 10px;
+            font-size: 0.85em;
+            color: #fff;
+        }
+
+        .diagnostic-results h4 {
+            margin-bottom: 10px;
+        }
+
+        .diagnostic-results ul {
+            list-style: none;
+            padding-left: 0;
+        }
+
+        .diagnostic-results li {
+            padding: 5px 0;
+        }
+
+        .diagnostic-results li:before {
+            content: "• ";
+            color: #4ade80;
+            margin-right: 5px;
+        }
+    </style>
+</head>
+<body>
+    <div class="login-container">
+        <div class="header">
+            <h1>AOH</h1>
+            <p class="subtitle">Agent Operations Hub</p>
+            <div class="connection-status">
+                <span class="status-dot" id="statusDot"></span>
+                <span id="connectionStatus">Checking connection...</span>
+            </div>
+        </div>
+
+        <div id="notificationContainer"></div>
+
+        <form id="loginForm">
+            <div class="form-group">
+                <label for="principalId">Service Principal ID</label>
+                <input
+                    type="text"
+                    id="principalId"
+                    name="principalId"
+                    placeholder="test-principal"
+                    value="test-principal"
+                    required
+                />
+                <div class="form-hint">Default: test-principal</div>
+            </div>
+
+            <div class="form-group">
+                <label for="secret">Secret</label>
+                <input
+                    type="password"
+                    id="secret"
+                    name="secret"
+                    value="test-secret"
+                    required
+                />
+                <div class="form-hint">Default: test-secret</div>
+            </div>
+
+            <button type="submit" class="login-button" id="loginButton">
+                Login
+            </button>
+
+            <button type="button" class="diagnose-button" id="diagnoseButton">
+                🔧 Diagnose Connection Issues
+            </button>
+
+            <div id="diagnosticResults"></div>
+        </form>
+
+        <div class="demo-credentials">
+            <h3>Demo Credentials:</h3>
+            <p>Principal: <code>test-principal</code></p>
+            <p>Secret: <code>test-secret</code></p>
+        </div>
+
+        <div class="server-info">
+            <p>Server running on <strong id="serverUrl">http://localhost:3000</strong></p>
+        </div>
+    </div>
+
+    <script>
+        // ========================================================================
+        // NETWORK UTILITIES (Embedded)
+        // ========================================================================
+
+        class NetworkError extends Error {
+            constructor(message, statusCode = null, isTimeout = false, isOffline = false) {
+                super(message);
+                this.name = 'NetworkError';
+                this.statusCode = statusCode;
+                this.isTimeout = isTimeout;
+                this.isOffline = isOffline;
+            }
+        }
+
+        class NetworkUtils {
+            constructor(config = {}) {
+                this.config = {
+                    maxRetries: config.maxRetries || 3,
+                    initialRetryDelay: config.initialRetryDelay || 1000,
+                    maxRetryDelay: config.maxRetryDelay || 10000,
+                    timeout: config.timeout || 30000,
+                    retryOn: config.retryOn || [408, 429, 500, 502, 503, 504],
+                    ...config
+                };
+                this.isOnline = navigator.onLine;
+                this.setupNetworkListeners();
+            }
+
+            setupNetworkListeners() {
+                window.addEventListener('online', () => {
+                    this.isOnline = true;
+                    console.log('[NetworkUtils] Connection restored');
+                });
+                window.addEventListener('offline', () => {
+                    this.isOnline = false;
+                    console.log('[NetworkUtils] Connection lost');
+                });
+            }
+
+            async checkServerHealth(baseUrl) {
+                try {
+                    const controller = new AbortController();
+                    const timeoutId = setTimeout(() => controller.abort(), 5000);
+                    const response = await fetch(`${baseUrl}/api/health`, {
+                        method: 'GET',
+                        signal: controller.signal,
+                        headers: { 'Content-Type': 'application/json' }
+                    });
+                    clearTimeout(timeoutId);
+                    return {
+                        reachable: response.ok,
+                        status: response.status,
+                        statusText: response.statusText
+                    };
+                } catch (error) {
+                    return { reachable: false, error: error.message };
+                }
+            }
+
+            async sleep(ms) {
+                return new Promise(resolve => setTimeout(resolve, ms));
+            }
+
+            getRetryDelay(retryCount) {
+                const delay = Math.min(
+                    this.config.initialRetryDelay * Math.pow(2, retryCount),
+                    this.config.maxRetryDelay
+                );
+                return delay + Math.random() * 1000;
+            }
+
+            isRetryable(error, statusCode) {
+                if (error && (error.name === 'TypeError' || error.name === 'NetworkError' || error.name === 'AbortError')) {
+                    return true;
+                }
+                if (statusCode && this.config.retryOn.includes(statusCode)) {
+                    return true;
+                }
+                return false;
+            }
+
+            async fetchWithRetry(url, options = {}) {
+                if (!this.isOnline) {
+                    throw new NetworkError('No internet connection. Please check your network and try again.', null, false, true);
+                }
+                const maxRetries = options.maxRetries !== undefined ? options.maxRetries : this.config.maxRetries;
+                const timeout = options.timeout || this.config.timeout;
+                let lastError, lastStatusCode;
+
+                for (let attempt = 0; attempt <= maxRetries; attempt++) {
+                    try {
+                        const controller = new AbortController();
+                        const timeoutId = setTimeout(() => controller.abort(), timeout);
+                        try {
+                            const response = await fetch(url, {
+                                ...options,
+                                signal: controller.signal,
+                                headers: { 'Content-Type': 'application/json', ...options.headers }
+                            });
+                            clearTimeout(timeoutId);
+
+                            if (!response.ok) {
+                                lastStatusCode = response.status;
+                                let errorMessage = `HTTP ${response.status}: ${response.statusText}`;
+                                try {
+                                    const errorData = await response.json();
+                                    if (errorData.message || errorData.error || errorData.detail) {
+                                        errorMessage = errorData.message || errorData.error || errorData.detail;
+                                    }
+                                } catch (e) {}
+
+                                if (attempt < maxRetries && this.isRetryable(null, response.status)) {
+                                    const delay = this.getRetryDelay(attempt);
+                                    console.log(`[NetworkUtils] Attempt ${attempt + 1} failed. Retrying in ${Math.round(delay)}ms...`);
+                                    await this.sleep(delay);
+                                    continue;
+                                }
+                                throw new NetworkError(errorMessage, response.status);
+                            }
+                            return response;
+                        } catch (error) {
+                            clearTimeout(timeoutId);
+                            if (error.name === 'AbortError') {
+                                lastError = new NetworkError(`Request timed out after ${timeout}ms.`, null, true);
+                            } else {
+                                lastError = error;
+                            }
+                            throw lastError;
+                        }
+                    } catch (error) {
+                        lastError = error;
+                        if (attempt < maxRetries && this.isRetryable(error, lastStatusCode)) {
+                            const delay = this.getRetryDelay(attempt);
+                            console.log(`[NetworkUtils] Attempt ${attempt + 1} failed. Retrying...`);
+                            await this.sleep(delay);
+                            continue;
+                        }
+                        break;
+                    }
+                }
+
+                if (lastError) {
+                    if (lastError instanceof NetworkError) throw lastError;
+                    let message = lastError.message || 'Unknown network error';
+                    if (message.includes('Failed to fetch')) {
+                        message = 'Cannot connect to server. Please ensure the server is running.';
+                    }
+                    throw new NetworkError(`Network request failed: ${message}`, lastStatusCode);
+                }
+                throw new NetworkError('Unknown error occurred');
+            }
+
+            async post(url, data, options = {}) {
+                const response = await this.fetchWithRetry(url, {
+                    ...options,
+                    method: 'POST',
+                    body: JSON.stringify(data)
+                });
+                return await response.json();
+            }
+
+            formatErrorMessage(error) {
+                if (error instanceof NetworkError) {
+                    if (error.isOffline) return '❌ You are offline. Please check your internet connection.';
+                    if (error.isTimeout) return '⏱️ Request timed out. The server is taking too long to respond.';
+                    if (error.statusCode) {
+                        const messages = {
+                            400: '❌ Bad request. Please check your input.',
+                            401: '🔒 Invalid credentials. Please check your Principal ID and Secret.',
+                            403: '🚫 Access denied.',
+                            404: '🔍 Server endpoint not found. Please restart the server.',
+                            500: '🔥 Server error. Please check server logs.',
+                            503: '⚠️ Service unavailable. Please try again later.'
+                        };
+                        return messages[error.statusCode] || `❌ Error (${error.statusCode}): ${error.message}`;
+                    }
+                    return `❌ ${error.message}`;
+                }
+                return `❌ An unexpected error occurred: ${error.message || 'Unknown error'}`;
+            }
+
+            async diagnoseConnection(baseUrl) {
+                const results = {
+                    online: this.isOnline,
+                    serverReachable: false,
+                    serverUrl: baseUrl,
+                    issues: [],
+                    suggestions: []
+                };
+                if (!this.isOnline) {
+                    results.issues.push('Device is offline');
+                    results.suggestions.push('Check your internet connection');
+                    return results;
+                }
+                try {
+                    const health = await this.checkServerHealth(baseUrl);
+                    if (health.reachable) {
+                        results.serverReachable = true;
+                        results.serverStatus = health.status;
+                    } else {
+                        results.issues.push('Cannot reach server');
+                        results.suggestions.push(`Ensure server is running at ${baseUrl}`);
+                        results.suggestions.push('Restart the server to pick up new endpoints');
+                        results.suggestions.push('Check if the port is correct');
+                    }
+                } catch (error) {
+                    results.issues.push(`Connection test failed: ${error.message}`);
+                }
+                return results;
+            }
+        }
+
+        // ========================================================================
+        // LOGIN PAGE SCRIPT
+        // ========================================================================
+
+        // Configuration
+        const DEFAULT_API_BASE = 'http://localhost:3000';  // Default to port 3000
+        const FALLBACK_API_BASES = [
+            'http://localhost:8080',
+            'http://localhost:8000',
+            window.location.origin
+        ];
+
+        let API_BASE = DEFAULT_API_BASE;
+        let networkUtils = new NetworkUtils({
+            maxRetries: 3,
+            initialRetryDelay: 1000,
+            timeout: 10000
+        });
+
+        // DOM Elements
+        const loginForm = document.getElementById('loginForm');
+        const loginButton = document.getElementById('loginButton');
+        const diagnoseButton = document.getElementById('diagnoseButton');
+        const notificationContainer = document.getElementById('notificationContainer');
+        const diagnosticResults = document.getElementById('diagnosticResults');
+        const statusDot = document.getElementById('statusDot');
+        const connectionStatus = document.getElementById('connectionStatus');
+        const serverUrl = document.getElementById('serverUrl');
+
+        // Initialize
+        document.addEventListener('DOMContentLoaded', async () => {
+            await checkServerConnection();
+        });
+
+        /**
+         * Check server connection and find working endpoint
+         */
+        async function checkServerConnection() {
+            statusDot.className = 'status-dot checking';
+            connectionStatus.textContent = 'Checking server...';
+
+            // Try default first
+            let health = await networkUtils.checkServerHealth(DEFAULT_API_BASE);
+
+            if (health.reachable) {
+                API_BASE = DEFAULT_API_BASE;
+                updateConnectionStatus(true, DEFAULT_API_BASE);
+                return;
+            }
+
+            // Try fallbacks
+            for (const fallback of FALLBACK_API_BASES) {
+                health = await networkUtils.checkServerHealth(fallback);
+                if (health.reachable) {
+                    API_BASE = fallback;
+                    updateConnectionStatus(true, fallback);
+                    showNotification(
+                        `Server found at ${fallback} (not default ${DEFAULT_API_BASE})`,
+                        'warning'
+                    );
+                    return;
+                }
+            }
+
+            // No server found
+            updateConnectionStatus(false);
+            showNotification(
+                `Cannot connect to server. Please ensure the server is running at ${DEFAULT_API_BASE} or start it with: uvicorn src.superstandard.api.server:app --port 3000`,
+                'error'
+            );
+        }
+
+        /**
+         * Update connection status UI
+         */
+        function updateConnectionStatus(connected, url = null) {
+            if (connected) {
+                statusDot.className = 'status-dot';
+                connectionStatus.textContent = 'Connected';
+                serverUrl.textContent = url || API_BASE;
+                loginButton.disabled = false;
+            } else {
+                statusDot.className = 'status-dot offline';
+                connectionStatus.textContent = 'Server Offline';
+                loginButton.disabled = true;
+            }
+        }
+
+        /**
+         * Handle login form submission
+         */
+        loginForm.addEventListener('submit', async (e) => {
+            e.preventDefault();
+
+            const principalId = document.getElementById('principalId').value.trim();
+            const secret = document.getElementById('secret').value;
+
+            if (!principalId || !secret) {
+                showNotification('Please enter both Principal ID and Secret', 'warning');
+                return;
+            }
+
+            // Disable button and show loading
+            loginButton.disabled = true;
+            loginButton.innerHTML = '<span class="loading-spinner"></span> Authenticating...';
+
+            try {
+                // Attempt login
+                const result = await networkUtils.post(`${API_BASE}/api/auth/login`, {
+                    principal_id: principalId,
+                    secret: secret
+                }, {
+                    maxRetries: 2,
+                    timeout: 15000
+                });
+
+                if (result.success || result.token) {
+                    showNotification('✅ Login successful! Redirecting...', 'success');
+
+                    // Store token if provided
+                    if (result.token) {
+                        localStorage.setItem('auth_token', result.token);
+                    }
+
+                    // Redirect to dashboard after short delay
+                    setTimeout(() => {
+                        window.location.href = '/dashboard';
+                    }, 1500);
+                } else {
+                    showNotification(
+                        result.message || 'Login failed. Please check your credentials.',
+                        'error'
+                    );
+                    loginButton.disabled = false;
+                    loginButton.textContent = 'Login';
+                }
+            } catch (error) {
+                console.error('[Login] Error:', error);
+
+                const errorMessage = networkUtils.formatErrorMessage(error);
+                showNotification(errorMessage, 'error');
+
+                // Re-enable button
+                loginButton.disabled = false;
+                loginButton.textContent = 'Login';
+
+                // If it's a connection error, suggest diagnosing
+                if (error instanceof NetworkError && (error.isOffline || error.isTimeout)) {
+                    showNotification(
+                        'Connection issues detected. Click "Diagnose Connection Issues" below for more information.',
+                        'info',
+                        10000
+                    );
+                }
+            }
+        });
+
+        /**
+         * Handle diagnose button click
+         */
+        diagnoseButton.addEventListener('click', async () => {
+            diagnoseButton.disabled = true;
+            diagnoseButton.textContent = '🔧 Diagnosing...';
+            diagnosticResults.innerHTML = '';
+
+            try {
+                const diagnosis = await networkUtils.diagnoseConnection(API_BASE);
+
+                let html = '<div class="diagnostic-results"><h4>Connection Diagnostic Results:</h4><ul>';
+
+                html += `<li>Device Online: ${diagnosis.online ? '✅ Yes' : '❌ No'}</li>`;
+                html += `<li>Server Reachable: ${diagnosis.serverReachable ? '✅ Yes' : '❌ No'}</li>`;
+                html += `<li>Server URL: ${diagnosis.serverUrl}</li>`;
+
+                if (diagnosis.serverStatus) {
+                    html += `<li>Server Status: ${diagnosis.serverStatus}</li>`;
+                }
+
+                if (diagnosis.issues.length > 0) {
+                    html += '<li><strong>Issues Found:</strong><ul>';
+                    diagnosis.issues.forEach(issue => {
+                        html += `<li>${issue}</li>`;
+                    });
+                    html += '</ul></li>';
+                }
+
+                if (diagnosis.suggestions.length > 0) {
+                    html += '<li><strong>Suggestions:</strong><ul>';
+                    diagnosis.suggestions.forEach(suggestion => {
+                        html += `<li>${suggestion}</li>`;
+                    });
+                    html += '</ul></li>';
+                }
+
+                html += '</ul></div>';
+                diagnosticResults.innerHTML = html;
+
+            } catch (error) {
+                diagnosticResults.innerHTML = `
+                    <div class="diagnostic-results">
+                        <h4>Diagnostic Error:</h4>
+                        <p>Unable to complete diagnosis: ${error.message}</p>
+                    </div>
+                `;
+            } finally {
+                diagnoseButton.disabled = false;
+                diagnoseButton.textContent = '🔧 Diagnose Connection Issues';
+            }
+        });
+
+        /**
+         * Show notification
+         */
+        function showNotification(message, type = 'info', duration = 8000) {
+            const notification = document.createElement('div');
+            notification.className = `notification ${type}`;
+            notification.textContent = message;
+
+            notificationContainer.appendChild(notification);
+
+            // Auto-dismiss
+            setTimeout(() => {
+                notification.style.opacity = '0';
+                setTimeout(() => notification.remove(), 300);
+            }, duration);
+        }
+
+        // Auto-refresh connection status every 30 seconds
+        setInterval(async () => {
+            const health = await networkUtils.checkServerHealth(API_BASE);
+            updateConnectionStatus(health.reachable, API_BASE);
+        }, 30000);
+    </script>
+</body>
+</html>

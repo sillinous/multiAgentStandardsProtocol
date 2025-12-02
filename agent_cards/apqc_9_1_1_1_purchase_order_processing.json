@@ -1,0 +1,688 @@
+{
+  "apqc_id": "9.1.1.1",
+  "apqc_name": "Process purchase requisitions and create purchase orders",
+  "category": "9.0 - Manage Financial Resources",
+  "description": "End-to-end purchase order workflow from requisition to PO creation, including vendor selection, approval routing, contract compliance, and ERP integration.",
+  "orchestration_pattern": "sequential",
+  "total_steps": 7,
+  "estimated_duration_seconds": 3600,
+  "compliance_frameworks": ["SOX", "Procurement Policy"],
+  "data_retention_days": 2555,
+
+  "agent_cards": [
+    {
+      "id": "agent_9_1_1_1_step1",
+      "apqc_id": "9.1.1.1",
+      "step_number": 1,
+      "step_name": "Purchase Requisition Intake",
+      "description": "Receive and validate purchase requisitions from requesters across the organization",
+      "purpose": "Capture purchase needs with complete information for processing",
+      "business_value": "Standardizes procurement requests and ensures complete documentation",
+
+      "capabilities": [
+        "receive_requisition",
+        "validate_required_fields",
+        "check_budget_availability",
+        "validate_requester_authority",
+        "detect_duplicate_requests",
+        "categorize_purchase_type"
+      ],
+
+      "input_schema": [
+        {
+          "name": "requester_id",
+          "type": "string",
+          "description": "Employee ID of the requester",
+          "required": true
+        },
+        {
+          "name": "department",
+          "type": "string",
+          "description": "Requesting department",
+          "required": true
+        },
+        {
+          "name": "line_items",
+          "type": "array",
+          "description": "Items/services to purchase",
+          "required": true,
+          "example": [
+            {"description": "Laptop - Dell XPS 15", "quantity": 5, "estimated_price": 1500.00, "category": "IT Equipment"}
+          ]
+        },
+        {
+          "name": "justification",
+          "type": "string",
+          "description": "Business justification for purchase",
+          "required": true
+        },
+        {
+          "name": "needed_by_date",
+          "type": "date",
+          "required": true
+        },
+        {
+          "name": "cost_center",
+          "type": "string",
+          "required": true
+        },
+        {
+          "name": "preferred_vendor",
+          "type": "string",
+          "required": false
+        }
+      ],
+
+      "output_schema": [
+        {
+          "name": "requisition_id",
+          "type": "string",
+          "description": "Unique requisition number",
+          "required": true,
+          "example": "REQ-2025-001234"
+        },
+        {
+          "name": "validation_status",
+          "type": "string",
+          "required": true,
+          "validation": {"enum": ["valid", "needs_info", "rejected"]}
+        },
+        {
+          "name": "estimated_total",
+          "type": "currency",
+          "required": true
+        },
+        {
+          "name": "budget_status",
+          "type": "object",
+          "description": "Budget availability check result",
+          "required": true
+        },
+        {
+          "name": "purchase_category",
+          "type": "string",
+          "description": "Classified purchase type",
+          "required": true,
+          "validation": {"enum": ["goods", "services", "capital", "software", "facilities"]}
+        }
+      ],
+
+      "required_integrations": ["coupa", "sap_ariba"],
+      "optional_integrations": ["oracle_procurement"],
+
+      "decision_rules": [
+        {
+          "id": "rule_budget_check",
+          "name": "Budget Availability",
+          "description": "Ensure sufficient budget exists",
+          "condition": "available_budget >= estimated_total",
+          "action_if_true": "proceed_to_next_step",
+          "action_if_false": "route_to_budget_exception",
+          "configurable": false
+        }
+      ],
+
+      "next_step_on_success": "agent_9_1_1_1_step2",
+      "expected_duration_seconds": 60,
+      "timeout_seconds": 300,
+      "requires_audit_log": true,
+      "version": "1.0.0",
+      "status": "active"
+    },
+
+    {
+      "id": "agent_9_1_1_1_step2",
+      "apqc_id": "9.1.1.1",
+      "step_number": 2,
+      "step_name": "Vendor Selection and Sourcing",
+      "description": "Identify and recommend vendors based on existing contracts, catalog items, and preferred vendor lists",
+      "purpose": "Ensure best value sourcing while complying with procurement policies",
+      "business_value": "Maximizes contract utilization and ensures competitive pricing",
+
+      "capabilities": [
+        "search_catalog_items",
+        "match_existing_contracts",
+        "recommend_vendors",
+        "check_preferred_vendors",
+        "compare_pricing",
+        "verify_vendor_compliance"
+      ],
+
+      "input_schema": [
+        {
+          "name": "requisition_id",
+          "type": "string",
+          "required": true
+        },
+        {
+          "name": "line_items",
+          "type": "array",
+          "required": true
+        },
+        {
+          "name": "preferred_vendor",
+          "type": "string",
+          "required": false
+        }
+      ],
+
+      "output_schema": [
+        {
+          "name": "vendor_recommendations",
+          "type": "array",
+          "description": "Ranked list of recommended vendors",
+          "required": true,
+          "example": [
+            {"vendor_id": "VND-001", "vendor_name": "Tech Supplies Inc", "contract_price": 1400.00, "compliance_status": "approved"}
+          ]
+        },
+        {
+          "name": "selected_vendor",
+          "type": "object",
+          "description": "Auto-selected or recommended vendor",
+          "required": true
+        },
+        {
+          "name": "catalog_match",
+          "type": "boolean",
+          "description": "Whether items found in catalog",
+          "required": true
+        },
+        {
+          "name": "contract_id",
+          "type": "string",
+          "description": "Applicable contract if exists",
+          "required": false
+        },
+        {
+          "name": "sourcing_method",
+          "type": "string",
+          "required": true,
+          "validation": {"enum": ["catalog", "contract", "spot_buy", "rfq_required"]}
+        }
+      ],
+
+      "required_integrations": ["coupa", "sap_ariba"],
+
+      "decision_rules": [
+        {
+          "id": "rule_contract_compliance",
+          "name": "Contract Utilization",
+          "description": "Use existing contracts when available",
+          "condition": "contract_exists == true",
+          "action_if_true": "use_contract_pricing",
+          "action_if_false": "allow_spot_buy_if_under_threshold",
+          "configurable": false
+        },
+        {
+          "id": "rule_rfq_threshold",
+          "name": "RFQ Requirement",
+          "description": "Require competitive bids above threshold",
+          "condition": "estimated_total <= rfq_threshold",
+          "action_if_true": "skip_rfq",
+          "action_if_false": "initiate_rfq_process",
+          "configurable": true,
+          "default_threshold": 10000.00
+        }
+      ],
+
+      "next_step_on_success": "agent_9_1_1_1_step3",
+      "expected_duration_seconds": 120,
+      "requires_audit_log": true,
+      "version": "1.0.0",
+      "status": "active"
+    },
+
+    {
+      "id": "agent_9_1_1_1_step3",
+      "apqc_id": "9.1.1.1",
+      "step_number": 3,
+      "step_name": "Approval Workflow Routing",
+      "description": "Route requisition through appropriate approval chain based on amount, type, and department",
+      "purpose": "Ensure proper authorization before commitment",
+      "business_value": "Enforces spending controls and policy compliance",
+
+      "capabilities": [
+        "determine_approval_chain",
+        "route_to_approvers",
+        "send_approval_notifications",
+        "handle_delegation",
+        "track_approval_status",
+        "escalate_overdue"
+      ],
+
+      "input_schema": [
+        {
+          "name": "requisition_id",
+          "type": "string",
+          "required": true
+        },
+        {
+          "name": "estimated_total",
+          "type": "currency",
+          "required": true
+        },
+        {
+          "name": "department",
+          "type": "string",
+          "required": true
+        },
+        {
+          "name": "purchase_category",
+          "type": "string",
+          "required": true
+        },
+        {
+          "name": "requester_id",
+          "type": "string",
+          "required": true
+        }
+      ],
+
+      "output_schema": [
+        {
+          "name": "approval_status",
+          "type": "string",
+          "required": true,
+          "validation": {"enum": ["approved", "rejected", "pending", "escalated"]}
+        },
+        {
+          "name": "approval_chain",
+          "type": "array",
+          "description": "List of approvers and their decisions",
+          "required": true
+        },
+        {
+          "name": "final_approver_id",
+          "type": "string",
+          "required": false
+        },
+        {
+          "name": "approval_timestamp",
+          "type": "datetime",
+          "required": false
+        },
+        {
+          "name": "rejection_reason",
+          "type": "string",
+          "required": false
+        }
+      ],
+
+      "required_integrations": ["slack", "microsoft_teams", "sendgrid"],
+
+      "decision_rules": [
+        {
+          "id": "rule_approval_matrix",
+          "name": "Approval Authority Matrix",
+          "description": "Determine approvers based on amount",
+          "condition": "amount <= single_approver_limit",
+          "action_if_true": "route_to_manager",
+          "action_if_false": "route_to_multi_level_approval",
+          "configurable": true,
+          "default_threshold": 5000.00
+        },
+        {
+          "id": "rule_capital_approval",
+          "name": "Capital Purchase Approval",
+          "description": "Capital purchases require CFO approval",
+          "condition": "purchase_category != 'capital'",
+          "action_if_true": "standard_approval_flow",
+          "action_if_false": "require_cfo_approval",
+          "configurable": false
+        }
+      ],
+
+      "error_handlers": [
+        {
+          "error_type": "approval_timeout",
+          "description": "Approver did not respond in time",
+          "action": "escalate",
+          "max_retries": 2,
+          "retry_delay_seconds": 86400,
+          "escalation_target": "next_level_manager"
+        }
+      ],
+
+      "next_step_on_success": "agent_9_1_1_1_step4",
+      "expected_duration_seconds": 7200,
+      "timeout_seconds": 259200,
+      "sla_target_seconds": 86400,
+      "requires_audit_log": true,
+      "version": "1.0.0",
+      "status": "active"
+    },
+
+    {
+      "id": "agent_9_1_1_1_step4",
+      "apqc_id": "9.1.1.1",
+      "step_number": 4,
+      "step_name": "Purchase Order Creation",
+      "description": "Generate formal purchase order with all required terms, conditions, and line item details",
+      "purpose": "Create legal procurement document for vendor",
+      "business_value": "Establishes clear contractual terms and protects organization",
+
+      "capabilities": [
+        "generate_po_number",
+        "populate_po_details",
+        "apply_contract_terms",
+        "add_standard_terms",
+        "calculate_totals",
+        "validate_po_completeness"
+      ],
+
+      "input_schema": [
+        {
+          "name": "requisition_id",
+          "type": "string",
+          "required": true
+        },
+        {
+          "name": "selected_vendor",
+          "type": "object",
+          "required": true
+        },
+        {
+          "name": "line_items",
+          "type": "array",
+          "required": true
+        },
+        {
+          "name": "contract_id",
+          "type": "string",
+          "required": false
+        },
+        {
+          "name": "ship_to_address",
+          "type": "object",
+          "required": true
+        }
+      ],
+
+      "output_schema": [
+        {
+          "name": "po_number",
+          "type": "string",
+          "description": "Purchase order number",
+          "required": true,
+          "example": "PO-2025-005678"
+        },
+        {
+          "name": "po_total",
+          "type": "currency",
+          "required": true
+        },
+        {
+          "name": "payment_terms",
+          "type": "string",
+          "required": true
+        },
+        {
+          "name": "delivery_date",
+          "type": "date",
+          "required": true
+        },
+        {
+          "name": "po_status",
+          "type": "string",
+          "required": true,
+          "validation": {"enum": ["draft", "pending_dispatch", "sent", "acknowledged"]}
+        }
+      ],
+
+      "required_integrations": ["coupa", "sap_ariba", "netsuite"],
+
+      "next_step_on_success": "agent_9_1_1_1_step5",
+      "expected_duration_seconds": 60,
+      "requires_audit_log": true,
+      "compliance_frameworks": ["SOX"],
+      "version": "1.0.0",
+      "status": "active"
+    },
+
+    {
+      "id": "agent_9_1_1_1_step5",
+      "apqc_id": "9.1.1.1",
+      "step_number": 5,
+      "step_name": "PO Dispatch to Vendor",
+      "description": "Send purchase order to vendor via preferred channel and capture acknowledgment",
+      "purpose": "Formally communicate order to vendor",
+      "business_value": "Ensures vendor receives and confirms order details",
+
+      "capabilities": [
+        "send_po_via_email",
+        "send_po_via_edi",
+        "send_po_via_portal",
+        "track_delivery_status",
+        "capture_acknowledgment",
+        "handle_vendor_response"
+      ],
+
+      "input_schema": [
+        {
+          "name": "po_number",
+          "type": "string",
+          "required": true
+        },
+        {
+          "name": "vendor_id",
+          "type": "string",
+          "required": true
+        },
+        {
+          "name": "vendor_contact",
+          "type": "object",
+          "required": true
+        }
+      ],
+
+      "output_schema": [
+        {
+          "name": "dispatch_status",
+          "type": "string",
+          "required": true,
+          "validation": {"enum": ["sent", "acknowledged", "rejected", "pending_response"]}
+        },
+        {
+          "name": "dispatch_method",
+          "type": "string",
+          "required": true
+        },
+        {
+          "name": "dispatch_timestamp",
+          "type": "datetime",
+          "required": true
+        },
+        {
+          "name": "vendor_acknowledgment",
+          "type": "object",
+          "required": false
+        }
+      ],
+
+      "required_integrations": ["sendgrid", "coupa"],
+      "optional_integrations": ["edi_network"],
+
+      "error_handlers": [
+        {
+          "error_type": "delivery_failed",
+          "description": "PO could not be delivered to vendor",
+          "action": "retry",
+          "max_retries": 3,
+          "retry_delay_seconds": 3600,
+          "escalation_target": "procurement_team"
+        }
+      ],
+
+      "next_step_on_success": "agent_9_1_1_1_step6",
+      "expected_duration_seconds": 30,
+      "timeout_seconds": 86400,
+      "requires_audit_log": true,
+      "version": "1.0.0",
+      "status": "active"
+    },
+
+    {
+      "id": "agent_9_1_1_1_step6",
+      "apqc_id": "9.1.1.1",
+      "step_number": 6,
+      "step_name": "Budget Commitment Recording",
+      "description": "Record budget commitment (encumbrance) in financial system",
+      "purpose": "Reserve budget for approved purchase",
+      "business_value": "Prevents overspending and provides accurate budget visibility",
+
+      "capabilities": [
+        "create_encumbrance",
+        "update_budget_consumed",
+        "record_commitment",
+        "link_to_cost_center"
+      ],
+
+      "input_schema": [
+        {
+          "name": "po_number",
+          "type": "string",
+          "required": true
+        },
+        {
+          "name": "po_total",
+          "type": "currency",
+          "required": true
+        },
+        {
+          "name": "cost_center",
+          "type": "string",
+          "required": true
+        },
+        {
+          "name": "gl_account",
+          "type": "string",
+          "required": true
+        }
+      ],
+
+      "output_schema": [
+        {
+          "name": "encumbrance_id",
+          "type": "string",
+          "required": true
+        },
+        {
+          "name": "commitment_amount",
+          "type": "currency",
+          "required": true
+        },
+        {
+          "name": "remaining_budget",
+          "type": "currency",
+          "required": true
+        },
+        {
+          "name": "posting_status",
+          "type": "string",
+          "required": true,
+          "validation": {"enum": ["posted", "pending", "failed"]}
+        }
+      ],
+
+      "required_integrations": ["netsuite", "sap_s4hana"],
+
+      "next_step_on_success": "agent_9_1_1_1_step7",
+      "expected_duration_seconds": 30,
+      "requires_audit_log": true,
+      "compliance_frameworks": ["GAAP", "SOX"],
+      "version": "1.0.0",
+      "status": "active"
+    },
+
+    {
+      "id": "agent_9_1_1_1_step7",
+      "apqc_id": "9.1.1.1",
+      "step_number": 7,
+      "step_name": "Notification and Tracking Setup",
+      "description": "Set up delivery tracking and notify stakeholders of PO status",
+      "purpose": "Keep stakeholders informed and track order fulfillment",
+      "business_value": "Improves visibility and reduces follow-up inquiries",
+
+      "capabilities": [
+        "notify_requester",
+        "setup_delivery_tracking",
+        "schedule_follow_ups",
+        "create_receipt_reminder"
+      ],
+
+      "input_schema": [
+        {
+          "name": "po_number",
+          "type": "string",
+          "required": true
+        },
+        {
+          "name": "requester_id",
+          "type": "string",
+          "required": true
+        },
+        {
+          "name": "delivery_date",
+          "type": "date",
+          "required": true
+        }
+      ],
+
+      "output_schema": [
+        {
+          "name": "notifications_sent",
+          "type": "array",
+          "required": true
+        },
+        {
+          "name": "tracking_setup",
+          "type": "boolean",
+          "required": true
+        },
+        {
+          "name": "processing_complete",
+          "type": "boolean",
+          "required": true
+        },
+        {
+          "name": "po_summary",
+          "type": "object",
+          "description": "Complete PO summary for records",
+          "required": true
+        }
+      ],
+
+      "required_integrations": ["slack", "sendgrid"],
+
+      "next_step_on_success": null,
+      "expected_duration_seconds": 30,
+      "requires_audit_log": true,
+      "version": "1.0.0",
+      "status": "active"
+    }
+  ],
+
+  "integration_summary": {
+    "required": [
+      {"id": "coupa", "purpose": "Procurement platform"},
+      {"id": "netsuite", "purpose": "ERP - budget, encumbrance, GL"},
+      {"id": "slack", "purpose": "Approval and status notifications"},
+      {"id": "sendgrid", "purpose": "PO dispatch and notifications"}
+    ],
+    "optional": [
+      {"id": "sap_ariba", "purpose": "Alternative procurement"},
+      {"id": "sap_s4hana", "purpose": "Alternative ERP"},
+      {"id": "microsoft_teams", "purpose": "Alternative notifications"},
+      {"id": "oracle_procurement", "purpose": "Alternative procurement"}
+    ]
+  },
+
+  "kpis": [
+    {"name": "Requisition to PO Cycle Time", "target": "< 24 hours", "current": null},
+    {"name": "Contract Utilization Rate", "target": "> 80%", "current": null},
+    {"name": "First-Pass Approval Rate", "target": "> 90%", "current": null},
+    {"name": "PO Accuracy Rate", "target": "> 99%", "current": null},
+    {"name": "Maverick Spend Rate", "target": "< 5%", "current": null}
+  ]
+}

@@ -1,0 +1,308 @@
+{
+  "apqc_id": "7.2.1.1",
+  "apqc_name": "Manage IT assets",
+  "category": "7.0 - Manage Information Technology",
+  "description": "End-to-end IT asset management workflow from procurement through disposal, including inventory tracking, lifecycle management, and compliance.",
+  "orchestration_pattern": "event_driven",
+  "total_steps": 7,
+  "estimated_duration_seconds": 172800,
+  "compliance_frameworks": ["ISO 19770", "ITIL", "SOX", "GDPR", "PCI-DSS"],
+  "data_retention_days": 2555,
+
+  "agent_cards": [
+    {
+      "id": "agent_7_2_1_1_step1",
+      "apqc_id": "7.2.1.1",
+      "step_number": 1,
+      "step_name": "Asset Procurement",
+      "description": "Request, approve, and procure IT assets",
+      "purpose": "Controlled asset acquisition",
+      "business_value": "Optimized IT spending",
+
+      "capabilities": ["request_management", "approval_workflow", "vendor_selection", "purchase_order", "receiving"],
+
+      "input_schema": [
+        {"name": "asset_request", "type": "object", "required": true},
+        {"name": "requester", "type": "string", "required": true},
+        {"name": "asset_type", "type": "string", "required": true, "validation": {"enum": ["hardware", "software", "cloud", "mobile"]}},
+        {"name": "business_justification", "type": "string", "required": true}
+      ],
+
+      "output_schema": [
+        {"name": "request_id", "type": "string", "required": true},
+        {"name": "approval_status", "type": "string", "required": true},
+        {"name": "purchase_order", "type": "object", "required": false},
+        {"name": "estimated_delivery", "type": "string", "required": false}
+      ],
+
+      "required_integrations": [
+        {"system": "ITAM", "type": "bidirectional", "protocol": "API", "examples": ["ServiceNow ITAM", "Flexera", "Snow Software"]},
+        {"system": "Procurement", "type": "bidirectional", "protocol": "API", "examples": ["SAP Ariba", "Coupa"]},
+        {"system": "ITSM", "type": "bidirectional", "protocol": "API", "examples": ["ServiceNow", "Jira Service Management"]}
+      ],
+
+      "decision_rules": [
+        {"rule_id": "DR-AM-001", "name": "Budget Check", "condition": "cost > department.remaining_budget", "action": "escalate_to_finance", "priority": 1},
+        {"rule_id": "DR-AM-002", "name": "Standard Asset", "condition": "asset_type IN approved_catalog", "action": "auto_approve_if_budget", "priority": 2}
+      ],
+
+      "error_handlers": [
+        {"error_type": "vendor_unavailable", "severity": "medium", "action": "route_to_alternate_vendor", "notification": ["procurement_team"]}
+      ]
+    },
+
+    {
+      "id": "agent_7_2_1_1_step2",
+      "apqc_id": "7.2.1.1",
+      "step_number": 2,
+      "step_name": "Asset Onboarding",
+      "description": "Register, tag, and configure new assets",
+      "purpose": "Accurate asset inventory",
+      "business_value": "Complete visibility of IT assets",
+
+      "capabilities": ["asset_registration", "tagging", "configuration", "deployment", "documentation"],
+
+      "input_schema": [
+        {"name": "received_assets", "type": "array", "required": true},
+        {"name": "assignment_target", "type": "object", "required": true},
+        {"name": "configuration_profile", "type": "string", "required": false}
+      ],
+
+      "output_schema": [
+        {"name": "asset_records", "type": "array", "required": true},
+        {"name": "asset_tags", "type": "array", "required": true},
+        {"name": "deployment_status", "type": "object", "required": true},
+        {"name": "configuration_status", "type": "object", "required": true}
+      ],
+
+      "required_integrations": [
+        {"system": "ITAM", "type": "bidirectional", "protocol": "API"},
+        {"system": "CMDB", "type": "bidirectional", "protocol": "API", "examples": ["ServiceNow CMDB", "BMC Helix"]},
+        {"system": "MDM", "type": "bidirectional", "protocol": "API", "examples": ["Intune", "Jamf", "VMware Workspace ONE"]}
+      ],
+
+      "decision_rules": [
+        {"rule_id": "DR-AM-010", "name": "Auto-Deploy", "condition": "asset.type == 'standard_laptop' AND user.profile EXISTS", "action": "initiate_auto_deploy", "priority": 2}
+      ],
+
+      "error_handlers": [
+        {"error_type": "serial_number_duplicate", "severity": "high", "action": "investigate_and_resolve", "notification": ["asset_manager"]}
+      ]
+    },
+
+    {
+      "id": "agent_7_2_1_1_step3",
+      "apqc_id": "7.2.1.1",
+      "step_number": 3,
+      "step_name": "Asset Tracking",
+      "description": "Maintain real-time visibility of asset location and status",
+      "purpose": "Accurate inventory management",
+      "business_value": "Reduced asset loss and ghost assets",
+
+      "capabilities": ["discovery_scanning", "inventory_reconciliation", "location_tracking", "status_monitoring", "audit_support"],
+
+      "input_schema": [
+        {"name": "scan_scope", "type": "string", "required": true, "validation": {"enum": ["full", "incremental", "targeted"]}},
+        {"name": "network_ranges", "type": "array", "required": false},
+        {"name": "locations", "type": "array", "required": false}
+      ],
+
+      "output_schema": [
+        {"name": "discovered_assets", "type": "array", "required": true},
+        {"name": "inventory_status", "type": "object", "required": true},
+        {"name": "discrepancies", "type": "array", "required": true},
+        {"name": "ghost_assets", "type": "array", "required": false}
+      ],
+
+      "required_integrations": [
+        {"system": "ITAM", "type": "bidirectional", "protocol": "API"},
+        {"system": "Discovery Tool", "type": "read", "protocol": "API", "examples": ["Qualys", "Rapid7", "Tanium"]},
+        {"system": "Network Management", "type": "read", "protocol": "API"}
+      ],
+
+      "decision_rules": [
+        {"rule_id": "DR-AM-020", "name": "Unknown Asset", "condition": "asset.status == 'discovered' AND asset NOT IN cmdb", "action": "investigate_rogue_device", "priority": 1},
+        {"rule_id": "DR-AM-021", "name": "Missing Asset", "condition": "asset.last_seen > 30_days", "action": "initiate_search", "priority": 2}
+      ],
+
+      "error_handlers": [
+        {"error_type": "scan_incomplete", "severity": "medium", "action": "reschedule_scan", "notification": ["it_operations"]}
+      ]
+    },
+
+    {
+      "id": "agent_7_2_1_1_step4",
+      "apqc_id": "7.2.1.1",
+      "step_number": 4,
+      "step_name": "Software License Management",
+      "description": "Manage software licenses, entitlements, and compliance",
+      "purpose": "License optimization and compliance",
+      "business_value": "Reduced software costs and audit risk",
+
+      "capabilities": ["license_tracking", "entitlement_management", "usage_monitoring", "compliance_reporting", "true_up_management"],
+
+      "input_schema": [
+        {"name": "software_inventory", "type": "array", "required": true},
+        {"name": "license_agreements", "type": "array", "required": true},
+        {"name": "usage_data", "type": "object", "required": true}
+      ],
+
+      "output_schema": [
+        {"name": "license_position", "type": "object", "required": true},
+        {"name": "compliance_status", "type": "object", "required": true},
+        {"name": "optimization_opportunities", "type": "array", "required": true},
+        {"name": "true_up_liability", "type": "number", "required": false}
+      ],
+
+      "required_integrations": [
+        {"system": "SAM Tool", "type": "bidirectional", "protocol": "API", "examples": ["Flexera", "Snow Software", "ServiceNow SAM"]},
+        {"system": "Procurement", "type": "read", "protocol": "API"},
+        {"system": "Usage Analytics", "type": "read", "protocol": "API"}
+      ],
+
+      "decision_rules": [
+        {"rule_id": "DR-AM-030", "name": "Over-Licensed", "condition": "licenses.purchased > licenses.required * 1.2", "action": "recommend_reduction", "priority": 2},
+        {"rule_id": "DR-AM-031", "name": "Non-Compliant", "condition": "licenses.used > licenses.entitled", "action": "urgent_remediation", "priority": 1}
+      ],
+
+      "error_handlers": [
+        {"error_type": "license_data_mismatch", "severity": "high", "action": "reconcile_with_vendor", "notification": ["license_manager"]}
+      ]
+    },
+
+    {
+      "id": "agent_7_2_1_1_step5",
+      "apqc_id": "7.2.1.1",
+      "step_number": 5,
+      "step_name": "Asset Maintenance",
+      "description": "Manage asset maintenance, repairs, and upgrades",
+      "purpose": "Maximize asset availability",
+      "business_value": "Extended asset life and reduced downtime",
+
+      "capabilities": ["warranty_tracking", "maintenance_scheduling", "repair_management", "upgrade_planning", "vendor_coordination"],
+
+      "input_schema": [
+        {"name": "asset_id", "type": "string", "required": true},
+        {"name": "maintenance_type", "type": "string", "required": true, "validation": {"enum": ["preventive", "corrective", "upgrade"]}},
+        {"name": "issue_description", "type": "string", "required": false}
+      ],
+
+      "output_schema": [
+        {"name": "work_order", "type": "object", "required": true},
+        {"name": "maintenance_record", "type": "object", "required": true},
+        {"name": "warranty_status", "type": "object", "required": true},
+        {"name": "next_maintenance_date", "type": "string", "required": false}
+      ],
+
+      "required_integrations": [
+        {"system": "ITAM", "type": "bidirectional", "protocol": "API"},
+        {"system": "ITSM", "type": "bidirectional", "protocol": "API"},
+        {"system": "Vendor Portal", "type": "bidirectional", "protocol": "API"}
+      ],
+
+      "decision_rules": [
+        {"rule_id": "DR-AM-040", "name": "Warranty Expiring", "condition": "warranty.end_date < today + 90", "action": "recommend_renewal_or_replacement", "priority": 2},
+        {"rule_id": "DR-AM-041", "name": "Frequent Repair", "condition": "repairs.count_12m > 3", "action": "recommend_replacement", "priority": 1}
+      ],
+
+      "error_handlers": [
+        {"error_type": "vendor_response_delayed", "severity": "medium", "action": "escalate_to_vendor_manager", "notification": ["vendor_manager"]}
+      ]
+    },
+
+    {
+      "id": "agent_7_2_1_1_step6",
+      "apqc_id": "7.2.1.1",
+      "step_number": 6,
+      "step_name": "Asset Financial Management",
+      "description": "Track asset costs, depreciation, and total cost of ownership",
+      "purpose": "Financial visibility and optimization",
+      "business_value": "Accurate IT cost allocation",
+
+      "capabilities": ["cost_tracking", "depreciation_calculation", "tco_analysis", "chargeback_allocation", "budget_forecasting"],
+
+      "input_schema": [
+        {"name": "asset_portfolio", "type": "array", "required": true},
+        {"name": "cost_centers", "type": "array", "required": true},
+        {"name": "depreciation_method", "type": "string", "required": true}
+      ],
+
+      "output_schema": [
+        {"name": "asset_valuation", "type": "object", "required": true},
+        {"name": "depreciation_schedule", "type": "object", "required": true},
+        {"name": "tco_analysis", "type": "object", "required": true},
+        {"name": "chargeback_report", "type": "object", "required": true}
+      ],
+
+      "required_integrations": [
+        {"system": "ITAM", "type": "read", "protocol": "API"},
+        {"system": "Fixed Assets", "type": "bidirectional", "protocol": "API", "examples": ["SAP Fixed Assets", "Oracle FA"]},
+        {"system": "General Ledger", "type": "bidirectional", "protocol": "API"}
+      ],
+
+      "decision_rules": [
+        {"rule_id": "DR-AM-050", "name": "Fully Depreciated", "condition": "asset.book_value == 0 AND asset.status == 'active'", "action": "review_for_disposal", "priority": 2}
+      ],
+
+      "error_handlers": [
+        {"error_type": "depreciation_calculation_error", "severity": "high", "action": "manual_review", "notification": ["finance_team"]}
+      ]
+    },
+
+    {
+      "id": "agent_7_2_1_1_step7",
+      "apqc_id": "7.2.1.1",
+      "step_number": 7,
+      "step_name": "Asset Retirement and Disposal",
+      "description": "Retire, dispose, and securely wipe end-of-life assets",
+      "purpose": "Secure and compliant asset disposal",
+      "business_value": "Data security and environmental compliance",
+
+      "capabilities": ["retirement_workflow", "data_sanitization", "disposal_tracking", "certificate_management", "environmental_compliance"],
+
+      "input_schema": [
+        {"name": "asset_id", "type": "string", "required": true},
+        {"name": "disposal_method", "type": "string", "required": true, "validation": {"enum": ["recycle", "resell", "donate", "destroy"]}},
+        {"name": "data_classification", "type": "string", "required": true}
+      ],
+
+      "output_schema": [
+        {"name": "retirement_record", "type": "object", "required": true},
+        {"name": "sanitization_certificate", "type": "object", "required": true},
+        {"name": "disposal_certificate", "type": "object", "required": true},
+        {"name": "financial_impact", "type": "object", "required": true}
+      ],
+
+      "required_integrations": [
+        {"system": "ITAM", "type": "bidirectional", "protocol": "API"},
+        {"system": "Data Sanitization", "type": "bidirectional", "protocol": "API", "examples": ["Blancco", "Iron Mountain"]},
+        {"system": "E-Waste Vendor", "type": "outbound", "protocol": "API"}
+      ],
+
+      "decision_rules": [
+        {"rule_id": "DR-AM-060", "name": "Sensitive Data", "condition": "asset.data_classification IN ['confidential', 'restricted']", "action": "require_certified_destruction", "priority": 1},
+        {"rule_id": "DR-AM-061", "name": "Resale Value", "condition": "asset.resale_value > $100", "action": "route_to_resale", "priority": 2}
+      ],
+
+      "error_handlers": [
+        {"error_type": "sanitization_failed", "severity": "critical", "action": "physical_destruction_required", "notification": ["security_team", "asset_manager"]}
+      ]
+    }
+  ],
+
+  "integration_summary": {
+    "itam_platforms": ["ServiceNow ITAM", "Flexera", "Snow Software", "Ivanti"],
+    "sam_tools": ["Flexera", "Snow Software", "ServiceNow SAM", "License Dashboard"],
+    "cmdb": ["ServiceNow CMDB", "BMC Helix", "Device42"],
+    "discovery": ["Qualys", "Rapid7", "Tanium", "Microsoft Defender"]
+  },
+
+  "kpis": [
+    {"name": "Inventory Accuracy", "description": "CMDB accuracy rate", "target": "> 95%", "measurement": "verified_assets / total_assets"},
+    {"name": "License Compliance", "description": "Software license compliance rate", "target": "100%", "measurement": "compliant_licenses / total_licenses"},
+    {"name": "Ghost Asset Rate", "description": "Unaccounted assets percentage", "target": "< 3%", "measurement": "ghost_assets / total_assets"},
+    {"name": "Asset Utilization", "description": "Average asset utilization", "target": "> 80%", "measurement": "avg(asset_utilization)"},
+    {"name": "Time to Deploy", "description": "Average deployment time", "target": "< 24 hours", "measurement": "avg(deployment_time)"},
+    {"name": "Disposal Compliance", "description": "Assets disposed with certificate", "target": "100%", "measurement": "certified_disposals / total_disposals"}
+  ]
+}

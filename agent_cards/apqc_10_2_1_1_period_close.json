@@ -1,0 +1,1037 @@
+{
+  "apqc_id": "10.2.1.1",
+  "apqc_name": "Perform period end close",
+  "category": "10.0 - Manage Financial Resources",
+  "description": "End-to-end period close workflow from subledger close through financial statement certification, including reconciliations, adjustments, and consolidation.",
+  "orchestration_pattern": "sequential",
+  "total_steps": 8,
+  "estimated_duration_seconds": 172800,
+  "compliance_frameworks": ["SOX", "GAAP", "IFRS", "SEC"],
+  "data_retention_days": 2555,
+
+  "agent_cards": [
+    {
+      "id": "agent_10_2_1_1_step1",
+      "apqc_id": "10.2.1.1",
+      "step_number": 1,
+      "step_name": "Pre-Close Preparation",
+      "description": "Prepare for period close with checklist and cutoff procedures",
+      "purpose": "Ensure all prerequisites are met before close begins",
+      "business_value": "Reduce close delays and rework",
+
+      "capabilities": [
+        "generate_close_calendar",
+        "distribute_close_checklist",
+        "verify_cutoff_completeness",
+        "identify_blocking_issues",
+        "track_task_assignments",
+        "send_deadline_reminders"
+      ],
+
+      "input_schema": [
+        {
+          "name": "period_id",
+          "type": "string",
+          "required": true,
+          "example": "2025-Q1"
+        },
+        {
+          "name": "close_type",
+          "type": "string",
+          "required": true,
+          "validation": {"enum": ["monthly", "quarterly", "annual"]}
+        },
+        {
+          "name": "entities",
+          "type": "array",
+          "description": "Legal entities to close",
+          "required": true
+        },
+        {
+          "name": "target_close_date",
+          "type": "date",
+          "required": true
+        }
+      ],
+
+      "output_schema": [
+        {
+          "name": "close_id",
+          "type": "string",
+          "required": true
+        },
+        {
+          "name": "close_calendar",
+          "type": "object",
+          "required": true
+        },
+        {
+          "name": "checklist_items",
+          "type": "array",
+          "required": true
+        },
+        {
+          "name": "blocking_issues",
+          "type": "array",
+          "required": true
+        },
+        {
+          "name": "readiness_score",
+          "type": "number",
+          "description": "Percentage of prerequisites complete",
+          "required": true
+        }
+      ],
+
+      "required_integrations": [
+        {"system": "Close Management", "type": "bidirectional", "protocol": "API", "examples": ["BlackLine", "FloQast", "Trintech"]},
+        {"system": "Task Management", "type": "bidirectional", "protocol": "API"},
+        {"system": "Email/Calendar", "type": "outbound", "protocol": "API"},
+        {"system": "ERP - Period Control", "type": "read", "protocol": "API"}
+      ],
+
+      "decision_rules": [
+        {
+          "rule_id": "DR-CL-001",
+          "name": "Block Close Start",
+          "condition": "critical_prerequisites_incomplete",
+          "action": "prevent_close_initiation",
+          "priority": 1
+        },
+        {
+          "rule_id": "DR-CL-002",
+          "name": "Escalate Overdue",
+          "condition": "task_overdue > 24_hours AND on_critical_path",
+          "action": "escalate_to_controller",
+          "priority": 1
+        },
+        {
+          "rule_id": "DR-CL-003",
+          "name": "Annual Close Enhancement",
+          "condition": "close_type == 'annual'",
+          "action": "add_year_end_specific_tasks",
+          "priority": 1
+        }
+      ],
+
+      "error_handlers": [
+        {
+          "error_type": "prior_period_not_closed",
+          "severity": "critical",
+          "action": "block_and_alert",
+          "notification": ["controller", "accounting_manager"]
+        },
+        {
+          "error_type": "resource_unavailable",
+          "severity": "high",
+          "action": "reassign_tasks",
+          "notification": ["accounting_manager"]
+        }
+      ]
+    },
+
+    {
+      "id": "agent_10_2_1_1_step2",
+      "apqc_id": "10.2.1.1",
+      "step_number": 2,
+      "step_name": "Subledger Close",
+      "description": "Close all subledgers and post to general ledger",
+      "purpose": "Transfer complete subledger data to GL",
+      "business_value": "Ensure complete and accurate GL balances",
+
+      "capabilities": [
+        "close_ap_subledger",
+        "close_ar_subledger",
+        "close_inventory_subledger",
+        "close_fixed_assets",
+        "close_payroll",
+        "reconcile_to_gl",
+        "lock_subledgers"
+      ],
+
+      "input_schema": [
+        {
+          "name": "close_id",
+          "type": "string",
+          "required": true
+        },
+        {
+          "name": "subledger_type",
+          "type": "string",
+          "required": true,
+          "validation": {"enum": ["ap", "ar", "inventory", "fixed_assets", "payroll", "projects"]}
+        },
+        {
+          "name": "entity_id",
+          "type": "string",
+          "required": true
+        },
+        {
+          "name": "period_end_date",
+          "type": "date",
+          "required": true
+        }
+      ],
+
+      "output_schema": [
+        {
+          "name": "subledger_balance",
+          "type": "currency",
+          "required": true
+        },
+        {
+          "name": "gl_balance",
+          "type": "currency",
+          "required": true
+        },
+        {
+          "name": "reconciliation_status",
+          "type": "string",
+          "required": true,
+          "validation": {"enum": ["balanced", "variance", "unreconciled"]}
+        },
+        {
+          "name": "variance_amount",
+          "type": "currency",
+          "required": true
+        },
+        {
+          "name": "lock_timestamp",
+          "type": "datetime",
+          "required": true
+        }
+      ],
+
+      "required_integrations": [
+        {"system": "ERP - Subledgers", "type": "bidirectional", "protocol": "API", "examples": ["SAP FI", "Oracle Financials"]},
+        {"system": "ERP - General Ledger", "type": "write", "protocol": "API"},
+        {"system": "Reconciliation Tool", "type": "bidirectional", "protocol": "API", "examples": ["BlackLine", "Trintech"]}
+      ],
+
+      "decision_rules": [
+        {
+          "rule_id": "DR-CL-010",
+          "name": "Auto-Close Balanced",
+          "condition": "subledger_balance == gl_balance",
+          "action": "auto_close_and_lock",
+          "priority": 1
+        },
+        {
+          "rule_id": "DR-CL-011",
+          "name": "Minor Variance",
+          "condition": "abs(variance) <= 100 AND variance_percent <= 0.01%",
+          "action": "auto_adjust_and_close",
+          "priority": 2
+        },
+        {
+          "rule_id": "DR-CL-012",
+          "name": "Material Variance",
+          "condition": "abs(variance) > materiality_threshold",
+          "action": "block_close_pending_investigation",
+          "priority": 1
+        }
+      ],
+
+      "error_handlers": [
+        {
+          "error_type": "unposted_transactions",
+          "severity": "high",
+          "action": "post_and_retry",
+          "notification": ["subledger_owner"]
+        },
+        {
+          "error_type": "interface_failure",
+          "severity": "critical",
+          "action": "manual_posting_procedure",
+          "notification": ["it_support", "accounting"]
+        }
+      ]
+    },
+
+    {
+      "id": "agent_10_2_1_1_step3",
+      "apqc_id": "10.2.1.1",
+      "step_number": 3,
+      "step_name": "Account Reconciliations",
+      "description": "Perform and certify balance sheet reconciliations",
+      "purpose": "Verify accuracy of all balance sheet accounts",
+      "business_value": "Detect errors and ensure reliable financial position",
+
+      "capabilities": [
+        "generate_reconciliation_workpapers",
+        "auto_match_transactions",
+        "identify_reconciling_items",
+        "age_reconciling_items",
+        "certify_reconciliation",
+        "track_certification_status"
+      ],
+
+      "input_schema": [
+        {
+          "name": "close_id",
+          "type": "string",
+          "required": true
+        },
+        {
+          "name": "account_id",
+          "type": "string",
+          "required": true
+        },
+        {
+          "name": "gl_balance",
+          "type": "currency",
+          "required": true
+        },
+        {
+          "name": "supporting_detail",
+          "type": "object",
+          "required": true
+        }
+      ],
+
+      "output_schema": [
+        {
+          "name": "reconciliation_id",
+          "type": "string",
+          "required": true
+        },
+        {
+          "name": "gl_balance",
+          "type": "currency",
+          "required": true
+        },
+        {
+          "name": "supporting_balance",
+          "type": "currency",
+          "required": true
+        },
+        {
+          "name": "reconciling_items",
+          "type": "array",
+          "required": true
+        },
+        {
+          "name": "explained_variance",
+          "type": "currency",
+          "required": true
+        },
+        {
+          "name": "unexplained_variance",
+          "type": "currency",
+          "required": true
+        },
+        {
+          "name": "certification_status",
+          "type": "string",
+          "required": true,
+          "validation": {"enum": ["certified", "pending_review", "pending_info", "rejected"]}
+        }
+      ],
+
+      "required_integrations": [
+        {"system": "Reconciliation Platform", "type": "bidirectional", "protocol": "API", "examples": ["BlackLine", "Trintech Cadency", "FloQast"]},
+        {"system": "ERP - GL", "type": "read", "protocol": "API"},
+        {"system": "Bank Statements", "type": "inbound", "protocol": "BAI2/API"},
+        {"system": "Document Storage", "type": "store", "protocol": "API"}
+      ],
+
+      "decision_rules": [
+        {
+          "rule_id": "DR-CL-020",
+          "name": "Auto-Certify Clean",
+          "condition": "unexplained_variance == 0 AND all_items_documented",
+          "action": "auto_certify",
+          "priority": 1
+        },
+        {
+          "rule_id": "DR-CL-021",
+          "name": "Stale Item Alert",
+          "condition": "reconciling_item_age > 90_days",
+          "action": "escalate_for_resolution",
+          "priority": 1
+        },
+        {
+          "rule_id": "DR-CL-022",
+          "name": "High Risk Account",
+          "condition": "account.risk_rating == 'high'",
+          "action": "require_manager_review",
+          "priority": 1
+        },
+        {
+          "rule_id": "DR-CL-023",
+          "name": "Flux Analysis Required",
+          "condition": "abs(period_over_period_change) > 20%",
+          "action": "require_variance_explanation",
+          "priority": 2
+        }
+      ],
+
+      "error_handlers": [
+        {
+          "error_type": "supporting_data_missing",
+          "severity": "high",
+          "action": "request_from_owner",
+          "notification": ["account_owner", "accounting_manager"]
+        },
+        {
+          "error_type": "certification_rejected",
+          "severity": "high",
+          "action": "return_for_correction",
+          "notification": ["preparer", "reviewer"]
+        }
+      ]
+    },
+
+    {
+      "id": "agent_10_2_1_1_step4",
+      "apqc_id": "10.2.1.1",
+      "step_number": 4,
+      "step_name": "Adjusting Entries",
+      "description": "Process period-end adjustments and accruals",
+      "purpose": "Ensure proper revenue and expense recognition",
+      "business_value": "Accurate matching of revenues and expenses",
+
+      "capabilities": [
+        "calculate_accruals",
+        "reverse_prior_accruals",
+        "post_adjusting_entries",
+        "calculate_depreciation",
+        "process_allocations",
+        "apply_fx_revaluation"
+      ],
+
+      "input_schema": [
+        {
+          "name": "close_id",
+          "type": "string",
+          "required": true
+        },
+        {
+          "name": "adjustment_type",
+          "type": "string",
+          "required": true,
+          "validation": {"enum": ["accrual", "reversal", "depreciation", "allocation", "fx_reval", "manual"]}
+        },
+        {
+          "name": "entity_id",
+          "type": "string",
+          "required": true
+        },
+        {
+          "name": "journal_entries",
+          "type": "array",
+          "required": false
+        }
+      ],
+
+      "output_schema": [
+        {
+          "name": "journal_id",
+          "type": "string",
+          "required": true
+        },
+        {
+          "name": "entry_amount",
+          "type": "currency",
+          "required": true
+        },
+        {
+          "name": "posting_status",
+          "type": "string",
+          "required": true,
+          "validation": {"enum": ["posted", "pending_approval", "rejected", "reversed"]}
+        },
+        {
+          "name": "affected_accounts",
+          "type": "array",
+          "required": true
+        },
+        {
+          "name": "supporting_documentation",
+          "type": "array",
+          "required": true
+        }
+      ],
+
+      "required_integrations": [
+        {"system": "ERP - General Ledger", "type": "bidirectional", "protocol": "API"},
+        {"system": "Fixed Assets", "type": "read", "protocol": "API"},
+        {"system": "Expense Management", "type": "read", "protocol": "API", "examples": ["Concur", "Expensify"]},
+        {"system": "Payroll", "type": "read", "protocol": "API"}
+      ],
+
+      "decision_rules": [
+        {
+          "rule_id": "DR-CL-030",
+          "name": "Auto-Reverse Accrual",
+          "condition": "prior_period_accrual AND reversal_date == period_start",
+          "action": "auto_post_reversal",
+          "priority": 1
+        },
+        {
+          "rule_id": "DR-CL-031",
+          "name": "Approval Required",
+          "condition": "abs(journal_amount) > approval_threshold",
+          "action": "route_for_approval",
+          "priority": 1
+        },
+        {
+          "rule_id": "DR-CL-032",
+          "name": "Standard vs Non-Standard",
+          "condition": "journal_type == 'manual' AND unusual_account_combination",
+          "action": "require_additional_documentation",
+          "priority": 1
+        },
+        {
+          "rule_id": "DR-CL-033",
+          "name": "Run Depreciation",
+          "condition": "fixed_asset_close_complete AND depreciation_not_run",
+          "action": "trigger_depreciation_run",
+          "priority": 1
+        }
+      ],
+
+      "error_handlers": [
+        {
+          "error_type": "unbalanced_entry",
+          "severity": "critical",
+          "action": "reject_entry",
+          "notification": ["preparer"]
+        },
+        {
+          "error_type": "closed_period",
+          "severity": "high",
+          "action": "reopen_period_with_approval",
+          "notification": ["controller"]
+        }
+      ]
+    },
+
+    {
+      "id": "agent_10_2_1_1_step5",
+      "apqc_id": "10.2.1.1",
+      "step_number": 5,
+      "step_name": "Intercompany Reconciliation",
+      "description": "Reconcile and eliminate intercompany transactions",
+      "purpose": "Prepare for consolidated financial statements",
+      "business_value": "Accurate consolidated financials without double-counting",
+
+      "capabilities": [
+        "match_intercompany_transactions",
+        "identify_mismatches",
+        "calculate_intercompany_balances",
+        "generate_elimination_entries",
+        "track_resolution_status",
+        "report_intercompany_exposure"
+      ],
+
+      "input_schema": [
+        {
+          "name": "close_id",
+          "type": "string",
+          "required": true
+        },
+        {
+          "name": "entity_pairs",
+          "type": "array",
+          "required": true,
+          "example": [{"from": "US-01", "to": "EU-01"}]
+        },
+        {
+          "name": "transaction_types",
+          "type": "array",
+          "required": false,
+          "example": ["sales", "services", "loans", "dividends"]
+        }
+      ],
+
+      "output_schema": [
+        {
+          "name": "reconciliation_id",
+          "type": "string",
+          "required": true
+        },
+        {
+          "name": "matched_transactions",
+          "type": "array",
+          "required": true
+        },
+        {
+          "name": "unmatched_items",
+          "type": "array",
+          "required": true
+        },
+        {
+          "name": "net_position",
+          "type": "object",
+          "required": true
+        },
+        {
+          "name": "elimination_entries",
+          "type": "array",
+          "required": true
+        },
+        {
+          "name": "status",
+          "type": "string",
+          "required": true,
+          "validation": {"enum": ["balanced", "disputed", "pending_resolution"]}
+        }
+      ],
+
+      "required_integrations": [
+        {"system": "Intercompany Hub", "type": "bidirectional", "protocol": "API", "examples": ["BlackLine Intercompany Hub", "SAP ICR"]},
+        {"system": "ERP - GL", "type": "bidirectional", "protocol": "API"},
+        {"system": "Consolidation System", "type": "write", "protocol": "API"}
+      ],
+
+      "decision_rules": [
+        {
+          "rule_id": "DR-CL-040",
+          "name": "Auto-Match",
+          "condition": "amounts_match AND reference_match",
+          "action": "auto_reconcile",
+          "priority": 1
+        },
+        {
+          "rule_id": "DR-CL-041",
+          "name": "Timing Difference",
+          "condition": "mismatch AND transaction_date_difference <= 5_days",
+          "action": "flag_as_timing_and_resolve",
+          "priority": 2
+        },
+        {
+          "rule_id": "DR-CL-042",
+          "name": "Material Dispute",
+          "condition": "unmatched_amount > 100000",
+          "action": "escalate_to_entity_controllers",
+          "priority": 1
+        },
+        {
+          "rule_id": "DR-CL-043",
+          "name": "Settlement Required",
+          "condition": "net_position > settlement_threshold AND days_outstanding > 30",
+          "action": "initiate_settlement",
+          "priority": 1
+        }
+      ],
+
+      "error_handlers": [
+        {
+          "error_type": "currency_mismatch",
+          "severity": "medium",
+          "action": "apply_fx_rate_and_reconcile",
+          "notification": ["treasury", "accounting"]
+        },
+        {
+          "error_type": "missing_counterparty_data",
+          "severity": "high",
+          "action": "request_from_counterparty",
+          "notification": ["counterparty_controller"]
+        }
+      ]
+    },
+
+    {
+      "id": "agent_10_2_1_1_step6",
+      "apqc_id": "10.2.1.1",
+      "step_number": 6,
+      "step_name": "Consolidation",
+      "description": "Consolidate all entities into group financial statements",
+      "purpose": "Produce consolidated group financials",
+      "business_value": "Single view of enterprise financial position",
+
+      "capabilities": [
+        "collect_entity_data",
+        "translate_foreign_currencies",
+        "post_eliminations",
+        "calculate_minority_interest",
+        "apply_equity_method",
+        "generate_consolidated_tb"
+      ],
+
+      "input_schema": [
+        {
+          "name": "close_id",
+          "type": "string",
+          "required": true
+        },
+        {
+          "name": "consolidation_group",
+          "type": "string",
+          "required": true
+        },
+        {
+          "name": "reporting_currency",
+          "type": "string",
+          "required": true
+        },
+        {
+          "name": "fx_rates",
+          "type": "object",
+          "required": true
+        },
+        {
+          "name": "elimination_entries",
+          "type": "array",
+          "required": true
+        }
+      ],
+
+      "output_schema": [
+        {
+          "name": "consolidation_id",
+          "type": "string",
+          "required": true
+        },
+        {
+          "name": "consolidated_trial_balance",
+          "type": "object",
+          "required": true
+        },
+        {
+          "name": "translation_adjustments",
+          "type": "currency",
+          "required": true
+        },
+        {
+          "name": "minority_interest",
+          "type": "currency",
+          "required": true
+        },
+        {
+          "name": "consolidation_status",
+          "type": "string",
+          "required": true,
+          "validation": {"enum": ["complete", "pending_entities", "validation_errors"]}
+        }
+      ],
+
+      "required_integrations": [
+        {"system": "Consolidation System", "type": "bidirectional", "protocol": "API", "examples": ["SAP BPC", "Oracle HFM", "OneStream", "Workiva"]},
+        {"system": "ERP - GL", "type": "read", "protocol": "API"},
+        {"system": "Treasury - FX Rates", "type": "read", "protocol": "API"}
+      ],
+
+      "decision_rules": [
+        {
+          "rule_id": "DR-CL-050",
+          "name": "Wait for Entities",
+          "condition": "not_all_entities_closed",
+          "action": "delay_consolidation",
+          "priority": 1
+        },
+        {
+          "rule_id": "DR-CL-051",
+          "name": "Validation Check",
+          "condition": "consolidation_complete",
+          "action": "run_validation_rules",
+          "priority": 1
+        },
+        {
+          "rule_id": "DR-CL-052",
+          "name": "Restate Prior Period",
+          "condition": "prior_period_adjustment AND material",
+          "action": "restate_comparatives",
+          "priority": 1
+        }
+      ],
+
+      "error_handlers": [
+        {
+          "error_type": "missing_fx_rate",
+          "severity": "critical",
+          "action": "halt_and_request_rate",
+          "notification": ["treasury", "consolidation_team"]
+        },
+        {
+          "error_type": "out_of_balance",
+          "severity": "critical",
+          "action": "investigate_source",
+          "notification": ["consolidation_team", "controller"]
+        }
+      ]
+    },
+
+    {
+      "id": "agent_10_2_1_1_step7",
+      "apqc_id": "10.2.1.1",
+      "step_number": 7,
+      "step_name": "Financial Statement Preparation",
+      "description": "Generate and review financial statements",
+      "purpose": "Produce accurate and compliant financial statements",
+      "business_value": "Decision-ready financial information",
+
+      "capabilities": [
+        "generate_income_statement",
+        "generate_balance_sheet",
+        "generate_cash_flow",
+        "generate_equity_statement",
+        "prepare_footnotes",
+        "apply_presentation_rules"
+      ],
+
+      "input_schema": [
+        {
+          "name": "close_id",
+          "type": "string",
+          "required": true
+        },
+        {
+          "name": "statement_type",
+          "type": "string",
+          "required": true,
+          "validation": {"enum": ["income_statement", "balance_sheet", "cash_flow", "equity", "comprehensive_income"]}
+        },
+        {
+          "name": "reporting_standard",
+          "type": "string",
+          "required": true,
+          "validation": {"enum": ["GAAP", "IFRS", "statutory"]}
+        },
+        {
+          "name": "comparative_periods",
+          "type": "array",
+          "required": false
+        }
+      ],
+
+      "output_schema": [
+        {
+          "name": "statement_id",
+          "type": "string",
+          "required": true
+        },
+        {
+          "name": "statement_data",
+          "type": "object",
+          "required": true
+        },
+        {
+          "name": "variance_analysis",
+          "type": "object",
+          "required": true
+        },
+        {
+          "name": "footnotes",
+          "type": "array",
+          "required": true
+        },
+        {
+          "name": "review_status",
+          "type": "string",
+          "required": true,
+          "validation": {"enum": ["draft", "reviewed", "approved", "published"]}
+        }
+      ],
+
+      "required_integrations": [
+        {"system": "Financial Reporting", "type": "bidirectional", "protocol": "API", "examples": ["Workiva", "Oracle Narrative Reporting"]},
+        {"system": "Consolidation System", "type": "read", "protocol": "API"},
+        {"system": "Disclosure Management", "type": "bidirectional", "protocol": "API"},
+        {"system": "Document Generation", "type": "create", "protocol": "API"}
+      ],
+
+      "decision_rules": [
+        {
+          "rule_id": "DR-CL-060",
+          "name": "Variance Threshold",
+          "condition": "period_variance > 10% AND material_amount",
+          "action": "require_variance_commentary",
+          "priority": 1
+        },
+        {
+          "rule_id": "DR-CL-061",
+          "name": "Round to Thousands",
+          "condition": "total_assets > 10000000",
+          "action": "apply_thousands_presentation",
+          "priority": 2
+        },
+        {
+          "rule_id": "DR-CL-062",
+          "name": "Footnote Update",
+          "condition": "new_accounting_standard OR significant_event",
+          "action": "update_disclosure_checklist",
+          "priority": 1
+        }
+      ],
+
+      "error_handlers": [
+        {
+          "error_type": "balance_sheet_imbalance",
+          "severity": "critical",
+          "action": "halt_and_investigate",
+          "notification": ["controller", "consolidation_team"]
+        },
+        {
+          "error_type": "missing_disclosure",
+          "severity": "high",
+          "action": "flag_for_completion",
+          "notification": ["sec_reporting"]
+        }
+      ]
+    },
+
+    {
+      "id": "agent_10_2_1_1_step8",
+      "apqc_id": "10.2.1.1",
+      "step_number": 8,
+      "step_name": "Close Certification",
+      "description": "Final review, certification, and period lock",
+      "purpose": "Ensure close completeness and lock period",
+      "business_value": "SOX compliance and audit readiness",
+
+      "capabilities": [
+        "generate_close_package",
+        "collect_certifications",
+        "verify_control_completion",
+        "lock_accounting_periods",
+        "archive_close_documentation",
+        "publish_close_metrics"
+      ],
+
+      "input_schema": [
+        {
+          "name": "close_id",
+          "type": "string",
+          "required": true
+        },
+        {
+          "name": "certification_level",
+          "type": "string",
+          "required": true,
+          "validation": {"enum": ["entity", "region", "corporate"]}
+        },
+        {
+          "name": "certifiers",
+          "type": "array",
+          "required": true
+        }
+      ],
+
+      "output_schema": [
+        {
+          "name": "certification_status",
+          "type": "string",
+          "required": true,
+          "validation": {"enum": ["certified", "pending", "exceptions"]}
+        },
+        {
+          "name": "certifications_received",
+          "type": "array",
+          "required": true
+        },
+        {
+          "name": "exceptions_noted",
+          "type": "array",
+          "required": true
+        },
+        {
+          "name": "period_locked",
+          "type": "boolean",
+          "required": true
+        },
+        {
+          "name": "close_metrics",
+          "type": "object",
+          "required": true,
+          "example": {"days_to_close": 5, "adjustments_count": 12, "late_tasks": 2}
+        }
+      ],
+
+      "required_integrations": [
+        {"system": "Close Management", "type": "bidirectional", "protocol": "API"},
+        {"system": "SOX Compliance", "type": "write", "protocol": "API", "examples": ["AuditBoard", "Workiva"]},
+        {"system": "E-Signature", "type": "bidirectional", "protocol": "API"},
+        {"system": "ERP - Period Control", "type": "write", "protocol": "API"}
+      ],
+
+      "decision_rules": [
+        {
+          "rule_id": "DR-CL-070",
+          "name": "Block Incomplete Close",
+          "condition": "required_tasks_incomplete OR missing_certifications",
+          "action": "prevent_period_lock",
+          "priority": 1
+        },
+        {
+          "rule_id": "DR-CL-071",
+          "name": "Escalate Late Certification",
+          "condition": "certification_overdue > 24_hours",
+          "action": "escalate_to_cfo",
+          "priority": 1
+        },
+        {
+          "rule_id": "DR-CL-072",
+          "name": "Archive Documentation",
+          "condition": "close_certified AND period_locked",
+          "action": "archive_close_package",
+          "priority": 2
+        }
+      ],
+
+      "error_handlers": [
+        {
+          "error_type": "certification_refused",
+          "severity": "critical",
+          "action": "investigate_and_escalate",
+          "notification": ["controller", "cfo", "audit_committee"]
+        },
+        {
+          "error_type": "period_lock_failure",
+          "severity": "critical",
+          "action": "manual_lock_procedure",
+          "notification": ["it_support", "controller"]
+        }
+      ]
+    }
+  ],
+
+  "integration_summary": {
+    "erp_systems": ["SAP S/4HANA", "Oracle Cloud Financials", "Microsoft Dynamics 365", "NetSuite"],
+    "close_management": ["BlackLine", "FloQast", "Trintech Cadency"],
+    "consolidation": ["SAP BPC", "Oracle HFM", "OneStream", "Workiva"],
+    "reporting_tools": ["Workiva", "Oracle Narrative Reporting", "Certent"],
+    "sox_compliance": ["AuditBoard", "Workiva", "SAP Process Control"],
+    "document_management": ["SharePoint", "Box", "Google Drive"]
+  },
+
+  "kpis": [
+    {
+      "name": "Days to Close",
+      "description": "Business days from period end to close completion",
+      "target": "< 5 days (monthly), < 10 days (quarterly)",
+      "measurement": "close_date - period_end_date"
+    },
+    {
+      "name": "Reconciliation Completion Rate",
+      "description": "Percentage of reconciliations certified on time",
+      "target": "> 98%",
+      "measurement": "on_time_certifications / total_reconciliations"
+    },
+    {
+      "name": "Adjusting Entry Count",
+      "description": "Number of adjusting entries per close",
+      "target": "< 50 (trending down)",
+      "measurement": "count(adjusting_entries)"
+    },
+    {
+      "name": "Intercompany Reconciliation Rate",
+      "description": "Percentage of IC transactions auto-matched",
+      "target": "> 90%",
+      "measurement": "auto_matched / total_ic_transactions"
+    },
+    {
+      "name": "Task On-Time Completion",
+      "description": "Percentage of close tasks completed by deadline",
+      "target": "> 95%",
+      "measurement": "on_time_tasks / total_tasks"
+    },
+    {
+      "name": "Restatement Frequency",
+      "description": "Number of material restatements per year",
+      "target": "0",
+      "measurement": "count(material_restatements)"
+    }
+  ]
+}

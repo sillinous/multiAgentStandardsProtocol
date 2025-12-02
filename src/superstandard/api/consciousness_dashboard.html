@@ -3,439 +3,656 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Consciousness Dashboard - Real-Time Collective Intelligence</title>
+    <title>Consciousness Dashboard - Collective Intelligence Monitoring</title>
+    <link rel="stylesheet" href="/design-system.css">
     <style>
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
+        /* Custom styles for consciousness dashboard */
+        .consciousness-header {
+            background: linear-gradient(135deg, var(--color-primary-700) 0%, var(--color-secondary-700) 100%);
+            color: var(--color-white);
+            padding: var(--spacing-8);
+            border-radius: var(--radius-lg);
+            margin-bottom: var(--spacing-6);
+            box-shadow: var(--shadow-primary);
         }
 
-        body {
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            background: linear-gradient(135deg, #0f0c29, #302b63, #24243e);
-            color: #e0e0e0;
-            min-height: 100vh;
-            padding: 20px;
-        }
-
-        .header {
+        .consciousness-title {
+            font-size: var(--font-size-3xl);
+            font-weight: var(--font-weight-bold);
+            margin-bottom: var(--spacing-3);
             text-align: center;
-            padding: 30px 0;
-            background: rgba(255, 255, 255, 0.05);
-            border-radius: 15px;
-            margin-bottom: 30px;
+        }
+
+        .consciousness-subtitle {
+            font-size: var(--font-size-md);
+            opacity: 0.95;
+            text-align: center;
+            margin-bottom: var(--spacing-4);
+        }
+
+        .connection-status-bar {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            gap: var(--spacing-3);
+        }
+
+        .connection-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: var(--spacing-2);
+            padding: var(--spacing-2) var(--spacing-4);
+            background: rgba(255, 255, 255, 0.2);
+            border-radius: var(--radius-full);
+            font-size: var(--font-size-sm);
+            font-weight: var(--font-weight-semibold);
             backdrop-filter: blur(10px);
         }
 
-        .header h1 {
-            font-size: 2.5em;
-            background: linear-gradient(90deg, #667eea 0%, #764ba2 100%);
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
-            margin-bottom: 10px;
+        .connection-badge.connected {
+            background: rgba(34, 197, 94, 0.3);
+            border: 1px solid var(--color-success-400);
         }
 
-        .header .subtitle {
-            color: #a0a0a0;
-            font-size: 1.1em;
+        .connection-badge.disconnected {
+            background: rgba(239, 68, 68, 0.3);
+            border: 1px solid var(--color-error-400);
         }
 
-        .connection-status {
-            display: inline-block;
-            padding: 5px 15px;
-            border-radius: 20px;
-            font-size: 0.9em;
-            margin-top: 15px;
+        /* Gauge meter for consciousness level */
+        .consciousness-gauge {
+            position: relative;
+            width: 200px;
+            height: 200px;
+            margin: 0 auto var(--spacing-4);
         }
 
-        .connection-status.connected {
-            background: rgba(76, 175, 80, 0.3);
-            color: #4CAF50;
-            border: 1px solid #4CAF50;
+        .gauge-svg {
+            transform: rotate(-90deg);
         }
 
-        .connection-status.disconnected {
-            background: rgba(244, 67, 54, 0.3);
-            color: #f44336;
-            border: 1px solid #f44336;
+        .gauge-background {
+            fill: none;
+            stroke: var(--color-neutral-200);
+            stroke-width: 12;
         }
 
-        .dashboard {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
-            gap: 20px;
-            margin-bottom: 30px;
+        .gauge-progress {
+            fill: none;
+            stroke: url(#gaugeGradient);
+            stroke-width: 12;
+            stroke-linecap: round;
+            transition: stroke-dashoffset 1s var(--ease-out);
         }
 
-        .card {
-            background: rgba(255, 255, 255, 0.05);
-            border-radius: 15px;
-            padding: 25px;
-            backdrop-filter: blur(10px);
-            border: 1px solid rgba(255, 255, 255, 0.1);
-            transition: transform 0.3s, box-shadow 0.3s;
+        .gauge-value {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            font-size: var(--font-size-4xl);
+            font-weight: var(--font-weight-bold);
+            color: var(--color-primary-700);
         }
 
-        .card:hover {
-            transform: translateY(-5px);
-            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+        .gauge-label {
+            position: absolute;
+            bottom: 30px;
+            left: 50%;
+            transform: translateX(-50%);
+            font-size: var(--font-size-sm);
+            color: var(--color-neutral-600);
+            text-align: center;
         }
 
-        .card-title {
-            font-size: 1.2em;
-            margin-bottom: 15px;
-            color: #667eea;
-            font-weight: 600;
+        /* Thought stream cards */
+        .thought-stream {
+            max-height: 600px;
+            overflow-y: auto;
+            padding-right: var(--spacing-2);
         }
 
-        .metric {
+        .thought-card {
+            background: var(--color-white);
+            border: 1px solid var(--color-neutral-200);
+            border-left: 4px solid var(--color-primary-500);
+            border-radius: var(--radius-md);
+            padding: var(--spacing-4);
+            margin-bottom: var(--spacing-3);
+            animation: slideInRight var(--duration-slow) var(--ease-out);
+            transition: var(--transition-shadow);
+        }
+
+        .thought-card:hover {
+            box-shadow: var(--shadow-md);
+        }
+
+        .thought-card.observation { border-left-color: var(--color-info-500); }
+        .thought-card.question { border-left-color: var(--color-warning-500); }
+        .thought-card.insight { border-left-color: var(--color-success-500); }
+        .thought-card.consensus { border-left-color: var(--color-secondary-500); }
+
+        .thought-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            margin-bottom: var(--spacing-2);
+        }
+
+        .thought-meta {
+            display: flex;
+            gap: var(--spacing-2);
+            align-items: center;
+            font-size: var(--font-size-xs);
+            color: var(--color-neutral-600);
+        }
+
+        .thought-content {
+            font-size: var(--font-size-sm);
+            color: var(--color-neutral-700);
+            line-height: var(--line-height-relaxed);
+            margin-bottom: var(--spacing-3);
+        }
+
+        .thought-footer {
             display: flex;
             justify-content: space-between;
             align-items: center;
-            padding: 10px 0;
-            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+            padding-top: var(--spacing-2);
+            border-top: 1px solid var(--color-neutral-200);
         }
 
-        .metric:last-child {
-            border-bottom: none;
+        .thought-weight {
+            display: flex;
+            align-items: center;
+            gap: var(--spacing-2);
+            font-size: var(--font-size-sm);
         }
 
-        .metric-label {
-            color: #b0b0b0;
+        /* Pattern discovery */
+        .pattern-card {
+            background: var(--color-white);
+            border: 1px solid var(--color-neutral-200);
+            border-radius: var(--radius-md);
+            padding: var(--spacing-4);
+            margin-bottom: var(--spacing-3);
+            transition: var(--transition-base);
         }
 
-        .metric-value {
-            font-size: 1.3em;
-            font-weight: bold;
-            color: #fff;
-        }
-
-        .metric-value.awareness {
-            color: #667eea;
-        }
-
-        .metric-value.patterns {
-            color: #f093fb;
-        }
-
-        .metric-value.agents {
-            color: #4facfe;
-        }
-
-        .metric-value.thoughts {
-            color: #43e97b;
-        }
-
-        .event-stream {
-            background: rgba(255, 255, 255, 0.05);
-            border-radius: 15px;
-            padding: 25px;
-            backdrop-filter: blur(10px);
-            border: 1px solid rgba(255, 255, 255, 0.1);
-            max-height: 500px;
-            overflow-y: auto;
-        }
-
-        .event-stream h2 {
-            color: #667eea;
-            margin-bottom: 20px;
-            font-size: 1.5em;
-        }
-
-        .event {
-            background: rgba(255, 255, 255, 0.03);
-            padding: 15px;
-            border-radius: 10px;
-            margin-bottom: 10px;
-            border-left: 3px solid;
-            animation: slideIn 0.5s ease;
-        }
-
-        @keyframes slideIn {
-            from {
-                opacity: 0;
-                transform: translateX(-20px);
-            }
-            to {
-                opacity: 1;
-                transform: translateX(0);
-            }
-        }
-
-        .event.agent_registered {
-            border-left-color: #4facfe;
-        }
-
-        .event.thought_contributed {
-            border-left-color: #43e97b;
-        }
-
-        .event.consciousness_collapsed {
-            border-left-color: #f093fb;
-        }
-
-        .event.pattern_discovered {
-            border-left-color: #ffd700;
-            background: rgba(255, 215, 0, 0.05);
-        }
-
-        .event-type {
-            font-weight: bold;
-            color: #667eea;
-            margin-bottom: 5px;
-        }
-
-        .event-time {
-            font-size: 0.85em;
-            color: #808080;
-            margin-bottom: 8px;
-        }
-
-        .event-details {
-            color: #d0d0d0;
-            font-size: 0.95em;
-        }
-
-        .progress-bar {
-            width: 100%;
-            height: 8px;
-            background: rgba(255, 255, 255, 0.1);
-            border-radius: 4px;
-            overflow: hidden;
-            margin-top: 10px;
-        }
-
-        .progress-fill {
-            height: 100%;
-            background: linear-gradient(90deg, #667eea 0%, #764ba2 100%);
-            transition: width 0.5s ease;
-        }
-
-        .controls {
-            background: rgba(255, 255, 255, 0.05);
-            border-radius: 15px;
-            padding: 25px;
-            backdrop-filter: blur(10px);
-            border: 1px solid rgba(255, 255, 255, 0.1);
-            margin-bottom: 30px;
-        }
-
-        .controls h2 {
-            color: #667eea;
-            margin-bottom: 20px;
-        }
-
-        .control-group {
-            margin-bottom: 15px;
-        }
-
-        .control-group label {
-            display: block;
-            color: #b0b0b0;
-            margin-bottom: 5px;
-        }
-
-        .control-group input,
-        .control-group select {
-            width: 100%;
-            padding: 10px;
-            background: rgba(255, 255, 255, 0.05);
-            border: 1px solid rgba(255, 255, 255, 0.2);
-            border-radius: 8px;
-            color: #fff;
-            font-size: 1em;
-        }
-
-        .btn {
-            background: linear-gradient(90deg, #667eea 0%, #764ba2 100%);
-            color: white;
-            border: none;
-            padding: 12px 30px;
-            border-radius: 25px;
-            cursor: pointer;
-            font-size: 1em;
-            font-weight: 600;
-            transition: transform 0.2s, box-shadow 0.2s;
-        }
-
-        .btn:hover {
+        .pattern-card:hover {
             transform: translateY(-2px);
-            box-shadow: 0 5px 20px rgba(102, 126, 234, 0.4);
+            box-shadow: var(--shadow-md);
         }
 
-        .btn:active {
-            transform: translateY(0);
+        .pattern-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            margin-bottom: var(--spacing-3);
         }
 
-        .visualization {
-            background: rgba(255, 255, 255, 0.05);
-            border-radius: 15px;
-            padding: 25px;
-            backdrop-filter: blur(10px);
-            border: 1px solid rgba(255, 255, 255, 0.1);
-            margin-bottom: 30px;
-            min-height: 400px;
+        .pattern-title {
+            font-weight: var(--font-weight-semibold);
+            color: var(--color-neutral-900);
+            font-size: var(--font-size-base);
         }
 
-        .visualization h2 {
-            color: #667eea;
-            margin-bottom: 20px;
+        .pattern-scores {
+            display: flex;
+            gap: var(--spacing-4);
+            margin-bottom: var(--spacing-3);
+        }
+
+        .pattern-score {
+            display: flex;
+            flex-direction: column;
+        }
+
+        .pattern-score-label {
+            font-size: var(--font-size-xs);
+            color: var(--color-neutral-600);
+            text-transform: uppercase;
+            letter-spacing: var(--letter-spacing-wide);
+        }
+
+        .pattern-score-value {
+            font-size: var(--font-size-lg);
+            font-weight: var(--font-weight-bold);
+            color: var(--color-primary-700);
+        }
+
+        /* Visualization canvas */
+        .visualization-container {
+            position: relative;
+            width: 100%;
+            height: 400px;
+            background: var(--color-neutral-50);
+            border-radius: var(--radius-md);
+            overflow: hidden;
         }
 
         #entanglementCanvas {
             width: 100%;
-            height: 350px;
-            background: rgba(0, 0, 0, 0.2);
-            border-radius: 10px;
+            height: 100%;
         }
 
-        .pulse {
-            animation: pulse 2s infinite;
-        }
-
-        @keyframes pulse {
-            0%, 100% {
-                opacity: 1;
-            }
-            50% {
-                opacity: 0.5;
-            }
-        }
-
-        .navbar {
-            background: rgba(255, 255, 255, 0.1);
-            backdrop-filter: blur(10px);
-            padding: 15px 30px;
-            border-radius: 15px;
-            margin-bottom: 20px;
+        /* Filter controls */
+        .filter-bar {
             display: flex;
-            justify-content: space-between;
-            align-items: center;
+            gap: var(--spacing-3);
+            margin-bottom: var(--spacing-4);
+            flex-wrap: wrap;
         }
 
-        .navbar h1 {
-            font-size: 24px;
-            font-weight: 600;
+        .filter-chip {
+            padding: var(--spacing-2) var(--spacing-4);
+            border: 1px solid var(--color-neutral-300);
+            border-radius: var(--radius-full);
+            font-size: var(--font-size-sm);
+            cursor: pointer;
+            transition: var(--transition-base);
+            background: var(--color-white);
         }
 
-        .nav-links {
-            display: flex;
-            gap: 20px;
+        .filter-chip:hover {
+            border-color: var(--color-primary-500);
+            background: var(--color-primary-50);
         }
 
-        .nav-links a {
-            color: #fff;
-            text-decoration: none;
-            padding: 8px 16px;
-            border-radius: 8px;
-            transition: background 0.3s;
+        .filter-chip.active {
+            background: var(--color-primary-700);
+            color: var(--color-white);
+            border-color: var(--color-primary-700);
         }
 
-        .nav-links a:hover {
-            background: rgba(255, 255, 255, 0.2);
+        /* Metrics grid */
+        .metrics-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: var(--spacing-4);
+            margin-bottom: var(--spacing-6);
         }
 
-        .nav-links a.active {
-            background: rgba(255, 255, 255, 0.3);
-            font-weight: 600;
+        .metric-card {
+            background: var(--color-white);
+            border: 1px solid var(--color-neutral-200);
+            border-radius: var(--radius-md);
+            padding: var(--spacing-5);
+            text-align: center;
+            transition: var(--transition-base);
+        }
+
+        .metric-card:hover {
+            transform: translateY(-2px);
+            box-shadow: var(--shadow-md);
+        }
+
+        .metric-icon {
+            font-size: var(--font-size-3xl);
+            margin-bottom: var(--spacing-2);
+        }
+
+        .metric-value {
+            font-size: var(--font-size-3xl);
+            font-weight: var(--font-weight-bold);
+            margin-bottom: var(--spacing-1);
+        }
+
+        .metric-label {
+            font-size: var(--font-size-sm);
+            color: var(--color-neutral-600);
+            text-transform: uppercase;
+            letter-spacing: var(--letter-spacing-wide);
+        }
+
+        /* Timeline */
+        .timeline {
+            position: relative;
+            padding-left: var(--spacing-6);
+        }
+
+        .timeline::before {
+            content: '';
+            position: absolute;
+            left: 0;
+            top: 0;
+            bottom: 0;
+            width: 2px;
+            background: var(--color-neutral-200);
+        }
+
+        .timeline-item {
+            position: relative;
+            margin-bottom: var(--spacing-4);
+        }
+
+        .timeline-item::before {
+            content: '';
+            position: absolute;
+            left: -31px;
+            top: 5px;
+            width: 12px;
+            height: 12px;
+            border-radius: var(--radius-full);
+            background: var(--color-primary-500);
+            border: 3px solid var(--color-white);
+            box-shadow: 0 0 0 2px var(--color-primary-500);
+        }
+
+        .timeline-time {
+            font-size: var(--font-size-xs);
+            color: var(--color-neutral-500);
+            margin-bottom: var(--spacing-1);
+        }
+
+        .timeline-content {
+            font-size: var(--font-size-sm);
+            color: var(--color-neutral-700);
+        }
+
+        /* Modal styles */
+        .modal-overlay.hidden {
+            display: none;
+        }
+
+        /* Custom scrollbar */
+        .thought-stream::-webkit-scrollbar {
+            width: 8px;
+        }
+
+        .thought-stream::-webkit-scrollbar-track {
+            background: var(--color-neutral-100);
+            border-radius: var(--radius-sm);
+        }
+
+        .thought-stream::-webkit-scrollbar-thumb {
+            background: var(--color-neutral-400);
+            border-radius: var(--radius-sm);
+        }
+
+        .thought-stream::-webkit-scrollbar-thumb:hover {
+            background: var(--color-neutral-500);
         }
     </style>
 </head>
 <body>
-    <nav class="navbar">
-        <h1>🧠 AConsP Consciousness Dashboard</h1>
+    <!-- Top Navigation -->
+    <nav class="nav-bar">
+        <a href="dashboard_landing.html" class="nav-logo">
+            <span>SuperStandard Platform</span>
+        </a>
         <div class="nav-links">
-            <a href="admin_dashboard.html">Admin</a>
-            <a href="network_dashboard.html">ANP Network</a>
-            <a href="coordination_dashboard.html">ACP Coordination</a>
-            <a href="consciousness_dashboard.html" class="active">AConsP Consciousness</a>
-            <a href="user_control_panel.html">User Panel</a>
+            <a href="admin_dashboard.html" class="nav-link">Admin</a>
+            <a href="network_dashboard.html" class="nav-link">ANP Network</a>
+            <a href="coordination_dashboard.html" class="nav-link">ACP Coordination</a>
+            <a href="consciousness_dashboard.html" class="nav-link active">AConsP Consciousness</a>
+            <a href="user_control_panel.html" class="nav-link">User Panel</a>
         </div>
     </nav>
 
-    <div class="header">
-        <h1>Collective Intelligence Monitor</h1>
-        <p class="subtitle">Real-Time Consciousness Field Visualization</p>
-        <div id="connectionStatus" class="connection-status disconnected">Disconnected</div>
+    <div class="app-content" style="max-width: 100%; padding-top: var(--spacing-8);">
+        <!-- Header with Connection Status -->
+        <div class="consciousness-header">
+            <h1 class="consciousness-title">Collective Intelligence Monitor</h1>
+            <p class="consciousness-subtitle">Real-time consciousness emergence and pattern discovery</p>
+            <div class="connection-status-bar">
+                <div id="connectionBadge" class="connection-badge disconnected">
+                    <span class="status-dot"></span>
+                    <span id="connectionText">Disconnected</span>
+                </div>
+                <button class="btn btn-sm btn-secondary" onclick="toggleConnection()" id="connectBtn">Connect</button>
+                <button class="btn btn-sm btn-ghost" onclick="showExportModal()">Export Data</button>
+            </div>
+        </div>
+
+        <!-- Collective Selection -->
+        <div class="panel" style="margin-bottom: var(--spacing-6);">
+            <div class="panel-header">
+                <h3 class="panel-title">Collective Selection</h3>
+            </div>
+            <div class="panel-body">
+                <div class="form-group">
+                    <label class="form-label">Select or Enter Collective ID</label>
+                    <div style="display: flex; gap: var(--spacing-3);">
+                        <select id="collectiveSelect" class="form-select" onchange="loadCollective()">
+                            <option value="">Loading collectives...</option>
+                        </select>
+                        <input type="text" id="collectiveInput" class="form-input" placeholder="Or enter custom ID" style="max-width: 300px;">
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Metrics Dashboard -->
+        <div class="metrics-grid">
+            <div class="metric-card">
+                <div class="consciousness-gauge">
+                    <svg class="gauge-svg" viewBox="0 0 200 200">
+                        <defs>
+                            <linearGradient id="gaugeGradient" x1="0%" y1="0%" x2="100%" y2="0%">
+                                <stop offset="0%" style="stop-color: var(--color-primary-700); stop-opacity: 1" />
+                                <stop offset="100%" style="stop-color: var(--color-secondary-700); stop-opacity: 1" />
+                            </linearGradient>
+                        </defs>
+                        <circle class="gauge-background" cx="100" cy="100" r="85"></circle>
+                        <circle id="gaugeProgress" class="gauge-progress" cx="100" cy="100" r="85"
+                                stroke-dasharray="534" stroke-dashoffset="534"></circle>
+                    </svg>
+                    <div class="gauge-value" id="awarenessValue">0%</div>
+                    <div class="gauge-label">Collective Awareness</div>
+                </div>
+            </div>
+
+            <div class="metric-card">
+                <div class="metric-icon">🎯</div>
+                <div class="metric-value" style="color: var(--color-success-600);" id="coherenceValue">0%</div>
+                <div class="metric-label">Coherence Score</div>
+            </div>
+
+            <div class="metric-card">
+                <div class="metric-icon">👥</div>
+                <div class="metric-value" style="color: var(--color-info-600);" id="collectivesValue">0</div>
+                <div class="metric-label">Active Collectives</div>
+            </div>
+
+            <div class="metric-card">
+                <div class="metric-icon">🌈</div>
+                <div class="metric-value" style="color: var(--color-warning-600);" id="diversityValue">0.00</div>
+                <div class="metric-label">Thought Diversity</div>
+            </div>
+        </div>
+
+        <!-- Main Content Grid -->
+        <div class="dashboard-grid">
+            <!-- Thought Stream -->
+            <div class="col-span-6">
+                <div class="panel">
+                    <div class="panel-header">
+                        <h3 class="panel-title">Live Thought Stream</h3>
+                        <div class="panel-actions">
+                            <button class="btn btn-sm btn-primary" onclick="showSubmitThoughtModal()">Submit Thought</button>
+                        </div>
+                    </div>
+                    <div class="panel-body">
+                        <div class="filter-bar">
+                            <div class="filter-chip active" data-filter="all" onclick="filterThoughts('all')">All</div>
+                            <div class="filter-chip" data-filter="observation" onclick="filterThoughts('observation')">Observations</div>
+                            <div class="filter-chip" data-filter="question" onclick="filterThoughts('question')">Questions</div>
+                            <div class="filter-chip" data-filter="insight" onclick="filterThoughts('insight')">Insights</div>
+                            <div class="filter-chip" data-filter="consensus" onclick="filterThoughts('consensus')">Consensus</div>
+                        </div>
+                        <div class="thought-stream" id="thoughtStream">
+                            <div class="empty-state">
+                                <div class="empty-state-icon">💭</div>
+                                <h3 class="empty-state-title">No thoughts yet</h3>
+                                <p class="empty-state-message">Connect to a collective to see the thought stream</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Pattern Discovery -->
+            <div class="col-span-6">
+                <div class="panel">
+                    <div class="panel-header">
+                        <h3 class="panel-title">Discovered Patterns</h3>
+                        <div class="panel-actions">
+                            <button class="btn btn-sm btn-ghost" onclick="refreshPatterns()">Refresh</button>
+                        </div>
+                    </div>
+                    <div class="panel-body">
+                        <div id="patternList">
+                            <div class="empty-state">
+                                <div class="empty-state-icon">🔍</div>
+                                <h3 class="empty-state-title">No patterns discovered</h3>
+                                <p class="empty-state-message">Patterns emerge as the collective processes thoughts</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Collective Analytics -->
+            <div class="col-span-12">
+                <div class="panel">
+                    <div class="panel-header">
+                        <h3 class="panel-title">Thought Entanglement Visualization</h3>
+                    </div>
+                    <div class="panel-body">
+                        <div class="visualization-container">
+                            <canvas id="entanglementCanvas"></canvas>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Analytics Grid -->
+            <div class="col-span-6">
+                <div class="panel">
+                    <div class="panel-header">
+                        <h3 class="panel-title">Thought Contribution by Agent</h3>
+                    </div>
+                    <div class="panel-body">
+                        <div class="table-container">
+                            <table class="table compact">
+                                <thead>
+                                    <tr>
+                                        <th>Agent ID</th>
+                                        <th>Thoughts</th>
+                                        <th>Type Distribution</th>
+                                        <th>Contribution %</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="agentContributionTable">
+                                    <tr>
+                                        <td colspan="4" style="text-align: center; padding: var(--spacing-6); color: var(--color-neutral-500);">
+                                            No data available
+                                        </td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Emergence Timeline -->
+            <div class="col-span-6">
+                <div class="panel">
+                    <div class="panel-header">
+                        <h3 class="panel-title">Emergence Events Timeline</h3>
+                    </div>
+                    <div class="panel-body">
+                        <div class="timeline" id="emergenceTimeline">
+                            <div style="text-align: center; padding: var(--spacing-6); color: var(--color-neutral-500);">
+                                No events yet
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
     </div>
 
-    <div class="controls">
-        <h2>Connect to Collective</h2>
-        <div class="control-group">
-            <label>Collective ID</label>
-            <input type="text" id="collectiveId" value="test_collective" placeholder="Enter collective ID">
-        </div>
-        <button class="btn" onclick="connect()">Connect</button>
-        <button class="btn" onclick="disconnect()">Disconnect</button>
-    </div>
-
-    <div class="dashboard">
-        <div class="card">
-            <div class="card-title">Collective Awareness</div>
-            <div class="metric-value awareness" id="awareness">0%</div>
-            <div class="progress-bar">
-                <div class="progress-fill" id="awarenessBar" style="width: 0%"></div>
+    <!-- Submit Thought Modal -->
+    <div id="submitThoughtModal" class="modal-overlay hidden">
+        <div class="modal">
+            <div class="modal-header">
+                <h3 class="modal-title">Submit Thought</h3>
+                <button class="modal-close" onclick="closeModal('submitThoughtModal')">&times;</button>
             </div>
-        </div>
-
-        <div class="card">
-            <div class="card-title">Active Agents</div>
-            <div class="metric">
-                <span class="metric-label">Total</span>
-                <span class="metric-value agents" id="totalAgents">0</span>
+            <div class="modal-body">
+                <div class="form-group">
+                    <label class="form-label required">Agent ID</label>
+                    <input type="text" id="thoughtAgentId" class="form-input" placeholder="Enter your agent ID">
+                </div>
+                <div class="form-group">
+                    <label class="form-label required">Thought Type</label>
+                    <select id="thoughtType" class="form-select">
+                        <option value="observation">Observation</option>
+                        <option value="question">Question</option>
+                        <option value="insight">Insight</option>
+                        <option value="consensus">Consensus</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label class="form-label required">Thought Content</label>
+                    <textarea id="thoughtContent" class="form-textarea" rows="4" placeholder="Share your thought..."></textarea>
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Weight (0.0 - 1.0)</label>
+                    <input type="number" id="thoughtWeight" class="form-input" value="0.5" min="0" max="1" step="0.1">
+                </div>
             </div>
-            <div class="metric">
-                <span class="metric-label">Active</span>
-                <span class="metric-value agents" id="activeAgents">0</span>
-            </div>
-            <div class="metric">
-                <span class="metric-label">Superconscious</span>
-                <span class="metric-value agents" id="superconsciousAgents">0</span>
-            </div>
-        </div>
-
-        <div class="card">
-            <div class="card-title">Thoughts & Patterns</div>
-            <div class="metric">
-                <span class="metric-label">Total Thoughts</span>
-                <span class="metric-value thoughts" id="totalThoughts">0</span>
-            </div>
-            <div class="metric">
-                <span class="metric-label">In Superposition</span>
-                <span class="metric-value thoughts" id="superpositionThoughts">0</span>
-            </div>
-            <div class="metric">
-                <span class="metric-label">Emergent Patterns</span>
-                <span class="metric-value patterns" id="emergentPatterns">0</span>
-            </div>
-        </div>
-
-        <div class="card">
-            <div class="card-title">Consciousness Metrics</div>
-            <div class="metric">
-                <span class="metric-label">Avg Integration</span>
-                <span class="metric-value" id="avgIntegration">0%</span>
-            </div>
-            <div class="metric">
-                <span class="metric-label">Entanglement Density</span>
-                <span class="metric-value" id="entanglementDensity">0.00</span>
-            </div>
-            <div class="metric">
-                <span class="metric-label">Total Collapses</span>
-                <span class="metric-value" id="totalCollapses">0</span>
+            <div class="modal-footer">
+                <button class="btn btn-secondary" onclick="closeModal('submitThoughtModal')">Cancel</button>
+                <button class="btn btn-primary" onclick="submitThought()">Submit Thought</button>
             </div>
         </div>
     </div>
 
-    <div class="visualization">
-        <h2>Consciousness Field Visualization</h2>
-        <canvas id="entanglementCanvas"></canvas>
+    <!-- Export Modal -->
+    <div id="exportModal" class="modal-overlay hidden">
+        <div class="modal">
+            <div class="modal-header">
+                <h3 class="modal-title">Export Patterns</h3>
+                <button class="modal-close" onclick="closeModal('exportModal')">&times;</button>
+            </div>
+            <div class="modal-body">
+                <p>Choose export format for discovered patterns:</p>
+                <div class="form-group">
+                    <label class="form-radio">
+                        <input type="radio" name="exportFormat" value="json" class="form-radio-input" checked>
+                        <span class="form-radio-label">JSON Format</span>
+                    </label>
+                    <label class="form-radio">
+                        <input type="radio" name="exportFormat" value="csv" class="form-radio-input">
+                        <span class="form-radio-label">CSV Format</span>
+                    </label>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button class="btn btn-secondary" onclick="closeModal('exportModal')">Cancel</button>
+                <button class="btn btn-primary" onclick="exportPatterns()">Export</button>
+            </div>
+        </div>
     </div>
 
-    <div class="event-stream">
-        <h2>Live Event Stream</h2>
-        <div id="events"></div>
+    <!-- Thought Detail Modal -->
+    <div id="thoughtDetailModal" class="modal-overlay hidden">
+        <div class="modal">
+            <div class="modal-header">
+                <h3 class="modal-title">Thought Details</h3>
+                <button class="modal-close" onclick="closeModal('thoughtDetailModal')">&times;</button>
+            </div>
+            <div class="modal-body" id="thoughtDetailContent">
+                <!-- Dynamic content -->
+            </div>
+            <div class="modal-footer">
+                <button class="btn btn-secondary" onclick="closeModal('thoughtDetailModal')">Close</button>
+            </div>
+        </div>
     </div>
 
     <script>
@@ -443,205 +660,445 @@
         const API_BASE = window.location.origin;
         const WS_BASE = window.location.protocol === 'https:' ? 'wss://' : 'ws://';
 
+        // State
         let ws = null;
-        let collectiveId = '';
-        let eventsData = [];
-        let maxEvents = 50;
-
-        // Canvas visualization
-        const canvas = document.getElementById('entanglementCanvas');
-        const ctx = canvas.getContext('2d');
-        let agents = [];
+        let currentCollectiveId = '';
         let thoughts = [];
+        let patterns = [];
+        let currentFilter = 'all';
+        let isConnected = false;
 
+        // Initialize dashboard
+        async function initDashboard() {
+            console.log('[Consciousness] Initializing dashboard...');
+            await loadCollectives();
+            resizeCanvas();
+            window.addEventListener('resize', resizeCanvas);
+        }
+
+        // Load available collectives
+        async function loadCollectives() {
+            try {
+                const response = await fetch(`${API_BASE}/api/aconsp/collectives`);
+                const data = await response.json();
+
+                const select = document.getElementById('collectiveSelect');
+                select.innerHTML = '<option value="">Select a collective...</option>';
+
+                if (data.success && data.collectives) {
+                    data.collectives.forEach(collective => {
+                        const option = document.createElement('option');
+                        option.value = collective.id;
+                        option.textContent = `${collective.id} (${collective.agent_count || 0} agents)`;
+                        select.appendChild(option);
+                    });
+                }
+            } catch (error) {
+                console.error('[Consciousness] Error loading collectives:', error);
+                showToast('Error loading collectives', 'error');
+            }
+        }
+
+        // Load collective data
+        function loadCollective() {
+            const select = document.getElementById('collectiveSelect');
+            const input = document.getElementById('collectiveInput');
+
+            if (select.value) {
+                input.value = select.value;
+                currentCollectiveId = select.value;
+            } else if (input.value) {
+                currentCollectiveId = input.value;
+            }
+
+            if (currentCollectiveId && isConnected) {
+                fetchCollectiveState();
+                fetchThoughts();
+                fetchPatterns();
+            }
+        }
+
+        // Toggle WebSocket connection
+        function toggleConnection() {
+            if (isConnected) {
+                disconnect();
+            } else {
+                connect();
+            }
+        }
+
+        // Connect to WebSocket
         function connect() {
-            const input = document.getElementById('collectiveId').value.trim();
-            if (!input) {
-                alert('Please enter a collective ID');
+            const input = document.getElementById('collectiveInput');
+            const select = document.getElementById('collectiveSelect');
+
+            currentCollectiveId = input.value || select.value;
+
+            if (!currentCollectiveId) {
+                showToast('Please select or enter a collective ID', 'error');
                 return;
             }
 
-            collectiveId = input;
-
-            // Close existing connection
             if (ws) {
                 ws.close();
             }
 
-            // Connect to WebSocket using real API server
-            const wsUrl = WS_BASE + window.location.host + '/ws/consciousness';
+            const wsUrl = `${WS_BASE}${window.location.host}/ws/consciousness`;
             console.log(`[Consciousness] Connecting to ${wsUrl}...`);
             ws = new WebSocket(wsUrl);
 
             ws.onopen = () => {
                 console.log('[Consciousness] WebSocket connected');
+                isConnected = true;
                 updateConnectionStatus(true);
-                addEvent('connected', 'Connected to collective', {});
-                // Immediately fetch current state
-                fetchMetrics();
+                fetchCollectiveState();
+                fetchThoughts();
+                fetchPatterns();
+                showToast('Connected to consciousness stream', 'success');
             };
 
             ws.onmessage = (event) => {
                 const data = JSON.parse(event.data);
-                console.log('[Consciousness] WebSocket message:', data);
-                handleEvent(data);
+                handleWebSocketMessage(data);
             };
 
             ws.onerror = (error) => {
                 console.error('[Consciousness] WebSocket error:', error);
-                updateConnectionStatus(false);
+                showToast('Connection error', 'error');
             };
 
             ws.onclose = () => {
                 console.log('[Consciousness] WebSocket disconnected');
+                isConnected = false;
                 updateConnectionStatus(false);
-                addEvent('disconnected', 'Disconnected from collective', {});
+
                 // Auto-reconnect after 5 seconds
-                setTimeout(() => {
-                    if (collectiveId) {
+                if (currentCollectiveId) {
+                    setTimeout(() => {
                         console.log('[Consciousness] Attempting to reconnect...');
                         connect();
-                    }
-                }, 5000);
+                    }, 5000);
+                }
             };
         }
 
+        // Disconnect from WebSocket
         function disconnect() {
             if (ws) {
                 ws.close();
                 ws = null;
             }
+            isConnected = false;
+            updateConnectionStatus(false);
+            currentCollectiveId = '';
+            showToast('Disconnected', 'info');
         }
 
+        // Update connection status UI
         function updateConnectionStatus(connected) {
-            const status = document.getElementById('connectionStatus');
+            const badge = document.getElementById('connectionBadge');
+            const text = document.getElementById('connectionText');
+            const btn = document.getElementById('connectBtn');
+
             if (connected) {
-                status.textContent = `Connected to ${collectiveId}`;
-                status.className = 'connection-status connected pulse';
+                badge.className = 'connection-badge connected';
+                text.textContent = `Connected to ${currentCollectiveId}`;
+                btn.textContent = 'Disconnect';
+                btn.className = 'btn btn-sm btn-ghost';
             } else {
-                status.textContent = 'Disconnected';
-                status.className = 'connection-status disconnected';
+                badge.className = 'connection-badge disconnected';
+                text.textContent = 'Disconnected';
+                btn.textContent = 'Connect';
+                btn.className = 'btn btn-sm btn-secondary';
             }
         }
 
-        function handleEvent(data) {
-            if (data.event_type === 'connected') {
-                updateMetrics(data.data);
-            } else {
-                addEvent(data.event_type, data.event_type, data.data);
+        // Handle WebSocket messages
+        function handleWebSocketMessage(data) {
+            console.log('[Consciousness] WebSocket message:', data);
 
-                // Update metrics based on event
-                if (data.event_type === 'agent_registered') {
-                    // Fetch updated metrics
-                    fetchMetrics();
-                } else if (data.event_type === 'thought_contributed') {
-                    fetchMetrics();
-                } else if (data.event_type === 'consciousness_collapsed') {
-                    fetchMetrics();
-                }
+            if (data.event_type === 'thought_contributed') {
+                addThoughtToStream(data.data);
+                fetchCollectiveState();
+            } else if (data.event_type === 'pattern_discovered') {
+                addPatternToList(data.data);
+                addEmergenceEvent('Pattern discovered', data.data);
+            } else if (data.event_type === 'consciousness_collapsed') {
+                addEmergenceEvent('Consciousness collapsed', data.data);
+                fetchCollectiveState();
+                fetchPatterns();
             }
         }
 
-        async function fetchMetrics() {
-            if (!collectiveId) return;
+        // Fetch collective state
+        async function fetchCollectiveState() {
+            if (!currentCollectiveId) return;
 
             try {
-                const response = await fetch(`${API_BASE}/api/aconsp/collectives/${collectiveId}/state`);
+                const response = await fetch(`${API_BASE}/api/aconsp/collectives/${currentCollectiveId}/state`);
                 const data = await response.json();
 
                 if (data.success) {
                     updateMetrics(data.state);
-                } else {
-                    console.error('[Consciousness] Failed to fetch metrics:', data.message);
                 }
             } catch (error) {
-                console.error('[Consciousness] Error fetching metrics:', error);
+                console.error('[Consciousness] Error fetching state:', error);
             }
         }
 
-        // Fetch AConsP statistics
-        async function fetchStats() {
+        // Fetch thoughts
+        async function fetchThoughts() {
+            if (!currentCollectiveId) return;
+
             try {
-                const response = await fetch(`${API_BASE}/api/aconsp/stats`);
+                const response = await fetch(`${API_BASE}/api/aconsp/collectives/${currentCollectiveId}/thoughts`);
                 const data = await response.json();
 
-                if (data.success) {
-                    console.log('[Consciousness] AConsP stats:', data);
-                    // Update overall stats if available
-                    if (data.stats) {
-                        document.getElementById('emergentPatterns').textContent =
-                            data.stats.total_patterns_discovered || 0;
-                    }
+                if (data.success && data.thoughts) {
+                    thoughts = data.thoughts;
+                    renderThoughts();
+                    updateAgentContributions();
                 }
             } catch (error) {
-                console.error('[Consciousness] Error fetching stats:', error);
+                console.error('[Consciousness] Error fetching thoughts:', error);
             }
         }
 
+        // Fetch patterns
+        async function fetchPatterns() {
+            try {
+                const response = await fetch(`${API_BASE}/api/aconsp/patterns`);
+                const data = await response.json();
+
+                if (data.success && data.patterns) {
+                    patterns = data.patterns;
+                    renderPatterns();
+                }
+            } catch (error) {
+                console.error('[Consciousness] Error fetching patterns:', error);
+            }
+        }
+
+        // Update metrics display
         function updateMetrics(state) {
-            // Update awareness
-            const awareness = Math.round(state.collective_awareness * 100);
-            document.getElementById('awareness').textContent = `${awareness}%`;
-            document.getElementById('awarenessBar').style.width = `${awareness}%`;
+            // Update awareness gauge
+            const awareness = Math.round((state.collective_awareness || 0) * 100);
+            document.getElementById('awarenessValue').textContent = `${awareness}%`;
 
-            // Update agents
-            document.getElementById('totalAgents').textContent = state.total_agents || 0;
-            document.getElementById('activeAgents').textContent = state.active_agents || 0;
-            document.getElementById('superconsciousAgents').textContent = state.superconscious_agents || 0;
+            const circumference = 2 * Math.PI * 85;
+            const offset = circumference - (awareness / 100) * circumference;
+            document.getElementById('gaugeProgress').style.strokeDashoffset = offset;
 
-            // Update thoughts
-            document.getElementById('totalThoughts').textContent = state.total_thoughts || 0;
-            document.getElementById('superpositionThoughts').textContent = state.thoughts_in_superposition || 0;
-            document.getElementById('emergentPatterns').textContent = state.emergent_patterns_discovered || 0;
-
-            // Update metrics
-            const avgIntegration = Math.round((state.average_integration_score || 0) * 100);
-            document.getElementById('avgIntegration').textContent = `${avgIntegration}%`;
-            document.getElementById('entanglementDensity').textContent = (state.entanglement_density || 0).toFixed(2);
-            document.getElementById('totalCollapses').textContent = state.total_collapses || 0;
+            // Update other metrics
+            document.getElementById('coherenceValue').textContent =
+                `${Math.round((state.coherence_score || 0) * 100)}%`;
+            document.getElementById('collectivesValue').textContent =
+                state.active_collectives || 1;
+            document.getElementById('diversityValue').textContent =
+                (state.thought_diversity || 0).toFixed(2);
 
             // Update visualization
             updateVisualization(state);
         }
 
-        function addEvent(type, title, data) {
-            const eventsContainer = document.getElementById('events');
-            const event = document.createElement('div');
-            event.className = `event ${type}`;
+        // Render thoughts
+        function renderThoughts() {
+            const container = document.getElementById('thoughtStream');
 
-            const now = new Date().toLocaleTimeString();
+            const filteredThoughts = currentFilter === 'all'
+                ? thoughts
+                : thoughts.filter(t => t.thought_type === currentFilter);
 
-            let details = '';
-            if (type === 'agent_registered') {
-                details = `Agent <strong>${data.agent_id}</strong> joined in <strong>${data.state}</strong> state`;
-            } else if (type === 'thought_contributed') {
-                details = `Agent <strong>${data.agent_id}</strong> contributed ${data.thought_type} thought`;
-            } else if (type === 'consciousness_collapsed') {
-                details = `Consciousness collapsed - <strong>${data.patterns_discovered}</strong> patterns discovered`;
-            } else if (type === 'pattern_discovered') {
-                details = `<strong>${data.pattern_type}</strong> pattern (${Math.round(data.coherence * 100)}% coherence, ${Math.round(data.novelty * 100)}% novelty)`;
-            } else {
-                details = JSON.stringify(data);
+            if (filteredThoughts.length === 0) {
+                container.innerHTML = `
+                    <div class="empty-state">
+                        <div class="empty-state-icon">💭</div>
+                        <h3 class="empty-state-title">No thoughts found</h3>
+                        <p class="empty-state-message">No thoughts match the current filter</p>
+                    </div>
+                `;
+                return;
             }
 
-            event.innerHTML = `
-                <div class="event-type">${title.replace('_', ' ').toUpperCase()}</div>
-                <div class="event-time">${now}</div>
-                <div class="event-details">${details}</div>
-            `;
-
-            eventsContainer.insertBefore(event, eventsContainer.firstChild);
-
-            // Keep only recent events
-            eventsData.push(event);
-            if (eventsData.length > maxEvents) {
-                const removed = eventsData.shift();
-                removed.remove();
-            }
+            container.innerHTML = filteredThoughts.map(thought => `
+                <div class="thought-card ${thought.thought_type || 'observation'}" onclick="showThoughtDetail('${thought.id}')">
+                    <div class="thought-header">
+                        <span class="badge badge-${getThoughtTypeBadgeColor(thought.thought_type)}">
+                            ${thought.thought_type || 'observation'}
+                        </span>
+                        <div class="thought-meta">
+                            <span>${thought.agent_id}</span>
+                            <span>•</span>
+                            <span>${formatTimestamp(thought.timestamp)}</span>
+                        </div>
+                    </div>
+                    <div class="thought-content">
+                        ${thought.content || thought.thought_content || 'No content'}
+                    </div>
+                    <div class="thought-footer">
+                        <div class="thought-weight">
+                            <span>Weight:</span>
+                            <div class="progress-bar" style="width: 100px; height: 6px;">
+                                <div class="progress-fill" style="width: ${(thought.weight || 0.5) * 100}%;"></div>
+                            </div>
+                            <span>${((thought.weight || 0.5) * 100).toFixed(0)}%</span>
+                        </div>
+                        ${thought.entangled_count ? `<span class="badge badge-neutral">${thought.entangled_count} entanglements</span>` : ''}
+                    </div>
+                </div>
+            `).join('');
         }
 
+        // Add thought to stream (real-time)
+        function addThoughtToStream(thought) {
+            thoughts.unshift(thought);
+            if (thoughts.length > 100) thoughts.pop();
+            renderThoughts();
+        }
+
+        // Render patterns
+        function renderPatterns() {
+            const container = document.getElementById('patternList');
+
+            if (patterns.length === 0) {
+                container.innerHTML = `
+                    <div class="empty-state">
+                        <div class="empty-state-icon">🔍</div>
+                        <h3 class="empty-state-title">No patterns discovered</h3>
+                        <p class="empty-state-message">Patterns emerge as the collective processes thoughts</p>
+                    </div>
+                `;
+                return;
+            }
+
+            container.innerHTML = patterns.map(pattern => `
+                <div class="pattern-card">
+                    <div class="pattern-header">
+                        <div class="pattern-title">${pattern.pattern_type || 'Unknown Pattern'}</div>
+                        <span class="badge badge-${getPatternBadgeColor(pattern.lifecycle_stage)}">
+                            ${pattern.lifecycle_stage || 'emerging'}
+                        </span>
+                    </div>
+                    <div class="pattern-scores">
+                        <div class="pattern-score">
+                            <span class="pattern-score-label">Confidence</span>
+                            <span class="pattern-score-value">${Math.round((pattern.confidence || 0) * 100)}%</span>
+                        </div>
+                        <div class="pattern-score">
+                            <span class="pattern-score-label">Coherence</span>
+                            <span class="pattern-score-value">${Math.round((pattern.coherence || 0) * 100)}%</span>
+                        </div>
+                        <div class="pattern-score">
+                            <span class="pattern-score-label">Novelty</span>
+                            <span class="pattern-score-value">${Math.round((pattern.novelty || 0) * 100)}%</span>
+                        </div>
+                    </div>
+                    ${pattern.description ? `<p style="font-size: var(--font-size-sm); color: var(--color-neutral-600);">${pattern.description}</p>` : ''}
+                </div>
+            `).join('');
+        }
+
+        // Add pattern to list (real-time)
+        function addPatternToList(pattern) {
+            patterns.unshift(pattern);
+            renderPatterns();
+        }
+
+        // Update agent contributions table
+        function updateAgentContributions() {
+            const contributions = {};
+
+            thoughts.forEach(thought => {
+                const agentId = thought.agent_id || 'unknown';
+                if (!contributions[agentId]) {
+                    contributions[agentId] = {
+                        total: 0,
+                        types: {}
+                    };
+                }
+                contributions[agentId].total++;
+                const type = thought.thought_type || 'observation';
+                contributions[agentId].types[type] = (contributions[agentId].types[type] || 0) + 1;
+            });
+
+            const totalThoughts = thoughts.length || 1;
+            const tbody = document.getElementById('agentContributionTable');
+
+            const rows = Object.entries(contributions).map(([agentId, data]) => {
+                const percentage = ((data.total / totalThoughts) * 100).toFixed(1);
+                const typeDistribution = Object.entries(data.types)
+                    .map(([type, count]) => `${type}: ${count}`)
+                    .join(', ');
+
+                return `
+                    <tr>
+                        <td><code>${agentId}</code></td>
+                        <td>${data.total}</td>
+                        <td style="font-size: var(--font-size-xs);">${typeDistribution}</td>
+                        <td>
+                            <div style="display: flex; align-items: center; gap: var(--spacing-2);">
+                                <div class="progress-bar" style="width: 100px; height: 6px;">
+                                    <div class="progress-fill" style="width: ${percentage}%;"></div>
+                                </div>
+                                <span>${percentage}%</span>
+                            </div>
+                        </td>
+                    </tr>
+                `;
+            }).join('');
+
+            tbody.innerHTML = rows || `
+                <tr>
+                    <td colspan="4" style="text-align: center; padding: var(--spacing-6); color: var(--color-neutral-500);">
+                        No data available
+                    </td>
+                </tr>
+            `;
+        }
+
+        // Add emergence event to timeline
+        function addEmergenceEvent(title, data) {
+            const timeline = document.getElementById('emergenceTimeline');
+
+            // Remove empty state if present
+            if (timeline.querySelector('div[style]')) {
+                timeline.innerHTML = '';
+            }
+
+            const event = document.createElement('div');
+            event.className = 'timeline-item';
+            event.innerHTML = `
+                <div class="timeline-time">${formatTimestamp(new Date())}</div>
+                <div class="timeline-content">
+                    <strong>${title}</strong><br>
+                    ${JSON.stringify(data, null, 2).substring(0, 100)}...
+                </div>
+            `;
+
+            timeline.insertBefore(event, timeline.firstChild);
+        }
+
+        // Filter thoughts
+        function filterThoughts(filter) {
+            currentFilter = filter;
+
+            // Update filter chips
+            document.querySelectorAll('.filter-chip').forEach(chip => {
+                if (chip.dataset.filter === filter) {
+                    chip.classList.add('active');
+                } else {
+                    chip.classList.remove('active');
+                }
+            });
+
+            renderThoughts();
+        }
+
+        // Visualization
         function updateVisualization(state) {
-            // Simple visualization: draw circles for agents
+            const canvas = document.getElementById('entanglementCanvas');
+            const ctx = canvas.getContext('2d');
+
             ctx.clearRect(0, 0, canvas.width, canvas.height);
 
             const numAgents = state.total_agents || 0;
@@ -651,31 +1108,15 @@
             const centerY = canvas.height / 2;
             const radius = Math.min(canvas.width, canvas.height) / 3;
 
-            // Draw agents in circle
-            for (let i = 0; i < numAgents; i++) {
-                const angle = (i / numAgents) * 2 * Math.PI;
-                const x = centerX + radius * Math.cos(angle);
-                const y = centerY + radius * Math.sin(angle);
-
-                // Draw agent
-                ctx.beginPath();
-                ctx.arc(x, y, 15, 0, 2 * Math.PI);
-                ctx.fillStyle = '#4facfe';
-                ctx.fill();
-                ctx.strokeStyle = '#667eea';
-                ctx.lineWidth = 2;
-                ctx.stroke();
-            }
-
             // Draw entanglement lines
             const density = state.entanglement_density || 0;
             if (density > 0) {
-                ctx.strokeStyle = 'rgba(240, 147, 251, 0.3)';
+                ctx.strokeStyle = 'rgba(147, 51, 234, 0.2)';
                 ctx.lineWidth = 1;
 
                 for (let i = 0; i < numAgents; i++) {
                     for (let j = i + 1; j < numAgents; j++) {
-                        if (Math.random() < Math.min(0.5, density / 5)) {
+                        if (Math.random() < Math.min(0.3, density / 10)) {
                             const angle1 = (i / numAgents) * 2 * Math.PI;
                             const x1 = centerX + radius * Math.cos(angle1);
                             const y1 = centerY + radius * Math.sin(angle1);
@@ -693,43 +1134,260 @@
                 }
             }
 
-            // Draw collective awareness circle
+            // Draw agents
+            for (let i = 0; i < numAgents; i++) {
+                const angle = (i / numAgents) * 2 * Math.PI;
+                const x = centerX + radius * Math.cos(angle);
+                const y = centerY + radius * Math.sin(angle);
+
+                ctx.beginPath();
+                ctx.arc(x, y, 12, 0, 2 * Math.PI);
+                ctx.fillStyle = '#6366f1';
+                ctx.fill();
+                ctx.strokeStyle = '#4f46e5';
+                ctx.lineWidth = 2;
+                ctx.stroke();
+            }
+
+            // Draw central awareness
             ctx.beginPath();
-            ctx.arc(centerX, centerY, 10, 0, 2 * Math.PI);
-            ctx.fillStyle = `rgba(102, 126, 234, ${state.collective_awareness || 0})`;
+            ctx.arc(centerX, centerY, 15, 0, 2 * Math.PI);
+            const awareness = state.collective_awareness || 0;
+            ctx.fillStyle = `rgba(99, 102, 241, ${awareness})`;
             ctx.fill();
         }
 
-        // Resize canvas
         function resizeCanvas() {
-            canvas.width = canvas.offsetWidth;
-            canvas.height = canvas.offsetHeight;
+            const canvas = document.getElementById('entanglementCanvas');
+            const container = canvas.parentElement;
+            canvas.width = container.offsetWidth;
+            canvas.height = container.offsetHeight;
         }
 
-        window.addEventListener('resize', resizeCanvas);
-        resizeCanvas();
+        // Submit thought
+        async function submitThought() {
+            const agentId = document.getElementById('thoughtAgentId').value;
+            const thoughtType = document.getElementById('thoughtType').value;
+            const content = document.getElementById('thoughtContent').value;
+            const weight = parseFloat(document.getElementById('thoughtWeight').value);
 
-        // Initialize dashboard
-        async function initializeDashboard() {
-            console.log('[Consciousness] Dashboard initialized');
-
-            // Fetch initial stats
-            await fetchStats();
-
-            // Periodic stats refresh (every 10 seconds)
-            setInterval(fetchStats, 10000);
-        }
-
-        // Auto-connect on load if collective ID present
-        window.addEventListener('load', () => {
-            initializeDashboard();
-
-            const input = document.getElementById('collectiveId');
-            if (input.value) {
-                // Auto-connect to default collective
-                connect();
+            if (!agentId || !content) {
+                showToast('Please fill in all required fields', 'error');
+                return;
             }
-        });
+
+            if (!currentCollectiveId) {
+                showToast('Please connect to a collective first', 'error');
+                return;
+            }
+
+            try {
+                const response = await fetch(`${API_BASE}/api/aconsp/collectives/${currentCollectiveId}/thoughts`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        agent_id: agentId,
+                        thought_type: thoughtType,
+                        content: content,
+                        weight: weight
+                    })
+                });
+
+                const data = await response.json();
+
+                if (data.success) {
+                    showToast('Thought submitted successfully', 'success');
+                    closeModal('submitThoughtModal');
+
+                    // Clear form
+                    document.getElementById('thoughtAgentId').value = '';
+                    document.getElementById('thoughtContent').value = '';
+                    document.getElementById('thoughtWeight').value = '0.5';
+
+                    // Refresh thoughts
+                    fetchThoughts();
+                } else {
+                    showToast(data.message || 'Failed to submit thought', 'error');
+                }
+            } catch (error) {
+                console.error('[Consciousness] Error submitting thought:', error);
+                showToast('Error submitting thought', 'error');
+            }
+        }
+
+        // Show thought detail modal
+        function showThoughtDetail(thoughtId) {
+            const thought = thoughts.find(t => t.id === thoughtId);
+            if (!thought) return;
+
+            const modal = document.getElementById('thoughtDetailModal');
+            const content = document.getElementById('thoughtDetailContent');
+
+            content.innerHTML = `
+                <div class="form-group">
+                    <label class="form-label">Thought ID</label>
+                    <code style="display: block; padding: var(--spacing-2); background: var(--color-neutral-100); border-radius: var(--radius-sm);">${thought.id}</code>
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Agent</label>
+                    <p>${thought.agent_id}</p>
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Type</label>
+                    <span class="badge badge-${getThoughtTypeBadgeColor(thought.thought_type)}">${thought.thought_type}</span>
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Content</label>
+                    <p>${thought.content || thought.thought_content}</p>
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Weight</label>
+                    <p>${((thought.weight || 0.5) * 100).toFixed(0)}%</p>
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Timestamp</label>
+                    <p>${formatTimestamp(thought.timestamp)}</p>
+                </div>
+                ${thought.entangled_with ? `
+                    <div class="form-group">
+                        <label class="form-label">Entangled With</label>
+                        <p>${thought.entangled_with.length} thoughts</p>
+                    </div>
+                ` : ''}
+            `;
+
+            modal.classList.remove('hidden');
+        }
+
+        // Export patterns
+        function exportPatterns() {
+            const format = document.querySelector('input[name="exportFormat"]:checked').value;
+
+            if (format === 'json') {
+                const dataStr = JSON.stringify(patterns, null, 2);
+                const blob = new Blob([dataStr], { type: 'application/json' });
+                downloadFile(blob, 'patterns.json');
+            } else if (format === 'csv') {
+                const csv = convertToCSV(patterns);
+                const blob = new Blob([csv], { type: 'text/csv' });
+                downloadFile(blob, 'patterns.csv');
+            }
+
+            closeModal('exportModal');
+            showToast('Patterns exported successfully', 'success');
+        }
+
+        function convertToCSV(data) {
+            if (data.length === 0) return '';
+
+            const headers = Object.keys(data[0]);
+            const rows = data.map(row =>
+                headers.map(header => JSON.stringify(row[header] || '')).join(',')
+            );
+
+            return [headers.join(','), ...rows].join('\n');
+        }
+
+        function downloadFile(blob, filename) {
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = filename;
+            a.click();
+            URL.revokeObjectURL(url);
+        }
+
+        // Modal controls
+        function showSubmitThoughtModal() {
+            document.getElementById('submitThoughtModal').classList.remove('hidden');
+        }
+
+        function showExportModal() {
+            document.getElementById('exportModal').classList.remove('hidden');
+        }
+
+        function closeModal(modalId) {
+            document.getElementById(modalId).classList.add('hidden');
+        }
+
+        // Utility functions
+        function getThoughtTypeBadgeColor(type) {
+            const colors = {
+                observation: 'info',
+                question: 'warning',
+                insight: 'success',
+                consensus: 'secondary'
+            };
+            return colors[type] || 'neutral';
+        }
+
+        function getPatternBadgeColor(stage) {
+            const colors = {
+                emerging: 'info',
+                established: 'success',
+                evolving: 'warning',
+                dissolving: 'error'
+            };
+            return colors[stage] || 'neutral';
+        }
+
+        function formatTimestamp(timestamp) {
+            if (!timestamp) return 'Unknown';
+            const date = new Date(timestamp);
+            const now = new Date();
+            const diff = now - date;
+
+            if (diff < 60000) return 'Just now';
+            if (diff < 3600000) return `${Math.floor(diff / 60000)}m ago`;
+            if (diff < 86400000) return `${Math.floor(diff / 3600000)}h ago`;
+            return date.toLocaleDateString();
+        }
+
+        function showToast(message, type = 'info') {
+            // Create toast container if it doesn't exist
+            let container = document.querySelector('.toast-container');
+            if (!container) {
+                container = document.createElement('div');
+                container.className = 'toast-container';
+                document.body.appendChild(container);
+            }
+
+            // Create toast
+            const toast = document.createElement('div');
+            toast.className = 'toast';
+            toast.innerHTML = `
+                <div class="toast-icon">${getToastIcon(type)}</div>
+                <div class="toast-content">
+                    <div class="toast-message">${message}</div>
+                </div>
+            `;
+
+            container.appendChild(toast);
+
+            // Remove after 3 seconds
+            setTimeout(() => {
+                toast.style.animation = 'slideOutRight var(--duration-slow) var(--ease-in)';
+                setTimeout(() => toast.remove(), 500);
+            }, 3000);
+        }
+
+        function getToastIcon(type) {
+            const icons = {
+                success: '✅',
+                error: '❌',
+                warning: '⚠️',
+                info: 'ℹ️'
+            };
+            return icons[type] || 'ℹ️';
+        }
+
+        function refreshPatterns() {
+            fetchPatterns();
+            showToast('Patterns refreshed', 'success');
+        }
+
+        // Initialize on load
+        window.addEventListener('load', initDashboard);
     </script>
 </body>
 </html>
