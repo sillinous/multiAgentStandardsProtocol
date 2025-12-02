@@ -10039,6 +10039,1354 @@ def attach_knowledge_base_to_agent(agent_id: str, kb_id: str = Body(..., embed=T
 
 
 # ============================================================================
+# Agent Chains / Pipelines
+# ============================================================================
+
+# Storage for chains
+AGENT_CHAINS: Dict[str, Dict[str, Any]] = {}
+CHAIN_EXECUTIONS: Dict[str, Dict[str, Any]] = {}
+CHAIN_TEMPLATES: Dict[str, Dict[str, Any]] = {}
+
+
+class ChainStep(BaseModel):
+    agent_id: str
+    name: str
+    input_mapping: Optional[Dict[str, str]] = {}  # Map outputs from previous steps
+    output_key: Optional[str] = None
+    condition: Optional[str] = None  # Conditional execution
+    on_error: Optional[str] = "stop"  # stop, skip, retry
+    timeout_seconds: Optional[int] = 60
+    config: Optional[Dict[str, Any]] = {}
+
+
+class AgentChainCreate(BaseModel):
+    name: str
+    description: Optional[str] = None
+    steps: List[ChainStep]
+    parallel_groups: Optional[List[List[int]]] = []  # Steps that can run in parallel
+    config: Optional[Dict[str, Any]] = {}
+
+
+@app.post("/chains")
+def create_agent_chain(chain: AgentChainCreate):
+    """Create an agent chain/pipeline"""
+    chain_id = str(uuid.uuid4())
+    AGENT_CHAINS[chain_id] = {
+        "id": chain_id,
+        "name": chain.name,
+        "description": chain.description,
+        "steps": [s.dict() for s in chain.steps],
+        "parallel_groups": chain.parallel_groups or [],
+        "config": chain.config or {},
+        "step_count": len(chain.steps),
+        "total_executions": 0,
+        "avg_duration_ms": 0,
+        "success_rate": 100.0,
+        "created_at": datetime.utcnow().isoformat(),
+        "updated_at": datetime.utcnow().isoformat()
+    }
+    return AGENT_CHAINS[chain_id]
+
+
+@app.get("/chains")
+def list_agent_chains():
+    """List all agent chains"""
+    return {"chains": list(AGENT_CHAINS.values())}
+
+
+@app.get("/chains/{chain_id}")
+def get_agent_chain(chain_id: str):
+    """Get chain details"""
+    if chain_id not in AGENT_CHAINS:
+        raise HTTPException(status_code=404, detail="Chain not found")
+    return AGENT_CHAINS[chain_id]
+
+
+@app.put("/chains/{chain_id}")
+def update_agent_chain(chain_id: str, updates: Dict[str, Any] = Body(...)):
+    """Update a chain"""
+    if chain_id not in AGENT_CHAINS:
+        raise HTTPException(status_code=404, detail="Chain not found")
+
+    allowed = ["name", "description", "steps", "parallel_groups", "config"]
+    for key, value in updates.items():
+        if key in allowed:
+            AGENT_CHAINS[chain_id][key] = value
+    if "steps" in updates:
+        AGENT_CHAINS[chain_id]["step_count"] = len(updates["steps"])
+    AGENT_CHAINS[chain_id]["updated_at"] = datetime.utcnow().isoformat()
+    return AGENT_CHAINS[chain_id]
+
+
+@app.delete("/chains/{chain_id}")
+def delete_agent_chain(chain_id: str):
+    """Delete a chain"""
+    if chain_id not in AGENT_CHAINS:
+        raise HTTPException(status_code=404, detail="Chain not found")
+    del AGENT_CHAINS[chain_id]
+    return {"status": "deleted"}
+
+
+@app.post("/chains/{chain_id}/execute")
+def execute_agent_chain(chain_id: str, input_data: Dict[str, Any] = Body(default={})):
+    """Execute an agent chain"""
+    if chain_id not in AGENT_CHAINS:
+        raise HTTPException(status_code=404, detail="Chain not found")
+
+    chain = AGENT_CHAINS[chain_id]
+    execution_id = str(uuid.uuid4())
+
+    # Simulate chain execution
+    step_results = []
+    accumulated_outputs = {"input": input_data}
+    total_duration = 0
+
+    for i, step in enumerate(chain["steps"]):
+        step_start = datetime.utcnow()
+        step_duration = 100 + (hash(step["agent_id"]) % 200)
+        total_duration += step_duration
+
+        step_result = {
+            "step_index": i,
+            "step_name": step["name"],
+            "agent_id": step["agent_id"],
+            "status": "completed",
+            "output": {"result": f"Output from {step['name']}", "data": {}},
+            "duration_ms": step_duration,
+            "started_at": step_start.isoformat(),
+            "completed_at": datetime.utcnow().isoformat()
+        }
+        step_results.append(step_result)
+
+        # Store output for next steps
+        output_key = step.get("output_key", f"step_{i}")
+        accumulated_outputs[output_key] = step_result["output"]
+
+    CHAIN_EXECUTIONS[execution_id] = {
+        "id": execution_id,
+        "chain_id": chain_id,
+        "status": "completed",
+        "input": input_data,
+        "step_results": step_results,
+        "final_output": accumulated_outputs,
+        "total_duration_ms": total_duration,
+        "started_at": datetime.utcnow().isoformat(),
+        "completed_at": datetime.utcnow().isoformat()
+    }
+
+    # Update chain stats
+    chain["total_executions"] += 1
+
+    return CHAIN_EXECUTIONS[execution_id]
+
+
+@app.get("/chains/{chain_id}/executions")
+def list_chain_executions(chain_id: str, limit: int = 20):
+    """List executions for a chain"""
+    if chain_id not in AGENT_CHAINS:
+        raise HTTPException(status_code=404, detail="Chain not found")
+
+    executions = [e for e in CHAIN_EXECUTIONS.values() if e["chain_id"] == chain_id]
+    executions.sort(key=lambda x: x["started_at"], reverse=True)
+    return {"executions": executions[:limit]}
+
+
+@app.get("/chains/executions/{execution_id}")
+def get_chain_execution(execution_id: str):
+    """Get chain execution details"""
+    if execution_id not in CHAIN_EXECUTIONS:
+        raise HTTPException(status_code=404, detail="Execution not found")
+    return CHAIN_EXECUTIONS[execution_id]
+
+
+@app.post("/chains/{chain_id}/validate")
+def validate_agent_chain(chain_id: str):
+    """Validate a chain configuration"""
+    if chain_id not in AGENT_CHAINS:
+        raise HTTPException(status_code=404, detail="Chain not found")
+
+    chain = AGENT_CHAINS[chain_id]
+    issues = []
+    warnings = []
+
+    # Check for empty chain
+    if not chain["steps"]:
+        issues.append("Chain has no steps defined")
+
+    # Check for circular dependencies (simplified)
+    for i, step in enumerate(chain["steps"]):
+        if not step.get("agent_id"):
+            issues.append(f"Step {i} has no agent_id")
+
+    return {
+        "chain_id": chain_id,
+        "valid": len(issues) == 0,
+        "issues": issues,
+        "warnings": warnings
+    }
+
+
+# ============================================================================
+# Evaluation Framework
+# ============================================================================
+
+# Storage for evaluations
+EVALUATION_METRICS: Dict[str, Dict[str, Any]] = {}
+EVALUATION_RUNS: Dict[str, Dict[str, Any]] = {}
+EVALUATION_DATASETS: Dict[str, Dict[str, Any]] = {}
+AGENT_SCORES: Dict[str, List[Dict[str, Any]]] = {}
+
+BUILTIN_METRICS = {
+    "accuracy": {"name": "Accuracy", "type": "numeric", "range": [0, 100], "higher_is_better": True},
+    "relevance": {"name": "Relevance", "type": "numeric", "range": [0, 100], "higher_is_better": True},
+    "coherence": {"name": "Coherence", "type": "numeric", "range": [0, 100], "higher_is_better": True},
+    "helpfulness": {"name": "Helpfulness", "type": "numeric", "range": [0, 100], "higher_is_better": True},
+    "safety": {"name": "Safety", "type": "numeric", "range": [0, 100], "higher_is_better": True},
+    "latency_ms": {"name": "Latency", "type": "numeric", "range": [0, 10000], "higher_is_better": False},
+    "cost": {"name": "Cost", "type": "numeric", "range": [0, 100], "higher_is_better": False},
+    "groundedness": {"name": "Groundedness", "type": "numeric", "range": [0, 100], "higher_is_better": True},
+    "toxicity": {"name": "Toxicity", "type": "numeric", "range": [0, 100], "higher_is_better": False}
+}
+
+
+class EvaluationDataset(BaseModel):
+    name: str
+    description: Optional[str] = None
+    test_cases: List[Dict[str, Any]]
+
+
+class EvaluationRun(BaseModel):
+    agent_id: str
+    dataset_id: str
+    metrics: List[str]
+    config: Optional[Dict[str, Any]] = {}
+
+
+@app.get("/evaluation/metrics")
+def list_evaluation_metrics():
+    """List available evaluation metrics"""
+    custom_metrics = {k: v for k, v in EVALUATION_METRICS.items()}
+    return {"builtin_metrics": BUILTIN_METRICS, "custom_metrics": custom_metrics}
+
+
+@app.post("/evaluation/metrics")
+def create_custom_metric(data: Dict[str, Any] = Body(...)):
+    """Create a custom evaluation metric"""
+    metric_id = str(uuid.uuid4())
+    EVALUATION_METRICS[metric_id] = {
+        "id": metric_id,
+        "name": data.get("name"),
+        "description": data.get("description"),
+        "type": data.get("type", "numeric"),
+        "range": data.get("range", [0, 100]),
+        "higher_is_better": data.get("higher_is_better", True),
+        "calculation": data.get("calculation"),
+        "created_at": datetime.utcnow().isoformat()
+    }
+    return EVALUATION_METRICS[metric_id]
+
+
+@app.post("/evaluation/datasets")
+def create_evaluation_dataset(dataset: EvaluationDataset):
+    """Create an evaluation dataset"""
+    dataset_id = str(uuid.uuid4())
+    EVALUATION_DATASETS[dataset_id] = {
+        "id": dataset_id,
+        "name": dataset.name,
+        "description": dataset.description,
+        "test_cases": dataset.test_cases,
+        "test_count": len(dataset.test_cases),
+        "created_at": datetime.utcnow().isoformat()
+    }
+    return EVALUATION_DATASETS[dataset_id]
+
+
+@app.get("/evaluation/datasets")
+def list_evaluation_datasets():
+    """List evaluation datasets"""
+    return {"datasets": list(EVALUATION_DATASETS.values())}
+
+
+@app.get("/evaluation/datasets/{dataset_id}")
+def get_evaluation_dataset(dataset_id: str):
+    """Get dataset details"""
+    if dataset_id not in EVALUATION_DATASETS:
+        raise HTTPException(status_code=404, detail="Dataset not found")
+    return EVALUATION_DATASETS[dataset_id]
+
+
+@app.delete("/evaluation/datasets/{dataset_id}")
+def delete_evaluation_dataset(dataset_id: str):
+    """Delete a dataset"""
+    if dataset_id not in EVALUATION_DATASETS:
+        raise HTTPException(status_code=404, detail="Dataset not found")
+    del EVALUATION_DATASETS[dataset_id]
+    return {"status": "deleted"}
+
+
+@app.post("/evaluation/run")
+def run_evaluation(evaluation: EvaluationRun):
+    """Run an evaluation"""
+    if evaluation.dataset_id not in EVALUATION_DATASETS:
+        raise HTTPException(status_code=404, detail="Dataset not found")
+
+    run_id = str(uuid.uuid4())
+    dataset = EVALUATION_DATASETS[evaluation.dataset_id]
+
+    # Simulate evaluation results
+    metric_results = {}
+    for metric in evaluation.metrics:
+        if metric in BUILTIN_METRICS:
+            metric_info = BUILTIN_METRICS[metric]
+            base_score = 70 + (hash(evaluation.agent_id + metric) % 30)
+            metric_results[metric] = {
+                "score": base_score,
+                "min": metric_info["range"][0],
+                "max": metric_info["range"][1],
+                "higher_is_better": metric_info["higher_is_better"]
+            }
+
+    # Calculate overall score
+    overall_score = sum(r["score"] for r in metric_results.values()) / len(metric_results) if metric_results else 0
+
+    test_results = []
+    for i, test_case in enumerate(dataset["test_cases"]):
+        test_results.append({
+            "test_index": i,
+            "input": test_case.get("input"),
+            "expected": test_case.get("expected"),
+            "actual": f"[Simulated output for test {i}]",
+            "passed": True,
+            "scores": {m: metric_results[m]["score"] + (hash(str(i)) % 10 - 5) for m in evaluation.metrics if m in metric_results}
+        })
+
+    EVALUATION_RUNS[run_id] = {
+        "id": run_id,
+        "agent_id": evaluation.agent_id,
+        "dataset_id": evaluation.dataset_id,
+        "metrics": evaluation.metrics,
+        "metric_results": metric_results,
+        "overall_score": overall_score,
+        "test_results": test_results,
+        "tests_passed": len(test_results),
+        "tests_failed": 0,
+        "status": "completed",
+        "started_at": datetime.utcnow().isoformat(),
+        "completed_at": datetime.utcnow().isoformat()
+    }
+
+    # Track agent scores
+    if evaluation.agent_id not in AGENT_SCORES:
+        AGENT_SCORES[evaluation.agent_id] = []
+    AGENT_SCORES[evaluation.agent_id].append({
+        "run_id": run_id,
+        "overall_score": overall_score,
+        "timestamp": datetime.utcnow().isoformat()
+    })
+
+    return EVALUATION_RUNS[run_id]
+
+
+@app.get("/evaluation/runs")
+def list_evaluation_runs(agent_id: Optional[str] = None, limit: int = 20):
+    """List evaluation runs"""
+    runs = list(EVALUATION_RUNS.values())
+    if agent_id:
+        runs = [r for r in runs if r["agent_id"] == agent_id]
+    runs.sort(key=lambda x: x["started_at"], reverse=True)
+    return {"runs": runs[:limit]}
+
+
+@app.get("/evaluation/runs/{run_id}")
+def get_evaluation_run(run_id: str):
+    """Get evaluation run details"""
+    if run_id not in EVALUATION_RUNS:
+        raise HTTPException(status_code=404, detail="Run not found")
+    return EVALUATION_RUNS[run_id]
+
+
+@app.get("/evaluation/agents/{agent_id}/scores")
+def get_agent_scores(agent_id: str):
+    """Get historical scores for an agent"""
+    scores = AGENT_SCORES.get(agent_id, [])
+    return {
+        "agent_id": agent_id,
+        "scores": scores,
+        "latest_score": scores[-1]["overall_score"] if scores else None,
+        "score_trend": "improving" if len(scores) > 1 and scores[-1]["overall_score"] > scores[0]["overall_score"] else "stable"
+    }
+
+
+@app.post("/evaluation/compare")
+def compare_agents(agent_ids: List[str] = Body(...)):
+    """Compare multiple agents' evaluation scores"""
+    comparison = {}
+    for agent_id in agent_ids:
+        scores = AGENT_SCORES.get(agent_id, [])
+        comparison[agent_id] = {
+            "latest_score": scores[-1]["overall_score"] if scores else None,
+            "avg_score": sum(s["overall_score"] for s in scores) / len(scores) if scores else None,
+            "evaluation_count": len(scores)
+        }
+
+    # Rank agents
+    ranked = sorted(
+        [(aid, data) for aid, data in comparison.items() if data["latest_score"] is not None],
+        key=lambda x: x[1]["latest_score"],
+        reverse=True
+    )
+
+    return {
+        "comparison": comparison,
+        "ranking": [{"rank": i + 1, "agent_id": aid, "score": data["latest_score"]} for i, (aid, data) in enumerate(ranked)]
+    }
+
+
+# ============================================================================
+# Guardrails & Safety
+# ============================================================================
+
+# Storage for guardrails
+GUARDRAILS: Dict[str, Dict[str, Any]] = {}
+GUARDRAIL_VIOLATIONS: List[Dict[str, Any]] = []
+CONTENT_FILTERS: Dict[str, Dict[str, Any]] = {}
+PII_PATTERNS: Dict[str, str] = {
+    "email": r"[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}",
+    "phone": r"\b\d{3}[-.]?\d{3}[-.]?\d{4}\b",
+    "ssn": r"\b\d{3}-\d{2}-\d{4}\b",
+    "credit_card": r"\b\d{4}[-\s]?\d{4}[-\s]?\d{4}[-\s]?\d{4}\b",
+    "ip_address": r"\b\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3}\b"
+}
+
+TOXICITY_CATEGORIES = [
+    "hate_speech", "harassment", "violence", "self_harm",
+    "sexual_content", "dangerous_content", "spam", "misinformation"
+]
+
+
+class GuardrailCreate(BaseModel):
+    name: str
+    description: Optional[str] = None
+    type: str  # input, output, both
+    rules: List[Dict[str, Any]]
+    action: str = "block"  # block, warn, log, redact
+    enabled: bool = True
+
+
+class ContentFilterCreate(BaseModel):
+    name: str
+    filter_type: str  # keyword, regex, ml_model
+    patterns: List[str]
+    action: str = "block"
+    severity: str = "high"
+
+
+@app.post("/guardrails")
+def create_guardrail(guardrail: GuardrailCreate):
+    """Create a guardrail"""
+    guardrail_id = str(uuid.uuid4())
+    GUARDRAILS[guardrail_id] = {
+        "id": guardrail_id,
+        "name": guardrail.name,
+        "description": guardrail.description,
+        "type": guardrail.type,
+        "rules": guardrail.rules,
+        "action": guardrail.action,
+        "enabled": guardrail.enabled,
+        "triggers": 0,
+        "created_at": datetime.utcnow().isoformat()
+    }
+    return GUARDRAILS[guardrail_id]
+
+
+@app.get("/guardrails")
+def list_guardrails():
+    """List all guardrails"""
+    return {"guardrails": list(GUARDRAILS.values())}
+
+
+@app.get("/guardrails/{guardrail_id}")
+def get_guardrail(guardrail_id: str):
+    """Get guardrail details"""
+    if guardrail_id not in GUARDRAILS:
+        raise HTTPException(status_code=404, detail="Guardrail not found")
+    return GUARDRAILS[guardrail_id]
+
+
+@app.put("/guardrails/{guardrail_id}")
+def update_guardrail(guardrail_id: str, updates: Dict[str, Any] = Body(...)):
+    """Update a guardrail"""
+    if guardrail_id not in GUARDRAILS:
+        raise HTTPException(status_code=404, detail="Guardrail not found")
+
+    allowed = ["name", "description", "rules", "action", "enabled"]
+    for key, value in updates.items():
+        if key in allowed:
+            GUARDRAILS[guardrail_id][key] = value
+    return GUARDRAILS[guardrail_id]
+
+
+@app.delete("/guardrails/{guardrail_id}")
+def delete_guardrail(guardrail_id: str):
+    """Delete a guardrail"""
+    if guardrail_id not in GUARDRAILS:
+        raise HTTPException(status_code=404, detail="Guardrail not found")
+    del GUARDRAILS[guardrail_id]
+    return {"status": "deleted"}
+
+
+@app.post("/guardrails/check")
+def check_guardrails(data: Dict[str, Any] = Body(...)):
+    """Check content against all enabled guardrails"""
+    content = data.get("content", "")
+    content_type = data.get("type", "output")  # input or output
+
+    violations = []
+    for guardrail_id, guardrail in GUARDRAILS.items():
+        if not guardrail["enabled"]:
+            continue
+        if guardrail["type"] != "both" and guardrail["type"] != content_type:
+            continue
+
+        # Check rules (simplified)
+        for rule in guardrail["rules"]:
+            if rule.get("type") == "keyword":
+                for keyword in rule.get("keywords", []):
+                    if keyword.lower() in content.lower():
+                        violations.append({
+                            "guardrail_id": guardrail_id,
+                            "guardrail_name": guardrail["name"],
+                            "rule": rule,
+                            "action": guardrail["action"],
+                            "match": keyword
+                        })
+                        guardrail["triggers"] += 1
+
+    passed = len(violations) == 0
+    if not passed:
+        GUARDRAIL_VIOLATIONS.extend([{**v, "timestamp": datetime.utcnow().isoformat(), "content_preview": content[:100]} for v in violations])
+
+    return {
+        "passed": passed,
+        "violations": violations,
+        "action": violations[0]["action"] if violations else None
+    }
+
+
+@app.post("/safety/detect-pii")
+def detect_pii(content: str = Body(..., embed=True)):
+    """Detect PII in content"""
+    import re
+    detected = []
+
+    for pii_type, pattern in PII_PATTERNS.items():
+        matches = re.findall(pattern, content)
+        if matches:
+            detected.append({
+                "type": pii_type,
+                "count": len(matches),
+                "matches": [m[:4] + "****" for m in matches[:5]]  # Partially mask
+            })
+
+    return {
+        "has_pii": len(detected) > 0,
+        "detected": detected,
+        "recommendation": "redact" if detected else "safe"
+    }
+
+
+@app.post("/safety/redact-pii")
+def redact_pii(content: str = Body(..., embed=True)):
+    """Redact PII from content"""
+    import re
+    redacted = content
+
+    replacements = {
+        "email": "[EMAIL_REDACTED]",
+        "phone": "[PHONE_REDACTED]",
+        "ssn": "[SSN_REDACTED]",
+        "credit_card": "[CARD_REDACTED]",
+        "ip_address": "[IP_REDACTED]"
+    }
+
+    for pii_type, pattern in PII_PATTERNS.items():
+        redacted = re.sub(pattern, replacements[pii_type], redacted)
+
+    return {
+        "original_length": len(content),
+        "redacted_length": len(redacted),
+        "redacted_content": redacted
+    }
+
+
+@app.post("/safety/check-toxicity")
+def check_toxicity(content: str = Body(..., embed=True)):
+    """Check content for toxicity"""
+    # Simulated toxicity detection
+    scores = {}
+    for category in TOXICITY_CATEGORIES:
+        # Simulate score based on content hash
+        scores[category] = (hash(content + category) % 30) / 100  # 0-0.3 range
+
+    max_score = max(scores.values())
+    flagged_categories = [cat for cat, score in scores.items() if score > 0.2]
+
+    return {
+        "is_toxic": max_score > 0.25,
+        "toxicity_score": max_score,
+        "category_scores": scores,
+        "flagged_categories": flagged_categories,
+        "recommendation": "block" if max_score > 0.5 else "review" if max_score > 0.25 else "safe"
+    }
+
+
+@app.post("/content-filters")
+def create_content_filter(filter_data: ContentFilterCreate):
+    """Create a content filter"""
+    filter_id = str(uuid.uuid4())
+    CONTENT_FILTERS[filter_id] = {
+        "id": filter_id,
+        "name": filter_data.name,
+        "filter_type": filter_data.filter_type,
+        "patterns": filter_data.patterns,
+        "action": filter_data.action,
+        "severity": filter_data.severity,
+        "matches": 0,
+        "created_at": datetime.utcnow().isoformat()
+    }
+    return CONTENT_FILTERS[filter_id]
+
+
+@app.get("/content-filters")
+def list_content_filters():
+    """List content filters"""
+    return {"filters": list(CONTENT_FILTERS.values())}
+
+
+@app.get("/guardrails/violations")
+def get_guardrail_violations(limit: int = 50):
+    """Get recent guardrail violations"""
+    violations = GUARDRAIL_VIOLATIONS.copy()
+    violations.sort(key=lambda x: x["timestamp"], reverse=True)
+    return {"violations": violations[:limit]}
+
+
+# ============================================================================
+# Batch Processing
+# ============================================================================
+
+# Storage for batch jobs
+BATCH_JOBS: Dict[str, Dict[str, Any]] = {}
+BATCH_RESULTS: Dict[str, List[Dict[str, Any]]] = {}
+
+
+class BatchJobCreate(BaseModel):
+    name: str
+    agent_id: str
+    items: List[Dict[str, Any]]
+    config: Optional[Dict[str, Any]] = {}
+    parallelism: Optional[int] = 10
+    on_error: Optional[str] = "continue"  # continue, stop
+
+
+@app.post("/batch")
+def create_batch_job(job: BatchJobCreate):
+    """Create a batch processing job"""
+    job_id = str(uuid.uuid4())
+    BATCH_JOBS[job_id] = {
+        "id": job_id,
+        "name": job.name,
+        "agent_id": job.agent_id,
+        "total_items": len(job.items),
+        "processed": 0,
+        "succeeded": 0,
+        "failed": 0,
+        "parallelism": job.parallelism,
+        "on_error": job.on_error,
+        "status": "pending",
+        "progress_percent": 0,
+        "created_at": datetime.utcnow().isoformat(),
+        "started_at": None,
+        "completed_at": None
+    }
+    BATCH_RESULTS[job_id] = []
+
+    # Store items for processing
+    BATCH_JOBS[job_id]["_items"] = job.items
+
+    return BATCH_JOBS[job_id]
+
+
+@app.get("/batch")
+def list_batch_jobs(status: Optional[str] = None):
+    """List batch jobs"""
+    jobs = [{k: v for k, v in j.items() if not k.startswith("_")} for j in BATCH_JOBS.values()]
+    if status:
+        jobs = [j for j in jobs if j["status"] == status]
+    return {"jobs": jobs}
+
+
+@app.get("/batch/{job_id}")
+def get_batch_job(job_id: str):
+    """Get batch job details"""
+    if job_id not in BATCH_JOBS:
+        raise HTTPException(status_code=404, detail="Job not found")
+    job = {k: v for k, v in BATCH_JOBS[job_id].items() if not k.startswith("_")}
+    return job
+
+
+@app.post("/batch/{job_id}/start")
+def start_batch_job(job_id: str):
+    """Start a batch job"""
+    if job_id not in BATCH_JOBS:
+        raise HTTPException(status_code=404, detail="Job not found")
+
+    job = BATCH_JOBS[job_id]
+    job["status"] = "running"
+    job["started_at"] = datetime.utcnow().isoformat()
+
+    # Simulate processing
+    items = job.get("_items", [])
+    for i, item in enumerate(items):
+        result = {
+            "item_index": i,
+            "input": item,
+            "output": {"result": f"Processed item {i}"},
+            "status": "success",
+            "duration_ms": 50 + (hash(str(item)) % 100)
+        }
+        BATCH_RESULTS[job_id].append(result)
+        job["processed"] += 1
+        job["succeeded"] += 1
+        job["progress_percent"] = int((job["processed"] / job["total_items"]) * 100)
+
+    job["status"] = "completed"
+    job["completed_at"] = datetime.utcnow().isoformat()
+
+    return {k: v for k, v in job.items() if not k.startswith("_")}
+
+
+@app.post("/batch/{job_id}/cancel")
+def cancel_batch_job(job_id: str):
+    """Cancel a batch job"""
+    if job_id not in BATCH_JOBS:
+        raise HTTPException(status_code=404, detail="Job not found")
+
+    BATCH_JOBS[job_id]["status"] = "cancelled"
+    return {"status": "cancelled"}
+
+
+@app.get("/batch/{job_id}/results")
+def get_batch_results(job_id: str, offset: int = 0, limit: int = 100):
+    """Get batch job results"""
+    if job_id not in BATCH_JOBS:
+        raise HTTPException(status_code=404, detail="Job not found")
+
+    results = BATCH_RESULTS.get(job_id, [])
+    return {
+        "total": len(results),
+        "offset": offset,
+        "limit": limit,
+        "results": results[offset:offset + limit]
+    }
+
+
+@app.delete("/batch/{job_id}")
+def delete_batch_job(job_id: str):
+    """Delete a batch job"""
+    if job_id not in BATCH_JOBS:
+        raise HTTPException(status_code=404, detail="Job not found")
+    del BATCH_JOBS[job_id]
+    if job_id in BATCH_RESULTS:
+        del BATCH_RESULTS[job_id]
+    return {"status": "deleted"}
+
+
+# ============================================================================
+# WebSocket Real-time Support
+# ============================================================================
+
+# Storage for WebSocket connections (simulated)
+WS_CONNECTIONS: Dict[str, Dict[str, Any]] = {}
+WS_SUBSCRIPTIONS: Dict[str, List[str]] = {}
+REALTIME_EVENTS: List[Dict[str, Any]] = []
+
+WS_EVENT_TYPES = [
+    "execution.started", "execution.progress", "execution.completed", "execution.failed",
+    "workflow.step_completed", "workflow.completed",
+    "chain.step_completed", "chain.completed",
+    "batch.progress", "batch.completed",
+    "notification.new", "alert.triggered"
+]
+
+
+@app.post("/realtime/connect")
+def websocket_connect(data: Dict[str, Any] = Body(...)):
+    """Simulate WebSocket connection (REST endpoint for demo)"""
+    connection_id = str(uuid.uuid4())
+    WS_CONNECTIONS[connection_id] = {
+        "id": connection_id,
+        "user_id": data.get("user_id"),
+        "connected_at": datetime.utcnow().isoformat(),
+        "last_heartbeat": datetime.utcnow().isoformat(),
+        "subscriptions": []
+    }
+    WS_SUBSCRIPTIONS[connection_id] = []
+
+    return {
+        "connection_id": connection_id,
+        "status": "connected",
+        "ws_url": f"wss://api.example.com/ws/{connection_id}",
+        "message": "Use this connection_id for subscribing to events"
+    }
+
+
+@app.post("/realtime/{connection_id}/subscribe")
+def websocket_subscribe(connection_id: str, event_types: List[str] = Body(...)):
+    """Subscribe to real-time events"""
+    if connection_id not in WS_CONNECTIONS:
+        raise HTTPException(status_code=404, detail="Connection not found")
+
+    valid_types = [et for et in event_types if et in WS_EVENT_TYPES]
+    WS_SUBSCRIPTIONS[connection_id].extend(valid_types)
+    WS_CONNECTIONS[connection_id]["subscriptions"] = list(set(WS_SUBSCRIPTIONS[connection_id]))
+
+    return {
+        "connection_id": connection_id,
+        "subscribed_to": WS_CONNECTIONS[connection_id]["subscriptions"]
+    }
+
+
+@app.post("/realtime/{connection_id}/unsubscribe")
+def websocket_unsubscribe(connection_id: str, event_types: List[str] = Body(...)):
+    """Unsubscribe from events"""
+    if connection_id not in WS_CONNECTIONS:
+        raise HTTPException(status_code=404, detail="Connection not found")
+
+    for et in event_types:
+        if et in WS_SUBSCRIPTIONS[connection_id]:
+            WS_SUBSCRIPTIONS[connection_id].remove(et)
+    WS_CONNECTIONS[connection_id]["subscriptions"] = WS_SUBSCRIPTIONS[connection_id]
+
+    return {
+        "connection_id": connection_id,
+        "subscribed_to": WS_SUBSCRIPTIONS[connection_id]
+    }
+
+
+@app.get("/realtime/{connection_id}/poll")
+def websocket_poll(connection_id: str, since: Optional[str] = None):
+    """Poll for events (simulates WebSocket receive)"""
+    if connection_id not in WS_CONNECTIONS:
+        raise HTTPException(status_code=404, detail="Connection not found")
+
+    subscriptions = WS_SUBSCRIPTIONS.get(connection_id, [])
+    events = [e for e in REALTIME_EVENTS if e["event_type"] in subscriptions]
+
+    if since:
+        events = [e for e in events if e["timestamp"] > since]
+
+    return {"events": events[-20:]}
+
+
+@app.post("/realtime/emit")
+def emit_realtime_event(data: Dict[str, Any] = Body(...)):
+    """Emit a real-time event"""
+    event = {
+        "id": str(uuid.uuid4()),
+        "event_type": data.get("event_type"),
+        "payload": data.get("payload", {}),
+        "timestamp": datetime.utcnow().isoformat()
+    }
+    REALTIME_EVENTS.append(event)
+
+    # Keep only last 1000 events
+    if len(REALTIME_EVENTS) > 1000:
+        REALTIME_EVENTS.pop(0)
+
+    return event
+
+
+@app.delete("/realtime/{connection_id}")
+def websocket_disconnect(connection_id: str):
+    """Disconnect WebSocket"""
+    if connection_id not in WS_CONNECTIONS:
+        raise HTTPException(status_code=404, detail="Connection not found")
+    del WS_CONNECTIONS[connection_id]
+    if connection_id in WS_SUBSCRIPTIONS:
+        del WS_SUBSCRIPTIONS[connection_id]
+    return {"status": "disconnected"}
+
+
+@app.get("/realtime/event-types")
+def list_realtime_event_types():
+    """List available real-time event types"""
+    return {"event_types": WS_EVENT_TYPES}
+
+
+# ============================================================================
+# Plugin / Extension System
+# ============================================================================
+
+# Storage for plugins
+PLUGINS: Dict[str, Dict[str, Any]] = {}
+PLUGIN_HOOKS: Dict[str, List[str]] = {}
+PLUGIN_CONFIGS: Dict[str, Dict[str, Any]] = {}
+
+PLUGIN_HOOK_POINTS = [
+    "pre_execution", "post_execution",
+    "pre_workflow", "post_workflow",
+    "pre_chain", "post_chain",
+    "on_error", "on_completion",
+    "input_transform", "output_transform",
+    "auth_check", "rate_limit_check"
+]
+
+
+class PluginCreate(BaseModel):
+    name: str
+    description: Optional[str] = None
+    version: str
+    author: Optional[str] = None
+    hooks: List[str]
+    config_schema: Optional[Dict[str, Any]] = {}
+    code_url: Optional[str] = None
+
+
+@app.post("/plugins")
+def register_plugin(plugin: PluginCreate):
+    """Register a new plugin"""
+    plugin_id = str(uuid.uuid4())
+
+    # Validate hooks
+    invalid_hooks = [h for h in plugin.hooks if h not in PLUGIN_HOOK_POINTS]
+    if invalid_hooks:
+        raise HTTPException(status_code=400, detail=f"Invalid hooks: {invalid_hooks}")
+
+    PLUGINS[plugin_id] = {
+        "id": plugin_id,
+        "name": plugin.name,
+        "description": plugin.description,
+        "version": plugin.version,
+        "author": plugin.author,
+        "hooks": plugin.hooks,
+        "config_schema": plugin.config_schema or {},
+        "code_url": plugin.code_url,
+        "enabled": True,
+        "install_count": 0,
+        "created_at": datetime.utcnow().isoformat()
+    }
+
+    # Register hooks
+    for hook in plugin.hooks:
+        if hook not in PLUGIN_HOOKS:
+            PLUGIN_HOOKS[hook] = []
+        PLUGIN_HOOKS[hook].append(plugin_id)
+
+    return PLUGINS[plugin_id]
+
+
+@app.get("/plugins")
+def list_plugins(enabled_only: bool = False):
+    """List all plugins"""
+    plugins = list(PLUGINS.values())
+    if enabled_only:
+        plugins = [p for p in plugins if p["enabled"]]
+    return {"plugins": plugins}
+
+
+@app.get("/plugins/{plugin_id}")
+def get_plugin(plugin_id: str):
+    """Get plugin details"""
+    if plugin_id not in PLUGINS:
+        raise HTTPException(status_code=404, detail="Plugin not found")
+    return PLUGINS[plugin_id]
+
+
+@app.post("/plugins/{plugin_id}/enable")
+def enable_plugin(plugin_id: str):
+    """Enable a plugin"""
+    if plugin_id not in PLUGINS:
+        raise HTTPException(status_code=404, detail="Plugin not found")
+    PLUGINS[plugin_id]["enabled"] = True
+    return PLUGINS[plugin_id]
+
+
+@app.post("/plugins/{plugin_id}/disable")
+def disable_plugin(plugin_id: str):
+    """Disable a plugin"""
+    if plugin_id not in PLUGINS:
+        raise HTTPException(status_code=404, detail="Plugin not found")
+    PLUGINS[plugin_id]["enabled"] = False
+    return PLUGINS[plugin_id]
+
+
+@app.delete("/plugins/{plugin_id}")
+def unregister_plugin(plugin_id: str):
+    """Unregister a plugin"""
+    if plugin_id not in PLUGINS:
+        raise HTTPException(status_code=404, detail="Plugin not found")
+
+    # Remove from hooks
+    for hook, plugins in PLUGIN_HOOKS.items():
+        if plugin_id in plugins:
+            plugins.remove(plugin_id)
+
+    del PLUGINS[plugin_id]
+    return {"status": "deleted"}
+
+
+@app.post("/plugins/{plugin_id}/configure")
+def configure_plugin(plugin_id: str, config: Dict[str, Any] = Body(...)):
+    """Configure a plugin"""
+    if plugin_id not in PLUGINS:
+        raise HTTPException(status_code=404, detail="Plugin not found")
+
+    PLUGIN_CONFIGS[plugin_id] = config
+    return {"plugin_id": plugin_id, "config": config}
+
+
+@app.get("/plugins/{plugin_id}/config")
+def get_plugin_config(plugin_id: str):
+    """Get plugin configuration"""
+    if plugin_id not in PLUGINS:
+        raise HTTPException(status_code=404, detail="Plugin not found")
+    return {"config": PLUGIN_CONFIGS.get(plugin_id, {})}
+
+
+@app.get("/plugins/hooks")
+def list_plugin_hooks():
+    """List available plugin hook points"""
+    return {
+        "hook_points": PLUGIN_HOOK_POINTS,
+        "registered_hooks": {k: len(v) for k, v in PLUGIN_HOOKS.items() if v}
+    }
+
+
+@app.post("/plugins/hooks/{hook_point}/execute")
+def execute_plugin_hook(hook_point: str, context: Dict[str, Any] = Body(...)):
+    """Execute all plugins registered for a hook point"""
+    if hook_point not in PLUGIN_HOOK_POINTS:
+        raise HTTPException(status_code=400, detail="Invalid hook point")
+
+    plugin_ids = PLUGIN_HOOKS.get(hook_point, [])
+    results = []
+
+    for plugin_id in plugin_ids:
+        if plugin_id in PLUGINS and PLUGINS[plugin_id]["enabled"]:
+            results.append({
+                "plugin_id": plugin_id,
+                "plugin_name": PLUGINS[plugin_id]["name"],
+                "result": "executed",
+                "modified_context": context
+            })
+
+    return {"hook_point": hook_point, "plugins_executed": len(results), "results": results}
+
+
+# ============================================================================
+# Import / Export
+# ============================================================================
+
+EXPORT_FORMATS = ["json", "yaml", "csv"]
+IMPORT_JOBS: Dict[str, Dict[str, Any]] = {}
+EXPORT_JOBS: Dict[str, Dict[str, Any]] = {}
+
+
+@app.post("/export/agents")
+def export_agents(data: Dict[str, Any] = Body(...)):
+    """Export agent cards"""
+    export_id = str(uuid.uuid4())
+    agent_ids = data.get("agent_ids", [])
+    format_type = data.get("format", "json")
+    include_related = data.get("include_related", False)
+
+    if format_type not in EXPORT_FORMATS:
+        raise HTTPException(status_code=400, detail=f"Invalid format. Supported: {EXPORT_FORMATS}")
+
+    EXPORT_JOBS[export_id] = {
+        "id": export_id,
+        "type": "agents",
+        "format": format_type,
+        "item_count": len(agent_ids) if agent_ids else "all",
+        "include_related": include_related,
+        "status": "completed",
+        "download_url": f"/export/download/{export_id}",
+        "created_at": datetime.utcnow().isoformat(),
+        "expires_at": (datetime.utcnow() + timedelta(hours=24)).isoformat()
+    }
+
+    return EXPORT_JOBS[export_id]
+
+
+@app.post("/export/workflows")
+def export_workflows(data: Dict[str, Any] = Body(...)):
+    """Export workflows"""
+    export_id = str(uuid.uuid4())
+    workflow_ids = data.get("workflow_ids", [])
+    format_type = data.get("format", "json")
+
+    EXPORT_JOBS[export_id] = {
+        "id": export_id,
+        "type": "workflows",
+        "format": format_type,
+        "item_count": len(workflow_ids) if workflow_ids else "all",
+        "status": "completed",
+        "download_url": f"/export/download/{export_id}",
+        "created_at": datetime.utcnow().isoformat()
+    }
+
+    return EXPORT_JOBS[export_id]
+
+
+@app.post("/export/full")
+def export_full_backup(data: Dict[str, Any] = Body(...)):
+    """Export full platform backup"""
+    export_id = str(uuid.uuid4())
+
+    EXPORT_JOBS[export_id] = {
+        "id": export_id,
+        "type": "full_backup",
+        "format": "json",
+        "includes": ["agents", "workflows", "chains", "templates", "prompts", "knowledge_bases"],
+        "status": "completed",
+        "download_url": f"/export/download/{export_id}",
+        "size_estimate_mb": 50,
+        "created_at": datetime.utcnow().isoformat()
+    }
+
+    return EXPORT_JOBS[export_id]
+
+
+@app.get("/export/download/{export_id}")
+def download_export(export_id: str):
+    """Download an export"""
+    if export_id not in EXPORT_JOBS:
+        raise HTTPException(status_code=404, detail="Export not found")
+
+    return {
+        "export_id": export_id,
+        "download_url": f"https://exports.example.com/{export_id}.zip",
+        "message": "Export ready for download"
+    }
+
+
+@app.get("/export/jobs")
+def list_export_jobs():
+    """List export jobs"""
+    return {"exports": list(EXPORT_JOBS.values())}
+
+
+@app.post("/import/agents")
+def import_agents(data: Dict[str, Any] = Body(...)):
+    """Import agent cards"""
+    import_id = str(uuid.uuid4())
+
+    IMPORT_JOBS[import_id] = {
+        "id": import_id,
+        "type": "agents",
+        "source": data.get("source_url") or "uploaded_file",
+        "format": data.get("format", "json"),
+        "status": "completed",
+        "items_imported": data.get("count", 0),
+        "items_skipped": 0,
+        "items_failed": 0,
+        "created_at": datetime.utcnow().isoformat()
+    }
+
+    return IMPORT_JOBS[import_id]
+
+
+@app.post("/import/workflows")
+def import_workflows(data: Dict[str, Any] = Body(...)):
+    """Import workflows"""
+    import_id = str(uuid.uuid4())
+
+    IMPORT_JOBS[import_id] = {
+        "id": import_id,
+        "type": "workflows",
+        "source": data.get("source_url") or "uploaded_file",
+        "format": data.get("format", "json"),
+        "status": "completed",
+        "items_imported": data.get("count", 0),
+        "created_at": datetime.utcnow().isoformat()
+    }
+
+    return IMPORT_JOBS[import_id]
+
+
+@app.post("/import/restore")
+def restore_backup(data: Dict[str, Any] = Body(...)):
+    """Restore from a full backup"""
+    import_id = str(uuid.uuid4())
+
+    IMPORT_JOBS[import_id] = {
+        "id": import_id,
+        "type": "full_restore",
+        "source": data.get("source_url") or "uploaded_file",
+        "status": "completed",
+        "restored": ["agents", "workflows", "chains", "templates"],
+        "created_at": datetime.utcnow().isoformat()
+    }
+
+    return IMPORT_JOBS[import_id]
+
+
+@app.get("/import/jobs")
+def list_import_jobs():
+    """List import jobs"""
+    return {"imports": list(IMPORT_JOBS.values())}
+
+
+@app.get("/import/formats")
+def list_import_formats():
+    """List supported import/export formats"""
+    return {
+        "formats": EXPORT_FORMATS,
+        "importable_types": ["agents", "workflows", "chains", "templates", "prompts", "knowledge_bases"],
+        "exportable_types": ["agents", "workflows", "chains", "templates", "prompts", "knowledge_bases", "full_backup"]
+    }
+
+
+# ============================================================================
+# GraphQL API Support
+# ============================================================================
+
+# GraphQL schema and resolvers (simplified REST representation)
+GRAPHQL_SCHEMA = """
+type Query {
+  agents(limit: Int, offset: Int): [Agent!]!
+  agent(id: ID!): Agent
+  workflows(limit: Int): [Workflow!]!
+  workflow(id: ID!): Workflow
+  chains(limit: Int): [Chain!]!
+  templates: [Template!]!
+  health: HealthStatus!
+}
+
+type Mutation {
+  createAgent(input: AgentInput!): Agent!
+  updateAgent(id: ID!, input: AgentInput!): Agent!
+  deleteAgent(id: ID!): Boolean!
+  executeAgent(id: ID!, input: JSON): Execution!
+  createWorkflow(input: WorkflowInput!): Workflow!
+  runWorkflow(id: ID!, input: JSON): WorkflowExecution!
+}
+
+type Subscription {
+  executionUpdated(executionId: ID!): Execution!
+  workflowProgress(workflowId: ID!): WorkflowExecution!
+}
+
+type Agent {
+  id: ID!
+  name: String!
+  description: String
+  capabilities: [String!]
+  createdAt: DateTime!
+}
+
+type Workflow {
+  id: ID!
+  name: String!
+  steps: [WorkflowStep!]!
+}
+
+type Execution {
+  id: ID!
+  status: String!
+  output: JSON
+}
+"""
+
+
+@app.get("/graphql/schema")
+def get_graphql_schema():
+    """Get GraphQL schema"""
+    return {
+        "schema": GRAPHQL_SCHEMA,
+        "introspection_url": "/graphql/introspection"
+    }
+
+
+@app.post("/graphql")
+def execute_graphql(data: Dict[str, Any] = Body(...)):
+    """Execute GraphQL query"""
+    query = data.get("query", "")
+    variables = data.get("variables", {})
+    operation_name = data.get("operationName")
+
+    # Parse query type (simplified)
+    if "query" in query.lower() or query.strip().startswith("{"):
+        query_type = "query"
+    elif "mutation" in query.lower():
+        query_type = "mutation"
+    elif "subscription" in query.lower():
+        query_type = "subscription"
+    else:
+        query_type = "unknown"
+
+    # Simulated response
+    response = {
+        "data": {
+            "simulated": True,
+            "query_type": query_type,
+            "message": "GraphQL execution simulated. In production, this would return actual data."
+        },
+        "extensions": {
+            "query_complexity": 10,
+            "execution_time_ms": 15
+        }
+    }
+
+    if query_type == "subscription":
+        response["data"]["subscription_id"] = str(uuid.uuid4())
+        response["data"]["websocket_url"] = "wss://api.example.com/graphql/subscriptions"
+
+    return response
+
+
+@app.get("/graphql/introspection")
+def graphql_introspection():
+    """GraphQL introspection query result"""
+    return {
+        "__schema": {
+            "types": [
+                {"name": "Query", "kind": "OBJECT"},
+                {"name": "Mutation", "kind": "OBJECT"},
+                {"name": "Subscription", "kind": "OBJECT"},
+                {"name": "Agent", "kind": "OBJECT"},
+                {"name": "Workflow", "kind": "OBJECT"},
+                {"name": "Execution", "kind": "OBJECT"},
+                {"name": "String", "kind": "SCALAR"},
+                {"name": "Int", "kind": "SCALAR"},
+                {"name": "Boolean", "kind": "SCALAR"},
+                {"name": "ID", "kind": "SCALAR"},
+                {"name": "JSON", "kind": "SCALAR"},
+                {"name": "DateTime", "kind": "SCALAR"}
+            ],
+            "queryType": {"name": "Query"},
+            "mutationType": {"name": "Mutation"},
+            "subscriptionType": {"name": "Subscription"}
+        }
+    }
+
+
+@app.get("/graphql/playground")
+def graphql_playground_config():
+    """GraphQL Playground configuration"""
+    return {
+        "endpoint": "/graphql",
+        "subscription_endpoint": "wss://api.example.com/graphql/subscriptions",
+        "settings": {
+            "editor.theme": "dark",
+            "editor.fontSize": 14,
+            "tracing.tracingSupported": True
+        }
+    }
+
+
+# ============================================================================
 # Run Server
 # ============================================================================
 
