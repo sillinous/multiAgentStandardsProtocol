@@ -6671,6 +6671,1906 @@ async def increment_rate_limit(
 
 
 # ============================================================================
+# AI/LLM Integration Layer
+# ============================================================================
+
+# Storage for AI providers and configurations
+AI_PROVIDERS: Dict[str, Dict[str, Any]] = {}
+AI_MODELS: Dict[str, Dict[str, Any]] = {}
+AI_CONVERSATIONS: Dict[str, Dict[str, Any]] = {}
+AI_USAGE_LOG: List[Dict[str, Any]] = []
+
+SUPPORTED_PROVIDERS = {
+    "openai": {
+        "name": "OpenAI",
+        "models": ["gpt-4", "gpt-4-turbo", "gpt-3.5-turbo", "gpt-4o", "gpt-4o-mini"],
+        "capabilities": ["chat", "completion", "embedding", "image", "audio"]
+    },
+    "anthropic": {
+        "name": "Anthropic",
+        "models": ["claude-3-opus", "claude-3-sonnet", "claude-3-haiku", "claude-3.5-sonnet"],
+        "capabilities": ["chat", "completion"]
+    },
+    "google": {
+        "name": "Google AI",
+        "models": ["gemini-pro", "gemini-pro-vision", "gemini-ultra"],
+        "capabilities": ["chat", "completion", "embedding", "image"]
+    },
+    "azure": {
+        "name": "Azure OpenAI",
+        "models": ["gpt-4", "gpt-35-turbo"],
+        "capabilities": ["chat", "completion", "embedding"]
+    },
+    "cohere": {
+        "name": "Cohere",
+        "models": ["command", "command-light", "command-r", "command-r-plus"],
+        "capabilities": ["chat", "completion", "embedding"]
+    },
+    "local": {
+        "name": "Local/Self-hosted",
+        "models": ["llama", "mistral", "custom"],
+        "capabilities": ["chat", "completion"]
+    }
+}
+
+
+class AIProviderCreate(BaseModel):
+    provider_type: str
+    name: str
+    api_key_secret_id: Optional[str] = None
+    endpoint_url: Optional[str] = None
+    default_model: Optional[str] = None
+    config: Optional[Dict[str, Any]] = None
+
+
+class AICompletionRequest(BaseModel):
+    provider_id: str
+    model: Optional[str] = None
+    messages: List[Dict[str, str]]
+    temperature: Optional[float] = 0.7
+    max_tokens: Optional[int] = 1000
+    stream: Optional[bool] = False
+    tools: Optional[List[Dict[str, Any]]] = None
+
+
+@app.get("/ai/providers/supported")
+def list_supported_providers():
+    """List all supported AI providers and their capabilities"""
+    return {"providers": SUPPORTED_PROVIDERS}
+
+
+@app.post("/ai/providers")
+def create_ai_provider(provider: AIProviderCreate):
+    """Register a new AI provider configuration"""
+    if provider.provider_type not in SUPPORTED_PROVIDERS:
+        raise HTTPException(status_code=400, detail=f"Unsupported provider: {provider.provider_type}")
+
+    provider_id = str(uuid.uuid4())
+    AI_PROVIDERS[provider_id] = {
+        "id": provider_id,
+        "provider_type": provider.provider_type,
+        "name": provider.name,
+        "api_key_secret_id": provider.api_key_secret_id,
+        "endpoint_url": provider.endpoint_url,
+        "default_model": provider.default_model,
+        "config": provider.config or {},
+        "status": "active",
+        "created_at": datetime.utcnow().isoformat(),
+        "last_used": None,
+        "total_requests": 0,
+        "total_tokens": 0
+    }
+    return AI_PROVIDERS[provider_id]
+
+
+@app.get("/ai/providers")
+def list_ai_providers():
+    """List all registered AI providers"""
+    return {"providers": list(AI_PROVIDERS.values())}
+
+
+@app.get("/ai/providers/{provider_id}")
+def get_ai_provider(provider_id: str):
+    """Get AI provider details"""
+    if provider_id not in AI_PROVIDERS:
+        raise HTTPException(status_code=404, detail="Provider not found")
+    return AI_PROVIDERS[provider_id]
+
+
+@app.delete("/ai/providers/{provider_id}")
+def delete_ai_provider(provider_id: str):
+    """Delete an AI provider configuration"""
+    if provider_id not in AI_PROVIDERS:
+        raise HTTPException(status_code=404, detail="Provider not found")
+    del AI_PROVIDERS[provider_id]
+    return {"status": "deleted"}
+
+
+@app.post("/ai/providers/{provider_id}/test")
+def test_ai_provider(provider_id: str):
+    """Test connectivity to an AI provider"""
+    if provider_id not in AI_PROVIDERS:
+        raise HTTPException(status_code=404, detail="Provider not found")
+
+    provider = AI_PROVIDERS[provider_id]
+    # Simulated test - in production would make actual API call
+    return {
+        "provider_id": provider_id,
+        "status": "connected",
+        "latency_ms": 145,
+        "models_available": SUPPORTED_PROVIDERS[provider["provider_type"]]["models"],
+        "tested_at": datetime.utcnow().isoformat()
+    }
+
+
+@app.post("/ai/completions")
+def create_ai_completion(request: AICompletionRequest):
+    """Execute an AI completion request"""
+    if request.provider_id not in AI_PROVIDERS:
+        raise HTTPException(status_code=404, detail="Provider not found")
+
+    provider = AI_PROVIDERS[request.provider_id]
+    model = request.model or provider["default_model"]
+
+    # Simulated completion - in production would call actual API
+    completion_id = str(uuid.uuid4())
+    response = {
+        "id": completion_id,
+        "provider_id": request.provider_id,
+        "model": model,
+        "choices": [
+            {
+                "index": 0,
+                "message": {
+                    "role": "assistant",
+                    "content": f"[Simulated response from {model}] This is a placeholder response. In production, this would be the actual AI response."
+                },
+                "finish_reason": "stop"
+            }
+        ],
+        "usage": {
+            "prompt_tokens": sum(len(m.get("content", "").split()) * 1.3 for m in request.messages),
+            "completion_tokens": 50,
+            "total_tokens": 0
+        },
+        "created_at": datetime.utcnow().isoformat()
+    }
+    response["usage"]["total_tokens"] = int(response["usage"]["prompt_tokens"] + response["usage"]["completion_tokens"])
+
+    # Update provider stats
+    AI_PROVIDERS[request.provider_id]["last_used"] = datetime.utcnow().isoformat()
+    AI_PROVIDERS[request.provider_id]["total_requests"] += 1
+    AI_PROVIDERS[request.provider_id]["total_tokens"] += response["usage"]["total_tokens"]
+
+    # Log usage
+    AI_USAGE_LOG.append({
+        "completion_id": completion_id,
+        "provider_id": request.provider_id,
+        "model": model,
+        "tokens": response["usage"]["total_tokens"],
+        "timestamp": datetime.utcnow().isoformat()
+    })
+
+    return response
+
+
+@app.post("/ai/conversations")
+def create_conversation(data: Dict[str, Any] = Body(...)):
+    """Create a new AI conversation session"""
+    conversation_id = str(uuid.uuid4())
+    AI_CONVERSATIONS[conversation_id] = {
+        "id": conversation_id,
+        "provider_id": data.get("provider_id"),
+        "model": data.get("model"),
+        "title": data.get("title", "New Conversation"),
+        "messages": [],
+        "context": data.get("context", {}),
+        "created_at": datetime.utcnow().isoformat(),
+        "updated_at": datetime.utcnow().isoformat()
+    }
+    return AI_CONVERSATIONS[conversation_id]
+
+
+@app.get("/ai/conversations")
+def list_conversations():
+    """List all conversations"""
+    return {"conversations": list(AI_CONVERSATIONS.values())}
+
+
+@app.get("/ai/conversations/{conversation_id}")
+def get_conversation(conversation_id: str):
+    """Get conversation history"""
+    if conversation_id not in AI_CONVERSATIONS:
+        raise HTTPException(status_code=404, detail="Conversation not found")
+    return AI_CONVERSATIONS[conversation_id]
+
+
+@app.post("/ai/conversations/{conversation_id}/messages")
+def add_conversation_message(conversation_id: str, message: Dict[str, Any] = Body(...)):
+    """Add a message to a conversation and get AI response"""
+    if conversation_id not in AI_CONVERSATIONS:
+        raise HTTPException(status_code=404, detail="Conversation not found")
+
+    conv = AI_CONVERSATIONS[conversation_id]
+
+    # Add user message
+    user_msg = {
+        "role": "user",
+        "content": message.get("content", ""),
+        "timestamp": datetime.utcnow().isoformat()
+    }
+    conv["messages"].append(user_msg)
+
+    # Simulate AI response
+    ai_msg = {
+        "role": "assistant",
+        "content": f"[Simulated response] Received: {message.get('content', '')}",
+        "timestamp": datetime.utcnow().isoformat()
+    }
+    conv["messages"].append(ai_msg)
+    conv["updated_at"] = datetime.utcnow().isoformat()
+
+    return {"user_message": user_msg, "ai_response": ai_msg}
+
+
+@app.delete("/ai/conversations/{conversation_id}")
+def delete_conversation(conversation_id: str):
+    """Delete a conversation"""
+    if conversation_id not in AI_CONVERSATIONS:
+        raise HTTPException(status_code=404, detail="Conversation not found")
+    del AI_CONVERSATIONS[conversation_id]
+    return {"status": "deleted"}
+
+
+@app.get("/ai/usage")
+def get_ai_usage(provider_id: Optional[str] = None, days: int = 30):
+    """Get AI usage statistics"""
+    cutoff = datetime.utcnow() - timedelta(days=days)
+    logs = [l for l in AI_USAGE_LOG if datetime.fromisoformat(l["timestamp"]) > cutoff]
+
+    if provider_id:
+        logs = [l for l in logs if l["provider_id"] == provider_id]
+
+    return {
+        "period_days": days,
+        "total_requests": len(logs),
+        "total_tokens": sum(l["tokens"] for l in logs),
+        "by_model": {},
+        "by_day": {}
+    }
+
+
+# ============================================================================
+# Agent Marketplace
+# ============================================================================
+
+# Storage for marketplace
+MARKETPLACE_LISTINGS: Dict[str, Dict[str, Any]] = {}
+MARKETPLACE_REVIEWS: Dict[str, List[Dict[str, Any]]] = {}
+MARKETPLACE_DOWNLOADS: Dict[str, List[Dict[str, Any]]] = {}
+MARKETPLACE_FEATURED: List[str] = []
+MARKETPLACE_CATEGORIES = [
+    "productivity", "automation", "data-analysis", "communication",
+    "development", "finance", "hr", "marketing", "sales", "operations",
+    "customer-service", "legal", "compliance", "research", "creative"
+]
+
+
+class MarketplaceListingCreate(BaseModel):
+    agent_card_id: str
+    title: str
+    description: str
+    category: str
+    tags: Optional[List[str]] = []
+    pricing_model: Optional[str] = "free"  # free, one-time, subscription
+    price: Optional[float] = 0.0
+    screenshots: Optional[List[str]] = []
+    demo_url: Optional[str] = None
+
+
+class MarketplaceReview(BaseModel):
+    rating: int  # 1-5
+    title: str
+    content: str
+    user_id: str
+
+
+@app.post("/marketplace/listings")
+def create_marketplace_listing(listing: MarketplaceListingCreate):
+    """Publish an agent to the marketplace"""
+    listing_id = str(uuid.uuid4())
+    MARKETPLACE_LISTINGS[listing_id] = {
+        "id": listing_id,
+        "agent_card_id": listing.agent_card_id,
+        "title": listing.title,
+        "description": listing.description,
+        "category": listing.category,
+        "tags": listing.tags or [],
+        "pricing_model": listing.pricing_model,
+        "price": listing.price,
+        "screenshots": listing.screenshots or [],
+        "demo_url": listing.demo_url,
+        "publisher_id": "current_user",
+        "status": "pending_review",
+        "downloads": 0,
+        "average_rating": 0.0,
+        "review_count": 0,
+        "created_at": datetime.utcnow().isoformat(),
+        "updated_at": datetime.utcnow().isoformat(),
+        "published_at": None
+    }
+    MARKETPLACE_REVIEWS[listing_id] = []
+    MARKETPLACE_DOWNLOADS[listing_id] = []
+    return MARKETPLACE_LISTINGS[listing_id]
+
+
+@app.get("/marketplace/listings")
+def list_marketplace_listings(
+    category: Optional[str] = None,
+    search: Optional[str] = None,
+    sort_by: str = "downloads",
+    pricing: Optional[str] = None,
+    page: int = 1,
+    page_size: int = 20
+):
+    """Browse marketplace listings"""
+    listings = [l for l in MARKETPLACE_LISTINGS.values() if l["status"] == "published"]
+
+    if category:
+        listings = [l for l in listings if l["category"] == category]
+    if search:
+        search_lower = search.lower()
+        listings = [l for l in listings if search_lower in l["title"].lower() or search_lower in l["description"].lower()]
+    if pricing:
+        listings = [l for l in listings if l["pricing_model"] == pricing]
+
+    # Sort
+    if sort_by == "downloads":
+        listings.sort(key=lambda x: x["downloads"], reverse=True)
+    elif sort_by == "rating":
+        listings.sort(key=lambda x: x["average_rating"], reverse=True)
+    elif sort_by == "newest":
+        listings.sort(key=lambda x: x["published_at"] or "", reverse=True)
+
+    # Paginate
+    start = (page - 1) * page_size
+    end = start + page_size
+
+    return {
+        "listings": listings[start:end],
+        "total": len(listings),
+        "page": page,
+        "page_size": page_size,
+        "total_pages": (len(listings) + page_size - 1) // page_size
+    }
+
+
+@app.get("/marketplace/listings/{listing_id}")
+def get_marketplace_listing(listing_id: str):
+    """Get marketplace listing details"""
+    if listing_id not in MARKETPLACE_LISTINGS:
+        raise HTTPException(status_code=404, detail="Listing not found")
+    return {
+        "listing": MARKETPLACE_LISTINGS[listing_id],
+        "reviews": MARKETPLACE_REVIEWS.get(listing_id, [])[:10]
+    }
+
+
+@app.put("/marketplace/listings/{listing_id}")
+def update_marketplace_listing(listing_id: str, updates: Dict[str, Any] = Body(...)):
+    """Update a marketplace listing"""
+    if listing_id not in MARKETPLACE_LISTINGS:
+        raise HTTPException(status_code=404, detail="Listing not found")
+
+    allowed = ["title", "description", "category", "tags", "pricing_model", "price", "screenshots", "demo_url"]
+    for key, value in updates.items():
+        if key in allowed:
+            MARKETPLACE_LISTINGS[listing_id][key] = value
+    MARKETPLACE_LISTINGS[listing_id]["updated_at"] = datetime.utcnow().isoformat()
+    return MARKETPLACE_LISTINGS[listing_id]
+
+
+@app.post("/marketplace/listings/{listing_id}/publish")
+def publish_marketplace_listing(listing_id: str):
+    """Publish a listing to the marketplace"""
+    if listing_id not in MARKETPLACE_LISTINGS:
+        raise HTTPException(status_code=404, detail="Listing not found")
+
+    MARKETPLACE_LISTINGS[listing_id]["status"] = "published"
+    MARKETPLACE_LISTINGS[listing_id]["published_at"] = datetime.utcnow().isoformat()
+    return MARKETPLACE_LISTINGS[listing_id]
+
+
+@app.post("/marketplace/listings/{listing_id}/unpublish")
+def unpublish_marketplace_listing(listing_id: str):
+    """Unpublish a listing from the marketplace"""
+    if listing_id not in MARKETPLACE_LISTINGS:
+        raise HTTPException(status_code=404, detail="Listing not found")
+
+    MARKETPLACE_LISTINGS[listing_id]["status"] = "unpublished"
+    return MARKETPLACE_LISTINGS[listing_id]
+
+
+@app.delete("/marketplace/listings/{listing_id}")
+def delete_marketplace_listing(listing_id: str):
+    """Delete a marketplace listing"""
+    if listing_id not in MARKETPLACE_LISTINGS:
+        raise HTTPException(status_code=404, detail="Listing not found")
+    del MARKETPLACE_LISTINGS[listing_id]
+    return {"status": "deleted"}
+
+
+@app.post("/marketplace/listings/{listing_id}/download")
+def download_marketplace_listing(listing_id: str, user_id: str = "current_user"):
+    """Download/install an agent from the marketplace"""
+    if listing_id not in MARKETPLACE_LISTINGS:
+        raise HTTPException(status_code=404, detail="Listing not found")
+
+    listing = MARKETPLACE_LISTINGS[listing_id]
+    listing["downloads"] += 1
+
+    MARKETPLACE_DOWNLOADS[listing_id].append({
+        "user_id": user_id,
+        "downloaded_at": datetime.utcnow().isoformat()
+    })
+
+    return {
+        "status": "downloaded",
+        "agent_card_id": listing["agent_card_id"],
+        "message": "Agent has been added to your library"
+    }
+
+
+@app.post("/marketplace/listings/{listing_id}/reviews")
+def create_marketplace_review(listing_id: str, review: MarketplaceReview):
+    """Submit a review for a marketplace listing"""
+    if listing_id not in MARKETPLACE_LISTINGS:
+        raise HTTPException(status_code=404, detail="Listing not found")
+
+    if review.rating < 1 or review.rating > 5:
+        raise HTTPException(status_code=400, detail="Rating must be between 1 and 5")
+
+    review_data = {
+        "id": str(uuid.uuid4()),
+        "listing_id": listing_id,
+        "user_id": review.user_id,
+        "rating": review.rating,
+        "title": review.title,
+        "content": review.content,
+        "helpful_count": 0,
+        "created_at": datetime.utcnow().isoformat()
+    }
+    MARKETPLACE_REVIEWS[listing_id].append(review_data)
+
+    # Update average rating
+    reviews = MARKETPLACE_REVIEWS[listing_id]
+    MARKETPLACE_LISTINGS[listing_id]["average_rating"] = sum(r["rating"] for r in reviews) / len(reviews)
+    MARKETPLACE_LISTINGS[listing_id]["review_count"] = len(reviews)
+
+    return review_data
+
+
+@app.get("/marketplace/listings/{listing_id}/reviews")
+def get_marketplace_reviews(listing_id: str, page: int = 1, page_size: int = 10):
+    """Get reviews for a marketplace listing"""
+    if listing_id not in MARKETPLACE_LISTINGS:
+        raise HTTPException(status_code=404, detail="Listing not found")
+
+    reviews = MARKETPLACE_REVIEWS.get(listing_id, [])
+    start = (page - 1) * page_size
+    end = start + page_size
+
+    return {
+        "reviews": reviews[start:end],
+        "total": len(reviews),
+        "average_rating": MARKETPLACE_LISTINGS[listing_id]["average_rating"]
+    }
+
+
+@app.get("/marketplace/featured")
+def get_featured_listings():
+    """Get featured marketplace listings"""
+    featured = [MARKETPLACE_LISTINGS[lid] for lid in MARKETPLACE_FEATURED if lid in MARKETPLACE_LISTINGS]
+    return {"featured": featured}
+
+
+@app.get("/marketplace/categories")
+def get_marketplace_categories():
+    """Get marketplace categories with counts"""
+    category_counts = {}
+    for listing in MARKETPLACE_LISTINGS.values():
+        if listing["status"] == "published":
+            cat = listing["category"]
+            category_counts[cat] = category_counts.get(cat, 0) + 1
+
+    return {
+        "categories": [
+            {"name": cat, "count": category_counts.get(cat, 0)}
+            for cat in MARKETPLACE_CATEGORIES
+        ]
+    }
+
+
+@app.get("/marketplace/trending")
+def get_trending_listings(days: int = 7, limit: int = 10):
+    """Get trending marketplace listings"""
+    cutoff = datetime.utcnow() - timedelta(days=days)
+
+    # Calculate recent downloads
+    trending_scores = {}
+    for listing_id, downloads in MARKETPLACE_DOWNLOADS.items():
+        recent = [d for d in downloads if datetime.fromisoformat(d["downloaded_at"]) > cutoff]
+        trending_scores[listing_id] = len(recent)
+
+    # Sort by trending score
+    sorted_ids = sorted(trending_scores.keys(), key=lambda x: trending_scores[x], reverse=True)[:limit]
+
+    return {
+        "trending": [MARKETPLACE_LISTINGS[lid] for lid in sorted_ids if lid in MARKETPLACE_LISTINGS]
+    }
+
+
+# ============================================================================
+# Testing & Sandbox
+# ============================================================================
+
+# Storage for testing
+TEST_SUITES: Dict[str, Dict[str, Any]] = {}
+TEST_RUNS: Dict[str, Dict[str, Any]] = {}
+SANDBOX_ENVIRONMENTS: Dict[str, Dict[str, Any]] = {}
+MOCK_RESPONSES: Dict[str, Dict[str, Any]] = {}
+
+
+class TestCase(BaseModel):
+    name: str
+    description: Optional[str] = None
+    input: Dict[str, Any]
+    expected_output: Optional[Dict[str, Any]] = None
+    assertions: Optional[List[Dict[str, Any]]] = []
+    timeout_seconds: Optional[int] = 30
+
+
+class TestSuiteCreate(BaseModel):
+    agent_card_id: str
+    name: str
+    description: Optional[str] = None
+    test_cases: List[TestCase]
+
+
+class SandboxCreate(BaseModel):
+    name: str
+    description: Optional[str] = None
+    config: Optional[Dict[str, Any]] = None
+    mock_providers: Optional[List[str]] = []
+    isolated: Optional[bool] = True
+
+
+@app.post("/testing/suites")
+def create_test_suite(suite: TestSuiteCreate):
+    """Create a test suite for an agent"""
+    suite_id = str(uuid.uuid4())
+    TEST_SUITES[suite_id] = {
+        "id": suite_id,
+        "agent_card_id": suite.agent_card_id,
+        "name": suite.name,
+        "description": suite.description,
+        "test_cases": [tc.dict() for tc in suite.test_cases],
+        "total_tests": len(suite.test_cases),
+        "last_run": None,
+        "last_result": None,
+        "created_at": datetime.utcnow().isoformat(),
+        "updated_at": datetime.utcnow().isoformat()
+    }
+    return TEST_SUITES[suite_id]
+
+
+@app.get("/testing/suites")
+def list_test_suites(agent_card_id: Optional[str] = None):
+    """List test suites"""
+    suites = list(TEST_SUITES.values())
+    if agent_card_id:
+        suites = [s for s in suites if s["agent_card_id"] == agent_card_id]
+    return {"test_suites": suites}
+
+
+@app.get("/testing/suites/{suite_id}")
+def get_test_suite(suite_id: str):
+    """Get test suite details"""
+    if suite_id not in TEST_SUITES:
+        raise HTTPException(status_code=404, detail="Test suite not found")
+    return TEST_SUITES[suite_id]
+
+
+@app.put("/testing/suites/{suite_id}")
+def update_test_suite(suite_id: str, updates: Dict[str, Any] = Body(...)):
+    """Update a test suite"""
+    if suite_id not in TEST_SUITES:
+        raise HTTPException(status_code=404, detail="Test suite not found")
+
+    allowed = ["name", "description", "test_cases"]
+    for key, value in updates.items():
+        if key in allowed:
+            TEST_SUITES[suite_id][key] = value
+
+    if "test_cases" in updates:
+        TEST_SUITES[suite_id]["total_tests"] = len(updates["test_cases"])
+    TEST_SUITES[suite_id]["updated_at"] = datetime.utcnow().isoformat()
+    return TEST_SUITES[suite_id]
+
+
+@app.delete("/testing/suites/{suite_id}")
+def delete_test_suite(suite_id: str):
+    """Delete a test suite"""
+    if suite_id not in TEST_SUITES:
+        raise HTTPException(status_code=404, detail="Test suite not found")
+    del TEST_SUITES[suite_id]
+    return {"status": "deleted"}
+
+
+@app.post("/testing/suites/{suite_id}/run")
+def run_test_suite(suite_id: str, sandbox_id: Optional[str] = None):
+    """Execute a test suite"""
+    if suite_id not in TEST_SUITES:
+        raise HTTPException(status_code=404, detail="Test suite not found")
+
+    suite = TEST_SUITES[suite_id]
+    run_id = str(uuid.uuid4())
+
+    # Simulate test execution
+    results = []
+    passed = 0
+    failed = 0
+
+    for tc in suite["test_cases"]:
+        # Simulated test result
+        test_passed = True  # In production, would actually execute
+        if test_passed:
+            passed += 1
+            status = "passed"
+        else:
+            failed += 1
+            status = "failed"
+
+        results.append({
+            "test_name": tc["name"],
+            "status": status,
+            "duration_ms": 150,
+            "output": {"simulated": True},
+            "assertions_passed": len(tc.get("assertions", [])),
+            "assertions_failed": 0
+        })
+
+    TEST_RUNS[run_id] = {
+        "id": run_id,
+        "suite_id": suite_id,
+        "sandbox_id": sandbox_id,
+        "status": "completed",
+        "total_tests": len(results),
+        "passed": passed,
+        "failed": failed,
+        "skipped": 0,
+        "duration_ms": sum(r["duration_ms"] for r in results),
+        "results": results,
+        "started_at": datetime.utcnow().isoformat(),
+        "completed_at": datetime.utcnow().isoformat()
+    }
+
+    # Update suite last run
+    TEST_SUITES[suite_id]["last_run"] = datetime.utcnow().isoformat()
+    TEST_SUITES[suite_id]["last_result"] = "passed" if failed == 0 else "failed"
+
+    return TEST_RUNS[run_id]
+
+
+@app.get("/testing/runs")
+def list_test_runs(suite_id: Optional[str] = None, limit: int = 20):
+    """List test runs"""
+    runs = list(TEST_RUNS.values())
+    if suite_id:
+        runs = [r for r in runs if r["suite_id"] == suite_id]
+    runs.sort(key=lambda x: x["started_at"], reverse=True)
+    return {"test_runs": runs[:limit]}
+
+
+@app.get("/testing/runs/{run_id}")
+def get_test_run(run_id: str):
+    """Get test run details"""
+    if run_id not in TEST_RUNS:
+        raise HTTPException(status_code=404, detail="Test run not found")
+    return TEST_RUNS[run_id]
+
+
+@app.post("/sandbox")
+def create_sandbox(sandbox: SandboxCreate):
+    """Create an isolated sandbox environment"""
+    sandbox_id = str(uuid.uuid4())
+    SANDBOX_ENVIRONMENTS[sandbox_id] = {
+        "id": sandbox_id,
+        "name": sandbox.name,
+        "description": sandbox.description,
+        "config": sandbox.config or {},
+        "mock_providers": sandbox.mock_providers or [],
+        "isolated": sandbox.isolated,
+        "status": "ready",
+        "created_at": datetime.utcnow().isoformat(),
+        "expires_at": (datetime.utcnow() + timedelta(hours=24)).isoformat()
+    }
+    return SANDBOX_ENVIRONMENTS[sandbox_id]
+
+
+@app.get("/sandbox")
+def list_sandboxes():
+    """List sandbox environments"""
+    return {"sandboxes": list(SANDBOX_ENVIRONMENTS.values())}
+
+
+@app.get("/sandbox/{sandbox_id}")
+def get_sandbox(sandbox_id: str):
+    """Get sandbox details"""
+    if sandbox_id not in SANDBOX_ENVIRONMENTS:
+        raise HTTPException(status_code=404, detail="Sandbox not found")
+    return SANDBOX_ENVIRONMENTS[sandbox_id]
+
+
+@app.delete("/sandbox/{sandbox_id}")
+def delete_sandbox(sandbox_id: str):
+    """Delete a sandbox environment"""
+    if sandbox_id not in SANDBOX_ENVIRONMENTS:
+        raise HTTPException(status_code=404, detail="Sandbox not found")
+    del SANDBOX_ENVIRONMENTS[sandbox_id]
+    return {"status": "deleted"}
+
+
+@app.post("/sandbox/{sandbox_id}/execute")
+def execute_in_sandbox(sandbox_id: str, data: Dict[str, Any] = Body(...)):
+    """Execute an agent in a sandbox environment"""
+    if sandbox_id not in SANDBOX_ENVIRONMENTS:
+        raise HTTPException(status_code=404, detail="Sandbox not found")
+
+    execution_id = str(uuid.uuid4())
+    return {
+        "execution_id": execution_id,
+        "sandbox_id": sandbox_id,
+        "status": "completed",
+        "result": {"simulated": True, "message": "Sandbox execution completed"},
+        "logs": ["[sandbox] Starting execution", "[sandbox] Execution completed"],
+        "duration_ms": 200
+    }
+
+
+@app.post("/testing/mocks")
+def create_mock_response(data: Dict[str, Any] = Body(...)):
+    """Create a mock response for testing"""
+    mock_id = str(uuid.uuid4())
+    MOCK_RESPONSES[mock_id] = {
+        "id": mock_id,
+        "pattern": data.get("pattern", "*"),
+        "response": data.get("response", {}),
+        "status_code": data.get("status_code", 200),
+        "delay_ms": data.get("delay_ms", 0),
+        "enabled": True,
+        "created_at": datetime.utcnow().isoformat()
+    }
+    return MOCK_RESPONSES[mock_id]
+
+
+@app.get("/testing/mocks")
+def list_mock_responses():
+    """List mock responses"""
+    return {"mocks": list(MOCK_RESPONSES.values())}
+
+
+@app.delete("/testing/mocks/{mock_id}")
+def delete_mock_response(mock_id: str):
+    """Delete a mock response"""
+    if mock_id not in MOCK_RESPONSES:
+        raise HTTPException(status_code=404, detail="Mock not found")
+    del MOCK_RESPONSES[mock_id]
+    return {"status": "deleted"}
+
+
+# ============================================================================
+# Secrets Management
+# ============================================================================
+
+# Storage for secrets (encrypted in production)
+SECRETS: Dict[str, Dict[str, Any]] = {}
+SECRET_VERSIONS: Dict[str, List[Dict[str, Any]]] = {}
+SECRET_ACCESS_LOG: List[Dict[str, Any]] = []
+
+
+class SecretCreate(BaseModel):
+    name: str
+    value: str
+    description: Optional[str] = None
+    scope: Optional[str] = "global"  # global, org, team, user
+    scope_id: Optional[str] = None
+    expires_at: Optional[str] = None
+    rotation_days: Optional[int] = None
+
+
+@app.post("/secrets")
+def create_secret(secret: SecretCreate):
+    """Create a new secret"""
+    secret_id = str(uuid.uuid4())
+
+    # Mask the value (in production, would encrypt)
+    masked_value = secret.value[:4] + "*" * (len(secret.value) - 4) if len(secret.value) > 4 else "****"
+
+    SECRETS[secret_id] = {
+        "id": secret_id,
+        "name": secret.name,
+        "masked_value": masked_value,
+        "_value": secret.value,  # In production, would be encrypted
+        "description": secret.description,
+        "scope": secret.scope,
+        "scope_id": secret.scope_id,
+        "version": 1,
+        "expires_at": secret.expires_at,
+        "rotation_days": secret.rotation_days,
+        "last_rotated": datetime.utcnow().isoformat(),
+        "created_at": datetime.utcnow().isoformat(),
+        "updated_at": datetime.utcnow().isoformat()
+    }
+    SECRET_VERSIONS[secret_id] = [{
+        "version": 1,
+        "created_at": datetime.utcnow().isoformat(),
+        "created_by": "current_user"
+    }]
+
+    # Don't return the actual value
+    result = {k: v for k, v in SECRETS[secret_id].items() if k != "_value"}
+    return result
+
+
+@app.get("/secrets")
+def list_secrets(scope: Optional[str] = None):
+    """List secrets (values are masked)"""
+    secrets = [{k: v for k, v in s.items() if k != "_value"} for s in SECRETS.values()]
+    if scope:
+        secrets = [s for s in secrets if s["scope"] == scope]
+    return {"secrets": secrets}
+
+
+@app.get("/secrets/{secret_id}")
+def get_secret(secret_id: str, include_value: bool = False):
+    """Get secret details"""
+    if secret_id not in SECRETS:
+        raise HTTPException(status_code=404, detail="Secret not found")
+
+    # Log access
+    SECRET_ACCESS_LOG.append({
+        "secret_id": secret_id,
+        "action": "read",
+        "include_value": include_value,
+        "user": "current_user",
+        "timestamp": datetime.utcnow().isoformat()
+    })
+
+    secret = SECRETS[secret_id]
+    if include_value:
+        return {k: v for k, v in secret.items()}
+    else:
+        return {k: v for k, v in secret.items() if k != "_value"}
+
+
+@app.put("/secrets/{secret_id}")
+def update_secret(secret_id: str, updates: Dict[str, Any] = Body(...)):
+    """Update a secret"""
+    if secret_id not in SECRETS:
+        raise HTTPException(status_code=404, detail="Secret not found")
+
+    allowed = ["name", "description", "expires_at", "rotation_days"]
+    for key, value in updates.items():
+        if key in allowed:
+            SECRETS[secret_id][key] = value
+    SECRETS[secret_id]["updated_at"] = datetime.utcnow().isoformat()
+
+    result = {k: v for k, v in SECRETS[secret_id].items() if k != "_value"}
+    return result
+
+
+@app.post("/secrets/{secret_id}/rotate")
+def rotate_secret(secret_id: str, new_value: str = Body(..., embed=True)):
+    """Rotate a secret's value"""
+    if secret_id not in SECRETS:
+        raise HTTPException(status_code=404, detail="Secret not found")
+
+    secret = SECRETS[secret_id]
+    secret["version"] += 1
+    secret["_value"] = new_value
+    secret["masked_value"] = new_value[:4] + "*" * (len(new_value) - 4) if len(new_value) > 4 else "****"
+    secret["last_rotated"] = datetime.utcnow().isoformat()
+    secret["updated_at"] = datetime.utcnow().isoformat()
+
+    SECRET_VERSIONS[secret_id].append({
+        "version": secret["version"],
+        "created_at": datetime.utcnow().isoformat(),
+        "created_by": "current_user"
+    })
+
+    SECRET_ACCESS_LOG.append({
+        "secret_id": secret_id,
+        "action": "rotate",
+        "user": "current_user",
+        "timestamp": datetime.utcnow().isoformat()
+    })
+
+    result = {k: v for k, v in secret.items() if k != "_value"}
+    return result
+
+
+@app.delete("/secrets/{secret_id}")
+def delete_secret(secret_id: str):
+    """Delete a secret"""
+    if secret_id not in SECRETS:
+        raise HTTPException(status_code=404, detail="Secret not found")
+
+    SECRET_ACCESS_LOG.append({
+        "secret_id": secret_id,
+        "action": "delete",
+        "user": "current_user",
+        "timestamp": datetime.utcnow().isoformat()
+    })
+
+    del SECRETS[secret_id]
+    return {"status": "deleted"}
+
+
+@app.get("/secrets/{secret_id}/versions")
+def get_secret_versions(secret_id: str):
+    """Get secret version history"""
+    if secret_id not in SECRETS:
+        raise HTTPException(status_code=404, detail="Secret not found")
+    return {"versions": SECRET_VERSIONS.get(secret_id, [])}
+
+
+@app.get("/secrets/{secret_id}/access-log")
+def get_secret_access_log(secret_id: str, limit: int = 50):
+    """Get access log for a secret"""
+    if secret_id not in SECRETS:
+        raise HTTPException(status_code=404, detail="Secret not found")
+
+    logs = [l for l in SECRET_ACCESS_LOG if l["secret_id"] == secret_id]
+    logs.sort(key=lambda x: x["timestamp"], reverse=True)
+    return {"access_log": logs[:limit]}
+
+
+# ============================================================================
+# Integration Connectors
+# ============================================================================
+
+# Storage for connectors
+CONNECTORS: Dict[str, Dict[str, Any]] = {}
+CONNECTOR_INSTANCES: Dict[str, Dict[str, Any]] = {}
+CONNECTOR_LOGS: List[Dict[str, Any]] = []
+
+SUPPORTED_CONNECTORS = {
+    "slack": {
+        "name": "Slack",
+        "category": "communication",
+        "actions": ["send_message", "create_channel", "list_channels", "upload_file"],
+        "triggers": ["message_received", "reaction_added", "channel_created"],
+        "auth_type": "oauth2"
+    },
+    "github": {
+        "name": "GitHub",
+        "category": "development",
+        "actions": ["create_issue", "create_pr", "merge_pr", "list_repos", "create_comment"],
+        "triggers": ["push", "pull_request", "issue_opened", "issue_closed"],
+        "auth_type": "oauth2"
+    },
+    "jira": {
+        "name": "Jira",
+        "category": "project_management",
+        "actions": ["create_issue", "update_issue", "transition_issue", "add_comment", "search"],
+        "triggers": ["issue_created", "issue_updated", "issue_transitioned"],
+        "auth_type": "oauth2"
+    },
+    "salesforce": {
+        "name": "Salesforce",
+        "category": "crm",
+        "actions": ["create_lead", "update_opportunity", "query", "create_task"],
+        "triggers": ["lead_created", "opportunity_updated", "case_created"],
+        "auth_type": "oauth2"
+    },
+    "postgresql": {
+        "name": "PostgreSQL",
+        "category": "database",
+        "actions": ["query", "insert", "update", "delete", "execute"],
+        "triggers": [],
+        "auth_type": "connection_string"
+    },
+    "mongodb": {
+        "name": "MongoDB",
+        "category": "database",
+        "actions": ["find", "insert", "update", "delete", "aggregate"],
+        "triggers": ["change_stream"],
+        "auth_type": "connection_string"
+    },
+    "aws_s3": {
+        "name": "AWS S3",
+        "category": "storage",
+        "actions": ["upload", "download", "list", "delete", "copy"],
+        "triggers": ["object_created", "object_deleted"],
+        "auth_type": "api_key"
+    },
+    "google_sheets": {
+        "name": "Google Sheets",
+        "category": "productivity",
+        "actions": ["read_range", "write_range", "append_row", "create_sheet"],
+        "triggers": ["row_added", "cell_updated"],
+        "auth_type": "oauth2"
+    },
+    "twilio": {
+        "name": "Twilio",
+        "category": "communication",
+        "actions": ["send_sms", "send_whatsapp", "make_call"],
+        "triggers": ["sms_received", "call_completed"],
+        "auth_type": "api_key"
+    },
+    "sendgrid": {
+        "name": "SendGrid",
+        "category": "email",
+        "actions": ["send_email", "send_template", "add_contact"],
+        "triggers": ["email_opened", "email_clicked", "email_bounced"],
+        "auth_type": "api_key"
+    },
+    "stripe": {
+        "name": "Stripe",
+        "category": "payments",
+        "actions": ["create_charge", "create_subscription", "create_invoice", "refund"],
+        "triggers": ["payment_succeeded", "payment_failed", "subscription_created"],
+        "auth_type": "api_key"
+    },
+    "webhook": {
+        "name": "Generic Webhook",
+        "category": "integration",
+        "actions": ["http_get", "http_post", "http_put", "http_delete"],
+        "triggers": ["webhook_received"],
+        "auth_type": "custom"
+    }
+}
+
+
+class ConnectorInstanceCreate(BaseModel):
+    connector_type: str
+    name: str
+    secret_id: Optional[str] = None
+    config: Optional[Dict[str, Any]] = None
+
+
+@app.get("/connectors/available")
+def list_available_connectors():
+    """List all available connector types"""
+    return {"connectors": SUPPORTED_CONNECTORS}
+
+
+@app.post("/connectors/instances")
+def create_connector_instance(instance: ConnectorInstanceCreate):
+    """Create a connector instance"""
+    if instance.connector_type not in SUPPORTED_CONNECTORS:
+        raise HTTPException(status_code=400, detail=f"Unsupported connector: {instance.connector_type}")
+
+    instance_id = str(uuid.uuid4())
+    CONNECTOR_INSTANCES[instance_id] = {
+        "id": instance_id,
+        "connector_type": instance.connector_type,
+        "name": instance.name,
+        "secret_id": instance.secret_id,
+        "config": instance.config or {},
+        "status": "configured",
+        "last_used": None,
+        "total_executions": 0,
+        "created_at": datetime.utcnow().isoformat()
+    }
+    return CONNECTOR_INSTANCES[instance_id]
+
+
+@app.get("/connectors/instances")
+def list_connector_instances(connector_type: Optional[str] = None):
+    """List connector instances"""
+    instances = list(CONNECTOR_INSTANCES.values())
+    if connector_type:
+        instances = [i for i in instances if i["connector_type"] == connector_type]
+    return {"instances": instances}
+
+
+@app.get("/connectors/instances/{instance_id}")
+def get_connector_instance(instance_id: str):
+    """Get connector instance details"""
+    if instance_id not in CONNECTOR_INSTANCES:
+        raise HTTPException(status_code=404, detail="Connector instance not found")
+    return CONNECTOR_INSTANCES[instance_id]
+
+
+@app.delete("/connectors/instances/{instance_id}")
+def delete_connector_instance(instance_id: str):
+    """Delete a connector instance"""
+    if instance_id not in CONNECTOR_INSTANCES:
+        raise HTTPException(status_code=404, detail="Connector instance not found")
+    del CONNECTOR_INSTANCES[instance_id]
+    return {"status": "deleted"}
+
+
+@app.post("/connectors/instances/{instance_id}/test")
+def test_connector_instance(instance_id: str):
+    """Test connector connectivity"""
+    if instance_id not in CONNECTOR_INSTANCES:
+        raise HTTPException(status_code=404, detail="Connector instance not found")
+
+    instance = CONNECTOR_INSTANCES[instance_id]
+    # Simulated test
+    return {
+        "instance_id": instance_id,
+        "connector_type": instance["connector_type"],
+        "status": "connected",
+        "latency_ms": 85,
+        "tested_at": datetime.utcnow().isoformat()
+    }
+
+
+@app.post("/connectors/instances/{instance_id}/execute")
+def execute_connector_action(instance_id: str, data: Dict[str, Any] = Body(...)):
+    """Execute a connector action"""
+    if instance_id not in CONNECTOR_INSTANCES:
+        raise HTTPException(status_code=404, detail="Connector instance not found")
+
+    instance = CONNECTOR_INSTANCES[instance_id]
+    connector_type = instance["connector_type"]
+    action = data.get("action")
+
+    if action not in SUPPORTED_CONNECTORS[connector_type]["actions"]:
+        raise HTTPException(status_code=400, detail=f"Invalid action: {action}")
+
+    execution_id = str(uuid.uuid4())
+
+    # Log execution
+    CONNECTOR_LOGS.append({
+        "execution_id": execution_id,
+        "instance_id": instance_id,
+        "connector_type": connector_type,
+        "action": action,
+        "status": "success",
+        "timestamp": datetime.utcnow().isoformat()
+    })
+
+    # Update stats
+    instance["last_used"] = datetime.utcnow().isoformat()
+    instance["total_executions"] += 1
+
+    return {
+        "execution_id": execution_id,
+        "status": "success",
+        "result": {"simulated": True, "action": action},
+        "duration_ms": 120
+    }
+
+
+@app.get("/connectors/logs")
+def get_connector_logs(instance_id: Optional[str] = None, limit: int = 50):
+    """Get connector execution logs"""
+    logs = CONNECTOR_LOGS.copy()
+    if instance_id:
+        logs = [l for l in logs if l["instance_id"] == instance_id]
+    logs.sort(key=lambda x: x["timestamp"], reverse=True)
+    return {"logs": logs[:limit]}
+
+
+# ============================================================================
+# Health & Monitoring
+# ============================================================================
+
+# Storage for monitoring
+HEALTH_CHECKS: Dict[str, Dict[str, Any]] = {}
+UPTIME_RECORDS: List[Dict[str, Any]] = []
+ALERT_RULES: Dict[str, Dict[str, Any]] = {}
+ALERTS: List[Dict[str, Any]] = []
+METRICS: Dict[str, List[Dict[str, Any]]] = {}
+
+SERVICE_COMPONENTS = [
+    "api_server", "database", "cache", "queue", "ai_providers",
+    "storage", "webhooks", "scheduler"
+]
+
+
+class HealthCheckCreate(BaseModel):
+    name: str
+    component: str
+    check_type: str = "http"  # http, tcp, script
+    endpoint: Optional[str] = None
+    interval_seconds: int = 60
+    timeout_seconds: int = 10
+    healthy_threshold: int = 2
+    unhealthy_threshold: int = 3
+
+
+class AlertRuleCreate(BaseModel):
+    name: str
+    component: str
+    condition: str  # unhealthy, latency_high, error_rate_high
+    threshold: Optional[float] = None
+    notification_channels: List[str] = []
+
+
+@app.get("/health")
+def get_health_status():
+    """Get overall system health status"""
+    component_status = {}
+    for comp in SERVICE_COMPONENTS:
+        # Simulated health check
+        component_status[comp] = {
+            "status": "healthy",
+            "latency_ms": 15,
+            "last_check": datetime.utcnow().isoformat()
+        }
+
+    overall = "healthy" if all(c["status"] == "healthy" for c in component_status.values()) else "degraded"
+
+    return {
+        "status": overall,
+        "components": component_status,
+        "uptime_seconds": 86400,
+        "version": "1.0.0",
+        "timestamp": datetime.utcnow().isoformat()
+    }
+
+
+@app.get("/health/detailed")
+def get_detailed_health():
+    """Get detailed health information"""
+    return {
+        "status": "healthy",
+        "components": {
+            comp: {
+                "status": "healthy",
+                "latency_ms": 15,
+                "memory_mb": 256,
+                "cpu_percent": 5.2,
+                "connections": 10,
+                "last_check": datetime.utcnow().isoformat()
+            }
+            for comp in SERVICE_COMPONENTS
+        },
+        "system": {
+            "memory_total_mb": 8192,
+            "memory_used_mb": 4096,
+            "cpu_cores": 4,
+            "cpu_percent": 25.5,
+            "disk_total_gb": 100,
+            "disk_used_gb": 45
+        },
+        "timestamp": datetime.utcnow().isoformat()
+    }
+
+
+@app.post("/health/checks")
+def create_health_check(check: HealthCheckCreate):
+    """Create a custom health check"""
+    check_id = str(uuid.uuid4())
+    HEALTH_CHECKS[check_id] = {
+        "id": check_id,
+        "name": check.name,
+        "component": check.component,
+        "check_type": check.check_type,
+        "endpoint": check.endpoint,
+        "interval_seconds": check.interval_seconds,
+        "timeout_seconds": check.timeout_seconds,
+        "healthy_threshold": check.healthy_threshold,
+        "unhealthy_threshold": check.unhealthy_threshold,
+        "status": "healthy",
+        "consecutive_failures": 0,
+        "last_check": None,
+        "created_at": datetime.utcnow().isoformat()
+    }
+    return HEALTH_CHECKS[check_id]
+
+
+@app.get("/health/checks")
+def list_health_checks():
+    """List health checks"""
+    return {"health_checks": list(HEALTH_CHECKS.values())}
+
+
+@app.get("/health/checks/{check_id}")
+def get_health_check(check_id: str):
+    """Get health check details"""
+    if check_id not in HEALTH_CHECKS:
+        raise HTTPException(status_code=404, detail="Health check not found")
+    return HEALTH_CHECKS[check_id]
+
+
+@app.delete("/health/checks/{check_id}")
+def delete_health_check(check_id: str):
+    """Delete a health check"""
+    if check_id not in HEALTH_CHECKS:
+        raise HTTPException(status_code=404, detail="Health check not found")
+    del HEALTH_CHECKS[check_id]
+    return {"status": "deleted"}
+
+
+@app.post("/health/checks/{check_id}/run")
+def run_health_check(check_id: str):
+    """Manually run a health check"""
+    if check_id not in HEALTH_CHECKS:
+        raise HTTPException(status_code=404, detail="Health check not found")
+
+    check = HEALTH_CHECKS[check_id]
+    # Simulated check
+    check["last_check"] = datetime.utcnow().isoformat()
+    check["status"] = "healthy"
+
+    return {
+        "check_id": check_id,
+        "status": "healthy",
+        "latency_ms": 45,
+        "checked_at": check["last_check"]
+    }
+
+
+@app.get("/health/uptime")
+def get_uptime_history(days: int = 30):
+    """Get uptime history"""
+    # Simulated uptime data
+    records = []
+    for i in range(days):
+        date = (datetime.utcnow() - timedelta(days=i)).strftime("%Y-%m-%d")
+        records.append({
+            "date": date,
+            "uptime_percent": 99.9 if i > 0 else 100.0,
+            "incidents": 0,
+            "total_downtime_minutes": 0
+        })
+
+    return {
+        "period_days": days,
+        "overall_uptime_percent": 99.95,
+        "daily_records": records
+    }
+
+
+@app.post("/monitoring/alerts/rules")
+def create_alert_rule(rule: AlertRuleCreate):
+    """Create an alert rule"""
+    rule_id = str(uuid.uuid4())
+    ALERT_RULES[rule_id] = {
+        "id": rule_id,
+        "name": rule.name,
+        "component": rule.component,
+        "condition": rule.condition,
+        "threshold": rule.threshold,
+        "notification_channels": rule.notification_channels,
+        "enabled": True,
+        "created_at": datetime.utcnow().isoformat()
+    }
+    return ALERT_RULES[rule_id]
+
+
+@app.get("/monitoring/alerts/rules")
+def list_alert_rules():
+    """List alert rules"""
+    return {"alert_rules": list(ALERT_RULES.values())}
+
+
+@app.delete("/monitoring/alerts/rules/{rule_id}")
+def delete_alert_rule(rule_id: str):
+    """Delete an alert rule"""
+    if rule_id not in ALERT_RULES:
+        raise HTTPException(status_code=404, detail="Alert rule not found")
+    del ALERT_RULES[rule_id]
+    return {"status": "deleted"}
+
+
+@app.get("/monitoring/alerts")
+def list_alerts(status: Optional[str] = None, limit: int = 50):
+    """List alerts"""
+    alerts = ALERTS.copy()
+    if status:
+        alerts = [a for a in alerts if a["status"] == status]
+    alerts.sort(key=lambda x: x["triggered_at"], reverse=True)
+    return {"alerts": alerts[:limit]}
+
+
+@app.post("/monitoring/alerts/{alert_id}/acknowledge")
+def acknowledge_alert(alert_id: str):
+    """Acknowledge an alert"""
+    for alert in ALERTS:
+        if alert["id"] == alert_id:
+            alert["status"] = "acknowledged"
+            alert["acknowledged_at"] = datetime.utcnow().isoformat()
+            return alert
+    raise HTTPException(status_code=404, detail="Alert not found")
+
+
+@app.post("/monitoring/alerts/{alert_id}/resolve")
+def resolve_alert(alert_id: str):
+    """Resolve an alert"""
+    for alert in ALERTS:
+        if alert["id"] == alert_id:
+            alert["status"] = "resolved"
+            alert["resolved_at"] = datetime.utcnow().isoformat()
+            return alert
+    raise HTTPException(status_code=404, detail="Alert not found")
+
+
+@app.get("/monitoring/metrics")
+def get_metrics(component: Optional[str] = None, metric_name: Optional[str] = None, hours: int = 24):
+    """Get system metrics"""
+    # Simulated metrics
+    return {
+        "period_hours": hours,
+        "metrics": {
+            "requests_per_minute": [{"timestamp": datetime.utcnow().isoformat(), "value": 150}],
+            "response_time_ms": [{"timestamp": datetime.utcnow().isoformat(), "value": 45}],
+            "error_rate_percent": [{"timestamp": datetime.utcnow().isoformat(), "value": 0.1}],
+            "active_connections": [{"timestamp": datetime.utcnow().isoformat(), "value": 25}]
+        }
+    }
+
+
+# ============================================================================
+# Environment Management
+# ============================================================================
+
+# Storage for environments
+ENVIRONMENTS: Dict[str, Dict[str, Any]] = {}
+ENVIRONMENT_VARIABLES: Dict[str, Dict[str, Dict[str, Any]]] = {}
+DEPLOYMENTS: Dict[str, Dict[str, Any]] = {}
+PROMOTION_HISTORY: List[Dict[str, Any]] = []
+
+DEFAULT_ENVIRONMENTS = ["development", "staging", "production"]
+
+
+class EnvironmentCreate(BaseModel):
+    name: str
+    description: Optional[str] = None
+    parent_environment: Optional[str] = None
+    config: Optional[Dict[str, Any]] = None
+    protection_rules: Optional[Dict[str, Any]] = None
+
+
+class DeploymentCreate(BaseModel):
+    environment_id: str
+    agent_card_id: Optional[str] = None
+    workflow_id: Optional[str] = None
+    version: str
+    config_overrides: Optional[Dict[str, Any]] = None
+
+
+@app.post("/environments")
+def create_environment(env: EnvironmentCreate):
+    """Create a new environment"""
+    env_id = str(uuid.uuid4())
+    ENVIRONMENTS[env_id] = {
+        "id": env_id,
+        "name": env.name,
+        "description": env.description,
+        "parent_environment": env.parent_environment,
+        "config": env.config or {},
+        "protection_rules": env.protection_rules or {},
+        "status": "active",
+        "created_at": datetime.utcnow().isoformat(),
+        "updated_at": datetime.utcnow().isoformat()
+    }
+    ENVIRONMENT_VARIABLES[env_id] = {}
+    return ENVIRONMENTS[env_id]
+
+
+@app.get("/environments")
+def list_environments():
+    """List all environments"""
+    return {"environments": list(ENVIRONMENTS.values())}
+
+
+@app.get("/environments/{env_id}")
+def get_environment(env_id: str):
+    """Get environment details"""
+    if env_id not in ENVIRONMENTS:
+        raise HTTPException(status_code=404, detail="Environment not found")
+    return {
+        "environment": ENVIRONMENTS[env_id],
+        "variables": ENVIRONMENT_VARIABLES.get(env_id, {})
+    }
+
+
+@app.put("/environments/{env_id}")
+def update_environment(env_id: str, updates: Dict[str, Any] = Body(...)):
+    """Update an environment"""
+    if env_id not in ENVIRONMENTS:
+        raise HTTPException(status_code=404, detail="Environment not found")
+
+    allowed = ["name", "description", "config", "protection_rules"]
+    for key, value in updates.items():
+        if key in allowed:
+            ENVIRONMENTS[env_id][key] = value
+    ENVIRONMENTS[env_id]["updated_at"] = datetime.utcnow().isoformat()
+    return ENVIRONMENTS[env_id]
+
+
+@app.delete("/environments/{env_id}")
+def delete_environment(env_id: str):
+    """Delete an environment"""
+    if env_id not in ENVIRONMENTS:
+        raise HTTPException(status_code=404, detail="Environment not found")
+
+    # Check protection rules
+    if ENVIRONMENTS[env_id].get("protection_rules", {}).get("prevent_deletion"):
+        raise HTTPException(status_code=403, detail="Environment is protected from deletion")
+
+    del ENVIRONMENTS[env_id]
+    if env_id in ENVIRONMENT_VARIABLES:
+        del ENVIRONMENT_VARIABLES[env_id]
+    return {"status": "deleted"}
+
+
+@app.post("/environments/{env_id}/variables")
+def set_environment_variable(env_id: str, data: Dict[str, Any] = Body(...)):
+    """Set an environment variable"""
+    if env_id not in ENVIRONMENTS:
+        raise HTTPException(status_code=404, detail="Environment not found")
+
+    var_name = data.get("name")
+    var_value = data.get("value")
+    is_secret = data.get("is_secret", False)
+
+    ENVIRONMENT_VARIABLES[env_id][var_name] = {
+        "name": var_name,
+        "value": var_value if not is_secret else "****",
+        "_value": var_value,
+        "is_secret": is_secret,
+        "updated_at": datetime.utcnow().isoformat()
+    }
+
+    return {"name": var_name, "is_secret": is_secret, "updated_at": datetime.utcnow().isoformat()}
+
+
+@app.get("/environments/{env_id}/variables")
+def get_environment_variables(env_id: str, include_secrets: bool = False):
+    """Get environment variables"""
+    if env_id not in ENVIRONMENTS:
+        raise HTTPException(status_code=404, detail="Environment not found")
+
+    variables = ENVIRONMENT_VARIABLES.get(env_id, {})
+    if not include_secrets:
+        variables = {k: {kk: vv for kk, vv in v.items() if kk != "_value"} for k, v in variables.items()}
+
+    return {"variables": variables}
+
+
+@app.delete("/environments/{env_id}/variables/{var_name}")
+def delete_environment_variable(env_id: str, var_name: str):
+    """Delete an environment variable"""
+    if env_id not in ENVIRONMENTS:
+        raise HTTPException(status_code=404, detail="Environment not found")
+
+    if var_name in ENVIRONMENT_VARIABLES.get(env_id, {}):
+        del ENVIRONMENT_VARIABLES[env_id][var_name]
+    return {"status": "deleted"}
+
+
+@app.post("/deployments")
+def create_deployment(deployment: DeploymentCreate):
+    """Create a new deployment"""
+    if deployment.environment_id not in ENVIRONMENTS:
+        raise HTTPException(status_code=404, detail="Environment not found")
+
+    deploy_id = str(uuid.uuid4())
+    DEPLOYMENTS[deploy_id] = {
+        "id": deploy_id,
+        "environment_id": deployment.environment_id,
+        "agent_card_id": deployment.agent_card_id,
+        "workflow_id": deployment.workflow_id,
+        "version": deployment.version,
+        "config_overrides": deployment.config_overrides or {},
+        "status": "pending",
+        "created_at": datetime.utcnow().isoformat(),
+        "deployed_at": None,
+        "deployed_by": "current_user"
+    }
+
+    # Simulate deployment
+    DEPLOYMENTS[deploy_id]["status"] = "deployed"
+    DEPLOYMENTS[deploy_id]["deployed_at"] = datetime.utcnow().isoformat()
+
+    return DEPLOYMENTS[deploy_id]
+
+
+@app.get("/deployments")
+def list_deployments(environment_id: Optional[str] = None, limit: int = 20):
+    """List deployments"""
+    deployments = list(DEPLOYMENTS.values())
+    if environment_id:
+        deployments = [d for d in deployments if d["environment_id"] == environment_id]
+    deployments.sort(key=lambda x: x["created_at"], reverse=True)
+    return {"deployments": deployments[:limit]}
+
+
+@app.get("/deployments/{deploy_id}")
+def get_deployment(deploy_id: str):
+    """Get deployment details"""
+    if deploy_id not in DEPLOYMENTS:
+        raise HTTPException(status_code=404, detail="Deployment not found")
+    return DEPLOYMENTS[deploy_id]
+
+
+@app.post("/deployments/{deploy_id}/rollback")
+def rollback_deployment(deploy_id: str):
+    """Rollback a deployment"""
+    if deploy_id not in DEPLOYMENTS:
+        raise HTTPException(status_code=404, detail="Deployment not found")
+
+    DEPLOYMENTS[deploy_id]["status"] = "rolled_back"
+    DEPLOYMENTS[deploy_id]["rolled_back_at"] = datetime.utcnow().isoformat()
+    return DEPLOYMENTS[deploy_id]
+
+
+@app.post("/environments/{env_id}/promote")
+def promote_to_environment(env_id: str, data: Dict[str, Any] = Body(...)):
+    """Promote a deployment to another environment"""
+    if env_id not in ENVIRONMENTS:
+        raise HTTPException(status_code=404, detail="Target environment not found")
+
+    source_deploy_id = data.get("source_deployment_id")
+    if source_deploy_id not in DEPLOYMENTS:
+        raise HTTPException(status_code=404, detail="Source deployment not found")
+
+    source = DEPLOYMENTS[source_deploy_id]
+
+    # Create new deployment in target environment
+    new_deploy_id = str(uuid.uuid4())
+    DEPLOYMENTS[new_deploy_id] = {
+        "id": new_deploy_id,
+        "environment_id": env_id,
+        "agent_card_id": source["agent_card_id"],
+        "workflow_id": source["workflow_id"],
+        "version": source["version"],
+        "config_overrides": source["config_overrides"],
+        "status": "deployed",
+        "promoted_from": source_deploy_id,
+        "created_at": datetime.utcnow().isoformat(),
+        "deployed_at": datetime.utcnow().isoformat(),
+        "deployed_by": "current_user"
+    }
+
+    PROMOTION_HISTORY.append({
+        "source_deployment_id": source_deploy_id,
+        "target_deployment_id": new_deploy_id,
+        "target_environment_id": env_id,
+        "promoted_at": datetime.utcnow().isoformat(),
+        "promoted_by": "current_user"
+    })
+
+    return DEPLOYMENTS[new_deploy_id]
+
+
+@app.get("/environments/promotion-history")
+def get_promotion_history(limit: int = 20):
+    """Get promotion history"""
+    history = PROMOTION_HISTORY.copy()
+    history.sort(key=lambda x: x["promoted_at"], reverse=True)
+    return {"promotions": history[:limit]}
+
+
+# ============================================================================
+# Collaboration Features
+# ============================================================================
+
+# Storage for collaboration
+COMMENTS: Dict[str, List[Dict[str, Any]]] = {}
+SHARES: Dict[str, Dict[str, Any]] = {}
+ACTIVITY_FEED: List[Dict[str, Any]] = []
+MENTIONS: Dict[str, List[Dict[str, Any]]] = {}
+REACTIONS: Dict[str, Dict[str, int]] = {}
+
+
+class CommentCreate(BaseModel):
+    content: str
+    resource_type: str  # agent_card, workflow, execution, etc.
+    resource_id: str
+    parent_comment_id: Optional[str] = None
+    mentions: Optional[List[str]] = []
+
+
+class ShareCreate(BaseModel):
+    resource_type: str
+    resource_id: str
+    share_with_type: str  # user, team, org, public
+    share_with_id: Optional[str] = None
+    permission: str = "view"  # view, edit, admin
+
+
+@app.post("/comments")
+def create_comment(comment: CommentCreate):
+    """Add a comment to a resource"""
+    comment_id = str(uuid.uuid4())
+    resource_key = f"{comment.resource_type}:{comment.resource_id}"
+
+    if resource_key not in COMMENTS:
+        COMMENTS[resource_key] = []
+
+    comment_data = {
+        "id": comment_id,
+        "content": comment.content,
+        "resource_type": comment.resource_type,
+        "resource_id": comment.resource_id,
+        "parent_comment_id": comment.parent_comment_id,
+        "author_id": "current_user",
+        "mentions": comment.mentions or [],
+        "created_at": datetime.utcnow().isoformat(),
+        "updated_at": datetime.utcnow().isoformat(),
+        "edited": False
+    }
+    COMMENTS[resource_key].append(comment_data)
+    REACTIONS[comment_id] = {}
+
+    # Record activity
+    ACTIVITY_FEED.append({
+        "type": "comment_added",
+        "resource_type": comment.resource_type,
+        "resource_id": comment.resource_id,
+        "user_id": "current_user",
+        "timestamp": datetime.utcnow().isoformat()
+    })
+
+    # Record mentions
+    for user_id in comment.mentions or []:
+        if user_id not in MENTIONS:
+            MENTIONS[user_id] = []
+        MENTIONS[user_id].append({
+            "comment_id": comment_id,
+            "mentioned_by": "current_user",
+            "resource_type": comment.resource_type,
+            "resource_id": comment.resource_id,
+            "timestamp": datetime.utcnow().isoformat()
+        })
+
+    return comment_data
+
+
+@app.get("/comments")
+def get_comments(resource_type: str, resource_id: str):
+    """Get comments for a resource"""
+    resource_key = f"{resource_type}:{resource_id}"
+    comments = COMMENTS.get(resource_key, [])
+
+    # Add reaction counts
+    for comment in comments:
+        comment["reactions"] = REACTIONS.get(comment["id"], {})
+
+    return {"comments": comments}
+
+
+@app.put("/comments/{comment_id}")
+def update_comment(comment_id: str, content: str = Body(..., embed=True)):
+    """Update a comment"""
+    for resource_comments in COMMENTS.values():
+        for comment in resource_comments:
+            if comment["id"] == comment_id:
+                comment["content"] = content
+                comment["updated_at"] = datetime.utcnow().isoformat()
+                comment["edited"] = True
+                return comment
+    raise HTTPException(status_code=404, detail="Comment not found")
+
+
+@app.delete("/comments/{comment_id}")
+def delete_comment(comment_id: str):
+    """Delete a comment"""
+    for resource_key, resource_comments in COMMENTS.items():
+        for i, comment in enumerate(resource_comments):
+            if comment["id"] == comment_id:
+                del COMMENTS[resource_key][i]
+                return {"status": "deleted"}
+    raise HTTPException(status_code=404, detail="Comment not found")
+
+
+@app.post("/comments/{comment_id}/reactions")
+def add_reaction(comment_id: str, reaction: str = Body(..., embed=True)):
+    """Add a reaction to a comment"""
+    if comment_id not in REACTIONS:
+        REACTIONS[comment_id] = {}
+
+    REACTIONS[comment_id][reaction] = REACTIONS[comment_id].get(reaction, 0) + 1
+    return {"reactions": REACTIONS[comment_id]}
+
+
+@app.delete("/comments/{comment_id}/reactions/{reaction}")
+def remove_reaction(comment_id: str, reaction: str):
+    """Remove a reaction from a comment"""
+    if comment_id in REACTIONS and reaction in REACTIONS[comment_id]:
+        REACTIONS[comment_id][reaction] = max(0, REACTIONS[comment_id][reaction] - 1)
+    return {"reactions": REACTIONS.get(comment_id, {})}
+
+
+@app.post("/shares")
+def create_share(share: ShareCreate):
+    """Share a resource"""
+    share_id = str(uuid.uuid4())
+    SHARES[share_id] = {
+        "id": share_id,
+        "resource_type": share.resource_type,
+        "resource_id": share.resource_id,
+        "share_with_type": share.share_with_type,
+        "share_with_id": share.share_with_id,
+        "permission": share.permission,
+        "shared_by": "current_user",
+        "created_at": datetime.utcnow().isoformat()
+    }
+
+    # Record activity
+    ACTIVITY_FEED.append({
+        "type": "resource_shared",
+        "resource_type": share.resource_type,
+        "resource_id": share.resource_id,
+        "user_id": "current_user",
+        "share_with": share.share_with_id or share.share_with_type,
+        "timestamp": datetime.utcnow().isoformat()
+    })
+
+    return SHARES[share_id]
+
+
+@app.get("/shares")
+def list_shares(resource_type: Optional[str] = None, resource_id: Optional[str] = None):
+    """List shares"""
+    shares = list(SHARES.values())
+    if resource_type:
+        shares = [s for s in shares if s["resource_type"] == resource_type]
+    if resource_id:
+        shares = [s for s in shares if s["resource_id"] == resource_id]
+    return {"shares": shares}
+
+
+@app.delete("/shares/{share_id}")
+def delete_share(share_id: str):
+    """Remove a share"""
+    if share_id not in SHARES:
+        raise HTTPException(status_code=404, detail="Share not found")
+    del SHARES[share_id]
+    return {"status": "deleted"}
+
+
+@app.get("/activity")
+def get_activity_feed(
+    resource_type: Optional[str] = None,
+    user_id: Optional[str] = None,
+    limit: int = 50
+):
+    """Get activity feed"""
+    activities = ACTIVITY_FEED.copy()
+    if resource_type:
+        activities = [a for a in activities if a.get("resource_type") == resource_type]
+    if user_id:
+        activities = [a for a in activities if a.get("user_id") == user_id]
+    activities.sort(key=lambda x: x["timestamp"], reverse=True)
+    return {"activities": activities[:limit]}
+
+
+@app.get("/mentions")
+def get_mentions(user_id: str = "current_user", unread_only: bool = False):
+    """Get mentions for a user"""
+    mentions = MENTIONS.get(user_id, [])
+    mentions.sort(key=lambda x: x["timestamp"], reverse=True)
+    return {"mentions": mentions}
+
+
+@app.post("/mentions/{mention_index}/read")
+def mark_mention_read(user_id: str = "current_user", mention_index: int = 0):
+    """Mark a mention as read"""
+    if user_id in MENTIONS and mention_index < len(MENTIONS[user_id]):
+        MENTIONS[user_id][mention_index]["read"] = True
+        return {"status": "marked_read"}
+    raise HTTPException(status_code=404, detail="Mention not found")
+
+
+@app.get("/shared-with-me")
+def get_shared_with_me(user_id: str = "current_user"):
+    """Get resources shared with the current user"""
+    shared = [s for s in SHARES.values() if s.get("share_with_id") == user_id]
+    return {"shared_resources": shared}
+
+
+# ============================================================================
 # Run Server
 # ============================================================================
 
