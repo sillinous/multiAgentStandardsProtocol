@@ -8571,6 +8571,1474 @@ def get_shared_with_me(user_id: str = "current_user"):
 
 
 # ============================================================================
+# Agent Templates Library
+# ============================================================================
+
+# Storage for templates
+AGENT_TEMPLATES: Dict[str, Dict[str, Any]] = {}
+TEMPLATE_CATEGORIES: Dict[str, Dict[str, Any]] = {}
+TEMPLATE_USAGE: Dict[str, List[Dict[str, Any]]] = {}
+
+# Pre-built template definitions
+BUILTIN_TEMPLATES = {
+    "customer-support": {
+        "name": "Customer Support Agent",
+        "description": "Handle customer inquiries, complaints, and support tickets with empathy and efficiency",
+        "category": "customer-service",
+        "system_prompt": "You are a helpful customer support agent. Be empathetic, professional, and solution-oriented. Always acknowledge the customer's concern before providing solutions.",
+        "capabilities": ["ticket_handling", "faq_response", "escalation", "sentiment_analysis"],
+        "suggested_tools": ["knowledge_base", "ticket_system", "email"],
+        "example_inputs": ["I can't log into my account", "Where is my order?", "I want a refund"],
+        "config": {"tone": "friendly", "max_response_length": 500}
+    },
+    "data-analyst": {
+        "name": "Data Analysis Agent",
+        "description": "Analyze datasets, generate insights, create visualizations, and answer data questions",
+        "category": "data-analysis",
+        "system_prompt": "You are a data analyst expert. Analyze data thoroughly, identify patterns, and provide actionable insights. Always validate your findings and present them clearly.",
+        "capabilities": ["data_analysis", "visualization", "statistical_analysis", "reporting"],
+        "suggested_tools": ["sql", "python", "charts", "export"],
+        "example_inputs": ["What are the sales trends?", "Find anomalies in this dataset", "Create a monthly report"],
+        "config": {"output_format": "structured", "include_confidence": True}
+    },
+    "code-reviewer": {
+        "name": "Code Review Agent",
+        "description": "Review code for bugs, security issues, performance problems, and best practices",
+        "category": "development",
+        "system_prompt": "You are an expert code reviewer. Analyze code for bugs, security vulnerabilities, performance issues, and adherence to best practices. Provide constructive feedback with specific suggestions.",
+        "capabilities": ["bug_detection", "security_analysis", "performance_review", "style_check"],
+        "suggested_tools": ["github", "static_analysis", "linter"],
+        "example_inputs": ["Review this pull request", "Check for security issues", "Suggest optimizations"],
+        "config": {"severity_levels": True, "auto_suggest_fixes": True}
+    },
+    "content-writer": {
+        "name": "Content Writing Agent",
+        "description": "Create blog posts, articles, marketing copy, and other written content",
+        "category": "creative",
+        "system_prompt": "You are a skilled content writer. Create engaging, well-structured content that matches the target audience and purpose. Maintain consistent tone and style throughout.",
+        "capabilities": ["blog_writing", "copywriting", "editing", "seo_optimization"],
+        "suggested_tools": ["grammar_check", "seo_analyzer", "plagiarism_check"],
+        "example_inputs": ["Write a blog post about AI", "Create marketing copy for our product", "Edit this article"],
+        "config": {"default_length": "medium", "include_seo": True}
+    },
+    "research-assistant": {
+        "name": "Research Assistant Agent",
+        "description": "Conduct research, summarize findings, and compile reports on any topic",
+        "category": "research",
+        "system_prompt": "You are a thorough research assistant. Gather information from multiple sources, verify facts, and present findings in a clear, organized manner. Always cite sources.",
+        "capabilities": ["web_research", "summarization", "fact_checking", "report_generation"],
+        "suggested_tools": ["web_search", "document_reader", "citation_manager"],
+        "example_inputs": ["Research market trends in AI", "Summarize this paper", "Find statistics on X"],
+        "config": {"citation_style": "apa", "include_sources": True}
+    },
+    "meeting-assistant": {
+        "name": "Meeting Assistant Agent",
+        "description": "Take notes, summarize discussions, track action items, and schedule follow-ups",
+        "category": "productivity",
+        "system_prompt": "You are an efficient meeting assistant. Capture key points, decisions, and action items accurately. Organize notes clearly and ensure nothing important is missed.",
+        "capabilities": ["note_taking", "summarization", "action_tracking", "scheduling"],
+        "suggested_tools": ["calendar", "task_manager", "transcription"],
+        "example_inputs": ["Summarize this meeting", "List action items", "Schedule a follow-up"],
+        "config": {"format": "structured", "extract_decisions": True}
+    },
+    "sales-assistant": {
+        "name": "Sales Assistant Agent",
+        "description": "Qualify leads, draft proposals, answer product questions, and assist with sales processes",
+        "category": "sales",
+        "system_prompt": "You are a knowledgeable sales assistant. Help qualify leads, understand customer needs, and provide relevant product information. Be helpful without being pushy.",
+        "capabilities": ["lead_qualification", "proposal_drafting", "product_knowledge", "crm_updates"],
+        "suggested_tools": ["crm", "email", "calendar", "product_catalog"],
+        "example_inputs": ["Qualify this lead", "Draft a proposal", "Answer product questions"],
+        "config": {"crm_integration": True, "follow_up_reminders": True}
+    },
+    "hr-assistant": {
+        "name": "HR Assistant Agent",
+        "description": "Handle HR inquiries, assist with onboarding, and manage employee-related tasks",
+        "category": "hr",
+        "system_prompt": "You are a helpful HR assistant. Answer employee questions about policies, benefits, and procedures. Maintain confidentiality and be supportive.",
+        "capabilities": ["policy_guidance", "onboarding_support", "leave_management", "benefits_info"],
+        "suggested_tools": ["hr_system", "document_library", "calendar"],
+        "example_inputs": ["What's the leave policy?", "Help with onboarding", "Explain benefits"],
+        "config": {"confidential_mode": True, "escalation_enabled": True}
+    },
+    "legal-reviewer": {
+        "name": "Legal Document Reviewer Agent",
+        "description": "Review contracts, identify risks, and summarize legal documents",
+        "category": "legal",
+        "system_prompt": "You are a legal document reviewer. Analyze contracts and legal documents for key terms, risks, and obligations. Flag potential issues and summarize findings clearly.",
+        "capabilities": ["contract_review", "risk_identification", "clause_extraction", "compliance_check"],
+        "suggested_tools": ["document_parser", "legal_database", "redlining"],
+        "example_inputs": ["Review this contract", "Identify risks", "Summarize key terms"],
+        "config": {"jurisdiction": "general", "risk_threshold": "medium"}
+    },
+    "devops-assistant": {
+        "name": "DevOps Assistant Agent",
+        "description": "Help with deployments, infrastructure, monitoring, and CI/CD pipelines",
+        "category": "development",
+        "system_prompt": "You are a DevOps expert assistant. Help with infrastructure, deployments, and operational tasks. Prioritize reliability, security, and best practices.",
+        "capabilities": ["deployment_assistance", "infrastructure_help", "monitoring_setup", "pipeline_config"],
+        "suggested_tools": ["aws", "kubernetes", "terraform", "github_actions"],
+        "example_inputs": ["Help deploy this service", "Set up monitoring", "Debug this pipeline"],
+        "config": {"cloud_provider": "aws", "security_first": True}
+    }
+}
+
+
+class AgentTemplateCreate(BaseModel):
+    name: str
+    description: str
+    category: str
+    system_prompt: str
+    capabilities: Optional[List[str]] = []
+    suggested_tools: Optional[List[str]] = []
+    example_inputs: Optional[List[str]] = []
+    config: Optional[Dict[str, Any]] = {}
+    is_public: Optional[bool] = False
+
+
+@app.get("/templates/builtin")
+def list_builtin_templates():
+    """List all built-in agent templates"""
+    return {"templates": BUILTIN_TEMPLATES}
+
+
+@app.get("/templates/builtin/{template_id}")
+def get_builtin_template(template_id: str):
+    """Get a specific built-in template"""
+    if template_id not in BUILTIN_TEMPLATES:
+        raise HTTPException(status_code=404, detail="Template not found")
+    return {"template": BUILTIN_TEMPLATES[template_id]}
+
+
+@app.post("/templates/builtin/{template_id}/use")
+def use_builtin_template(template_id: str, customizations: Dict[str, Any] = Body(default={})):
+    """Create an agent card from a built-in template"""
+    if template_id not in BUILTIN_TEMPLATES:
+        raise HTTPException(status_code=404, detail="Template not found")
+
+    template = BUILTIN_TEMPLATES[template_id].copy()
+
+    # Apply customizations
+    for key, value in customizations.items():
+        if key in template:
+            template[key] = value
+
+    # Track usage
+    if template_id not in TEMPLATE_USAGE:
+        TEMPLATE_USAGE[template_id] = []
+    TEMPLATE_USAGE[template_id].append({
+        "used_at": datetime.utcnow().isoformat(),
+        "customizations": list(customizations.keys())
+    })
+
+    agent_card_id = str(uuid.uuid4())
+    return {
+        "agent_card_id": agent_card_id,
+        "template_id": template_id,
+        "config": template,
+        "message": "Agent card created from template"
+    }
+
+
+@app.post("/templates")
+def create_custom_template(template: AgentTemplateCreate):
+    """Create a custom agent template"""
+    template_id = str(uuid.uuid4())
+    AGENT_TEMPLATES[template_id] = {
+        "id": template_id,
+        "name": template.name,
+        "description": template.description,
+        "category": template.category,
+        "system_prompt": template.system_prompt,
+        "capabilities": template.capabilities or [],
+        "suggested_tools": template.suggested_tools or [],
+        "example_inputs": template.example_inputs or [],
+        "config": template.config or {},
+        "is_public": template.is_public,
+        "author_id": "current_user",
+        "uses": 0,
+        "created_at": datetime.utcnow().isoformat(),
+        "updated_at": datetime.utcnow().isoformat()
+    }
+    return AGENT_TEMPLATES[template_id]
+
+
+@app.get("/templates")
+def list_custom_templates(category: Optional[str] = None, public_only: bool = False):
+    """List custom templates"""
+    templates = list(AGENT_TEMPLATES.values())
+    if category:
+        templates = [t for t in templates if t["category"] == category]
+    if public_only:
+        templates = [t for t in templates if t["is_public"]]
+    return {"templates": templates}
+
+
+@app.get("/templates/{template_id}")
+def get_custom_template(template_id: str):
+    """Get a custom template"""
+    if template_id not in AGENT_TEMPLATES:
+        raise HTTPException(status_code=404, detail="Template not found")
+    return AGENT_TEMPLATES[template_id]
+
+
+@app.put("/templates/{template_id}")
+def update_custom_template(template_id: str, updates: Dict[str, Any] = Body(...)):
+    """Update a custom template"""
+    if template_id not in AGENT_TEMPLATES:
+        raise HTTPException(status_code=404, detail="Template not found")
+
+    allowed = ["name", "description", "system_prompt", "capabilities", "suggested_tools", "example_inputs", "config", "is_public"]
+    for key, value in updates.items():
+        if key in allowed:
+            AGENT_TEMPLATES[template_id][key] = value
+    AGENT_TEMPLATES[template_id]["updated_at"] = datetime.utcnow().isoformat()
+    return AGENT_TEMPLATES[template_id]
+
+
+@app.delete("/templates/{template_id}")
+def delete_custom_template(template_id: str):
+    """Delete a custom template"""
+    if template_id not in AGENT_TEMPLATES:
+        raise HTTPException(status_code=404, detail="Template not found")
+    del AGENT_TEMPLATES[template_id]
+    return {"status": "deleted"}
+
+
+@app.get("/templates/categories")
+def list_template_categories():
+    """List template categories with counts"""
+    categories = {}
+    for template in BUILTIN_TEMPLATES.values():
+        cat = template["category"]
+        categories[cat] = categories.get(cat, 0) + 1
+    for template in AGENT_TEMPLATES.values():
+        cat = template["category"]
+        categories[cat] = categories.get(cat, 0) + 1
+    return {"categories": [{"name": k, "count": v} for k, v in categories.items()]}
+
+
+# ============================================================================
+# Prompt Engineering Tools
+# ============================================================================
+
+# Storage for prompts
+PROMPTS: Dict[str, Dict[str, Any]] = {}
+PROMPT_VERSIONS: Dict[str, List[Dict[str, Any]]] = {}
+PROMPT_TESTS: Dict[str, Dict[str, Any]] = {}
+PROMPT_EXPERIMENTS: Dict[str, Dict[str, Any]] = {}
+
+
+class PromptCreate(BaseModel):
+    name: str
+    description: Optional[str] = None
+    template: str
+    variables: Optional[List[str]] = []
+    category: Optional[str] = None
+    tags: Optional[List[str]] = []
+
+
+class PromptTest(BaseModel):
+    prompt_id: str
+    test_inputs: Dict[str, str]
+    expected_behavior: Optional[str] = None
+
+
+class PromptExperiment(BaseModel):
+    name: str
+    prompt_variants: List[str]  # List of prompt IDs
+    test_cases: List[Dict[str, Any]]
+    metrics: Optional[List[str]] = ["quality", "relevance", "coherence"]
+
+
+@app.post("/prompts")
+def create_prompt(prompt: PromptCreate):
+    """Create a new prompt template"""
+    prompt_id = str(uuid.uuid4())
+
+    # Extract variables from template ({{variable}})
+    import re
+    found_vars = re.findall(r'\{\{(\w+)\}\}', prompt.template)
+
+    PROMPTS[prompt_id] = {
+        "id": prompt_id,
+        "name": prompt.name,
+        "description": prompt.description,
+        "template": prompt.template,
+        "variables": prompt.variables or found_vars,
+        "category": prompt.category,
+        "tags": prompt.tags or [],
+        "version": 1,
+        "author_id": "current_user",
+        "created_at": datetime.utcnow().isoformat(),
+        "updated_at": datetime.utcnow().isoformat()
+    }
+    PROMPT_VERSIONS[prompt_id] = [{
+        "version": 1,
+        "template": prompt.template,
+        "created_at": datetime.utcnow().isoformat()
+    }]
+    return PROMPTS[prompt_id]
+
+
+@app.get("/prompts")
+def list_prompts(category: Optional[str] = None, tag: Optional[str] = None):
+    """List prompts"""
+    prompts = list(PROMPTS.values())
+    if category:
+        prompts = [p for p in prompts if p["category"] == category]
+    if tag:
+        prompts = [p for p in prompts if tag in p.get("tags", [])]
+    return {"prompts": prompts}
+
+
+@app.get("/prompts/{prompt_id}")
+def get_prompt(prompt_id: str):
+    """Get prompt details"""
+    if prompt_id not in PROMPTS:
+        raise HTTPException(status_code=404, detail="Prompt not found")
+    return PROMPTS[prompt_id]
+
+
+@app.put("/prompts/{prompt_id}")
+def update_prompt(prompt_id: str, updates: Dict[str, Any] = Body(...)):
+    """Update a prompt (creates new version)"""
+    if prompt_id not in PROMPTS:
+        raise HTTPException(status_code=404, detail="Prompt not found")
+
+    prompt = PROMPTS[prompt_id]
+
+    if "template" in updates:
+        prompt["version"] += 1
+        PROMPT_VERSIONS[prompt_id].append({
+            "version": prompt["version"],
+            "template": updates["template"],
+            "created_at": datetime.utcnow().isoformat()
+        })
+
+    allowed = ["name", "description", "template", "variables", "category", "tags"]
+    for key, value in updates.items():
+        if key in allowed:
+            prompt[key] = value
+    prompt["updated_at"] = datetime.utcnow().isoformat()
+    return prompt
+
+
+@app.delete("/prompts/{prompt_id}")
+def delete_prompt(prompt_id: str):
+    """Delete a prompt"""
+    if prompt_id not in PROMPTS:
+        raise HTTPException(status_code=404, detail="Prompt not found")
+    del PROMPTS[prompt_id]
+    return {"status": "deleted"}
+
+
+@app.get("/prompts/{prompt_id}/versions")
+def get_prompt_versions(prompt_id: str):
+    """Get prompt version history"""
+    if prompt_id not in PROMPTS:
+        raise HTTPException(status_code=404, detail="Prompt not found")
+    return {"versions": PROMPT_VERSIONS.get(prompt_id, [])}
+
+
+@app.post("/prompts/{prompt_id}/render")
+def render_prompt(prompt_id: str, variables: Dict[str, str] = Body(...)):
+    """Render a prompt with variables"""
+    if prompt_id not in PROMPTS:
+        raise HTTPException(status_code=404, detail="Prompt not found")
+
+    template = PROMPTS[prompt_id]["template"]
+    rendered = template
+    for var, value in variables.items():
+        rendered = rendered.replace(f"{{{{{var}}}}}", value)
+
+    return {
+        "prompt_id": prompt_id,
+        "rendered": rendered,
+        "variables_used": list(variables.keys())
+    }
+
+
+@app.post("/prompts/{prompt_id}/test")
+def test_prompt(prompt_id: str, test: PromptTest):
+    """Test a prompt with sample inputs"""
+    if prompt_id not in PROMPTS:
+        raise HTTPException(status_code=404, detail="Prompt not found")
+
+    template = PROMPTS[prompt_id]["template"]
+    rendered = template
+    for var, value in test.test_inputs.items():
+        rendered = rendered.replace(f"{{{{{var}}}}}", value)
+
+    test_id = str(uuid.uuid4())
+    PROMPT_TESTS[test_id] = {
+        "id": test_id,
+        "prompt_id": prompt_id,
+        "inputs": test.test_inputs,
+        "rendered_prompt": rendered,
+        "expected_behavior": test.expected_behavior,
+        "simulated_response": f"[Simulated AI response to: {rendered[:100]}...]",
+        "created_at": datetime.utcnow().isoformat()
+    }
+    return PROMPT_TESTS[test_id]
+
+
+@app.post("/prompts/{prompt_id}/analyze")
+def analyze_prompt(prompt_id: str):
+    """Analyze a prompt for potential improvements"""
+    if prompt_id not in PROMPTS:
+        raise HTTPException(status_code=404, detail="Prompt not found")
+
+    prompt = PROMPTS[prompt_id]
+    template = prompt["template"]
+
+    # Basic analysis
+    analysis = {
+        "prompt_id": prompt_id,
+        "length": len(template),
+        "word_count": len(template.split()),
+        "variable_count": len(prompt.get("variables", [])),
+        "suggestions": [],
+        "score": 0
+    }
+
+    # Generate suggestions
+    if len(template) < 50:
+        analysis["suggestions"].append("Prompt may be too short. Consider adding more context or instructions.")
+    if len(template) > 2000:
+        analysis["suggestions"].append("Prompt is quite long. Consider breaking into smaller, focused prompts.")
+    if "{{" not in template:
+        analysis["suggestions"].append("No variables detected. Consider adding {{variables}} for reusability.")
+    if not any(word in template.lower() for word in ["please", "you are", "your task"]):
+        analysis["suggestions"].append("Consider adding role/task framing like 'You are...' or 'Your task is...'")
+    if "example" not in template.lower():
+        analysis["suggestions"].append("Consider adding examples for better AI understanding.")
+
+    # Calculate score
+    analysis["score"] = max(0, 100 - len(analysis["suggestions"]) * 15)
+
+    return analysis
+
+
+@app.post("/prompts/experiments")
+def create_prompt_experiment(experiment: PromptExperiment):
+    """Create an A/B test experiment for prompts"""
+    exp_id = str(uuid.uuid4())
+    PROMPT_EXPERIMENTS[exp_id] = {
+        "id": exp_id,
+        "name": experiment.name,
+        "prompt_variants": experiment.prompt_variants,
+        "test_cases": experiment.test_cases,
+        "metrics": experiment.metrics,
+        "status": "created",
+        "results": {},
+        "created_at": datetime.utcnow().isoformat()
+    }
+    return PROMPT_EXPERIMENTS[exp_id]
+
+
+@app.post("/prompts/experiments/{exp_id}/run")
+def run_prompt_experiment(exp_id: str):
+    """Run a prompt experiment"""
+    if exp_id not in PROMPT_EXPERIMENTS:
+        raise HTTPException(status_code=404, detail="Experiment not found")
+
+    experiment = PROMPT_EXPERIMENTS[exp_id]
+    experiment["status"] = "running"
+
+    # Simulate experiment results
+    results = {}
+    for variant_id in experiment["prompt_variants"]:
+        results[variant_id] = {
+            "quality_score": 75 + (hash(variant_id) % 25),
+            "relevance_score": 70 + (hash(variant_id + "r") % 30),
+            "coherence_score": 80 + (hash(variant_id + "c") % 20),
+            "avg_response_time_ms": 150 + (hash(variant_id + "t") % 100),
+            "test_cases_passed": len(experiment["test_cases"])
+        }
+
+    experiment["results"] = results
+    experiment["status"] = "completed"
+    experiment["completed_at"] = datetime.utcnow().isoformat()
+
+    # Determine winner
+    best_variant = max(results.keys(), key=lambda k: results[k]["quality_score"])
+    experiment["winner"] = best_variant
+
+    return experiment
+
+
+@app.get("/prompts/experiments")
+def list_experiments():
+    """List all prompt experiments"""
+    return {"experiments": list(PROMPT_EXPERIMENTS.values())}
+
+
+@app.get("/prompts/experiments/{exp_id}")
+def get_experiment(exp_id: str):
+    """Get experiment details"""
+    if exp_id not in PROMPT_EXPERIMENTS:
+        raise HTTPException(status_code=404, detail="Experiment not found")
+    return PROMPT_EXPERIMENTS[exp_id]
+
+
+# ============================================================================
+# A2A (Agent-to-Agent) Communication Protocol
+# ============================================================================
+
+# Storage for A2A
+A2A_CHANNELS: Dict[str, Dict[str, Any]] = {}
+A2A_MESSAGES: Dict[str, List[Dict[str, Any]]] = {}
+A2A_SUBSCRIPTIONS: Dict[str, List[str]] = {}
+A2A_PROTOCOLS: Dict[str, Dict[str, Any]] = {}
+
+# Built-in A2A message types
+A2A_MESSAGE_TYPES = [
+    "request", "response", "event", "query", "command",
+    "handoff", "escalation", "delegation", "notification", "heartbeat"
+]
+
+
+class A2AChannelCreate(BaseModel):
+    name: str
+    description: Optional[str] = None
+    participants: List[str]  # Agent IDs
+    protocol: Optional[str] = "default"
+    config: Optional[Dict[str, Any]] = {}
+
+
+class A2AMessage(BaseModel):
+    channel_id: str
+    sender_agent_id: str
+    message_type: str
+    content: Dict[str, Any]
+    target_agent_id: Optional[str] = None
+    requires_response: Optional[bool] = False
+    timeout_seconds: Optional[int] = 30
+
+
+@app.post("/a2a/channels")
+def create_a2a_channel(channel: A2AChannelCreate):
+    """Create an A2A communication channel"""
+    channel_id = str(uuid.uuid4())
+    A2A_CHANNELS[channel_id] = {
+        "id": channel_id,
+        "name": channel.name,
+        "description": channel.description,
+        "participants": channel.participants,
+        "protocol": channel.protocol,
+        "config": channel.config or {},
+        "status": "active",
+        "message_count": 0,
+        "created_at": datetime.utcnow().isoformat()
+    }
+    A2A_MESSAGES[channel_id] = []
+    return A2A_CHANNELS[channel_id]
+
+
+@app.get("/a2a/channels")
+def list_a2a_channels(agent_id: Optional[str] = None):
+    """List A2A channels"""
+    channels = list(A2A_CHANNELS.values())
+    if agent_id:
+        channels = [c for c in channels if agent_id in c["participants"]]
+    return {"channels": channels}
+
+
+@app.get("/a2a/channels/{channel_id}")
+def get_a2a_channel(channel_id: str):
+    """Get channel details"""
+    if channel_id not in A2A_CHANNELS:
+        raise HTTPException(status_code=404, detail="Channel not found")
+    return A2A_CHANNELS[channel_id]
+
+
+@app.delete("/a2a/channels/{channel_id}")
+def delete_a2a_channel(channel_id: str):
+    """Delete an A2A channel"""
+    if channel_id not in A2A_CHANNELS:
+        raise HTTPException(status_code=404, detail="Channel not found")
+    del A2A_CHANNELS[channel_id]
+    if channel_id in A2A_MESSAGES:
+        del A2A_MESSAGES[channel_id]
+    return {"status": "deleted"}
+
+
+@app.post("/a2a/channels/{channel_id}/join")
+def join_a2a_channel(channel_id: str, agent_id: str = Body(..., embed=True)):
+    """Add an agent to a channel"""
+    if channel_id not in A2A_CHANNELS:
+        raise HTTPException(status_code=404, detail="Channel not found")
+
+    if agent_id not in A2A_CHANNELS[channel_id]["participants"]:
+        A2A_CHANNELS[channel_id]["participants"].append(agent_id)
+    return A2A_CHANNELS[channel_id]
+
+
+@app.post("/a2a/channels/{channel_id}/leave")
+def leave_a2a_channel(channel_id: str, agent_id: str = Body(..., embed=True)):
+    """Remove an agent from a channel"""
+    if channel_id not in A2A_CHANNELS:
+        raise HTTPException(status_code=404, detail="Channel not found")
+
+    if agent_id in A2A_CHANNELS[channel_id]["participants"]:
+        A2A_CHANNELS[channel_id]["participants"].remove(agent_id)
+    return A2A_CHANNELS[channel_id]
+
+
+@app.post("/a2a/messages")
+def send_a2a_message(message: A2AMessage):
+    """Send a message through an A2A channel"""
+    if message.channel_id not in A2A_CHANNELS:
+        raise HTTPException(status_code=404, detail="Channel not found")
+
+    if message.message_type not in A2A_MESSAGE_TYPES:
+        raise HTTPException(status_code=400, detail=f"Invalid message type. Valid types: {A2A_MESSAGE_TYPES}")
+
+    message_id = str(uuid.uuid4())
+    msg_data = {
+        "id": message_id,
+        "channel_id": message.channel_id,
+        "sender_agent_id": message.sender_agent_id,
+        "target_agent_id": message.target_agent_id,
+        "message_type": message.message_type,
+        "content": message.content,
+        "requires_response": message.requires_response,
+        "response_id": None,
+        "status": "delivered",
+        "timestamp": datetime.utcnow().isoformat()
+    }
+    A2A_MESSAGES[message.channel_id].append(msg_data)
+    A2A_CHANNELS[message.channel_id]["message_count"] += 1
+
+    return msg_data
+
+
+@app.get("/a2a/channels/{channel_id}/messages")
+def get_a2a_messages(channel_id: str, limit: int = 50, since: Optional[str] = None):
+    """Get messages from a channel"""
+    if channel_id not in A2A_CHANNELS:
+        raise HTTPException(status_code=404, detail="Channel not found")
+
+    messages = A2A_MESSAGES.get(channel_id, [])
+    if since:
+        messages = [m for m in messages if m["timestamp"] > since]
+    messages = messages[-limit:]
+    return {"messages": messages}
+
+
+@app.post("/a2a/messages/{message_id}/respond")
+def respond_to_a2a_message(message_id: str, response: Dict[str, Any] = Body(...)):
+    """Respond to an A2A message"""
+    # Find the message
+    for channel_id, messages in A2A_MESSAGES.items():
+        for msg in messages:
+            if msg["id"] == message_id:
+                response_id = str(uuid.uuid4())
+                response_msg = {
+                    "id": response_id,
+                    "channel_id": channel_id,
+                    "sender_agent_id": response.get("sender_agent_id", "responder"),
+                    "target_agent_id": msg["sender_agent_id"],
+                    "message_type": "response",
+                    "content": response.get("content", {}),
+                    "in_response_to": message_id,
+                    "status": "delivered",
+                    "timestamp": datetime.utcnow().isoformat()
+                }
+                A2A_MESSAGES[channel_id].append(response_msg)
+                msg["response_id"] = response_id
+                return response_msg
+
+    raise HTTPException(status_code=404, detail="Message not found")
+
+
+@app.post("/a2a/handoff")
+def agent_handoff(data: Dict[str, Any] = Body(...)):
+    """Hand off a task from one agent to another"""
+    handoff_id = str(uuid.uuid4())
+    return {
+        "handoff_id": handoff_id,
+        "from_agent": data.get("from_agent_id"),
+        "to_agent": data.get("to_agent_id"),
+        "task": data.get("task"),
+        "context": data.get("context", {}),
+        "status": "handed_off",
+        "timestamp": datetime.utcnow().isoformat()
+    }
+
+
+@app.post("/a2a/broadcast")
+def broadcast_to_agents(data: Dict[str, Any] = Body(...)):
+    """Broadcast a message to multiple agents"""
+    broadcast_id = str(uuid.uuid4())
+    target_agents = data.get("target_agents", [])
+    return {
+        "broadcast_id": broadcast_id,
+        "sender_agent_id": data.get("sender_agent_id"),
+        "target_agents": target_agents,
+        "message": data.get("message"),
+        "delivered_to": len(target_agents),
+        "timestamp": datetime.utcnow().isoformat()
+    }
+
+
+@app.get("/a2a/message-types")
+def list_a2a_message_types():
+    """List available A2A message types"""
+    return {"message_types": A2A_MESSAGE_TYPES}
+
+
+# ============================================================================
+# SDK Generation & Client Libraries
+# ============================================================================
+
+SDK_CONFIGS: Dict[str, Dict[str, Any]] = {}
+SDK_GENERATIONS: List[Dict[str, Any]] = []
+
+SUPPORTED_SDK_LANGUAGES = {
+    "python": {
+        "name": "Python",
+        "package_manager": "pip",
+        "file_extension": ".py",
+        "template_style": "pydantic"
+    },
+    "typescript": {
+        "name": "TypeScript",
+        "package_manager": "npm",
+        "file_extension": ".ts",
+        "template_style": "fetch"
+    },
+    "javascript": {
+        "name": "JavaScript",
+        "package_manager": "npm",
+        "file_extension": ".js",
+        "template_style": "fetch"
+    },
+    "go": {
+        "name": "Go",
+        "package_manager": "go mod",
+        "file_extension": ".go",
+        "template_style": "http"
+    },
+    "rust": {
+        "name": "Rust",
+        "package_manager": "cargo",
+        "file_extension": ".rs",
+        "template_style": "reqwest"
+    },
+    "java": {
+        "name": "Java",
+        "package_manager": "maven",
+        "file_extension": ".java",
+        "template_style": "okhttp"
+    }
+}
+
+
+@app.get("/sdk/languages")
+def list_sdk_languages():
+    """List supported SDK languages"""
+    return {"languages": SUPPORTED_SDK_LANGUAGES}
+
+
+@app.post("/sdk/generate")
+def generate_sdk(data: Dict[str, Any] = Body(...)):
+    """Generate an SDK for a specific language"""
+    language = data.get("language", "python")
+    if language not in SUPPORTED_SDK_LANGUAGES:
+        raise HTTPException(status_code=400, detail=f"Unsupported language. Supported: {list(SUPPORTED_SDK_LANGUAGES.keys())}")
+
+    generation_id = str(uuid.uuid4())
+    sdk_info = SUPPORTED_SDK_LANGUAGES[language]
+
+    # Simulated SDK generation
+    generation = {
+        "id": generation_id,
+        "language": language,
+        "version": "1.0.0",
+        "api_version": "v1",
+        "package_name": f"masp-sdk-{language}",
+        "status": "generated",
+        "files": [
+            f"masp_client{sdk_info['file_extension']}",
+            f"models{sdk_info['file_extension']}",
+            f"exceptions{sdk_info['file_extension']}",
+            "README.md"
+        ],
+        "install_command": f"{sdk_info['package_manager']} install masp-sdk-{language}",
+        "download_url": f"/sdk/download/{generation_id}",
+        "created_at": datetime.utcnow().isoformat()
+    }
+    SDK_GENERATIONS.append(generation)
+    return generation
+
+
+@app.get("/sdk/download/{generation_id}")
+def download_sdk(generation_id: str):
+    """Download a generated SDK"""
+    for gen in SDK_GENERATIONS:
+        if gen["id"] == generation_id:
+            return {
+                "generation_id": generation_id,
+                "download_url": f"https://sdk.example.com/download/{generation_id}.zip",
+                "message": "SDK ready for download"
+            }
+    raise HTTPException(status_code=404, detail="SDK generation not found")
+
+
+@app.get("/sdk/generations")
+def list_sdk_generations():
+    """List SDK generations"""
+    return {"generations": SDK_GENERATIONS}
+
+
+@app.get("/sdk/snippet/{language}")
+def get_sdk_snippet(language: str, endpoint: str = "agent_cards"):
+    """Get a code snippet for using the SDK"""
+    if language not in SUPPORTED_SDK_LANGUAGES:
+        raise HTTPException(status_code=400, detail="Unsupported language")
+
+    snippets = {
+        "python": f'''from masp_sdk import MASPClient
+
+client = MASPClient(api_key="your-api-key")
+
+# List {endpoint}
+items = client.{endpoint}.list()
+for item in items:
+    print(item.name)
+
+# Create new
+new_item = client.{endpoint}.create(name="My Agent", description="...")
+''',
+        "typescript": f'''import {{ MASPClient }} from 'masp-sdk';
+
+const client = new MASPClient({{ apiKey: 'your-api-key' }});
+
+// List {endpoint}
+const items = await client.{endpoint}.list();
+items.forEach(item => console.log(item.name));
+
+// Create new
+const newItem = await client.{endpoint}.create({{
+  name: 'My Agent',
+  description: '...'
+}});
+''',
+        "javascript": f'''const {{ MASPClient }} = require('masp-sdk');
+
+const client = new MASPClient({{ apiKey: 'your-api-key' }});
+
+// List {endpoint}
+const items = await client.{endpoint}.list();
+items.forEach(item => console.log(item.name));
+'''
+    }
+
+    return {
+        "language": language,
+        "endpoint": endpoint,
+        "snippet": snippets.get(language, "// Snippet not available")
+    }
+
+
+# ============================================================================
+# OpenAPI / Swagger Support
+# ============================================================================
+
+@app.get("/openapi.json")
+def get_openapi_spec():
+    """Get OpenAPI specification"""
+    return app.openapi()
+
+
+@app.get("/docs/swagger")
+def get_swagger_ui_config():
+    """Get Swagger UI configuration"""
+    return {
+        "swagger_url": "/openapi.json",
+        "title": "Multi-Agent Standards Protocol API",
+        "version": "1.0.0",
+        "description": "Comprehensive API for managing AI agents, workflows, and enterprise features",
+        "contact": {
+            "name": "API Support",
+            "email": "support@example.com"
+        },
+        "license": {
+            "name": "MIT",
+            "url": "https://opensource.org/licenses/MIT"
+        }
+    }
+
+
+@app.get("/docs/endpoints")
+def list_all_endpoints():
+    """List all API endpoints with their methods and descriptions"""
+    endpoints = []
+    for route in app.routes:
+        if hasattr(route, 'methods') and hasattr(route, 'path'):
+            endpoints.append({
+                "path": route.path,
+                "methods": list(route.methods - {"HEAD", "OPTIONS"}),
+                "name": route.name,
+                "description": route.endpoint.__doc__ if route.endpoint else None
+            })
+    return {
+        "total_endpoints": len(endpoints),
+        "endpoints": sorted(endpoints, key=lambda x: x["path"])
+    }
+
+
+@app.get("/docs/categories")
+def list_endpoint_categories():
+    """List endpoints grouped by category"""
+    categories = {}
+    for route in app.routes:
+        if hasattr(route, 'path') and route.path.startswith("/"):
+            parts = route.path.split("/")
+            if len(parts) > 1 and parts[1]:
+                category = parts[1]
+                if category not in categories:
+                    categories[category] = []
+                if hasattr(route, 'methods'):
+                    categories[category].append({
+                        "path": route.path,
+                        "methods": list(route.methods - {"HEAD", "OPTIONS"})
+                    })
+    return {"categories": categories}
+
+
+# ============================================================================
+# CLI Support Endpoints
+# ============================================================================
+
+CLI_SESSIONS: Dict[str, Dict[str, Any]] = {}
+CLI_HISTORY: Dict[str, List[Dict[str, Any]]] = {}
+
+
+@app.post("/cli/auth")
+def cli_authenticate(data: Dict[str, Any] = Body(...)):
+    """Authenticate CLI session"""
+    session_id = str(uuid.uuid4())
+    CLI_SESSIONS[session_id] = {
+        "id": session_id,
+        "api_key": data.get("api_key", "")[:8] + "...",
+        "authenticated": True,
+        "created_at": datetime.utcnow().isoformat(),
+        "expires_at": (datetime.utcnow() + timedelta(hours=24)).isoformat()
+    }
+    CLI_HISTORY[session_id] = []
+    return {
+        "session_id": session_id,
+        "authenticated": True,
+        "message": "CLI session authenticated successfully"
+    }
+
+
+@app.get("/cli/status")
+def cli_status(session_id: Optional[str] = None):
+    """Get CLI status and available commands"""
+    return {
+        "version": "1.0.0",
+        "authenticated": session_id in CLI_SESSIONS if session_id else False,
+        "available_commands": [
+            {"command": "masp agents list", "description": "List all agent cards"},
+            {"command": "masp agents create <name>", "description": "Create a new agent"},
+            {"command": "masp agents get <id>", "description": "Get agent details"},
+            {"command": "masp workflows list", "description": "List all workflows"},
+            {"command": "masp workflows run <id>", "description": "Run a workflow"},
+            {"command": "masp templates list", "description": "List agent templates"},
+            {"command": "masp templates use <id>", "description": "Create agent from template"},
+            {"command": "masp execute <agent_id>", "description": "Execute an agent"},
+            {"command": "masp search <query>", "description": "Search for agents"},
+            {"command": "masp config set <key> <value>", "description": "Set configuration"},
+            {"command": "masp config get <key>", "description": "Get configuration"},
+            {"command": "masp health", "description": "Check API health"},
+            {"command": "masp version", "description": "Show version info"}
+        ]
+    }
+
+
+@app.post("/cli/execute")
+def cli_execute_command(data: Dict[str, Any] = Body(...)):
+    """Execute a CLI command"""
+    command = data.get("command", "")
+    session_id = data.get("session_id")
+
+    # Parse command
+    parts = command.strip().split()
+    if not parts:
+        return {"error": "No command provided"}
+
+    # Simulate command execution
+    result = {
+        "command": command,
+        "status": "success",
+        "output": f"Executed: {command}",
+        "timestamp": datetime.utcnow().isoformat()
+    }
+
+    # Log to history
+    if session_id and session_id in CLI_HISTORY:
+        CLI_HISTORY[session_id].append(result)
+
+    return result
+
+
+@app.get("/cli/history")
+def cli_get_history(session_id: str, limit: int = 20):
+    """Get CLI command history"""
+    if session_id not in CLI_SESSIONS:
+        raise HTTPException(status_code=404, detail="Session not found")
+    history = CLI_HISTORY.get(session_id, [])
+    return {"history": history[-limit:]}
+
+
+@app.get("/cli/completions")
+def cli_get_completions(partial: str):
+    """Get CLI auto-completions"""
+    commands = ["agents", "workflows", "templates", "execute", "search", "config", "health", "version"]
+    subcommands = {
+        "agents": ["list", "create", "get", "update", "delete"],
+        "workflows": ["list", "create", "run", "status"],
+        "templates": ["list", "use", "create"],
+        "config": ["set", "get", "list"]
+    }
+
+    parts = partial.strip().split()
+    if len(parts) == 0:
+        return {"completions": commands}
+    elif len(parts) == 1:
+        matches = [c for c in commands if c.startswith(parts[0])]
+        return {"completions": matches}
+    elif len(parts) == 2 and parts[0] in subcommands:
+        matches = [s for s in subcommands[parts[0]] if s.startswith(parts[1])]
+        return {"completions": matches}
+
+    return {"completions": []}
+
+
+# ============================================================================
+# Memory / Context Management
+# ============================================================================
+
+# Storage for memory
+AGENT_MEMORIES: Dict[str, Dict[str, Any]] = {}
+MEMORY_ENTRIES: Dict[str, List[Dict[str, Any]]] = {}
+CONVERSATION_CONTEXTS: Dict[str, Dict[str, Any]] = {}
+
+
+class MemoryCreate(BaseModel):
+    agent_id: str
+    memory_type: str = "long_term"  # short_term, long_term, episodic, semantic
+    capacity: Optional[int] = 1000
+    config: Optional[Dict[str, Any]] = {}
+
+
+class MemoryEntry(BaseModel):
+    content: str
+    metadata: Optional[Dict[str, Any]] = {}
+    importance: Optional[float] = 0.5
+    tags: Optional[List[str]] = []
+
+
+@app.post("/memory")
+def create_agent_memory(memory: MemoryCreate):
+    """Create a memory store for an agent"""
+    memory_id = str(uuid.uuid4())
+    AGENT_MEMORIES[memory_id] = {
+        "id": memory_id,
+        "agent_id": memory.agent_id,
+        "memory_type": memory.memory_type,
+        "capacity": memory.capacity,
+        "config": memory.config or {},
+        "entry_count": 0,
+        "created_at": datetime.utcnow().isoformat()
+    }
+    MEMORY_ENTRIES[memory_id] = []
+    return AGENT_MEMORIES[memory_id]
+
+
+@app.get("/memory")
+def list_agent_memories(agent_id: Optional[str] = None):
+    """List memory stores"""
+    memories = list(AGENT_MEMORIES.values())
+    if agent_id:
+        memories = [m for m in memories if m["agent_id"] == agent_id]
+    return {"memories": memories}
+
+
+@app.get("/memory/{memory_id}")
+def get_agent_memory(memory_id: str):
+    """Get memory store details"""
+    if memory_id not in AGENT_MEMORIES:
+        raise HTTPException(status_code=404, detail="Memory not found")
+    return AGENT_MEMORIES[memory_id]
+
+
+@app.delete("/memory/{memory_id}")
+def delete_agent_memory(memory_id: str):
+    """Delete a memory store"""
+    if memory_id not in AGENT_MEMORIES:
+        raise HTTPException(status_code=404, detail="Memory not found")
+    del AGENT_MEMORIES[memory_id]
+    if memory_id in MEMORY_ENTRIES:
+        del MEMORY_ENTRIES[memory_id]
+    return {"status": "deleted"}
+
+
+@app.post("/memory/{memory_id}/entries")
+def add_memory_entry(memory_id: str, entry: MemoryEntry):
+    """Add an entry to memory"""
+    if memory_id not in AGENT_MEMORIES:
+        raise HTTPException(status_code=404, detail="Memory not found")
+
+    entry_id = str(uuid.uuid4())
+    entry_data = {
+        "id": entry_id,
+        "content": entry.content,
+        "metadata": entry.metadata or {},
+        "importance": entry.importance,
+        "tags": entry.tags or [],
+        "access_count": 0,
+        "last_accessed": None,
+        "created_at": datetime.utcnow().isoformat()
+    }
+    MEMORY_ENTRIES[memory_id].append(entry_data)
+    AGENT_MEMORIES[memory_id]["entry_count"] += 1
+
+    # Enforce capacity
+    capacity = AGENT_MEMORIES[memory_id]["capacity"]
+    if len(MEMORY_ENTRIES[memory_id]) > capacity:
+        # Remove least important entries
+        MEMORY_ENTRIES[memory_id].sort(key=lambda x: x["importance"], reverse=True)
+        MEMORY_ENTRIES[memory_id] = MEMORY_ENTRIES[memory_id][:capacity]
+        AGENT_MEMORIES[memory_id]["entry_count"] = capacity
+
+    return entry_data
+
+
+@app.get("/memory/{memory_id}/entries")
+def list_memory_entries(memory_id: str, limit: int = 50, tag: Optional[str] = None):
+    """List memory entries"""
+    if memory_id not in AGENT_MEMORIES:
+        raise HTTPException(status_code=404, detail="Memory not found")
+
+    entries = MEMORY_ENTRIES.get(memory_id, [])
+    if tag:
+        entries = [e for e in entries if tag in e.get("tags", [])]
+    entries.sort(key=lambda x: x["importance"], reverse=True)
+    return {"entries": entries[:limit]}
+
+
+@app.post("/memory/{memory_id}/search")
+def search_memory(memory_id: str, query: str = Body(..., embed=True)):
+    """Search memory entries"""
+    if memory_id not in AGENT_MEMORIES:
+        raise HTTPException(status_code=404, detail="Memory not found")
+
+    entries = MEMORY_ENTRIES.get(memory_id, [])
+    query_lower = query.lower()
+
+    # Simple text search (in production would use embeddings)
+    matches = []
+    for entry in entries:
+        if query_lower in entry["content"].lower():
+            entry["access_count"] += 1
+            entry["last_accessed"] = datetime.utcnow().isoformat()
+            matches.append(entry)
+
+    matches.sort(key=lambda x: x["importance"], reverse=True)
+    return {"query": query, "matches": matches[:10]}
+
+
+@app.post("/memory/{memory_id}/consolidate")
+def consolidate_memory(memory_id: str):
+    """Consolidate memory entries (merge similar, remove redundant)"""
+    if memory_id not in AGENT_MEMORIES:
+        raise HTTPException(status_code=404, detail="Memory not found")
+
+    original_count = len(MEMORY_ENTRIES.get(memory_id, []))
+    # Simulated consolidation
+    return {
+        "memory_id": memory_id,
+        "original_entries": original_count,
+        "consolidated_entries": original_count,
+        "entries_merged": 0,
+        "entries_removed": 0,
+        "message": "Memory consolidation complete"
+    }
+
+
+@app.post("/context")
+def create_conversation_context(data: Dict[str, Any] = Body(...)):
+    """Create a conversation context"""
+    context_id = str(uuid.uuid4())
+    CONVERSATION_CONTEXTS[context_id] = {
+        "id": context_id,
+        "agent_id": data.get("agent_id"),
+        "user_id": data.get("user_id"),
+        "variables": data.get("variables", {}),
+        "history": [],
+        "metadata": data.get("metadata", {}),
+        "created_at": datetime.utcnow().isoformat(),
+        "updated_at": datetime.utcnow().isoformat()
+    }
+    return CONVERSATION_CONTEXTS[context_id]
+
+
+@app.get("/context/{context_id}")
+def get_conversation_context(context_id: str):
+    """Get conversation context"""
+    if context_id not in CONVERSATION_CONTEXTS:
+        raise HTTPException(status_code=404, detail="Context not found")
+    return CONVERSATION_CONTEXTS[context_id]
+
+
+@app.put("/context/{context_id}")
+def update_conversation_context(context_id: str, updates: Dict[str, Any] = Body(...)):
+    """Update conversation context"""
+    if context_id not in CONVERSATION_CONTEXTS:
+        raise HTTPException(status_code=404, detail="Context not found")
+
+    context = CONVERSATION_CONTEXTS[context_id]
+    if "variables" in updates:
+        context["variables"].update(updates["variables"])
+    if "metadata" in updates:
+        context["metadata"].update(updates["metadata"])
+    if "history_entry" in updates:
+        context["history"].append(updates["history_entry"])
+    context["updated_at"] = datetime.utcnow().isoformat()
+    return context
+
+
+@app.delete("/context/{context_id}")
+def delete_conversation_context(context_id: str):
+    """Delete conversation context"""
+    if context_id not in CONVERSATION_CONTEXTS:
+        raise HTTPException(status_code=404, detail="Context not found")
+    del CONVERSATION_CONTEXTS[context_id]
+    return {"status": "deleted"}
+
+
+# ============================================================================
+# RAG (Retrieval Augmented Generation) Integration
+# ============================================================================
+
+# Storage for RAG
+KNOWLEDGE_BASES: Dict[str, Dict[str, Any]] = {}
+DOCUMENTS: Dict[str, List[Dict[str, Any]]] = {}
+VECTOR_STORES: Dict[str, Dict[str, Any]] = {}
+RAG_QUERIES: List[Dict[str, Any]] = []
+
+
+class KnowledgeBaseCreate(BaseModel):
+    name: str
+    description: Optional[str] = None
+    embedding_model: Optional[str] = "text-embedding-ada-002"
+    chunk_size: Optional[int] = 500
+    chunk_overlap: Optional[int] = 50
+    config: Optional[Dict[str, Any]] = {}
+
+
+class DocumentUpload(BaseModel):
+    title: str
+    content: str
+    source: Optional[str] = None
+    metadata: Optional[Dict[str, Any]] = {}
+
+
+class RAGQuery(BaseModel):
+    knowledge_base_id: str
+    query: str
+    top_k: Optional[int] = 5
+    filters: Optional[Dict[str, Any]] = {}
+    include_sources: Optional[bool] = True
+
+
+@app.post("/rag/knowledge-bases")
+def create_knowledge_base(kb: KnowledgeBaseCreate):
+    """Create a knowledge base"""
+    kb_id = str(uuid.uuid4())
+    KNOWLEDGE_BASES[kb_id] = {
+        "id": kb_id,
+        "name": kb.name,
+        "description": kb.description,
+        "embedding_model": kb.embedding_model,
+        "chunk_size": kb.chunk_size,
+        "chunk_overlap": kb.chunk_overlap,
+        "config": kb.config or {},
+        "document_count": 0,
+        "chunk_count": 0,
+        "status": "ready",
+        "created_at": datetime.utcnow().isoformat()
+    }
+    DOCUMENTS[kb_id] = []
+    return KNOWLEDGE_BASES[kb_id]
+
+
+@app.get("/rag/knowledge-bases")
+def list_knowledge_bases():
+    """List knowledge bases"""
+    return {"knowledge_bases": list(KNOWLEDGE_BASES.values())}
+
+
+@app.get("/rag/knowledge-bases/{kb_id}")
+def get_knowledge_base(kb_id: str):
+    """Get knowledge base details"""
+    if kb_id not in KNOWLEDGE_BASES:
+        raise HTTPException(status_code=404, detail="Knowledge base not found")
+    return KNOWLEDGE_BASES[kb_id]
+
+
+@app.delete("/rag/knowledge-bases/{kb_id}")
+def delete_knowledge_base(kb_id: str):
+    """Delete a knowledge base"""
+    if kb_id not in KNOWLEDGE_BASES:
+        raise HTTPException(status_code=404, detail="Knowledge base not found")
+    del KNOWLEDGE_BASES[kb_id]
+    if kb_id in DOCUMENTS:
+        del DOCUMENTS[kb_id]
+    return {"status": "deleted"}
+
+
+@app.post("/rag/knowledge-bases/{kb_id}/documents")
+def upload_document(kb_id: str, doc: DocumentUpload):
+    """Upload a document to knowledge base"""
+    if kb_id not in KNOWLEDGE_BASES:
+        raise HTTPException(status_code=404, detail="Knowledge base not found")
+
+    doc_id = str(uuid.uuid4())
+    chunk_size = KNOWLEDGE_BASES[kb_id]["chunk_size"]
+
+    # Simulate chunking
+    content_length = len(doc.content)
+    num_chunks = (content_length + chunk_size - 1) // chunk_size
+
+    doc_data = {
+        "id": doc_id,
+        "title": doc.title,
+        "content_preview": doc.content[:200] + "..." if len(doc.content) > 200 else doc.content,
+        "source": doc.source,
+        "metadata": doc.metadata or {},
+        "chunk_count": num_chunks,
+        "status": "indexed",
+        "uploaded_at": datetime.utcnow().isoformat()
+    }
+    DOCUMENTS[kb_id].append(doc_data)
+
+    # Update KB stats
+    KNOWLEDGE_BASES[kb_id]["document_count"] += 1
+    KNOWLEDGE_BASES[kb_id]["chunk_count"] += num_chunks
+
+    return doc_data
+
+
+@app.get("/rag/knowledge-bases/{kb_id}/documents")
+def list_documents(kb_id: str):
+    """List documents in knowledge base"""
+    if kb_id not in KNOWLEDGE_BASES:
+        raise HTTPException(status_code=404, detail="Knowledge base not found")
+    return {"documents": DOCUMENTS.get(kb_id, [])}
+
+
+@app.delete("/rag/knowledge-bases/{kb_id}/documents/{doc_id}")
+def delete_document(kb_id: str, doc_id: str):
+    """Delete a document from knowledge base"""
+    if kb_id not in KNOWLEDGE_BASES:
+        raise HTTPException(status_code=404, detail="Knowledge base not found")
+
+    docs = DOCUMENTS.get(kb_id, [])
+    for i, doc in enumerate(docs):
+        if doc["id"] == doc_id:
+            KNOWLEDGE_BASES[kb_id]["document_count"] -= 1
+            KNOWLEDGE_BASES[kb_id]["chunk_count"] -= doc["chunk_count"]
+            del docs[i]
+            return {"status": "deleted"}
+
+    raise HTTPException(status_code=404, detail="Document not found")
+
+
+@app.post("/rag/query")
+def rag_query(query: RAGQuery):
+    """Query knowledge base with RAG"""
+    if query.knowledge_base_id not in KNOWLEDGE_BASES:
+        raise HTTPException(status_code=404, detail="Knowledge base not found")
+
+    kb = KNOWLEDGE_BASES[query.knowledge_base_id]
+    docs = DOCUMENTS.get(query.knowledge_base_id, [])
+
+    # Simulate semantic search
+    results = []
+    for doc in docs[:query.top_k]:
+        results.append({
+            "document_id": doc["id"],
+            "title": doc["title"],
+            "content_preview": doc["content_preview"],
+            "relevance_score": 0.85 + (hash(doc["id"]) % 15) / 100,
+            "source": doc.get("source")
+        })
+
+    # Sort by relevance
+    results.sort(key=lambda x: x["relevance_score"], reverse=True)
+
+    query_result = {
+        "query_id": str(uuid.uuid4()),
+        "query": query.query,
+        "knowledge_base_id": query.knowledge_base_id,
+        "results": results,
+        "total_results": len(results),
+        "augmented_prompt": f"Based on the following context:\n\n[Retrieved content would be here]\n\nAnswer the question: {query.query}",
+        "timestamp": datetime.utcnow().isoformat()
+    }
+
+    RAG_QUERIES.append(query_result)
+    return query_result
+
+
+@app.post("/rag/knowledge-bases/{kb_id}/sync")
+def sync_knowledge_base(kb_id: str, source: Dict[str, Any] = Body(...)):
+    """Sync knowledge base with external source"""
+    if kb_id not in KNOWLEDGE_BASES:
+        raise HTTPException(status_code=404, detail="Knowledge base not found")
+
+    return {
+        "kb_id": kb_id,
+        "source_type": source.get("type", "unknown"),
+        "source_url": source.get("url"),
+        "status": "syncing",
+        "message": "Sync initiated. Documents will be updated in the background.",
+        "started_at": datetime.utcnow().isoformat()
+    }
+
+
+@app.get("/rag/queries")
+def list_rag_queries(kb_id: Optional[str] = None, limit: int = 20):
+    """List RAG queries"""
+    queries = RAG_QUERIES.copy()
+    if kb_id:
+        queries = [q for q in queries if q["knowledge_base_id"] == kb_id]
+    queries.sort(key=lambda x: x["timestamp"], reverse=True)
+    return {"queries": queries[:limit]}
+
+
+@app.post("/rag/agents/{agent_id}/attach")
+def attach_knowledge_base_to_agent(agent_id: str, kb_id: str = Body(..., embed=True)):
+    """Attach a knowledge base to an agent for RAG"""
+    if kb_id not in KNOWLEDGE_BASES:
+        raise HTTPException(status_code=404, detail="Knowledge base not found")
+
+    return {
+        "agent_id": agent_id,
+        "knowledge_base_id": kb_id,
+        "status": "attached",
+        "message": f"Knowledge base attached. Agent will use RAG for responses.",
+        "attached_at": datetime.utcnow().isoformat()
+    }
+
+
+# ============================================================================
 # Run Server
 # ============================================================================
 
