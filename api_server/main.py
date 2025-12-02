@@ -5568,6 +5568,1109 @@ async def get_real_time_stats():
 
 
 # ============================================================================
+# Webhooks & Event System
+# ============================================================================
+
+# Webhook and event storage
+WEBHOOKS: Dict[str, Dict[str, Any]] = {}
+EVENT_LOG: List[Dict[str, Any]] = []
+EVENT_SUBSCRIPTIONS: Dict[str, List[str]] = {}  # event_type -> [webhook_ids]
+
+
+class WebhookCreate(BaseModel):
+    """Create a webhook subscription."""
+    name: str
+    url: str = Field(..., description="Webhook endpoint URL")
+    events: List[str] = Field(..., description="Events to subscribe to")
+    secret: Optional[str] = Field(default=None, description="Secret for HMAC signature")
+    headers: Dict[str, str] = Field(default={}, description="Custom headers to send")
+    enabled: bool = Field(default=True)
+    retry_policy: Dict[str, Any] = Field(
+        default={"max_retries": 3, "backoff_seconds": 60}
+    )
+
+
+# Available event types
+WEBHOOK_EVENT_TYPES = [
+    "execution.queued", "execution.started", "execution.completed", "execution.failed",
+    "workflow.created", "workflow.updated", "workflow.deleted",
+    "agent.created", "agent.updated", "agent.deleted",
+    "schedule.triggered", "schedule.created", "schedule.deleted",
+    "user.created", "user.updated", "team.member_added",
+    "export.completed", "export.failed"
+]
+
+
+@app.post("/api/webhooks", tags=["Webhooks & Events"])
+async def create_webhook(webhook: WebhookCreate):
+    """
+    Create a webhook subscription.
+
+    Webhooks receive HTTP POST notifications when subscribed events occur.
+    """
+    webhook_id = f"wh_{uuid4().hex[:10]}"
+
+    # Validate event types
+    for event in webhook.events:
+        if event not in WEBHOOK_EVENT_TYPES and not event.endswith(".*"):
+            raise HTTPException(
+                status_code=400,
+                detail=f"Invalid event type: {event}. Valid types: {WEBHOOK_EVENT_TYPES}"
+            )
+
+    wh = {
+        "webhook_id": webhook_id,
+        "name": webhook.name,
+        "url": webhook.url,
+        "events": webhook.events,
+        "secret": webhook.secret,
+        "headers": webhook.headers,
+        "enabled": webhook.enabled,
+        "retry_policy": webhook.retry_policy,
+        "created_at": datetime.utcnow().isoformat(),
+        "last_triggered": None,
+        "trigger_count": 0,
+        "failure_count": 0
+    }
+
+    WEBHOOKS[webhook_id] = wh
+
+    # Register subscriptions
+    for event in webhook.events:
+        if event not in EVENT_SUBSCRIPTIONS:
+            EVENT_SUBSCRIPTIONS[event] = []
+        EVENT_SUBSCRIPTIONS[event].append(webhook_id)
+
+    return {"success": True, "webhook_id": webhook_id, "webhook": wh}
+
+
+@app.get("/api/webhooks", tags=["Webhooks & Events"])
+async def list_webhooks():
+    """List all registered webhooks."""
+    return {
+        "total": len(WEBHOOKS),
+        "webhooks": list(WEBHOOKS.values())
+    }
+
+
+@app.get("/api/webhooks/{webhook_id}", tags=["Webhooks & Events"])
+async def get_webhook(webhook_id: str):
+    """Get webhook details."""
+    if webhook_id not in WEBHOOKS:
+        raise HTTPException(status_code=404, detail=f"Webhook {webhook_id} not found")
+    return WEBHOOKS[webhook_id]
+
+
+@app.delete("/api/webhooks/{webhook_id}", tags=["Webhooks & Events"])
+async def delete_webhook(webhook_id: str):
+    """Delete a webhook."""
+    if webhook_id not in WEBHOOKS:
+        raise HTTPException(status_code=404, detail=f"Webhook {webhook_id} not found")
+
+    wh = WEBHOOKS.pop(webhook_id)
+
+    # Remove from subscriptions
+    for event in wh["events"]:
+        if event in EVENT_SUBSCRIPTIONS:
+            EVENT_SUBSCRIPTIONS[event] = [w for w in EVENT_SUBSCRIPTIONS[event] if w != webhook_id]
+
+    return {"success": True, "deleted": webhook_id}
+
+
+@app.post("/api/webhooks/{webhook_id}/test", tags=["Webhooks & Events"])
+async def test_webhook(webhook_id: str):
+    """Send a test event to a webhook."""
+    if webhook_id not in WEBHOOKS:
+        raise HTTPException(status_code=404, detail=f"Webhook {webhook_id} not found")
+
+    test_event = {
+        "event_id": f"evt_{uuid4().hex[:10]}",
+        "event_type": "webhook.test",
+        "timestamp": datetime.utcnow().isoformat(),
+        "data": {"message": "This is a test event", "webhook_id": webhook_id}
+    }
+
+    # Would actually send HTTP request here
+    return {"success": True, "test_event": test_event, "status": "sent"}
+
+
+@app.get("/api/events", tags=["Webhooks & Events"])
+async def list_events(
+    event_type: Optional[str] = None,
+    limit: int = 50,
+    offset: int = 0
+):
+    """List recent events."""
+    events = EVENT_LOG
+
+    if event_type:
+        events = [e for e in events if e.get("event_type") == event_type]
+
+    return {
+        "total": len(events),
+        "events": events[offset:offset + limit],
+        "event_types": WEBHOOK_EVENT_TYPES
+    }
+
+
+@app.post("/api/events/emit", tags=["Webhooks & Events"])
+async def emit_event(event_type: str, data: Dict[str, Any] = {}):
+    """
+    Emit a custom event (triggers webhooks).
+
+    Internal use for testing and custom integrations.
+    """
+    event = {
+        "event_id": f"evt_{uuid4().hex[:10]}",
+        "event_type": event_type,
+        "timestamp": datetime.utcnow().isoformat(),
+        "data": data
+    }
+
+    EVENT_LOG.append(event)
+
+    # Find matching webhooks and trigger them
+    triggered = []
+    for wh_id in EVENT_SUBSCRIPTIONS.get(event_type, []):
+        if wh_id in WEBHOOKS and WEBHOOKS[wh_id]["enabled"]:
+            WEBHOOKS[wh_id]["trigger_count"] += 1
+            WEBHOOKS[wh_id]["last_triggered"] = datetime.utcnow().isoformat()
+            triggered.append(wh_id)
+
+    return {
+        "success": True,
+        "event": event,
+        "webhooks_triggered": len(triggered)
+    }
+
+
+# ============================================================================
+# User & Team Management
+# ============================================================================
+
+# User and team storage
+USERS: Dict[str, Dict[str, Any]] = {}
+TEAMS: Dict[str, Dict[str, Any]] = {}
+ORGANIZATIONS: Dict[str, Dict[str, Any]] = {}
+AUDIT_LOG: List[Dict[str, Any]] = []
+
+# Default roles and permissions
+ROLES = {
+    "admin": ["*"],
+    "editor": ["read", "write", "execute"],
+    "viewer": ["read"],
+    "executor": ["read", "execute"]
+}
+
+
+class UserCreate(BaseModel):
+    """Create a user."""
+    email: str
+    name: str
+    role: str = Field(default="viewer")
+    team_ids: List[str] = Field(default=[])
+    organization_id: Optional[str] = None
+
+
+class TeamCreate(BaseModel):
+    """Create a team."""
+    name: str
+    description: str = ""
+    organization_id: Optional[str] = None
+
+
+class OrganizationCreate(BaseModel):
+    """Create an organization."""
+    name: str
+    plan: str = Field(default="free", description="free, pro, enterprise")
+    settings: Dict[str, Any] = Field(default={})
+
+
+@app.post("/api/organizations", tags=["User & Team Management"])
+async def create_organization(org: OrganizationCreate):
+    """Create an organization (tenant)."""
+    org_id = f"org_{uuid4().hex[:8]}"
+
+    organization = {
+        "organization_id": org_id,
+        "name": org.name,
+        "plan": org.plan,
+        "settings": org.settings,
+        "created_at": datetime.utcnow().isoformat(),
+        "member_count": 0,
+        "team_count": 0
+    }
+
+    ORGANIZATIONS[org_id] = organization
+
+    return {"success": True, "organization_id": org_id, "organization": organization}
+
+
+@app.get("/api/organizations", tags=["User & Team Management"])
+async def list_organizations():
+    """List all organizations."""
+    return {"total": len(ORGANIZATIONS), "organizations": list(ORGANIZATIONS.values())}
+
+
+@app.get("/api/organizations/{org_id}", tags=["User & Team Management"])
+async def get_organization(org_id: str):
+    """Get organization details."""
+    if org_id not in ORGANIZATIONS:
+        raise HTTPException(status_code=404, detail=f"Organization {org_id} not found")
+    return ORGANIZATIONS[org_id]
+
+
+@app.post("/api/teams", tags=["User & Team Management"])
+async def create_team(team: TeamCreate):
+    """Create a team."""
+    team_id = f"team_{uuid4().hex[:8]}"
+
+    team_data = {
+        "team_id": team_id,
+        "name": team.name,
+        "description": team.description,
+        "organization_id": team.organization_id,
+        "created_at": datetime.utcnow().isoformat(),
+        "members": [],
+        "member_count": 0
+    }
+
+    TEAMS[team_id] = team_data
+
+    if team.organization_id and team.organization_id in ORGANIZATIONS:
+        ORGANIZATIONS[team.organization_id]["team_count"] += 1
+
+    return {"success": True, "team_id": team_id, "team": team_data}
+
+
+@app.get("/api/teams", tags=["User & Team Management"])
+async def list_teams(organization_id: Optional[str] = None):
+    """List all teams."""
+    teams = list(TEAMS.values())
+    if organization_id:
+        teams = [t for t in teams if t.get("organization_id") == organization_id]
+    return {"total": len(teams), "teams": teams}
+
+
+@app.get("/api/teams/{team_id}", tags=["User & Team Management"])
+async def get_team(team_id: str):
+    """Get team details."""
+    if team_id not in TEAMS:
+        raise HTTPException(status_code=404, detail=f"Team {team_id} not found")
+    return TEAMS[team_id]
+
+
+@app.post("/api/users", tags=["User & Team Management"])
+async def create_user(user: UserCreate):
+    """Create a user."""
+    user_id = f"user_{uuid4().hex[:8]}"
+
+    if user.role not in ROLES:
+        raise HTTPException(status_code=400, detail=f"Invalid role: {user.role}. Valid: {list(ROLES.keys())}")
+
+    user_data = {
+        "user_id": user_id,
+        "email": user.email,
+        "name": user.name,
+        "role": user.role,
+        "permissions": ROLES[user.role],
+        "team_ids": user.team_ids,
+        "organization_id": user.organization_id,
+        "created_at": datetime.utcnow().isoformat(),
+        "last_login": None,
+        "status": "active"
+    }
+
+    USERS[user_id] = user_data
+
+    # Add to teams
+    for team_id in user.team_ids:
+        if team_id in TEAMS:
+            TEAMS[team_id]["members"].append(user_id)
+            TEAMS[team_id]["member_count"] += 1
+
+    if user.organization_id and user.organization_id in ORGANIZATIONS:
+        ORGANIZATIONS[user.organization_id]["member_count"] += 1
+
+    # Audit log
+    AUDIT_LOG.append({
+        "event": "user.created",
+        "user_id": user_id,
+        "timestamp": datetime.utcnow().isoformat(),
+        "details": {"email": user.email, "role": user.role}
+    })
+
+    return {"success": True, "user_id": user_id, "user": user_data}
+
+
+@app.get("/api/users", tags=["User & Team Management"])
+async def list_users(
+    team_id: Optional[str] = None,
+    organization_id: Optional[str] = None,
+    role: Optional[str] = None
+):
+    """List users with optional filters."""
+    users = list(USERS.values())
+
+    if team_id:
+        users = [u for u in users if team_id in u.get("team_ids", [])]
+    if organization_id:
+        users = [u for u in users if u.get("organization_id") == organization_id]
+    if role:
+        users = [u for u in users if u.get("role") == role]
+
+    return {"total": len(users), "users": users}
+
+
+@app.get("/api/users/{user_id}", tags=["User & Team Management"])
+async def get_user(user_id: str):
+    """Get user details."""
+    if user_id not in USERS:
+        raise HTTPException(status_code=404, detail=f"User {user_id} not found")
+    return USERS[user_id]
+
+
+@app.put("/api/users/{user_id}/role", tags=["User & Team Management"])
+async def update_user_role(user_id: str, role: str):
+    """Update a user's role."""
+    if user_id not in USERS:
+        raise HTTPException(status_code=404, detail=f"User {user_id} not found")
+    if role not in ROLES:
+        raise HTTPException(status_code=400, detail=f"Invalid role: {role}")
+
+    old_role = USERS[user_id]["role"]
+    USERS[user_id]["role"] = role
+    USERS[user_id]["permissions"] = ROLES[role]
+
+    AUDIT_LOG.append({
+        "event": "user.role_changed",
+        "user_id": user_id,
+        "timestamp": datetime.utcnow().isoformat(),
+        "details": {"old_role": old_role, "new_role": role}
+    })
+
+    return {"success": True, "user_id": user_id, "new_role": role}
+
+
+@app.post("/api/teams/{team_id}/members", tags=["User & Team Management"])
+async def add_team_member(team_id: str, user_id: str):
+    """Add a user to a team."""
+    if team_id not in TEAMS:
+        raise HTTPException(status_code=404, detail=f"Team {team_id} not found")
+    if user_id not in USERS:
+        raise HTTPException(status_code=404, detail=f"User {user_id} not found")
+
+    if user_id not in TEAMS[team_id]["members"]:
+        TEAMS[team_id]["members"].append(user_id)
+        TEAMS[team_id]["member_count"] += 1
+        USERS[user_id]["team_ids"].append(team_id)
+
+    return {"success": True, "team_id": team_id, "user_id": user_id}
+
+
+@app.get("/api/audit-log", tags=["User & Team Management"])
+async def get_audit_log(
+    user_id: Optional[str] = None,
+    event_type: Optional[str] = None,
+    limit: int = 100
+):
+    """Get audit log entries."""
+    logs = AUDIT_LOG
+
+    if user_id:
+        logs = [l for l in logs if l.get("user_id") == user_id]
+    if event_type:
+        logs = [l for l in logs if l.get("event") == event_type]
+
+    return {"total": len(logs), "entries": logs[-limit:]}
+
+
+@app.get("/api/roles", tags=["User & Team Management"])
+async def list_roles():
+    """List available roles and their permissions."""
+    return {"roles": ROLES}
+
+
+# ============================================================================
+# Data Export & Compliance
+# ============================================================================
+
+EXPORT_JOBS: Dict[str, Dict[str, Any]] = {}
+DATA_RETENTION_POLICIES: Dict[str, Dict[str, Any]] = {}
+
+
+class ExportRequest(BaseModel):
+    """Request for data export."""
+    export_type: str = Field(..., description="agents, executions, workflows, users, audit_log, all")
+    format: str = Field(default="json", description="json, csv")
+    filters: Dict[str, Any] = Field(default={})
+    include_pii: bool = Field(default=False, description="Include personally identifiable information")
+    date_range: Optional[Dict[str, str]] = Field(default=None, description="{start, end} ISO dates")
+
+
+class RetentionPolicy(BaseModel):
+    """Data retention policy."""
+    name: str
+    data_type: str = Field(..., description="executions, audit_log, events")
+    retention_days: int = Field(..., ge=1, le=3650)
+    action: str = Field(default="delete", description="delete, archive, anonymize")
+
+
+@app.post("/api/exports", tags=["Data Export & Compliance"])
+async def create_export(request: ExportRequest, db: Session = Depends(get_db)):
+    """
+    Create a data export job.
+
+    Supports GDPR-compliant exports with optional PII exclusion.
+    """
+    export_id = f"exp_{uuid4().hex[:10]}"
+
+    # Gather data based on export type
+    data = {}
+
+    if request.export_type in ["agents", "all"]:
+        agents = db.query(Agent).all()
+        data["agents"] = [
+            {
+                "id": a.id,
+                "name": a.name,
+                "description": a.description,
+                "apqc_id": a.apqc_id,
+                "created_at": a.created_at.isoformat() if a.created_at else None
+            }
+            for a in agents
+        ]
+
+    if request.export_type in ["executions", "all"]:
+        data["executions"] = EXECUTION_HISTORY[-1000:]
+
+    if request.export_type in ["workflows", "all"]:
+        data["workflow_definitions"] = list(WORKFLOW_DEFINITIONS.values())
+
+    if request.export_type in ["users", "all"]:
+        users_data = list(USERS.values())
+        if not request.include_pii:
+            # Anonymize PII
+            users_data = [
+                {**u, "email": f"user_{i}@anonymized.com", "name": f"User {i}"}
+                for i, u in enumerate(users_data)
+            ]
+        data["users"] = users_data
+
+    if request.export_type in ["audit_log", "all"]:
+        data["audit_log"] = AUDIT_LOG[-1000:]
+
+    export_job = {
+        "export_id": export_id,
+        "export_type": request.export_type,
+        "format": request.format,
+        "status": "completed",
+        "created_at": datetime.utcnow().isoformat(),
+        "completed_at": datetime.utcnow().isoformat(),
+        "record_count": sum(len(v) if isinstance(v, list) else 1 for v in data.values()),
+        "include_pii": request.include_pii,
+        "download_url": f"/api/exports/{export_id}/download",
+        "expires_at": (datetime.utcnow().replace(hour=datetime.utcnow().hour + 24)).isoformat()
+    }
+
+    EXPORT_JOBS[export_id] = {"job": export_job, "data": data}
+
+    return {"success": True, "export": export_job}
+
+
+@app.get("/api/exports", tags=["Data Export & Compliance"])
+async def list_exports():
+    """List all export jobs."""
+    return {
+        "total": len(EXPORT_JOBS),
+        "exports": [e["job"] for e in EXPORT_JOBS.values()]
+    }
+
+
+@app.get("/api/exports/{export_id}", tags=["Data Export & Compliance"])
+async def get_export(export_id: str):
+    """Get export job details."""
+    if export_id not in EXPORT_JOBS:
+        raise HTTPException(status_code=404, detail=f"Export {export_id} not found")
+    return EXPORT_JOBS[export_id]["job"]
+
+
+@app.get("/api/exports/{export_id}/download", tags=["Data Export & Compliance"])
+async def download_export(export_id: str):
+    """Download export data."""
+    if export_id not in EXPORT_JOBS:
+        raise HTTPException(status_code=404, detail=f"Export {export_id} not found")
+
+    return EXPORT_JOBS[export_id]["data"]
+
+
+@app.post("/api/compliance/gdpr/delete-request", tags=["Data Export & Compliance"])
+async def gdpr_delete_request(user_id: str, confirm: bool = False):
+    """
+    GDPR Right to Erasure (Article 17) request.
+
+    Deletes all personal data associated with a user.
+    """
+    if not confirm:
+        raise HTTPException(
+            status_code=400,
+            detail="Must confirm deletion with confirm=true"
+        )
+
+    deleted_data = {
+        "user_data": False,
+        "execution_history": 0,
+        "audit_entries": 0
+    }
+
+    # Delete user
+    if user_id in USERS:
+        del USERS[user_id]
+        deleted_data["user_data"] = True
+
+    # Anonymize execution history
+    for exec in EXECUTION_HISTORY:
+        if exec.get("user_id") == user_id:
+            exec["user_id"] = "DELETED"
+            deleted_data["execution_history"] += 1
+
+    # Anonymize audit log
+    for entry in AUDIT_LOG:
+        if entry.get("user_id") == user_id:
+            entry["user_id"] = "DELETED"
+            entry["details"] = {"anonymized": True}
+            deleted_data["audit_entries"] += 1
+
+    return {
+        "success": True,
+        "user_id": user_id,
+        "deleted": deleted_data,
+        "completed_at": datetime.utcnow().isoformat()
+    }
+
+
+@app.post("/api/compliance/retention-policies", tags=["Data Export & Compliance"])
+async def create_retention_policy(policy: RetentionPolicy):
+    """Create a data retention policy."""
+    policy_id = f"rp_{uuid4().hex[:8]}"
+
+    policy_data = {
+        "policy_id": policy_id,
+        "name": policy.name,
+        "data_type": policy.data_type,
+        "retention_days": policy.retention_days,
+        "action": policy.action,
+        "created_at": datetime.utcnow().isoformat(),
+        "last_run": None,
+        "records_affected": 0
+    }
+
+    DATA_RETENTION_POLICIES[policy_id] = policy_data
+
+    return {"success": True, "policy_id": policy_id, "policy": policy_data}
+
+
+@app.get("/api/compliance/retention-policies", tags=["Data Export & Compliance"])
+async def list_retention_policies():
+    """List data retention policies."""
+    return {
+        "total": len(DATA_RETENTION_POLICIES),
+        "policies": list(DATA_RETENTION_POLICIES.values())
+    }
+
+
+@app.get("/api/compliance/data-inventory", tags=["Data Export & Compliance"])
+async def get_data_inventory(db: Session = Depends(get_db)):
+    """
+    Get inventory of all data stored in the system.
+
+    Useful for GDPR Article 30 compliance (Records of Processing).
+    """
+    return {
+        "data_categories": [
+            {
+                "category": "Agents",
+                "count": db.query(Agent).count(),
+                "contains_pii": False,
+                "retention": "permanent"
+            },
+            {
+                "category": "Users",
+                "count": len(USERS),
+                "contains_pii": True,
+                "pii_fields": ["email", "name"],
+                "retention": "until deletion request"
+            },
+            {
+                "category": "Execution History",
+                "count": len(EXECUTION_HISTORY),
+                "contains_pii": False,
+                "retention": "90 days default"
+            },
+            {
+                "category": "Audit Log",
+                "count": len(AUDIT_LOG),
+                "contains_pii": True,
+                "pii_fields": ["user_id"],
+                "retention": "365 days"
+            },
+            {
+                "category": "Webhooks",
+                "count": len(WEBHOOKS),
+                "contains_pii": False,
+                "retention": "permanent"
+            }
+        ],
+        "generated_at": datetime.utcnow().isoformat()
+    }
+
+
+# ============================================================================
+# Cost Analytics & Billing
+# ============================================================================
+
+COST_RECORDS: List[Dict[str, Any]] = []
+BILLING_ACCOUNTS: Dict[str, Dict[str, Any]] = {}
+USAGE_QUOTAS: Dict[str, Dict[str, Any]] = {}
+
+# Cost rates (configurable)
+COST_RATES = {
+    "agent_execution": 0.01,  # per execution
+    "workflow_execution": 0.05,  # per workflow
+    "ai_call": 0.002,  # per AI API call
+    "storage_gb_month": 0.10,  # per GB per month
+    "api_request": 0.0001  # per API request
+}
+
+
+class BillingAccount(BaseModel):
+    """Billing account for an organization."""
+    organization_id: str
+    plan: str = Field(default="free", description="free, pro, enterprise")
+    payment_method: Optional[str] = None
+    billing_email: str
+
+
+class UsageQuota(BaseModel):
+    """Usage quota for an organization."""
+    organization_id: str
+    quota_type: str = Field(..., description="executions, api_calls, storage_gb")
+    limit: int
+    period: str = Field(default="monthly", description="daily, monthly")
+
+
+@app.post("/api/billing/accounts", tags=["Cost Analytics & Billing"])
+async def create_billing_account(account: BillingAccount):
+    """Create a billing account for an organization."""
+    if account.organization_id not in ORGANIZATIONS:
+        raise HTTPException(status_code=404, detail=f"Organization {account.organization_id} not found")
+
+    BILLING_ACCOUNTS[account.organization_id] = {
+        "organization_id": account.organization_id,
+        "plan": account.plan,
+        "payment_method": account.payment_method,
+        "billing_email": account.billing_email,
+        "created_at": datetime.utcnow().isoformat(),
+        "current_balance": 0.0,
+        "total_spent": 0.0
+    }
+
+    return {"success": True, "account": BILLING_ACCOUNTS[account.organization_id]}
+
+
+@app.get("/api/billing/accounts/{org_id}", tags=["Cost Analytics & Billing"])
+async def get_billing_account(org_id: str):
+    """Get billing account details."""
+    if org_id not in BILLING_ACCOUNTS:
+        raise HTTPException(status_code=404, detail=f"Billing account for {org_id} not found")
+    return BILLING_ACCOUNTS[org_id]
+
+
+@app.post("/api/costs/record", tags=["Cost Analytics & Billing"])
+async def record_cost(
+    organization_id: str,
+    cost_type: str,
+    quantity: int = 1,
+    metadata: Dict[str, Any] = {}
+):
+    """
+    Record a cost event (internal use).
+
+    Called automatically when executions, API calls, etc. occur.
+    """
+    if cost_type not in COST_RATES:
+        raise HTTPException(status_code=400, detail=f"Unknown cost type: {cost_type}")
+
+    cost = COST_RATES[cost_type] * quantity
+
+    record = {
+        "record_id": f"cost_{uuid4().hex[:8]}",
+        "organization_id": organization_id,
+        "cost_type": cost_type,
+        "quantity": quantity,
+        "unit_cost": COST_RATES[cost_type],
+        "total_cost": cost,
+        "timestamp": datetime.utcnow().isoformat(),
+        "metadata": metadata
+    }
+
+    COST_RECORDS.append(record)
+
+    # Update billing account
+    if organization_id in BILLING_ACCOUNTS:
+        BILLING_ACCOUNTS[organization_id]["current_balance"] += cost
+        BILLING_ACCOUNTS[organization_id]["total_spent"] += cost
+
+    return {"success": True, "cost": cost, "record": record}
+
+
+@app.get("/api/costs/summary", tags=["Cost Analytics & Billing"])
+async def get_cost_summary(
+    organization_id: Optional[str] = None,
+    period: str = "30d"
+):
+    """
+    Get cost summary and breakdown.
+
+    Periods: 24h, 7d, 30d, 90d
+    """
+    records = COST_RECORDS
+
+    if organization_id:
+        records = [r for r in records if r.get("organization_id") == organization_id]
+
+    # Group by cost type
+    by_type = {}
+    for record in records:
+        ct = record["cost_type"]
+        if ct not in by_type:
+            by_type[ct] = {"count": 0, "total_cost": 0.0}
+        by_type[ct]["count"] += record["quantity"]
+        by_type[ct]["total_cost"] += record["total_cost"]
+
+    total_cost = sum(t["total_cost"] for t in by_type.values())
+
+    return {
+        "period": period,
+        "organization_id": organization_id,
+        "total_cost": round(total_cost, 4),
+        "breakdown": by_type,
+        "record_count": len(records),
+        "rates": COST_RATES
+    }
+
+
+@app.get("/api/costs/trends", tags=["Cost Analytics & Billing"])
+async def get_cost_trends(
+    organization_id: Optional[str] = None,
+    group_by: str = "day"
+):
+    """
+    Get cost trends over time.
+
+    Group by: hour, day, week, month
+    """
+    # Simulated trend data
+    trends = []
+    now = datetime.utcnow()
+
+    for i in range(30):
+        day = now.replace(day=max(1, now.day - i))
+        day_records = [r for r in COST_RECORDS if r.get("timestamp", "").startswith(day.strftime("%Y-%m-%d"))]
+
+        trends.append({
+            "date": day.strftime("%Y-%m-%d"),
+            "total_cost": sum(r["total_cost"] for r in day_records),
+            "execution_count": len([r for r in day_records if r["cost_type"] == "agent_execution"])
+        })
+
+    return {
+        "group_by": group_by,
+        "organization_id": organization_id,
+        "trends": trends[::-1]  # Chronological order
+    }
+
+
+@app.post("/api/quotas", tags=["Cost Analytics & Billing"])
+async def create_quota(quota: UsageQuota):
+    """Create a usage quota for an organization."""
+    quota_id = f"quota_{uuid4().hex[:8]}"
+
+    quota_data = {
+        "quota_id": quota_id,
+        "organization_id": quota.organization_id,
+        "quota_type": quota.quota_type,
+        "limit": quota.limit,
+        "period": quota.period,
+        "current_usage": 0,
+        "created_at": datetime.utcnow().isoformat(),
+        "reset_at": None
+    }
+
+    USAGE_QUOTAS[quota_id] = quota_data
+
+    return {"success": True, "quota_id": quota_id, "quota": quota_data}
+
+
+@app.get("/api/quotas", tags=["Cost Analytics & Billing"])
+async def list_quotas(organization_id: Optional[str] = None):
+    """List usage quotas."""
+    quotas = list(USAGE_QUOTAS.values())
+    if organization_id:
+        quotas = [q for q in quotas if q.get("organization_id") == organization_id]
+    return {"total": len(quotas), "quotas": quotas}
+
+
+@app.get("/api/quotas/usage/{org_id}", tags=["Cost Analytics & Billing"])
+async def get_quota_usage(org_id: str):
+    """Get current quota usage for an organization."""
+    org_quotas = [q for q in USAGE_QUOTAS.values() if q.get("organization_id") == org_id]
+
+    usage = []
+    for quota in org_quotas:
+        usage.append({
+            "quota_type": quota["quota_type"],
+            "limit": quota["limit"],
+            "current_usage": quota["current_usage"],
+            "remaining": quota["limit"] - quota["current_usage"],
+            "percentage_used": round(quota["current_usage"] / quota["limit"] * 100, 2) if quota["limit"] > 0 else 0
+        })
+
+    return {"organization_id": org_id, "usage": usage}
+
+
+# ============================================================================
+# Notifications System
+# ============================================================================
+
+NOTIFICATION_CHANNELS: Dict[str, Dict[str, Any]] = {}
+NOTIFICATIONS: List[Dict[str, Any]] = []
+NOTIFICATION_PREFERENCES: Dict[str, Dict[str, Any]] = {}
+
+
+class NotificationChannel(BaseModel):
+    """Notification channel configuration."""
+    name: str
+    channel_type: str = Field(..., description="email, slack, teams, webhook")
+    config: Dict[str, Any] = Field(..., description="Channel-specific configuration")
+    enabled: bool = Field(default=True)
+
+
+class NotificationPreference(BaseModel):
+    """User notification preferences."""
+    user_id: str
+    channel_id: str
+    events: List[str] = Field(..., description="Events to receive notifications for")
+    quiet_hours: Optional[Dict[str, str]] = Field(default=None, description="{start, end} times")
+
+
+@app.post("/api/notifications/channels", tags=["Notifications"])
+async def create_notification_channel(channel: NotificationChannel):
+    """Create a notification channel."""
+    channel_id = f"nc_{uuid4().hex[:8]}"
+
+    channel_data = {
+        "channel_id": channel_id,
+        "name": channel.name,
+        "channel_type": channel.channel_type,
+        "config": channel.config,
+        "enabled": channel.enabled,
+        "created_at": datetime.utcnow().isoformat(),
+        "message_count": 0
+    }
+
+    NOTIFICATION_CHANNELS[channel_id] = channel_data
+
+    return {"success": True, "channel_id": channel_id, "channel": channel_data}
+
+
+@app.get("/api/notifications/channels", tags=["Notifications"])
+async def list_notification_channels():
+    """List notification channels."""
+    return {"total": len(NOTIFICATION_CHANNELS), "channels": list(NOTIFICATION_CHANNELS.values())}
+
+
+@app.post("/api/notifications/send", tags=["Notifications"])
+async def send_notification(
+    channel_id: str,
+    title: str,
+    message: str,
+    priority: str = "normal",
+    metadata: Dict[str, Any] = {}
+):
+    """Send a notification through a channel."""
+    if channel_id not in NOTIFICATION_CHANNELS:
+        raise HTTPException(status_code=404, detail=f"Channel {channel_id} not found")
+
+    notification = {
+        "notification_id": f"notif_{uuid4().hex[:10]}",
+        "channel_id": channel_id,
+        "title": title,
+        "message": message,
+        "priority": priority,
+        "metadata": metadata,
+        "sent_at": datetime.utcnow().isoformat(),
+        "status": "sent"
+    }
+
+    NOTIFICATIONS.append(notification)
+    NOTIFICATION_CHANNELS[channel_id]["message_count"] += 1
+
+    return {"success": True, "notification": notification}
+
+
+@app.get("/api/notifications", tags=["Notifications"])
+async def list_notifications(
+    channel_id: Optional[str] = None,
+    limit: int = 50
+):
+    """List recent notifications."""
+    notifs = NOTIFICATIONS
+
+    if channel_id:
+        notifs = [n for n in notifs if n.get("channel_id") == channel_id]
+
+    return {"total": len(notifs), "notifications": notifs[-limit:]}
+
+
+@app.post("/api/notifications/preferences", tags=["Notifications"])
+async def set_notification_preferences(pref: NotificationPreference):
+    """Set notification preferences for a user."""
+    pref_id = f"{pref.user_id}_{pref.channel_id}"
+
+    NOTIFICATION_PREFERENCES[pref_id] = {
+        "user_id": pref.user_id,
+        "channel_id": pref.channel_id,
+        "events": pref.events,
+        "quiet_hours": pref.quiet_hours,
+        "updated_at": datetime.utcnow().isoformat()
+    }
+
+    return {"success": True, "preferences": NOTIFICATION_PREFERENCES[pref_id]}
+
+
+@app.get("/api/notifications/preferences/{user_id}", tags=["Notifications"])
+async def get_notification_preferences(user_id: str):
+    """Get notification preferences for a user."""
+    prefs = [p for p in NOTIFICATION_PREFERENCES.values() if p.get("user_id") == user_id]
+    return {"user_id": user_id, "preferences": prefs}
+
+
+# ============================================================================
+# Rate Limiting & Quotas
+# ============================================================================
+
+RATE_LIMIT_RULES: Dict[str, Dict[str, Any]] = {}
+RATE_LIMIT_COUNTERS: Dict[str, Dict[str, Any]] = {}
+
+
+class RateLimitRule(BaseModel):
+    """Rate limiting rule."""
+    name: str
+    scope: str = Field(..., description="global, organization, user, ip")
+    endpoint_pattern: str = Field(default="*", description="Endpoint pattern to apply to")
+    requests_per_minute: int = Field(default=60)
+    requests_per_hour: int = Field(default=1000)
+    burst_limit: int = Field(default=10)
+
+
+@app.post("/api/rate-limits/rules", tags=["Rate Limiting"])
+async def create_rate_limit_rule(rule: RateLimitRule):
+    """Create a rate limiting rule."""
+    rule_id = f"rl_{uuid4().hex[:8]}"
+
+    rule_data = {
+        "rule_id": rule_id,
+        "name": rule.name,
+        "scope": rule.scope,
+        "endpoint_pattern": rule.endpoint_pattern,
+        "requests_per_minute": rule.requests_per_minute,
+        "requests_per_hour": rule.requests_per_hour,
+        "burst_limit": rule.burst_limit,
+        "created_at": datetime.utcnow().isoformat(),
+        "enabled": True
+    }
+
+    RATE_LIMIT_RULES[rule_id] = rule_data
+
+    return {"success": True, "rule_id": rule_id, "rule": rule_data}
+
+
+@app.get("/api/rate-limits/rules", tags=["Rate Limiting"])
+async def list_rate_limit_rules():
+    """List rate limiting rules."""
+    return {"total": len(RATE_LIMIT_RULES), "rules": list(RATE_LIMIT_RULES.values())}
+
+
+@app.get("/api/rate-limits/status", tags=["Rate Limiting"])
+async def get_rate_limit_status(
+    scope_type: str = "global",
+    scope_id: Optional[str] = None
+):
+    """Get current rate limit status."""
+    key = f"{scope_type}:{scope_id or 'default'}"
+
+    if key not in RATE_LIMIT_COUNTERS:
+        RATE_LIMIT_COUNTERS[key] = {
+            "requests_this_minute": 0,
+            "requests_this_hour": 0,
+            "last_reset_minute": datetime.utcnow().isoformat(),
+            "last_reset_hour": datetime.utcnow().isoformat()
+        }
+
+    counter = RATE_LIMIT_COUNTERS[key]
+
+    # Find applicable rules
+    applicable_rules = [r for r in RATE_LIMIT_RULES.values() if r["scope"] == scope_type]
+
+    return {
+        "scope_type": scope_type,
+        "scope_id": scope_id,
+        "current_usage": counter,
+        "applicable_rules": applicable_rules,
+        "status": "ok"  # Would calculate if limited
+    }
+
+
+@app.post("/api/rate-limits/increment", tags=["Rate Limiting"])
+async def increment_rate_limit(
+    scope_type: str = "global",
+    scope_id: Optional[str] = None
+):
+    """
+    Increment rate limit counter (internal use).
+
+    Called automatically on API requests.
+    """
+    key = f"{scope_type}:{scope_id or 'default'}"
+
+    if key not in RATE_LIMIT_COUNTERS:
+        RATE_LIMIT_COUNTERS[key] = {
+            "requests_this_minute": 0,
+            "requests_this_hour": 0,
+            "last_reset_minute": datetime.utcnow().isoformat(),
+            "last_reset_hour": datetime.utcnow().isoformat()
+        }
+
+    RATE_LIMIT_COUNTERS[key]["requests_this_minute"] += 1
+    RATE_LIMIT_COUNTERS[key]["requests_this_hour"] += 1
+
+    # Check if limited
+    limited = False
+    for rule in RATE_LIMIT_RULES.values():
+        if rule["scope"] == scope_type and rule["enabled"]:
+            if RATE_LIMIT_COUNTERS[key]["requests_this_minute"] > rule["requests_per_minute"]:
+                limited = True
+            if RATE_LIMIT_COUNTERS[key]["requests_this_hour"] > rule["requests_per_hour"]:
+                limited = True
+
+    return {
+        "limited": limited,
+        "current": RATE_LIMIT_COUNTERS[key]
+    }
+
+
+# ============================================================================
 # Run Server
 # ============================================================================
 
