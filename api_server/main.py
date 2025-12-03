@@ -20324,6 +20324,1396 @@ def get_quota_summary(entity_type: Optional[str] = None):
 
 
 # ============================================================================
+# Real-time Streaming & Events
+# ============================================================================
+
+STREAM_CONNECTIONS: Dict[str, Dict[str, Any]] = {}
+EVENT_STREAMS: Dict[str, List[Dict[str, Any]]] = {}
+STREAM_SUBSCRIPTIONS: Dict[str, List[Dict[str, Any]]] = {}
+EVENT_TYPES = ["agent.started", "agent.completed", "agent.failed", "workflow.started",
+               "workflow.completed", "workflow.step", "message.received", "alert.triggered"]
+
+
+@app.post("/streams/connect")
+def create_stream_connection(
+    user_id: str,
+    client_id: str,
+    subscriptions: Optional[List[str]] = None
+):
+    """Create a streaming connection"""
+    connection_id = f"stream_{uuid.uuid4().hex[:12]}"
+    connection = {
+        "id": connection_id,
+        "user_id": user_id,
+        "client_id": client_id,
+        "subscriptions": subscriptions or ["*"],
+        "status": "connected",
+        "connected_at": datetime.utcnow().isoformat(),
+        "last_heartbeat": datetime.utcnow().isoformat(),
+        "messages_sent": 0
+    }
+    STREAM_CONNECTIONS[connection_id] = connection
+    return connection
+
+
+@app.get("/streams/connections")
+def list_stream_connections(user_id: Optional[str] = None):
+    """List active stream connections"""
+    connections = list(STREAM_CONNECTIONS.values())
+    if user_id:
+        connections = [c for c in connections if c["user_id"] == user_id]
+    return {"connections": connections, "total": len(connections)}
+
+
+@app.delete("/streams/connections/{connection_id}")
+def disconnect_stream(connection_id: str):
+    """Disconnect a stream"""
+    if connection_id not in STREAM_CONNECTIONS:
+        raise HTTPException(status_code=404, detail="Connection not found")
+    STREAM_CONNECTIONS[connection_id]["status"] = "disconnected"
+    del STREAM_CONNECTIONS[connection_id]
+    return {"disconnected": True}
+
+
+@app.post("/streams/events")
+def publish_event(
+    event_type: str,
+    payload: Dict[str, Any],
+    target_users: Optional[List[str]] = None,
+    metadata: Optional[Dict[str, Any]] = None
+):
+    """Publish an event to streams"""
+    event = {
+        "id": f"evt_{uuid.uuid4().hex[:12]}",
+        "type": event_type,
+        "payload": payload,
+        "target_users": target_users,
+        "metadata": metadata or {},
+        "published_at": datetime.utcnow().isoformat()
+    }
+
+    # Add to event stream
+    if event_type not in EVENT_STREAMS:
+        EVENT_STREAMS[event_type] = []
+    EVENT_STREAMS[event_type].append(event)
+
+    # Count deliveries
+    delivered = 0
+    for conn in STREAM_CONNECTIONS.values():
+        if conn["status"] == "connected":
+            if "*" in conn["subscriptions"] or event_type in conn["subscriptions"]:
+                if target_users is None or conn["user_id"] in target_users:
+                    conn["messages_sent"] += 1
+                    delivered += 1
+
+    return {"event": event, "delivered_to": delivered}
+
+
+@app.get("/streams/events")
+def get_events(
+    event_type: Optional[str] = None,
+    since: Optional[str] = None,
+    limit: int = 100
+):
+    """Get recent events"""
+    events = []
+    if event_type:
+        events = EVENT_STREAMS.get(event_type, [])
+    else:
+        for evt_list in EVENT_STREAMS.values():
+            events.extend(evt_list)
+
+    if since:
+        events = [e for e in events if e["published_at"] > since]
+
+    events.sort(key=lambda x: x["published_at"], reverse=True)
+    return {"events": events[:limit], "total": len(events)}
+
+
+@app.post("/streams/subscriptions")
+def create_subscription(
+    connection_id: str,
+    event_types: List[str],
+    filters: Optional[Dict[str, Any]] = None
+):
+    """Add subscription to a connection"""
+    if connection_id not in STREAM_CONNECTIONS:
+        raise HTTPException(status_code=404, detail="Connection not found")
+
+    subscription = {
+        "id": f"sub_{uuid.uuid4().hex[:8]}",
+        "connection_id": connection_id,
+        "event_types": event_types,
+        "filters": filters or {},
+        "created_at": datetime.utcnow().isoformat()
+    }
+
+    if connection_id not in STREAM_SUBSCRIPTIONS:
+        STREAM_SUBSCRIPTIONS[connection_id] = []
+    STREAM_SUBSCRIPTIONS[connection_id].append(subscription)
+
+    # Update connection subscriptions
+    STREAM_CONNECTIONS[connection_id]["subscriptions"].extend(event_types)
+
+    return subscription
+
+
+@app.post("/streams/heartbeat/{connection_id}")
+def stream_heartbeat(connection_id: str):
+    """Send heartbeat for a stream connection"""
+    if connection_id not in STREAM_CONNECTIONS:
+        raise HTTPException(status_code=404, detail="Connection not found")
+
+    STREAM_CONNECTIONS[connection_id]["last_heartbeat"] = datetime.utcnow().isoformat()
+    return {"status": "ok", "connection_id": connection_id}
+
+
+@app.get("/streams/event-types")
+def list_event_types():
+    """List available event types"""
+    return {"event_types": EVENT_TYPES}
+
+
+# ============================================================================
+# Semantic Search
+# ============================================================================
+
+SEARCH_INDEXES: Dict[str, Dict[str, Any]] = {}
+SEARCH_DOCUMENTS: Dict[str, List[Dict[str, Any]]] = {}
+SEARCH_QUERIES: List[Dict[str, Any]] = []
+
+
+@app.post("/search/indexes")
+def create_search_index(
+    name: str,
+    resource_types: List[str],
+    fields: List[Dict[str, Any]],
+    config: Optional[Dict[str, Any]] = None
+):
+    """Create a semantic search index"""
+    index_id = f"idx_{uuid.uuid4().hex[:12]}"
+    index = {
+        "id": index_id,
+        "name": name,
+        "resource_types": resource_types,
+        "fields": fields,
+        "config": config or {"embedding_model": "default", "similarity": "cosine"},
+        "document_count": 0,
+        "status": "active",
+        "created_at": datetime.utcnow().isoformat(),
+        "last_updated": datetime.utcnow().isoformat()
+    }
+    SEARCH_INDEXES[index_id] = index
+    SEARCH_DOCUMENTS[index_id] = []
+    return index
+
+
+@app.get("/search/indexes")
+def list_search_indexes():
+    """List search indexes"""
+    return {"indexes": list(SEARCH_INDEXES.values()), "total": len(SEARCH_INDEXES)}
+
+
+@app.post("/search/indexes/{index_id}/documents")
+def index_document(
+    index_id: str,
+    document_id: str,
+    content: Dict[str, Any],
+    metadata: Optional[Dict[str, Any]] = None
+):
+    """Index a document for search"""
+    if index_id not in SEARCH_INDEXES:
+        raise HTTPException(status_code=404, detail="Index not found")
+
+    doc = {
+        "id": document_id,
+        "content": content,
+        "metadata": metadata or {},
+        "embedding": [random.random() for _ in range(384)],  # Simulated embedding
+        "indexed_at": datetime.utcnow().isoformat()
+    }
+    SEARCH_DOCUMENTS[index_id].append(doc)
+    SEARCH_INDEXES[index_id]["document_count"] += 1
+    SEARCH_INDEXES[index_id]["last_updated"] = datetime.utcnow().isoformat()
+
+    return {"indexed": True, "document_id": document_id}
+
+
+@app.post("/search/query")
+def semantic_search(
+    query: str,
+    index_ids: Optional[List[str]] = None,
+    filters: Optional[Dict[str, Any]] = None,
+    limit: int = 20,
+    min_score: float = 0.5
+):
+    """Perform semantic search"""
+    results = []
+    search_indexes = index_ids or list(SEARCH_INDEXES.keys())
+
+    for idx_id in search_indexes:
+        if idx_id not in SEARCH_DOCUMENTS:
+            continue
+        for doc in SEARCH_DOCUMENTS[idx_id]:
+            # Simulate relevance scoring
+            score = random.uniform(0.4, 1.0)
+            if query.lower() in str(doc["content"]).lower():
+                score += 0.2
+
+            if score >= min_score:
+                results.append({
+                    "document_id": doc["id"],
+                    "index_id": idx_id,
+                    "score": min(1.0, score),
+                    "content": doc["content"],
+                    "metadata": doc["metadata"],
+                    "highlights": [f"...{query}..."]
+                })
+
+    results.sort(key=lambda x: x["score"], reverse=True)
+
+    # Log query
+    SEARCH_QUERIES.append({
+        "query": query,
+        "results_count": len(results),
+        "timestamp": datetime.utcnow().isoformat()
+    })
+
+    return {
+        "results": results[:limit],
+        "total": len(results),
+        "query": query,
+        "facets": {"resource_type": {}, "index": {}}
+    }
+
+
+@app.post("/search/natural")
+def natural_language_search(
+    question: str,
+    context: Optional[str] = None,
+    include_sources: bool = True
+):
+    """Natural language search with AI understanding"""
+    # Simulate NL understanding
+    intent = "find" if "find" in question.lower() or "where" in question.lower() else "explain"
+    entities = []
+    if "agent" in question.lower():
+        entities.append({"type": "resource", "value": "agent"})
+    if "workflow" in question.lower():
+        entities.append({"type": "resource", "value": "workflow"})
+
+    return {
+        "question": question,
+        "intent": intent,
+        "entities": entities,
+        "answer": f"Based on your question about '{question}', here are the relevant results...",
+        "confidence": random.uniform(0.75, 0.95),
+        "sources": [
+            {"type": "agent", "id": "agent_001", "relevance": 0.9},
+            {"type": "workflow", "id": "wf_001", "relevance": 0.85}
+        ] if include_sources else [],
+        "follow_up_questions": [
+            "Would you like more details about this?",
+            "Should I filter by a specific category?"
+        ]
+    }
+
+
+@app.get("/search/suggestions")
+def get_search_suggestions(query: str, limit: int = 10):
+    """Get search suggestions/autocomplete"""
+    suggestions = [
+        f"{query} agents",
+        f"{query} workflows",
+        f"{query} templates",
+        f"how to {query}",
+        f"{query} examples"
+    ]
+    return {"suggestions": suggestions[:limit], "query": query}
+
+
+@app.get("/search/analytics")
+def get_search_analytics(time_period: str = "7d"):
+    """Get search analytics"""
+    return {
+        "total_queries": len(SEARCH_QUERIES),
+        "unique_queries": len(set(q["query"] for q in SEARCH_QUERIES)),
+        "avg_results": sum(q["results_count"] for q in SEARCH_QUERIES) / max(1, len(SEARCH_QUERIES)),
+        "top_queries": ["agent", "workflow", "template", "api", "help"],
+        "zero_result_queries": [],
+        "time_period": time_period
+    }
+
+
+# ============================================================================
+# Knowledge Graphs
+# ============================================================================
+
+GRAPH_NODES: Dict[str, Dict[str, Any]] = {}
+GRAPH_EDGES: Dict[str, Dict[str, Any]] = {}
+GRAPH_SCHEMAS: Dict[str, Dict[str, Any]] = {}
+
+
+@app.post("/graph/nodes")
+def create_graph_node(
+    node_type: str,
+    properties: Dict[str, Any],
+    labels: Optional[List[str]] = None
+):
+    """Create a knowledge graph node"""
+    node_id = f"node_{uuid.uuid4().hex[:12]}"
+    node = {
+        "id": node_id,
+        "type": node_type,
+        "properties": properties,
+        "labels": labels or [],
+        "created_at": datetime.utcnow().isoformat()
+    }
+    GRAPH_NODES[node_id] = node
+    return node
+
+
+@app.get("/graph/nodes")
+def list_graph_nodes(node_type: Optional[str] = None, label: Optional[str] = None):
+    """List graph nodes"""
+    nodes = list(GRAPH_NODES.values())
+    if node_type:
+        nodes = [n for n in nodes if n["type"] == node_type]
+    if label:
+        nodes = [n for n in nodes if label in n.get("labels", [])]
+    return {"nodes": nodes, "total": len(nodes)}
+
+
+@app.get("/graph/nodes/{node_id}")
+def get_graph_node(node_id: str):
+    """Get a graph node"""
+    if node_id not in GRAPH_NODES:
+        raise HTTPException(status_code=404, detail="Node not found")
+    return GRAPH_NODES[node_id]
+
+
+@app.post("/graph/edges")
+def create_graph_edge(
+    from_node: str,
+    to_node: str,
+    relationship: str,
+    properties: Optional[Dict[str, Any]] = None
+):
+    """Create an edge between nodes"""
+    if from_node not in GRAPH_NODES or to_node not in GRAPH_NODES:
+        raise HTTPException(status_code=404, detail="Node not found")
+
+    edge_id = f"edge_{uuid.uuid4().hex[:12]}"
+    edge = {
+        "id": edge_id,
+        "from_node": from_node,
+        "to_node": to_node,
+        "relationship": relationship,
+        "properties": properties or {},
+        "created_at": datetime.utcnow().isoformat()
+    }
+    GRAPH_EDGES[edge_id] = edge
+    return edge
+
+
+@app.get("/graph/edges")
+def list_graph_edges(relationship: Optional[str] = None, node_id: Optional[str] = None):
+    """List graph edges"""
+    edges = list(GRAPH_EDGES.values())
+    if relationship:
+        edges = [e for e in edges if e["relationship"] == relationship]
+    if node_id:
+        edges = [e for e in edges if e["from_node"] == node_id or e["to_node"] == node_id]
+    return {"edges": edges, "total": len(edges)}
+
+
+@app.get("/graph/nodes/{node_id}/neighbors")
+def get_node_neighbors(node_id: str, depth: int = 1, relationship: Optional[str] = None):
+    """Get neighboring nodes"""
+    if node_id not in GRAPH_NODES:
+        raise HTTPException(status_code=404, detail="Node not found")
+
+    neighbors = []
+    for edge in GRAPH_EDGES.values():
+        if relationship and edge["relationship"] != relationship:
+            continue
+        if edge["from_node"] == node_id:
+            neighbors.append({
+                "node": GRAPH_NODES.get(edge["to_node"]),
+                "relationship": edge["relationship"],
+                "direction": "outgoing"
+            })
+        elif edge["to_node"] == node_id:
+            neighbors.append({
+                "node": GRAPH_NODES.get(edge["from_node"]),
+                "relationship": edge["relationship"],
+                "direction": "incoming"
+            })
+
+    return {"node_id": node_id, "neighbors": neighbors, "depth": depth}
+
+
+@app.post("/graph/query")
+def query_graph(
+    pattern: Dict[str, Any],
+    limit: int = 100
+):
+    """Query the knowledge graph"""
+    # Simulate graph query execution
+    results = []
+    node_type = pattern.get("node_type")
+    relationship = pattern.get("relationship")
+
+    for node in GRAPH_NODES.values():
+        if node_type and node["type"] != node_type:
+            continue
+        match = {"node": node, "edges": []}
+        for edge in GRAPH_EDGES.values():
+            if relationship and edge["relationship"] != relationship:
+                continue
+            if edge["from_node"] == node["id"] or edge["to_node"] == node["id"]:
+                match["edges"].append(edge)
+        if match["edges"] or not relationship:
+            results.append(match)
+
+    return {"results": results[:limit], "total": len(results), "pattern": pattern}
+
+
+@app.post("/graph/paths")
+def find_paths(from_node: str, to_node: str, max_depth: int = 5):
+    """Find paths between two nodes"""
+    if from_node not in GRAPH_NODES or to_node not in GRAPH_NODES:
+        raise HTTPException(status_code=404, detail="Node not found")
+
+    # Simulate path finding
+    paths = []
+    if from_node != to_node:
+        # Check for direct connection
+        for edge in GRAPH_EDGES.values():
+            if edge["from_node"] == from_node and edge["to_node"] == to_node:
+                paths.append({
+                    "nodes": [from_node, to_node],
+                    "edges": [edge["id"]],
+                    "length": 1
+                })
+
+    return {
+        "from_node": from_node,
+        "to_node": to_node,
+        "paths": paths,
+        "shortest_path_length": paths[0]["length"] if paths else None
+    }
+
+
+@app.get("/graph/statistics")
+def get_graph_statistics():
+    """Get knowledge graph statistics"""
+    relationship_counts = {}
+    for edge in GRAPH_EDGES.values():
+        rel = edge["relationship"]
+        relationship_counts[rel] = relationship_counts.get(rel, 0) + 1
+
+    node_type_counts = {}
+    for node in GRAPH_NODES.values():
+        nt = node["type"]
+        node_type_counts[nt] = node_type_counts.get(nt, 0) + 1
+
+    return {
+        "total_nodes": len(GRAPH_NODES),
+        "total_edges": len(GRAPH_EDGES),
+        "node_types": node_type_counts,
+        "relationship_types": relationship_counts,
+        "avg_connections_per_node": len(GRAPH_EDGES) * 2 / max(1, len(GRAPH_NODES))
+    }
+
+
+# ============================================================================
+# Agent Personas & Behaviors
+# ============================================================================
+
+AGENT_PERSONAS: Dict[str, Dict[str, Any]] = {}
+BEHAVIOR_PROFILES: Dict[str, Dict[str, Any]] = {}
+PERSONA_TEMPLATES: Dict[str, Dict[str, Any]] = {}
+
+
+@app.post("/personas")
+def create_persona(
+    name: str,
+    description: str,
+    personality_traits: Dict[str, float],
+    communication_style: Dict[str, Any],
+    knowledge_domains: Optional[List[str]] = None,
+    constraints: Optional[Dict[str, Any]] = None
+):
+    """Create an agent persona"""
+    persona_id = f"persona_{uuid.uuid4().hex[:12]}"
+    persona = {
+        "id": persona_id,
+        "name": name,
+        "description": description,
+        "personality_traits": personality_traits,  # e.g., {"friendliness": 0.8, "formality": 0.6}
+        "communication_style": communication_style,  # e.g., {"tone": "professional", "verbosity": "concise"}
+        "knowledge_domains": knowledge_domains or [],
+        "constraints": constraints or {},
+        "status": "active",
+        "created_at": datetime.utcnow().isoformat()
+    }
+    AGENT_PERSONAS[persona_id] = persona
+    return persona
+
+
+@app.get("/personas")
+def list_personas(domain: Optional[str] = None):
+    """List agent personas"""
+    personas = list(AGENT_PERSONAS.values())
+    if domain:
+        personas = [p for p in personas if domain in p.get("knowledge_domains", [])]
+    return {"personas": personas, "total": len(personas)}
+
+
+@app.get("/personas/{persona_id}")
+def get_persona(persona_id: str):
+    """Get persona details"""
+    if persona_id not in AGENT_PERSONAS:
+        raise HTTPException(status_code=404, detail="Persona not found")
+    return AGENT_PERSONAS[persona_id]
+
+
+@app.put("/personas/{persona_id}")
+def update_persona(
+    persona_id: str,
+    personality_traits: Optional[Dict[str, float]] = None,
+    communication_style: Optional[Dict[str, Any]] = None
+):
+    """Update a persona"""
+    if persona_id not in AGENT_PERSONAS:
+        raise HTTPException(status_code=404, detail="Persona not found")
+
+    persona = AGENT_PERSONAS[persona_id]
+    if personality_traits:
+        persona["personality_traits"].update(personality_traits)
+    if communication_style:
+        persona["communication_style"].update(communication_style)
+    persona["updated_at"] = datetime.utcnow().isoformat()
+
+    return persona
+
+
+@app.post("/personas/{persona_id}/assign/{agent_id}")
+def assign_persona_to_agent(persona_id: str, agent_id: str):
+    """Assign a persona to an agent"""
+    if persona_id not in AGENT_PERSONAS:
+        raise HTTPException(status_code=404, detail="Persona not found")
+
+    return {
+        "assigned": True,
+        "persona_id": persona_id,
+        "agent_id": agent_id,
+        "assigned_at": datetime.utcnow().isoformat()
+    }
+
+
+@app.post("/behaviors")
+def create_behavior_profile(
+    name: str,
+    triggers: List[Dict[str, Any]],
+    responses: List[Dict[str, Any]],
+    conditions: Optional[Dict[str, Any]] = None
+):
+    """Create a behavior profile"""
+    behavior_id = f"behavior_{uuid.uuid4().hex[:12]}"
+    behavior = {
+        "id": behavior_id,
+        "name": name,
+        "triggers": triggers,  # e.g., [{"type": "keyword", "value": "help"}]
+        "responses": responses,  # e.g., [{"type": "template", "content": "How can I help?"}]
+        "conditions": conditions or {},
+        "priority": 0,
+        "enabled": True,
+        "created_at": datetime.utcnow().isoformat()
+    }
+    BEHAVIOR_PROFILES[behavior_id] = behavior
+    return behavior
+
+
+@app.get("/behaviors")
+def list_behavior_profiles():
+    """List behavior profiles"""
+    return {"behaviors": list(BEHAVIOR_PROFILES.values()), "total": len(BEHAVIOR_PROFILES)}
+
+
+@app.post("/behaviors/{behavior_id}/test")
+def test_behavior(behavior_id: str, input_text: str, context: Optional[Dict[str, Any]] = None):
+    """Test a behavior profile"""
+    if behavior_id not in BEHAVIOR_PROFILES:
+        raise HTTPException(status_code=404, detail="Behavior not found")
+
+    behavior = BEHAVIOR_PROFILES[behavior_id]
+
+    # Check if any trigger matches
+    triggered = False
+    for trigger in behavior["triggers"]:
+        if trigger["type"] == "keyword" and trigger["value"].lower() in input_text.lower():
+            triggered = True
+            break
+
+    response = None
+    if triggered and behavior["responses"]:
+        response = behavior["responses"][0]
+
+    return {
+        "behavior_id": behavior_id,
+        "input": input_text,
+        "triggered": triggered,
+        "response": response,
+        "context": context
+    }
+
+
+@app.get("/personas/traits")
+def list_personality_traits():
+    """List available personality traits"""
+    return {
+        "traits": [
+            {"id": "friendliness", "name": "Friendliness", "range": [0, 1]},
+            {"id": "formality", "name": "Formality", "range": [0, 1]},
+            {"id": "enthusiasm", "name": "Enthusiasm", "range": [0, 1]},
+            {"id": "patience", "name": "Patience", "range": [0, 1]},
+            {"id": "humor", "name": "Humor", "range": [0, 1]},
+            {"id": "empathy", "name": "Empathy", "range": [0, 1]},
+            {"id": "assertiveness", "name": "Assertiveness", "range": [0, 1]},
+            {"id": "creativity", "name": "Creativity", "range": [0, 1]}
+        ]
+    }
+
+
+# ============================================================================
+# Conversation Designer
+# ============================================================================
+
+CONVERSATION_FLOWS: Dict[str, Dict[str, Any]] = {}
+FLOW_NODES: Dict[str, List[Dict[str, Any]]] = {}
+INTENT_DEFINITIONS: Dict[str, Dict[str, Any]] = {}
+RESPONSE_TEMPLATES: Dict[str, Dict[str, Any]] = {}
+
+
+@app.post("/conversations/flows")
+def create_conversation_flow(
+    name: str,
+    description: str,
+    start_node: str,
+    nodes: List[Dict[str, Any]],
+    transitions: List[Dict[str, Any]]
+):
+    """Create a conversation flow"""
+    flow_id = f"flow_{uuid.uuid4().hex[:12]}"
+    flow = {
+        "id": flow_id,
+        "name": name,
+        "description": description,
+        "start_node": start_node,
+        "nodes": nodes,
+        "transitions": transitions,
+        "status": "draft",
+        "version": 1,
+        "created_at": datetime.utcnow().isoformat()
+    }
+    CONVERSATION_FLOWS[flow_id] = flow
+    FLOW_NODES[flow_id] = nodes
+    return flow
+
+
+@app.get("/conversations/flows")
+def list_conversation_flows(status: Optional[str] = None):
+    """List conversation flows"""
+    flows = list(CONVERSATION_FLOWS.values())
+    if status:
+        flows = [f for f in flows if f["status"] == status]
+    return {"flows": flows, "total": len(flows)}
+
+
+@app.get("/conversations/flows/{flow_id}")
+def get_conversation_flow(flow_id: str):
+    """Get conversation flow details"""
+    if flow_id not in CONVERSATION_FLOWS:
+        raise HTTPException(status_code=404, detail="Flow not found")
+    return CONVERSATION_FLOWS[flow_id]
+
+
+@app.post("/conversations/flows/{flow_id}/publish")
+def publish_conversation_flow(flow_id: str):
+    """Publish a conversation flow"""
+    if flow_id not in CONVERSATION_FLOWS:
+        raise HTTPException(status_code=404, detail="Flow not found")
+
+    flow = CONVERSATION_FLOWS[flow_id]
+    flow["status"] = "published"
+    flow["published_at"] = datetime.utcnow().isoformat()
+    return flow
+
+
+@app.post("/conversations/flows/{flow_id}/simulate")
+def simulate_conversation(flow_id: str, inputs: List[str]):
+    """Simulate a conversation through a flow"""
+    if flow_id not in CONVERSATION_FLOWS:
+        raise HTTPException(status_code=404, detail="Flow not found")
+
+    flow = CONVERSATION_FLOWS[flow_id]
+    simulation = []
+    current_node = flow["start_node"]
+
+    for user_input in inputs:
+        # Find current node
+        node = next((n for n in flow["nodes"] if n.get("id") == current_node), None)
+        if not node:
+            break
+
+        # Add to simulation
+        step = {
+            "node_id": current_node,
+            "user_input": user_input,
+            "bot_response": node.get("response", "Default response"),
+            "detected_intent": "general"
+        }
+        simulation.append(step)
+
+        # Find next transition
+        for trans in flow["transitions"]:
+            if trans["from"] == current_node:
+                current_node = trans["to"]
+                break
+
+    return {"flow_id": flow_id, "simulation": simulation, "steps": len(simulation)}
+
+
+@app.post("/conversations/intents")
+def create_intent(
+    name: str,
+    examples: List[str],
+    description: Optional[str] = None,
+    entities: Optional[List[str]] = None
+):
+    """Create an intent definition"""
+    intent_id = f"intent_{uuid.uuid4().hex[:12]}"
+    intent = {
+        "id": intent_id,
+        "name": name,
+        "description": description,
+        "examples": examples,
+        "entities": entities or [],
+        "training_count": len(examples),
+        "created_at": datetime.utcnow().isoformat()
+    }
+    INTENT_DEFINITIONS[intent_id] = intent
+    return intent
+
+
+@app.get("/conversations/intents")
+def list_intents():
+    """List intent definitions"""
+    return {"intents": list(INTENT_DEFINITIONS.values()), "total": len(INTENT_DEFINITIONS)}
+
+
+@app.post("/conversations/intents/detect")
+def detect_intent(text: str, threshold: float = 0.5):
+    """Detect intent from text"""
+    detected = []
+    for intent in INTENT_DEFINITIONS.values():
+        # Simple matching simulation
+        score = 0.0
+        for example in intent["examples"]:
+            if any(word in text.lower() for word in example.lower().split()):
+                score = max(score, random.uniform(0.6, 0.95))
+
+        if score >= threshold:
+            detected.append({
+                "intent": intent["name"],
+                "confidence": score,
+                "entities": []
+            })
+
+    detected.sort(key=lambda x: x["confidence"], reverse=True)
+    return {"text": text, "intents": detected, "top_intent": detected[0] if detected else None}
+
+
+@app.post("/conversations/templates")
+def create_response_template(
+    name: str,
+    template: str,
+    variables: Optional[List[str]] = None,
+    variants: Optional[List[str]] = None
+):
+    """Create a response template"""
+    template_id = f"tpl_{uuid.uuid4().hex[:12]}"
+    tpl = {
+        "id": template_id,
+        "name": name,
+        "template": template,
+        "variables": variables or [],
+        "variants": variants or [],
+        "usage_count": 0,
+        "created_at": datetime.utcnow().isoformat()
+    }
+    RESPONSE_TEMPLATES[template_id] = tpl
+    return tpl
+
+
+@app.get("/conversations/templates")
+def list_response_templates():
+    """List response templates"""
+    return {"templates": list(RESPONSE_TEMPLATES.values()), "total": len(RESPONSE_TEMPLATES)}
+
+
+# ============================================================================
+# AI Safety & Content Moderation
+# ============================================================================
+
+MODERATION_RULES: Dict[str, Dict[str, Any]] = {}
+MODERATION_LOGS: List[Dict[str, Any]] = []
+SAFETY_POLICIES: Dict[str, Dict[str, Any]] = {}
+BLOCKED_PATTERNS: List[Dict[str, Any]] = []
+
+
+@app.post("/safety/moderate")
+def moderate_content(
+    content: str,
+    content_type: str = "text",
+    context: Optional[Dict[str, Any]] = None
+):
+    """Moderate content for safety"""
+    # Simulate moderation checks
+    checks = {
+        "toxicity": random.uniform(0, 0.3),
+        "hate_speech": random.uniform(0, 0.1),
+        "harassment": random.uniform(0, 0.15),
+        "violence": random.uniform(0, 0.1),
+        "sexual_content": random.uniform(0, 0.05),
+        "self_harm": random.uniform(0, 0.05),
+        "pii_detected": random.choice([True, False]),
+        "profanity": random.uniform(0, 0.2)
+    }
+
+    # Determine if content passes
+    max_score = max(checks["toxicity"], checks["hate_speech"], checks["harassment"])
+    passed = max_score < 0.5
+
+    result = {
+        "id": f"mod_{uuid.uuid4().hex[:12]}",
+        "content_type": content_type,
+        "passed": passed,
+        "scores": checks,
+        "flagged_categories": [k for k, v in checks.items() if isinstance(v, float) and v > 0.3],
+        "action": "allow" if passed else "block",
+        "timestamp": datetime.utcnow().isoformat()
+    }
+
+    MODERATION_LOGS.append(result)
+    return result
+
+
+@app.post("/safety/rules")
+def create_moderation_rule(
+    name: str,
+    rule_type: str,
+    pattern: str,
+    action: str = "flag",
+    severity: str = "medium"
+):
+    """Create a moderation rule"""
+    rule_id = f"rule_{uuid.uuid4().hex[:12]}"
+    rule = {
+        "id": rule_id,
+        "name": name,
+        "rule_type": rule_type,  # regex, keyword, ml_category
+        "pattern": pattern,
+        "action": action,  # flag, block, warn
+        "severity": severity,
+        "enabled": True,
+        "trigger_count": 0,
+        "created_at": datetime.utcnow().isoformat()
+    }
+    MODERATION_RULES[rule_id] = rule
+    return rule
+
+
+@app.get("/safety/rules")
+def list_moderation_rules():
+    """List moderation rules"""
+    return {"rules": list(MODERATION_RULES.values()), "total": len(MODERATION_RULES)}
+
+
+@app.post("/safety/bias/detect")
+def detect_bias(
+    content: str,
+    categories: Optional[List[str]] = None
+):
+    """Detect potential bias in content"""
+    bias_categories = categories or ["gender", "race", "age", "religion", "political"]
+
+    results = {}
+    for category in bias_categories:
+        results[category] = {
+            "detected": random.choice([True, False]),
+            "confidence": random.uniform(0.5, 0.95) if random.random() > 0.7 else 0.0,
+            "examples": []
+        }
+
+    overall_bias = any(r["detected"] for r in results.values())
+
+    return {
+        "content_analyzed": True,
+        "overall_bias_detected": overall_bias,
+        "bias_score": random.uniform(0, 0.3) if not overall_bias else random.uniform(0.4, 0.8),
+        "categories": results,
+        "recommendations": ["Consider neutral language", "Review for inclusive terms"] if overall_bias else []
+    }
+
+
+@app.post("/safety/policies")
+def create_safety_policy(
+    name: str,
+    description: str,
+    rules: List[Dict[str, Any]],
+    enforcement: str = "strict"
+):
+    """Create a safety policy"""
+    policy_id = f"policy_{uuid.uuid4().hex[:12]}"
+    policy = {
+        "id": policy_id,
+        "name": name,
+        "description": description,
+        "rules": rules,
+        "enforcement": enforcement,  # strict, moderate, permissive
+        "status": "active",
+        "created_at": datetime.utcnow().isoformat()
+    }
+    SAFETY_POLICIES[policy_id] = policy
+    return policy
+
+
+@app.get("/safety/policies")
+def list_safety_policies():
+    """List safety policies"""
+    return {"policies": list(SAFETY_POLICIES.values()), "total": len(SAFETY_POLICIES)}
+
+
+@app.get("/safety/logs")
+def get_moderation_logs(action: Optional[str] = None, limit: int = 100):
+    """Get moderation logs"""
+    logs = MODERATION_LOGS
+    if action:
+        logs = [l for l in logs if l["action"] == action]
+    return {"logs": logs[-limit:], "total": len(logs)}
+
+
+@app.get("/safety/statistics")
+def get_safety_statistics(time_period: str = "7d"):
+    """Get safety/moderation statistics"""
+    total = len(MODERATION_LOGS)
+    blocked = len([l for l in MODERATION_LOGS if l["action"] == "block"])
+
+    return {
+        "total_checks": total,
+        "blocked": blocked,
+        "allowed": total - blocked,
+        "block_rate": blocked / max(1, total),
+        "top_flagged_categories": ["toxicity", "profanity", "harassment"],
+        "time_period": time_period
+    }
+
+
+# ============================================================================
+# Marketplace & Monetization
+# ============================================================================
+
+MARKETPLACE_LISTINGS: Dict[str, Dict[str, Any]] = {}
+MARKETPLACE_PURCHASES: Dict[str, Dict[str, Any]] = {}
+PRICING_PLANS: Dict[str, Dict[str, Any]] = {}
+REVENUE_RECORDS: List[Dict[str, Any]] = []
+
+
+@app.post("/marketplace/listings")
+def create_marketplace_listing(
+    name: str,
+    description: str,
+    resource_type: str,
+    resource_id: str,
+    pricing: Dict[str, Any],
+    author_id: str,
+    categories: Optional[List[str]] = None
+):
+    """Create a marketplace listing"""
+    listing_id = f"listing_{uuid.uuid4().hex[:12]}"
+    listing = {
+        "id": listing_id,
+        "name": name,
+        "description": description,
+        "resource_type": resource_type,
+        "resource_id": resource_id,
+        "pricing": pricing,  # {"type": "one_time", "amount": 9.99, "currency": "USD"}
+        "author_id": author_id,
+        "categories": categories or [],
+        "rating": 0.0,
+        "review_count": 0,
+        "purchase_count": 0,
+        "status": "pending_review",
+        "created_at": datetime.utcnow().isoformat()
+    }
+    MARKETPLACE_LISTINGS[listing_id] = listing
+    return listing
+
+
+@app.get("/marketplace/listings")
+def list_marketplace_listings(
+    category: Optional[str] = None,
+    resource_type: Optional[str] = None,
+    min_rating: float = 0.0,
+    sort_by: str = "popular"
+):
+    """Browse marketplace listings"""
+    listings = [l for l in MARKETPLACE_LISTINGS.values() if l["status"] == "published"]
+
+    if category:
+        listings = [l for l in listings if category in l.get("categories", [])]
+    if resource_type:
+        listings = [l for l in listings if l["resource_type"] == resource_type]
+    if min_rating > 0:
+        listings = [l for l in listings if l["rating"] >= min_rating]
+
+    if sort_by == "popular":
+        listings.sort(key=lambda x: x["purchase_count"], reverse=True)
+    elif sort_by == "rating":
+        listings.sort(key=lambda x: x["rating"], reverse=True)
+    elif sort_by == "newest":
+        listings.sort(key=lambda x: x["created_at"], reverse=True)
+    elif sort_by == "price_low":
+        listings.sort(key=lambda x: x["pricing"].get("amount", 0))
+
+    return {"listings": listings, "total": len(listings)}
+
+
+@app.get("/marketplace/listings/{listing_id}")
+def get_marketplace_listing(listing_id: str):
+    """Get listing details"""
+    if listing_id not in MARKETPLACE_LISTINGS:
+        raise HTTPException(status_code=404, detail="Listing not found")
+    return MARKETPLACE_LISTINGS[listing_id]
+
+
+@app.post("/marketplace/listings/{listing_id}/publish")
+def publish_listing(listing_id: str):
+    """Publish a listing to marketplace"""
+    if listing_id not in MARKETPLACE_LISTINGS:
+        raise HTTPException(status_code=404, detail="Listing not found")
+
+    listing = MARKETPLACE_LISTINGS[listing_id]
+    listing["status"] = "published"
+    listing["published_at"] = datetime.utcnow().isoformat()
+    return listing
+
+
+@app.post("/marketplace/purchase")
+def purchase_listing(
+    listing_id: str,
+    buyer_id: str,
+    payment_method: str = "card"
+):
+    """Purchase a marketplace listing"""
+    if listing_id not in MARKETPLACE_LISTINGS:
+        raise HTTPException(status_code=404, detail="Listing not found")
+
+    listing = MARKETPLACE_LISTINGS[listing_id]
+    purchase_id = f"purchase_{uuid.uuid4().hex[:12]}"
+
+    purchase = {
+        "id": purchase_id,
+        "listing_id": listing_id,
+        "listing_name": listing["name"],
+        "buyer_id": buyer_id,
+        "seller_id": listing["author_id"],
+        "amount": listing["pricing"]["amount"],
+        "currency": listing["pricing"].get("currency", "USD"),
+        "payment_method": payment_method,
+        "status": "completed",
+        "purchased_at": datetime.utcnow().isoformat()
+    }
+    MARKETPLACE_PURCHASES[purchase_id] = purchase
+    listing["purchase_count"] += 1
+
+    # Record revenue
+    REVENUE_RECORDS.append({
+        "purchase_id": purchase_id,
+        "seller_id": listing["author_id"],
+        "gross_amount": listing["pricing"]["amount"],
+        "platform_fee": listing["pricing"]["amount"] * 0.15,
+        "net_amount": listing["pricing"]["amount"] * 0.85,
+        "timestamp": datetime.utcnow().isoformat()
+    })
+
+    return purchase
+
+
+@app.get("/marketplace/purchases")
+def list_purchases(buyer_id: Optional[str] = None, seller_id: Optional[str] = None):
+    """List purchases"""
+    purchases = list(MARKETPLACE_PURCHASES.values())
+    if buyer_id:
+        purchases = [p for p in purchases if p["buyer_id"] == buyer_id]
+    if seller_id:
+        purchases = [p for p in purchases if p["seller_id"] == seller_id]
+    return {"purchases": purchases, "total": len(purchases)}
+
+
+@app.post("/marketplace/pricing-plans")
+def create_pricing_plan(
+    name: str,
+    listing_id: str,
+    plan_type: str,
+    price: float,
+    billing_period: Optional[str] = None,
+    features: Optional[List[str]] = None
+):
+    """Create a pricing plan for a listing"""
+    plan_id = f"plan_{uuid.uuid4().hex[:12]}"
+    plan = {
+        "id": plan_id,
+        "name": name,
+        "listing_id": listing_id,
+        "plan_type": plan_type,  # one_time, subscription, usage_based
+        "price": price,
+        "billing_period": billing_period,  # monthly, yearly
+        "features": features or [],
+        "status": "active",
+        "created_at": datetime.utcnow().isoformat()
+    }
+    PRICING_PLANS[plan_id] = plan
+    return plan
+
+
+@app.get("/marketplace/revenue")
+def get_revenue_summary(seller_id: str, time_period: str = "30d"):
+    """Get revenue summary for a seller"""
+    seller_revenue = [r for r in REVENUE_RECORDS if r["seller_id"] == seller_id]
+
+    total_gross = sum(r["gross_amount"] for r in seller_revenue)
+    total_fees = sum(r["platform_fee"] for r in seller_revenue)
+    total_net = sum(r["net_amount"] for r in seller_revenue)
+
+    return {
+        "seller_id": seller_id,
+        "total_sales": len(seller_revenue),
+        "gross_revenue": total_gross,
+        "platform_fees": total_fees,
+        "net_revenue": total_net,
+        "time_period": time_period
+    }
+
+
+@app.get("/marketplace/categories")
+def list_marketplace_categories():
+    """List marketplace categories"""
+    return {
+        "categories": [
+            {"id": "agents", "name": "AI Agents", "count": 0},
+            {"id": "workflows", "name": "Workflows", "count": 0},
+            {"id": "templates", "name": "Templates", "count": 0},
+            {"id": "integrations", "name": "Integrations", "count": 0},
+            {"id": "plugins", "name": "Plugins", "count": 0},
+            {"id": "datasets", "name": "Datasets", "count": 0}
+        ]
+    }
+
+
+# ============================================================================
+# Plugin System
+# ============================================================================
+
+PLUGINS: Dict[str, Dict[str, Any]] = {}
+PLUGIN_REGISTRY: Dict[str, Dict[str, Any]] = {}
+PLUGIN_INSTANCES: Dict[str, Dict[str, Any]] = {}
+PLUGIN_HOOKS: Dict[str, List[Dict[str, Any]]] = {}
+
+
+@app.post("/plugins/register")
+def register_plugin(
+    name: str,
+    version: str,
+    description: str,
+    author: str,
+    entry_point: str,
+    hooks: List[str],
+    config_schema: Optional[Dict[str, Any]] = None,
+    dependencies: Optional[List[str]] = None
+):
+    """Register a plugin"""
+    plugin_id = f"plugin_{uuid.uuid4().hex[:12]}"
+    plugin = {
+        "id": plugin_id,
+        "name": name,
+        "version": version,
+        "description": description,
+        "author": author,
+        "entry_point": entry_point,
+        "hooks": hooks,
+        "config_schema": config_schema or {},
+        "dependencies": dependencies or [],
+        "status": "registered",
+        "downloads": 0,
+        "created_at": datetime.utcnow().isoformat()
+    }
+    PLUGIN_REGISTRY[plugin_id] = plugin
+    return plugin
+
+
+@app.get("/plugins")
+def list_plugins(status: Optional[str] = None, hook: Optional[str] = None):
+    """List registered plugins"""
+    plugins = list(PLUGIN_REGISTRY.values())
+    if status:
+        plugins = [p for p in plugins if p["status"] == status]
+    if hook:
+        plugins = [p for p in plugins if hook in p["hooks"]]
+    return {"plugins": plugins, "total": len(plugins)}
+
+
+@app.get("/plugins/{plugin_id}")
+def get_plugin(plugin_id: str):
+    """Get plugin details"""
+    if plugin_id not in PLUGIN_REGISTRY:
+        raise HTTPException(status_code=404, detail="Plugin not found")
+    return PLUGIN_REGISTRY[plugin_id]
+
+
+@app.post("/plugins/{plugin_id}/install")
+def install_plugin(plugin_id: str, config: Optional[Dict[str, Any]] = None):
+    """Install a plugin"""
+    if plugin_id not in PLUGIN_REGISTRY:
+        raise HTTPException(status_code=404, detail="Plugin not found")
+
+    plugin = PLUGIN_REGISTRY[plugin_id]
+    instance_id = f"inst_{uuid.uuid4().hex[:12]}"
+
+    instance = {
+        "id": instance_id,
+        "plugin_id": plugin_id,
+        "plugin_name": plugin["name"],
+        "version": plugin["version"],
+        "config": config or {},
+        "status": "installed",
+        "installed_at": datetime.utcnow().isoformat()
+    }
+    PLUGIN_INSTANCES[instance_id] = instance
+    plugin["downloads"] += 1
+
+    # Register hooks
+    for hook in plugin["hooks"]:
+        if hook not in PLUGIN_HOOKS:
+            PLUGIN_HOOKS[hook] = []
+        PLUGIN_HOOKS[hook].append({
+            "instance_id": instance_id,
+            "plugin_id": plugin_id,
+            "priority": 0
+        })
+
+    return instance
+
+
+@app.get("/plugins/installed")
+def list_installed_plugins():
+    """List installed plugin instances"""
+    return {"instances": list(PLUGIN_INSTANCES.values()), "total": len(PLUGIN_INSTANCES)}
+
+
+@app.post("/plugins/{instance_id}/enable")
+def enable_plugin(instance_id: str):
+    """Enable a plugin instance"""
+    if instance_id not in PLUGIN_INSTANCES:
+        raise HTTPException(status_code=404, detail="Plugin instance not found")
+
+    PLUGIN_INSTANCES[instance_id]["status"] = "enabled"
+    PLUGIN_INSTANCES[instance_id]["enabled_at"] = datetime.utcnow().isoformat()
+    return PLUGIN_INSTANCES[instance_id]
+
+
+@app.post("/plugins/{instance_id}/disable")
+def disable_plugin(instance_id: str):
+    """Disable a plugin instance"""
+    if instance_id not in PLUGIN_INSTANCES:
+        raise HTTPException(status_code=404, detail="Plugin instance not found")
+
+    PLUGIN_INSTANCES[instance_id]["status"] = "disabled"
+    PLUGIN_INSTANCES[instance_id]["disabled_at"] = datetime.utcnow().isoformat()
+    return PLUGIN_INSTANCES[instance_id]
+
+
+@app.delete("/plugins/{instance_id}")
+def uninstall_plugin(instance_id: str):
+    """Uninstall a plugin"""
+    if instance_id not in PLUGIN_INSTANCES:
+        raise HTTPException(status_code=404, detail="Plugin instance not found")
+
+    instance = PLUGIN_INSTANCES[instance_id]
+
+    # Remove hooks
+    for hook, handlers in PLUGIN_HOOKS.items():
+        PLUGIN_HOOKS[hook] = [h for h in handlers if h["instance_id"] != instance_id]
+
+    del PLUGIN_INSTANCES[instance_id]
+    return {"uninstalled": True}
+
+
+@app.post("/plugins/hooks/{hook_name}/trigger")
+def trigger_plugin_hook(hook_name: str, data: Dict[str, Any]):
+    """Trigger a plugin hook"""
+    handlers = PLUGIN_HOOKS.get(hook_name, [])
+
+    results = []
+    for handler in handlers:
+        instance = PLUGIN_INSTANCES.get(handler["instance_id"])
+        if instance and instance["status"] == "enabled":
+            results.append({
+                "plugin_id": handler["plugin_id"],
+                "instance_id": handler["instance_id"],
+                "executed": True,
+                "result": {"processed": True, "data": data}
+            })
+
+    return {
+        "hook": hook_name,
+        "handlers_triggered": len(results),
+        "results": results
+    }
+
+
+@app.get("/plugins/hooks")
+def list_plugin_hooks():
+    """List available plugin hooks"""
+    return {
+        "hooks": [
+            {"name": "pre_agent_execute", "description": "Before agent execution"},
+            {"name": "post_agent_execute", "description": "After agent execution"},
+            {"name": "pre_workflow_start", "description": "Before workflow starts"},
+            {"name": "post_workflow_complete", "description": "After workflow completes"},
+            {"name": "on_message_receive", "description": "When message received"},
+            {"name": "on_message_send", "description": "When message sent"},
+            {"name": "on_error", "description": "When error occurs"},
+            {"name": "on_metric_record", "description": "When metric recorded"}
+        ]
+    }
+
+
+@app.put("/plugins/{instance_id}/config")
+def update_plugin_config(instance_id: str, config: Dict[str, Any]):
+    """Update plugin configuration"""
+    if instance_id not in PLUGIN_INSTANCES:
+        raise HTTPException(status_code=404, detail="Plugin instance not found")
+
+    PLUGIN_INSTANCES[instance_id]["config"].update(config)
+    PLUGIN_INSTANCES[instance_id]["config_updated_at"] = datetime.utcnow().isoformat()
+    return PLUGIN_INSTANCES[instance_id]
+
+
+# ============================================================================
 # Run Server
 # ============================================================================
 
