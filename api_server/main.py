@@ -26149,6 +26149,962 @@ def get_promotions(limit: int = 20):
 
 
 # ============================================================================
+# Message Queue
+# ============================================================================
+
+MESSAGE_QUEUES: Dict[str, Dict[str, Any]] = {}
+QUEUE_MESSAGES: Dict[str, List[Dict[str, Any]]] = {}
+DEAD_LETTER_QUEUES: Dict[str, List[Dict[str, Any]]] = {}
+QUEUE_SUBSCRIPTIONS: Dict[str, List[Dict[str, Any]]] = {}
+
+
+@app.post("/queues")
+def create_queue(body: dict = Body(...)):
+    """Create message queue"""
+    queue_id = f"queue_{uuid.uuid4().hex[:8]}"
+    queue = {
+        "id": queue_id,
+        "name": body.get("name", ""),
+        "type": body.get("type", "standard"),
+        "max_size": body.get("max_size", 10000),
+        "message_retention_seconds": body.get("message_retention_seconds", 86400),
+        "visibility_timeout_seconds": body.get("visibility_timeout_seconds", 30),
+        "dead_letter_queue": body.get("dead_letter_queue"),
+        "max_retries": body.get("max_retries", 3),
+        "created_at": datetime.utcnow().isoformat()
+    }
+    MESSAGE_QUEUES[queue_id] = queue
+    QUEUE_MESSAGES[queue_id] = []
+    return queue
+
+
+@app.get("/queues")
+def list_queues(type: Optional[str] = None):
+    """List message queues"""
+    queues = list(MESSAGE_QUEUES.values())
+    if type:
+        queues = [q for q in queues if q["type"] == type]
+    return {"queues": queues, "total": len(queues)}
+
+
+@app.get("/queues/{queue_id}")
+def get_queue(queue_id: str):
+    """Get queue details"""
+    if queue_id not in MESSAGE_QUEUES:
+        raise HTTPException(status_code=404, detail="Queue not found")
+    messages = QUEUE_MESSAGES.get(queue_id, [])
+    return {
+        "queue": MESSAGE_QUEUES[queue_id],
+        "message_count": len(messages),
+        "oldest_message": messages[0]["created_at"] if messages else None
+    }
+
+
+@app.post("/queues/{queue_id}/messages")
+def send_message(queue_id: str, body: dict = Body(...)):
+    """Send message to queue"""
+    if queue_id not in MESSAGE_QUEUES:
+        raise HTTPException(status_code=404, detail="Queue not found")
+
+    message = {
+        "id": f"msg_{uuid.uuid4().hex[:12]}",
+        "body": body.get("body", {}),
+        "attributes": body.get("attributes", {}),
+        "priority": body.get("priority", 0),
+        "delay_seconds": body.get("delay_seconds", 0),
+        "retry_count": 0,
+        "status": "pending",
+        "created_at": datetime.utcnow().isoformat(),
+        "visible_at": datetime.utcnow().isoformat()
+    }
+    QUEUE_MESSAGES[queue_id].append(message)
+    return {"message_id": message["id"], "status": "queued"}
+
+
+@app.get("/queues/{queue_id}/messages")
+def receive_messages(queue_id: str, max_messages: int = 10):
+    """Receive messages from queue"""
+    if queue_id not in MESSAGE_QUEUES:
+        raise HTTPException(status_code=404, detail="Queue not found")
+
+    messages = QUEUE_MESSAGES.get(queue_id, [])
+    pending = [m for m in messages if m["status"] == "pending"][:max_messages]
+
+    for msg in pending:
+        msg["status"] = "processing"
+
+    return {"messages": pending, "count": len(pending)}
+
+
+@app.delete("/queues/{queue_id}/messages/{message_id}")
+def delete_message(queue_id: str, message_id: str):
+    """Delete/acknowledge message"""
+    if queue_id not in MESSAGE_QUEUES:
+        raise HTTPException(status_code=404, detail="Queue not found")
+
+    messages = QUEUE_MESSAGES.get(queue_id, [])
+    QUEUE_MESSAGES[queue_id] = [m for m in messages if m["id"] != message_id]
+    return {"message": "Message deleted", "message_id": message_id}
+
+
+@app.post("/queues/{queue_id}/messages/{message_id}/nack")
+def nack_message(queue_id: str, message_id: str):
+    """Negative acknowledge - return message to queue"""
+    if queue_id not in MESSAGE_QUEUES:
+        raise HTTPException(status_code=404, detail="Queue not found")
+
+    queue = MESSAGE_QUEUES[queue_id]
+    messages = QUEUE_MESSAGES.get(queue_id, [])
+
+    for msg in messages:
+        if msg["id"] == message_id:
+            msg["retry_count"] += 1
+            if msg["retry_count"] >= queue["max_retries"]:
+                msg["status"] = "dead_letter"
+                if queue_id not in DEAD_LETTER_QUEUES:
+                    DEAD_LETTER_QUEUES[queue_id] = []
+                DEAD_LETTER_QUEUES[queue_id].append(msg)
+            else:
+                msg["status"] = "pending"
+            return {"message": "Message returned to queue", "retry_count": msg["retry_count"]}
+
+    raise HTTPException(status_code=404, detail="Message not found")
+
+
+@app.get("/queues/{queue_id}/dead-letter")
+def get_dead_letter_queue(queue_id: str):
+    """Get dead letter queue messages"""
+    return {"messages": DEAD_LETTER_QUEUES.get(queue_id, []), "total": len(DEAD_LETTER_QUEUES.get(queue_id, []))}
+
+
+# ============================================================================
+# Cache Management
+# ============================================================================
+
+CACHES: Dict[str, Dict[str, Any]] = {}
+CACHE_ENTRIES: Dict[str, Dict[str, Any]] = {}
+CACHE_STATS: Dict[str, Dict[str, int]] = {}
+
+
+@app.post("/caches")
+def create_cache(body: dict = Body(...)):
+    """Create cache"""
+    cache_id = f"cache_{uuid.uuid4().hex[:8]}"
+    cache = {
+        "id": cache_id,
+        "name": body.get("name", ""),
+        "type": body.get("type", "memory"),
+        "max_size_mb": body.get("max_size_mb", 100),
+        "default_ttl_seconds": body.get("default_ttl_seconds", 3600),
+        "eviction_policy": body.get("eviction_policy", "lru"),
+        "created_at": datetime.utcnow().isoformat()
+    }
+    CACHES[cache_id] = cache
+    CACHE_ENTRIES[cache_id] = {}
+    CACHE_STATS[cache_id] = {"hits": 0, "misses": 0, "evictions": 0}
+    return cache
+
+
+@app.get("/caches")
+def list_caches():
+    """List caches"""
+    return {"caches": list(CACHES.values()), "total": len(CACHES)}
+
+
+@app.get("/caches/{cache_id}")
+def get_cache(cache_id: str):
+    """Get cache details"""
+    if cache_id not in CACHES:
+        raise HTTPException(status_code=404, detail="Cache not found")
+    return {
+        "cache": CACHES[cache_id],
+        "stats": CACHE_STATS.get(cache_id, {}),
+        "entry_count": len(CACHE_ENTRIES.get(cache_id, {}))
+    }
+
+
+@app.post("/caches/{cache_id}/set")
+def cache_set(cache_id: str, body: dict = Body(...)):
+    """Set cache entry"""
+    if cache_id not in CACHES:
+        raise HTTPException(status_code=404, detail="Cache not found")
+
+    key = body.get("key")
+    value = body.get("value")
+    ttl = body.get("ttl_seconds", CACHES[cache_id]["default_ttl_seconds"])
+
+    CACHE_ENTRIES[cache_id][key] = {
+        "value": value,
+        "created_at": datetime.utcnow().isoformat(),
+        "expires_at": (datetime.utcnow() + timedelta(seconds=ttl)).isoformat(),
+        "ttl_seconds": ttl
+    }
+    return {"key": key, "status": "set"}
+
+
+@app.get("/caches/{cache_id}/get/{key}")
+def cache_get(cache_id: str, key: str):
+    """Get cache entry"""
+    if cache_id not in CACHES:
+        raise HTTPException(status_code=404, detail="Cache not found")
+
+    entries = CACHE_ENTRIES.get(cache_id, {})
+    if key in entries:
+        CACHE_STATS[cache_id]["hits"] += 1
+        return {"key": key, "value": entries[key]["value"], "hit": True}
+    else:
+        CACHE_STATS[cache_id]["misses"] += 1
+        return {"key": key, "value": None, "hit": False}
+
+
+@app.delete("/caches/{cache_id}/delete/{key}")
+def cache_delete(cache_id: str, key: str):
+    """Delete cache entry"""
+    if cache_id not in CACHES:
+        raise HTTPException(status_code=404, detail="Cache not found")
+
+    entries = CACHE_ENTRIES.get(cache_id, {})
+    if key in entries:
+        del entries[key]
+    return {"key": key, "status": "deleted"}
+
+
+@app.post("/caches/{cache_id}/flush")
+def cache_flush(cache_id: str):
+    """Flush all cache entries"""
+    if cache_id not in CACHES:
+        raise HTTPException(status_code=404, detail="Cache not found")
+
+    count = len(CACHE_ENTRIES.get(cache_id, {}))
+    CACHE_ENTRIES[cache_id] = {}
+    CACHE_STATS[cache_id]["evictions"] += count
+    return {"message": "Cache flushed", "entries_removed": count}
+
+
+@app.get("/caches/{cache_id}/stats")
+def get_cache_stats(cache_id: str):
+    """Get cache statistics"""
+    if cache_id not in CACHES:
+        raise HTTPException(status_code=404, detail="Cache not found")
+
+    stats = CACHE_STATS.get(cache_id, {})
+    total = stats.get("hits", 0) + stats.get("misses", 0)
+    hit_rate = (stats.get("hits", 0) / max(1, total)) * 100
+
+    return {
+        "cache_id": cache_id,
+        "hits": stats.get("hits", 0),
+        "misses": stats.get("misses", 0),
+        "hit_rate": round(hit_rate, 2),
+        "evictions": stats.get("evictions", 0),
+        "entry_count": len(CACHE_ENTRIES.get(cache_id, {}))
+    }
+
+
+# ============================================================================
+# Job Scheduler
+# ============================================================================
+
+SCHEDULED_JOBS: Dict[str, Dict[str, Any]] = {}
+JOB_EXECUTIONS: Dict[str, List[Dict[str, Any]]] = {}
+JOB_TRIGGERS: Dict[str, Dict[str, Any]] = {}
+
+
+@app.post("/scheduler/jobs")
+def create_scheduled_job(body: dict = Body(...)):
+    """Create scheduled job"""
+    job_id = f"job_{uuid.uuid4().hex[:8]}"
+    job = {
+        "id": job_id,
+        "name": body.get("name", ""),
+        "description": body.get("description", ""),
+        "schedule": body.get("schedule", "0 * * * *"),
+        "timezone": body.get("timezone", "UTC"),
+        "action": body.get("action", {}),
+        "enabled": True,
+        "last_run": None,
+        "next_run": datetime.utcnow().isoformat(),
+        "created_at": datetime.utcnow().isoformat()
+    }
+    SCHEDULED_JOBS[job_id] = job
+    JOB_EXECUTIONS[job_id] = []
+    return job
+
+
+@app.get("/scheduler/jobs")
+def list_scheduled_jobs(enabled: Optional[bool] = None):
+    """List scheduled jobs"""
+    jobs = list(SCHEDULED_JOBS.values())
+    if enabled is not None:
+        jobs = [j for j in jobs if j["enabled"] == enabled]
+    return {"jobs": jobs, "total": len(jobs)}
+
+
+@app.get("/scheduler/jobs/{job_id}")
+def get_scheduled_job(job_id: str):
+    """Get scheduled job details"""
+    if job_id not in SCHEDULED_JOBS:
+        raise HTTPException(status_code=404, detail="Job not found")
+    return {
+        "job": SCHEDULED_JOBS[job_id],
+        "recent_executions": JOB_EXECUTIONS.get(job_id, [])[-10:]
+    }
+
+
+@app.put("/scheduler/jobs/{job_id}")
+def update_scheduled_job(job_id: str, body: dict = Body(...)):
+    """Update scheduled job"""
+    if job_id not in SCHEDULED_JOBS:
+        raise HTTPException(status_code=404, detail="Job not found")
+    job = SCHEDULED_JOBS[job_id]
+    job.update({k: v for k, v in body.items() if k not in ["id", "created_at"]})
+    return job
+
+
+@app.delete("/scheduler/jobs/{job_id}")
+def delete_scheduled_job(job_id: str):
+    """Delete scheduled job"""
+    if job_id not in SCHEDULED_JOBS:
+        raise HTTPException(status_code=404, detail="Job not found")
+    del SCHEDULED_JOBS[job_id]
+    return {"message": "Job deleted", "job_id": job_id}
+
+
+@app.post("/scheduler/jobs/{job_id}/run")
+def run_job_now(job_id: str):
+    """Run job immediately"""
+    if job_id not in SCHEDULED_JOBS:
+        raise HTTPException(status_code=404, detail="Job not found")
+
+    execution = {
+        "id": f"exec_{uuid.uuid4().hex[:8]}",
+        "job_id": job_id,
+        "status": "completed",
+        "started_at": datetime.utcnow().isoformat(),
+        "completed_at": datetime.utcnow().isoformat(),
+        "duration_ms": random.randint(100, 5000),
+        "result": {"success": True}
+    }
+    JOB_EXECUTIONS[job_id].append(execution)
+    SCHEDULED_JOBS[job_id]["last_run"] = execution["completed_at"]
+
+    return execution
+
+
+@app.post("/scheduler/jobs/{job_id}/pause")
+def pause_job(job_id: str):
+    """Pause scheduled job"""
+    if job_id not in SCHEDULED_JOBS:
+        raise HTTPException(status_code=404, detail="Job not found")
+    SCHEDULED_JOBS[job_id]["enabled"] = False
+    return {"message": "Job paused", "job_id": job_id}
+
+
+@app.post("/scheduler/jobs/{job_id}/resume")
+def resume_job(job_id: str):
+    """Resume scheduled job"""
+    if job_id not in SCHEDULED_JOBS:
+        raise HTTPException(status_code=404, detail="Job not found")
+    SCHEDULED_JOBS[job_id]["enabled"] = True
+    return {"message": "Job resumed", "job_id": job_id}
+
+
+@app.get("/scheduler/jobs/{job_id}/executions")
+def get_job_executions(job_id: str, status: Optional[str] = None, limit: int = 50):
+    """Get job execution history"""
+    if job_id not in SCHEDULED_JOBS:
+        raise HTTPException(status_code=404, detail="Job not found")
+    executions = JOB_EXECUTIONS.get(job_id, [])
+    if status:
+        executions = [e for e in executions if e["status"] == status]
+    return {"executions": executions[-limit:], "total": len(executions)}
+
+
+# ============================================================================
+# Health Monitoring
+# ============================================================================
+
+HEALTH_CHECKS: Dict[str, Dict[str, Any]] = {}
+HEALTH_RESULTS: Dict[str, List[Dict[str, Any]]] = {}
+HEALTH_ALERTS: List[Dict[str, Any]] = []
+
+
+@app.post("/health/checks")
+def create_health_check(body: dict = Body(...)):
+    """Create health check"""
+    check_id = f"hc_{uuid.uuid4().hex[:8]}"
+    check = {
+        "id": check_id,
+        "name": body.get("name", ""),
+        "type": body.get("type", "http"),
+        "target": body.get("target", ""),
+        "interval_seconds": body.get("interval_seconds", 30),
+        "timeout_seconds": body.get("timeout_seconds", 10),
+        "healthy_threshold": body.get("healthy_threshold", 2),
+        "unhealthy_threshold": body.get("unhealthy_threshold", 3),
+        "enabled": True,
+        "status": "unknown",
+        "created_at": datetime.utcnow().isoformat()
+    }
+    HEALTH_CHECKS[check_id] = check
+    HEALTH_RESULTS[check_id] = []
+    return check
+
+
+@app.get("/health/checks")
+def list_health_checks(status: Optional[str] = None):
+    """List health checks"""
+    checks = list(HEALTH_CHECKS.values())
+    if status:
+        checks = [c for c in checks if c["status"] == status]
+    return {"checks": checks, "total": len(checks)}
+
+
+@app.get("/health/checks/{check_id}")
+def get_health_check(check_id: str):
+    """Get health check details"""
+    if check_id not in HEALTH_CHECKS:
+        raise HTTPException(status_code=404, detail="Health check not found")
+    return {
+        "check": HEALTH_CHECKS[check_id],
+        "recent_results": HEALTH_RESULTS.get(check_id, [])[-20:]
+    }
+
+
+@app.post("/health/checks/{check_id}/run")
+def run_health_check(check_id: str):
+    """Run health check now"""
+    if check_id not in HEALTH_CHECKS:
+        raise HTTPException(status_code=404, detail="Health check not found")
+
+    healthy = random.random() > 0.1
+    result = {
+        "id": f"result_{uuid.uuid4().hex[:8]}",
+        "check_id": check_id,
+        "healthy": healthy,
+        "response_time_ms": random.randint(10, 500) if healthy else None,
+        "error": None if healthy else "Connection timeout",
+        "checked_at": datetime.utcnow().isoformat()
+    }
+    HEALTH_RESULTS[check_id].append(result)
+    HEALTH_CHECKS[check_id]["status"] = "healthy" if healthy else "unhealthy"
+
+    if not healthy:
+        HEALTH_ALERTS.append({
+            "check_id": check_id,
+            "check_name": HEALTH_CHECKS[check_id]["name"],
+            "status": "unhealthy",
+            "error": result["error"],
+            "created_at": datetime.utcnow().isoformat()
+        })
+
+    return result
+
+
+@app.get("/health/alerts")
+def get_health_alerts(check_id: Optional[str] = None, limit: int = 50):
+    """Get health alerts"""
+    alerts = HEALTH_ALERTS
+    if check_id:
+        alerts = [a for a in alerts if a["check_id"] == check_id]
+    return {"alerts": alerts[-limit:], "total": len(alerts)}
+
+
+@app.get("/health/dashboard")
+def health_dashboard():
+    """Get health dashboard"""
+    checks = list(HEALTH_CHECKS.values())
+    return {
+        "total_checks": len(checks),
+        "healthy": len([c for c in checks if c["status"] == "healthy"]),
+        "unhealthy": len([c for c in checks if c["status"] == "unhealthy"]),
+        "unknown": len([c for c in checks if c["status"] == "unknown"]),
+        "recent_alerts": HEALTH_ALERTS[-5:],
+        "checks": [{
+            "id": c["id"],
+            "name": c["name"],
+            "status": c["status"],
+            "type": c["type"]
+        } for c in checks]
+    }
+
+
+# ============================================================================
+# API Versioning
+# ============================================================================
+
+API_VERSIONS: Dict[str, Dict[str, Any]] = {}
+VERSION_ROUTES: Dict[str, List[Dict[str, Any]]] = {}
+DEPRECATION_NOTICES: List[Dict[str, Any]] = []
+
+
+@app.post("/api-versions")
+def create_api_version(body: dict = Body(...)):
+    """Create API version"""
+    version_id = f"v_{uuid.uuid4().hex[:8]}"
+    version = {
+        "id": version_id,
+        "version": body.get("version", "1.0"),
+        "status": body.get("status", "active"),
+        "release_date": body.get("release_date", datetime.utcnow().isoformat()),
+        "deprecation_date": body.get("deprecation_date"),
+        "sunset_date": body.get("sunset_date"),
+        "changelog": body.get("changelog", ""),
+        "created_at": datetime.utcnow().isoformat()
+    }
+    API_VERSIONS[version_id] = version
+    VERSION_ROUTES[version_id] = []
+    return version
+
+
+@app.get("/api-versions")
+def list_api_versions(status: Optional[str] = None):
+    """List API versions"""
+    versions = list(API_VERSIONS.values())
+    if status:
+        versions = [v for v in versions if v["status"] == status]
+    return {"versions": versions, "total": len(versions)}
+
+
+@app.get("/api-versions/{version_id}")
+def get_api_version(version_id: str):
+    """Get API version details"""
+    if version_id not in API_VERSIONS:
+        raise HTTPException(status_code=404, detail="API version not found")
+    return {
+        "version": API_VERSIONS[version_id],
+        "routes": VERSION_ROUTES.get(version_id, [])
+    }
+
+
+@app.post("/api-versions/{version_id}/deprecate")
+def deprecate_api_version(version_id: str, body: dict = Body(...)):
+    """Deprecate API version"""
+    if version_id not in API_VERSIONS:
+        raise HTTPException(status_code=404, detail="API version not found")
+
+    version = API_VERSIONS[version_id]
+    version["status"] = "deprecated"
+    version["deprecation_date"] = datetime.utcnow().isoformat()
+    version["sunset_date"] = body.get("sunset_date")
+
+    notice = {
+        "version_id": version_id,
+        "version": version["version"],
+        "message": body.get("message", "This API version is deprecated"),
+        "sunset_date": version["sunset_date"],
+        "created_at": datetime.utcnow().isoformat()
+    }
+    DEPRECATION_NOTICES.append(notice)
+
+    return {"message": "Version deprecated", "version": version}
+
+
+@app.post("/api-versions/{version_id}/routes")
+def add_version_route(version_id: str, body: dict = Body(...)):
+    """Add route to API version"""
+    if version_id not in API_VERSIONS:
+        raise HTTPException(status_code=404, detail="API version not found")
+
+    route = {
+        "id": f"route_{uuid.uuid4().hex[:8]}",
+        "path": body.get("path", ""),
+        "methods": body.get("methods", ["GET"]),
+        "handler": body.get("handler", ""),
+        "deprecated": body.get("deprecated", False)
+    }
+    VERSION_ROUTES[version_id].append(route)
+    return route
+
+
+@app.get("/api-versions/deprecation-notices")
+def get_deprecation_notices():
+    """Get deprecation notices"""
+    return {"notices": DEPRECATION_NOTICES, "total": len(DEPRECATION_NOTICES)}
+
+
+# ============================================================================
+# Data Export
+# ============================================================================
+
+EXPORT_JOBS: Dict[str, Dict[str, Any]] = {}
+EXPORT_TEMPLATES: Dict[str, Dict[str, Any]] = {}
+
+
+@app.post("/exports")
+def create_export(body: dict = Body(...)):
+    """Create data export job"""
+    export_id = f"export_{uuid.uuid4().hex[:12]}"
+    export = {
+        "id": export_id,
+        "name": body.get("name", ""),
+        "format": body.get("format", "json"),
+        "resource_type": body.get("resource_type", ""),
+        "filters": body.get("filters", {}),
+        "fields": body.get("fields", []),
+        "status": "pending",
+        "progress_percent": 0,
+        "file_url": None,
+        "file_size_bytes": None,
+        "record_count": None,
+        "created_at": datetime.utcnow().isoformat(),
+        "completed_at": None
+    }
+    EXPORT_JOBS[export_id] = export
+    return export
+
+
+@app.get("/exports")
+def list_exports(status: Optional[str] = None, format: Optional[str] = None):
+    """List export jobs"""
+    exports = list(EXPORT_JOBS.values())
+    if status:
+        exports = [e for e in exports if e["status"] == status]
+    if format:
+        exports = [e for e in exports if e["format"] == format]
+    return {"exports": exports, "total": len(exports)}
+
+
+@app.get("/exports/{export_id}")
+def get_export(export_id: str):
+    """Get export job details"""
+    if export_id not in EXPORT_JOBS:
+        raise HTTPException(status_code=404, detail="Export not found")
+    return EXPORT_JOBS[export_id]
+
+
+@app.post("/exports/{export_id}/start")
+def start_export(export_id: str):
+    """Start export job"""
+    if export_id not in EXPORT_JOBS:
+        raise HTTPException(status_code=404, detail="Export not found")
+
+    export = EXPORT_JOBS[export_id]
+    export["status"] = "processing"
+
+    export["status"] = "completed"
+    export["progress_percent"] = 100
+    export["completed_at"] = datetime.utcnow().isoformat()
+    export["record_count"] = random.randint(100, 10000)
+    export["file_size_bytes"] = random.randint(10000, 1000000)
+    export["file_url"] = f"/downloads/{export_id}.{export['format']}"
+
+    return export
+
+
+@app.delete("/exports/{export_id}")
+def delete_export(export_id: str):
+    """Delete export job"""
+    if export_id not in EXPORT_JOBS:
+        raise HTTPException(status_code=404, detail="Export not found")
+    del EXPORT_JOBS[export_id]
+    return {"message": "Export deleted", "export_id": export_id}
+
+
+@app.post("/export-templates")
+def create_export_template(body: dict = Body(...)):
+    """Create export template"""
+    template_id = f"tmpl_{uuid.uuid4().hex[:8]}"
+    template = {
+        "id": template_id,
+        "name": body.get("name", ""),
+        "format": body.get("format", "json"),
+        "resource_type": body.get("resource_type", ""),
+        "filters": body.get("filters", {}),
+        "fields": body.get("fields", []),
+        "created_at": datetime.utcnow().isoformat()
+    }
+    EXPORT_TEMPLATES[template_id] = template
+    return template
+
+
+@app.get("/export-templates")
+def list_export_templates():
+    """List export templates"""
+    return {"templates": list(EXPORT_TEMPLATES.values()), "total": len(EXPORT_TEMPLATES)}
+
+
+# ============================================================================
+# Incident Management
+# ============================================================================
+
+INCIDENTS: Dict[str, Dict[str, Any]] = {}
+INCIDENT_UPDATES: Dict[str, List[Dict[str, Any]]] = {}
+INCIDENT_POSTMORTEMS: Dict[str, Dict[str, Any]] = {}
+
+
+@app.post("/incidents")
+def create_incident(body: dict = Body(...)):
+    """Create incident"""
+    incident_id = f"inc_{uuid.uuid4().hex[:8]}"
+    incident = {
+        "id": incident_id,
+        "title": body.get("title", ""),
+        "description": body.get("description", ""),
+        "severity": body.get("severity", "medium"),
+        "status": "open",
+        "priority": body.get("priority", "P2"),
+        "affected_services": body.get("affected_services", []),
+        "assigned_to": body.get("assigned_to"),
+        "created_at": datetime.utcnow().isoformat(),
+        "resolved_at": None
+    }
+    INCIDENTS[incident_id] = incident
+    INCIDENT_UPDATES[incident_id] = []
+    return incident
+
+
+@app.get("/incidents")
+def list_incidents(status: Optional[str] = None, severity: Optional[str] = None):
+    """List incidents"""
+    incidents = list(INCIDENTS.values())
+    if status:
+        incidents = [i for i in incidents if i["status"] == status]
+    if severity:
+        incidents = [i for i in incidents if i["severity"] == severity]
+    return {"incidents": incidents, "total": len(incidents)}
+
+
+@app.get("/incidents/{incident_id}")
+def get_incident(incident_id: str):
+    """Get incident details"""
+    if incident_id not in INCIDENTS:
+        raise HTTPException(status_code=404, detail="Incident not found")
+    return {
+        "incident": INCIDENTS[incident_id],
+        "updates": INCIDENT_UPDATES.get(incident_id, []),
+        "postmortem": INCIDENT_POSTMORTEMS.get(incident_id)
+    }
+
+
+@app.post("/incidents/{incident_id}/update")
+def add_incident_update(incident_id: str, body: dict = Body(...)):
+    """Add incident update"""
+    if incident_id not in INCIDENTS:
+        raise HTTPException(status_code=404, detail="Incident not found")
+
+    update = {
+        "id": f"update_{uuid.uuid4().hex[:8]}",
+        "message": body.get("message", ""),
+        "status": body.get("status"),
+        "author": body.get("author", "system"),
+        "created_at": datetime.utcnow().isoformat()
+    }
+
+    if body.get("status"):
+        INCIDENTS[incident_id]["status"] = body["status"]
+
+    INCIDENT_UPDATES[incident_id].append(update)
+    return update
+
+
+@app.post("/incidents/{incident_id}/resolve")
+def resolve_incident(incident_id: str, body: dict = Body(...)):
+    """Resolve incident"""
+    if incident_id not in INCIDENTS:
+        raise HTTPException(status_code=404, detail="Incident not found")
+
+    incident = INCIDENTS[incident_id]
+    incident["status"] = "resolved"
+    incident["resolved_at"] = datetime.utcnow().isoformat()
+
+    INCIDENT_UPDATES[incident_id].append({
+        "id": f"update_{uuid.uuid4().hex[:8]}",
+        "message": body.get("resolution_message", "Incident resolved"),
+        "status": "resolved",
+        "author": body.get("author", "system"),
+        "created_at": datetime.utcnow().isoformat()
+    })
+
+    return {"message": "Incident resolved", "incident": incident}
+
+
+@app.post("/incidents/{incident_id}/postmortem")
+def create_postmortem(incident_id: str, body: dict = Body(...)):
+    """Create incident postmortem"""
+    if incident_id not in INCIDENTS:
+        raise HTTPException(status_code=404, detail="Incident not found")
+
+    postmortem = {
+        "incident_id": incident_id,
+        "summary": body.get("summary", ""),
+        "root_cause": body.get("root_cause", ""),
+        "impact": body.get("impact", ""),
+        "timeline": body.get("timeline", []),
+        "action_items": body.get("action_items", []),
+        "lessons_learned": body.get("lessons_learned", []),
+        "created_at": datetime.utcnow().isoformat()
+    }
+    INCIDENT_POSTMORTEMS[incident_id] = postmortem
+    return postmortem
+
+
+@app.get("/incidents/dashboard")
+def incident_dashboard():
+    """Get incident dashboard"""
+    incidents = list(INCIDENTS.values())
+    return {
+        "total": len(incidents),
+        "open": len([i for i in incidents if i["status"] == "open"]),
+        "investigating": len([i for i in incidents if i["status"] == "investigating"]),
+        "resolved": len([i for i in incidents if i["status"] == "resolved"]),
+        "by_severity": {
+            "critical": len([i for i in incidents if i["severity"] == "critical"]),
+            "high": len([i for i in incidents if i["severity"] == "high"]),
+            "medium": len([i for i in incidents if i["severity"] == "medium"]),
+            "low": len([i for i in incidents if i["severity"] == "low"])
+        },
+        "recent": sorted(incidents, key=lambda x: x["created_at"], reverse=True)[:5]
+    }
+
+
+# ============================================================================
+# Change Management
+# ============================================================================
+
+CHANGE_REQUESTS: Dict[str, Dict[str, Any]] = {}
+CHANGE_APPROVALS: Dict[str, List[Dict[str, Any]]] = {}
+CHANGE_IMPLEMENTATIONS: Dict[str, Dict[str, Any]] = {}
+
+
+@app.post("/changes")
+def create_change_request(body: dict = Body(...)):
+    """Create change request"""
+    change_id = f"chg_{uuid.uuid4().hex[:8]}"
+    change = {
+        "id": change_id,
+        "title": body.get("title", ""),
+        "description": body.get("description", ""),
+        "type": body.get("type", "standard"),
+        "priority": body.get("priority", "medium"),
+        "risk_level": body.get("risk_level", "low"),
+        "status": "draft",
+        "requester": body.get("requester", ""),
+        "affected_systems": body.get("affected_systems", []),
+        "implementation_plan": body.get("implementation_plan", ""),
+        "rollback_plan": body.get("rollback_plan", ""),
+        "scheduled_date": body.get("scheduled_date"),
+        "created_at": datetime.utcnow().isoformat()
+    }
+    CHANGE_REQUESTS[change_id] = change
+    CHANGE_APPROVALS[change_id] = []
+    return change
+
+
+@app.get("/changes")
+def list_change_requests(status: Optional[str] = None, type: Optional[str] = None):
+    """List change requests"""
+    changes = list(CHANGE_REQUESTS.values())
+    if status:
+        changes = [c for c in changes if c["status"] == status]
+    if type:
+        changes = [c for c in changes if c["type"] == type]
+    return {"changes": changes, "total": len(changes)}
+
+
+@app.get("/changes/{change_id}")
+def get_change_request(change_id: str):
+    """Get change request details"""
+    if change_id not in CHANGE_REQUESTS:
+        raise HTTPException(status_code=404, detail="Change request not found")
+    return {
+        "change": CHANGE_REQUESTS[change_id],
+        "approvals": CHANGE_APPROVALS.get(change_id, []),
+        "implementation": CHANGE_IMPLEMENTATIONS.get(change_id)
+    }
+
+
+@app.post("/changes/{change_id}/submit")
+def submit_change_request(change_id: str):
+    """Submit change request for approval"""
+    if change_id not in CHANGE_REQUESTS:
+        raise HTTPException(status_code=404, detail="Change request not found")
+
+    CHANGE_REQUESTS[change_id]["status"] = "pending_approval"
+    return {"message": "Change submitted for approval", "change_id": change_id}
+
+
+@app.post("/changes/{change_id}/approve")
+def approve_change(change_id: str, body: dict = Body(...)):
+    """Approve change request"""
+    if change_id not in CHANGE_REQUESTS:
+        raise HTTPException(status_code=404, detail="Change request not found")
+
+    approval = {
+        "id": f"appr_{uuid.uuid4().hex[:8]}",
+        "approver": body.get("approver", ""),
+        "decision": "approved",
+        "comments": body.get("comments", ""),
+        "approved_at": datetime.utcnow().isoformat()
+    }
+    CHANGE_APPROVALS[change_id].append(approval)
+    CHANGE_REQUESTS[change_id]["status"] = "approved"
+
+    return approval
+
+
+@app.post("/changes/{change_id}/reject")
+def reject_change(change_id: str, body: dict = Body(...)):
+    """Reject change request"""
+    if change_id not in CHANGE_REQUESTS:
+        raise HTTPException(status_code=404, detail="Change request not found")
+
+    approval = {
+        "id": f"appr_{uuid.uuid4().hex[:8]}",
+        "approver": body.get("approver", ""),
+        "decision": "rejected",
+        "reason": body.get("reason", ""),
+        "rejected_at": datetime.utcnow().isoformat()
+    }
+    CHANGE_APPROVALS[change_id].append(approval)
+    CHANGE_REQUESTS[change_id]["status"] = "rejected"
+
+    return approval
+
+
+@app.post("/changes/{change_id}/implement")
+def implement_change(change_id: str, body: dict = Body(...)):
+    """Record change implementation"""
+    if change_id not in CHANGE_REQUESTS:
+        raise HTTPException(status_code=404, detail="Change request not found")
+
+    implementation = {
+        "change_id": change_id,
+        "implementer": body.get("implementer", ""),
+        "status": "completed",
+        "started_at": datetime.utcnow().isoformat(),
+        "completed_at": datetime.utcnow().isoformat(),
+        "notes": body.get("notes", "")
+    }
+    CHANGE_IMPLEMENTATIONS[change_id] = implementation
+    CHANGE_REQUESTS[change_id]["status"] = "implemented"
+
+    return implementation
+
+
+@app.get("/changes/dashboard")
+def change_dashboard():
+    """Get change management dashboard"""
+    changes = list(CHANGE_REQUESTS.values())
+    return {
+        "total": len(changes),
+        "by_status": {
+            "draft": len([c for c in changes if c["status"] == "draft"]),
+            "pending_approval": len([c for c in changes if c["status"] == "pending_approval"]),
+            "approved": len([c for c in changes if c["status"] == "approved"]),
+            "implemented": len([c for c in changes if c["status"] == "implemented"]),
+            "rejected": len([c for c in changes if c["status"] == "rejected"])
+        },
+        "by_risk": {
+            "high": len([c for c in changes if c["risk_level"] == "high"]),
+            "medium": len([c for c in changes if c["risk_level"] == "medium"]),
+            "low": len([c for c in changes if c["risk_level"] == "low"])
+        },
+        "pending_approval": [c for c in changes if c["status"] == "pending_approval"][:5]
+    }
+
+
+# ============================================================================
 # Run Server
 # ============================================================================
 
