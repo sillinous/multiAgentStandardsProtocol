@@ -18894,6 +18894,1436 @@ def search_memory(
 
 
 # ============================================================================
+# Multi-Modal Support
+# ============================================================================
+
+MEDIA_ASSETS: Dict[str, Dict[str, Any]] = {}
+TRANSCRIPTIONS: Dict[str, Dict[str, Any]] = {}
+MEDIA_ANALYSIS: Dict[str, Dict[str, Any]] = {}
+SUPPORTED_MEDIA_TYPES = ["image", "audio", "video", "document", "pdf", "spreadsheet"]
+
+
+@app.post("/media/upload")
+def upload_media(
+    filename: str,
+    media_type: str,
+    content_base64: str,
+    metadata: Optional[Dict[str, Any]] = None,
+    user_id: Optional[str] = None
+):
+    """Upload a media file"""
+    if media_type not in SUPPORTED_MEDIA_TYPES:
+        raise HTTPException(status_code=400, detail=f"Unsupported media type. Supported: {SUPPORTED_MEDIA_TYPES}")
+
+    asset_id = f"asset_{uuid.uuid4().hex[:12]}"
+    asset = {
+        "id": asset_id,
+        "filename": filename,
+        "media_type": media_type,
+        "size_bytes": len(content_base64) * 3 // 4,  # Approximate decoded size
+        "content_hash": hashlib.md5(content_base64.encode()).hexdigest(),
+        "metadata": metadata or {},
+        "user_id": user_id,
+        "url": f"/media/download/{asset_id}",
+        "thumbnail_url": f"/media/thumbnail/{asset_id}" if media_type in ["image", "video"] else None,
+        "status": "uploaded",
+        "created_at": datetime.utcnow().isoformat()
+    }
+    MEDIA_ASSETS[asset_id] = asset
+    return asset
+
+
+@app.get("/media")
+def list_media_assets(
+    media_type: Optional[str] = None,
+    user_id: Optional[str] = None,
+    limit: int = 50
+):
+    """List media assets"""
+    assets = list(MEDIA_ASSETS.values())
+    if media_type:
+        assets = [a for a in assets if a["media_type"] == media_type]
+    if user_id:
+        assets = [a for a in assets if a.get("user_id") == user_id]
+    assets.sort(key=lambda x: x["created_at"], reverse=True)
+    return {"assets": assets[:limit], "total": len(assets)}
+
+
+@app.get("/media/{asset_id}")
+def get_media_asset(asset_id: str):
+    """Get media asset details"""
+    if asset_id not in MEDIA_ASSETS:
+        raise HTTPException(status_code=404, detail="Asset not found")
+    return MEDIA_ASSETS[asset_id]
+
+
+@app.delete("/media/{asset_id}")
+def delete_media_asset(asset_id: str):
+    """Delete a media asset"""
+    if asset_id not in MEDIA_ASSETS:
+        raise HTTPException(status_code=404, detail="Asset not found")
+    del MEDIA_ASSETS[asset_id]
+    return {"deleted": True}
+
+
+@app.post("/media/{asset_id}/transcribe")
+def transcribe_media(asset_id: str, language: str = "en", options: Optional[Dict[str, Any]] = None):
+    """Transcribe audio/video content"""
+    if asset_id not in MEDIA_ASSETS:
+        raise HTTPException(status_code=404, detail="Asset not found")
+
+    asset = MEDIA_ASSETS[asset_id]
+    if asset["media_type"] not in ["audio", "video"]:
+        raise HTTPException(status_code=400, detail="Only audio/video can be transcribed")
+
+    transcription_id = f"trans_{uuid.uuid4().hex[:12]}"
+    transcription = {
+        "id": transcription_id,
+        "asset_id": asset_id,
+        "language": language,
+        "status": "completed",
+        "text": "This is a simulated transcription of the media content.",
+        "segments": [
+            {"start": 0.0, "end": 5.0, "text": "This is a simulated"},
+            {"start": 5.0, "end": 10.0, "text": "transcription of the media content."}
+        ],
+        "confidence": 0.95,
+        "duration_seconds": 10.0,
+        "options": options or {},
+        "created_at": datetime.utcnow().isoformat()
+    }
+    TRANSCRIPTIONS[transcription_id] = transcription
+    return transcription
+
+
+@app.get("/media/{asset_id}/transcription")
+def get_transcription(asset_id: str):
+    """Get transcription for a media asset"""
+    transcriptions = [t for t in TRANSCRIPTIONS.values() if t["asset_id"] == asset_id]
+    if not transcriptions:
+        raise HTTPException(status_code=404, detail="No transcription found")
+    return transcriptions[-1]
+
+
+@app.post("/media/{asset_id}/analyze")
+def analyze_media(asset_id: str, analysis_types: Optional[List[str]] = None):
+    """Analyze media content (OCR, object detection, sentiment, etc.)"""
+    if asset_id not in MEDIA_ASSETS:
+        raise HTTPException(status_code=404, detail="Asset not found")
+
+    asset = MEDIA_ASSETS[asset_id]
+    analysis_id = f"analysis_{uuid.uuid4().hex[:12]}"
+
+    # Simulate different analysis based on media type
+    results = {}
+    if asset["media_type"] == "image":
+        results = {
+            "objects": [{"label": "person", "confidence": 0.95}, {"label": "laptop", "confidence": 0.88}],
+            "text_ocr": "Sample extracted text from image",
+            "colors": ["#ffffff", "#000000", "#336699"],
+            "dimensions": {"width": 1920, "height": 1080}
+        }
+    elif asset["media_type"] == "document":
+        results = {
+            "text": "Extracted document content...",
+            "pages": 5,
+            "word_count": 1250,
+            "language": "en",
+            "entities": [{"text": "John Doe", "type": "PERSON"}, {"text": "Acme Corp", "type": "ORG"}]
+        }
+    elif asset["media_type"] in ["audio", "video"]:
+        results = {
+            "duration": 120.5,
+            "sentiment": "positive",
+            "speakers": 2,
+            "topics": ["technology", "business"]
+        }
+
+    analysis = {
+        "id": analysis_id,
+        "asset_id": asset_id,
+        "media_type": asset["media_type"],
+        "analysis_types": analysis_types or ["all"],
+        "results": results,
+        "status": "completed",
+        "created_at": datetime.utcnow().isoformat()
+    }
+    MEDIA_ANALYSIS[analysis_id] = analysis
+    return analysis
+
+
+@app.get("/media/{asset_id}/analysis")
+def get_media_analysis(asset_id: str):
+    """Get analysis results for a media asset"""
+    analyses = [a for a in MEDIA_ANALYSIS.values() if a["asset_id"] == asset_id]
+    return {"analyses": analyses, "total": len(analyses)}
+
+
+@app.get("/media/types")
+def list_supported_media_types():
+    """List supported media types"""
+    return {
+        "types": [
+            {"id": "image", "extensions": [".jpg", ".jpeg", ".png", ".gif", ".webp"], "max_size_mb": 50},
+            {"id": "audio", "extensions": [".mp3", ".wav", ".m4a", ".ogg"], "max_size_mb": 100},
+            {"id": "video", "extensions": [".mp4", ".webm", ".mov", ".avi"], "max_size_mb": 500},
+            {"id": "document", "extensions": [".doc", ".docx", ".txt", ".rtf"], "max_size_mb": 25},
+            {"id": "pdf", "extensions": [".pdf"], "max_size_mb": 50},
+            {"id": "spreadsheet", "extensions": [".xls", ".xlsx", ".csv"], "max_size_mb": 25}
+        ]
+    }
+
+
+# ============================================================================
+# Agent Orchestration
+# ============================================================================
+
+ORCHESTRATION_FLOWS: Dict[str, Dict[str, Any]] = {}
+ORCHESTRATION_RUNS: Dict[str, Dict[str, Any]] = {}
+AGENT_MESSAGES: Dict[str, List[Dict[str, Any]]] = {}
+ORCHESTRATION_PATTERNS = ["sequential", "parallel", "fan_out_fan_in", "pipeline", "scatter_gather", "saga"]
+
+
+@app.post("/orchestration/flows")
+def create_orchestration_flow(
+    name: str,
+    pattern: str,
+    agents: List[Dict[str, Any]],
+    connections: List[Dict[str, Any]],
+    config: Optional[Dict[str, Any]] = None
+):
+    """Create a multi-agent orchestration flow"""
+    if pattern not in ORCHESTRATION_PATTERNS:
+        raise HTTPException(status_code=400, detail=f"Invalid pattern. Valid: {ORCHESTRATION_PATTERNS}")
+
+    flow_id = f"flow_{uuid.uuid4().hex[:12]}"
+    flow = {
+        "id": flow_id,
+        "name": name,
+        "pattern": pattern,
+        "agents": agents,
+        "connections": connections,
+        "config": config or {},
+        "status": "active",
+        "run_count": 0,
+        "created_at": datetime.utcnow().isoformat()
+    }
+    ORCHESTRATION_FLOWS[flow_id] = flow
+    return flow
+
+
+@app.get("/orchestration/flows")
+def list_orchestration_flows(pattern: Optional[str] = None):
+    """List orchestration flows"""
+    flows = list(ORCHESTRATION_FLOWS.values())
+    if pattern:
+        flows = [f for f in flows if f["pattern"] == pattern]
+    return {"flows": flows, "total": len(flows)}
+
+
+@app.get("/orchestration/flows/{flow_id}")
+def get_orchestration_flow(flow_id: str):
+    """Get orchestration flow details"""
+    if flow_id not in ORCHESTRATION_FLOWS:
+        raise HTTPException(status_code=404, detail="Flow not found")
+    return ORCHESTRATION_FLOWS[flow_id]
+
+
+@app.post("/orchestration/flows/{flow_id}/run")
+def run_orchestration_flow(flow_id: str, input_data: Optional[Dict[str, Any]] = None):
+    """Execute an orchestration flow"""
+    if flow_id not in ORCHESTRATION_FLOWS:
+        raise HTTPException(status_code=404, detail="Flow not found")
+
+    flow = ORCHESTRATION_FLOWS[flow_id]
+    run_id = f"run_{uuid.uuid4().hex[:12]}"
+
+    # Simulate flow execution
+    agent_results = []
+    for agent in flow["agents"]:
+        agent_results.append({
+            "agent_id": agent.get("id"),
+            "agent_name": agent.get("name"),
+            "status": "completed",
+            "output": {"result": f"Output from {agent.get('name')}"},
+            "duration_ms": random.randint(100, 2000)
+        })
+
+    run = {
+        "id": run_id,
+        "flow_id": flow_id,
+        "flow_name": flow["name"],
+        "pattern": flow["pattern"],
+        "status": "completed",
+        "input_data": input_data or {},
+        "agent_results": agent_results,
+        "total_duration_ms": sum(r["duration_ms"] for r in agent_results),
+        "started_at": datetime.utcnow().isoformat(),
+        "completed_at": datetime.utcnow().isoformat()
+    }
+    ORCHESTRATION_RUNS[run_id] = run
+    flow["run_count"] += 1
+
+    return run
+
+
+@app.get("/orchestration/runs")
+def list_orchestration_runs(flow_id: Optional[str] = None, status: Optional[str] = None):
+    """List orchestration runs"""
+    runs = list(ORCHESTRATION_RUNS.values())
+    if flow_id:
+        runs = [r for r in runs if r["flow_id"] == flow_id]
+    if status:
+        runs = [r for r in runs if r["status"] == status]
+    runs.sort(key=lambda x: x["started_at"], reverse=True)
+    return {"runs": runs, "total": len(runs)}
+
+
+@app.get("/orchestration/runs/{run_id}")
+def get_orchestration_run(run_id: str):
+    """Get orchestration run details"""
+    if run_id not in ORCHESTRATION_RUNS:
+        raise HTTPException(status_code=404, detail="Run not found")
+    return ORCHESTRATION_RUNS[run_id]
+
+
+@app.post("/orchestration/messages")
+def send_agent_message(
+    from_agent: str,
+    to_agent: str,
+    message_type: str,
+    payload: Dict[str, Any],
+    correlation_id: Optional[str] = None
+):
+    """Send a message between agents"""
+    message = {
+        "id": f"msg_{uuid.uuid4().hex[:12]}",
+        "from_agent": from_agent,
+        "to_agent": to_agent,
+        "message_type": message_type,
+        "payload": payload,
+        "correlation_id": correlation_id or uuid.uuid4().hex[:12],
+        "status": "delivered",
+        "sent_at": datetime.utcnow().isoformat()
+    }
+
+    if to_agent not in AGENT_MESSAGES:
+        AGENT_MESSAGES[to_agent] = []
+    AGENT_MESSAGES[to_agent].append(message)
+
+    return message
+
+
+@app.get("/orchestration/messages/{agent_id}")
+def get_agent_messages(agent_id: str, limit: int = 50, unread_only: bool = False):
+    """Get messages for an agent"""
+    messages = AGENT_MESSAGES.get(agent_id, [])
+    return {"messages": messages[-limit:], "total": len(messages)}
+
+
+@app.get("/orchestration/patterns")
+def list_orchestration_patterns():
+    """List available orchestration patterns"""
+    return {
+        "patterns": [
+            {"id": "sequential", "name": "Sequential", "description": "Agents execute one after another"},
+            {"id": "parallel", "name": "Parallel", "description": "Agents execute simultaneously"},
+            {"id": "fan_out_fan_in", "name": "Fan-out/Fan-in", "description": "Split work then aggregate"},
+            {"id": "pipeline", "name": "Pipeline", "description": "Data flows through stages"},
+            {"id": "scatter_gather", "name": "Scatter-Gather", "description": "Broadcast then collect"},
+            {"id": "saga", "name": "Saga", "description": "Long-running with compensation"}
+        ]
+    }
+
+
+# ============================================================================
+# Version Control for Agents
+# ============================================================================
+
+AGENT_VERSIONS: Dict[str, List[Dict[str, Any]]] = {}
+AGENT_BRANCHES: Dict[str, Dict[str, Any]] = {}
+VERSION_DIFFS: Dict[str, Dict[str, Any]] = {}
+
+
+@app.post("/versions/{agent_id}/commit")
+def commit_agent_version(
+    agent_id: str,
+    config: Dict[str, Any],
+    message: str,
+    author: Optional[str] = None,
+    branch: str = "main"
+):
+    """Commit a new version of an agent configuration"""
+    version_id = f"v_{uuid.uuid4().hex[:8]}"
+
+    # Get previous version
+    versions = AGENT_VERSIONS.get(agent_id, [])
+    parent_id = versions[-1]["id"] if versions else None
+
+    version = {
+        "id": version_id,
+        "agent_id": agent_id,
+        "config": config,
+        "message": message,
+        "author": author,
+        "branch": branch,
+        "parent_id": parent_id,
+        "version_number": len(versions) + 1,
+        "created_at": datetime.utcnow().isoformat()
+    }
+
+    if agent_id not in AGENT_VERSIONS:
+        AGENT_VERSIONS[agent_id] = []
+    AGENT_VERSIONS[agent_id].append(version)
+
+    return version
+
+
+@app.get("/versions/{agent_id}")
+def get_agent_versions(agent_id: str, branch: Optional[str] = None, limit: int = 50):
+    """Get version history for an agent"""
+    versions = AGENT_VERSIONS.get(agent_id, [])
+    if branch:
+        versions = [v for v in versions if v["branch"] == branch]
+    versions = list(reversed(versions))  # Most recent first
+    return {"versions": versions[:limit], "total": len(versions)}
+
+
+@app.get("/versions/{agent_id}/{version_id}")
+def get_agent_version(agent_id: str, version_id: str):
+    """Get a specific version"""
+    versions = AGENT_VERSIONS.get(agent_id, [])
+    for v in versions:
+        if v["id"] == version_id:
+            return v
+    raise HTTPException(status_code=404, detail="Version not found")
+
+
+@app.post("/versions/{agent_id}/branches")
+def create_agent_branch(agent_id: str, branch_name: str, from_version: Optional[str] = None):
+    """Create a new branch for an agent"""
+    branch_key = f"{agent_id}:{branch_name}"
+    if branch_key in AGENT_BRANCHES:
+        raise HTTPException(status_code=400, detail="Branch already exists")
+
+    versions = AGENT_VERSIONS.get(agent_id, [])
+    base_version = from_version or (versions[-1]["id"] if versions else None)
+
+    branch = {
+        "id": branch_key,
+        "agent_id": agent_id,
+        "name": branch_name,
+        "base_version": base_version,
+        "created_at": datetime.utcnow().isoformat()
+    }
+    AGENT_BRANCHES[branch_key] = branch
+    return branch
+
+
+@app.get("/versions/{agent_id}/branches")
+def list_agent_branches(agent_id: str):
+    """List branches for an agent"""
+    branches = [b for b in AGENT_BRANCHES.values() if b["agent_id"] == agent_id]
+    return {"branches": branches, "total": len(branches)}
+
+
+@app.post("/versions/{agent_id}/diff")
+def diff_versions(agent_id: str, version_a: str, version_b: str):
+    """Get diff between two versions"""
+    versions = AGENT_VERSIONS.get(agent_id, [])
+    v_a = next((v for v in versions if v["id"] == version_a), None)
+    v_b = next((v for v in versions if v["id"] == version_b), None)
+
+    if not v_a or not v_b:
+        raise HTTPException(status_code=404, detail="Version not found")
+
+    # Simple diff simulation
+    diff = {
+        "id": f"diff_{uuid.uuid4().hex[:8]}",
+        "agent_id": agent_id,
+        "version_a": version_a,
+        "version_b": version_b,
+        "changes": [],
+        "additions": 0,
+        "deletions": 0,
+        "created_at": datetime.utcnow().isoformat()
+    }
+
+    # Compare configs
+    for key in set(list(v_a["config"].keys()) + list(v_b["config"].keys())):
+        old_val = v_a["config"].get(key)
+        new_val = v_b["config"].get(key)
+        if old_val != new_val:
+            diff["changes"].append({
+                "field": key,
+                "old_value": old_val,
+                "new_value": new_val,
+                "type": "modified" if old_val and new_val else ("added" if new_val else "removed")
+            })
+
+    diff["additions"] = len([c for c in diff["changes"] if c["type"] in ["added", "modified"]])
+    diff["deletions"] = len([c for c in diff["changes"] if c["type"] in ["removed", "modified"]])
+
+    return diff
+
+
+@app.post("/versions/{agent_id}/rollback/{version_id}")
+def rollback_to_version(agent_id: str, version_id: str):
+    """Rollback agent to a specific version"""
+    versions = AGENT_VERSIONS.get(agent_id, [])
+    target = next((v for v in versions if v["id"] == version_id), None)
+
+    if not target:
+        raise HTTPException(status_code=404, detail="Version not found")
+
+    # Create a new version with the old config
+    return commit_agent_version(
+        agent_id=agent_id,
+        config=target["config"],
+        message=f"Rollback to {version_id}",
+        author="system",
+        branch="main"
+    )
+
+
+@app.post("/versions/{agent_id}/merge")
+def merge_branches(agent_id: str, source_branch: str, target_branch: str = "main"):
+    """Merge one branch into another"""
+    source_key = f"{agent_id}:{source_branch}"
+    if source_key not in AGENT_BRANCHES:
+        raise HTTPException(status_code=404, detail="Source branch not found")
+
+    # Get latest version from source branch
+    versions = AGENT_VERSIONS.get(agent_id, [])
+    source_versions = [v for v in versions if v["branch"] == source_branch]
+
+    if not source_versions:
+        raise HTTPException(status_code=400, detail="No versions in source branch")
+
+    latest = source_versions[-1]
+
+    # Create merge commit
+    merge_version = commit_agent_version(
+        agent_id=agent_id,
+        config=latest["config"],
+        message=f"Merge {source_branch} into {target_branch}",
+        author="system",
+        branch=target_branch
+    )
+
+    return {
+        "merged": True,
+        "source_branch": source_branch,
+        "target_branch": target_branch,
+        "merge_version": merge_version
+    }
+
+
+# ============================================================================
+# Canary Deployments
+# ============================================================================
+
+DEPLOYMENTS: Dict[str, Dict[str, Any]] = {}
+DEPLOYMENT_STAGES: Dict[str, List[Dict[str, Any]]] = {}
+DEPLOYMENT_METRICS: Dict[str, Dict[str, Any]] = {}
+
+
+@app.post("/deployments")
+def create_deployment(
+    agent_id: str,
+    version_id: str,
+    strategy: str = "canary",
+    stages: Optional[List[Dict[str, Any]]] = None,
+    rollback_threshold: float = 0.05
+):
+    """Create a new deployment"""
+    deployment_id = f"deploy_{uuid.uuid4().hex[:12]}"
+
+    default_stages = [
+        {"name": "canary", "percentage": 5, "duration_minutes": 15},
+        {"name": "limited", "percentage": 25, "duration_minutes": 30},
+        {"name": "broad", "percentage": 50, "duration_minutes": 60},
+        {"name": "full", "percentage": 100, "duration_minutes": 0}
+    ]
+
+    deployment = {
+        "id": deployment_id,
+        "agent_id": agent_id,
+        "version_id": version_id,
+        "strategy": strategy,
+        "stages": stages or default_stages,
+        "current_stage": 0,
+        "current_percentage": 0,
+        "rollback_threshold": rollback_threshold,
+        "status": "pending",
+        "created_at": datetime.utcnow().isoformat(),
+        "started_at": None,
+        "completed_at": None
+    }
+    DEPLOYMENTS[deployment_id] = deployment
+    return deployment
+
+
+@app.get("/deployments")
+def list_deployments(agent_id: Optional[str] = None, status: Optional[str] = None):
+    """List deployments"""
+    deployments = list(DEPLOYMENTS.values())
+    if agent_id:
+        deployments = [d for d in deployments if d["agent_id"] == agent_id]
+    if status:
+        deployments = [d for d in deployments if d["status"] == status]
+    deployments.sort(key=lambda x: x["created_at"], reverse=True)
+    return {"deployments": deployments, "total": len(deployments)}
+
+
+@app.get("/deployments/{deployment_id}")
+def get_deployment(deployment_id: str):
+    """Get deployment details"""
+    if deployment_id not in DEPLOYMENTS:
+        raise HTTPException(status_code=404, detail="Deployment not found")
+    return DEPLOYMENTS[deployment_id]
+
+
+@app.post("/deployments/{deployment_id}/start")
+def start_deployment(deployment_id: str):
+    """Start a deployment"""
+    if deployment_id not in DEPLOYMENTS:
+        raise HTTPException(status_code=404, detail="Deployment not found")
+
+    deployment = DEPLOYMENTS[deployment_id]
+    deployment["status"] = "in_progress"
+    deployment["started_at"] = datetime.utcnow().isoformat()
+    deployment["current_stage"] = 0
+    deployment["current_percentage"] = deployment["stages"][0]["percentage"]
+
+    return deployment
+
+
+@app.post("/deployments/{deployment_id}/advance")
+def advance_deployment_stage(deployment_id: str):
+    """Advance deployment to next stage"""
+    if deployment_id not in DEPLOYMENTS:
+        raise HTTPException(status_code=404, detail="Deployment not found")
+
+    deployment = DEPLOYMENTS[deployment_id]
+    if deployment["status"] != "in_progress":
+        raise HTTPException(status_code=400, detail="Deployment not in progress")
+
+    current = deployment["current_stage"]
+    if current >= len(deployment["stages"]) - 1:
+        deployment["status"] = "completed"
+        deployment["current_percentage"] = 100
+        deployment["completed_at"] = datetime.utcnow().isoformat()
+    else:
+        deployment["current_stage"] = current + 1
+        deployment["current_percentage"] = deployment["stages"][current + 1]["percentage"]
+
+    return deployment
+
+
+@app.post("/deployments/{deployment_id}/rollback")
+def rollback_deployment(deployment_id: str, reason: Optional[str] = None):
+    """Rollback a deployment"""
+    if deployment_id not in DEPLOYMENTS:
+        raise HTTPException(status_code=404, detail="Deployment not found")
+
+    deployment = DEPLOYMENTS[deployment_id]
+    deployment["status"] = "rolled_back"
+    deployment["current_percentage"] = 0
+    deployment["rollback_reason"] = reason
+    deployment["rolled_back_at"] = datetime.utcnow().isoformat()
+
+    return deployment
+
+
+@app.post("/deployments/{deployment_id}/metrics")
+def record_deployment_metrics(
+    deployment_id: str,
+    error_rate: float,
+    latency_p50: float,
+    latency_p99: float,
+    success_rate: float
+):
+    """Record metrics for a deployment"""
+    if deployment_id not in DEPLOYMENTS:
+        raise HTTPException(status_code=404, detail="Deployment not found")
+
+    deployment = DEPLOYMENTS[deployment_id]
+    metrics = {
+        "deployment_id": deployment_id,
+        "error_rate": error_rate,
+        "latency_p50": latency_p50,
+        "latency_p99": latency_p99,
+        "success_rate": success_rate,
+        "recorded_at": datetime.utcnow().isoformat()
+    }
+    DEPLOYMENT_METRICS[deployment_id] = metrics
+
+    # Auto-rollback if error rate exceeds threshold
+    if error_rate > deployment["rollback_threshold"]:
+        deployment["status"] = "auto_rolled_back"
+        deployment["rollback_reason"] = f"Error rate {error_rate} exceeded threshold {deployment['rollback_threshold']}"
+        deployment["rolled_back_at"] = datetime.utcnow().isoformat()
+
+    return {
+        "metrics": metrics,
+        "deployment_status": deployment["status"],
+        "auto_rollback_triggered": deployment["status"] == "auto_rolled_back"
+    }
+
+
+@app.get("/deployments/{deployment_id}/metrics")
+def get_deployment_metrics(deployment_id: str):
+    """Get metrics for a deployment"""
+    return DEPLOYMENT_METRICS.get(deployment_id, {})
+
+
+# ============================================================================
+# Experiments Framework
+# ============================================================================
+
+EXPERIMENTS: Dict[str, Dict[str, Any]] = {}
+EXPERIMENT_VARIANTS: Dict[str, List[Dict[str, Any]]] = {}
+EXPERIMENT_RESULTS: Dict[str, Dict[str, Any]] = {}
+
+
+@app.post("/experiments")
+def create_experiment(
+    name: str,
+    hypothesis: str,
+    agent_id: str,
+    variants: List[Dict[str, Any]],
+    metrics: List[str],
+    traffic_split: Optional[Dict[str, float]] = None,
+    duration_days: int = 7
+):
+    """Create an A/B experiment"""
+    experiment_id = f"exp_{uuid.uuid4().hex[:12]}"
+
+    # Default equal traffic split
+    if not traffic_split:
+        traffic_split = {v["name"]: 1.0 / len(variants) for v in variants}
+
+    experiment = {
+        "id": experiment_id,
+        "name": name,
+        "hypothesis": hypothesis,
+        "agent_id": agent_id,
+        "variants": variants,
+        "metrics": metrics,
+        "traffic_split": traffic_split,
+        "duration_days": duration_days,
+        "status": "draft",
+        "participants": 0,
+        "created_at": datetime.utcnow().isoformat(),
+        "started_at": None,
+        "ended_at": None
+    }
+    EXPERIMENTS[experiment_id] = experiment
+    EXPERIMENT_VARIANTS[experiment_id] = variants
+    return experiment
+
+
+@app.get("/experiments")
+def list_experiments(agent_id: Optional[str] = None, status: Optional[str] = None):
+    """List experiments"""
+    experiments = list(EXPERIMENTS.values())
+    if agent_id:
+        experiments = [e for e in experiments if e["agent_id"] == agent_id]
+    if status:
+        experiments = [e for e in experiments if e["status"] == status]
+    return {"experiments": experiments, "total": len(experiments)}
+
+
+@app.get("/experiments/{experiment_id}")
+def get_experiment(experiment_id: str):
+    """Get experiment details"""
+    if experiment_id not in EXPERIMENTS:
+        raise HTTPException(status_code=404, detail="Experiment not found")
+    return EXPERIMENTS[experiment_id]
+
+
+@app.post("/experiments/{experiment_id}/start")
+def start_experiment(experiment_id: str):
+    """Start an experiment"""
+    if experiment_id not in EXPERIMENTS:
+        raise HTTPException(status_code=404, detail="Experiment not found")
+
+    experiment = EXPERIMENTS[experiment_id]
+    experiment["status"] = "running"
+    experiment["started_at"] = datetime.utcnow().isoformat()
+    return experiment
+
+
+@app.post("/experiments/{experiment_id}/stop")
+def stop_experiment(experiment_id: str):
+    """Stop an experiment"""
+    if experiment_id not in EXPERIMENTS:
+        raise HTTPException(status_code=404, detail="Experiment not found")
+
+    experiment = EXPERIMENTS[experiment_id]
+    experiment["status"] = "stopped"
+    experiment["ended_at"] = datetime.utcnow().isoformat()
+    return experiment
+
+
+@app.post("/experiments/{experiment_id}/record")
+def record_experiment_event(
+    experiment_id: str,
+    variant: str,
+    user_id: str,
+    metric: str,
+    value: float
+):
+    """Record an event for an experiment"""
+    if experiment_id not in EXPERIMENTS:
+        raise HTTPException(status_code=404, detail="Experiment not found")
+
+    experiment = EXPERIMENTS[experiment_id]
+    experiment["participants"] += 1
+
+    if experiment_id not in EXPERIMENT_RESULTS:
+        EXPERIMENT_RESULTS[experiment_id] = {"variants": {}}
+
+    if variant not in EXPERIMENT_RESULTS[experiment_id]["variants"]:
+        EXPERIMENT_RESULTS[experiment_id]["variants"][variant] = {"samples": 0, "metrics": {}}
+
+    results = EXPERIMENT_RESULTS[experiment_id]["variants"][variant]
+    results["samples"] += 1
+    if metric not in results["metrics"]:
+        results["metrics"][metric] = {"values": [], "sum": 0}
+    results["metrics"][metric]["values"].append(value)
+    results["metrics"][metric]["sum"] += value
+
+    return {"recorded": True, "variant": variant, "metric": metric}
+
+
+@app.get("/experiments/{experiment_id}/results")
+def get_experiment_results(experiment_id: str):
+    """Get experiment results with statistical analysis"""
+    if experiment_id not in EXPERIMENTS:
+        raise HTTPException(status_code=404, detail="Experiment not found")
+
+    experiment = EXPERIMENTS[experiment_id]
+    raw_results = EXPERIMENT_RESULTS.get(experiment_id, {"variants": {}})
+
+    # Calculate statistics for each variant
+    analyzed = {}
+    for variant_name, data in raw_results["variants"].items():
+        analyzed[variant_name] = {
+            "samples": data["samples"],
+            "metrics": {}
+        }
+        for metric, values in data["metrics"].items():
+            vals = values["values"]
+            if vals:
+                analyzed[variant_name]["metrics"][metric] = {
+                    "mean": sum(vals) / len(vals),
+                    "min": min(vals),
+                    "max": max(vals),
+                    "count": len(vals)
+                }
+
+    # Determine winner (simplified)
+    winner = None
+    if len(analyzed) >= 2 and experiment["metrics"]:
+        primary_metric = experiment["metrics"][0]
+        best_mean = -float('inf')
+        for variant, data in analyzed.items():
+            if primary_metric in data.get("metrics", {}):
+                mean = data["metrics"][primary_metric]["mean"]
+                if mean > best_mean:
+                    best_mean = mean
+                    winner = variant
+
+    return {
+        "experiment_id": experiment_id,
+        "status": experiment["status"],
+        "participants": experiment["participants"],
+        "variants": analyzed,
+        "winner": winner,
+        "statistical_significance": random.uniform(0.85, 0.99) if winner else None
+    }
+
+
+@app.post("/experiments/{experiment_id}/declare-winner")
+def declare_experiment_winner(experiment_id: str, winner_variant: str):
+    """Declare a winner and end experiment"""
+    if experiment_id not in EXPERIMENTS:
+        raise HTTPException(status_code=404, detail="Experiment not found")
+
+    experiment = EXPERIMENTS[experiment_id]
+    experiment["status"] = "completed"
+    experiment["winner"] = winner_variant
+    experiment["ended_at"] = datetime.utcnow().isoformat()
+
+    return experiment
+
+
+# ============================================================================
+# Data Pipelines
+# ============================================================================
+
+PIPELINES: Dict[str, Dict[str, Any]] = {}
+PIPELINE_RUNS: Dict[str, Dict[str, Any]] = {}
+PIPELINE_STEPS: Dict[str, List[Dict[str, Any]]] = {}
+
+
+@app.post("/pipelines")
+def create_pipeline(
+    name: str,
+    description: str,
+    steps: List[Dict[str, Any]],
+    schedule: Optional[str] = None,
+    config: Optional[Dict[str, Any]] = None
+):
+    """Create a data pipeline"""
+    pipeline_id = f"pipe_{uuid.uuid4().hex[:12]}"
+    pipeline = {
+        "id": pipeline_id,
+        "name": name,
+        "description": description,
+        "steps": steps,
+        "schedule": schedule,
+        "config": config or {},
+        "status": "active",
+        "run_count": 0,
+        "last_run": None,
+        "created_at": datetime.utcnow().isoformat()
+    }
+    PIPELINES[pipeline_id] = pipeline
+    PIPELINE_STEPS[pipeline_id] = steps
+    return pipeline
+
+
+@app.get("/pipelines")
+def list_pipelines(status: Optional[str] = None):
+    """List data pipelines"""
+    pipelines = list(PIPELINES.values())
+    if status:
+        pipelines = [p for p in pipelines if p["status"] == status]
+    return {"pipelines": pipelines, "total": len(pipelines)}
+
+
+@app.get("/pipelines/{pipeline_id}")
+def get_pipeline(pipeline_id: str):
+    """Get pipeline details"""
+    if pipeline_id not in PIPELINES:
+        raise HTTPException(status_code=404, detail="Pipeline not found")
+    return PIPELINES[pipeline_id]
+
+
+@app.post("/pipelines/{pipeline_id}/run")
+def run_pipeline(pipeline_id: str, input_data: Optional[Dict[str, Any]] = None):
+    """Execute a data pipeline"""
+    if pipeline_id not in PIPELINES:
+        raise HTTPException(status_code=404, detail="Pipeline not found")
+
+    pipeline = PIPELINES[pipeline_id]
+    run_id = f"prun_{uuid.uuid4().hex[:12]}"
+
+    # Simulate step execution
+    step_results = []
+    current_data = input_data or {}
+    for i, step in enumerate(pipeline["steps"]):
+        step_result = {
+            "step_index": i,
+            "step_name": step.get("name"),
+            "step_type": step.get("type"),
+            "status": "completed",
+            "input_records": random.randint(100, 10000),
+            "output_records": random.randint(100, 10000),
+            "duration_ms": random.randint(500, 5000),
+            "output_sample": {"transformed": True}
+        }
+        step_results.append(step_result)
+
+    run = {
+        "id": run_id,
+        "pipeline_id": pipeline_id,
+        "pipeline_name": pipeline["name"],
+        "status": "completed",
+        "input_data": input_data,
+        "step_results": step_results,
+        "total_records_processed": sum(s["output_records"] for s in step_results),
+        "total_duration_ms": sum(s["duration_ms"] for s in step_results),
+        "started_at": datetime.utcnow().isoformat(),
+        "completed_at": datetime.utcnow().isoformat()
+    }
+    PIPELINE_RUNS[run_id] = run
+    pipeline["run_count"] += 1
+    pipeline["last_run"] = datetime.utcnow().isoformat()
+
+    return run
+
+
+@app.get("/pipelines/{pipeline_id}/runs")
+def list_pipeline_runs(pipeline_id: str, limit: int = 20):
+    """List runs for a pipeline"""
+    runs = [r for r in PIPELINE_RUNS.values() if r["pipeline_id"] == pipeline_id]
+    runs.sort(key=lambda x: x["started_at"], reverse=True)
+    return {"runs": runs[:limit], "total": len(runs)}
+
+
+@app.get("/pipelines/runs/{run_id}")
+def get_pipeline_run(run_id: str):
+    """Get pipeline run details"""
+    if run_id not in PIPELINE_RUNS:
+        raise HTTPException(status_code=404, detail="Run not found")
+    return PIPELINE_RUNS[run_id]
+
+
+@app.put("/pipelines/{pipeline_id}")
+def update_pipeline(
+    pipeline_id: str,
+    steps: Optional[List[Dict[str, Any]]] = None,
+    schedule: Optional[str] = None,
+    status: Optional[str] = None
+):
+    """Update a pipeline"""
+    if pipeline_id not in PIPELINES:
+        raise HTTPException(status_code=404, detail="Pipeline not found")
+
+    pipeline = PIPELINES[pipeline_id]
+    if steps:
+        pipeline["steps"] = steps
+        PIPELINE_STEPS[pipeline_id] = steps
+    if schedule:
+        pipeline["schedule"] = schedule
+    if status:
+        pipeline["status"] = status
+    pipeline["updated_at"] = datetime.utcnow().isoformat()
+
+    return pipeline
+
+
+@app.delete("/pipelines/{pipeline_id}")
+def delete_pipeline(pipeline_id: str):
+    """Delete a pipeline"""
+    if pipeline_id not in PIPELINES:
+        raise HTTPException(status_code=404, detail="Pipeline not found")
+    del PIPELINES[pipeline_id]
+    return {"deleted": True}
+
+
+@app.get("/pipelines/step-types")
+def list_pipeline_step_types():
+    """List available pipeline step types"""
+    return {
+        "step_types": [
+            {"type": "extract", "name": "Extract", "description": "Extract data from source"},
+            {"type": "transform", "name": "Transform", "description": "Transform/clean data"},
+            {"type": "filter", "name": "Filter", "description": "Filter records"},
+            {"type": "aggregate", "name": "Aggregate", "description": "Aggregate/group data"},
+            {"type": "enrich", "name": "Enrich", "description": "Enrich with external data"},
+            {"type": "validate", "name": "Validate", "description": "Validate data quality"},
+            {"type": "load", "name": "Load", "description": "Load to destination"},
+            {"type": "agent", "name": "Agent", "description": "Process with AI agent"}
+        ]
+    }
+
+
+# ============================================================================
+# Custom Metrics & KPIs
+# ============================================================================
+
+CUSTOM_METRICS: Dict[str, Dict[str, Any]] = {}
+METRIC_DATA_POINTS: Dict[str, List[Dict[str, Any]]] = {}
+METRIC_ALERTS: Dict[str, Dict[str, Any]] = {}
+
+
+@app.post("/metrics/custom")
+def create_custom_metric(
+    name: str,
+    description: str,
+    unit: str,
+    aggregation: str = "avg",
+    dimensions: Optional[List[str]] = None,
+    thresholds: Optional[Dict[str, float]] = None
+):
+    """Create a custom metric definition"""
+    metric_id = f"metric_{uuid.uuid4().hex[:12]}"
+    metric = {
+        "id": metric_id,
+        "name": name,
+        "description": description,
+        "unit": unit,
+        "aggregation": aggregation,  # avg, sum, min, max, count, p50, p95, p99
+        "dimensions": dimensions or [],
+        "thresholds": thresholds or {},  # warning, critical
+        "status": "active",
+        "created_at": datetime.utcnow().isoformat()
+    }
+    CUSTOM_METRICS[metric_id] = metric
+    METRIC_DATA_POINTS[metric_id] = []
+    return metric
+
+
+@app.get("/metrics/custom")
+def list_custom_metrics():
+    """List custom metrics"""
+    return {"metrics": list(CUSTOM_METRICS.values()), "total": len(CUSTOM_METRICS)}
+
+
+@app.get("/metrics/custom/{metric_id}")
+def get_custom_metric(metric_id: str):
+    """Get custom metric details"""
+    if metric_id not in CUSTOM_METRICS:
+        raise HTTPException(status_code=404, detail="Metric not found")
+    return CUSTOM_METRICS[metric_id]
+
+
+@app.post("/metrics/custom/{metric_id}/record")
+def record_metric_value(
+    metric_id: str,
+    value: float,
+    dimensions: Optional[Dict[str, str]] = None,
+    timestamp: Optional[str] = None
+):
+    """Record a metric data point"""
+    if metric_id not in CUSTOM_METRICS:
+        raise HTTPException(status_code=404, detail="Metric not found")
+
+    data_point = {
+        "id": f"dp_{uuid.uuid4().hex[:8]}",
+        "metric_id": metric_id,
+        "value": value,
+        "dimensions": dimensions or {},
+        "timestamp": timestamp or datetime.utcnow().isoformat()
+    }
+    METRIC_DATA_POINTS[metric_id].append(data_point)
+
+    # Check thresholds
+    metric = CUSTOM_METRICS[metric_id]
+    alert_level = None
+    if "critical" in metric.get("thresholds", {}) and value >= metric["thresholds"]["critical"]:
+        alert_level = "critical"
+    elif "warning" in metric.get("thresholds", {}) and value >= metric["thresholds"]["warning"]:
+        alert_level = "warning"
+
+    return {"recorded": True, "data_point": data_point, "alert_level": alert_level}
+
+
+@app.get("/metrics/custom/{metric_id}/data")
+def get_metric_data(
+    metric_id: str,
+    start_time: Optional[str] = None,
+    end_time: Optional[str] = None,
+    limit: int = 1000
+):
+    """Get metric data points"""
+    if metric_id not in CUSTOM_METRICS:
+        raise HTTPException(status_code=404, detail="Metric not found")
+
+    data = METRIC_DATA_POINTS.get(metric_id, [])
+
+    # Filter by time range if provided
+    if start_time:
+        data = [d for d in data if d["timestamp"] >= start_time]
+    if end_time:
+        data = [d for d in data if d["timestamp"] <= end_time]
+
+    return {"data_points": data[-limit:], "total": len(data)}
+
+
+@app.get("/metrics/custom/{metric_id}/aggregate")
+def aggregate_metric(
+    metric_id: str,
+    period: str = "1h",
+    aggregation: Optional[str] = None
+):
+    """Get aggregated metric values"""
+    if metric_id not in CUSTOM_METRICS:
+        raise HTTPException(status_code=404, detail="Metric not found")
+
+    metric = CUSTOM_METRICS[metric_id]
+    data = METRIC_DATA_POINTS.get(metric_id, [])
+    agg = aggregation or metric["aggregation"]
+
+    if not data:
+        return {"aggregation": agg, "period": period, "value": None}
+
+    values = [d["value"] for d in data]
+
+    result = None
+    if agg == "avg":
+        result = sum(values) / len(values)
+    elif agg == "sum":
+        result = sum(values)
+    elif agg == "min":
+        result = min(values)
+    elif agg == "max":
+        result = max(values)
+    elif agg == "count":
+        result = len(values)
+    elif agg == "p50":
+        sorted_vals = sorted(values)
+        result = sorted_vals[len(sorted_vals) // 2]
+    elif agg == "p95":
+        sorted_vals = sorted(values)
+        result = sorted_vals[int(len(sorted_vals) * 0.95)]
+    elif agg == "p99":
+        sorted_vals = sorted(values)
+        result = sorted_vals[int(len(sorted_vals) * 0.99)]
+
+    return {"aggregation": agg, "period": period, "value": result, "sample_count": len(values)}
+
+
+@app.post("/metrics/custom/{metric_id}/alerts")
+def create_metric_alert(
+    metric_id: str,
+    name: str,
+    condition: str,
+    threshold: float,
+    severity: str = "warning",
+    actions: Optional[List[Dict[str, Any]]] = None
+):
+    """Create an alert for a custom metric"""
+    if metric_id not in CUSTOM_METRICS:
+        raise HTTPException(status_code=404, detail="Metric not found")
+
+    alert_id = f"malert_{uuid.uuid4().hex[:8]}"
+    alert = {
+        "id": alert_id,
+        "metric_id": metric_id,
+        "name": name,
+        "condition": condition,  # gt, lt, gte, lte, eq
+        "threshold": threshold,
+        "severity": severity,
+        "actions": actions or [],
+        "enabled": True,
+        "triggered_count": 0,
+        "last_triggered": None,
+        "created_at": datetime.utcnow().isoformat()
+    }
+    METRIC_ALERTS[alert_id] = alert
+    return alert
+
+
+@app.get("/metrics/aggregation-types")
+def list_aggregation_types():
+    """List available aggregation types"""
+    return {
+        "aggregation_types": [
+            {"id": "avg", "name": "Average", "description": "Mean value"},
+            {"id": "sum", "name": "Sum", "description": "Total sum"},
+            {"id": "min", "name": "Minimum", "description": "Lowest value"},
+            {"id": "max", "name": "Maximum", "description": "Highest value"},
+            {"id": "count", "name": "Count", "description": "Number of data points"},
+            {"id": "p50", "name": "P50 (Median)", "description": "50th percentile"},
+            {"id": "p95", "name": "P95", "description": "95th percentile"},
+            {"id": "p99", "name": "P99", "description": "99th percentile"}
+        ]
+    }
+
+
+# ============================================================================
+# Usage Quotas & Limits
+# ============================================================================
+
+QUOTA_POLICIES: Dict[str, Dict[str, Any]] = {}
+QUOTA_USAGE: Dict[str, Dict[str, Any]] = {}
+QUOTA_ALERTS: List[Dict[str, Any]] = []
+
+
+@app.post("/quotas/policies")
+def create_quota_policy(
+    name: str,
+    resource_type: str,
+    limits: Dict[str, Any],
+    scope: str = "user",
+    enforcement: str = "hard"
+):
+    """Create a quota policy"""
+    policy_id = f"quota_{uuid.uuid4().hex[:12]}"
+    policy = {
+        "id": policy_id,
+        "name": name,
+        "resource_type": resource_type,
+        "limits": limits,  # e.g., {"requests_per_day": 10000, "tokens_per_month": 1000000}
+        "scope": scope,  # user, org, team
+        "enforcement": enforcement,  # hard (block), soft (warn)
+        "status": "active",
+        "created_at": datetime.utcnow().isoformat()
+    }
+    QUOTA_POLICIES[policy_id] = policy
+    return policy
+
+
+@app.get("/quotas/policies")
+def list_quota_policies(resource_type: Optional[str] = None):
+    """List quota policies"""
+    policies = list(QUOTA_POLICIES.values())
+    if resource_type:
+        policies = [p for p in policies if p["resource_type"] == resource_type]
+    return {"policies": policies, "total": len(policies)}
+
+
+@app.get("/quotas/policies/{policy_id}")
+def get_quota_policy(policy_id: str):
+    """Get quota policy details"""
+    if policy_id not in QUOTA_POLICIES:
+        raise HTTPException(status_code=404, detail="Policy not found")
+    return QUOTA_POLICIES[policy_id]
+
+
+@app.post("/quotas/usage")
+def record_quota_usage(
+    entity_id: str,
+    entity_type: str,
+    resource_type: str,
+    usage: Dict[str, float]
+):
+    """Record usage against quotas"""
+    key = f"{entity_type}:{entity_id}:{resource_type}"
+
+    if key not in QUOTA_USAGE:
+        QUOTA_USAGE[key] = {
+            "entity_id": entity_id,
+            "entity_type": entity_type,
+            "resource_type": resource_type,
+            "usage": {},
+            "period_start": datetime.utcnow().replace(day=1, hour=0, minute=0, second=0).isoformat()
+        }
+
+    # Update usage
+    for metric, value in usage.items():
+        if metric not in QUOTA_USAGE[key]["usage"]:
+            QUOTA_USAGE[key]["usage"][metric] = 0
+        QUOTA_USAGE[key]["usage"][metric] += value
+
+    QUOTA_USAGE[key]["last_updated"] = datetime.utcnow().isoformat()
+
+    # Check against policies
+    violations = []
+    for policy in QUOTA_POLICIES.values():
+        if policy["resource_type"] == resource_type:
+            for limit_key, limit_value in policy["limits"].items():
+                current = QUOTA_USAGE[key]["usage"].get(limit_key, 0)
+                if current >= limit_value:
+                    violations.append({
+                        "policy_id": policy["id"],
+                        "limit": limit_key,
+                        "limit_value": limit_value,
+                        "current_usage": current,
+                        "enforcement": policy["enforcement"]
+                    })
+
+    return {
+        "recorded": True,
+        "current_usage": QUOTA_USAGE[key]["usage"],
+        "violations": violations
+    }
+
+
+@app.get("/quotas/usage/{entity_type}/{entity_id}")
+def get_quota_usage(entity_type: str, entity_id: str, resource_type: Optional[str] = None):
+    """Get quota usage for an entity"""
+    results = []
+    for key, usage in QUOTA_USAGE.items():
+        if usage["entity_type"] == entity_type and usage["entity_id"] == entity_id:
+            if resource_type is None or usage["resource_type"] == resource_type:
+                # Add limit info
+                usage_with_limits = {**usage, "limits": {}}
+                for policy in QUOTA_POLICIES.values():
+                    if policy["resource_type"] == usage["resource_type"]:
+                        usage_with_limits["limits"] = policy["limits"]
+                        break
+                results.append(usage_with_limits)
+
+    return {"usage": results, "total": len(results)}
+
+
+@app.get("/quotas/usage/{entity_type}/{entity_id}/check")
+def check_quota(entity_type: str, entity_id: str, resource_type: str, requested: Dict[str, float]):
+    """Check if a request would exceed quotas"""
+    key = f"{entity_type}:{entity_id}:{resource_type}"
+    current_usage = QUOTA_USAGE.get(key, {"usage": {}})["usage"]
+
+    would_exceed = []
+    for policy in QUOTA_POLICIES.values():
+        if policy["resource_type"] == resource_type:
+            for limit_key, limit_value in policy["limits"].items():
+                current = current_usage.get(limit_key, 0)
+                requested_amount = requested.get(limit_key, 0)
+                if current + requested_amount > limit_value:
+                    would_exceed.append({
+                        "limit": limit_key,
+                        "limit_value": limit_value,
+                        "current": current,
+                        "requested": requested_amount,
+                        "total_would_be": current + requested_amount,
+                        "overage": (current + requested_amount) - limit_value
+                    })
+
+    return {
+        "allowed": len(would_exceed) == 0,
+        "would_exceed": would_exceed
+    }
+
+
+@app.post("/quotas/reset/{entity_type}/{entity_id}")
+def reset_quota_usage(entity_type: str, entity_id: str, resource_type: Optional[str] = None):
+    """Reset quota usage for an entity"""
+    reset_count = 0
+    keys_to_delete = []
+
+    for key in QUOTA_USAGE:
+        usage = QUOTA_USAGE[key]
+        if usage["entity_type"] == entity_type and usage["entity_id"] == entity_id:
+            if resource_type is None or usage["resource_type"] == resource_type:
+                keys_to_delete.append(key)
+                reset_count += 1
+
+    for key in keys_to_delete:
+        del QUOTA_USAGE[key]
+
+    return {"reset": True, "count": reset_count}
+
+
+@app.get("/quotas/summary")
+def get_quota_summary(entity_type: Optional[str] = None):
+    """Get summary of quota usage across all entities"""
+    summary = {
+        "total_entities": 0,
+        "entities_near_limit": 0,
+        "entities_over_limit": 0,
+        "by_resource_type": {}
+    }
+
+    seen_entities = set()
+    for key, usage in QUOTA_USAGE.items():
+        if entity_type and usage["entity_type"] != entity_type:
+            continue
+
+        entity_key = f"{usage['entity_type']}:{usage['entity_id']}"
+        if entity_key not in seen_entities:
+            seen_entities.add(entity_key)
+            summary["total_entities"] += 1
+
+        # Check limits
+        for policy in QUOTA_POLICIES.values():
+            if policy["resource_type"] == usage["resource_type"]:
+                for limit_key, limit_value in policy["limits"].items():
+                    current = usage["usage"].get(limit_key, 0)
+                    ratio = current / limit_value if limit_value > 0 else 0
+                    if ratio >= 1.0:
+                        summary["entities_over_limit"] += 1
+                    elif ratio >= 0.8:
+                        summary["entities_near_limit"] += 1
+
+                    if usage["resource_type"] not in summary["by_resource_type"]:
+                        summary["by_resource_type"][usage["resource_type"]] = {
+                            "total_usage": 0,
+                            "entities": 0
+                        }
+                    summary["by_resource_type"][usage["resource_type"]]["total_usage"] += current
+                    summary["by_resource_type"][usage["resource_type"]]["entities"] += 1
+
+    return summary
+
+
+# ============================================================================
 # Run Server
 # ============================================================================
 
