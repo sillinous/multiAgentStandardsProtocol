@@ -11387,6 +11387,2181 @@ def graphql_playground_config():
 
 
 # ============================================================================
+# Multi-tenancy / Organizations
+# ============================================================================
+
+ORGANIZATIONS: Dict[str, Dict[str, Any]] = {}
+ORG_TEAMS: Dict[str, Dict[str, Any]] = {}
+ORG_MEMBERS: Dict[str, Dict[str, Any]] = {}
+ORG_ROLES: Dict[str, Dict[str, Any]] = {
+    "owner": {"permissions": ["*"]},
+    "admin": {"permissions": ["read", "write", "delete", "manage_members", "manage_teams"]},
+    "member": {"permissions": ["read", "write"]},
+    "viewer": {"permissions": ["read"]}
+}
+
+
+@app.post("/organizations")
+def create_organization(request: Request):
+    """Create a new organization"""
+    data = {}
+    org_id = f"org_{uuid.uuid4().hex[:12]}"
+
+    org = {
+        "id": org_id,
+        "name": data.get("name", f"Organization {org_id}"),
+        "slug": data.get("slug", org_id),
+        "plan": data.get("plan", "free"),
+        "settings": {
+            "default_environment": "development",
+            "require_2fa": False,
+            "allowed_domains": [],
+            "ip_whitelist": []
+        },
+        "limits": {
+            "max_agents": 100,
+            "max_workflows": 50,
+            "max_members": 10,
+            "max_teams": 5,
+            "api_rate_limit": 1000
+        },
+        "billing": {
+            "plan": "free",
+            "status": "active",
+            "next_billing_date": None
+        },
+        "created_at": datetime.now(timezone.utc).isoformat(),
+        "updated_at": datetime.now(timezone.utc).isoformat()
+    }
+
+    ORGANIZATIONS[org_id] = org
+    return {"organization": org}
+
+
+@app.get("/organizations")
+def list_organizations():
+    """List all organizations"""
+    return {
+        "organizations": list(ORGANIZATIONS.values()),
+        "total": len(ORGANIZATIONS)
+    }
+
+
+@app.get("/organizations/{org_id}")
+def get_organization(org_id: str):
+    """Get organization details"""
+    if org_id not in ORGANIZATIONS:
+        raise HTTPException(status_code=404, detail="Organization not found")
+    return {"organization": ORGANIZATIONS[org_id]}
+
+
+@app.put("/organizations/{org_id}")
+def update_organization(org_id: str, request: Request):
+    """Update organization"""
+    if org_id not in ORGANIZATIONS:
+        raise HTTPException(status_code=404, detail="Organization not found")
+
+    data = {}
+    org = ORGANIZATIONS[org_id]
+
+    for field in ["name", "slug", "plan", "settings", "limits"]:
+        if field in data:
+            org[field] = data[field]
+
+    org["updated_at"] = datetime.now(timezone.utc).isoformat()
+    return {"organization": org}
+
+
+@app.delete("/organizations/{org_id}")
+def delete_organization(org_id: str):
+    """Delete organization"""
+    if org_id not in ORGANIZATIONS:
+        raise HTTPException(status_code=404, detail="Organization not found")
+
+    del ORGANIZATIONS[org_id]
+    # Clean up related resources
+    teams_to_delete = [tid for tid, t in ORG_TEAMS.items() if t.get("org_id") == org_id]
+    for tid in teams_to_delete:
+        del ORG_TEAMS[tid]
+
+    members_to_delete = [mid for mid, m in ORG_MEMBERS.items() if m.get("org_id") == org_id]
+    for mid in members_to_delete:
+        del ORG_MEMBERS[mid]
+
+    return {"deleted": True}
+
+
+@app.post("/organizations/{org_id}/teams")
+def create_team(org_id: str, request: Request):
+    """Create a team within an organization"""
+    if org_id not in ORGANIZATIONS:
+        raise HTTPException(status_code=404, detail="Organization not found")
+
+    data = {}
+    team_id = f"team_{uuid.uuid4().hex[:12]}"
+
+    team = {
+        "id": team_id,
+        "org_id": org_id,
+        "name": data.get("name", f"Team {team_id}"),
+        "description": data.get("description", ""),
+        "members": [],
+        "permissions": data.get("permissions", ["read"]),
+        "created_at": datetime.now(timezone.utc).isoformat()
+    }
+
+    ORG_TEAMS[team_id] = team
+    return {"team": team}
+
+
+@app.get("/organizations/{org_id}/teams")
+def list_teams(org_id: str):
+    """List teams in an organization"""
+    if org_id not in ORGANIZATIONS:
+        raise HTTPException(status_code=404, detail="Organization not found")
+
+    teams = [t for t in ORG_TEAMS.values() if t.get("org_id") == org_id]
+    return {"teams": teams, "total": len(teams)}
+
+
+@app.post("/organizations/{org_id}/members")
+def add_member(org_id: str, request: Request):
+    """Add a member to an organization"""
+    if org_id not in ORGANIZATIONS:
+        raise HTTPException(status_code=404, detail="Organization not found")
+
+    data = {}
+    member_id = f"member_{uuid.uuid4().hex[:12]}"
+
+    member = {
+        "id": member_id,
+        "org_id": org_id,
+        "user_id": data.get("user_id"),
+        "email": data.get("email"),
+        "role": data.get("role", "member"),
+        "teams": data.get("teams", []),
+        "status": "active",
+        "invited_at": datetime.now(timezone.utc).isoformat(),
+        "joined_at": datetime.now(timezone.utc).isoformat()
+    }
+
+    ORG_MEMBERS[member_id] = member
+    return {"member": member}
+
+
+@app.get("/organizations/{org_id}/members")
+def list_members(org_id: str):
+    """List members in an organization"""
+    if org_id not in ORGANIZATIONS:
+        raise HTTPException(status_code=404, detail="Organization not found")
+
+    members = [m for m in ORG_MEMBERS.values() if m.get("org_id") == org_id]
+    return {"members": members, "total": len(members)}
+
+
+@app.put("/organizations/{org_id}/members/{member_id}/role")
+def update_member_role(org_id: str, member_id: str, request: Request):
+    """Update a member's role"""
+    if member_id not in ORG_MEMBERS:
+        raise HTTPException(status_code=404, detail="Member not found")
+
+    data = {}
+    new_role = data.get("role", "member")
+
+    if new_role not in ORG_ROLES:
+        raise HTTPException(status_code=400, detail="Invalid role")
+
+    ORG_MEMBERS[member_id]["role"] = new_role
+    return {"member": ORG_MEMBERS[member_id]}
+
+
+@app.get("/organizations/{org_id}/permissions")
+def get_org_permissions(org_id: str):
+    """Get available roles and permissions"""
+    return {
+        "roles": ORG_ROLES,
+        "available_permissions": [
+            "read", "write", "delete", "execute",
+            "manage_members", "manage_teams", "manage_billing",
+            "manage_settings", "manage_integrations", "admin", "*"
+        ]
+    }
+
+
+# ============================================================================
+# Audit Logging / Activity Stream
+# ============================================================================
+
+AUDIT_LOGS: List[Dict[str, Any]] = []
+AUDIT_LOG_RETENTION_DAYS = 90
+
+
+@app.post("/audit/log")
+def create_audit_log(request: Request):
+    """Create an audit log entry"""
+    data = {}
+
+    log_entry = {
+        "id": f"audit_{uuid.uuid4().hex[:12]}",
+        "timestamp": datetime.now(timezone.utc).isoformat(),
+        "actor": {
+            "type": data.get("actor_type", "user"),
+            "id": data.get("actor_id"),
+            "email": data.get("actor_email"),
+            "ip_address": data.get("ip_address")
+        },
+        "action": data.get("action", "unknown"),
+        "resource": {
+            "type": data.get("resource_type"),
+            "id": data.get("resource_id"),
+            "name": data.get("resource_name")
+        },
+        "context": {
+            "org_id": data.get("org_id"),
+            "environment": data.get("environment"),
+            "user_agent": data.get("user_agent"),
+            "request_id": data.get("request_id")
+        },
+        "changes": data.get("changes", {}),
+        "metadata": data.get("metadata", {}),
+        "status": data.get("status", "success")
+    }
+
+    AUDIT_LOGS.append(log_entry)
+    return {"audit_log": log_entry}
+
+
+@app.get("/audit/logs")
+def list_audit_logs(
+    org_id: Optional[str] = None,
+    actor_id: Optional[str] = None,
+    action: Optional[str] = None,
+    resource_type: Optional[str] = None,
+    start_date: Optional[str] = None,
+    end_date: Optional[str] = None,
+    limit: int = 100,
+    offset: int = 0
+):
+    """Query audit logs with filters"""
+    filtered = AUDIT_LOGS.copy()
+
+    if org_id:
+        filtered = [l for l in filtered if l["context"].get("org_id") == org_id]
+    if actor_id:
+        filtered = [l for l in filtered if l["actor"].get("id") == actor_id]
+    if action:
+        filtered = [l for l in filtered if l.get("action") == action]
+    if resource_type:
+        filtered = [l for l in filtered if l["resource"].get("type") == resource_type]
+
+    # Sort by timestamp descending
+    filtered.sort(key=lambda x: x["timestamp"], reverse=True)
+
+    return {
+        "logs": filtered[offset:offset + limit],
+        "total": len(filtered),
+        "limit": limit,
+        "offset": offset
+    }
+
+
+@app.get("/audit/logs/{log_id}")
+def get_audit_log(log_id: str):
+    """Get a specific audit log entry"""
+    for log in AUDIT_LOGS:
+        if log["id"] == log_id:
+            return {"audit_log": log}
+    raise HTTPException(status_code=404, detail="Audit log not found")
+
+
+@app.get("/audit/activity-stream")
+def get_activity_stream(
+    org_id: Optional[str] = None,
+    limit: int = 50
+):
+    """Get recent activity stream"""
+    filtered = AUDIT_LOGS.copy()
+
+    if org_id:
+        filtered = [l for l in filtered if l["context"].get("org_id") == org_id]
+
+    filtered.sort(key=lambda x: x["timestamp"], reverse=True)
+
+    activities = []
+    for log in filtered[:limit]:
+        activities.append({
+            "id": log["id"],
+            "timestamp": log["timestamp"],
+            "actor": log["actor"].get("email") or log["actor"].get("id"),
+            "action": log["action"],
+            "resource": f"{log['resource'].get('type')}: {log['resource'].get('name') or log['resource'].get('id')}",
+            "status": log["status"]
+        })
+
+    return {"activities": activities, "total": len(activities)}
+
+
+@app.get("/audit/actions")
+def list_audit_actions():
+    """List available audit action types"""
+    return {
+        "actions": [
+            "agent.created", "agent.updated", "agent.deleted", "agent.executed",
+            "workflow.created", "workflow.updated", "workflow.deleted", "workflow.executed",
+            "user.login", "user.logout", "user.created", "user.updated", "user.deleted",
+            "org.created", "org.updated", "org.member_added", "org.member_removed",
+            "api_key.created", "api_key.revoked",
+            "settings.updated", "billing.updated",
+            "export.created", "import.completed"
+        ]
+    }
+
+
+@app.post("/audit/export")
+def export_audit_logs(request: Request):
+    """Export audit logs"""
+    data = {}
+
+    export_id = f"audit_export_{uuid.uuid4().hex[:8]}"
+
+    return {
+        "export_id": export_id,
+        "status": "processing",
+        "format": data.get("format", "json"),
+        "filters": data.get("filters", {}),
+        "download_url": f"/audit/exports/{export_id}/download",
+        "expires_at": (datetime.now(timezone.utc) + timedelta(hours=24)).isoformat()
+    }
+
+
+# ============================================================================
+# Cost Management / Usage Analytics
+# ============================================================================
+
+USAGE_RECORDS: List[Dict[str, Any]] = []
+BUDGETS: Dict[str, Dict[str, Any]] = {}
+COST_ALERTS: List[Dict[str, Any]] = []
+
+
+@app.post("/usage/record")
+def record_usage(request: Request):
+    """Record a usage event"""
+    data = {}
+
+    record = {
+        "id": f"usage_{uuid.uuid4().hex[:12]}",
+        "timestamp": datetime.now(timezone.utc).isoformat(),
+        "org_id": data.get("org_id"),
+        "resource_type": data.get("resource_type"),  # agent, workflow, api_call, etc.
+        "resource_id": data.get("resource_id"),
+        "operation": data.get("operation"),
+        "quantity": data.get("quantity", 1),
+        "unit": data.get("unit", "request"),
+        "cost": {
+            "amount": data.get("cost_amount", 0.0),
+            "currency": data.get("currency", "USD")
+        },
+        "metadata": {
+            "model": data.get("model"),
+            "tokens_input": data.get("tokens_input", 0),
+            "tokens_output": data.get("tokens_output", 0),
+            "duration_ms": data.get("duration_ms", 0)
+        }
+    }
+
+    USAGE_RECORDS.append(record)
+    return {"usage_record": record}
+
+
+@app.get("/usage/summary")
+def get_usage_summary(
+    org_id: Optional[str] = None,
+    start_date: Optional[str] = None,
+    end_date: Optional[str] = None,
+    group_by: str = "day"
+):
+    """Get usage summary with aggregations"""
+    filtered = USAGE_RECORDS.copy()
+
+    if org_id:
+        filtered = [r for r in filtered if r.get("org_id") == org_id]
+
+    total_cost = sum(r["cost"]["amount"] for r in filtered)
+    total_requests = len(filtered)
+    total_tokens = sum(
+        r["metadata"].get("tokens_input", 0) + r["metadata"].get("tokens_output", 0)
+        for r in filtered
+    )
+
+    by_resource = {}
+    for r in filtered:
+        rt = r.get("resource_type", "unknown")
+        if rt not in by_resource:
+            by_resource[rt] = {"count": 0, "cost": 0.0}
+        by_resource[rt]["count"] += 1
+        by_resource[rt]["cost"] += r["cost"]["amount"]
+
+    return {
+        "summary": {
+            "total_cost": total_cost,
+            "total_requests": total_requests,
+            "total_tokens": total_tokens,
+            "currency": "USD"
+        },
+        "by_resource_type": by_resource,
+        "period": {
+            "start": start_date,
+            "end": end_date,
+            "group_by": group_by
+        }
+    }
+
+
+@app.get("/usage/costs")
+def get_cost_breakdown(
+    org_id: Optional[str] = None,
+    period: str = "month"
+):
+    """Get detailed cost breakdown"""
+    filtered = USAGE_RECORDS.copy()
+
+    if org_id:
+        filtered = [r for r in filtered if r.get("org_id") == org_id]
+
+    by_agent = {}
+    by_workflow = {}
+    by_model = {}
+
+    for r in filtered:
+        # By agent
+        if r.get("resource_type") == "agent":
+            aid = r.get("resource_id", "unknown")
+            if aid not in by_agent:
+                by_agent[aid] = 0.0
+            by_agent[aid] += r["cost"]["amount"]
+
+        # By workflow
+        if r.get("resource_type") == "workflow":
+            wid = r.get("resource_id", "unknown")
+            if wid not in by_workflow:
+                by_workflow[wid] = 0.0
+            by_workflow[wid] += r["cost"]["amount"]
+
+        # By model
+        model = r["metadata"].get("model", "unknown")
+        if model not in by_model:
+            by_model[model] = 0.0
+        by_model[model] += r["cost"]["amount"]
+
+    return {
+        "period": period,
+        "by_agent": by_agent,
+        "by_workflow": by_workflow,
+        "by_model": by_model,
+        "total": sum(r["cost"]["amount"] for r in filtered)
+    }
+
+
+@app.post("/usage/budgets")
+def create_budget(request: Request):
+    """Create a budget with alerts"""
+    data = {}
+    budget_id = f"budget_{uuid.uuid4().hex[:8]}"
+
+    budget = {
+        "id": budget_id,
+        "name": data.get("name", f"Budget {budget_id}"),
+        "org_id": data.get("org_id"),
+        "amount": data.get("amount", 1000.0),
+        "currency": data.get("currency", "USD"),
+        "period": data.get("period", "monthly"),
+        "alert_thresholds": data.get("alert_thresholds", [50, 80, 100]),
+        "current_spend": 0.0,
+        "status": "active",
+        "created_at": datetime.now(timezone.utc).isoformat()
+    }
+
+    BUDGETS[budget_id] = budget
+    return {"budget": budget}
+
+
+@app.get("/usage/budgets")
+def list_budgets(org_id: Optional[str] = None):
+    """List all budgets"""
+    budgets = list(BUDGETS.values())
+    if org_id:
+        budgets = [b for b in budgets if b.get("org_id") == org_id]
+    return {"budgets": budgets, "total": len(budgets)}
+
+
+@app.get("/usage/budgets/{budget_id}")
+def get_budget(budget_id: str):
+    """Get budget details with current status"""
+    if budget_id not in BUDGETS:
+        raise HTTPException(status_code=404, detail="Budget not found")
+
+    budget = BUDGETS[budget_id]
+    percentage_used = (budget["current_spend"] / budget["amount"]) * 100 if budget["amount"] > 0 else 0
+
+    return {
+        "budget": budget,
+        "percentage_used": percentage_used,
+        "remaining": budget["amount"] - budget["current_spend"]
+    }
+
+
+@app.get("/usage/alerts")
+def list_cost_alerts(org_id: Optional[str] = None):
+    """List cost alerts"""
+    alerts = COST_ALERTS.copy()
+    if org_id:
+        alerts = [a for a in alerts if a.get("org_id") == org_id]
+    return {"alerts": alerts, "total": len(alerts)}
+
+
+# ============================================================================
+# Scheduling / Cron Jobs
+# ============================================================================
+
+SCHEDULED_JOBS: Dict[str, Dict[str, Any]] = {}
+JOB_EXECUTIONS: Dict[str, List[Dict[str, Any]]] = {}
+
+
+@app.post("/schedules")
+def create_schedule(request: Request):
+    """Create a scheduled job"""
+    data = {}
+    job_id = f"schedule_{uuid.uuid4().hex[:8]}"
+
+    job = {
+        "id": job_id,
+        "name": data.get("name", f"Job {job_id}"),
+        "description": data.get("description", ""),
+        "schedule": {
+            "type": data.get("schedule_type", "cron"),  # cron, interval, once
+            "expression": data.get("cron_expression", "0 0 * * *"),  # Daily at midnight
+            "interval_seconds": data.get("interval_seconds"),
+            "run_at": data.get("run_at"),
+            "timezone": data.get("timezone", "UTC")
+        },
+        "action": {
+            "type": data.get("action_type", "agent"),  # agent, workflow, webhook
+            "target_id": data.get("target_id"),
+            "input": data.get("input", {}),
+            "config": data.get("config", {})
+        },
+        "retry": {
+            "max_attempts": data.get("max_retries", 3),
+            "backoff_seconds": data.get("backoff_seconds", 60)
+        },
+        "status": "active",
+        "next_run_at": None,
+        "last_run_at": None,
+        "run_count": 0,
+        "created_at": datetime.now(timezone.utc).isoformat()
+    }
+
+    SCHEDULED_JOBS[job_id] = job
+    JOB_EXECUTIONS[job_id] = []
+    return {"schedule": job}
+
+
+@app.get("/schedules")
+def list_schedules(status: Optional[str] = None):
+    """List all scheduled jobs"""
+    jobs = list(SCHEDULED_JOBS.values())
+    if status:
+        jobs = [j for j in jobs if j.get("status") == status]
+    return {"schedules": jobs, "total": len(jobs)}
+
+
+@app.get("/schedules/{job_id}")
+def get_schedule(job_id: str):
+    """Get schedule details"""
+    if job_id not in SCHEDULED_JOBS:
+        raise HTTPException(status_code=404, detail="Schedule not found")
+    return {"schedule": SCHEDULED_JOBS[job_id]}
+
+
+@app.put("/schedules/{job_id}")
+def update_schedule(job_id: str, request: Request):
+    """Update a schedule"""
+    if job_id not in SCHEDULED_JOBS:
+        raise HTTPException(status_code=404, detail="Schedule not found")
+
+    data = {}
+    job = SCHEDULED_JOBS[job_id]
+
+    for field in ["name", "description", "schedule", "action", "retry"]:
+        if field in data:
+            job[field] = data[field]
+
+    job["updated_at"] = datetime.now(timezone.utc).isoformat()
+    return {"schedule": job}
+
+
+@app.post("/schedules/{job_id}/pause")
+def pause_schedule(job_id: str):
+    """Pause a scheduled job"""
+    if job_id not in SCHEDULED_JOBS:
+        raise HTTPException(status_code=404, detail="Schedule not found")
+
+    SCHEDULED_JOBS[job_id]["status"] = "paused"
+    return {"schedule": SCHEDULED_JOBS[job_id]}
+
+
+@app.post("/schedules/{job_id}/resume")
+def resume_schedule(job_id: str):
+    """Resume a paused schedule"""
+    if job_id not in SCHEDULED_JOBS:
+        raise HTTPException(status_code=404, detail="Schedule not found")
+
+    SCHEDULED_JOBS[job_id]["status"] = "active"
+    return {"schedule": SCHEDULED_JOBS[job_id]}
+
+
+@app.post("/schedules/{job_id}/trigger")
+def trigger_schedule(job_id: str):
+    """Manually trigger a scheduled job"""
+    if job_id not in SCHEDULED_JOBS:
+        raise HTTPException(status_code=404, detail="Schedule not found")
+
+    job = SCHEDULED_JOBS[job_id]
+    execution_id = f"exec_{uuid.uuid4().hex[:8]}"
+
+    execution = {
+        "id": execution_id,
+        "job_id": job_id,
+        "triggered_by": "manual",
+        "started_at": datetime.now(timezone.utc).isoformat(),
+        "completed_at": None,
+        "status": "running",
+        "result": None,
+        "error": None
+    }
+
+    JOB_EXECUTIONS[job_id].append(execution)
+    job["last_run_at"] = execution["started_at"]
+    job["run_count"] += 1
+
+    # Simulate completion
+    execution["status"] = "completed"
+    execution["completed_at"] = datetime.now(timezone.utc).isoformat()
+    execution["result"] = {"message": "Execution completed successfully"}
+
+    return {"execution": execution}
+
+
+@app.delete("/schedules/{job_id}")
+def delete_schedule(job_id: str):
+    """Delete a schedule"""
+    if job_id not in SCHEDULED_JOBS:
+        raise HTTPException(status_code=404, detail="Schedule not found")
+
+    del SCHEDULED_JOBS[job_id]
+    if job_id in JOB_EXECUTIONS:
+        del JOB_EXECUTIONS[job_id]
+
+    return {"deleted": True}
+
+
+@app.get("/schedules/{job_id}/executions")
+def list_schedule_executions(job_id: str, limit: int = 50):
+    """List executions for a schedule"""
+    if job_id not in SCHEDULED_JOBS:
+        raise HTTPException(status_code=404, detail="Schedule not found")
+
+    executions = JOB_EXECUTIONS.get(job_id, [])
+    return {"executions": executions[-limit:], "total": len(executions)}
+
+
+# ============================================================================
+# Caching Layer
+# ============================================================================
+
+CACHE_STORE: Dict[str, Dict[str, Any]] = {}
+SEMANTIC_CACHE: Dict[str, Dict[str, Any]] = {}
+CACHE_STATS = {"hits": 0, "misses": 0, "evictions": 0}
+
+
+@app.post("/cache/set")
+def cache_set(request: Request):
+    """Set a cache entry"""
+    data = {}
+
+    key = data.get("key")
+    if not key:
+        raise HTTPException(status_code=400, detail="Cache key required")
+
+    ttl_seconds = data.get("ttl_seconds", 3600)
+    expires_at = datetime.now(timezone.utc) + timedelta(seconds=ttl_seconds)
+
+    entry = {
+        "key": key,
+        "value": data.get("value"),
+        "metadata": data.get("metadata", {}),
+        "ttl_seconds": ttl_seconds,
+        "expires_at": expires_at.isoformat(),
+        "created_at": datetime.now(timezone.utc).isoformat(),
+        "access_count": 0
+    }
+
+    CACHE_STORE[key] = entry
+    return {"cached": True, "key": key, "expires_at": entry["expires_at"]}
+
+
+@app.get("/cache/get/{key}")
+def cache_get(key: str):
+    """Get a cache entry"""
+    if key not in CACHE_STORE:
+        CACHE_STATS["misses"] += 1
+        raise HTTPException(status_code=404, detail="Cache miss")
+
+    entry = CACHE_STORE[key]
+
+    # Check expiration
+    if datetime.fromisoformat(entry["expires_at"].replace("Z", "+00:00")) < datetime.now(timezone.utc):
+        del CACHE_STORE[key]
+        CACHE_STATS["evictions"] += 1
+        CACHE_STATS["misses"] += 1
+        raise HTTPException(status_code=404, detail="Cache expired")
+
+    entry["access_count"] += 1
+    CACHE_STATS["hits"] += 1
+
+    return {"value": entry["value"], "metadata": entry["metadata"]}
+
+
+@app.delete("/cache/delete/{key}")
+def cache_delete(key: str):
+    """Delete a cache entry"""
+    if key in CACHE_STORE:
+        del CACHE_STORE[key]
+        return {"deleted": True}
+    return {"deleted": False}
+
+
+@app.post("/cache/clear")
+def cache_clear(pattern: Optional[str] = None):
+    """Clear cache entries"""
+    if pattern:
+        keys_to_delete = [k for k in CACHE_STORE.keys() if pattern in k]
+        for k in keys_to_delete:
+            del CACHE_STORE[k]
+        return {"cleared": len(keys_to_delete)}
+    else:
+        count = len(CACHE_STORE)
+        CACHE_STORE.clear()
+        return {"cleared": count}
+
+
+@app.get("/cache/stats")
+def cache_stats():
+    """Get cache statistics"""
+    total = CACHE_STATS["hits"] + CACHE_STATS["misses"]
+    hit_rate = (CACHE_STATS["hits"] / total * 100) if total > 0 else 0
+
+    return {
+        "stats": CACHE_STATS,
+        "hit_rate_percent": hit_rate,
+        "total_entries": len(CACHE_STORE),
+        "semantic_cache_entries": len(SEMANTIC_CACHE)
+    }
+
+
+@app.post("/cache/semantic/set")
+def semantic_cache_set(request: Request):
+    """Set a semantic cache entry (for LLM responses)"""
+    data = {}
+
+    cache_id = f"sem_{uuid.uuid4().hex[:12]}"
+
+    entry = {
+        "id": cache_id,
+        "prompt_hash": data.get("prompt_hash"),
+        "prompt_embedding": data.get("prompt_embedding", []),
+        "model": data.get("model"),
+        "response": data.get("response"),
+        "similarity_threshold": data.get("similarity_threshold", 0.95),
+        "ttl_seconds": data.get("ttl_seconds", 86400),
+        "created_at": datetime.now(timezone.utc).isoformat(),
+        "hit_count": 0
+    }
+
+    SEMANTIC_CACHE[cache_id] = entry
+    return {"cached": True, "cache_id": cache_id}
+
+
+@app.post("/cache/semantic/lookup")
+def semantic_cache_lookup(request: Request):
+    """Look up semantic cache by similarity"""
+    data = {}
+
+    # In production, this would compute embedding similarity
+    prompt_hash = data.get("prompt_hash")
+
+    for cache_id, entry in SEMANTIC_CACHE.items():
+        if entry.get("prompt_hash") == prompt_hash:
+            entry["hit_count"] += 1
+            return {
+                "hit": True,
+                "cache_id": cache_id,
+                "response": entry["response"],
+                "model": entry["model"]
+            }
+
+    return {"hit": False}
+
+
+# ============================================================================
+# Feature Flags
+# ============================================================================
+
+FEATURE_FLAGS: Dict[str, Dict[str, Any]] = {}
+FLAG_OVERRIDES: Dict[str, Dict[str, bool]] = {}  # user_id -> {flag_name: value}
+
+
+@app.post("/feature-flags")
+def create_feature_flag(request: Request):
+    """Create a feature flag"""
+    data = {}
+
+    flag_name = data.get("name")
+    if not flag_name:
+        raise HTTPException(status_code=400, detail="Flag name required")
+
+    flag = {
+        "name": flag_name,
+        "description": data.get("description", ""),
+        "enabled": data.get("enabled", False),
+        "rollout_percentage": data.get("rollout_percentage", 0),
+        "targeting_rules": data.get("targeting_rules", []),
+        "environments": data.get("environments", {"development": True, "staging": False, "production": False}),
+        "variants": data.get("variants", []),
+        "default_variant": data.get("default_variant"),
+        "created_at": datetime.now(timezone.utc).isoformat(),
+        "updated_at": datetime.now(timezone.utc).isoformat()
+    }
+
+    FEATURE_FLAGS[flag_name] = flag
+    return {"feature_flag": flag}
+
+
+@app.get("/feature-flags")
+def list_feature_flags(environment: Optional[str] = None):
+    """List all feature flags"""
+    flags = list(FEATURE_FLAGS.values())
+    return {"feature_flags": flags, "total": len(flags)}
+
+
+@app.get("/feature-flags/{flag_name}")
+def get_feature_flag(flag_name: str):
+    """Get feature flag details"""
+    if flag_name not in FEATURE_FLAGS:
+        raise HTTPException(status_code=404, detail="Feature flag not found")
+    return {"feature_flag": FEATURE_FLAGS[flag_name]}
+
+
+@app.put("/feature-flags/{flag_name}")
+def update_feature_flag(flag_name: str, request: Request):
+    """Update a feature flag"""
+    if flag_name not in FEATURE_FLAGS:
+        raise HTTPException(status_code=404, detail="Feature flag not found")
+
+    data = {}
+    flag = FEATURE_FLAGS[flag_name]
+
+    for field in ["description", "enabled", "rollout_percentage", "targeting_rules", "environments", "variants"]:
+        if field in data:
+            flag[field] = data[field]
+
+    flag["updated_at"] = datetime.now(timezone.utc).isoformat()
+    return {"feature_flag": flag}
+
+
+@app.post("/feature-flags/{flag_name}/toggle")
+def toggle_feature_flag(flag_name: str, environment: Optional[str] = None):
+    """Toggle a feature flag"""
+    if flag_name not in FEATURE_FLAGS:
+        raise HTTPException(status_code=404, detail="Feature flag not found")
+
+    flag = FEATURE_FLAGS[flag_name]
+
+    if environment:
+        flag["environments"][environment] = not flag["environments"].get(environment, False)
+    else:
+        flag["enabled"] = not flag["enabled"]
+
+    flag["updated_at"] = datetime.now(timezone.utc).isoformat()
+    return {"feature_flag": flag}
+
+
+@app.post("/feature-flags/evaluate")
+def evaluate_feature_flags(request: Request):
+    """Evaluate feature flags for a user/context"""
+    data = {}
+
+    user_id = data.get("user_id")
+    environment = data.get("environment", "production")
+    context = data.get("context", {})
+
+    evaluated = {}
+    for flag_name, flag in FEATURE_FLAGS.items():
+        # Check override first
+        if user_id and user_id in FLAG_OVERRIDES:
+            if flag_name in FLAG_OVERRIDES[user_id]:
+                evaluated[flag_name] = FLAG_OVERRIDES[user_id][flag_name]
+                continue
+
+        # Check environment
+        env_enabled = flag["environments"].get(environment, False)
+
+        # Check rollout percentage (simplified)
+        if flag["rollout_percentage"] > 0 and user_id:
+            hash_value = hash(f"{flag_name}:{user_id}") % 100
+            rollout_enabled = hash_value < flag["rollout_percentage"]
+        else:
+            rollout_enabled = flag["enabled"]
+
+        evaluated[flag_name] = env_enabled and rollout_enabled
+
+    return {"flags": evaluated, "user_id": user_id, "environment": environment}
+
+
+@app.post("/feature-flags/{flag_name}/override")
+def set_flag_override(flag_name: str, request: Request):
+    """Set a user-specific flag override"""
+    data = {}
+
+    user_id = data.get("user_id")
+    value = data.get("value", True)
+
+    if user_id not in FLAG_OVERRIDES:
+        FLAG_OVERRIDES[user_id] = {}
+
+    FLAG_OVERRIDES[user_id][flag_name] = value
+    return {"override_set": True, "user_id": user_id, "flag": flag_name, "value": value}
+
+
+@app.delete("/feature-flags/{flag_name}")
+def delete_feature_flag(flag_name: str):
+    """Delete a feature flag"""
+    if flag_name not in FEATURE_FLAGS:
+        raise HTTPException(status_code=404, detail="Feature flag not found")
+
+    del FEATURE_FLAGS[flag_name]
+    return {"deleted": True}
+
+
+# ============================================================================
+# A/B Testing
+# ============================================================================
+
+AB_EXPERIMENTS: Dict[str, Dict[str, Any]] = {}
+AB_ASSIGNMENTS: Dict[str, Dict[str, str]] = {}  # user_id -> {experiment_id: variant}
+AB_EVENTS: List[Dict[str, Any]] = []
+
+
+@app.post("/experiments")
+def create_experiment(request: Request):
+    """Create an A/B experiment"""
+    data = {}
+    experiment_id = f"exp_{uuid.uuid4().hex[:8]}"
+
+    experiment = {
+        "id": experiment_id,
+        "name": data.get("name", f"Experiment {experiment_id}"),
+        "description": data.get("description", ""),
+        "hypothesis": data.get("hypothesis", ""),
+        "variants": data.get("variants", [
+            {"id": "control", "name": "Control", "weight": 50},
+            {"id": "treatment", "name": "Treatment", "weight": 50}
+        ]),
+        "metrics": data.get("metrics", ["conversion", "engagement"]),
+        "targeting": {
+            "percentage": data.get("targeting_percentage", 100),
+            "rules": data.get("targeting_rules", [])
+        },
+        "status": "draft",
+        "started_at": None,
+        "ended_at": None,
+        "created_at": datetime.now(timezone.utc).isoformat()
+    }
+
+    AB_EXPERIMENTS[experiment_id] = experiment
+    return {"experiment": experiment}
+
+
+@app.get("/experiments")
+def list_experiments(status: Optional[str] = None):
+    """List all experiments"""
+    experiments = list(AB_EXPERIMENTS.values())
+    if status:
+        experiments = [e for e in experiments if e.get("status") == status]
+    return {"experiments": experiments, "total": len(experiments)}
+
+
+@app.get("/experiments/{experiment_id}")
+def get_experiment(experiment_id: str):
+    """Get experiment details"""
+    if experiment_id not in AB_EXPERIMENTS:
+        raise HTTPException(status_code=404, detail="Experiment not found")
+    return {"experiment": AB_EXPERIMENTS[experiment_id]}
+
+
+@app.post("/experiments/{experiment_id}/start")
+def start_experiment(experiment_id: str):
+    """Start an experiment"""
+    if experiment_id not in AB_EXPERIMENTS:
+        raise HTTPException(status_code=404, detail="Experiment not found")
+
+    experiment = AB_EXPERIMENTS[experiment_id]
+    experiment["status"] = "running"
+    experiment["started_at"] = datetime.now(timezone.utc).isoformat()
+
+    return {"experiment": experiment}
+
+
+@app.post("/experiments/{experiment_id}/stop")
+def stop_experiment(experiment_id: str):
+    """Stop an experiment"""
+    if experiment_id not in AB_EXPERIMENTS:
+        raise HTTPException(status_code=404, detail="Experiment not found")
+
+    experiment = AB_EXPERIMENTS[experiment_id]
+    experiment["status"] = "stopped"
+    experiment["ended_at"] = datetime.now(timezone.utc).isoformat()
+
+    return {"experiment": experiment}
+
+
+@app.post("/experiments/{experiment_id}/assign")
+def assign_variant(experiment_id: str, request: Request):
+    """Assign a user to an experiment variant"""
+    if experiment_id not in AB_EXPERIMENTS:
+        raise HTTPException(status_code=404, detail="Experiment not found")
+
+    data = {}
+    user_id = data.get("user_id")
+
+    if not user_id:
+        raise HTTPException(status_code=400, detail="user_id required")
+
+    # Check existing assignment
+    if user_id in AB_ASSIGNMENTS and experiment_id in AB_ASSIGNMENTS[user_id]:
+        return {
+            "user_id": user_id,
+            "experiment_id": experiment_id,
+            "variant": AB_ASSIGNMENTS[user_id][experiment_id],
+            "source": "existing"
+        }
+
+    # Assign based on weights
+    experiment = AB_EXPERIMENTS[experiment_id]
+    variants = experiment["variants"]
+    total_weight = sum(v["weight"] for v in variants)
+
+    hash_value = hash(f"{experiment_id}:{user_id}") % total_weight
+    cumulative = 0
+    assigned_variant = variants[0]["id"]
+
+    for variant in variants:
+        cumulative += variant["weight"]
+        if hash_value < cumulative:
+            assigned_variant = variant["id"]
+            break
+
+    if user_id not in AB_ASSIGNMENTS:
+        AB_ASSIGNMENTS[user_id] = {}
+    AB_ASSIGNMENTS[user_id][experiment_id] = assigned_variant
+
+    return {
+        "user_id": user_id,
+        "experiment_id": experiment_id,
+        "variant": assigned_variant,
+        "source": "new"
+    }
+
+
+@app.post("/experiments/{experiment_id}/track")
+def track_experiment_event(experiment_id: str, request: Request):
+    """Track an event for an experiment"""
+    if experiment_id not in AB_EXPERIMENTS:
+        raise HTTPException(status_code=404, detail="Experiment not found")
+
+    data = {}
+
+    event = {
+        "id": f"event_{uuid.uuid4().hex[:8]}",
+        "experiment_id": experiment_id,
+        "user_id": data.get("user_id"),
+        "variant": data.get("variant"),
+        "event_type": data.get("event_type", "conversion"),
+        "value": data.get("value", 1),
+        "metadata": data.get("metadata", {}),
+        "timestamp": datetime.now(timezone.utc).isoformat()
+    }
+
+    AB_EVENTS.append(event)
+    return {"event": event}
+
+
+@app.get("/experiments/{experiment_id}/results")
+def get_experiment_results(experiment_id: str):
+    """Get experiment results and statistics"""
+    if experiment_id not in AB_EXPERIMENTS:
+        raise HTTPException(status_code=404, detail="Experiment not found")
+
+    experiment = AB_EXPERIMENTS[experiment_id]
+    events = [e for e in AB_EVENTS if e["experiment_id"] == experiment_id]
+
+    # Calculate stats per variant
+    variant_stats = {}
+    for variant in experiment["variants"]:
+        vid = variant["id"]
+        variant_events = [e for e in events if e.get("variant") == vid]
+
+        variant_stats[vid] = {
+            "total_users": len(set(e["user_id"] for e in variant_events if e.get("user_id"))),
+            "total_events": len(variant_events),
+            "conversions": len([e for e in variant_events if e.get("event_type") == "conversion"]),
+            "total_value": sum(e.get("value", 0) for e in variant_events)
+        }
+
+        if variant_stats[vid]["total_users"] > 0:
+            variant_stats[vid]["conversion_rate"] = (
+                variant_stats[vid]["conversions"] / variant_stats[vid]["total_users"] * 100
+            )
+        else:
+            variant_stats[vid]["conversion_rate"] = 0
+
+    return {
+        "experiment_id": experiment_id,
+        "status": experiment["status"],
+        "variant_stats": variant_stats,
+        "total_events": len(events)
+    }
+
+
+# ============================================================================
+# Human-in-the-Loop (HITL)
+# ============================================================================
+
+HITL_TASKS: Dict[str, Dict[str, Any]] = {}
+HITL_QUEUES: Dict[str, List[str]] = {}  # queue_name -> [task_ids]
+HITL_FEEDBACK: Dict[str, List[Dict[str, Any]]] = {}
+
+
+@app.post("/hitl/tasks")
+def create_hitl_task(request: Request):
+    """Create a human-in-the-loop task"""
+    data = {}
+    task_id = f"hitl_{uuid.uuid4().hex[:8]}"
+
+    task = {
+        "id": task_id,
+        "type": data.get("type", "review"),  # review, approval, annotation, correction
+        "title": data.get("title", f"Task {task_id}"),
+        "description": data.get("description", ""),
+        "context": {
+            "agent_id": data.get("agent_id"),
+            "execution_id": data.get("execution_id"),
+            "input": data.get("input"),
+            "output": data.get("output")
+        },
+        "options": data.get("options", ["approve", "reject", "modify"]),
+        "priority": data.get("priority", "normal"),
+        "queue": data.get("queue", "default"),
+        "assignee": data.get("assignee"),
+        "deadline": data.get("deadline"),
+        "status": "pending",
+        "result": None,
+        "created_at": datetime.now(timezone.utc).isoformat(),
+        "completed_at": None
+    }
+
+    HITL_TASKS[task_id] = task
+
+    # Add to queue
+    queue_name = task["queue"]
+    if queue_name not in HITL_QUEUES:
+        HITL_QUEUES[queue_name] = []
+    HITL_QUEUES[queue_name].append(task_id)
+
+    return {"task": task}
+
+
+@app.get("/hitl/tasks")
+def list_hitl_tasks(
+    queue: Optional[str] = None,
+    status: Optional[str] = None,
+    assignee: Optional[str] = None
+):
+    """List HITL tasks"""
+    tasks = list(HITL_TASKS.values())
+
+    if queue:
+        tasks = [t for t in tasks if t.get("queue") == queue]
+    if status:
+        tasks = [t for t in tasks if t.get("status") == status]
+    if assignee:
+        tasks = [t for t in tasks if t.get("assignee") == assignee]
+
+    return {"tasks": tasks, "total": len(tasks)}
+
+
+@app.get("/hitl/tasks/{task_id}")
+def get_hitl_task(task_id: str):
+    """Get HITL task details"""
+    if task_id not in HITL_TASKS:
+        raise HTTPException(status_code=404, detail="Task not found")
+    return {"task": HITL_TASKS[task_id]}
+
+
+@app.post("/hitl/tasks/{task_id}/claim")
+def claim_hitl_task(task_id: str, request: Request):
+    """Claim a HITL task for processing"""
+    if task_id not in HITL_TASKS:
+        raise HTTPException(status_code=404, detail="Task not found")
+
+    data = {}
+    task = HITL_TASKS[task_id]
+
+    if task["status"] != "pending":
+        raise HTTPException(status_code=400, detail="Task is not available for claiming")
+
+    task["assignee"] = data.get("assignee")
+    task["status"] = "in_progress"
+    task["claimed_at"] = datetime.now(timezone.utc).isoformat()
+
+    return {"task": task}
+
+
+@app.post("/hitl/tasks/{task_id}/complete")
+def complete_hitl_task(task_id: str, request: Request):
+    """Complete a HITL task"""
+    if task_id not in HITL_TASKS:
+        raise HTTPException(status_code=404, detail="Task not found")
+
+    data = {}
+    task = HITL_TASKS[task_id]
+
+    task["status"] = "completed"
+    task["result"] = {
+        "decision": data.get("decision"),
+        "modified_output": data.get("modified_output"),
+        "notes": data.get("notes"),
+        "completed_by": data.get("completed_by")
+    }
+    task["completed_at"] = datetime.now(timezone.utc).isoformat()
+
+    # Remove from queue
+    if task["queue"] in HITL_QUEUES and task_id in HITL_QUEUES[task["queue"]]:
+        HITL_QUEUES[task["queue"]].remove(task_id)
+
+    return {"task": task}
+
+
+@app.post("/hitl/tasks/{task_id}/escalate")
+def escalate_hitl_task(task_id: str, request: Request):
+    """Escalate a HITL task"""
+    if task_id not in HITL_TASKS:
+        raise HTTPException(status_code=404, detail="Task not found")
+
+    data = {}
+    task = HITL_TASKS[task_id]
+
+    task["status"] = "escalated"
+    task["escalation"] = {
+        "reason": data.get("reason"),
+        "escalated_to": data.get("escalated_to"),
+        "escalated_at": datetime.now(timezone.utc).isoformat()
+    }
+
+    return {"task": task}
+
+
+@app.get("/hitl/queues")
+def list_hitl_queues():
+    """List HITL queues"""
+    queue_stats = {}
+    for queue_name, task_ids in HITL_QUEUES.items():
+        queue_stats[queue_name] = {
+            "total_tasks": len(task_ids),
+            "pending": len([t for t in task_ids if HITL_TASKS.get(t, {}).get("status") == "pending"])
+        }
+    return {"queues": queue_stats}
+
+
+@app.post("/hitl/feedback")
+def submit_hitl_feedback(request: Request):
+    """Submit feedback on an agent output"""
+    data = {}
+    feedback_id = f"feedback_{uuid.uuid4().hex[:8]}"
+
+    feedback = {
+        "id": feedback_id,
+        "agent_id": data.get("agent_id"),
+        "execution_id": data.get("execution_id"),
+        "rating": data.get("rating"),  # 1-5
+        "feedback_type": data.get("feedback_type", "general"),  # accuracy, helpfulness, safety
+        "comment": data.get("comment"),
+        "corrections": data.get("corrections"),
+        "submitted_by": data.get("submitted_by"),
+        "submitted_at": datetime.now(timezone.utc).isoformat()
+    }
+
+    agent_id = data.get("agent_id", "unknown")
+    if agent_id not in HITL_FEEDBACK:
+        HITL_FEEDBACK[agent_id] = []
+    HITL_FEEDBACK[agent_id].append(feedback)
+
+    return {"feedback": feedback}
+
+
+@app.get("/hitl/feedback/{agent_id}")
+def get_agent_feedback(agent_id: str, limit: int = 50):
+    """Get feedback for an agent"""
+    feedback_list = HITL_FEEDBACK.get(agent_id, [])
+
+    avg_rating = None
+    if feedback_list:
+        ratings = [f["rating"] for f in feedback_list if f.get("rating")]
+        if ratings:
+            avg_rating = sum(ratings) / len(ratings)
+
+    return {
+        "agent_id": agent_id,
+        "feedback": feedback_list[-limit:],
+        "total": len(feedback_list),
+        "average_rating": avg_rating
+    }
+
+
+# ============================================================================
+# Knowledge Base
+# ============================================================================
+
+KNOWLEDGE_ARTICLES: Dict[str, Dict[str, Any]] = {}
+KNOWLEDGE_CATEGORIES: Dict[str, Dict[str, Any]] = {}
+KNOWLEDGE_EMBEDDINGS: Dict[str, List[float]] = {}
+
+
+@app.post("/knowledge/articles")
+def create_knowledge_article(request: Request):
+    """Create a knowledge base article"""
+    data = {}
+    article_id = f"kb_{uuid.uuid4().hex[:8]}"
+
+    article = {
+        "id": article_id,
+        "title": data.get("title", f"Article {article_id}"),
+        "content": data.get("content", ""),
+        "summary": data.get("summary", ""),
+        "category": data.get("category"),
+        "tags": data.get("tags", []),
+        "metadata": {
+            "author": data.get("author"),
+            "source": data.get("source"),
+            "language": data.get("language", "en")
+        },
+        "visibility": data.get("visibility", "public"),
+        "status": data.get("status", "published"),
+        "version": 1,
+        "created_at": datetime.now(timezone.utc).isoformat(),
+        "updated_at": datetime.now(timezone.utc).isoformat()
+    }
+
+    KNOWLEDGE_ARTICLES[article_id] = article
+    return {"article": article}
+
+
+@app.get("/knowledge/articles")
+def list_knowledge_articles(
+    category: Optional[str] = None,
+    tag: Optional[str] = None,
+    search: Optional[str] = None,
+    limit: int = 50
+):
+    """List knowledge base articles"""
+    articles = list(KNOWLEDGE_ARTICLES.values())
+
+    if category:
+        articles = [a for a in articles if a.get("category") == category]
+    if tag:
+        articles = [a for a in articles if tag in a.get("tags", [])]
+    if search:
+        search_lower = search.lower()
+        articles = [a for a in articles if
+                   search_lower in a.get("title", "").lower() or
+                   search_lower in a.get("content", "").lower()]
+
+    return {"articles": articles[:limit], "total": len(articles)}
+
+
+@app.get("/knowledge/articles/{article_id}")
+def get_knowledge_article(article_id: str):
+    """Get knowledge article details"""
+    if article_id not in KNOWLEDGE_ARTICLES:
+        raise HTTPException(status_code=404, detail="Article not found")
+    return {"article": KNOWLEDGE_ARTICLES[article_id]}
+
+
+@app.put("/knowledge/articles/{article_id}")
+def update_knowledge_article(article_id: str, request: Request):
+    """Update a knowledge article"""
+    if article_id not in KNOWLEDGE_ARTICLES:
+        raise HTTPException(status_code=404, detail="Article not found")
+
+    data = {}
+    article = KNOWLEDGE_ARTICLES[article_id]
+
+    for field in ["title", "content", "summary", "category", "tags", "visibility", "status"]:
+        if field in data:
+            article[field] = data[field]
+
+    article["version"] += 1
+    article["updated_at"] = datetime.now(timezone.utc).isoformat()
+
+    return {"article": article}
+
+
+@app.delete("/knowledge/articles/{article_id}")
+def delete_knowledge_article(article_id: str):
+    """Delete a knowledge article"""
+    if article_id not in KNOWLEDGE_ARTICLES:
+        raise HTTPException(status_code=404, detail="Article not found")
+
+    del KNOWLEDGE_ARTICLES[article_id]
+    return {"deleted": True}
+
+
+@app.post("/knowledge/categories")
+def create_knowledge_category(request: Request):
+    """Create a knowledge category"""
+    data = {}
+    cat_id = f"cat_{uuid.uuid4().hex[:8]}"
+
+    category = {
+        "id": cat_id,
+        "name": data.get("name", f"Category {cat_id}"),
+        "description": data.get("description", ""),
+        "parent_id": data.get("parent_id"),
+        "icon": data.get("icon"),
+        "order": data.get("order", 0),
+        "created_at": datetime.now(timezone.utc).isoformat()
+    }
+
+    KNOWLEDGE_CATEGORIES[cat_id] = category
+    return {"category": category}
+
+
+@app.get("/knowledge/categories")
+def list_knowledge_categories():
+    """List knowledge categories"""
+    return {"categories": list(KNOWLEDGE_CATEGORIES.values())}
+
+
+@app.post("/knowledge/search")
+def semantic_knowledge_search(request: Request):
+    """Semantic search across knowledge base"""
+    data = {}
+    query = data.get("query", "")
+    limit = data.get("limit", 10)
+
+    # Simplified search - in production would use embeddings
+    results = []
+    query_lower = query.lower()
+
+    for article_id, article in KNOWLEDGE_ARTICLES.items():
+        score = 0
+        if query_lower in article.get("title", "").lower():
+            score += 2
+        if query_lower in article.get("content", "").lower():
+            score += 1
+        if query_lower in article.get("summary", "").lower():
+            score += 1.5
+
+        if score > 0:
+            results.append({
+                "article_id": article_id,
+                "title": article["title"],
+                "summary": article.get("summary", "")[:200],
+                "score": score
+            })
+
+    results.sort(key=lambda x: x["score"], reverse=True)
+
+    return {"results": results[:limit], "query": query}
+
+
+# ============================================================================
+# Model Registry
+# ============================================================================
+
+MODEL_REGISTRY: Dict[str, Dict[str, Any]] = {}
+MODEL_DEPLOYMENTS: Dict[str, Dict[str, Any]] = {}
+MODEL_METRICS: Dict[str, List[Dict[str, Any]]] = {}
+
+
+@app.post("/models/register")
+def register_model(request: Request):
+    """Register a model in the registry"""
+    data = {}
+    model_id = f"model_{uuid.uuid4().hex[:8]}"
+
+    model = {
+        "id": model_id,
+        "name": data.get("name", f"Model {model_id}"),
+        "version": data.get("version", "1.0.0"),
+        "type": data.get("type", "llm"),  # llm, embedding, classifier, etc.
+        "provider": data.get("provider"),  # openai, anthropic, local, etc.
+        "config": {
+            "model_name": data.get("model_name"),
+            "endpoint": data.get("endpoint"),
+            "api_key_ref": data.get("api_key_ref"),
+            "max_tokens": data.get("max_tokens", 4096),
+            "temperature": data.get("temperature", 0.7)
+        },
+        "capabilities": data.get("capabilities", []),
+        "pricing": {
+            "input_cost_per_1k": data.get("input_cost", 0.0),
+            "output_cost_per_1k": data.get("output_cost", 0.0),
+            "currency": "USD"
+        },
+        "status": "registered",
+        "created_at": datetime.now(timezone.utc).isoformat()
+    }
+
+    MODEL_REGISTRY[model_id] = model
+    return {"model": model}
+
+
+@app.get("/models")
+def list_models(
+    model_type: Optional[str] = None,
+    provider: Optional[str] = None,
+    status: Optional[str] = None
+):
+    """List registered models"""
+    models = list(MODEL_REGISTRY.values())
+
+    if model_type:
+        models = [m for m in models if m.get("type") == model_type]
+    if provider:
+        models = [m for m in models if m.get("provider") == provider]
+    if status:
+        models = [m for m in models if m.get("status") == status]
+
+    return {"models": models, "total": len(models)}
+
+
+@app.get("/models/{model_id}")
+def get_model(model_id: str):
+    """Get model details"""
+    if model_id not in MODEL_REGISTRY:
+        raise HTTPException(status_code=404, detail="Model not found")
+    return {"model": MODEL_REGISTRY[model_id]}
+
+
+@app.put("/models/{model_id}")
+def update_model(model_id: str, request: Request):
+    """Update model configuration"""
+    if model_id not in MODEL_REGISTRY:
+        raise HTTPException(status_code=404, detail="Model not found")
+
+    data = {}
+    model = MODEL_REGISTRY[model_id]
+
+    for field in ["name", "version", "config", "capabilities", "pricing", "status"]:
+        if field in data:
+            model[field] = data[field]
+
+    model["updated_at"] = datetime.now(timezone.utc).isoformat()
+    return {"model": model}
+
+
+@app.post("/models/{model_id}/deploy")
+def deploy_model(model_id: str, request: Request):
+    """Deploy a model to an environment"""
+    if model_id not in MODEL_REGISTRY:
+        raise HTTPException(status_code=404, detail="Model not found")
+
+    data = {}
+    deployment_id = f"deploy_{uuid.uuid4().hex[:8]}"
+
+    deployment = {
+        "id": deployment_id,
+        "model_id": model_id,
+        "environment": data.get("environment", "production"),
+        "config": data.get("config", {}),
+        "scaling": {
+            "min_instances": data.get("min_instances", 1),
+            "max_instances": data.get("max_instances", 10),
+            "target_concurrency": data.get("target_concurrency", 100)
+        },
+        "status": "deploying",
+        "endpoint": f"/models/{model_id}/invoke",
+        "deployed_at": datetime.now(timezone.utc).isoformat()
+    }
+
+    MODEL_DEPLOYMENTS[deployment_id] = deployment
+    MODEL_REGISTRY[model_id]["status"] = "deployed"
+
+    # Simulate deployment completion
+    deployment["status"] = "active"
+
+    return {"deployment": deployment}
+
+
+@app.get("/models/{model_id}/deployments")
+def list_model_deployments(model_id: str):
+    """List deployments for a model"""
+    deployments = [d for d in MODEL_DEPLOYMENTS.values() if d.get("model_id") == model_id]
+    return {"deployments": deployments, "total": len(deployments)}
+
+
+@app.post("/models/{model_id}/metrics")
+def record_model_metrics(model_id: str, request: Request):
+    """Record performance metrics for a model"""
+    if model_id not in MODEL_REGISTRY:
+        raise HTTPException(status_code=404, detail="Model not found")
+
+    data = {}
+
+    metrics = {
+        "timestamp": datetime.now(timezone.utc).isoformat(),
+        "latency_ms": data.get("latency_ms"),
+        "tokens_input": data.get("tokens_input"),
+        "tokens_output": data.get("tokens_output"),
+        "success": data.get("success", True),
+        "error_type": data.get("error_type"),
+        "metadata": data.get("metadata", {})
+    }
+
+    if model_id not in MODEL_METRICS:
+        MODEL_METRICS[model_id] = []
+    MODEL_METRICS[model_id].append(metrics)
+
+    return {"recorded": True}
+
+
+@app.get("/models/{model_id}/metrics")
+def get_model_metrics(model_id: str, limit: int = 100):
+    """Get model performance metrics"""
+    if model_id not in MODEL_REGISTRY:
+        raise HTTPException(status_code=404, detail="Model not found")
+
+    metrics_list = MODEL_METRICS.get(model_id, [])
+
+    # Calculate aggregates
+    if metrics_list:
+        latencies = [m["latency_ms"] for m in metrics_list if m.get("latency_ms")]
+        successes = [m for m in metrics_list if m.get("success")]
+
+        summary = {
+            "total_requests": len(metrics_list),
+            "success_rate": len(successes) / len(metrics_list) * 100,
+            "avg_latency_ms": sum(latencies) / len(latencies) if latencies else 0,
+            "p95_latency_ms": sorted(latencies)[int(len(latencies) * 0.95)] if latencies else 0
+        }
+    else:
+        summary = {}
+
+    return {
+        "model_id": model_id,
+        "metrics": metrics_list[-limit:],
+        "summary": summary
+    }
+
+
+@app.post("/models/compare")
+def compare_models(request: Request):
+    """Compare multiple models"""
+    data = {}
+    model_ids = data.get("model_ids", [])
+
+    comparison = {}
+    for model_id in model_ids:
+        if model_id in MODEL_REGISTRY:
+            model = MODEL_REGISTRY[model_id]
+            metrics_list = MODEL_METRICS.get(model_id, [])
+
+            latencies = [m["latency_ms"] for m in metrics_list if m.get("latency_ms")]
+
+            comparison[model_id] = {
+                "name": model["name"],
+                "version": model["version"],
+                "provider": model.get("provider"),
+                "pricing": model.get("pricing"),
+                "avg_latency_ms": sum(latencies) / len(latencies) if latencies else None,
+                "total_requests": len(metrics_list)
+            }
+
+    return {"comparison": comparison}
+
+
+# ============================================================================
+# Distributed Execution
+# ============================================================================
+
+WORKER_REGISTRY: Dict[str, Dict[str, Any]] = {}
+TASK_QUEUE: List[Dict[str, Any]] = []
+DISTRIBUTED_TASKS: Dict[str, Dict[str, Any]] = {}
+
+
+@app.post("/workers/register")
+def register_worker(request: Request):
+    """Register a worker node"""
+    data = {}
+    worker_id = f"worker_{uuid.uuid4().hex[:8]}"
+
+    worker = {
+        "id": worker_id,
+        "name": data.get("name", f"Worker {worker_id}"),
+        "type": data.get("type", "general"),
+        "capabilities": data.get("capabilities", []),
+        "capacity": {
+            "max_concurrent": data.get("max_concurrent", 10),
+            "current_load": 0
+        },
+        "endpoint": data.get("endpoint"),
+        "status": "active",
+        "last_heartbeat": datetime.now(timezone.utc).isoformat(),
+        "registered_at": datetime.now(timezone.utc).isoformat()
+    }
+
+    WORKER_REGISTRY[worker_id] = worker
+    return {"worker": worker}
+
+
+@app.get("/workers")
+def list_workers(status: Optional[str] = None):
+    """List registered workers"""
+    workers = list(WORKER_REGISTRY.values())
+    if status:
+        workers = [w for w in workers if w.get("status") == status]
+    return {"workers": workers, "total": len(workers)}
+
+
+@app.post("/workers/{worker_id}/heartbeat")
+def worker_heartbeat(worker_id: str, request: Request):
+    """Update worker heartbeat"""
+    if worker_id not in WORKER_REGISTRY:
+        raise HTTPException(status_code=404, detail="Worker not found")
+
+    data = {}
+    worker = WORKER_REGISTRY[worker_id]
+
+    worker["last_heartbeat"] = datetime.now(timezone.utc).isoformat()
+    worker["capacity"]["current_load"] = data.get("current_load", 0)
+    worker["status"] = data.get("status", "active")
+
+    return {"acknowledged": True}
+
+
+@app.post("/distributed/tasks")
+def create_distributed_task(request: Request):
+    """Create a distributed task"""
+    data = {}
+    task_id = f"dtask_{uuid.uuid4().hex[:8]}"
+
+    task = {
+        "id": task_id,
+        "type": data.get("type", "agent_execution"),
+        "payload": data.get("payload", {}),
+        "priority": data.get("priority", 5),
+        "routing": {
+            "strategy": data.get("routing_strategy", "least_loaded"),
+            "required_capabilities": data.get("required_capabilities", []),
+            "preferred_worker": data.get("preferred_worker")
+        },
+        "retry": {
+            "max_attempts": data.get("max_retries", 3),
+            "attempt": 0
+        },
+        "status": "queued",
+        "assigned_worker": None,
+        "created_at": datetime.now(timezone.utc).isoformat()
+    }
+
+    DISTRIBUTED_TASKS[task_id] = task
+    TASK_QUEUE.append(task)
+
+    return {"task": task}
+
+
+@app.get("/distributed/tasks")
+def list_distributed_tasks(status: Optional[str] = None, limit: int = 100):
+    """List distributed tasks"""
+    tasks = list(DISTRIBUTED_TASKS.values())
+    if status:
+        tasks = [t for t in tasks if t.get("status") == status]
+    return {"tasks": tasks[-limit:], "total": len(tasks)}
+
+
+@app.post("/distributed/tasks/{task_id}/assign")
+def assign_distributed_task(task_id: str, request: Request):
+    """Assign task to a worker"""
+    if task_id not in DISTRIBUTED_TASKS:
+        raise HTTPException(status_code=404, detail="Task not found")
+
+    data = {}
+    task = DISTRIBUTED_TASKS[task_id]
+    worker_id = data.get("worker_id")
+
+    if worker_id and worker_id in WORKER_REGISTRY:
+        task["assigned_worker"] = worker_id
+        task["status"] = "assigned"
+        task["assigned_at"] = datetime.now(timezone.utc).isoformat()
+        WORKER_REGISTRY[worker_id]["capacity"]["current_load"] += 1
+    else:
+        # Auto-assign to least loaded worker
+        available_workers = [w for w in WORKER_REGISTRY.values()
+                          if w["status"] == "active" and
+                          w["capacity"]["current_load"] < w["capacity"]["max_concurrent"]]
+
+        if available_workers:
+            worker = min(available_workers, key=lambda w: w["capacity"]["current_load"])
+            task["assigned_worker"] = worker["id"]
+            task["status"] = "assigned"
+            task["assigned_at"] = datetime.now(timezone.utc).isoformat()
+            worker["capacity"]["current_load"] += 1
+
+    return {"task": task}
+
+
+@app.post("/distributed/tasks/{task_id}/complete")
+def complete_distributed_task(task_id: str, request: Request):
+    """Mark distributed task as complete"""
+    if task_id not in DISTRIBUTED_TASKS:
+        raise HTTPException(status_code=404, detail="Task not found")
+
+    data = {}
+    task = DISTRIBUTED_TASKS[task_id]
+
+    task["status"] = "completed"
+    task["result"] = data.get("result")
+    task["completed_at"] = datetime.now(timezone.utc).isoformat()
+
+    # Update worker load
+    if task["assigned_worker"] and task["assigned_worker"] in WORKER_REGISTRY:
+        WORKER_REGISTRY[task["assigned_worker"]]["capacity"]["current_load"] -= 1
+
+    return {"task": task}
+
+
+@app.get("/distributed/queue")
+def get_task_queue():
+    """Get current task queue status"""
+    queued = [t for t in TASK_QUEUE if t["status"] == "queued"]
+
+    return {
+        "queue_length": len(queued),
+        "tasks": queued[:50],
+        "workers_available": len([w for w in WORKER_REGISTRY.values() if w["status"] == "active"])
+    }
+
+
+# ============================================================================
+# Observability / Tracing
+# ============================================================================
+
+TRACES: Dict[str, Dict[str, Any]] = {}
+SPANS: Dict[str, List[Dict[str, Any]]] = {}
+
+
+@app.post("/tracing/traces")
+def create_trace(request: Request):
+    """Create a new trace"""
+    data = {}
+    trace_id = data.get("trace_id") or f"trace_{uuid.uuid4().hex[:16]}"
+
+    trace = {
+        "trace_id": trace_id,
+        "name": data.get("name", "unnamed"),
+        "service": data.get("service", "api"),
+        "start_time": datetime.now(timezone.utc).isoformat(),
+        "end_time": None,
+        "duration_ms": None,
+        "status": "active",
+        "attributes": data.get("attributes", {}),
+        "resource": {
+            "service.name": data.get("service_name", "masp-api"),
+            "service.version": data.get("service_version", "1.0.0")
+        }
+    }
+
+    TRACES[trace_id] = trace
+    SPANS[trace_id] = []
+
+    return {"trace": trace}
+
+
+@app.post("/tracing/traces/{trace_id}/spans")
+def create_span(trace_id: str, request: Request):
+    """Create a span within a trace"""
+    if trace_id not in TRACES:
+        raise HTTPException(status_code=404, detail="Trace not found")
+
+    data = {}
+    span_id = f"span_{uuid.uuid4().hex[:16]}"
+
+    span = {
+        "span_id": span_id,
+        "trace_id": trace_id,
+        "parent_span_id": data.get("parent_span_id"),
+        "name": data.get("name", "unnamed"),
+        "kind": data.get("kind", "internal"),  # internal, server, client, producer, consumer
+        "start_time": datetime.now(timezone.utc).isoformat(),
+        "end_time": None,
+        "duration_ms": None,
+        "status": {"code": "OK"},
+        "attributes": data.get("attributes", {}),
+        "events": [],
+        "links": []
+    }
+
+    SPANS[trace_id].append(span)
+    return {"span": span}
+
+
+@app.put("/tracing/traces/{trace_id}/spans/{span_id}")
+def update_span(trace_id: str, span_id: str, request: Request):
+    """Update a span"""
+    if trace_id not in TRACES:
+        raise HTTPException(status_code=404, detail="Trace not found")
+
+    data = {}
+
+    for span in SPANS[trace_id]:
+        if span["span_id"] == span_id:
+            if data.get("end"):
+                span["end_time"] = datetime.now(timezone.utc).isoformat()
+            if "status" in data:
+                span["status"] = data["status"]
+            if "attributes" in data:
+                span["attributes"].update(data["attributes"])
+            return {"span": span}
+
+    raise HTTPException(status_code=404, detail="Span not found")
+
+
+@app.post("/tracing/traces/{trace_id}/complete")
+def complete_trace(trace_id: str):
+    """Complete a trace"""
+    if trace_id not in TRACES:
+        raise HTTPException(status_code=404, detail="Trace not found")
+
+    trace = TRACES[trace_id]
+    trace["end_time"] = datetime.now(timezone.utc).isoformat()
+    trace["status"] = "completed"
+
+    # Calculate duration
+    start = datetime.fromisoformat(trace["start_time"].replace("Z", "+00:00"))
+    end = datetime.fromisoformat(trace["end_time"].replace("Z", "+00:00"))
+    trace["duration_ms"] = (end - start).total_seconds() * 1000
+
+    return {"trace": trace}
+
+
+@app.get("/tracing/traces")
+def list_traces(
+    service: Optional[str] = None,
+    status: Optional[str] = None,
+    limit: int = 100
+):
+    """List traces"""
+    traces = list(TRACES.values())
+
+    if service:
+        traces = [t for t in traces if t.get("service") == service]
+    if status:
+        traces = [t for t in traces if t.get("status") == status]
+
+    traces.sort(key=lambda x: x["start_time"], reverse=True)
+
+    return {"traces": traces[:limit], "total": len(traces)}
+
+
+@app.get("/tracing/traces/{trace_id}")
+def get_trace(trace_id: str):
+    """Get trace with all spans"""
+    if trace_id not in TRACES:
+        raise HTTPException(status_code=404, detail="Trace not found")
+
+    return {
+        "trace": TRACES[trace_id],
+        "spans": SPANS.get(trace_id, [])
+    }
+
+
+@app.get("/tracing/services")
+def list_traced_services():
+    """List services with tracing data"""
+    services = {}
+    for trace in TRACES.values():
+        service = trace.get("service", "unknown")
+        if service not in services:
+            services[service] = {"trace_count": 0, "error_count": 0}
+        services[service]["trace_count"] += 1
+        if trace.get("status") == "error":
+            services[service]["error_count"] += 1
+
+    return {"services": services}
+
+
+# ============================================================================
+# Circuit Breakers
+# ============================================================================
+
+CIRCUIT_BREAKERS: Dict[str, Dict[str, Any]] = {}
+
+
+@app.post("/circuit-breakers")
+def create_circuit_breaker(request: Request):
+    """Create a circuit breaker"""
+    data = {}
+    cb_id = f"cb_{uuid.uuid4().hex[:8]}"
+
+    circuit_breaker = {
+        "id": cb_id,
+        "name": data.get("name", f"CircuitBreaker {cb_id}"),
+        "target": data.get("target"),  # service/endpoint being protected
+        "config": {
+            "failure_threshold": data.get("failure_threshold", 5),
+            "success_threshold": data.get("success_threshold", 3),
+            "timeout_seconds": data.get("timeout_seconds", 30),
+            "half_open_max_calls": data.get("half_open_max_calls", 3)
+        },
+        "state": "closed",  # closed, open, half_open
+        "metrics": {
+            "total_calls": 0,
+            "successful_calls": 0,
+            "failed_calls": 0,
+            "consecutive_failures": 0,
+            "consecutive_successes": 0
+        },
+        "last_failure_time": None,
+        "last_state_change": datetime.now(timezone.utc).isoformat(),
+        "created_at": datetime.now(timezone.utc).isoformat()
+    }
+
+    CIRCUIT_BREAKERS[cb_id] = circuit_breaker
+    return {"circuit_breaker": circuit_breaker}
+
+
+@app.get("/circuit-breakers")
+def list_circuit_breakers():
+    """List all circuit breakers"""
+    return {"circuit_breakers": list(CIRCUIT_BREAKERS.values())}
+
+
+@app.get("/circuit-breakers/{cb_id}")
+def get_circuit_breaker(cb_id: str):
+    """Get circuit breaker status"""
+    if cb_id not in CIRCUIT_BREAKERS:
+        raise HTTPException(status_code=404, detail="Circuit breaker not found")
+    return {"circuit_breaker": CIRCUIT_BREAKERS[cb_id]}
+
+
+@app.post("/circuit-breakers/{cb_id}/record")
+def record_circuit_breaker_call(cb_id: str, request: Request):
+    """Record a call result for the circuit breaker"""
+    if cb_id not in CIRCUIT_BREAKERS:
+        raise HTTPException(status_code=404, detail="Circuit breaker not found")
+
+    data = {}
+    cb = CIRCUIT_BREAKERS[cb_id]
+    success = data.get("success", True)
+
+    cb["metrics"]["total_calls"] += 1
+
+    if success:
+        cb["metrics"]["successful_calls"] += 1
+        cb["metrics"]["consecutive_successes"] += 1
+        cb["metrics"]["consecutive_failures"] = 0
+
+        # Check if we can close from half_open
+        if cb["state"] == "half_open":
+            if cb["metrics"]["consecutive_successes"] >= cb["config"]["success_threshold"]:
+                cb["state"] = "closed"
+                cb["last_state_change"] = datetime.now(timezone.utc).isoformat()
+    else:
+        cb["metrics"]["failed_calls"] += 1
+        cb["metrics"]["consecutive_failures"] += 1
+        cb["metrics"]["consecutive_successes"] = 0
+        cb["last_failure_time"] = datetime.now(timezone.utc).isoformat()
+
+        # Check if we should open the circuit
+        if cb["state"] == "closed":
+            if cb["metrics"]["consecutive_failures"] >= cb["config"]["failure_threshold"]:
+                cb["state"] = "open"
+                cb["last_state_change"] = datetime.now(timezone.utc).isoformat()
+        elif cb["state"] == "half_open":
+            cb["state"] = "open"
+            cb["last_state_change"] = datetime.now(timezone.utc).isoformat()
+
+    return {"circuit_breaker": cb, "call_allowed": cb["state"] != "open"}
+
+
+@app.post("/circuit-breakers/{cb_id}/check")
+def check_circuit_breaker(cb_id: str):
+    """Check if a call is allowed"""
+    if cb_id not in CIRCUIT_BREAKERS:
+        raise HTTPException(status_code=404, detail="Circuit breaker not found")
+
+    cb = CIRCUIT_BREAKERS[cb_id]
+
+    # Check if timeout has passed for open circuit
+    if cb["state"] == "open" and cb["last_state_change"]:
+        last_change = datetime.fromisoformat(cb["last_state_change"].replace("Z", "+00:00"))
+        timeout = timedelta(seconds=cb["config"]["timeout_seconds"])
+
+        if datetime.now(timezone.utc) > last_change + timeout:
+            cb["state"] = "half_open"
+            cb["last_state_change"] = datetime.now(timezone.utc).isoformat()
+            cb["metrics"]["consecutive_successes"] = 0
+
+    return {
+        "allowed": cb["state"] != "open",
+        "state": cb["state"],
+        "metrics": cb["metrics"]
+    }
+
+
+@app.post("/circuit-breakers/{cb_id}/reset")
+def reset_circuit_breaker(cb_id: str):
+    """Manually reset a circuit breaker"""
+    if cb_id not in CIRCUIT_BREAKERS:
+        raise HTTPException(status_code=404, detail="Circuit breaker not found")
+
+    cb = CIRCUIT_BREAKERS[cb_id]
+    cb["state"] = "closed"
+    cb["metrics"] = {
+        "total_calls": 0,
+        "successful_calls": 0,
+        "failed_calls": 0,
+        "consecutive_failures": 0,
+        "consecutive_successes": 0
+    }
+    cb["last_failure_time"] = None
+    cb["last_state_change"] = datetime.now(timezone.utc).isoformat()
+
+    return {"circuit_breaker": cb}
+
+
+@app.delete("/circuit-breakers/{cb_id}")
+def delete_circuit_breaker(cb_id: str):
+    """Delete a circuit breaker"""
+    if cb_id not in CIRCUIT_BREAKERS:
+        raise HTTPException(status_code=404, detail="Circuit breaker not found")
+
+    del CIRCUIT_BREAKERS[cb_id]
+    return {"deleted": True}
+
+
+# ============================================================================
 # Run Server
 # ============================================================================
 
