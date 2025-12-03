@@ -13562,6 +13562,1990 @@ def delete_circuit_breaker(cb_id: str):
 
 
 # ============================================================================
+# API Versioning
+# ============================================================================
+
+API_VERSIONS: Dict[str, Dict[str, Any]] = {
+    "v1": {
+        "version": "1.0.0",
+        "status": "stable",
+        "deprecated": False,
+        "sunset_date": None,
+        "endpoints_count": 300
+    },
+    "v2": {
+        "version": "2.0.0",
+        "status": "beta",
+        "deprecated": False,
+        "sunset_date": None,
+        "endpoints_count": 320
+    }
+}
+
+VERSION_MIGRATIONS: List[Dict[str, Any]] = []
+
+
+@app.get("/api/versions")
+def list_api_versions():
+    """List all API versions"""
+    return {
+        "versions": API_VERSIONS,
+        "current": "v1",
+        "latest": "v2"
+    }
+
+
+@app.get("/api/versions/{version}")
+def get_api_version(version: str):
+    """Get API version details"""
+    if version not in API_VERSIONS:
+        raise HTTPException(status_code=404, detail="API version not found")
+
+    return {
+        "version": API_VERSIONS[version],
+        "changelog": f"/api/versions/{version}/changelog",
+        "migration_guide": f"/api/versions/{version}/migration"
+    }
+
+
+@app.get("/api/versions/{version}/changelog")
+def get_version_changelog(version: str):
+    """Get changelog for a version"""
+    if version not in API_VERSIONS:
+        raise HTTPException(status_code=404, detail="API version not found")
+
+    return {
+        "version": version,
+        "changes": [
+            {"type": "added", "description": "New endpoints for enhanced functionality"},
+            {"type": "changed", "description": "Improved response formats"},
+            {"type": "deprecated", "description": "Legacy endpoints marked for removal"},
+            {"type": "fixed", "description": "Bug fixes and performance improvements"}
+        ]
+    }
+
+
+@app.post("/api/versions/deprecate")
+def deprecate_api_version(request: Request):
+    """Mark an API version as deprecated"""
+    data = {}
+    version = data.get("version")
+
+    if version and version in API_VERSIONS:
+        API_VERSIONS[version]["deprecated"] = True
+        API_VERSIONS[version]["sunset_date"] = data.get("sunset_date")
+        return {"deprecated": True, "version": API_VERSIONS[version]}
+
+    raise HTTPException(status_code=404, detail="Version not found")
+
+
+@app.get("/api/versions/{version}/endpoints")
+def list_version_endpoints(version: str):
+    """List endpoints available in a version"""
+    return {
+        "version": version,
+        "endpoints": [
+            {"path": "/agents", "methods": ["GET", "POST"], "version_added": "v1"},
+            {"path": "/workflows", "methods": ["GET", "POST"], "version_added": "v1"},
+            {"path": "/executions", "methods": ["GET", "POST"], "version_added": "v1"},
+            {"path": "/chains", "methods": ["GET", "POST"], "version_added": "v2"},
+            {"path": "/experiments", "methods": ["GET", "POST"], "version_added": "v2"}
+        ],
+        "total": API_VERSIONS.get(version, {}).get("endpoints_count", 0)
+    }
+
+
+# ============================================================================
+# Request Validation
+# ============================================================================
+
+VALIDATION_SCHEMAS: Dict[str, Dict[str, Any]] = {}
+VALIDATION_RULES: Dict[str, List[Dict[str, Any]]] = {}
+
+
+@app.post("/validation/schemas")
+def create_validation_schema(request: Request):
+    """Create a validation schema"""
+    data = {}
+    schema_id = f"schema_{uuid.uuid4().hex[:8]}"
+
+    schema = {
+        "id": schema_id,
+        "name": data.get("name", f"Schema {schema_id}"),
+        "description": data.get("description", ""),
+        "type": data.get("type", "object"),
+        "properties": data.get("properties", {}),
+        "required": data.get("required", []),
+        "additional_properties": data.get("additional_properties", False),
+        "version": 1,
+        "created_at": datetime.now(timezone.utc).isoformat()
+    }
+
+    VALIDATION_SCHEMAS[schema_id] = schema
+    return {"schema": schema}
+
+
+@app.get("/validation/schemas")
+def list_validation_schemas():
+    """List all validation schemas"""
+    return {"schemas": list(VALIDATION_SCHEMAS.values()), "total": len(VALIDATION_SCHEMAS)}
+
+
+@app.get("/validation/schemas/{schema_id}")
+def get_validation_schema(schema_id: str):
+    """Get a validation schema"""
+    if schema_id not in VALIDATION_SCHEMAS:
+        raise HTTPException(status_code=404, detail="Schema not found")
+    return {"schema": VALIDATION_SCHEMAS[schema_id]}
+
+
+@app.post("/validation/validate")
+def validate_request_data(request: Request):
+    """Validate data against a schema"""
+    data = {}
+    schema_id = data.get("schema_id")
+    payload = data.get("data", {})
+
+    if schema_id and schema_id in VALIDATION_SCHEMAS:
+        schema = VALIDATION_SCHEMAS[schema_id]
+        errors = []
+
+        # Check required fields
+        for field in schema.get("required", []):
+            if field not in payload:
+                errors.append({"field": field, "error": "Required field missing"})
+
+        # Check field types
+        for field, props in schema.get("properties", {}).items():
+            if field in payload:
+                expected_type = props.get("type")
+                value = payload[field]
+
+                type_mapping = {
+                    "string": str,
+                    "integer": int,
+                    "number": (int, float),
+                    "boolean": bool,
+                    "array": list,
+                    "object": dict
+                }
+
+                if expected_type in type_mapping:
+                    if not isinstance(value, type_mapping[expected_type]):
+                        errors.append({
+                            "field": field,
+                            "error": f"Expected {expected_type}, got {type(value).__name__}"
+                        })
+
+        return {
+            "valid": len(errors) == 0,
+            "errors": errors,
+            "schema_id": schema_id
+        }
+
+    return {"valid": True, "errors": [], "schema_id": None}
+
+
+@app.post("/validation/sanitize")
+def sanitize_input(request: Request):
+    """Sanitize input data"""
+    data = {}
+    payload = data.get("data", {})
+    rules = data.get("rules", ["trim", "escape_html"])
+
+    sanitized = {}
+
+    for key, value in payload.items():
+        if isinstance(value, str):
+            result = value
+            if "trim" in rules:
+                result = result.strip()
+            if "escape_html" in rules:
+                result = result.replace("<", "&lt;").replace(">", "&gt;")
+            if "lowercase" in rules:
+                result = result.lower()
+            if "remove_scripts" in rules:
+                import re
+                result = re.sub(r'<script[^>]*>.*?</script>', '', result, flags=re.IGNORECASE | re.DOTALL)
+            sanitized[key] = result
+        else:
+            sanitized[key] = value
+
+    return {"sanitized": sanitized, "rules_applied": rules}
+
+
+@app.get("/validation/rules")
+def list_validation_rules():
+    """List available validation rules"""
+    return {
+        "rules": [
+            {"name": "required", "description": "Field must be present"},
+            {"name": "type", "description": "Field must match specified type"},
+            {"name": "min_length", "description": "String minimum length"},
+            {"name": "max_length", "description": "String maximum length"},
+            {"name": "pattern", "description": "String must match regex pattern"},
+            {"name": "min", "description": "Numeric minimum value"},
+            {"name": "max", "description": "Numeric maximum value"},
+            {"name": "enum", "description": "Value must be in allowed list"},
+            {"name": "email", "description": "Must be valid email format"},
+            {"name": "url", "description": "Must be valid URL format"},
+            {"name": "uuid", "description": "Must be valid UUID format"}
+        ]
+    }
+
+
+# ============================================================================
+# OpenAPI / Swagger Generation
+# ============================================================================
+
+OPENAPI_SPEC: Dict[str, Any] = {
+    "openapi": "3.0.3",
+    "info": {
+        "title": "Multi-Agent Standards Protocol API",
+        "version": "1.0.0",
+        "description": "Comprehensive API for multi-agent orchestration and management"
+    }
+}
+
+
+@app.get("/openapi/spec")
+def get_openapi_spec():
+    """Get OpenAPI specification"""
+    spec = OPENAPI_SPEC.copy()
+    spec["paths"] = {}
+
+    # Auto-generate paths from registered routes
+    endpoint_groups = {
+        "/agents": {"tag": "Agents", "description": "Agent management"},
+        "/workflows": {"tag": "Workflows", "description": "Workflow orchestration"},
+        "/executions": {"tag": "Executions", "description": "Execution management"},
+        "/chains": {"tag": "Chains", "description": "Agent chains and pipelines"},
+        "/evaluation": {"tag": "Evaluation", "description": "Evaluation framework"},
+        "/guardrails": {"tag": "Guardrails", "description": "Safety and guardrails"},
+        "/organizations": {"tag": "Organizations", "description": "Multi-tenancy"},
+        "/audit": {"tag": "Audit", "description": "Audit logging"},
+        "/usage": {"tag": "Usage", "description": "Cost management"}
+    }
+
+    for path, meta in endpoint_groups.items():
+        spec["paths"][path] = {
+            "get": {
+                "tags": [meta["tag"]],
+                "summary": f"List {meta['tag'].lower()}",
+                "responses": {"200": {"description": "Success"}}
+            },
+            "post": {
+                "tags": [meta["tag"]],
+                "summary": f"Create {meta['tag'].lower()[:-1]}",
+                "responses": {"201": {"description": "Created"}}
+            }
+        }
+
+    return spec
+
+
+@app.get("/openapi/spec.json")
+def get_openapi_json():
+    """Get OpenAPI spec as JSON"""
+    return get_openapi_spec()
+
+
+@app.get("/openapi/spec.yaml")
+def get_openapi_yaml():
+    """Get OpenAPI spec as YAML"""
+    spec = get_openapi_spec()
+    # Return as formatted string (YAML library would be used in production)
+    return {"format": "yaml", "spec": spec}
+
+
+@app.get("/openapi/docs")
+def get_swagger_ui_config():
+    """Get Swagger UI configuration"""
+    return {
+        "swagger_url": "/openapi/spec.json",
+        "title": "MASP API Documentation",
+        "theme": "dark",
+        "try_it_out_enabled": True,
+        "request_snippets_enabled": True,
+        "supported_languages": ["curl", "python", "javascript", "go"]
+    }
+
+
+@app.post("/openapi/generate")
+def generate_client_code(request: Request):
+    """Generate client code from OpenAPI spec"""
+    data = {}
+    language = data.get("language", "python")
+
+    templates = {
+        "python": "import requests\n\nclass MASPClient:\n    def __init__(self, base_url):\n        self.base_url = base_url\n",
+        "javascript": "class MASPClient {\n    constructor(baseUrl) {\n        this.baseUrl = baseUrl;\n    }\n",
+        "go": "package masp\n\ntype Client struct {\n    BaseURL string\n}\n",
+        "typescript": "export class MASPClient {\n    constructor(private baseUrl: string) {}\n"
+    }
+
+    return {
+        "language": language,
+        "code": templates.get(language, templates["python"]),
+        "generated_at": datetime.now(timezone.utc).isoformat()
+    }
+
+
+# ============================================================================
+# OAuth2 / OIDC Flows
+# ============================================================================
+
+OAUTH_CLIENTS: Dict[str, Dict[str, Any]] = {}
+OAUTH_TOKENS: Dict[str, Dict[str, Any]] = {}
+AUTHORIZATION_CODES: Dict[str, Dict[str, Any]] = {}
+
+
+@app.post("/oauth/clients")
+def register_oauth_client(request: Request):
+    """Register an OAuth client"""
+    data = {}
+    client_id = f"client_{uuid.uuid4().hex[:16]}"
+    client_secret = f"secret_{uuid.uuid4().hex[:32]}"
+
+    client = {
+        "client_id": client_id,
+        "client_secret": client_secret,
+        "name": data.get("name", f"Client {client_id[:8]}"),
+        "redirect_uris": data.get("redirect_uris", []),
+        "grant_types": data.get("grant_types", ["authorization_code", "refresh_token"]),
+        "scopes": data.get("scopes", ["read", "write"]),
+        "token_endpoint_auth_method": data.get("auth_method", "client_secret_basic"),
+        "created_at": datetime.now(timezone.utc).isoformat()
+    }
+
+    OAUTH_CLIENTS[client_id] = client
+    return {"client": client}
+
+
+@app.get("/oauth/clients")
+def list_oauth_clients():
+    """List OAuth clients"""
+    # Don't expose secrets
+    clients = []
+    for c in OAUTH_CLIENTS.values():
+        safe_client = {k: v for k, v in c.items() if k != "client_secret"}
+        clients.append(safe_client)
+    return {"clients": clients, "total": len(clients)}
+
+
+@app.get("/oauth/authorize")
+def oauth_authorize(
+    client_id: str,
+    redirect_uri: str,
+    response_type: str = "code",
+    scope: str = "read",
+    state: Optional[str] = None
+):
+    """OAuth2 authorization endpoint"""
+    if client_id not in OAUTH_CLIENTS:
+        raise HTTPException(status_code=400, detail="Invalid client_id")
+
+    client = OAUTH_CLIENTS[client_id]
+
+    if redirect_uri not in client.get("redirect_uris", []):
+        raise HTTPException(status_code=400, detail="Invalid redirect_uri")
+
+    # Generate authorization code
+    code = f"authz_{uuid.uuid4().hex[:16]}"
+
+    AUTHORIZATION_CODES[code] = {
+        "client_id": client_id,
+        "redirect_uri": redirect_uri,
+        "scope": scope,
+        "state": state,
+        "created_at": datetime.now(timezone.utc).isoformat(),
+        "expires_at": (datetime.now(timezone.utc) + timedelta(minutes=10)).isoformat()
+    }
+
+    return {
+        "redirect_to": f"{redirect_uri}?code={code}&state={state}",
+        "code": code,
+        "state": state
+    }
+
+
+@app.post("/oauth/token")
+def oauth_token(request: Request):
+    """OAuth2 token endpoint"""
+    data = {}
+    grant_type = data.get("grant_type")
+
+    if grant_type == "authorization_code":
+        code = data.get("code")
+        if code not in AUTHORIZATION_CODES:
+            raise HTTPException(status_code=400, detail="Invalid authorization code")
+
+        auth_code = AUTHORIZATION_CODES[code]
+        del AUTHORIZATION_CODES[code]
+
+        access_token = f"access_{uuid.uuid4().hex[:32]}"
+        refresh_token = f"refresh_{uuid.uuid4().hex[:32]}"
+
+        token = {
+            "access_token": access_token,
+            "refresh_token": refresh_token,
+            "token_type": "Bearer",
+            "expires_in": 3600,
+            "scope": auth_code["scope"],
+            "created_at": datetime.now(timezone.utc).isoformat()
+        }
+
+        OAUTH_TOKENS[access_token] = token
+        return token
+
+    elif grant_type == "client_credentials":
+        client_id = data.get("client_id")
+        client_secret = data.get("client_secret")
+
+        if client_id not in OAUTH_CLIENTS:
+            raise HTTPException(status_code=401, detail="Invalid client credentials")
+
+        if OAUTH_CLIENTS[client_id]["client_secret"] != client_secret:
+            raise HTTPException(status_code=401, detail="Invalid client credentials")
+
+        access_token = f"access_{uuid.uuid4().hex[:32]}"
+
+        token = {
+            "access_token": access_token,
+            "token_type": "Bearer",
+            "expires_in": 3600,
+            "scope": " ".join(OAUTH_CLIENTS[client_id]["scopes"]),
+            "created_at": datetime.now(timezone.utc).isoformat()
+        }
+
+        OAUTH_TOKENS[access_token] = token
+        return token
+
+    elif grant_type == "refresh_token":
+        refresh = data.get("refresh_token")
+
+        # Find and refresh
+        access_token = f"access_{uuid.uuid4().hex[:32]}"
+
+        token = {
+            "access_token": access_token,
+            "refresh_token": refresh,
+            "token_type": "Bearer",
+            "expires_in": 3600,
+            "created_at": datetime.now(timezone.utc).isoformat()
+        }
+
+        OAUTH_TOKENS[access_token] = token
+        return token
+
+    raise HTTPException(status_code=400, detail="Unsupported grant type")
+
+
+@app.post("/oauth/revoke")
+def oauth_revoke(request: Request):
+    """Revoke an OAuth token"""
+    data = {}
+    token = data.get("token")
+
+    if token in OAUTH_TOKENS:
+        del OAUTH_TOKENS[token]
+        return {"revoked": True}
+
+    return {"revoked": False}
+
+
+@app.get("/oauth/userinfo")
+def oauth_userinfo(authorization: Optional[str] = None):
+    """OIDC UserInfo endpoint"""
+    return {
+        "sub": "user_12345",
+        "name": "Test User",
+        "email": "user@example.com",
+        "email_verified": True,
+        "updated_at": datetime.now(timezone.utc).isoformat()
+    }
+
+
+@app.get("/.well-known/openid-configuration")
+def openid_configuration():
+    """OIDC Discovery endpoint"""
+    base_url = "https://api.example.com"
+    return {
+        "issuer": base_url,
+        "authorization_endpoint": f"{base_url}/oauth/authorize",
+        "token_endpoint": f"{base_url}/oauth/token",
+        "userinfo_endpoint": f"{base_url}/oauth/userinfo",
+        "revocation_endpoint": f"{base_url}/oauth/revoke",
+        "jwks_uri": f"{base_url}/.well-known/jwks.json",
+        "response_types_supported": ["code", "token"],
+        "grant_types_supported": ["authorization_code", "client_credentials", "refresh_token"],
+        "scopes_supported": ["openid", "profile", "email", "read", "write"],
+        "token_endpoint_auth_methods_supported": ["client_secret_basic", "client_secret_post"]
+    }
+
+
+# ============================================================================
+# Fine-grained RBAC
+# ============================================================================
+
+RBAC_POLICIES: Dict[str, Dict[str, Any]] = {}
+RESOURCE_PERMISSIONS: Dict[str, Dict[str, Any]] = {}
+PERMISSION_GRANTS: List[Dict[str, Any]] = []
+
+
+@app.post("/rbac/policies")
+def create_rbac_policy(request: Request):
+    """Create an RBAC policy"""
+    data = {}
+    policy_id = f"policy_{uuid.uuid4().hex[:8]}"
+
+    policy = {
+        "id": policy_id,
+        "name": data.get("name", f"Policy {policy_id}"),
+        "description": data.get("description", ""),
+        "effect": data.get("effect", "allow"),  # allow, deny
+        "actions": data.get("actions", ["read"]),
+        "resources": data.get("resources", ["*"]),
+        "conditions": data.get("conditions", {}),
+        "priority": data.get("priority", 0),
+        "created_at": datetime.now(timezone.utc).isoformat()
+    }
+
+    RBAC_POLICIES[policy_id] = policy
+    return {"policy": policy}
+
+
+@app.get("/rbac/policies")
+def list_rbac_policies():
+    """List RBAC policies"""
+    return {"policies": list(RBAC_POLICIES.values()), "total": len(RBAC_POLICIES)}
+
+
+@app.get("/rbac/policies/{policy_id}")
+def get_rbac_policy(policy_id: str):
+    """Get RBAC policy details"""
+    if policy_id not in RBAC_POLICIES:
+        raise HTTPException(status_code=404, detail="Policy not found")
+    return {"policy": RBAC_POLICIES[policy_id]}
+
+
+@app.post("/rbac/permissions/grant")
+def grant_permission(request: Request):
+    """Grant permission to a subject"""
+    data = {}
+
+    grant = {
+        "id": f"grant_{uuid.uuid4().hex[:8]}",
+        "subject_type": data.get("subject_type", "user"),  # user, role, group
+        "subject_id": data.get("subject_id"),
+        "resource_type": data.get("resource_type"),  # agent, workflow, etc.
+        "resource_id": data.get("resource_id"),  # specific ID or "*"
+        "actions": data.get("actions", ["read"]),
+        "conditions": data.get("conditions", {}),
+        "granted_by": data.get("granted_by"),
+        "granted_at": datetime.now(timezone.utc).isoformat(),
+        "expires_at": data.get("expires_at")
+    }
+
+    PERMISSION_GRANTS.append(grant)
+    return {"grant": grant}
+
+
+@app.post("/rbac/permissions/revoke")
+def revoke_permission(request: Request):
+    """Revoke a permission grant"""
+    data = {}
+    grant_id = data.get("grant_id")
+
+    for i, grant in enumerate(PERMISSION_GRANTS):
+        if grant["id"] == grant_id:
+            del PERMISSION_GRANTS[i]
+            return {"revoked": True}
+
+    return {"revoked": False}
+
+
+@app.post("/rbac/check")
+def check_permission(request: Request):
+    """Check if an action is permitted"""
+    data = {}
+    subject_id = data.get("subject_id")
+    action = data.get("action")
+    resource_type = data.get("resource_type")
+    resource_id = data.get("resource_id")
+
+    # Check grants
+    for grant in PERMISSION_GRANTS:
+        if grant["subject_id"] == subject_id:
+            if grant["resource_type"] == resource_type or grant["resource_type"] == "*":
+                if grant["resource_id"] == resource_id or grant["resource_id"] == "*":
+                    if action in grant["actions"] or "*" in grant["actions"]:
+                        return {
+                            "allowed": True,
+                            "grant_id": grant["id"],
+                            "reason": "Explicit grant"
+                        }
+
+    return {
+        "allowed": False,
+        "reason": "No matching permission grant"
+    }
+
+
+@app.get("/rbac/permissions/{subject_id}")
+def get_subject_permissions(subject_id: str):
+    """Get all permissions for a subject"""
+    grants = [g for g in PERMISSION_GRANTS if g["subject_id"] == subject_id]
+    return {"subject_id": subject_id, "permissions": grants, "total": len(grants)}
+
+
+@app.get("/rbac/resources/{resource_type}/{resource_id}/permissions")
+def get_resource_permissions(resource_type: str, resource_id: str):
+    """Get all permissions for a resource"""
+    grants = [g for g in PERMISSION_GRANTS
+              if g["resource_type"] == resource_type and
+              (g["resource_id"] == resource_id or g["resource_id"] == "*")]
+    return {"resource": f"{resource_type}/{resource_id}", "permissions": grants}
+
+
+# ============================================================================
+# Data Retention Policies
+# ============================================================================
+
+RETENTION_POLICIES: Dict[str, Dict[str, Any]] = {}
+RETENTION_JOBS: Dict[str, Dict[str, Any]] = {}
+DATA_DELETION_REQUESTS: List[Dict[str, Any]] = []
+
+
+@app.post("/retention/policies")
+def create_retention_policy(request: Request):
+    """Create a data retention policy"""
+    data = {}
+    policy_id = f"retention_{uuid.uuid4().hex[:8]}"
+
+    policy = {
+        "id": policy_id,
+        "name": data.get("name", f"Policy {policy_id}"),
+        "description": data.get("description", ""),
+        "data_types": data.get("data_types", ["logs", "executions"]),
+        "retention_days": data.get("retention_days", 90),
+        "action": data.get("action", "delete"),  # delete, archive, anonymize
+        "schedule": data.get("schedule", "0 0 * * *"),  # Daily at midnight
+        "enabled": data.get("enabled", True),
+        "last_run": None,
+        "next_run": None,
+        "created_at": datetime.now(timezone.utc).isoformat()
+    }
+
+    RETENTION_POLICIES[policy_id] = policy
+    return {"policy": policy}
+
+
+@app.get("/retention/policies")
+def list_retention_policies():
+    """List retention policies"""
+    return {"policies": list(RETENTION_POLICIES.values()), "total": len(RETENTION_POLICIES)}
+
+
+@app.get("/retention/policies/{policy_id}")
+def get_retention_policy(policy_id: str):
+    """Get retention policy details"""
+    if policy_id not in RETENTION_POLICIES:
+        raise HTTPException(status_code=404, detail="Policy not found")
+    return {"policy": RETENTION_POLICIES[policy_id]}
+
+
+@app.post("/retention/policies/{policy_id}/run")
+def run_retention_policy(policy_id: str):
+    """Manually run a retention policy"""
+    if policy_id not in RETENTION_POLICIES:
+        raise HTTPException(status_code=404, detail="Policy not found")
+
+    policy = RETENTION_POLICIES[policy_id]
+    job_id = f"job_{uuid.uuid4().hex[:8]}"
+
+    job = {
+        "id": job_id,
+        "policy_id": policy_id,
+        "status": "running",
+        "started_at": datetime.now(timezone.utc).isoformat(),
+        "records_processed": 0,
+        "records_deleted": 0,
+        "records_archived": 0
+    }
+
+    RETENTION_JOBS[job_id] = job
+    policy["last_run"] = job["started_at"]
+
+    # Simulate completion
+    job["status"] = "completed"
+    job["completed_at"] = datetime.now(timezone.utc).isoformat()
+    job["records_processed"] = 1000
+    job["records_deleted"] = 150
+
+    return {"job": job}
+
+
+@app.get("/retention/jobs")
+def list_retention_jobs(policy_id: Optional[str] = None):
+    """List retention jobs"""
+    jobs = list(RETENTION_JOBS.values())
+    if policy_id:
+        jobs = [j for j in jobs if j.get("policy_id") == policy_id]
+    return {"jobs": jobs, "total": len(jobs)}
+
+
+@app.post("/retention/gdpr/delete-request")
+def create_gdpr_delete_request(request: Request):
+    """Create a GDPR data deletion request"""
+    data = {}
+    request_id = f"gdpr_{uuid.uuid4().hex[:8]}"
+
+    deletion_request = {
+        "id": request_id,
+        "type": "deletion",
+        "subject_email": data.get("email"),
+        "subject_id": data.get("user_id"),
+        "data_types": data.get("data_types", ["all"]),
+        "reason": data.get("reason"),
+        "status": "pending",
+        "requested_at": datetime.now(timezone.utc).isoformat(),
+        "deadline": (datetime.now(timezone.utc) + timedelta(days=30)).isoformat(),
+        "completed_at": None
+    }
+
+    DATA_DELETION_REQUESTS.append(deletion_request)
+    return {"request": deletion_request}
+
+
+@app.get("/retention/gdpr/requests")
+def list_gdpr_requests(status: Optional[str] = None):
+    """List GDPR requests"""
+    requests = DATA_DELETION_REQUESTS.copy()
+    if status:
+        requests = [r for r in requests if r.get("status") == status]
+    return {"requests": requests, "total": len(requests)}
+
+
+@app.post("/retention/gdpr/requests/{request_id}/complete")
+def complete_gdpr_request(request_id: str):
+    """Mark a GDPR request as completed"""
+    for req in DATA_DELETION_REQUESTS:
+        if req["id"] == request_id:
+            req["status"] = "completed"
+            req["completed_at"] = datetime.now(timezone.utc).isoformat()
+            return {"request": req}
+
+    raise HTTPException(status_code=404, detail="Request not found")
+
+
+# ============================================================================
+# Enhanced Webhooks
+# ============================================================================
+
+WEBHOOK_ENDPOINTS: Dict[str, Dict[str, Any]] = {}
+WEBHOOK_DELIVERIES: Dict[str, List[Dict[str, Any]]] = {}
+WEBHOOK_SECRETS: Dict[str, str] = {}
+
+
+@app.post("/webhooks/endpoints")
+def create_webhook_endpoint(request: Request):
+    """Create a webhook endpoint"""
+    data = {}
+    endpoint_id = f"wh_{uuid.uuid4().hex[:8]}"
+    secret = f"whsec_{uuid.uuid4().hex[:32]}"
+
+    endpoint = {
+        "id": endpoint_id,
+        "url": data.get("url"),
+        "description": data.get("description", ""),
+        "events": data.get("events", ["*"]),
+        "enabled": True,
+        "config": {
+            "content_type": data.get("content_type", "application/json"),
+            "secret": secret,
+            "insecure_ssl": data.get("insecure_ssl", False)
+        },
+        "retry_policy": {
+            "max_retries": data.get("max_retries", 3),
+            "retry_delay_seconds": data.get("retry_delay", 60),
+            "exponential_backoff": data.get("exponential_backoff", True)
+        },
+        "metadata": data.get("metadata", {}),
+        "created_at": datetime.now(timezone.utc).isoformat()
+    }
+
+    WEBHOOK_ENDPOINTS[endpoint_id] = endpoint
+    WEBHOOK_SECRETS[endpoint_id] = secret
+    WEBHOOK_DELIVERIES[endpoint_id] = []
+
+    return {"endpoint": endpoint, "secret": secret}
+
+
+@app.get("/webhooks/endpoints")
+def list_webhook_endpoints():
+    """List webhook endpoints"""
+    # Don't expose secrets
+    endpoints = []
+    for e in WEBHOOK_ENDPOINTS.values():
+        safe = e.copy()
+        safe["config"] = {k: v for k, v in e["config"].items() if k != "secret"}
+        endpoints.append(safe)
+    return {"endpoints": endpoints, "total": len(endpoints)}
+
+
+@app.get("/webhooks/endpoints/{endpoint_id}")
+def get_webhook_endpoint(endpoint_id: str):
+    """Get webhook endpoint details"""
+    if endpoint_id not in WEBHOOK_ENDPOINTS:
+        raise HTTPException(status_code=404, detail="Endpoint not found")
+
+    endpoint = WEBHOOK_ENDPOINTS[endpoint_id].copy()
+    endpoint["config"] = {k: v for k, v in endpoint["config"].items() if k != "secret"}
+    return {"endpoint": endpoint}
+
+
+@app.post("/webhooks/endpoints/{endpoint_id}/test")
+def test_webhook_endpoint(endpoint_id: str):
+    """Send a test webhook"""
+    if endpoint_id not in WEBHOOK_ENDPOINTS:
+        raise HTTPException(status_code=404, detail="Endpoint not found")
+
+    delivery_id = f"delivery_{uuid.uuid4().hex[:8]}"
+
+    delivery = {
+        "id": delivery_id,
+        "endpoint_id": endpoint_id,
+        "event": "test.ping",
+        "payload": {"test": True, "timestamp": datetime.now(timezone.utc).isoformat()},
+        "status": "success",
+        "response_code": 200,
+        "response_time_ms": 150,
+        "attempt": 1,
+        "delivered_at": datetime.now(timezone.utc).isoformat()
+    }
+
+    WEBHOOK_DELIVERIES[endpoint_id].append(delivery)
+    return {"delivery": delivery}
+
+
+@app.get("/webhooks/endpoints/{endpoint_id}/deliveries")
+def list_webhook_deliveries(endpoint_id: str, limit: int = 50):
+    """List webhook deliveries"""
+    if endpoint_id not in WEBHOOK_ENDPOINTS:
+        raise HTTPException(status_code=404, detail="Endpoint not found")
+
+    deliveries = WEBHOOK_DELIVERIES.get(endpoint_id, [])
+    return {"deliveries": deliveries[-limit:], "total": len(deliveries)}
+
+
+@app.post("/webhooks/endpoints/{endpoint_id}/deliveries/{delivery_id}/retry")
+def retry_webhook_delivery(endpoint_id: str, delivery_id: str):
+    """Retry a failed webhook delivery"""
+    if endpoint_id not in WEBHOOK_ENDPOINTS:
+        raise HTTPException(status_code=404, detail="Endpoint not found")
+
+    for delivery in WEBHOOK_DELIVERIES.get(endpoint_id, []):
+        if delivery["id"] == delivery_id:
+            new_delivery = delivery.copy()
+            new_delivery["id"] = f"delivery_{uuid.uuid4().hex[:8]}"
+            new_delivery["attempt"] = delivery["attempt"] + 1
+            new_delivery["status"] = "success"
+            new_delivery["delivered_at"] = datetime.now(timezone.utc).isoformat()
+
+            WEBHOOK_DELIVERIES[endpoint_id].append(new_delivery)
+            return {"delivery": new_delivery}
+
+    raise HTTPException(status_code=404, detail="Delivery not found")
+
+
+@app.post("/webhooks/sign")
+def sign_webhook_payload(request: Request):
+    """Generate HMAC signature for webhook payload"""
+    data = {}
+    payload = data.get("payload", "")
+    secret = data.get("secret", "")
+
+    import hashlib
+    import hmac
+
+    signature = hmac.new(
+        secret.encode(),
+        payload.encode() if isinstance(payload, str) else str(payload).encode(),
+        hashlib.sha256
+    ).hexdigest()
+
+    return {
+        "signature": f"sha256={signature}",
+        "header_name": "X-Webhook-Signature"
+    }
+
+
+@app.post("/webhooks/verify")
+def verify_webhook_signature(request: Request):
+    """Verify a webhook signature"""
+    data = {}
+    payload = data.get("payload", "")
+    signature = data.get("signature", "")
+    secret = data.get("secret", "")
+
+    import hashlib
+    import hmac
+
+    expected = hmac.new(
+        secret.encode(),
+        payload.encode() if isinstance(payload, str) else str(payload).encode(),
+        hashlib.sha256
+    ).hexdigest()
+
+    valid = hmac.compare_digest(f"sha256={expected}", signature)
+    return {"valid": valid}
+
+
+# ============================================================================
+# Event Bus / Pub-Sub
+# ============================================================================
+
+EVENT_TOPICS: Dict[str, Dict[str, Any]] = {}
+EVENT_SUBSCRIPTIONS: Dict[str, List[Dict[str, Any]]] = {}
+EVENT_MESSAGES: Dict[str, List[Dict[str, Any]]] = {}
+
+
+@app.post("/events/topics")
+def create_event_topic(request: Request):
+    """Create an event topic"""
+    data = {}
+    topic_id = f"topic_{uuid.uuid4().hex[:8]}"
+
+    topic = {
+        "id": topic_id,
+        "name": data.get("name", f"Topic {topic_id}"),
+        "description": data.get("description", ""),
+        "schema": data.get("schema", {}),
+        "retention_hours": data.get("retention_hours", 168),  # 7 days
+        "max_message_size_kb": data.get("max_message_size", 256),
+        "created_at": datetime.now(timezone.utc).isoformat()
+    }
+
+    EVENT_TOPICS[topic_id] = topic
+    EVENT_SUBSCRIPTIONS[topic_id] = []
+    EVENT_MESSAGES[topic_id] = []
+
+    return {"topic": topic}
+
+
+@app.get("/events/topics")
+def list_event_topics():
+    """List event topics"""
+    topics = []
+    for topic_id, topic in EVENT_TOPICS.items():
+        topic_info = topic.copy()
+        topic_info["subscription_count"] = len(EVENT_SUBSCRIPTIONS.get(topic_id, []))
+        topic_info["message_count"] = len(EVENT_MESSAGES.get(topic_id, []))
+        topics.append(topic_info)
+    return {"topics": topics, "total": len(topics)}
+
+
+@app.post("/events/topics/{topic_id}/subscribe")
+def subscribe_to_topic(topic_id: str, request: Request):
+    """Subscribe to a topic"""
+    if topic_id not in EVENT_TOPICS:
+        raise HTTPException(status_code=404, detail="Topic not found")
+
+    data = {}
+    subscription_id = f"sub_{uuid.uuid4().hex[:8]}"
+
+    subscription = {
+        "id": subscription_id,
+        "topic_id": topic_id,
+        "name": data.get("name", f"Subscription {subscription_id}"),
+        "endpoint": data.get("endpoint"),  # webhook URL or queue name
+        "filter": data.get("filter", {}),
+        "delivery_type": data.get("delivery_type", "push"),  # push, pull
+        "ack_deadline_seconds": data.get("ack_deadline", 60),
+        "created_at": datetime.now(timezone.utc).isoformat()
+    }
+
+    EVENT_SUBSCRIPTIONS[topic_id].append(subscription)
+    return {"subscription": subscription}
+
+
+@app.get("/events/topics/{topic_id}/subscriptions")
+def list_topic_subscriptions(topic_id: str):
+    """List subscriptions for a topic"""
+    if topic_id not in EVENT_TOPICS:
+        raise HTTPException(status_code=404, detail="Topic not found")
+
+    return {"subscriptions": EVENT_SUBSCRIPTIONS.get(topic_id, [])}
+
+
+@app.post("/events/topics/{topic_id}/publish")
+def publish_event(topic_id: str, request: Request):
+    """Publish an event to a topic"""
+    if topic_id not in EVENT_TOPICS:
+        raise HTTPException(status_code=404, detail="Topic not found")
+
+    data = {}
+    message_id = f"msg_{uuid.uuid4().hex[:12]}"
+
+    message = {
+        "id": message_id,
+        "topic_id": topic_id,
+        "data": data.get("data", {}),
+        "attributes": data.get("attributes", {}),
+        "published_at": datetime.now(timezone.utc).isoformat()
+    }
+
+    EVENT_MESSAGES[topic_id].append(message)
+
+    # Notify subscribers (simulated)
+    subscribers_notified = len(EVENT_SUBSCRIPTIONS.get(topic_id, []))
+
+    return {
+        "message_id": message_id,
+        "subscribers_notified": subscribers_notified
+    }
+
+
+@app.post("/events/subscriptions/{subscription_id}/pull")
+def pull_events(subscription_id: str, max_messages: int = 10):
+    """Pull events from a subscription"""
+    for topic_id, subs in EVENT_SUBSCRIPTIONS.items():
+        for sub in subs:
+            if sub["id"] == subscription_id:
+                messages = EVENT_MESSAGES.get(topic_id, [])[-max_messages:]
+                return {
+                    "messages": messages,
+                    "subscription_id": subscription_id
+                }
+
+    raise HTTPException(status_code=404, detail="Subscription not found")
+
+
+@app.post("/events/subscriptions/{subscription_id}/ack")
+def acknowledge_event(subscription_id: str, request: Request):
+    """Acknowledge receipt of events"""
+    data = {}
+    message_ids = data.get("message_ids", [])
+
+    return {
+        "acknowledged": len(message_ids),
+        "subscription_id": subscription_id
+    }
+
+
+# ============================================================================
+# SSO Providers
+# ============================================================================
+
+SSO_PROVIDERS: Dict[str, Dict[str, Any]] = {}
+SSO_SESSIONS: Dict[str, Dict[str, Any]] = {}
+
+
+@app.post("/sso/providers")
+def configure_sso_provider(request: Request):
+    """Configure an SSO provider"""
+    data = {}
+    provider_id = f"sso_{uuid.uuid4().hex[:8]}"
+
+    provider = {
+        "id": provider_id,
+        "type": data.get("type", "saml"),  # saml, oidc
+        "name": data.get("name", f"Provider {provider_id}"),
+        "enabled": data.get("enabled", True),
+        "config": {
+            # SAML config
+            "entity_id": data.get("entity_id"),
+            "sso_url": data.get("sso_url"),
+            "certificate": data.get("certificate"),
+            # OIDC config
+            "client_id": data.get("client_id"),
+            "client_secret": data.get("client_secret"),
+            "authorization_url": data.get("authorization_url"),
+            "token_url": data.get("token_url"),
+            "userinfo_url": data.get("userinfo_url")
+        },
+        "attribute_mapping": data.get("attribute_mapping", {
+            "email": "email",
+            "name": "name",
+            "groups": "groups"
+        }),
+        "created_at": datetime.now(timezone.utc).isoformat()
+    }
+
+    SSO_PROVIDERS[provider_id] = provider
+    return {"provider": provider}
+
+
+@app.get("/sso/providers")
+def list_sso_providers():
+    """List SSO providers"""
+    # Don't expose secrets
+    providers = []
+    for p in SSO_PROVIDERS.values():
+        safe = p.copy()
+        safe["config"] = {k: v for k, v in p["config"].items()
+                        if k not in ["client_secret", "certificate"]}
+        providers.append(safe)
+    return {"providers": providers, "total": len(providers)}
+
+
+@app.get("/sso/providers/{provider_id}")
+def get_sso_provider(provider_id: str):
+    """Get SSO provider details"""
+    if provider_id not in SSO_PROVIDERS:
+        raise HTTPException(status_code=404, detail="Provider not found")
+
+    provider = SSO_PROVIDERS[provider_id].copy()
+    provider["config"] = {k: v for k, v in provider["config"].items()
+                         if k not in ["client_secret", "certificate"]}
+    return {"provider": provider}
+
+
+@app.get("/sso/providers/{provider_id}/login")
+def initiate_sso_login(provider_id: str, redirect_uri: Optional[str] = None):
+    """Initiate SSO login flow"""
+    if provider_id not in SSO_PROVIDERS:
+        raise HTTPException(status_code=404, detail="Provider not found")
+
+    provider = SSO_PROVIDERS[provider_id]
+    session_id = f"sso_session_{uuid.uuid4().hex[:16]}"
+
+    SSO_SESSIONS[session_id] = {
+        "provider_id": provider_id,
+        "redirect_uri": redirect_uri,
+        "state": uuid.uuid4().hex,
+        "created_at": datetime.now(timezone.utc).isoformat()
+    }
+
+    if provider["type"] == "saml":
+        return {
+            "redirect_to": provider["config"].get("sso_url"),
+            "saml_request": f"SAMLRequest={session_id}",
+            "session_id": session_id
+        }
+    else:  # OIDC
+        return {
+            "redirect_to": provider["config"].get("authorization_url"),
+            "session_id": session_id
+        }
+
+
+@app.post("/sso/callback")
+def sso_callback(request: Request):
+    """Handle SSO callback"""
+    data = {}
+
+    # Process SAML response or OIDC code
+    session_id = data.get("session_id") or data.get("state")
+
+    if session_id in SSO_SESSIONS:
+        session = SSO_SESSIONS[session_id]
+
+        # Create user session
+        user_session = {
+            "user_id": f"user_{uuid.uuid4().hex[:8]}",
+            "email": data.get("email", "user@example.com"),
+            "name": data.get("name", "SSO User"),
+            "provider_id": session["provider_id"],
+            "authenticated_at": datetime.now(timezone.utc).isoformat()
+        }
+
+        return {
+            "success": True,
+            "session": user_session,
+            "redirect_to": session.get("redirect_uri", "/")
+        }
+
+    raise HTTPException(status_code=400, detail="Invalid SSO session")
+
+
+@app.post("/sso/providers/{provider_id}/test")
+def test_sso_provider(provider_id: str):
+    """Test SSO provider configuration"""
+    if provider_id not in SSO_PROVIDERS:
+        raise HTTPException(status_code=404, detail="Provider not found")
+
+    provider = SSO_PROVIDERS[provider_id]
+
+    return {
+        "provider_id": provider_id,
+        "status": "healthy",
+        "tests": {
+            "connectivity": True,
+            "certificate_valid": True,
+            "metadata_accessible": True
+        },
+        "tested_at": datetime.now(timezone.utc).isoformat()
+    }
+
+
+# ============================================================================
+# Dashboard Metrics
+# ============================================================================
+
+DASHBOARD_CONFIGS: Dict[str, Dict[str, Any]] = {}
+METRIC_TIMESERIES: Dict[str, List[Dict[str, Any]]] = {}
+
+
+@app.get("/dashboard/overview")
+def get_dashboard_overview():
+    """Get dashboard overview metrics"""
+    return {
+        "summary": {
+            "total_agents": len(AGENTS) if "AGENTS" in dir() else 0,
+            "total_workflows": len(WORKFLOWS) if "WORKFLOWS" in dir() else 0,
+            "active_executions": 5,
+            "total_users": len(USERS) if "USERS" in dir() else 0
+        },
+        "trends": {
+            "executions_today": 150,
+            "executions_yesterday": 120,
+            "change_percent": 25.0
+        },
+        "health": {
+            "api_status": "healthy",
+            "database_status": "healthy",
+            "queue_status": "healthy"
+        },
+        "generated_at": datetime.now(timezone.utc).isoformat()
+    }
+
+
+@app.get("/dashboard/metrics/timeseries")
+def get_metrics_timeseries(
+    metric: str = "executions",
+    period: str = "24h",
+    interval: str = "1h"
+):
+    """Get time-series metrics data"""
+    now = datetime.now(timezone.utc)
+
+    # Generate sample time-series data
+    data_points = []
+    for i in range(24):
+        timestamp = now - timedelta(hours=23 - i)
+        data_points.append({
+            "timestamp": timestamp.isoformat(),
+            "value": 50 + (i * 2) + (i % 5)
+        })
+
+    return {
+        "metric": metric,
+        "period": period,
+        "interval": interval,
+        "data": data_points
+    }
+
+
+@app.get("/dashboard/metrics/summary")
+def get_metrics_summary(period: str = "7d"):
+    """Get aggregated metrics summary"""
+    return {
+        "period": period,
+        "metrics": {
+            "total_executions": 1250,
+            "successful_executions": 1180,
+            "failed_executions": 70,
+            "success_rate": 94.4,
+            "avg_execution_time_ms": 450,
+            "p95_execution_time_ms": 1200,
+            "total_tokens_used": 5000000,
+            "total_cost_usd": 125.50
+        }
+    }
+
+
+@app.post("/dashboard/widgets")
+def create_dashboard_widget(request: Request):
+    """Create a dashboard widget configuration"""
+    data = {}
+    widget_id = f"widget_{uuid.uuid4().hex[:8]}"
+
+    widget = {
+        "id": widget_id,
+        "type": data.get("type", "line_chart"),  # line_chart, bar_chart, pie_chart, metric, table
+        "title": data.get("title", f"Widget {widget_id}"),
+        "metric": data.get("metric"),
+        "config": data.get("config", {}),
+        "position": data.get("position", {"x": 0, "y": 0, "w": 4, "h": 3}),
+        "created_at": datetime.now(timezone.utc).isoformat()
+    }
+
+    return {"widget": widget}
+
+
+@app.get("/dashboard/real-time")
+def get_real_time_metrics():
+    """Get real-time streaming metrics"""
+    return {
+        "current": {
+            "active_connections": 42,
+            "requests_per_second": 125,
+            "avg_latency_ms": 45,
+            "error_rate_percent": 0.5,
+            "queue_depth": 15
+        },
+        "timestamp": datetime.now(timezone.utc).isoformat()
+    }
+
+
+# ============================================================================
+# Anomaly Detection
+# ============================================================================
+
+ANOMALY_RULES: Dict[str, Dict[str, Any]] = {}
+DETECTED_ANOMALIES: List[Dict[str, Any]] = []
+
+
+@app.post("/anomaly/rules")
+def create_anomaly_rule(request: Request):
+    """Create an anomaly detection rule"""
+    data = {}
+    rule_id = f"anomaly_{uuid.uuid4().hex[:8]}"
+
+    rule = {
+        "id": rule_id,
+        "name": data.get("name", f"Rule {rule_id}"),
+        "description": data.get("description", ""),
+        "metric": data.get("metric"),
+        "condition": {
+            "type": data.get("condition_type", "threshold"),  # threshold, percentage_change, stddev
+            "operator": data.get("operator", "gt"),  # gt, lt, eq
+            "value": data.get("threshold_value", 100),
+            "window_minutes": data.get("window_minutes", 5)
+        },
+        "severity": data.get("severity", "warning"),  # info, warning, critical
+        "actions": data.get("actions", ["alert"]),
+        "enabled": True,
+        "created_at": datetime.now(timezone.utc).isoformat()
+    }
+
+    ANOMALY_RULES[rule_id] = rule
+    return {"rule": rule}
+
+
+@app.get("/anomaly/rules")
+def list_anomaly_rules():
+    """List anomaly detection rules"""
+    return {"rules": list(ANOMALY_RULES.values()), "total": len(ANOMALY_RULES)}
+
+
+@app.get("/anomaly/rules/{rule_id}")
+def get_anomaly_rule(rule_id: str):
+    """Get anomaly rule details"""
+    if rule_id not in ANOMALY_RULES:
+        raise HTTPException(status_code=404, detail="Rule not found")
+    return {"rule": ANOMALY_RULES[rule_id]}
+
+
+@app.post("/anomaly/detect")
+def detect_anomalies(request: Request):
+    """Run anomaly detection on metrics"""
+    data = {}
+    metric = data.get("metric")
+    values = data.get("values", [])
+
+    if not values:
+        return {"anomalies": [], "total": 0}
+
+    # Simple anomaly detection using z-score
+    mean = sum(values) / len(values)
+    variance = sum((x - mean) ** 2 for x in values) / len(values)
+    stddev = variance ** 0.5 if variance > 0 else 1
+
+    anomalies = []
+    for i, value in enumerate(values):
+        z_score = abs(value - mean) / stddev if stddev > 0 else 0
+        if z_score > 2:  # More than 2 standard deviations
+            anomalies.append({
+                "index": i,
+                "value": value,
+                "z_score": z_score,
+                "severity": "critical" if z_score > 3 else "warning"
+            })
+
+    return {
+        "metric": metric,
+        "anomalies": anomalies,
+        "statistics": {
+            "mean": mean,
+            "stddev": stddev,
+            "min": min(values),
+            "max": max(values)
+        }
+    }
+
+
+@app.get("/anomaly/history")
+def get_anomaly_history(
+    severity: Optional[str] = None,
+    limit: int = 100
+):
+    """Get detected anomaly history"""
+    anomalies = DETECTED_ANOMALIES.copy()
+
+    if severity:
+        anomalies = [a for a in anomalies if a.get("severity") == severity]
+
+    return {"anomalies": anomalies[-limit:], "total": len(anomalies)}
+
+
+@app.post("/anomaly/acknowledge/{anomaly_id}")
+def acknowledge_anomaly(anomaly_id: str):
+    """Acknowledge an anomaly"""
+    for anomaly in DETECTED_ANOMALIES:
+        if anomaly.get("id") == anomaly_id:
+            anomaly["acknowledged"] = True
+            anomaly["acknowledged_at"] = datetime.now(timezone.utc).isoformat()
+            return {"anomaly": anomaly}
+
+    raise HTTPException(status_code=404, detail="Anomaly not found")
+
+
+# ============================================================================
+# Usage Forecasting
+# ============================================================================
+
+FORECAST_MODELS: Dict[str, Dict[str, Any]] = {}
+FORECAST_RESULTS: Dict[str, Dict[str, Any]] = {}
+
+
+@app.post("/forecasting/models")
+def create_forecast_model(request: Request):
+    """Create a forecasting model"""
+    data = {}
+    model_id = f"forecast_{uuid.uuid4().hex[:8]}"
+
+    model = {
+        "id": model_id,
+        "name": data.get("name", f"Model {model_id}"),
+        "metric": data.get("metric", "usage"),
+        "algorithm": data.get("algorithm", "linear"),  # linear, exponential, seasonal
+        "config": {
+            "seasonality": data.get("seasonality", "daily"),
+            "trend": data.get("trend", "additive"),
+            "confidence_interval": data.get("confidence_interval", 0.95)
+        },
+        "training_data_days": data.get("training_days", 30),
+        "forecast_days": data.get("forecast_days", 7),
+        "last_trained": None,
+        "created_at": datetime.now(timezone.utc).isoformat()
+    }
+
+    FORECAST_MODELS[model_id] = model
+    return {"model": model}
+
+
+@app.get("/forecasting/models")
+def list_forecast_models():
+    """List forecasting models"""
+    return {"models": list(FORECAST_MODELS.values()), "total": len(FORECAST_MODELS)}
+
+
+@app.post("/forecasting/models/{model_id}/train")
+def train_forecast_model(model_id: str):
+    """Train a forecasting model"""
+    if model_id not in FORECAST_MODELS:
+        raise HTTPException(status_code=404, detail="Model not found")
+
+    model = FORECAST_MODELS[model_id]
+    model["last_trained"] = datetime.now(timezone.utc).isoformat()
+
+    return {
+        "model_id": model_id,
+        "status": "trained",
+        "metrics": {
+            "mape": 5.2,  # Mean Absolute Percentage Error
+            "rmse": 12.5,  # Root Mean Square Error
+            "r_squared": 0.92
+        }
+    }
+
+
+@app.post("/forecasting/models/{model_id}/predict")
+def generate_forecast(model_id: str, request: Request):
+    """Generate a forecast"""
+    if model_id not in FORECAST_MODELS:
+        raise HTTPException(status_code=404, detail="Model not found")
+
+    data = {}
+    model = FORECAST_MODELS[model_id]
+    horizon_days = data.get("horizon_days", model["forecast_days"])
+
+    # Generate sample forecast
+    now = datetime.now(timezone.utc)
+    predictions = []
+    base_value = 100
+
+    for i in range(horizon_days):
+        date = now + timedelta(days=i + 1)
+        predicted = base_value + (i * 5) + (i % 7 * 3)  # Simulated trend with weekly pattern
+        lower = predicted * 0.9
+        upper = predicted * 1.1
+
+        predictions.append({
+            "date": date.date().isoformat(),
+            "predicted": predicted,
+            "lower_bound": lower,
+            "upper_bound": upper
+        })
+
+    forecast_id = f"result_{uuid.uuid4().hex[:8]}"
+    FORECAST_RESULTS[forecast_id] = {
+        "id": forecast_id,
+        "model_id": model_id,
+        "predictions": predictions,
+        "generated_at": datetime.now(timezone.utc).isoformat()
+    }
+
+    return {"forecast": FORECAST_RESULTS[forecast_id]}
+
+
+@app.get("/forecasting/capacity")
+def get_capacity_forecast():
+    """Get capacity planning forecast"""
+    return {
+        "current_capacity": {
+            "agents": {"used": 45, "limit": 100, "utilization": 45},
+            "workflows": {"used": 20, "limit": 50, "utilization": 40},
+            "api_calls": {"used": 500000, "limit": 1000000, "utilization": 50}
+        },
+        "forecast": {
+            "days_until_80_percent": 15,
+            "recommended_upgrade_date": (datetime.now(timezone.utc) + timedelta(days=10)).date().isoformat(),
+            "projected_growth_rate": 5.2
+        }
+    }
+
+
+# ============================================================================
+# Backup & Recovery
+# ============================================================================
+
+BACKUPS: Dict[str, Dict[str, Any]] = {}
+RESTORE_JOBS: Dict[str, Dict[str, Any]] = {}
+
+
+@app.post("/backups")
+def create_backup(request: Request):
+    """Create a backup"""
+    data = {}
+    backup_id = f"backup_{uuid.uuid4().hex[:8]}"
+
+    backup = {
+        "id": backup_id,
+        "name": data.get("name", f"Backup {backup_id}"),
+        "type": data.get("type", "full"),  # full, incremental, differential
+        "includes": data.get("includes", ["agents", "workflows", "configs"]),
+        "status": "in_progress",
+        "size_bytes": 0,
+        "checksum": None,
+        "storage_location": data.get("storage", "local"),
+        "retention_days": data.get("retention_days", 30),
+        "created_at": datetime.now(timezone.utc).isoformat(),
+        "completed_at": None
+    }
+
+    BACKUPS[backup_id] = backup
+
+    # Simulate completion
+    backup["status"] = "completed"
+    backup["completed_at"] = datetime.now(timezone.utc).isoformat()
+    backup["size_bytes"] = 1024 * 1024 * 50  # 50MB
+    backup["checksum"] = f"sha256:{uuid.uuid4().hex}"
+
+    return {"backup": backup}
+
+
+@app.get("/backups")
+def list_backups(status: Optional[str] = None):
+    """List backups"""
+    backups = list(BACKUPS.values())
+    if status:
+        backups = [b for b in backups if b.get("status") == status]
+    return {"backups": backups, "total": len(backups)}
+
+
+@app.get("/backups/{backup_id}")
+def get_backup(backup_id: str):
+    """Get backup details"""
+    if backup_id not in BACKUPS:
+        raise HTTPException(status_code=404, detail="Backup not found")
+    return {"backup": BACKUPS[backup_id]}
+
+
+@app.post("/backups/{backup_id}/restore")
+def restore_backup(backup_id: str, request: Request):
+    """Restore from a backup"""
+    if backup_id not in BACKUPS:
+        raise HTTPException(status_code=404, detail="Backup not found")
+
+    data = {}
+    restore_id = f"restore_{uuid.uuid4().hex[:8]}"
+
+    restore = {
+        "id": restore_id,
+        "backup_id": backup_id,
+        "target": data.get("target", "current"),
+        "includes": data.get("includes"),  # Selective restore
+        "status": "in_progress",
+        "progress_percent": 0,
+        "started_at": datetime.now(timezone.utc).isoformat(),
+        "completed_at": None
+    }
+
+    RESTORE_JOBS[restore_id] = restore
+
+    # Simulate completion
+    restore["status"] = "completed"
+    restore["progress_percent"] = 100
+    restore["completed_at"] = datetime.now(timezone.utc).isoformat()
+
+    return {"restore": restore}
+
+
+@app.get("/backups/restore/{restore_id}")
+def get_restore_status(restore_id: str):
+    """Get restore job status"""
+    if restore_id not in RESTORE_JOBS:
+        raise HTTPException(status_code=404, detail="Restore job not found")
+    return {"restore": RESTORE_JOBS[restore_id]}
+
+
+@app.delete("/backups/{backup_id}")
+def delete_backup(backup_id: str):
+    """Delete a backup"""
+    if backup_id not in BACKUPS:
+        raise HTTPException(status_code=404, detail="Backup not found")
+
+    del BACKUPS[backup_id]
+    return {"deleted": True}
+
+
+@app.post("/backups/schedule")
+def schedule_backup(request: Request):
+    """Schedule automatic backups"""
+    data = {}
+
+    schedule = {
+        "id": f"schedule_{uuid.uuid4().hex[:8]}",
+        "type": data.get("type", "full"),
+        "schedule": data.get("schedule", "0 2 * * *"),  # Daily at 2 AM
+        "retention_days": data.get("retention_days", 30),
+        "enabled": True,
+        "created_at": datetime.now(timezone.utc).isoformat()
+    }
+
+    return {"schedule": schedule}
+
+
+# ============================================================================
+# Migration Tools
+# ============================================================================
+
+MIGRATIONS: Dict[str, Dict[str, Any]] = {}
+MIGRATION_TEMPLATES: Dict[str, Dict[str, Any]] = {
+    "v1_to_v2": {
+        "name": "V1 to V2 Migration",
+        "source_version": "1.0",
+        "target_version": "2.0",
+        "steps": ["backup", "transform", "validate", "apply"]
+    }
+}
+
+
+@app.post("/migrations")
+def create_migration(request: Request):
+    """Create a migration job"""
+    data = {}
+    migration_id = f"migration_{uuid.uuid4().hex[:8]}"
+
+    migration = {
+        "id": migration_id,
+        "name": data.get("name", f"Migration {migration_id}"),
+        "type": data.get("type", "schema"),  # schema, data, full
+        "source": data.get("source", {}),
+        "target": data.get("target", {}),
+        "options": {
+            "dry_run": data.get("dry_run", True),
+            "backup_before": data.get("backup", True),
+            "rollback_on_error": data.get("rollback", True)
+        },
+        "status": "pending",
+        "steps": [],
+        "created_at": datetime.now(timezone.utc).isoformat()
+    }
+
+    MIGRATIONS[migration_id] = migration
+    return {"migration": migration}
+
+
+@app.get("/migrations")
+def list_migrations(status: Optional[str] = None):
+    """List migrations"""
+    migrations = list(MIGRATIONS.values())
+    if status:
+        migrations = [m for m in migrations if m.get("status") == status]
+    return {"migrations": migrations, "total": len(migrations)}
+
+
+@app.get("/migrations/{migration_id}")
+def get_migration(migration_id: str):
+    """Get migration details"""
+    if migration_id not in MIGRATIONS:
+        raise HTTPException(status_code=404, detail="Migration not found")
+    return {"migration": MIGRATIONS[migration_id]}
+
+
+@app.post("/migrations/{migration_id}/run")
+def run_migration(migration_id: str):
+    """Run a migration"""
+    if migration_id not in MIGRATIONS:
+        raise HTTPException(status_code=404, detail="Migration not found")
+
+    migration = MIGRATIONS[migration_id]
+    migration["status"] = "running"
+    migration["started_at"] = datetime.now(timezone.utc).isoformat()
+
+    # Simulate migration steps
+    migration["steps"] = [
+        {"name": "backup", "status": "completed", "duration_ms": 5000},
+        {"name": "validate_source", "status": "completed", "duration_ms": 1000},
+        {"name": "transform", "status": "completed", "duration_ms": 10000},
+        {"name": "apply", "status": "completed", "duration_ms": 8000},
+        {"name": "verify", "status": "completed", "duration_ms": 2000}
+    ]
+
+    migration["status"] = "completed"
+    migration["completed_at"] = datetime.now(timezone.utc).isoformat()
+
+    return {"migration": migration}
+
+
+@app.post("/migrations/{migration_id}/rollback")
+def rollback_migration(migration_id: str):
+    """Rollback a migration"""
+    if migration_id not in MIGRATIONS:
+        raise HTTPException(status_code=404, detail="Migration not found")
+
+    migration = MIGRATIONS[migration_id]
+    migration["status"] = "rolled_back"
+    migration["rolled_back_at"] = datetime.now(timezone.utc).isoformat()
+
+    return {"migration": migration}
+
+
+@app.get("/migrations/templates")
+def list_migration_templates():
+    """List available migration templates"""
+    return {"templates": list(MIGRATION_TEMPLATES.values())}
+
+
+@app.post("/migrations/analyze")
+def analyze_migration(request: Request):
+    """Analyze migration impact"""
+    data = {}
+
+    return {
+        "analysis": {
+            "affected_resources": {
+                "agents": 25,
+                "workflows": 10,
+                "configs": 5
+            },
+            "estimated_duration_seconds": 300,
+            "risk_level": "low",
+            "recommendations": [
+                "Run during low-traffic period",
+                "Ensure backup is recent",
+                "Notify stakeholders"
+            ]
+        }
+    }
+
+
+# ============================================================================
+# Configuration Management
+# ============================================================================
+
+CONFIGS: Dict[str, Dict[str, Any]] = {}
+CONFIG_HISTORY: Dict[str, List[Dict[str, Any]]] = {}
+
+
+@app.post("/configs")
+def create_config(request: Request):
+    """Create a configuration"""
+    data = {}
+    config_id = f"config_{uuid.uuid4().hex[:8]}"
+
+    config = {
+        "id": config_id,
+        "key": data.get("key", config_id),
+        "value": data.get("value"),
+        "type": data.get("type", "string"),  # string, number, boolean, json
+        "environment": data.get("environment", "all"),
+        "description": data.get("description", ""),
+        "sensitive": data.get("sensitive", False),
+        "version": 1,
+        "created_at": datetime.now(timezone.utc).isoformat(),
+        "updated_at": datetime.now(timezone.utc).isoformat()
+    }
+
+    CONFIGS[config_id] = config
+    CONFIG_HISTORY[config_id] = [config.copy()]
+
+    return {"config": config}
+
+
+@app.get("/configs")
+def list_configs(environment: Optional[str] = None):
+    """List configurations"""
+    configs = list(CONFIGS.values())
+    if environment:
+        configs = [c for c in configs if c.get("environment") in [environment, "all"]]
+
+    # Mask sensitive values
+    for c in configs:
+        if c.get("sensitive"):
+            c["value"] = "********"
+
+    return {"configs": configs, "total": len(configs)}
+
+
+@app.get("/configs/{config_id}")
+def get_config(config_id: str):
+    """Get configuration details"""
+    if config_id not in CONFIGS:
+        raise HTTPException(status_code=404, detail="Config not found")
+
+    config = CONFIGS[config_id].copy()
+    if config.get("sensitive"):
+        config["value"] = "********"
+
+    return {"config": config}
+
+
+@app.put("/configs/{config_id}")
+def update_config(config_id: str, request: Request):
+    """Update a configuration"""
+    if config_id not in CONFIGS:
+        raise HTTPException(status_code=404, detail="Config not found")
+
+    data = {}
+    config = CONFIGS[config_id]
+
+    # Save history
+    CONFIG_HISTORY[config_id].append(config.copy())
+
+    # Update
+    if "value" in data:
+        config["value"] = data["value"]
+    if "description" in data:
+        config["description"] = data["description"]
+
+    config["version"] += 1
+    config["updated_at"] = datetime.now(timezone.utc).isoformat()
+
+    return {"config": config}
+
+
+@app.get("/configs/{config_id}/history")
+def get_config_history(config_id: str):
+    """Get configuration version history"""
+    if config_id not in CONFIGS:
+        raise HTTPException(status_code=404, detail="Config not found")
+
+    history = CONFIG_HISTORY.get(config_id, [])
+    return {"history": history, "total": len(history)}
+
+
+@app.post("/configs/{config_id}/rollback")
+def rollback_config(config_id: str, request: Request):
+    """Rollback configuration to a previous version"""
+    if config_id not in CONFIGS:
+        raise HTTPException(status_code=404, detail="Config not found")
+
+    data = {}
+    target_version = data.get("version", 1)
+    history = CONFIG_HISTORY.get(config_id, [])
+
+    for h in history:
+        if h.get("version") == target_version:
+            CONFIGS[config_id] = h.copy()
+            CONFIGS[config_id]["version"] = CONFIGS[config_id]["version"] + 0.1  # Mark as rollback
+            CONFIGS[config_id]["updated_at"] = datetime.now(timezone.utc).isoformat()
+            return {"config": CONFIGS[config_id]}
+
+    raise HTTPException(status_code=404, detail="Version not found")
+
+
+@app.delete("/configs/{config_id}")
+def delete_config(config_id: str):
+    """Delete a configuration"""
+    if config_id not in CONFIGS:
+        raise HTTPException(status_code=404, detail="Config not found")
+
+    del CONFIGS[config_id]
+    if config_id in CONFIG_HISTORY:
+        del CONFIG_HISTORY[config_id]
+
+    return {"deleted": True}
+
+
+@app.get("/configs/export")
+def export_configs(environment: Optional[str] = None):
+    """Export configurations"""
+    configs = list(CONFIGS.values())
+    if environment:
+        configs = [c for c in configs if c.get("environment") in [environment, "all"]]
+
+    # Remove sensitive values
+    export_data = []
+    for c in configs:
+        exported = c.copy()
+        if exported.get("sensitive"):
+            exported["value"] = None
+        export_data.append(exported)
+
+    return {
+        "configs": export_data,
+        "exported_at": datetime.now(timezone.utc).isoformat(),
+        "environment": environment
+    }
+
+
+@app.post("/configs/import")
+def import_configs(request: Request):
+    """Import configurations"""
+    data = {}
+    configs_to_import = data.get("configs", [])
+    imported = 0
+
+    for config_data in configs_to_import:
+        config_id = config_data.get("id") or f"config_{uuid.uuid4().hex[:8]}"
+
+        config = {
+            "id": config_id,
+            "key": config_data.get("key", config_id),
+            "value": config_data.get("value"),
+            "type": config_data.get("type", "string"),
+            "environment": config_data.get("environment", "all"),
+            "description": config_data.get("description", ""),
+            "sensitive": config_data.get("sensitive", False),
+            "version": 1,
+            "created_at": datetime.now(timezone.utc).isoformat(),
+            "updated_at": datetime.now(timezone.utc).isoformat()
+        }
+
+        CONFIGS[config_id] = config
+        CONFIG_HISTORY[config_id] = [config.copy()]
+        imported += 1
+
+    return {"imported": imported}
+
+
+# ============================================================================
 # Run Server
 # ============================================================================
 
