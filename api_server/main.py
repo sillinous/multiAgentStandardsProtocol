@@ -17368,6 +17368,1532 @@ def get_shared_with_me(user_id: Optional[str] = None):
 
 
 # ============================================================================
+# Templates & Marketplace
+# ============================================================================
+
+AGENT_TEMPLATES: Dict[str, Dict[str, Any]] = {}
+WORKFLOW_TEMPLATES: Dict[str, Dict[str, Any]] = {}
+TEMPLATE_REVIEWS: Dict[str, List[Dict[str, Any]]] = {}
+TEMPLATE_CATEGORIES = ["customer-service", "data-processing", "content-generation",
+                        "code-assistance", "research", "automation", "analytics", "integration"]
+
+
+@app.post("/templates/agents")
+def create_agent_template(
+    name: str,
+    description: str,
+    category: str,
+    agent_card_config: Dict[str, Any],
+    tags: Optional[List[str]] = None,
+    is_public: bool = True,
+    author_id: Optional[str] = None
+):
+    """Create a reusable agent template"""
+    template_id = f"at_{uuid.uuid4().hex[:12]}"
+    template = {
+        "id": template_id,
+        "name": name,
+        "description": description,
+        "category": category,
+        "agent_card_config": agent_card_config,
+        "tags": tags or [],
+        "is_public": is_public,
+        "author_id": author_id,
+        "downloads": 0,
+        "rating": 0.0,
+        "review_count": 0,
+        "created_at": datetime.utcnow().isoformat(),
+        "updated_at": datetime.utcnow().isoformat()
+    }
+    AGENT_TEMPLATES[template_id] = template
+    return template
+
+
+@app.get("/templates/agents")
+def list_agent_templates(
+    category: Optional[str] = None,
+    tag: Optional[str] = None,
+    search: Optional[str] = None,
+    sort_by: str = "downloads"
+):
+    """List available agent templates"""
+    templates = list(AGENT_TEMPLATES.values())
+
+    if category:
+        templates = [t for t in templates if t["category"] == category]
+    if tag:
+        templates = [t for t in templates if tag in t.get("tags", [])]
+    if search:
+        templates = [t for t in templates if search.lower() in t["name"].lower()
+                    or search.lower() in t["description"].lower()]
+
+    # Sort
+    if sort_by == "downloads":
+        templates.sort(key=lambda x: x["downloads"], reverse=True)
+    elif sort_by == "rating":
+        templates.sort(key=lambda x: x["rating"], reverse=True)
+    elif sort_by == "newest":
+        templates.sort(key=lambda x: x["created_at"], reverse=True)
+
+    return {"templates": templates, "total": len(templates)}
+
+
+@app.get("/templates/agents/{template_id}")
+def get_agent_template(template_id: str):
+    """Get agent template details"""
+    if template_id not in AGENT_TEMPLATES:
+        raise HTTPException(status_code=404, detail="Template not found")
+    return AGENT_TEMPLATES[template_id]
+
+
+@app.post("/templates/agents/{template_id}/deploy")
+def deploy_agent_template(template_id: str, customizations: Optional[Dict[str, Any]] = None):
+    """One-click deploy an agent template"""
+    if template_id not in AGENT_TEMPLATES:
+        raise HTTPException(status_code=404, detail="Template not found")
+
+    template = AGENT_TEMPLATES[template_id]
+    template["downloads"] += 1
+
+    # Create agent card from template
+    agent_id = f"agent_{uuid.uuid4().hex[:12]}"
+    config = {**template["agent_card_config"]}
+    if customizations:
+        config.update(customizations)
+
+    return {
+        "deployed": True,
+        "agent_id": agent_id,
+        "config": config,
+        "source_template": template_id
+    }
+
+
+@app.post("/templates/workflows")
+def create_workflow_template(
+    name: str,
+    description: str,
+    category: str,
+    workflow_config: Dict[str, Any],
+    tags: Optional[List[str]] = None,
+    author_id: Optional[str] = None
+):
+    """Create a reusable workflow template"""
+    template_id = f"wt_{uuid.uuid4().hex[:12]}"
+    template = {
+        "id": template_id,
+        "name": name,
+        "description": description,
+        "category": category,
+        "workflow_config": workflow_config,
+        "tags": tags or [],
+        "author_id": author_id,
+        "downloads": 0,
+        "rating": 0.0,
+        "created_at": datetime.utcnow().isoformat()
+    }
+    WORKFLOW_TEMPLATES[template_id] = template
+    return template
+
+
+@app.get("/templates/workflows")
+def list_workflow_templates(category: Optional[str] = None):
+    """List workflow templates"""
+    templates = list(WORKFLOW_TEMPLATES.values())
+    if category:
+        templates = [t for t in templates if t["category"] == category]
+    return {"templates": templates, "total": len(templates)}
+
+
+@app.post("/templates/{template_id}/reviews")
+def add_template_review(
+    template_id: str,
+    user_id: str,
+    rating: int,
+    comment: Optional[str] = None
+):
+    """Add a review to a template"""
+    if template_id not in AGENT_TEMPLATES and template_id not in WORKFLOW_TEMPLATES:
+        raise HTTPException(status_code=404, detail="Template not found")
+
+    review = {
+        "id": f"rev_{uuid.uuid4().hex[:8]}",
+        "user_id": user_id,
+        "rating": min(5, max(1, rating)),
+        "comment": comment,
+        "created_at": datetime.utcnow().isoformat()
+    }
+
+    if template_id not in TEMPLATE_REVIEWS:
+        TEMPLATE_REVIEWS[template_id] = []
+    TEMPLATE_REVIEWS[template_id].append(review)
+
+    # Update average rating
+    reviews = TEMPLATE_REVIEWS[template_id]
+    avg_rating = sum(r["rating"] for r in reviews) / len(reviews)
+
+    if template_id in AGENT_TEMPLATES:
+        AGENT_TEMPLATES[template_id]["rating"] = round(avg_rating, 2)
+        AGENT_TEMPLATES[template_id]["review_count"] = len(reviews)
+    elif template_id in WORKFLOW_TEMPLATES:
+        WORKFLOW_TEMPLATES[template_id]["rating"] = round(avg_rating, 2)
+
+    return review
+
+
+@app.get("/templates/{template_id}/reviews")
+def get_template_reviews(template_id: str):
+    """Get reviews for a template"""
+    reviews = TEMPLATE_REVIEWS.get(template_id, [])
+    return {"reviews": reviews, "total": len(reviews)}
+
+
+@app.get("/templates/categories")
+def list_template_categories():
+    """List available template categories"""
+    return {"categories": TEMPLATE_CATEGORIES}
+
+
+# ============================================================================
+# Notifications & Real-time Alerts
+# ============================================================================
+
+NOTIFICATION_SUBSCRIPTIONS: Dict[str, Dict[str, Any]] = {}
+NOTIFICATIONS: Dict[str, List[Dict[str, Any]]] = {}
+ALERT_RULES: Dict[str, Dict[str, Any]] = {}
+NOTIFICATION_CHANNELS = ["email", "slack", "teams", "webhook", "in_app"]
+
+
+@app.post("/notifications/subscriptions")
+def create_notification_subscription(
+    user_id: str,
+    event_types: List[str],
+    channels: List[str],
+    filters: Optional[Dict[str, Any]] = None
+):
+    """Subscribe to event notifications"""
+    sub_id = f"sub_{uuid.uuid4().hex[:12]}"
+    subscription = {
+        "id": sub_id,
+        "user_id": user_id,
+        "event_types": event_types,
+        "channels": [c for c in channels if c in NOTIFICATION_CHANNELS],
+        "filters": filters or {},
+        "enabled": True,
+        "created_at": datetime.utcnow().isoformat()
+    }
+    NOTIFICATION_SUBSCRIPTIONS[sub_id] = subscription
+    return subscription
+
+
+@app.get("/notifications/subscriptions")
+def list_notification_subscriptions(user_id: Optional[str] = None):
+    """List notification subscriptions"""
+    subs = list(NOTIFICATION_SUBSCRIPTIONS.values())
+    if user_id:
+        subs = [s for s in subs if s["user_id"] == user_id]
+    return {"subscriptions": subs, "total": len(subs)}
+
+
+@app.put("/notifications/subscriptions/{subscription_id}")
+def update_notification_subscription(
+    subscription_id: str,
+    enabled: Optional[bool] = None,
+    channels: Optional[List[str]] = None,
+    event_types: Optional[List[str]] = None
+):
+    """Update a notification subscription"""
+    if subscription_id not in NOTIFICATION_SUBSCRIPTIONS:
+        raise HTTPException(status_code=404, detail="Subscription not found")
+
+    sub = NOTIFICATION_SUBSCRIPTIONS[subscription_id]
+    if enabled is not None:
+        sub["enabled"] = enabled
+    if channels:
+        sub["channels"] = channels
+    if event_types:
+        sub["event_types"] = event_types
+    sub["updated_at"] = datetime.utcnow().isoformat()
+
+    return sub
+
+
+@app.delete("/notifications/subscriptions/{subscription_id}")
+def delete_notification_subscription(subscription_id: str):
+    """Delete a notification subscription"""
+    if subscription_id not in NOTIFICATION_SUBSCRIPTIONS:
+        raise HTTPException(status_code=404, detail="Subscription not found")
+    del NOTIFICATION_SUBSCRIPTIONS[subscription_id]
+    return {"deleted": True}
+
+
+@app.post("/notifications/send")
+def send_notification(
+    user_id: str,
+    title: str,
+    message: str,
+    event_type: str,
+    priority: str = "normal",
+    data: Optional[Dict[str, Any]] = None
+):
+    """Send a notification to a user"""
+    notification = {
+        "id": f"notif_{uuid.uuid4().hex[:12]}",
+        "user_id": user_id,
+        "title": title,
+        "message": message,
+        "event_type": event_type,
+        "priority": priority,
+        "data": data or {},
+        "read": False,
+        "created_at": datetime.utcnow().isoformat()
+    }
+
+    if user_id not in NOTIFICATIONS:
+        NOTIFICATIONS[user_id] = []
+    NOTIFICATIONS[user_id].insert(0, notification)
+
+    return notification
+
+
+@app.get("/notifications")
+def get_notifications(user_id: str, unread_only: bool = False, limit: int = 50):
+    """Get user notifications"""
+    notifs = NOTIFICATIONS.get(user_id, [])
+    if unread_only:
+        notifs = [n for n in notifs if not n["read"]]
+    return {"notifications": notifs[:limit], "total": len(notifs)}
+
+
+@app.post("/notifications/{notification_id}/read")
+def mark_notification_read(notification_id: str, user_id: str):
+    """Mark a notification as read"""
+    user_notifs = NOTIFICATIONS.get(user_id, [])
+    for notif in user_notifs:
+        if notif["id"] == notification_id:
+            notif["read"] = True
+            notif["read_at"] = datetime.utcnow().isoformat()
+            return notif
+    raise HTTPException(status_code=404, detail="Notification not found")
+
+
+@app.post("/notifications/mark-all-read")
+def mark_all_notifications_read(user_id: str):
+    """Mark all notifications as read"""
+    user_notifs = NOTIFICATIONS.get(user_id, [])
+    count = 0
+    for notif in user_notifs:
+        if not notif["read"]:
+            notif["read"] = True
+            notif["read_at"] = datetime.utcnow().isoformat()
+            count += 1
+    return {"marked_read": count}
+
+
+@app.post("/alerts/rules")
+def create_alert_rule(
+    name: str,
+    user_id: str,
+    condition: Dict[str, Any],
+    actions: List[Dict[str, Any]],
+    enabled: bool = True
+):
+    """Create a custom alert rule"""
+    rule_id = f"alert_{uuid.uuid4().hex[:12]}"
+    rule = {
+        "id": rule_id,
+        "name": name,
+        "user_id": user_id,
+        "condition": condition,
+        "actions": actions,
+        "enabled": enabled,
+        "trigger_count": 0,
+        "last_triggered": None,
+        "created_at": datetime.utcnow().isoformat()
+    }
+    ALERT_RULES[rule_id] = rule
+    return rule
+
+
+@app.get("/alerts/rules")
+def list_alert_rules(user_id: Optional[str] = None):
+    """List alert rules"""
+    rules = list(ALERT_RULES.values())
+    if user_id:
+        rules = [r for r in rules if r["user_id"] == user_id]
+    return {"rules": rules, "total": len(rules)}
+
+
+@app.post("/alerts/rules/{rule_id}/test")
+def test_alert_rule(rule_id: str, test_data: Optional[Dict[str, Any]] = None):
+    """Test an alert rule with sample data"""
+    if rule_id not in ALERT_RULES:
+        raise HTTPException(status_code=404, detail="Alert rule not found")
+
+    rule = ALERT_RULES[rule_id]
+    # Simulate rule evaluation
+    return {
+        "rule_id": rule_id,
+        "would_trigger": True,
+        "test_data": test_data,
+        "matched_condition": rule["condition"]
+    }
+
+
+@app.get("/notifications/channels")
+def list_notification_channels():
+    """List available notification channels"""
+    return {"channels": NOTIFICATION_CHANNELS}
+
+
+# ============================================================================
+# Smart Recommendations
+# ============================================================================
+
+USER_PREFERENCES: Dict[str, Dict[str, Any]] = {}
+RECOMMENDATION_CACHE: Dict[str, List[Dict[str, Any]]] = {}
+
+
+@app.get("/recommendations/agents")
+def get_agent_recommendations(user_id: str, limit: int = 10):
+    """Get personalized agent recommendations"""
+    # Simulate recommendation engine
+    recommendations = []
+
+    # Based on user activity, suggest popular templates
+    for template_id, template in list(AGENT_TEMPLATES.items())[:limit]:
+        recommendations.append({
+            "type": "agent_template",
+            "id": template_id,
+            "name": template["name"],
+            "reason": "Popular in your category",
+            "score": template.get("downloads", 0) * 0.1 + template.get("rating", 0) * 20,
+            "category": template.get("category")
+        })
+
+    recommendations.sort(key=lambda x: x["score"], reverse=True)
+    return {"recommendations": recommendations[:limit], "user_id": user_id}
+
+
+@app.get("/recommendations/workflows")
+def get_workflow_recommendations(user_id: str, context: Optional[str] = None):
+    """Get workflow recommendations based on context"""
+    recommendations = []
+
+    for wf_id, wf in list(WORKFLOW_TEMPLATES.items())[:5]:
+        recommendations.append({
+            "type": "workflow_template",
+            "id": wf_id,
+            "name": wf["name"],
+            "reason": f"Matches your {context or 'usage pattern'}",
+            "score": random.uniform(0.7, 1.0)
+        })
+
+    return {"recommendations": recommendations, "context": context}
+
+
+@app.get("/recommendations/performance-tips")
+def get_performance_tips(user_id: str, resource_type: Optional[str] = None):
+    """Get performance improvement recommendations"""
+    tips = [
+        {
+            "id": "tip_1",
+            "title": "Enable response caching",
+            "description": "Your agents could benefit from caching repeated queries",
+            "impact": "high",
+            "category": "performance",
+            "action_url": "/settings/caching"
+        },
+        {
+            "id": "tip_2",
+            "title": "Optimize prompt length",
+            "description": "Some prompts exceed recommended length, affecting latency",
+            "impact": "medium",
+            "category": "performance",
+            "action_url": "/agents/optimize"
+        },
+        {
+            "id": "tip_3",
+            "title": "Use batch processing",
+            "description": "Batch similar requests to reduce API calls by 40%",
+            "impact": "high",
+            "category": "efficiency",
+            "action_url": "/batch/configure"
+        }
+    ]
+
+    if resource_type:
+        tips = [t for t in tips if resource_type in t.get("category", "")]
+
+    return {"tips": tips, "user_id": user_id}
+
+
+@app.get("/recommendations/cost-optimization")
+def get_cost_optimization_recommendations(user_id: str, time_period: str = "30d"):
+    """Get cost optimization recommendations"""
+    recommendations = [
+        {
+            "id": "cost_1",
+            "title": "Switch to smaller model for simple tasks",
+            "description": "30% of your requests could use a smaller, cheaper model",
+            "potential_savings": "$150/month",
+            "confidence": 0.85,
+            "affected_agents": ["agent_001", "agent_002"]
+        },
+        {
+            "id": "cost_2",
+            "title": "Enable request deduplication",
+            "description": "Detected 15% duplicate requests that could be cached",
+            "potential_savings": "$75/month",
+            "confidence": 0.92,
+            "action": "enable_dedup"
+        },
+        {
+            "id": "cost_3",
+            "title": "Optimize token usage",
+            "description": "Trim unnecessary context from prompts",
+            "potential_savings": "$50/month",
+            "confidence": 0.78,
+            "action": "review_prompts"
+        }
+    ]
+
+    total_savings = sum(float(r["potential_savings"].replace("$", "").replace("/month", ""))
+                       for r in recommendations)
+
+    return {
+        "recommendations": recommendations,
+        "total_potential_savings": f"${total_savings}/month",
+        "time_period": time_period
+    }
+
+
+@app.get("/recommendations/workflow-optimization")
+def get_workflow_optimization_recommendations(workflow_id: Optional[str] = None):
+    """Get workflow optimization suggestions"""
+    optimizations = [
+        {
+            "id": "opt_1",
+            "type": "bottleneck",
+            "title": "Parallel execution opportunity",
+            "description": "Steps 2 and 3 can run in parallel, reducing total time by 35%",
+            "current_duration": "45s",
+            "optimized_duration": "29s",
+            "workflow_id": workflow_id
+        },
+        {
+            "id": "opt_2",
+            "type": "redundancy",
+            "title": "Remove redundant validation",
+            "description": "Same validation runs twice in the workflow",
+            "recommendation": "Consolidate into single step"
+        }
+    ]
+
+    return {"optimizations": optimizations, "analyzed_workflow": workflow_id}
+
+
+# ============================================================================
+# Quick Actions & Shortcuts
+# ============================================================================
+
+USER_FAVORITES: Dict[str, List[Dict[str, Any]]] = {}
+USER_RECENT_ACTIVITY: Dict[str, List[Dict[str, Any]]] = {}
+KEYBOARD_SHORTCUTS: Dict[str, Dict[str, str]] = {}
+
+
+@app.post("/favorites")
+def add_to_favorites(user_id: str, resource_type: str, resource_id: str, name: str):
+    """Add a resource to favorites"""
+    favorite = {
+        "id": f"fav_{uuid.uuid4().hex[:8]}",
+        "resource_type": resource_type,
+        "resource_id": resource_id,
+        "name": name,
+        "pinned": False,
+        "added_at": datetime.utcnow().isoformat()
+    }
+
+    if user_id not in USER_FAVORITES:
+        USER_FAVORITES[user_id] = []
+    USER_FAVORITES[user_id].append(favorite)
+
+    return favorite
+
+
+@app.get("/favorites")
+def get_favorites(user_id: str, resource_type: Optional[str] = None):
+    """Get user's favorite resources"""
+    favorites = USER_FAVORITES.get(user_id, [])
+    if resource_type:
+        favorites = [f for f in favorites if f["resource_type"] == resource_type]
+
+    # Sort pinned first
+    favorites.sort(key=lambda x: (not x.get("pinned", False), x["added_at"]))
+    return {"favorites": favorites, "total": len(favorites)}
+
+
+@app.put("/favorites/{favorite_id}/pin")
+def pin_favorite(user_id: str, favorite_id: str, pinned: bool = True):
+    """Pin or unpin a favorite"""
+    favorites = USER_FAVORITES.get(user_id, [])
+    for fav in favorites:
+        if fav["id"] == favorite_id:
+            fav["pinned"] = pinned
+            return fav
+    raise HTTPException(status_code=404, detail="Favorite not found")
+
+
+@app.delete("/favorites/{favorite_id}")
+def remove_from_favorites(user_id: str, favorite_id: str):
+    """Remove a resource from favorites"""
+    favorites = USER_FAVORITES.get(user_id, [])
+    USER_FAVORITES[user_id] = [f for f in favorites if f["id"] != favorite_id]
+    return {"removed": True}
+
+
+@app.post("/activity/track")
+def track_activity(user_id: str, action: str, resource_type: str, resource_id: str, metadata: Optional[Dict[str, Any]] = None):
+    """Track user activity for recent items"""
+    activity = {
+        "id": f"act_{uuid.uuid4().hex[:8]}",
+        "action": action,
+        "resource_type": resource_type,
+        "resource_id": resource_id,
+        "metadata": metadata or {},
+        "timestamp": datetime.utcnow().isoformat()
+    }
+
+    if user_id not in USER_RECENT_ACTIVITY:
+        USER_RECENT_ACTIVITY[user_id] = []
+    USER_RECENT_ACTIVITY[user_id].insert(0, activity)
+
+    # Keep only last 100 activities
+    USER_RECENT_ACTIVITY[user_id] = USER_RECENT_ACTIVITY[user_id][:100]
+
+    return activity
+
+
+@app.get("/activity/recent")
+def get_recent_activity(user_id: str, limit: int = 20, resource_type: Optional[str] = None):
+    """Get recent user activity"""
+    activities = USER_RECENT_ACTIVITY.get(user_id, [])
+    if resource_type:
+        activities = [a for a in activities if a["resource_type"] == resource_type]
+    return {"activities": activities[:limit], "total": len(activities)}
+
+
+@app.post("/bulk-operations")
+def execute_bulk_operation(
+    operation: str,
+    resource_type: str,
+    resource_ids: List[str],
+    params: Optional[Dict[str, Any]] = None
+):
+    """Execute bulk operations on multiple resources"""
+    valid_operations = ["delete", "archive", "export", "tag", "move", "duplicate"]
+    if operation not in valid_operations:
+        raise HTTPException(status_code=400, detail=f"Invalid operation. Valid: {valid_operations}")
+
+    results = []
+    for resource_id in resource_ids:
+        results.append({
+            "resource_id": resource_id,
+            "operation": operation,
+            "status": "success",
+            "message": f"{operation} completed"
+        })
+
+    return {
+        "operation": operation,
+        "resource_type": resource_type,
+        "processed": len(results),
+        "results": results
+    }
+
+
+@app.get("/keyboard-shortcuts")
+def get_keyboard_shortcuts(context: Optional[str] = None):
+    """Get available keyboard shortcuts"""
+    shortcuts = {
+        "global": {
+            "Ctrl+K": "Quick search",
+            "Ctrl+N": "New agent",
+            "Ctrl+Shift+N": "New workflow",
+            "Ctrl+/": "Show shortcuts",
+            "Ctrl+,": "Settings"
+        },
+        "editor": {
+            "Ctrl+S": "Save",
+            "Ctrl+Enter": "Run/Execute",
+            "Ctrl+Shift+Enter": "Run with options",
+            "Escape": "Cancel"
+        },
+        "navigation": {
+            "G then A": "Go to Agents",
+            "G then W": "Go to Workflows",
+            "G then T": "Go to Templates",
+            "G then D": "Go to Dashboard"
+        }
+    }
+
+    if context and context in shortcuts:
+        return {"shortcuts": shortcuts[context], "context": context}
+    return {"shortcuts": shortcuts, "contexts": list(shortcuts.keys())}
+
+
+@app.post("/keyboard-shortcuts/custom")
+def set_custom_shortcut(user_id: str, action: str, shortcut: str):
+    """Set a custom keyboard shortcut"""
+    if user_id not in KEYBOARD_SHORTCUTS:
+        KEYBOARD_SHORTCUTS[user_id] = {}
+    KEYBOARD_SHORTCUTS[user_id][action] = shortcut
+    return {"action": action, "shortcut": shortcut, "user_id": user_id}
+
+
+# ============================================================================
+# Personal Dashboard
+# ============================================================================
+
+USER_DASHBOARDS: Dict[str, Dict[str, Any]] = {}
+DASHBOARD_WIDGETS: Dict[str, List[Dict[str, Any]]] = {}
+SAVED_VIEWS: Dict[str, List[Dict[str, Any]]] = {}
+USER_GOALS: Dict[str, List[Dict[str, Any]]] = {}
+
+
+@app.post("/dashboard")
+def create_personal_dashboard(
+    user_id: str,
+    name: str,
+    layout: Optional[Dict[str, Any]] = None,
+    is_default: bool = False
+):
+    """Create a personal dashboard"""
+    dashboard_id = f"dash_{uuid.uuid4().hex[:12]}"
+    dashboard = {
+        "id": dashboard_id,
+        "user_id": user_id,
+        "name": name,
+        "layout": layout or {"columns": 3, "rows": "auto"},
+        "is_default": is_default,
+        "widgets": [],
+        "created_at": datetime.utcnow().isoformat(),
+        "updated_at": datetime.utcnow().isoformat()
+    }
+    USER_DASHBOARDS[dashboard_id] = dashboard
+    return dashboard
+
+
+@app.get("/dashboard")
+def get_user_dashboards(user_id: str):
+    """Get all dashboards for a user"""
+    dashboards = [d for d in USER_DASHBOARDS.values() if d["user_id"] == user_id]
+    return {"dashboards": dashboards, "total": len(dashboards)}
+
+
+@app.post("/dashboard/{dashboard_id}/widgets")
+def add_dashboard_widget(
+    dashboard_id: str,
+    widget_type: str,
+    title: str,
+    config: Dict[str, Any],
+    position: Optional[Dict[str, int]] = None
+):
+    """Add a widget to a dashboard"""
+    if dashboard_id not in USER_DASHBOARDS:
+        raise HTTPException(status_code=404, detail="Dashboard not found")
+
+    widget = {
+        "id": f"widget_{uuid.uuid4().hex[:8]}",
+        "type": widget_type,
+        "title": title,
+        "config": config,
+        "position": position or {"x": 0, "y": 0, "w": 1, "h": 1},
+        "added_at": datetime.utcnow().isoformat()
+    }
+
+    if dashboard_id not in DASHBOARD_WIDGETS:
+        DASHBOARD_WIDGETS[dashboard_id] = []
+    DASHBOARD_WIDGETS[dashboard_id].append(widget)
+    USER_DASHBOARDS[dashboard_id]["widgets"] = DASHBOARD_WIDGETS[dashboard_id]
+
+    return widget
+
+
+@app.get("/dashboard/{dashboard_id}/widgets")
+def get_dashboard_widgets(dashboard_id: str):
+    """Get all widgets for a dashboard"""
+    widgets = DASHBOARD_WIDGETS.get(dashboard_id, [])
+    return {"widgets": widgets, "total": len(widgets)}
+
+
+@app.put("/dashboard/{dashboard_id}/widgets/{widget_id}")
+def update_dashboard_widget(
+    dashboard_id: str,
+    widget_id: str,
+    config: Optional[Dict[str, Any]] = None,
+    position: Optional[Dict[str, int]] = None
+):
+    """Update a dashboard widget"""
+    widgets = DASHBOARD_WIDGETS.get(dashboard_id, [])
+    for widget in widgets:
+        if widget["id"] == widget_id:
+            if config:
+                widget["config"] = config
+            if position:
+                widget["position"] = position
+            widget["updated_at"] = datetime.utcnow().isoformat()
+            return widget
+    raise HTTPException(status_code=404, detail="Widget not found")
+
+
+@app.delete("/dashboard/{dashboard_id}/widgets/{widget_id}")
+def remove_dashboard_widget(dashboard_id: str, widget_id: str):
+    """Remove a widget from a dashboard"""
+    widgets = DASHBOARD_WIDGETS.get(dashboard_id, [])
+    DASHBOARD_WIDGETS[dashboard_id] = [w for w in widgets if w["id"] != widget_id]
+    return {"removed": True}
+
+
+@app.get("/dashboard/widget-types")
+def list_widget_types():
+    """List available widget types"""
+    return {
+        "widget_types": [
+            {"type": "metrics", "name": "Metrics Card", "description": "Display key metrics"},
+            {"type": "chart", "name": "Chart", "description": "Line, bar, or pie charts"},
+            {"type": "table", "name": "Data Table", "description": "Tabular data display"},
+            {"type": "activity", "name": "Activity Feed", "description": "Recent activity stream"},
+            {"type": "agents", "name": "Agent Status", "description": "Agent health overview"},
+            {"type": "workflows", "name": "Workflow Status", "description": "Active workflows"},
+            {"type": "alerts", "name": "Alerts", "description": "Recent alerts"},
+            {"type": "quick_actions", "name": "Quick Actions", "description": "Common actions"}
+        ]
+    }
+
+
+@app.post("/saved-views")
+def create_saved_view(
+    user_id: str,
+    name: str,
+    resource_type: str,
+    filters: Dict[str, Any],
+    sort: Optional[Dict[str, str]] = None
+):
+    """Create a saved view with custom filters"""
+    view = {
+        "id": f"view_{uuid.uuid4().hex[:8]}",
+        "user_id": user_id,
+        "name": name,
+        "resource_type": resource_type,
+        "filters": filters,
+        "sort": sort or {},
+        "created_at": datetime.utcnow().isoformat()
+    }
+
+    if user_id not in SAVED_VIEWS:
+        SAVED_VIEWS[user_id] = []
+    SAVED_VIEWS[user_id].append(view)
+
+    return view
+
+
+@app.get("/saved-views")
+def get_saved_views(user_id: str, resource_type: Optional[str] = None):
+    """Get user's saved views"""
+    views = SAVED_VIEWS.get(user_id, [])
+    if resource_type:
+        views = [v for v in views if v["resource_type"] == resource_type]
+    return {"views": views, "total": len(views)}
+
+
+@app.post("/goals")
+def create_goal(
+    user_id: str,
+    name: str,
+    target_metric: str,
+    target_value: float,
+    deadline: Optional[str] = None
+):
+    """Create a goal to track"""
+    goal = {
+        "id": f"goal_{uuid.uuid4().hex[:8]}",
+        "user_id": user_id,
+        "name": name,
+        "target_metric": target_metric,
+        "target_value": target_value,
+        "current_value": 0.0,
+        "progress_percent": 0.0,
+        "deadline": deadline,
+        "status": "in_progress",
+        "created_at": datetime.utcnow().isoformat()
+    }
+
+    if user_id not in USER_GOALS:
+        USER_GOALS[user_id] = []
+    USER_GOALS[user_id].append(goal)
+
+    return goal
+
+
+@app.get("/goals")
+def get_goals(user_id: str, status: Optional[str] = None):
+    """Get user goals"""
+    goals = USER_GOALS.get(user_id, [])
+    if status:
+        goals = [g for g in goals if g["status"] == status]
+    return {"goals": goals, "total": len(goals)}
+
+
+@app.put("/goals/{goal_id}/progress")
+def update_goal_progress(user_id: str, goal_id: str, current_value: float):
+    """Update goal progress"""
+    goals = USER_GOALS.get(user_id, [])
+    for goal in goals:
+        if goal["id"] == goal_id:
+            goal["current_value"] = current_value
+            goal["progress_percent"] = min(100, (current_value / goal["target_value"]) * 100)
+            if goal["progress_percent"] >= 100:
+                goal["status"] = "completed"
+                goal["completed_at"] = datetime.utcnow().isoformat()
+            return goal
+    raise HTTPException(status_code=404, detail="Goal not found")
+
+
+@app.get("/activity-feed")
+def get_activity_feed(user_id: str, limit: int = 50, include_system: bool = True):
+    """Get personalized activity feed"""
+    feed = []
+
+    # Get user's own activities
+    activities = USER_RECENT_ACTIVITY.get(user_id, [])
+    for act in activities[:limit // 2]:
+        feed.append({
+            "type": "user_activity",
+            "data": act,
+            "timestamp": act["timestamp"]
+        })
+
+    # Add notifications
+    notifs = NOTIFICATIONS.get(user_id, [])
+    for notif in notifs[:limit // 2]:
+        feed.append({
+            "type": "notification",
+            "data": notif,
+            "timestamp": notif["created_at"]
+        })
+
+    # Sort by timestamp
+    feed.sort(key=lambda x: x["timestamp"], reverse=True)
+
+    return {"feed": feed[:limit], "total": len(feed)}
+
+
+# ============================================================================
+# Scheduled Reports
+# ============================================================================
+
+SCHEDULED_REPORTS: Dict[str, Dict[str, Any]] = {}
+GENERATED_REPORTS: Dict[str, List[Dict[str, Any]]] = {}
+REPORT_TEMPLATES: Dict[str, Dict[str, Any]] = {}
+
+
+@app.post("/reports/scheduled")
+def create_scheduled_report(
+    name: str,
+    user_id: str,
+    report_type: str,
+    schedule: str,
+    config: Dict[str, Any],
+    recipients: Optional[List[str]] = None,
+    format: str = "pdf"
+):
+    """Create a scheduled report"""
+    report_id = f"rpt_{uuid.uuid4().hex[:12]}"
+    report = {
+        "id": report_id,
+        "name": name,
+        "user_id": user_id,
+        "report_type": report_type,
+        "schedule": schedule,  # cron expression or preset
+        "config": config,
+        "recipients": recipients or [user_id],
+        "format": format,
+        "enabled": True,
+        "last_run": None,
+        "next_run": datetime.utcnow().isoformat(),
+        "created_at": datetime.utcnow().isoformat()
+    }
+    SCHEDULED_REPORTS[report_id] = report
+    return report
+
+
+@app.get("/reports/scheduled")
+def list_scheduled_reports(user_id: Optional[str] = None):
+    """List scheduled reports"""
+    reports = list(SCHEDULED_REPORTS.values())
+    if user_id:
+        reports = [r for r in reports if r["user_id"] == user_id]
+    return {"reports": reports, "total": len(reports)}
+
+
+@app.put("/reports/scheduled/{report_id}")
+def update_scheduled_report(
+    report_id: str,
+    schedule: Optional[str] = None,
+    config: Optional[Dict[str, Any]] = None,
+    enabled: Optional[bool] = None
+):
+    """Update a scheduled report"""
+    if report_id not in SCHEDULED_REPORTS:
+        raise HTTPException(status_code=404, detail="Scheduled report not found")
+
+    report = SCHEDULED_REPORTS[report_id]
+    if schedule:
+        report["schedule"] = schedule
+    if config:
+        report["config"] = config
+    if enabled is not None:
+        report["enabled"] = enabled
+    report["updated_at"] = datetime.utcnow().isoformat()
+
+    return report
+
+
+@app.delete("/reports/scheduled/{report_id}")
+def delete_scheduled_report(report_id: str):
+    """Delete a scheduled report"""
+    if report_id not in SCHEDULED_REPORTS:
+        raise HTTPException(status_code=404, detail="Scheduled report not found")
+    del SCHEDULED_REPORTS[report_id]
+    return {"deleted": True}
+
+
+@app.post("/reports/scheduled/{report_id}/run")
+def run_scheduled_report_now(report_id: str):
+    """Manually trigger a scheduled report"""
+    if report_id not in SCHEDULED_REPORTS:
+        raise HTTPException(status_code=404, detail="Scheduled report not found")
+
+    report = SCHEDULED_REPORTS[report_id]
+
+    generated = {
+        "id": f"gen_{uuid.uuid4().hex[:12]}",
+        "report_id": report_id,
+        "report_name": report["name"],
+        "format": report["format"],
+        "status": "completed",
+        "file_url": f"/reports/download/{uuid.uuid4().hex[:12]}",
+        "generated_at": datetime.utcnow().isoformat(),
+        "size_bytes": random.randint(10000, 500000)
+    }
+
+    if report_id not in GENERATED_REPORTS:
+        GENERATED_REPORTS[report_id] = []
+    GENERATED_REPORTS[report_id].insert(0, generated)
+
+    report["last_run"] = datetime.utcnow().isoformat()
+
+    return generated
+
+
+@app.get("/reports/generated")
+def list_generated_reports(report_id: Optional[str] = None, user_id: Optional[str] = None):
+    """List generated reports"""
+    if report_id:
+        reports = GENERATED_REPORTS.get(report_id, [])
+    else:
+        reports = []
+        for rid, gen_list in GENERATED_REPORTS.items():
+            reports.extend(gen_list)
+
+    reports.sort(key=lambda x: x["generated_at"], reverse=True)
+    return {"reports": reports, "total": len(reports)}
+
+
+@app.post("/reports/builder")
+def create_custom_report(
+    name: str,
+    user_id: str,
+    sections: List[Dict[str, Any]],
+    filters: Optional[Dict[str, Any]] = None,
+    branding: Optional[Dict[str, Any]] = None
+):
+    """Create a custom report using the report builder"""
+    report_id = f"custom_{uuid.uuid4().hex[:12]}"
+    report = {
+        "id": report_id,
+        "name": name,
+        "user_id": user_id,
+        "sections": sections,
+        "filters": filters or {},
+        "branding": branding or {},
+        "created_at": datetime.utcnow().isoformat()
+    }
+    REPORT_TEMPLATES[report_id] = report
+    return report
+
+
+@app.get("/reports/formats")
+def list_report_formats():
+    """List available report export formats"""
+    return {
+        "formats": [
+            {"id": "pdf", "name": "PDF", "mime_type": "application/pdf"},
+            {"id": "csv", "name": "CSV", "mime_type": "text/csv"},
+            {"id": "xlsx", "name": "Excel", "mime_type": "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"},
+            {"id": "json", "name": "JSON", "mime_type": "application/json"},
+            {"id": "html", "name": "HTML", "mime_type": "text/html"}
+        ]
+    }
+
+
+@app.get("/reports/schedules")
+def list_schedule_presets():
+    """List available schedule presets"""
+    return {
+        "presets": [
+            {"id": "daily", "name": "Daily", "cron": "0 9 * * *", "description": "Every day at 9 AM"},
+            {"id": "weekly", "name": "Weekly", "cron": "0 9 * * 1", "description": "Every Monday at 9 AM"},
+            {"id": "biweekly", "name": "Bi-weekly", "cron": "0 9 1,15 * *", "description": "1st and 15th of month"},
+            {"id": "monthly", "name": "Monthly", "cron": "0 9 1 * *", "description": "First day of month"},
+            {"id": "quarterly", "name": "Quarterly", "cron": "0 9 1 1,4,7,10 *", "description": "First day of quarter"}
+        ]
+    }
+
+
+# ============================================================================
+# Integrations Hub
+# ============================================================================
+
+INTEGRATIONS: Dict[str, Dict[str, Any]] = {}
+INTEGRATION_CONNECTIONS: Dict[str, Dict[str, Any]] = {}
+WEBHOOK_TEMPLATES: Dict[str, Dict[str, Any]] = {}
+OAUTH_APPS: Dict[str, Dict[str, Any]] = {}
+
+
+@app.get("/integrations/available")
+def list_available_integrations():
+    """List all available integrations"""
+    return {
+        "integrations": [
+            {"id": "slack", "name": "Slack", "category": "communication", "status": "available",
+             "description": "Send notifications and interact via Slack"},
+            {"id": "teams", "name": "Microsoft Teams", "category": "communication", "status": "available",
+             "description": "Teams integration for notifications and commands"},
+            {"id": "jira", "name": "Jira", "category": "project_management", "status": "available",
+             "description": "Create and manage Jira issues"},
+            {"id": "github", "name": "GitHub", "category": "development", "status": "available",
+             "description": "Trigger workflows from GitHub events"},
+            {"id": "gitlab", "name": "GitLab", "category": "development", "status": "available",
+             "description": "GitLab CI/CD integration"},
+            {"id": "notion", "name": "Notion", "category": "documentation", "status": "available",
+             "description": "Sync with Notion databases"},
+            {"id": "zapier", "name": "Zapier", "category": "automation", "status": "available",
+             "description": "Connect to 5000+ apps via Zapier"},
+            {"id": "salesforce", "name": "Salesforce", "category": "crm", "status": "available",
+             "description": "CRM integration with Salesforce"},
+            {"id": "hubspot", "name": "HubSpot", "category": "crm", "status": "available",
+             "description": "HubSpot CRM and marketing"},
+            {"id": "snowflake", "name": "Snowflake", "category": "data", "status": "available",
+             "description": "Query and sync with Snowflake"}
+        ]
+    }
+
+
+@app.post("/integrations/connect")
+def connect_integration(
+    integration_id: str,
+    user_id: str,
+    credentials: Dict[str, Any],
+    config: Optional[Dict[str, Any]] = None
+):
+    """Connect an integration"""
+    connection_id = f"conn_{uuid.uuid4().hex[:12]}"
+    connection = {
+        "id": connection_id,
+        "integration_id": integration_id,
+        "user_id": user_id,
+        "status": "connected",
+        "config": config or {},
+        "connected_at": datetime.utcnow().isoformat(),
+        "last_sync": None,
+        "health": "healthy"
+    }
+    INTEGRATION_CONNECTIONS[connection_id] = connection
+    return connection
+
+
+@app.get("/integrations/connections")
+def list_integration_connections(user_id: Optional[str] = None):
+    """List active integration connections"""
+    connections = list(INTEGRATION_CONNECTIONS.values())
+    if user_id:
+        connections = [c for c in connections if c["user_id"] == user_id]
+    return {"connections": connections, "total": len(connections)}
+
+
+@app.get("/integrations/connections/{connection_id}")
+def get_integration_connection(connection_id: str):
+    """Get integration connection details"""
+    if connection_id not in INTEGRATION_CONNECTIONS:
+        raise HTTPException(status_code=404, detail="Connection not found")
+    return INTEGRATION_CONNECTIONS[connection_id]
+
+
+@app.post("/integrations/connections/{connection_id}/test")
+def test_integration_connection(connection_id: str):
+    """Test an integration connection"""
+    if connection_id not in INTEGRATION_CONNECTIONS:
+        raise HTTPException(status_code=404, detail="Connection not found")
+
+    connection = INTEGRATION_CONNECTIONS[connection_id]
+    # Simulate connection test
+    return {
+        "connection_id": connection_id,
+        "integration_id": connection["integration_id"],
+        "test_result": "success",
+        "latency_ms": random.randint(50, 200),
+        "tested_at": datetime.utcnow().isoformat()
+    }
+
+
+@app.post("/integrations/connections/{connection_id}/sync")
+def sync_integration(connection_id: str, full_sync: bool = False):
+    """Trigger a sync for an integration"""
+    if connection_id not in INTEGRATION_CONNECTIONS:
+        raise HTTPException(status_code=404, detail="Connection not found")
+
+    connection = INTEGRATION_CONNECTIONS[connection_id]
+    connection["last_sync"] = datetime.utcnow().isoformat()
+
+    return {
+        "connection_id": connection_id,
+        "sync_type": "full" if full_sync else "incremental",
+        "status": "completed",
+        "records_synced": random.randint(10, 100),
+        "synced_at": connection["last_sync"]
+    }
+
+
+@app.delete("/integrations/connections/{connection_id}")
+def disconnect_integration(connection_id: str):
+    """Disconnect an integration"""
+    if connection_id not in INTEGRATION_CONNECTIONS:
+        raise HTTPException(status_code=404, detail="Connection not found")
+    del INTEGRATION_CONNECTIONS[connection_id]
+    return {"disconnected": True}
+
+
+@app.get("/integrations/webhook-templates")
+def list_webhook_templates():
+    """List pre-made webhook configurations"""
+    return {
+        "templates": [
+            {"id": "slack_notify", "name": "Slack Notification",
+             "description": "Send formatted message to Slack channel",
+             "config": {"method": "POST", "content_type": "application/json"}},
+            {"id": "discord_notify", "name": "Discord Webhook",
+             "description": "Post to Discord channel",
+             "config": {"method": "POST", "content_type": "application/json"}},
+            {"id": "pagerduty_alert", "name": "PagerDuty Alert",
+             "description": "Create PagerDuty incident",
+             "config": {"method": "POST", "content_type": "application/json"}},
+            {"id": "generic_post", "name": "Generic POST",
+             "description": "Send data to any HTTP endpoint",
+             "config": {"method": "POST", "content_type": "application/json"}}
+        ]
+    }
+
+
+@app.post("/integrations/oauth-apps")
+def register_oauth_app(
+    name: str,
+    client_id: str,
+    redirect_uri: str,
+    scopes: List[str],
+    user_id: str
+):
+    """Register a third-party OAuth app"""
+    app_id = f"oauth_{uuid.uuid4().hex[:12]}"
+    app = {
+        "id": app_id,
+        "name": name,
+        "client_id": client_id,
+        "redirect_uri": redirect_uri,
+        "scopes": scopes,
+        "user_id": user_id,
+        "status": "active",
+        "created_at": datetime.utcnow().isoformat()
+    }
+    OAUTH_APPS[app_id] = app
+    return app
+
+
+@app.get("/integrations/oauth-apps")
+def list_oauth_apps(user_id: Optional[str] = None):
+    """List registered OAuth apps"""
+    apps = list(OAUTH_APPS.values())
+    if user_id:
+        apps = [a for a in apps if a["user_id"] == user_id]
+    return {"apps": apps, "total": len(apps)}
+
+
+@app.get("/integrations/health")
+def get_integrations_health():
+    """Get health status of all integrations"""
+    health_status = []
+    for conn_id, conn in INTEGRATION_CONNECTIONS.items():
+        health_status.append({
+            "connection_id": conn_id,
+            "integration_id": conn["integration_id"],
+            "status": conn.get("health", "unknown"),
+            "last_check": datetime.utcnow().isoformat(),
+            "uptime_percent": random.uniform(99.0, 100.0)
+        })
+
+    return {
+        "health": health_status,
+        "total_connections": len(health_status),
+        "healthy": len([h for h in health_status if h["status"] == "healthy"])
+    }
+
+
+# ============================================================================
+# Agent Memory & Context
+# ============================================================================
+
+AGENT_MEMORY: Dict[str, Dict[str, Any]] = {}
+CONVERSATION_HISTORY: Dict[str, List[Dict[str, Any]]] = {}
+USER_PREFERENCES_STORE: Dict[str, Dict[str, Any]] = {}
+CONTEXT_WINDOWS: Dict[str, Dict[str, Any]] = {}
+
+
+@app.post("/memory/{agent_id}")
+def store_memory(
+    agent_id: str,
+    key: str,
+    value: Any,
+    memory_type: str = "short_term",
+    ttl_seconds: Optional[int] = None
+):
+    """Store a memory item for an agent"""
+    memory_item = {
+        "key": key,
+        "value": value,
+        "memory_type": memory_type,
+        "ttl_seconds": ttl_seconds,
+        "stored_at": datetime.utcnow().isoformat(),
+        "access_count": 0,
+        "last_accessed": None
+    }
+
+    if agent_id not in AGENT_MEMORY:
+        AGENT_MEMORY[agent_id] = {}
+    AGENT_MEMORY[agent_id][key] = memory_item
+
+    return memory_item
+
+
+@app.get("/memory/{agent_id}")
+def get_agent_memory(agent_id: str, key: Optional[str] = None, memory_type: Optional[str] = None):
+    """Get agent memory items"""
+    if agent_id not in AGENT_MEMORY:
+        return {"memory": {}, "total": 0}
+
+    memory = AGENT_MEMORY[agent_id]
+
+    if key:
+        if key in memory:
+            memory[key]["access_count"] += 1
+            memory[key]["last_accessed"] = datetime.utcnow().isoformat()
+            return {"memory": {key: memory[key]}, "total": 1}
+        return {"memory": {}, "total": 0}
+
+    if memory_type:
+        filtered = {k: v for k, v in memory.items() if v["memory_type"] == memory_type}
+        return {"memory": filtered, "total": len(filtered)}
+
+    return {"memory": memory, "total": len(memory)}
+
+
+@app.delete("/memory/{agent_id}")
+def clear_agent_memory(agent_id: str, key: Optional[str] = None, memory_type: Optional[str] = None):
+    """Clear agent memory"""
+    if agent_id not in AGENT_MEMORY:
+        return {"cleared": 0}
+
+    if key:
+        if key in AGENT_MEMORY[agent_id]:
+            del AGENT_MEMORY[agent_id][key]
+            return {"cleared": 1}
+        return {"cleared": 0}
+
+    if memory_type:
+        before = len(AGENT_MEMORY[agent_id])
+        AGENT_MEMORY[agent_id] = {k: v for k, v in AGENT_MEMORY[agent_id].items()
+                                   if v["memory_type"] != memory_type}
+        after = len(AGENT_MEMORY[agent_id])
+        return {"cleared": before - after}
+
+    count = len(AGENT_MEMORY[agent_id])
+    AGENT_MEMORY[agent_id] = {}
+    return {"cleared": count}
+
+
+@app.post("/memory/{agent_id}/conversation")
+def add_conversation_turn(
+    agent_id: str,
+    role: str,
+    content: str,
+    user_id: Optional[str] = None,
+    metadata: Optional[Dict[str, Any]] = None
+):
+    """Add a turn to conversation history"""
+    turn = {
+        "id": f"turn_{uuid.uuid4().hex[:8]}",
+        "role": role,
+        "content": content,
+        "user_id": user_id,
+        "metadata": metadata or {},
+        "timestamp": datetime.utcnow().isoformat()
+    }
+
+    if agent_id not in CONVERSATION_HISTORY:
+        CONVERSATION_HISTORY[agent_id] = []
+    CONVERSATION_HISTORY[agent_id].append(turn)
+
+    return turn
+
+
+@app.get("/memory/{agent_id}/conversation")
+def get_conversation_history(agent_id: str, limit: int = 50, user_id: Optional[str] = None):
+    """Get conversation history for an agent"""
+    history = CONVERSATION_HISTORY.get(agent_id, [])
+
+    if user_id:
+        history = [h for h in history if h.get("user_id") == user_id]
+
+    return {"history": history[-limit:], "total": len(history)}
+
+
+@app.post("/memory/user-preferences")
+def store_user_preferences(user_id: str, agent_id: str, preferences: Dict[str, Any]):
+    """Store user preferences for personalized agent behavior"""
+    key = f"{user_id}:{agent_id}"
+    pref = {
+        "user_id": user_id,
+        "agent_id": agent_id,
+        "preferences": preferences,
+        "updated_at": datetime.utcnow().isoformat()
+    }
+    USER_PREFERENCES_STORE[key] = pref
+    return pref
+
+
+@app.get("/memory/user-preferences")
+def get_user_preferences(user_id: str, agent_id: Optional[str] = None):
+    """Get user preferences"""
+    if agent_id:
+        key = f"{user_id}:{agent_id}"
+        return USER_PREFERENCES_STORE.get(key, {"preferences": {}})
+
+    # Get all preferences for user
+    prefs = [v for k, v in USER_PREFERENCES_STORE.items() if k.startswith(f"{user_id}:")]
+    return {"preferences": prefs, "total": len(prefs)}
+
+
+@app.post("/memory/{agent_id}/context-window")
+def configure_context_window(
+    agent_id: str,
+    max_tokens: int = 4000,
+    include_history: int = 10,
+    include_memory_types: Optional[List[str]] = None
+):
+    """Configure context window for an agent"""
+    config = {
+        "agent_id": agent_id,
+        "max_tokens": max_tokens,
+        "include_history": include_history,
+        "include_memory_types": include_memory_types or ["short_term", "important"],
+        "configured_at": datetime.utcnow().isoformat()
+    }
+    CONTEXT_WINDOWS[agent_id] = config
+    return config
+
+
+@app.get("/memory/{agent_id}/context-window")
+def get_context_window(agent_id: str):
+    """Get the current context window configuration"""
+    return CONTEXT_WINDOWS.get(agent_id, {
+        "agent_id": agent_id,
+        "max_tokens": 4000,
+        "include_history": 10,
+        "include_memory_types": ["short_term"]
+    })
+
+
+@app.get("/memory/{agent_id}/build-context")
+def build_agent_context(agent_id: str, user_id: Optional[str] = None):
+    """Build the full context for an agent including memory and history"""
+    context = {
+        "agent_id": agent_id,
+        "built_at": datetime.utcnow().isoformat()
+    }
+
+    # Get context window config
+    config = CONTEXT_WINDOWS.get(agent_id, {"include_history": 10, "include_memory_types": ["short_term"]})
+
+    # Add conversation history
+    history = CONVERSATION_HISTORY.get(agent_id, [])
+    if user_id:
+        history = [h for h in history if h.get("user_id") == user_id]
+    context["conversation_history"] = history[-config.get("include_history", 10):]
+
+    # Add relevant memory
+    memory = AGENT_MEMORY.get(agent_id, {})
+    relevant_memory = {k: v for k, v in memory.items()
+                       if v["memory_type"] in config.get("include_memory_types", [])}
+    context["memory"] = relevant_memory
+
+    # Add user preferences
+    if user_id:
+        key = f"{user_id}:{agent_id}"
+        if key in USER_PREFERENCES_STORE:
+            context["user_preferences"] = USER_PREFERENCES_STORE[key]["preferences"]
+
+    return context
+
+
+@app.post("/memory/search")
+def search_memory(
+    agent_id: str,
+    query: str,
+    memory_types: Optional[List[str]] = None,
+    limit: int = 10
+):
+    """Search agent memory"""
+    memory = AGENT_MEMORY.get(agent_id, {})
+    results = []
+
+    for key, item in memory.items():
+        if memory_types and item["memory_type"] not in memory_types:
+            continue
+
+        # Simple text search (in production, use vector similarity)
+        if query.lower() in str(item["value"]).lower() or query.lower() in key.lower():
+            results.append({
+                "key": key,
+                "value": item["value"],
+                "memory_type": item["memory_type"],
+                "relevance_score": 0.8 + random.uniform(0, 0.2)
+            })
+
+    results.sort(key=lambda x: x["relevance_score"], reverse=True)
+    return {"results": results[:limit], "query": query, "total": len(results)}
+
+
+# ============================================================================
 # Run Server
 # ============================================================================
 
