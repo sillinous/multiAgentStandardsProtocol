@@ -22927,6 +22927,1101 @@ def get_sla_dashboard():
 
 
 # ============================================================================
+# Multi-Tenancy & Isolation
+# ============================================================================
+
+TENANTS: Dict[str, Dict[str, Any]] = {}
+TENANT_QUOTAS: Dict[str, Dict[str, Any]] = {}
+TENANT_ISOLATION_POLICIES: Dict[str, Dict[str, Any]] = {}
+TENANT_DATA_PARTITIONS: Dict[str, List[str]] = {}
+
+
+@app.post("/tenants")
+def create_tenant(body: dict = Body(...)):
+    """Create a new tenant"""
+    tenant_id = f"tenant_{uuid.uuid4().hex[:12]}"
+    tenant = {
+        "id": tenant_id,
+        "name": body.get("name", ""),
+        "plan": body.get("plan", "standard"),
+        "status": "active",
+        "settings": body.get("settings", {}),
+        "metadata": body.get("metadata", {}),
+        "created_at": datetime.utcnow().isoformat(),
+        "updated_at": datetime.utcnow().isoformat()
+    }
+    TENANTS[tenant_id] = tenant
+    TENANT_QUOTAS[tenant_id] = {
+        "max_agents": body.get("max_agents", 100),
+        "max_workflows": body.get("max_workflows", 50),
+        "max_api_calls_per_hour": body.get("max_api_calls", 10000),
+        "max_storage_mb": body.get("max_storage", 5000),
+        "current_usage": {"agents": 0, "workflows": 0, "api_calls": 0, "storage_mb": 0}
+    }
+    TENANT_DATA_PARTITIONS[tenant_id] = []
+    return tenant
+
+
+@app.get("/tenants")
+def list_tenants(status: Optional[str] = None, plan: Optional[str] = None):
+    """List all tenants"""
+    tenants = list(TENANTS.values())
+    if status:
+        tenants = [t for t in tenants if t["status"] == status]
+    if plan:
+        tenants = [t for t in tenants if t["plan"] == plan]
+    return {"tenants": tenants, "total": len(tenants)}
+
+
+@app.get("/tenants/{tenant_id}")
+def get_tenant(tenant_id: str):
+    """Get tenant details"""
+    if tenant_id not in TENANTS:
+        raise HTTPException(status_code=404, detail="Tenant not found")
+    return {
+        "tenant": TENANTS[tenant_id],
+        "quotas": TENANT_QUOTAS.get(tenant_id, {}),
+        "partitions": TENANT_DATA_PARTITIONS.get(tenant_id, [])
+    }
+
+
+@app.put("/tenants/{tenant_id}")
+def update_tenant(tenant_id: str, body: dict = Body(...)):
+    """Update tenant"""
+    if tenant_id not in TENANTS:
+        raise HTTPException(status_code=404, detail="Tenant not found")
+    tenant = TENANTS[tenant_id]
+    tenant.update({
+        "name": body.get("name", tenant["name"]),
+        "plan": body.get("plan", tenant["plan"]),
+        "settings": body.get("settings", tenant["settings"]),
+        "metadata": body.get("metadata", tenant["metadata"]),
+        "updated_at": datetime.utcnow().isoformat()
+    })
+    return tenant
+
+
+@app.delete("/tenants/{tenant_id}")
+def delete_tenant(tenant_id: str):
+    """Delete tenant"""
+    if tenant_id not in TENANTS:
+        raise HTTPException(status_code=404, detail="Tenant not found")
+    TENANTS[tenant_id]["status"] = "deleted"
+    return {"message": "Tenant marked for deletion", "tenant_id": tenant_id}
+
+
+@app.get("/tenants/{tenant_id}/quotas")
+def get_tenant_quotas(tenant_id: str):
+    """Get tenant quotas and usage"""
+    if tenant_id not in TENANTS:
+        raise HTTPException(status_code=404, detail="Tenant not found")
+    return TENANT_QUOTAS.get(tenant_id, {})
+
+
+@app.put("/tenants/{tenant_id}/quotas")
+def update_tenant_quotas(tenant_id: str, body: dict = Body(...)):
+    """Update tenant quotas"""
+    if tenant_id not in TENANTS:
+        raise HTTPException(status_code=404, detail="Tenant not found")
+    quotas = TENANT_QUOTAS.get(tenant_id, {})
+    quotas.update({k: v for k, v in body.items() if k != "current_usage"})
+    TENANT_QUOTAS[tenant_id] = quotas
+    return quotas
+
+
+@app.post("/tenants/{tenant_id}/isolation-policy")
+def create_isolation_policy(tenant_id: str, body: dict = Body(...)):
+    """Create tenant isolation policy"""
+    if tenant_id not in TENANTS:
+        raise HTTPException(status_code=404, detail="Tenant not found")
+    policy_id = f"iso_{uuid.uuid4().hex[:8]}"
+    policy = {
+        "id": policy_id,
+        "tenant_id": tenant_id,
+        "data_isolation": body.get("data_isolation", "strict"),
+        "network_isolation": body.get("network_isolation", True),
+        "resource_limits": body.get("resource_limits", {}),
+        "allowed_regions": body.get("allowed_regions", ["all"]),
+        "encryption_required": body.get("encryption_required", True),
+        "created_at": datetime.utcnow().isoformat()
+    }
+    TENANT_ISOLATION_POLICIES[policy_id] = policy
+    return policy
+
+
+@app.get("/tenants/{tenant_id}/isolation-policies")
+def get_isolation_policies(tenant_id: str):
+    """Get tenant isolation policies"""
+    if tenant_id not in TENANTS:
+        raise HTTPException(status_code=404, detail="Tenant not found")
+    policies = [p for p in TENANT_ISOLATION_POLICIES.values() if p["tenant_id"] == tenant_id]
+    return {"policies": policies, "total": len(policies)}
+
+
+# ============================================================================
+# Rate Limiting & Throttling
+# ============================================================================
+
+RATE_LIMIT_CONFIGS: Dict[str, Dict[str, Any]] = {}
+RATE_LIMIT_BUCKETS: Dict[str, Dict[str, Any]] = {}
+THROTTLE_POLICIES: Dict[str, Dict[str, Any]] = {}
+
+
+@app.post("/rate-limits")
+def create_rate_limit(body: dict = Body(...)):
+    """Create rate limit configuration"""
+    limit_id = f"rl_{uuid.uuid4().hex[:8]}"
+    config = {
+        "id": limit_id,
+        "name": body.get("name", ""),
+        "resource_type": body.get("resource_type", "api"),
+        "limit": body.get("limit", 1000),
+        "window_seconds": body.get("window_seconds", 3600),
+        "burst_limit": body.get("burst_limit"),
+        "scope": body.get("scope", "global"),
+        "action_on_exceed": body.get("action_on_exceed", "reject"),
+        "enabled": True,
+        "created_at": datetime.utcnow().isoformat()
+    }
+    RATE_LIMIT_CONFIGS[limit_id] = config
+    return config
+
+
+@app.get("/rate-limits")
+def list_rate_limits(resource_type: Optional[str] = None):
+    """List rate limit configurations"""
+    configs = list(RATE_LIMIT_CONFIGS.values())
+    if resource_type:
+        configs = [c for c in configs if c["resource_type"] == resource_type]
+    return {"rate_limits": configs, "total": len(configs)}
+
+
+@app.get("/rate-limits/{limit_id}")
+def get_rate_limit(limit_id: str):
+    """Get rate limit details"""
+    if limit_id not in RATE_LIMIT_CONFIGS:
+        raise HTTPException(status_code=404, detail="Rate limit not found")
+    return RATE_LIMIT_CONFIGS[limit_id]
+
+
+@app.put("/rate-limits/{limit_id}")
+def update_rate_limit(limit_id: str, body: dict = Body(...)):
+    """Update rate limit"""
+    if limit_id not in RATE_LIMIT_CONFIGS:
+        raise HTTPException(status_code=404, detail="Rate limit not found")
+    config = RATE_LIMIT_CONFIGS[limit_id]
+    config.update({k: v for k, v in body.items() if k not in ["id", "created_at"]})
+    return config
+
+
+@app.delete("/rate-limits/{limit_id}")
+def delete_rate_limit(limit_id: str):
+    """Delete rate limit"""
+    if limit_id not in RATE_LIMIT_CONFIGS:
+        raise HTTPException(status_code=404, detail="Rate limit not found")
+    del RATE_LIMIT_CONFIGS[limit_id]
+    return {"message": "Rate limit deleted", "id": limit_id}
+
+
+@app.post("/rate-limits/check")
+def check_rate_limit(body: dict = Body(...)):
+    """Check if request is within rate limits"""
+    resource_id = body.get("resource_id", "default")
+    client_id = body.get("client_id", "anonymous")
+    bucket_key = f"{resource_id}:{client_id}"
+
+    now = datetime.utcnow()
+    bucket = RATE_LIMIT_BUCKETS.get(bucket_key, {
+        "count": 0,
+        "window_start": now.isoformat(),
+        "last_request": now.isoformat()
+    })
+
+    bucket["count"] += 1
+    bucket["last_request"] = now.isoformat()
+    RATE_LIMIT_BUCKETS[bucket_key] = bucket
+
+    return {
+        "allowed": True,
+        "bucket_key": bucket_key,
+        "current_count": bucket["count"],
+        "remaining": 1000 - bucket["count"],
+        "reset_at": now.isoformat()
+    }
+
+
+@app.post("/throttle-policies")
+def create_throttle_policy(body: dict = Body(...)):
+    """Create throttle policy"""
+    policy_id = f"throttle_{uuid.uuid4().hex[:8]}"
+    policy = {
+        "id": policy_id,
+        "name": body.get("name", ""),
+        "type": body.get("type", "token_bucket"),
+        "tokens_per_second": body.get("tokens_per_second", 100),
+        "bucket_size": body.get("bucket_size", 1000),
+        "priority_levels": body.get("priority_levels", {"high": 1.5, "normal": 1.0, "low": 0.5}),
+        "enabled": True,
+        "created_at": datetime.utcnow().isoformat()
+    }
+    THROTTLE_POLICIES[policy_id] = policy
+    return policy
+
+
+@app.get("/throttle-policies")
+def list_throttle_policies():
+    """List throttle policies"""
+    return {"policies": list(THROTTLE_POLICIES.values()), "total": len(THROTTLE_POLICIES)}
+
+
+# ============================================================================
+# Feature Flags & Toggles
+# ============================================================================
+
+FEATURE_FLAGS: Dict[str, Dict[str, Any]] = {}
+FLAG_OVERRIDES: Dict[str, List[Dict[str, Any]]] = {}
+FLAG_ROLLOUTS: Dict[str, Dict[str, Any]] = {}
+
+
+@app.post("/feature-flags")
+def create_feature_flag(body: dict = Body(...)):
+    """Create feature flag"""
+    flag_id = f"flag_{uuid.uuid4().hex[:8]}"
+    flag = {
+        "id": flag_id,
+        "key": body.get("key", flag_id),
+        "name": body.get("name", ""),
+        "description": body.get("description", ""),
+        "type": body.get("type", "boolean"),
+        "default_value": body.get("default_value", False),
+        "enabled": body.get("enabled", False),
+        "tags": body.get("tags", []),
+        "created_at": datetime.utcnow().isoformat(),
+        "updated_at": datetime.utcnow().isoformat()
+    }
+    FEATURE_FLAGS[flag_id] = flag
+    return flag
+
+
+@app.get("/feature-flags")
+def list_feature_flags(enabled: Optional[bool] = None, tag: Optional[str] = None):
+    """List feature flags"""
+    flags = list(FEATURE_FLAGS.values())
+    if enabled is not None:
+        flags = [f for f in flags if f["enabled"] == enabled]
+    if tag:
+        flags = [f for f in flags if tag in f.get("tags", [])]
+    return {"flags": flags, "total": len(flags)}
+
+
+@app.get("/feature-flags/{flag_id}")
+def get_feature_flag(flag_id: str):
+    """Get feature flag details"""
+    if flag_id not in FEATURE_FLAGS:
+        raise HTTPException(status_code=404, detail="Feature flag not found")
+    return {
+        "flag": FEATURE_FLAGS[flag_id],
+        "overrides": FLAG_OVERRIDES.get(flag_id, []),
+        "rollout": FLAG_ROLLOUTS.get(flag_id)
+    }
+
+
+@app.put("/feature-flags/{flag_id}")
+def update_feature_flag(flag_id: str, body: dict = Body(...)):
+    """Update feature flag"""
+    if flag_id not in FEATURE_FLAGS:
+        raise HTTPException(status_code=404, detail="Feature flag not found")
+    flag = FEATURE_FLAGS[flag_id]
+    flag.update({
+        "name": body.get("name", flag["name"]),
+        "description": body.get("description", flag["description"]),
+        "default_value": body.get("default_value", flag["default_value"]),
+        "enabled": body.get("enabled", flag["enabled"]),
+        "tags": body.get("tags", flag["tags"]),
+        "updated_at": datetime.utcnow().isoformat()
+    })
+    return flag
+
+
+@app.delete("/feature-flags/{flag_id}")
+def delete_feature_flag(flag_id: str):
+    """Delete feature flag"""
+    if flag_id not in FEATURE_FLAGS:
+        raise HTTPException(status_code=404, detail="Feature flag not found")
+    del FEATURE_FLAGS[flag_id]
+    return {"message": "Feature flag deleted", "id": flag_id}
+
+
+@app.post("/feature-flags/{flag_id}/evaluate")
+def evaluate_feature_flag(flag_id: str, body: dict = Body(...)):
+    """Evaluate feature flag for context"""
+    if flag_id not in FEATURE_FLAGS:
+        raise HTTPException(status_code=404, detail="Feature flag not found")
+
+    flag = FEATURE_FLAGS[flag_id]
+    context = body.get("context", {})
+
+    if not flag["enabled"]:
+        return {"value": flag["default_value"], "reason": "flag_disabled"}
+
+    overrides = FLAG_OVERRIDES.get(flag_id, [])
+    for override in overrides:
+        if all(context.get(k) == v for k, v in override.get("conditions", {}).items()):
+            return {"value": override["value"], "reason": "override_match"}
+
+    rollout = FLAG_ROLLOUTS.get(flag_id)
+    if rollout:
+        user_id = context.get("user_id", "")
+        hash_value = hash(user_id) % 100
+        if hash_value < rollout.get("percentage", 0):
+            return {"value": rollout.get("value", True), "reason": "rollout"}
+
+    return {"value": flag["default_value"], "reason": "default"}
+
+
+@app.post("/feature-flags/{flag_id}/overrides")
+def add_flag_override(flag_id: str, body: dict = Body(...)):
+    """Add feature flag override"""
+    if flag_id not in FEATURE_FLAGS:
+        raise HTTPException(status_code=404, detail="Feature flag not found")
+
+    override = {
+        "id": f"override_{uuid.uuid4().hex[:8]}",
+        "conditions": body.get("conditions", {}),
+        "value": body.get("value"),
+        "priority": body.get("priority", 0),
+        "created_at": datetime.utcnow().isoformat()
+    }
+
+    if flag_id not in FLAG_OVERRIDES:
+        FLAG_OVERRIDES[flag_id] = []
+    FLAG_OVERRIDES[flag_id].append(override)
+    FLAG_OVERRIDES[flag_id].sort(key=lambda x: x["priority"], reverse=True)
+
+    return override
+
+
+@app.post("/feature-flags/{flag_id}/rollout")
+def configure_rollout(flag_id: str, body: dict = Body(...)):
+    """Configure gradual rollout"""
+    if flag_id not in FEATURE_FLAGS:
+        raise HTTPException(status_code=404, detail="Feature flag not found")
+
+    rollout = {
+        "flag_id": flag_id,
+        "percentage": body.get("percentage", 0),
+        "value": body.get("value", True),
+        "schedule": body.get("schedule"),
+        "auto_increment": body.get("auto_increment", False),
+        "increment_by": body.get("increment_by", 10),
+        "created_at": datetime.utcnow().isoformat()
+    }
+    FLAG_ROLLOUTS[flag_id] = rollout
+    return rollout
+
+
+# ============================================================================
+# Notification Center
+# ============================================================================
+
+NOTIFICATIONS: Dict[str, Dict[str, Any]] = {}
+NOTIFICATION_CHANNELS: Dict[str, Dict[str, Any]] = {}
+NOTIFICATION_SUBSCRIPTIONS: Dict[str, List[Dict[str, Any]]] = {}
+NOTIFICATION_TEMPLATES: Dict[str, Dict[str, Any]] = {}
+
+
+@app.post("/notifications")
+def create_notification(body: dict = Body(...)):
+    """Create and send notification"""
+    notif_id = f"notif_{uuid.uuid4().hex[:12]}"
+    notification = {
+        "id": notif_id,
+        "type": body.get("type", "info"),
+        "title": body.get("title", ""),
+        "message": body.get("message", ""),
+        "priority": body.get("priority", "normal"),
+        "recipients": body.get("recipients", []),
+        "channels": body.get("channels", ["in_app"]),
+        "data": body.get("data", {}),
+        "status": "sent",
+        "read_by": [],
+        "created_at": datetime.utcnow().isoformat()
+    }
+    NOTIFICATIONS[notif_id] = notification
+    return notification
+
+
+@app.get("/notifications")
+def list_notifications(recipient: Optional[str] = None, type: Optional[str] = None, unread_only: bool = False):
+    """List notifications"""
+    notifs = list(NOTIFICATIONS.values())
+    if recipient:
+        notifs = [n for n in notifs if recipient in n["recipients"]]
+    if type:
+        notifs = [n for n in notifs if n["type"] == type]
+    if unread_only:
+        notifs = [n for n in notifs if recipient and recipient not in n.get("read_by", [])]
+    return {"notifications": notifs, "total": len(notifs)}
+
+
+@app.get("/notifications/{notif_id}")
+def get_notification(notif_id: str):
+    """Get notification details"""
+    if notif_id not in NOTIFICATIONS:
+        raise HTTPException(status_code=404, detail="Notification not found")
+    return NOTIFICATIONS[notif_id]
+
+
+@app.post("/notifications/{notif_id}/read")
+def mark_notification_read(notif_id: str, body: dict = Body(...)):
+    """Mark notification as read"""
+    if notif_id not in NOTIFICATIONS:
+        raise HTTPException(status_code=404, detail="Notification not found")
+    user_id = body.get("user_id")
+    if user_id and user_id not in NOTIFICATIONS[notif_id]["read_by"]:
+        NOTIFICATIONS[notif_id]["read_by"].append(user_id)
+    return {"message": "Marked as read", "notification_id": notif_id}
+
+
+@app.post("/notification-channels")
+def create_notification_channel(body: dict = Body(...)):
+    """Create notification channel"""
+    channel_id = f"channel_{uuid.uuid4().hex[:8]}"
+    channel = {
+        "id": channel_id,
+        "name": body.get("name", ""),
+        "type": body.get("type", "email"),
+        "config": body.get("config", {}),
+        "enabled": True,
+        "created_at": datetime.utcnow().isoformat()
+    }
+    NOTIFICATION_CHANNELS[channel_id] = channel
+    return channel
+
+
+@app.get("/notification-channels")
+def list_notification_channels():
+    """List notification channels"""
+    return {"channels": list(NOTIFICATION_CHANNELS.values()), "total": len(NOTIFICATION_CHANNELS)}
+
+
+@app.post("/notification-subscriptions")
+def create_subscription(body: dict = Body(...)):
+    """Create notification subscription"""
+    sub_id = f"sub_{uuid.uuid4().hex[:8]}"
+    subscription = {
+        "id": sub_id,
+        "user_id": body.get("user_id"),
+        "event_types": body.get("event_types", ["*"]),
+        "channels": body.get("channels", ["in_app"]),
+        "filters": body.get("filters", {}),
+        "enabled": True,
+        "created_at": datetime.utcnow().isoformat()
+    }
+    user_id = body.get("user_id", "default")
+    if user_id not in NOTIFICATION_SUBSCRIPTIONS:
+        NOTIFICATION_SUBSCRIPTIONS[user_id] = []
+    NOTIFICATION_SUBSCRIPTIONS[user_id].append(subscription)
+    return subscription
+
+
+@app.get("/notification-subscriptions/{user_id}")
+def get_user_subscriptions(user_id: str):
+    """Get user notification subscriptions"""
+    return {"subscriptions": NOTIFICATION_SUBSCRIPTIONS.get(user_id, []), "user_id": user_id}
+
+
+@app.post("/notification-templates")
+def create_notification_template(body: dict = Body(...)):
+    """Create notification template"""
+    template_id = f"tmpl_{uuid.uuid4().hex[:8]}"
+    template = {
+        "id": template_id,
+        "name": body.get("name", ""),
+        "type": body.get("type", "info"),
+        "title_template": body.get("title_template", ""),
+        "message_template": body.get("message_template", ""),
+        "variables": body.get("variables", []),
+        "created_at": datetime.utcnow().isoformat()
+    }
+    NOTIFICATION_TEMPLATES[template_id] = template
+    return template
+
+
+# ============================================================================
+# Data Pipeline
+# ============================================================================
+
+PIPELINES: Dict[str, Dict[str, Any]] = {}
+PIPELINE_RUNS: Dict[str, List[Dict[str, Any]]] = {}
+PIPELINE_STAGES: Dict[str, List[Dict[str, Any]]] = {}
+DATA_TRANSFORMATIONS: Dict[str, Dict[str, Any]] = {}
+
+
+@app.post("/pipelines")
+def create_pipeline(body: dict = Body(...)):
+    """Create data pipeline"""
+    pipeline_id = f"pipe_{uuid.uuid4().hex[:12]}"
+    pipeline = {
+        "id": pipeline_id,
+        "name": body.get("name", ""),
+        "description": body.get("description", ""),
+        "source": body.get("source", {}),
+        "destination": body.get("destination", {}),
+        "schedule": body.get("schedule"),
+        "stages": body.get("stages", []),
+        "status": "created",
+        "created_at": datetime.utcnow().isoformat(),
+        "updated_at": datetime.utcnow().isoformat()
+    }
+    PIPELINES[pipeline_id] = pipeline
+    PIPELINE_STAGES[pipeline_id] = body.get("stages", [])
+    return pipeline
+
+
+@app.get("/pipelines")
+def list_pipelines(status: Optional[str] = None):
+    """List data pipelines"""
+    pipes = list(PIPELINES.values())
+    if status:
+        pipes = [p for p in pipes if p["status"] == status]
+    return {"pipelines": pipes, "total": len(pipes)}
+
+
+@app.get("/pipelines/{pipeline_id}")
+def get_pipeline(pipeline_id: str):
+    """Get pipeline details"""
+    if pipeline_id not in PIPELINES:
+        raise HTTPException(status_code=404, detail="Pipeline not found")
+    return {
+        "pipeline": PIPELINES[pipeline_id],
+        "stages": PIPELINE_STAGES.get(pipeline_id, []),
+        "recent_runs": PIPELINE_RUNS.get(pipeline_id, [])[-5:]
+    }
+
+
+@app.post("/pipelines/{pipeline_id}/run")
+def run_pipeline(pipeline_id: str, body: dict = Body(default={})):
+    """Execute pipeline"""
+    if pipeline_id not in PIPELINES:
+        raise HTTPException(status_code=404, detail="Pipeline not found")
+
+    run_id = f"run_{uuid.uuid4().hex[:8]}"
+    run = {
+        "id": run_id,
+        "pipeline_id": pipeline_id,
+        "status": "running",
+        "started_at": datetime.utcnow().isoformat(),
+        "completed_at": None,
+        "records_processed": 0,
+        "errors": [],
+        "parameters": body.get("parameters", {})
+    }
+
+    if pipeline_id not in PIPELINE_RUNS:
+        PIPELINE_RUNS[pipeline_id] = []
+    PIPELINE_RUNS[pipeline_id].append(run)
+
+    PIPELINES[pipeline_id]["status"] = "running"
+
+    run["status"] = "completed"
+    run["completed_at"] = datetime.utcnow().isoformat()
+    run["records_processed"] = random.randint(100, 10000)
+    PIPELINES[pipeline_id]["status"] = "idle"
+
+    return run
+
+
+@app.get("/pipelines/{pipeline_id}/runs")
+def get_pipeline_runs(pipeline_id: str, limit: int = 20):
+    """Get pipeline run history"""
+    if pipeline_id not in PIPELINES:
+        raise HTTPException(status_code=404, detail="Pipeline not found")
+    runs = PIPELINE_RUNS.get(pipeline_id, [])
+    return {"runs": runs[-limit:], "total": len(runs)}
+
+
+@app.post("/pipelines/{pipeline_id}/stages")
+def add_pipeline_stage(pipeline_id: str, body: dict = Body(...)):
+    """Add stage to pipeline"""
+    if pipeline_id not in PIPELINES:
+        raise HTTPException(status_code=404, detail="Pipeline not found")
+
+    stage = {
+        "id": f"stage_{uuid.uuid4().hex[:8]}",
+        "name": body.get("name", ""),
+        "type": body.get("type", "transform"),
+        "config": body.get("config", {}),
+        "order": len(PIPELINE_STAGES.get(pipeline_id, []))
+    }
+
+    if pipeline_id not in PIPELINE_STAGES:
+        PIPELINE_STAGES[pipeline_id] = []
+    PIPELINE_STAGES[pipeline_id].append(stage)
+
+    return stage
+
+
+@app.post("/data-transformations")
+def create_transformation(body: dict = Body(...)):
+    """Create data transformation"""
+    transform_id = f"xform_{uuid.uuid4().hex[:8]}"
+    transformation = {
+        "id": transform_id,
+        "name": body.get("name", ""),
+        "type": body.get("type", "map"),
+        "expression": body.get("expression", ""),
+        "input_schema": body.get("input_schema", {}),
+        "output_schema": body.get("output_schema", {}),
+        "created_at": datetime.utcnow().isoformat()
+    }
+    DATA_TRANSFORMATIONS[transform_id] = transformation
+    return transformation
+
+
+@app.get("/data-transformations")
+def list_transformations():
+    """List data transformations"""
+    return {"transformations": list(DATA_TRANSFORMATIONS.values()), "total": len(DATA_TRANSFORMATIONS)}
+
+
+# ============================================================================
+# Schema Registry
+# ============================================================================
+
+SCHEMAS: Dict[str, Dict[str, Any]] = {}
+SCHEMA_VERSIONS: Dict[str, List[Dict[str, Any]]] = {}
+SCHEMA_COMPATIBILITY: Dict[str, str] = {}
+
+
+@app.post("/schemas")
+def create_schema(body: dict = Body(...)):
+    """Register new schema"""
+    schema_id = f"schema_{uuid.uuid4().hex[:8]}"
+    schema = {
+        "id": schema_id,
+        "name": body.get("name", ""),
+        "namespace": body.get("namespace", "default"),
+        "type": body.get("type", "json"),
+        "definition": body.get("definition", {}),
+        "version": 1,
+        "status": "active",
+        "created_at": datetime.utcnow().isoformat(),
+        "updated_at": datetime.utcnow().isoformat()
+    }
+    SCHEMAS[schema_id] = schema
+    SCHEMA_VERSIONS[schema_id] = [{"version": 1, "definition": schema["definition"], "created_at": schema["created_at"]}]
+    SCHEMA_COMPATIBILITY[schema_id] = body.get("compatibility", "backward")
+    return schema
+
+
+@app.get("/schemas")
+def list_schemas(namespace: Optional[str] = None, type: Optional[str] = None):
+    """List schemas"""
+    schemas = list(SCHEMAS.values())
+    if namespace:
+        schemas = [s for s in schemas if s["namespace"] == namespace]
+    if type:
+        schemas = [s for s in schemas if s["type"] == type]
+    return {"schemas": schemas, "total": len(schemas)}
+
+
+@app.get("/schemas/{schema_id}")
+def get_schema(schema_id: str, version: Optional[int] = None):
+    """Get schema details"""
+    if schema_id not in SCHEMAS:
+        raise HTTPException(status_code=404, detail="Schema not found")
+
+    if version:
+        versions = SCHEMA_VERSIONS.get(schema_id, [])
+        for v in versions:
+            if v["version"] == version:
+                return {"schema": SCHEMAS[schema_id], "definition": v["definition"], "version": version}
+        raise HTTPException(status_code=404, detail="Schema version not found")
+
+    return {
+        "schema": SCHEMAS[schema_id],
+        "versions": len(SCHEMA_VERSIONS.get(schema_id, [])),
+        "compatibility": SCHEMA_COMPATIBILITY.get(schema_id, "backward")
+    }
+
+
+@app.post("/schemas/{schema_id}/versions")
+def create_schema_version(schema_id: str, body: dict = Body(...)):
+    """Create new schema version"""
+    if schema_id not in SCHEMAS:
+        raise HTTPException(status_code=404, detail="Schema not found")
+
+    versions = SCHEMA_VERSIONS.get(schema_id, [])
+    new_version = len(versions) + 1
+
+    version_entry = {
+        "version": new_version,
+        "definition": body.get("definition", {}),
+        "created_at": datetime.utcnow().isoformat()
+    }
+    SCHEMA_VERSIONS[schema_id].append(version_entry)
+
+    SCHEMAS[schema_id]["version"] = new_version
+    SCHEMAS[schema_id]["definition"] = body.get("definition", {})
+    SCHEMAS[schema_id]["updated_at"] = datetime.utcnow().isoformat()
+
+    return {"schema_id": schema_id, "version": new_version, "message": "Version created"}
+
+
+@app.get("/schemas/{schema_id}/versions")
+def get_schema_versions(schema_id: str):
+    """Get all schema versions"""
+    if schema_id not in SCHEMAS:
+        raise HTTPException(status_code=404, detail="Schema not found")
+    return {"versions": SCHEMA_VERSIONS.get(schema_id, []), "total": len(SCHEMA_VERSIONS.get(schema_id, []))}
+
+
+@app.post("/schemas/{schema_id}/validate")
+def validate_against_schema(schema_id: str, body: dict = Body(...)):
+    """Validate data against schema"""
+    if schema_id not in SCHEMAS:
+        raise HTTPException(status_code=404, detail="Schema not found")
+
+    data = body.get("data", {})
+    schema_def = SCHEMAS[schema_id]["definition"]
+
+    errors = []
+    for field, field_def in schema_def.get("properties", {}).items():
+        if field_def.get("required") and field not in data:
+            errors.append(f"Missing required field: {field}")
+
+    return {
+        "valid": len(errors) == 0,
+        "errors": errors,
+        "schema_id": schema_id,
+        "schema_version": SCHEMAS[schema_id]["version"]
+    }
+
+
+@app.put("/schemas/{schema_id}/compatibility")
+def set_schema_compatibility(schema_id: str, body: dict = Body(...)):
+    """Set schema compatibility mode"""
+    if schema_id not in SCHEMAS:
+        raise HTTPException(status_code=404, detail="Schema not found")
+    mode = body.get("mode", "backward")
+    if mode not in ["backward", "forward", "full", "none"]:
+        raise HTTPException(status_code=400, detail="Invalid compatibility mode")
+    SCHEMA_COMPATIBILITY[schema_id] = mode
+    return {"schema_id": schema_id, "compatibility": mode}
+
+
+# ============================================================================
+# Service Discovery
+# ============================================================================
+
+SERVICES: Dict[str, Dict[str, Any]] = {}
+SERVICE_INSTANCES: Dict[str, List[Dict[str, Any]]] = {}
+SERVICE_HEALTH: Dict[str, Dict[str, Any]] = {}
+
+
+@app.post("/services")
+def register_service(body: dict = Body(...)):
+    """Register a service"""
+    service_id = f"svc_{uuid.uuid4().hex[:8]}"
+    service = {
+        "id": service_id,
+        "name": body.get("name", ""),
+        "version": body.get("version", "1.0.0"),
+        "description": body.get("description", ""),
+        "endpoints": body.get("endpoints", []),
+        "metadata": body.get("metadata", {}),
+        "tags": body.get("tags", []),
+        "status": "registered",
+        "created_at": datetime.utcnow().isoformat()
+    }
+    SERVICES[service_id] = service
+    SERVICE_INSTANCES[service_id] = []
+    return service
+
+
+@app.get("/services")
+def list_services(tag: Optional[str] = None, status: Optional[str] = None):
+    """List registered services"""
+    services = list(SERVICES.values())
+    if tag:
+        services = [s for s in services if tag in s.get("tags", [])]
+    if status:
+        services = [s for s in services if s["status"] == status]
+    return {"services": services, "total": len(services)}
+
+
+@app.get("/services/{service_id}")
+def get_service(service_id: str):
+    """Get service details"""
+    if service_id not in SERVICES:
+        raise HTTPException(status_code=404, detail="Service not found")
+    return {
+        "service": SERVICES[service_id],
+        "instances": SERVICE_INSTANCES.get(service_id, []),
+        "health": SERVICE_HEALTH.get(service_id, {})
+    }
+
+
+@app.post("/services/{service_id}/instances")
+def register_instance(service_id: str, body: dict = Body(...)):
+    """Register service instance"""
+    if service_id not in SERVICES:
+        raise HTTPException(status_code=404, detail="Service not found")
+
+    instance_id = f"inst_{uuid.uuid4().hex[:8]}"
+    instance = {
+        "id": instance_id,
+        "host": body.get("host", "localhost"),
+        "port": body.get("port", 8080),
+        "protocol": body.get("protocol", "http"),
+        "weight": body.get("weight", 1),
+        "zone": body.get("zone", "default"),
+        "status": "healthy",
+        "registered_at": datetime.utcnow().isoformat(),
+        "last_heartbeat": datetime.utcnow().isoformat()
+    }
+
+    if service_id not in SERVICE_INSTANCES:
+        SERVICE_INSTANCES[service_id] = []
+    SERVICE_INSTANCES[service_id].append(instance)
+
+    SERVICES[service_id]["status"] = "active"
+
+    return instance
+
+
+@app.delete("/services/{service_id}/instances/{instance_id}")
+def deregister_instance(service_id: str, instance_id: str):
+    """Deregister service instance"""
+    if service_id not in SERVICES:
+        raise HTTPException(status_code=404, detail="Service not found")
+
+    instances = SERVICE_INSTANCES.get(service_id, [])
+    SERVICE_INSTANCES[service_id] = [i for i in instances if i["id"] != instance_id]
+
+    if not SERVICE_INSTANCES[service_id]:
+        SERVICES[service_id]["status"] = "registered"
+
+    return {"message": "Instance deregistered", "instance_id": instance_id}
+
+
+@app.post("/services/{service_id}/heartbeat")
+def service_heartbeat(service_id: str, body: dict = Body(...)):
+    """Update service heartbeat"""
+    if service_id not in SERVICES:
+        raise HTTPException(status_code=404, detail="Service not found")
+
+    instance_id = body.get("instance_id")
+    instances = SERVICE_INSTANCES.get(service_id, [])
+
+    for instance in instances:
+        if instance["id"] == instance_id:
+            instance["last_heartbeat"] = datetime.utcnow().isoformat()
+            instance["status"] = "healthy"
+            break
+
+    SERVICE_HEALTH[service_id] = {
+        "last_check": datetime.utcnow().isoformat(),
+        "healthy_instances": len([i for i in instances if i["status"] == "healthy"]),
+        "total_instances": len(instances)
+    }
+
+    return {"message": "Heartbeat recorded", "service_id": service_id}
+
+
+@app.get("/services/{service_id}/discover")
+def discover_service(service_id: str, zone: Optional[str] = None):
+    """Discover healthy service instances"""
+    if service_id not in SERVICES:
+        raise HTTPException(status_code=404, detail="Service not found")
+
+    instances = SERVICE_INSTANCES.get(service_id, [])
+    healthy = [i for i in instances if i["status"] == "healthy"]
+
+    if zone:
+        healthy = [i for i in healthy if i["zone"] == zone]
+
+    if not healthy:
+        return {"instances": [], "message": "No healthy instances available"}
+
+    selected = random.choice(healthy)
+
+    return {
+        "service": SERVICES[service_id]["name"],
+        "selected_instance": selected,
+        "all_healthy": healthy,
+        "endpoint": f"{selected['protocol']}://{selected['host']}:{selected['port']}"
+    }
+
+
+# ============================================================================
+# Circuit Breaker
+# ============================================================================
+
+CIRCUIT_BREAKERS: Dict[str, Dict[str, Any]] = {}
+CIRCUIT_BREAKER_STATS: Dict[str, Dict[str, Any]] = {}
+FALLBACK_CONFIGS: Dict[str, Dict[str, Any]] = {}
+
+
+@app.post("/circuit-breakers")
+def create_circuit_breaker(body: dict = Body(...)):
+    """Create circuit breaker"""
+    cb_id = f"cb_{uuid.uuid4().hex[:8]}"
+    circuit_breaker = {
+        "id": cb_id,
+        "name": body.get("name", ""),
+        "service_id": body.get("service_id"),
+        "state": "closed",
+        "failure_threshold": body.get("failure_threshold", 5),
+        "success_threshold": body.get("success_threshold", 3),
+        "timeout_seconds": body.get("timeout_seconds", 30),
+        "half_open_max_calls": body.get("half_open_max_calls", 3),
+        "created_at": datetime.utcnow().isoformat()
+    }
+    CIRCUIT_BREAKERS[cb_id] = circuit_breaker
+    CIRCUIT_BREAKER_STATS[cb_id] = {
+        "total_calls": 0,
+        "successful_calls": 0,
+        "failed_calls": 0,
+        "rejected_calls": 0,
+        "last_failure": None,
+        "last_state_change": datetime.utcnow().isoformat()
+    }
+    return circuit_breaker
+
+
+@app.get("/circuit-breakers")
+def list_circuit_breakers(state: Optional[str] = None):
+    """List circuit breakers"""
+    cbs = list(CIRCUIT_BREAKERS.values())
+    if state:
+        cbs = [cb for cb in cbs if cb["state"] == state]
+    return {"circuit_breakers": cbs, "total": len(cbs)}
+
+
+@app.get("/circuit-breakers/{cb_id}")
+def get_circuit_breaker(cb_id: str):
+    """Get circuit breaker details"""
+    if cb_id not in CIRCUIT_BREAKERS:
+        raise HTTPException(status_code=404, detail="Circuit breaker not found")
+    return {
+        "circuit_breaker": CIRCUIT_BREAKERS[cb_id],
+        "stats": CIRCUIT_BREAKER_STATS.get(cb_id, {}),
+        "fallback": FALLBACK_CONFIGS.get(cb_id)
+    }
+
+
+@app.post("/circuit-breakers/{cb_id}/call")
+def call_through_breaker(cb_id: str, body: dict = Body(...)):
+    """Execute call through circuit breaker"""
+    if cb_id not in CIRCUIT_BREAKERS:
+        raise HTTPException(status_code=404, detail="Circuit breaker not found")
+
+    cb = CIRCUIT_BREAKERS[cb_id]
+    stats = CIRCUIT_BREAKER_STATS[cb_id]
+
+    stats["total_calls"] += 1
+
+    if cb["state"] == "open":
+        stats["rejected_calls"] += 1
+        fallback = FALLBACK_CONFIGS.get(cb_id)
+        if fallback:
+            return {"status": "fallback", "response": fallback.get("response"), "circuit_state": "open"}
+        raise HTTPException(status_code=503, detail="Circuit breaker is open")
+
+    success = random.random() > 0.1
+
+    if success:
+        stats["successful_calls"] += 1
+        if cb["state"] == "half_open":
+            if stats["successful_calls"] >= cb["success_threshold"]:
+                cb["state"] = "closed"
+                stats["last_state_change"] = datetime.utcnow().isoformat()
+        return {"status": "success", "circuit_state": cb["state"]}
+    else:
+        stats["failed_calls"] += 1
+        stats["last_failure"] = datetime.utcnow().isoformat()
+
+        if stats["failed_calls"] >= cb["failure_threshold"]:
+            cb["state"] = "open"
+            stats["last_state_change"] = datetime.utcnow().isoformat()
+
+        return {"status": "failure", "circuit_state": cb["state"]}
+
+
+@app.post("/circuit-breakers/{cb_id}/reset")
+def reset_circuit_breaker(cb_id: str):
+    """Reset circuit breaker to closed state"""
+    if cb_id not in CIRCUIT_BREAKERS:
+        raise HTTPException(status_code=404, detail="Circuit breaker not found")
+
+    CIRCUIT_BREAKERS[cb_id]["state"] = "closed"
+    CIRCUIT_BREAKER_STATS[cb_id] = {
+        "total_calls": 0,
+        "successful_calls": 0,
+        "failed_calls": 0,
+        "rejected_calls": 0,
+        "last_failure": None,
+        "last_state_change": datetime.utcnow().isoformat()
+    }
+
+    return {"message": "Circuit breaker reset", "state": "closed"}
+
+
+@app.post("/circuit-breakers/{cb_id}/half-open")
+def set_half_open(cb_id: str):
+    """Transition circuit breaker to half-open state"""
+    if cb_id not in CIRCUIT_BREAKERS:
+        raise HTTPException(status_code=404, detail="Circuit breaker not found")
+
+    CIRCUIT_BREAKERS[cb_id]["state"] = "half_open"
+    CIRCUIT_BREAKER_STATS[cb_id]["last_state_change"] = datetime.utcnow().isoformat()
+
+    return {"message": "Circuit breaker set to half-open", "state": "half_open"}
+
+
+@app.post("/circuit-breakers/{cb_id}/fallback")
+def configure_fallback(cb_id: str, body: dict = Body(...)):
+    """Configure fallback for circuit breaker"""
+    if cb_id not in CIRCUIT_BREAKERS:
+        raise HTTPException(status_code=404, detail="Circuit breaker not found")
+
+    fallback = {
+        "cb_id": cb_id,
+        "type": body.get("type", "static"),
+        "response": body.get("response", {}),
+        "cache_ttl": body.get("cache_ttl", 60),
+        "created_at": datetime.utcnow().isoformat()
+    }
+    FALLBACK_CONFIGS[cb_id] = fallback
+    return fallback
+
+
+@app.get("/circuit-breakers/dashboard")
+def circuit_breaker_dashboard():
+    """Get circuit breaker dashboard"""
+    dashboard = {
+        "total": len(CIRCUIT_BREAKERS),
+        "by_state": {"closed": 0, "open": 0, "half_open": 0},
+        "breakers": []
+    }
+
+    for cb_id, cb in CIRCUIT_BREAKERS.items():
+        dashboard["by_state"][cb["state"]] += 1
+        stats = CIRCUIT_BREAKER_STATS.get(cb_id, {})
+        dashboard["breakers"].append({
+            "id": cb_id,
+            "name": cb["name"],
+            "state": cb["state"],
+            "success_rate": (stats.get("successful_calls", 0) / max(1, stats.get("total_calls", 1))) * 100,
+            "total_calls": stats.get("total_calls", 0)
+        })
+
+    return dashboard
+
+
+# ============================================================================
 # Run Server
 # ============================================================================
 
