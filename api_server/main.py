@@ -21714,6 +21714,1219 @@ def update_plugin_config(instance_id: str, config: Dict[str, Any]):
 
 
 # ============================================================================
+# Time Series & Forecasting
+# ============================================================================
+
+TIME_SERIES_DATA: Dict[str, List[Dict[str, Any]]] = {}
+FORECASTS: Dict[str, Dict[str, Any]] = {}
+TREND_ANALYSES: Dict[str, Dict[str, Any]] = {}
+
+
+@app.post("/timeseries/{metric_name}/data")
+def record_timeseries_data(
+    metric_name: str,
+    value: float,
+    timestamp: Optional[str] = None,
+    dimensions: Optional[Dict[str, str]] = None
+):
+    """Record time series data point"""
+    data_point = {
+        "id": f"ts_{uuid.uuid4().hex[:8]}",
+        "metric_name": metric_name,
+        "value": value,
+        "timestamp": timestamp or datetime.utcnow().isoformat(),
+        "dimensions": dimensions or {}
+    }
+
+    if metric_name not in TIME_SERIES_DATA:
+        TIME_SERIES_DATA[metric_name] = []
+    TIME_SERIES_DATA[metric_name].append(data_point)
+
+    return data_point
+
+
+@app.get("/timeseries/{metric_name}/data")
+def get_timeseries_data(
+    metric_name: str,
+    start_time: Optional[str] = None,
+    end_time: Optional[str] = None,
+    granularity: str = "1h"
+):
+    """Get time series data"""
+    data = TIME_SERIES_DATA.get(metric_name, [])
+
+    if start_time:
+        data = [d for d in data if d["timestamp"] >= start_time]
+    if end_time:
+        data = [d for d in data if d["timestamp"] <= end_time]
+
+    return {
+        "metric_name": metric_name,
+        "data_points": data,
+        "count": len(data),
+        "granularity": granularity
+    }
+
+
+@app.post("/timeseries/{metric_name}/forecast")
+def create_forecast(
+    metric_name: str,
+    horizon: int = 7,
+    model: str = "linear",
+    confidence_level: float = 0.95
+):
+    """Generate a forecast for a metric"""
+    data = TIME_SERIES_DATA.get(metric_name, [])
+
+    if len(data) < 3:
+        raise HTTPException(status_code=400, detail="Insufficient data for forecasting")
+
+    # Simulate forecast generation
+    last_value = data[-1]["value"] if data else 100
+    forecast_id = f"forecast_{uuid.uuid4().hex[:12]}"
+
+    predictions = []
+    for i in range(horizon):
+        predicted = last_value * (1 + random.uniform(-0.1, 0.15))
+        predictions.append({
+            "period": i + 1,
+            "predicted_value": round(predicted, 2),
+            "lower_bound": round(predicted * 0.85, 2),
+            "upper_bound": round(predicted * 1.15, 2)
+        })
+        last_value = predicted
+
+    forecast = {
+        "id": forecast_id,
+        "metric_name": metric_name,
+        "model": model,
+        "horizon": horizon,
+        "confidence_level": confidence_level,
+        "predictions": predictions,
+        "accuracy_metrics": {
+            "mape": random.uniform(5, 15),
+            "rmse": random.uniform(10, 50)
+        },
+        "created_at": datetime.utcnow().isoformat()
+    }
+    FORECASTS[forecast_id] = forecast
+    return forecast
+
+
+@app.get("/timeseries/forecasts")
+def list_forecasts(metric_name: Optional[str] = None):
+    """List forecasts"""
+    forecasts = list(FORECASTS.values())
+    if metric_name:
+        forecasts = [f for f in forecasts if f["metric_name"] == metric_name]
+    return {"forecasts": forecasts, "total": len(forecasts)}
+
+
+@app.post("/timeseries/{metric_name}/trend")
+def analyze_trend(metric_name: str, window: str = "7d"):
+    """Analyze trend for a metric"""
+    data = TIME_SERIES_DATA.get(metric_name, [])
+
+    if not data:
+        raise HTTPException(status_code=404, detail="No data found for metric")
+
+    values = [d["value"] for d in data]
+    trend_id = f"trend_{uuid.uuid4().hex[:12]}"
+
+    # Simulate trend analysis
+    trend_direction = "increasing" if values[-1] > values[0] else "decreasing" if values[-1] < values[0] else "stable"
+    change_percent = ((values[-1] - values[0]) / values[0] * 100) if values[0] != 0 else 0
+
+    analysis = {
+        "id": trend_id,
+        "metric_name": metric_name,
+        "window": window,
+        "trend_direction": trend_direction,
+        "change_percent": round(change_percent, 2),
+        "min_value": min(values),
+        "max_value": max(values),
+        "avg_value": sum(values) / len(values),
+        "volatility": random.uniform(0.1, 0.5),
+        "seasonality_detected": random.choice([True, False]),
+        "anomalies_detected": random.randint(0, 3),
+        "analyzed_at": datetime.utcnow().isoformat()
+    }
+    TREND_ANALYSES[trend_id] = analysis
+    return analysis
+
+
+@app.get("/timeseries/metrics")
+def list_timeseries_metrics():
+    """List all metrics with time series data"""
+    metrics = []
+    for name, data in TIME_SERIES_DATA.items():
+        metrics.append({
+            "metric_name": name,
+            "data_points": len(data),
+            "first_timestamp": data[0]["timestamp"] if data else None,
+            "last_timestamp": data[-1]["timestamp"] if data else None
+        })
+    return {"metrics": metrics, "total": len(metrics)}
+
+
+# ============================================================================
+# Workflow Automation Rules
+# ============================================================================
+
+AUTOMATION_RULES: Dict[str, Dict[str, Any]] = {}
+AUTOMATION_EXECUTIONS: Dict[str, List[Dict[str, Any]]] = {}
+SCHEDULED_TRIGGERS: Dict[str, Dict[str, Any]] = {}
+
+
+@app.post("/automation/rules")
+def create_automation_rule(
+    name: str,
+    trigger: Dict[str, Any],
+    conditions: List[Dict[str, Any]],
+    actions: List[Dict[str, Any]],
+    enabled: bool = True
+):
+    """Create an automation rule"""
+    rule_id = f"auto_{uuid.uuid4().hex[:12]}"
+    rule = {
+        "id": rule_id,
+        "name": name,
+        "trigger": trigger,  # {"type": "event", "event": "agent.completed"} or {"type": "schedule", "cron": "0 * * * *"}
+        "conditions": conditions,  # [{"field": "status", "operator": "equals", "value": "success"}]
+        "actions": actions,  # [{"type": "webhook", "url": "..."}, {"type": "notification", "channel": "slack"}]
+        "enabled": enabled,
+        "execution_count": 0,
+        "last_executed": None,
+        "created_at": datetime.utcnow().isoformat()
+    }
+    AUTOMATION_RULES[rule_id] = rule
+    return rule
+
+
+@app.get("/automation/rules")
+def list_automation_rules(trigger_type: Optional[str] = None, enabled: Optional[bool] = None):
+    """List automation rules"""
+    rules = list(AUTOMATION_RULES.values())
+    if trigger_type:
+        rules = [r for r in rules if r["trigger"].get("type") == trigger_type]
+    if enabled is not None:
+        rules = [r for r in rules if r["enabled"] == enabled]
+    return {"rules": rules, "total": len(rules)}
+
+
+@app.get("/automation/rules/{rule_id}")
+def get_automation_rule(rule_id: str):
+    """Get automation rule details"""
+    if rule_id not in AUTOMATION_RULES:
+        raise HTTPException(status_code=404, detail="Rule not found")
+    return AUTOMATION_RULES[rule_id]
+
+
+@app.put("/automation/rules/{rule_id}")
+def update_automation_rule(
+    rule_id: str,
+    conditions: Optional[List[Dict[str, Any]]] = None,
+    actions: Optional[List[Dict[str, Any]]] = None,
+    enabled: Optional[bool] = None
+):
+    """Update an automation rule"""
+    if rule_id not in AUTOMATION_RULES:
+        raise HTTPException(status_code=404, detail="Rule not found")
+
+    rule = AUTOMATION_RULES[rule_id]
+    if conditions:
+        rule["conditions"] = conditions
+    if actions:
+        rule["actions"] = actions
+    if enabled is not None:
+        rule["enabled"] = enabled
+    rule["updated_at"] = datetime.utcnow().isoformat()
+
+    return rule
+
+
+@app.delete("/automation/rules/{rule_id}")
+def delete_automation_rule(rule_id: str):
+    """Delete an automation rule"""
+    if rule_id not in AUTOMATION_RULES:
+        raise HTTPException(status_code=404, detail="Rule not found")
+    del AUTOMATION_RULES[rule_id]
+    return {"deleted": True}
+
+
+@app.post("/automation/rules/{rule_id}/execute")
+def execute_automation_rule(rule_id: str, context: Optional[Dict[str, Any]] = None):
+    """Manually execute an automation rule"""
+    if rule_id not in AUTOMATION_RULES:
+        raise HTTPException(status_code=404, detail="Rule not found")
+
+    rule = AUTOMATION_RULES[rule_id]
+    execution_id = f"exec_{uuid.uuid4().hex[:12]}"
+
+    # Simulate condition evaluation and action execution
+    conditions_met = all(random.choice([True, True, True, False]) for _ in rule["conditions"]) if rule["conditions"] else True
+
+    action_results = []
+    if conditions_met:
+        for action in rule["actions"]:
+            action_results.append({
+                "action_type": action.get("type"),
+                "status": "success",
+                "result": {"executed": True}
+            })
+
+    execution = {
+        "id": execution_id,
+        "rule_id": rule_id,
+        "rule_name": rule["name"],
+        "conditions_met": conditions_met,
+        "actions_executed": len(action_results),
+        "action_results": action_results,
+        "context": context or {},
+        "executed_at": datetime.utcnow().isoformat()
+    }
+
+    if rule_id not in AUTOMATION_EXECUTIONS:
+        AUTOMATION_EXECUTIONS[rule_id] = []
+    AUTOMATION_EXECUTIONS[rule_id].append(execution)
+
+    rule["execution_count"] += 1
+    rule["last_executed"] = datetime.utcnow().isoformat()
+
+    return execution
+
+
+@app.get("/automation/rules/{rule_id}/executions")
+def get_rule_executions(rule_id: str, limit: int = 50):
+    """Get execution history for a rule"""
+    executions = AUTOMATION_EXECUTIONS.get(rule_id, [])
+    return {"executions": executions[-limit:], "total": len(executions)}
+
+
+@app.post("/automation/triggers/schedule")
+def create_scheduled_trigger(
+    name: str,
+    cron: str,
+    rule_id: str,
+    timezone: str = "UTC"
+):
+    """Create a scheduled trigger for a rule"""
+    trigger_id = f"sched_{uuid.uuid4().hex[:12]}"
+    trigger = {
+        "id": trigger_id,
+        "name": name,
+        "cron": cron,
+        "rule_id": rule_id,
+        "timezone": timezone,
+        "enabled": True,
+        "next_run": datetime.utcnow().isoformat(),
+        "created_at": datetime.utcnow().isoformat()
+    }
+    SCHEDULED_TRIGGERS[trigger_id] = trigger
+    return trigger
+
+
+@app.get("/automation/triggers/schedule")
+def list_scheduled_triggers():
+    """List scheduled triggers"""
+    return {"triggers": list(SCHEDULED_TRIGGERS.values()), "total": len(SCHEDULED_TRIGGERS)}
+
+
+# ============================================================================
+# Agent Cloning & Templates
+# ============================================================================
+
+AGENT_CLONES: Dict[str, Dict[str, Any]] = {}
+AGENT_SNAPSHOTS: Dict[str, Dict[str, Any]] = {}
+INHERITANCE_CHAINS: Dict[str, List[str]] = {}
+
+
+@app.post("/agents/{agent_id}/clone")
+def clone_agent(
+    agent_id: str,
+    new_name: str,
+    modifications: Optional[Dict[str, Any]] = None,
+    include_memory: bool = False
+):
+    """Clone an agent with optional modifications"""
+    clone_id = f"clone_{uuid.uuid4().hex[:12]}"
+
+    clone = {
+        "id": clone_id,
+        "source_agent_id": agent_id,
+        "name": new_name,
+        "modifications": modifications or {},
+        "include_memory": include_memory,
+        "status": "active",
+        "cloned_at": datetime.utcnow().isoformat()
+    }
+    AGENT_CLONES[clone_id] = clone
+
+    # Track inheritance
+    if agent_id not in INHERITANCE_CHAINS:
+        INHERITANCE_CHAINS[agent_id] = []
+    INHERITANCE_CHAINS[agent_id].append(clone_id)
+
+    return clone
+
+
+@app.get("/agents/{agent_id}/clones")
+def list_agent_clones(agent_id: str):
+    """List clones of an agent"""
+    clones = [c for c in AGENT_CLONES.values() if c["source_agent_id"] == agent_id]
+    return {"clones": clones, "total": len(clones)}
+
+
+@app.post("/agents/{agent_id}/snapshot")
+def create_agent_snapshot(agent_id: str, name: str, description: Optional[str] = None):
+    """Create a snapshot of an agent"""
+    snapshot_id = f"snap_{uuid.uuid4().hex[:12]}"
+
+    snapshot = {
+        "id": snapshot_id,
+        "agent_id": agent_id,
+        "name": name,
+        "description": description,
+        "config": {"simulated": "agent_config"},
+        "memory_included": True,
+        "size_bytes": random.randint(1000, 100000),
+        "created_at": datetime.utcnow().isoformat()
+    }
+    AGENT_SNAPSHOTS[snapshot_id] = snapshot
+    return snapshot
+
+
+@app.get("/agents/{agent_id}/snapshots")
+def list_agent_snapshots(agent_id: str):
+    """List snapshots for an agent"""
+    snapshots = [s for s in AGENT_SNAPSHOTS.values() if s["agent_id"] == agent_id]
+    snapshots.sort(key=lambda x: x["created_at"], reverse=True)
+    return {"snapshots": snapshots, "total": len(snapshots)}
+
+
+@app.post("/agents/{agent_id}/restore/{snapshot_id}")
+def restore_agent_snapshot(agent_id: str, snapshot_id: str):
+    """Restore an agent from a snapshot"""
+    if snapshot_id not in AGENT_SNAPSHOTS:
+        raise HTTPException(status_code=404, detail="Snapshot not found")
+
+    snapshot = AGENT_SNAPSHOTS[snapshot_id]
+    return {
+        "restored": True,
+        "agent_id": agent_id,
+        "snapshot_id": snapshot_id,
+        "snapshot_name": snapshot["name"],
+        "restored_at": datetime.utcnow().isoformat()
+    }
+
+
+@app.delete("/agents/snapshots/{snapshot_id}")
+def delete_agent_snapshot(snapshot_id: str):
+    """Delete a snapshot"""
+    if snapshot_id not in AGENT_SNAPSHOTS:
+        raise HTTPException(status_code=404, detail="Snapshot not found")
+    del AGENT_SNAPSHOTS[snapshot_id]
+    return {"deleted": True}
+
+
+@app.get("/agents/{agent_id}/inheritance")
+def get_agent_inheritance(agent_id: str):
+    """Get inheritance chain for an agent"""
+    children = INHERITANCE_CHAINS.get(agent_id, [])
+
+    # Find parent
+    parent = None
+    for clone in AGENT_CLONES.values():
+        if clone["id"] == agent_id:
+            parent = clone["source_agent_id"]
+            break
+
+    return {
+        "agent_id": agent_id,
+        "parent_agent": parent,
+        "children": children,
+        "total_descendants": len(children)
+    }
+
+
+# ============================================================================
+# Natural Language Commands
+# ============================================================================
+
+NL_COMMANDS: Dict[str, Dict[str, Any]] = {}
+COMMAND_HISTORY: List[Dict[str, Any]] = []
+COMMAND_TEMPLATES: Dict[str, Dict[str, Any]] = {}
+
+
+@app.post("/commands/interpret")
+def interpret_nl_command(
+    command: str,
+    context: Optional[Dict[str, Any]] = None,
+    user_id: Optional[str] = None
+):
+    """Interpret a natural language command"""
+    # Simulate NL understanding
+    interpreted = {
+        "id": f"cmd_{uuid.uuid4().hex[:12]}",
+        "original_command": command,
+        "interpreted_action": None,
+        "parameters": {},
+        "confidence": 0.0,
+        "requires_confirmation": True
+    }
+
+    # Simple pattern matching simulation
+    command_lower = command.lower()
+    if "create" in command_lower and "agent" in command_lower:
+        interpreted["interpreted_action"] = "create_agent"
+        interpreted["parameters"] = {"name": "New Agent"}
+        interpreted["confidence"] = 0.85
+    elif "run" in command_lower and "workflow" in command_lower:
+        interpreted["interpreted_action"] = "run_workflow"
+        interpreted["confidence"] = 0.82
+    elif "list" in command_lower or "show" in command_lower:
+        interpreted["interpreted_action"] = "list_resources"
+        interpreted["confidence"] = 0.90
+    elif "delete" in command_lower or "remove" in command_lower:
+        interpreted["interpreted_action"] = "delete_resource"
+        interpreted["confidence"] = 0.75
+        interpreted["requires_confirmation"] = True
+    else:
+        interpreted["interpreted_action"] = "unknown"
+        interpreted["confidence"] = 0.3
+
+    interpreted["context"] = context
+    interpreted["user_id"] = user_id
+    interpreted["interpreted_at"] = datetime.utcnow().isoformat()
+
+    NL_COMMANDS[interpreted["id"]] = interpreted
+    return interpreted
+
+
+@app.post("/commands/{command_id}/confirm")
+def confirm_command(command_id: str, confirmed: bool = True):
+    """Confirm or reject an interpreted command"""
+    if command_id not in NL_COMMANDS:
+        raise HTTPException(status_code=404, detail="Command not found")
+
+    command = NL_COMMANDS[command_id]
+
+    if confirmed:
+        # Simulate command execution
+        result = {
+            "command_id": command_id,
+            "action": command["interpreted_action"],
+            "status": "executed",
+            "result": {"success": True, "message": f"Executed {command['interpreted_action']}"},
+            "executed_at": datetime.utcnow().isoformat()
+        }
+    else:
+        result = {
+            "command_id": command_id,
+            "status": "rejected",
+            "rejected_at": datetime.utcnow().isoformat()
+        }
+
+    COMMAND_HISTORY.append(result)
+    return result
+
+
+@app.get("/commands/history")
+def get_command_history(user_id: Optional[str] = None, limit: int = 50):
+    """Get command execution history"""
+    history = COMMAND_HISTORY
+    if user_id:
+        history = [h for h in history if h.get("user_id") == user_id]
+    return {"history": history[-limit:], "total": len(history)}
+
+
+@app.post("/commands/templates")
+def create_command_template(
+    name: str,
+    pattern: str,
+    action: str,
+    parameter_mappings: Dict[str, str],
+    examples: List[str]
+):
+    """Create a command template for NL understanding"""
+    template_id = f"tpl_{uuid.uuid4().hex[:12]}"
+    template = {
+        "id": template_id,
+        "name": name,
+        "pattern": pattern,
+        "action": action,
+        "parameter_mappings": parameter_mappings,
+        "examples": examples,
+        "usage_count": 0,
+        "created_at": datetime.utcnow().isoformat()
+    }
+    COMMAND_TEMPLATES[template_id] = template
+    return template
+
+
+@app.get("/commands/templates")
+def list_command_templates():
+    """List command templates"""
+    return {"templates": list(COMMAND_TEMPLATES.values()), "total": len(COMMAND_TEMPLATES)}
+
+
+@app.get("/commands/suggestions")
+def get_command_suggestions(partial_command: str, limit: int = 5):
+    """Get command suggestions based on partial input"""
+    suggestions = [
+        f"{partial_command} all agents",
+        f"{partial_command} workflow named 'test'",
+        f"run {partial_command}",
+        f"create new {partial_command}",
+        f"show {partial_command} status"
+    ]
+    return {"suggestions": suggestions[:limit], "partial": partial_command}
+
+
+# ============================================================================
+# Audit Trail & Forensics
+# ============================================================================
+
+AUDIT_LOGS: List[Dict[str, Any]] = []
+AUDIT_POLICIES: Dict[str, Dict[str, Any]] = {}
+FORENSIC_QUERIES: Dict[str, Dict[str, Any]] = {}
+
+
+@app.post("/audit/log")
+def create_audit_log(
+    action: str,
+    resource_type: str,
+    resource_id: str,
+    user_id: str,
+    changes: Optional[Dict[str, Any]] = None,
+    metadata: Optional[Dict[str, Any]] = None
+):
+    """Create an audit log entry"""
+    log_entry = {
+        "id": f"audit_{uuid.uuid4().hex[:12]}",
+        "action": action,
+        "resource_type": resource_type,
+        "resource_id": resource_id,
+        "user_id": user_id,
+        "changes": changes or {},
+        "metadata": metadata or {},
+        "ip_address": "192.168.1.1",
+        "user_agent": "API Client",
+        "timestamp": datetime.utcnow().isoformat()
+    }
+    AUDIT_LOGS.append(log_entry)
+    return log_entry
+
+
+@app.get("/audit/logs")
+def get_audit_logs(
+    resource_type: Optional[str] = None,
+    resource_id: Optional[str] = None,
+    user_id: Optional[str] = None,
+    action: Optional[str] = None,
+    start_time: Optional[str] = None,
+    end_time: Optional[str] = None,
+    limit: int = 100
+):
+    """Query audit logs"""
+    logs = AUDIT_LOGS
+
+    if resource_type:
+        logs = [l for l in logs if l["resource_type"] == resource_type]
+    if resource_id:
+        logs = [l for l in logs if l["resource_id"] == resource_id]
+    if user_id:
+        logs = [l for l in logs if l["user_id"] == user_id]
+    if action:
+        logs = [l for l in logs if l["action"] == action]
+    if start_time:
+        logs = [l for l in logs if l["timestamp"] >= start_time]
+    if end_time:
+        logs = [l for l in logs if l["timestamp"] <= end_time]
+
+    return {"logs": logs[-limit:], "total": len(logs)}
+
+
+@app.get("/audit/logs/{resource_type}/{resource_id}/history")
+def get_resource_history(resource_type: str, resource_id: str):
+    """Get complete history of changes for a resource"""
+    history = [l for l in AUDIT_LOGS if l["resource_type"] == resource_type and l["resource_id"] == resource_id]
+    history.sort(key=lambda x: x["timestamp"])
+
+    return {
+        "resource_type": resource_type,
+        "resource_id": resource_id,
+        "history": history,
+        "total_changes": len(history)
+    }
+
+
+@app.post("/audit/policies")
+def create_audit_policy(
+    name: str,
+    resource_types: List[str],
+    actions: List[str],
+    retention_days: int = 90,
+    alert_on: Optional[List[str]] = None
+):
+    """Create an audit policy"""
+    policy_id = f"apol_{uuid.uuid4().hex[:12]}"
+    policy = {
+        "id": policy_id,
+        "name": name,
+        "resource_types": resource_types,
+        "actions": actions,
+        "retention_days": retention_days,
+        "alert_on": alert_on or [],
+        "enabled": True,
+        "created_at": datetime.utcnow().isoformat()
+    }
+    AUDIT_POLICIES[policy_id] = policy
+    return policy
+
+
+@app.get("/audit/policies")
+def list_audit_policies():
+    """List audit policies"""
+    return {"policies": list(AUDIT_POLICIES.values()), "total": len(AUDIT_POLICIES)}
+
+
+@app.post("/audit/forensics/query")
+def create_forensic_query(
+    name: str,
+    description: str,
+    filters: Dict[str, Any],
+    time_range: Dict[str, str]
+):
+    """Create a forensic query for investigation"""
+    query_id = f"forensic_{uuid.uuid4().hex[:12]}"
+
+    # Execute query
+    results = []
+    for log in AUDIT_LOGS:
+        match = True
+        for key, value in filters.items():
+            if log.get(key) != value:
+                match = False
+                break
+        if match:
+            results.append(log)
+
+    query = {
+        "id": query_id,
+        "name": name,
+        "description": description,
+        "filters": filters,
+        "time_range": time_range,
+        "results_count": len(results),
+        "results": results[:100],
+        "executed_at": datetime.utcnow().isoformat()
+    }
+    FORENSIC_QUERIES[query_id] = query
+    return query
+
+
+@app.get("/audit/statistics")
+def get_audit_statistics(time_period: str = "7d"):
+    """Get audit log statistics"""
+    action_counts = {}
+    user_counts = {}
+    resource_counts = {}
+
+    for log in AUDIT_LOGS:
+        action_counts[log["action"]] = action_counts.get(log["action"], 0) + 1
+        user_counts[log["user_id"]] = user_counts.get(log["user_id"], 0) + 1
+        resource_counts[log["resource_type"]] = resource_counts.get(log["resource_type"], 0) + 1
+
+    return {
+        "total_events": len(AUDIT_LOGS),
+        "by_action": action_counts,
+        "by_user": dict(sorted(user_counts.items(), key=lambda x: x[1], reverse=True)[:10]),
+        "by_resource": resource_counts,
+        "time_period": time_period
+    }
+
+
+# ============================================================================
+# Resource Tagging & Organization
+# ============================================================================
+
+RESOURCE_TAGS: Dict[str, List[Dict[str, Any]]] = {}
+TAG_DEFINITIONS: Dict[str, Dict[str, Any]] = {}
+TAG_POLICIES: Dict[str, Dict[str, Any]] = {}
+
+
+@app.post("/tags/resources/{resource_type}/{resource_id}")
+def add_tags_to_resource(
+    resource_type: str,
+    resource_id: str,
+    tags: Dict[str, str]
+):
+    """Add tags to a resource"""
+    key = f"{resource_type}:{resource_id}"
+
+    if key not in RESOURCE_TAGS:
+        RESOURCE_TAGS[key] = []
+
+    for tag_key, tag_value in tags.items():
+        RESOURCE_TAGS[key].append({
+            "key": tag_key,
+            "value": tag_value,
+            "added_at": datetime.utcnow().isoformat()
+        })
+
+    return {
+        "resource_type": resource_type,
+        "resource_id": resource_id,
+        "tags": RESOURCE_TAGS[key]
+    }
+
+
+@app.get("/tags/resources/{resource_type}/{resource_id}")
+def get_resource_tags(resource_type: str, resource_id: str):
+    """Get tags for a resource"""
+    key = f"{resource_type}:{resource_id}"
+    tags = RESOURCE_TAGS.get(key, [])
+    return {"resource_type": resource_type, "resource_id": resource_id, "tags": tags}
+
+
+@app.delete("/tags/resources/{resource_type}/{resource_id}/{tag_key}")
+def remove_tag_from_resource(resource_type: str, resource_id: str, tag_key: str):
+    """Remove a tag from a resource"""
+    key = f"{resource_type}:{resource_id}"
+    if key in RESOURCE_TAGS:
+        RESOURCE_TAGS[key] = [t for t in RESOURCE_TAGS[key] if t["key"] != tag_key]
+    return {"removed": True}
+
+
+@app.get("/tags/search")
+def search_by_tags(
+    tag_key: Optional[str] = None,
+    tag_value: Optional[str] = None,
+    resource_type: Optional[str] = None
+):
+    """Search resources by tags"""
+    results = []
+    for resource_key, tags in RESOURCE_TAGS.items():
+        parts = resource_key.split(":", 1)
+        res_type, res_id = parts[0], parts[1]
+
+        if resource_type and res_type != resource_type:
+            continue
+
+        for tag in tags:
+            if tag_key and tag["key"] != tag_key:
+                continue
+            if tag_value and tag["value"] != tag_value:
+                continue
+            results.append({
+                "resource_type": res_type,
+                "resource_id": res_id,
+                "matching_tag": tag
+            })
+            break
+
+    return {"results": results, "total": len(results)}
+
+
+@app.post("/tags/definitions")
+def create_tag_definition(
+    key: str,
+    description: str,
+    allowed_values: Optional[List[str]] = None,
+    required: bool = False
+):
+    """Define a tag with validation rules"""
+    definition = {
+        "key": key,
+        "description": description,
+        "allowed_values": allowed_values,
+        "required": required,
+        "usage_count": 0,
+        "created_at": datetime.utcnow().isoformat()
+    }
+    TAG_DEFINITIONS[key] = definition
+    return definition
+
+
+@app.get("/tags/definitions")
+def list_tag_definitions():
+    """List tag definitions"""
+    return {"definitions": list(TAG_DEFINITIONS.values()), "total": len(TAG_DEFINITIONS)}
+
+
+@app.post("/tags/policies")
+def create_tag_policy(
+    name: str,
+    resource_types: List[str],
+    required_tags: List[str],
+    enforcement: str = "warn"
+):
+    """Create a tag policy"""
+    policy_id = f"tagpol_{uuid.uuid4().hex[:12]}"
+    policy = {
+        "id": policy_id,
+        "name": name,
+        "resource_types": resource_types,
+        "required_tags": required_tags,
+        "enforcement": enforcement,
+        "enabled": True,
+        "created_at": datetime.utcnow().isoformat()
+    }
+    TAG_POLICIES[policy_id] = policy
+    return policy
+
+
+@app.get("/tags/policies")
+def list_tag_policies():
+    """List tag policies"""
+    return {"policies": list(TAG_POLICIES.values()), "total": len(TAG_POLICIES)}
+
+
+# ============================================================================
+# Cost Allocation & Chargeback
+# ============================================================================
+
+COST_CENTERS: Dict[str, Dict[str, Any]] = {}
+COST_ALLOCATIONS: Dict[str, List[Dict[str, Any]]] = {}
+CHARGEBACK_REPORTS: Dict[str, Dict[str, Any]] = {}
+
+
+@app.post("/costs/centers")
+def create_cost_center(
+    name: str,
+    code: str,
+    owner_id: str,
+    budget: Optional[float] = None,
+    parent_id: Optional[str] = None
+):
+    """Create a cost center"""
+    center_id = f"cc_{uuid.uuid4().hex[:12]}"
+    center = {
+        "id": center_id,
+        "name": name,
+        "code": code,
+        "owner_id": owner_id,
+        "budget": budget,
+        "parent_id": parent_id,
+        "total_allocated": 0.0,
+        "created_at": datetime.utcnow().isoformat()
+    }
+    COST_CENTERS[center_id] = center
+    return center
+
+
+@app.get("/costs/centers")
+def list_cost_centers():
+    """List cost centers"""
+    return {"cost_centers": list(COST_CENTERS.values()), "total": len(COST_CENTERS)}
+
+
+@app.get("/costs/centers/{center_id}")
+def get_cost_center(center_id: str):
+    """Get cost center details"""
+    if center_id not in COST_CENTERS:
+        raise HTTPException(status_code=404, detail="Cost center not found")
+    return COST_CENTERS[center_id]
+
+
+@app.post("/costs/allocations")
+def create_cost_allocation(
+    cost_center_id: str,
+    resource_type: str,
+    resource_id: str,
+    amount: float,
+    period: str,
+    metadata: Optional[Dict[str, Any]] = None
+):
+    """Allocate cost to a cost center"""
+    if cost_center_id not in COST_CENTERS:
+        raise HTTPException(status_code=404, detail="Cost center not found")
+
+    allocation = {
+        "id": f"alloc_{uuid.uuid4().hex[:8]}",
+        "cost_center_id": cost_center_id,
+        "resource_type": resource_type,
+        "resource_id": resource_id,
+        "amount": amount,
+        "period": period,
+        "metadata": metadata or {},
+        "allocated_at": datetime.utcnow().isoformat()
+    }
+
+    if cost_center_id not in COST_ALLOCATIONS:
+        COST_ALLOCATIONS[cost_center_id] = []
+    COST_ALLOCATIONS[cost_center_id].append(allocation)
+
+    COST_CENTERS[cost_center_id]["total_allocated"] += amount
+
+    return allocation
+
+
+@app.get("/costs/allocations/{cost_center_id}")
+def get_cost_allocations(cost_center_id: str, period: Optional[str] = None):
+    """Get allocations for a cost center"""
+    allocations = COST_ALLOCATIONS.get(cost_center_id, [])
+    if period:
+        allocations = [a for a in allocations if a["period"] == period]
+    total = sum(a["amount"] for a in allocations)
+    return {"allocations": allocations, "total_amount": total}
+
+
+@app.post("/costs/chargeback/report")
+def generate_chargeback_report(
+    period: str,
+    cost_center_ids: Optional[List[str]] = None,
+    include_details: bool = True
+):
+    """Generate a chargeback report"""
+    report_id = f"cb_{uuid.uuid4().hex[:12]}"
+
+    centers_to_report = cost_center_ids or list(COST_CENTERS.keys())
+
+    report_data = []
+    total_amount = 0.0
+
+    for cc_id in centers_to_report:
+        if cc_id not in COST_CENTERS:
+            continue
+        center = COST_CENTERS[cc_id]
+        allocations = COST_ALLOCATIONS.get(cc_id, [])
+        period_allocations = [a for a in allocations if a["period"] == period]
+        amount = sum(a["amount"] for a in period_allocations)
+        total_amount += amount
+
+        entry = {
+            "cost_center_id": cc_id,
+            "cost_center_name": center["name"],
+            "code": center["code"],
+            "amount": amount,
+            "budget": center.get("budget"),
+            "budget_utilization": (amount / center["budget"] * 100) if center.get("budget") else None
+        }
+        if include_details:
+            entry["allocations"] = period_allocations
+        report_data.append(entry)
+
+    report = {
+        "id": report_id,
+        "period": period,
+        "total_amount": total_amount,
+        "cost_centers": report_data,
+        "generated_at": datetime.utcnow().isoformat()
+    }
+    CHARGEBACK_REPORTS[report_id] = report
+    return report
+
+
+@app.get("/costs/chargeback/reports")
+def list_chargeback_reports():
+    """List chargeback reports"""
+    return {"reports": list(CHARGEBACK_REPORTS.values()), "total": len(CHARGEBACK_REPORTS)}
+
+
+@app.get("/costs/summary")
+def get_cost_summary(period: Optional[str] = None):
+    """Get overall cost summary"""
+    total = 0.0
+    by_center = {}
+    by_resource_type = {}
+
+    for cc_id, allocations in COST_ALLOCATIONS.items():
+        for alloc in allocations:
+            if period and alloc["period"] != period:
+                continue
+            total += alloc["amount"]
+            by_center[cc_id] = by_center.get(cc_id, 0) + alloc["amount"]
+            by_resource_type[alloc["resource_type"]] = by_resource_type.get(alloc["resource_type"], 0) + alloc["amount"]
+
+    return {
+        "total_cost": total,
+        "by_cost_center": by_center,
+        "by_resource_type": by_resource_type,
+        "period": period
+    }
+
+
+# ============================================================================
+# SLA Management
+# ============================================================================
+
+SLA_DEFINITIONS: Dict[str, Dict[str, Any]] = {}
+SLA_MEASUREMENTS: Dict[str, List[Dict[str, Any]]] = {}
+SLA_BREACHES: List[Dict[str, Any]] = []
+
+
+@app.post("/sla/definitions")
+def create_sla_definition(
+    name: str,
+    description: str,
+    metrics: List[Dict[str, Any]],
+    targets: Dict[str, Any],
+    measurement_window: str = "1d"
+):
+    """Create an SLA definition"""
+    sla_id = f"sla_{uuid.uuid4().hex[:12]}"
+    sla = {
+        "id": sla_id,
+        "name": name,
+        "description": description,
+        "metrics": metrics,  # [{"name": "availability", "unit": "percent"}, {"name": "latency_p99", "unit": "ms"}]
+        "targets": targets,  # {"availability": 99.9, "latency_p99": 200}
+        "measurement_window": measurement_window,
+        "status": "active",
+        "current_compliance": None,
+        "created_at": datetime.utcnow().isoformat()
+    }
+    SLA_DEFINITIONS[sla_id] = sla
+    SLA_MEASUREMENTS[sla_id] = []
+    return sla
+
+
+@app.get("/sla/definitions")
+def list_sla_definitions():
+    """List SLA definitions"""
+    return {"slas": list(SLA_DEFINITIONS.values()), "total": len(SLA_DEFINITIONS)}
+
+
+@app.get("/sla/definitions/{sla_id}")
+def get_sla_definition(sla_id: str):
+    """Get SLA definition details"""
+    if sla_id not in SLA_DEFINITIONS:
+        raise HTTPException(status_code=404, detail="SLA not found")
+    return SLA_DEFINITIONS[sla_id]
+
+
+@app.post("/sla/{sla_id}/measurements")
+def record_sla_measurement(
+    sla_id: str,
+    metric_name: str,
+    value: float,
+    timestamp: Optional[str] = None
+):
+    """Record an SLA measurement"""
+    if sla_id not in SLA_DEFINITIONS:
+        raise HTTPException(status_code=404, detail="SLA not found")
+
+    sla = SLA_DEFINITIONS[sla_id]
+    measurement = {
+        "id": f"measure_{uuid.uuid4().hex[:8]}",
+        "sla_id": sla_id,
+        "metric_name": metric_name,
+        "value": value,
+        "target": sla["targets"].get(metric_name),
+        "meets_target": value >= sla["targets"].get(metric_name, 0) if metric_name == "availability" else value <= sla["targets"].get(metric_name, float('inf')),
+        "timestamp": timestamp or datetime.utcnow().isoformat()
+    }
+    SLA_MEASUREMENTS[sla_id].append(measurement)
+
+    # Check for breach
+    if not measurement["meets_target"]:
+        breach = {
+            "id": f"breach_{uuid.uuid4().hex[:8]}",
+            "sla_id": sla_id,
+            "sla_name": sla["name"],
+            "metric_name": metric_name,
+            "target_value": measurement["target"],
+            "actual_value": value,
+            "severity": "critical" if abs(value - measurement["target"]) / measurement["target"] > 0.1 else "warning",
+            "timestamp": datetime.utcnow().isoformat()
+        }
+        SLA_BREACHES.append(breach)
+
+    return measurement
+
+
+@app.get("/sla/{sla_id}/measurements")
+def get_sla_measurements(sla_id: str, limit: int = 100):
+    """Get SLA measurements"""
+    if sla_id not in SLA_DEFINITIONS:
+        raise HTTPException(status_code=404, detail="SLA not found")
+    measurements = SLA_MEASUREMENTS.get(sla_id, [])
+    return {"measurements": measurements[-limit:], "total": len(measurements)}
+
+
+@app.get("/sla/{sla_id}/compliance")
+def get_sla_compliance(sla_id: str, period: str = "30d"):
+    """Get SLA compliance report"""
+    if sla_id not in SLA_DEFINITIONS:
+        raise HTTPException(status_code=404, detail="SLA not found")
+
+    sla = SLA_DEFINITIONS[sla_id]
+    measurements = SLA_MEASUREMENTS.get(sla_id, [])
+
+    compliance_by_metric = {}
+    for metric in sla["metrics"]:
+        metric_name = metric["name"]
+        metric_measurements = [m for m in measurements if m["metric_name"] == metric_name]
+        if metric_measurements:
+            compliant = len([m for m in metric_measurements if m["meets_target"]])
+            compliance_by_metric[metric_name] = {
+                "compliance_percent": (compliant / len(metric_measurements)) * 100,
+                "measurements_count": len(metric_measurements),
+                "target": sla["targets"].get(metric_name)
+            }
+
+    overall_compliance = sum(c["compliance_percent"] for c in compliance_by_metric.values()) / max(1, len(compliance_by_metric))
+
+    return {
+        "sla_id": sla_id,
+        "sla_name": sla["name"],
+        "period": period,
+        "overall_compliance": round(overall_compliance, 2),
+        "by_metric": compliance_by_metric
+    }
+
+
+@app.get("/sla/breaches")
+def get_sla_breaches(sla_id: Optional[str] = None, severity: Optional[str] = None, limit: int = 100):
+    """Get SLA breaches"""
+    breaches = SLA_BREACHES
+    if sla_id:
+        breaches = [b for b in breaches if b["sla_id"] == sla_id]
+    if severity:
+        breaches = [b for b in breaches if b["severity"] == severity]
+    return {"breaches": breaches[-limit:], "total": len(breaches)}
+
+
+@app.get("/sla/dashboard")
+def get_sla_dashboard():
+    """Get SLA dashboard overview"""
+    dashboard = {
+        "total_slas": len(SLA_DEFINITIONS),
+        "slas_meeting_targets": 0,
+        "slas_at_risk": 0,
+        "slas_breached": 0,
+        "recent_breaches": SLA_BREACHES[-5:] if SLA_BREACHES else [],
+        "by_sla": []
+    }
+
+    for sla_id, sla in SLA_DEFINITIONS.items():
+        measurements = SLA_MEASUREMENTS.get(sla_id, [])
+        recent = measurements[-10:] if measurements else []
+        compliance = len([m for m in recent if m.get("meets_target", True)]) / max(1, len(recent)) * 100
+
+        if compliance >= 99:
+            dashboard["slas_meeting_targets"] += 1
+            status = "healthy"
+        elif compliance >= 95:
+            dashboard["slas_at_risk"] += 1
+            status = "at_risk"
+        else:
+            dashboard["slas_breached"] += 1
+            status = "breached"
+
+        dashboard["by_sla"].append({
+            "sla_id": sla_id,
+            "name": sla["name"],
+            "compliance": round(compliance, 2),
+            "status": status
+        })
+
+    return dashboard
+
+
+# ============================================================================
 # Run Server
 # ============================================================================
 
