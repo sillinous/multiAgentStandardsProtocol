@@ -24022,6 +24022,1171 @@ def circuit_breaker_dashboard():
 
 
 # ============================================================================
+# API Gateway & Routing
+# ============================================================================
+
+API_ROUTES: Dict[str, Dict[str, Any]] = {}
+ROUTE_POLICIES: Dict[str, Dict[str, Any]] = {}
+API_KEYS: Dict[str, Dict[str, Any]] = {}
+GATEWAY_CONFIGS: Dict[str, Dict[str, Any]] = {}
+
+
+@app.post("/gateway/routes")
+def create_route(body: dict = Body(...)):
+    """Create API route"""
+    route_id = f"route_{uuid.uuid4().hex[:8]}"
+    route = {
+        "id": route_id,
+        "path": body.get("path", "/"),
+        "methods": body.get("methods", ["GET"]),
+        "target_service": body.get("target_service"),
+        "target_path": body.get("target_path"),
+        "strip_prefix": body.get("strip_prefix", False),
+        "timeout_ms": body.get("timeout_ms", 30000),
+        "retries": body.get("retries", 3),
+        "enabled": True,
+        "created_at": datetime.utcnow().isoformat()
+    }
+    API_ROUTES[route_id] = route
+    return route
+
+
+@app.get("/gateway/routes")
+def list_routes(enabled: Optional[bool] = None):
+    """List API routes"""
+    routes = list(API_ROUTES.values())
+    if enabled is not None:
+        routes = [r for r in routes if r["enabled"] == enabled]
+    return {"routes": routes, "total": len(routes)}
+
+
+@app.get("/gateway/routes/{route_id}")
+def get_route(route_id: str):
+    """Get route details"""
+    if route_id not in API_ROUTES:
+        raise HTTPException(status_code=404, detail="Route not found")
+    return API_ROUTES[route_id]
+
+
+@app.put("/gateway/routes/{route_id}")
+def update_route(route_id: str, body: dict = Body(...)):
+    """Update route"""
+    if route_id not in API_ROUTES:
+        raise HTTPException(status_code=404, detail="Route not found")
+    route = API_ROUTES[route_id]
+    route.update({k: v for k, v in body.items() if k not in ["id", "created_at"]})
+    return route
+
+
+@app.delete("/gateway/routes/{route_id}")
+def delete_route(route_id: str):
+    """Delete route"""
+    if route_id not in API_ROUTES:
+        raise HTTPException(status_code=404, detail="Route not found")
+    del API_ROUTES[route_id]
+    return {"message": "Route deleted", "id": route_id}
+
+
+@app.post("/gateway/api-keys")
+def create_api_key(body: dict = Body(...)):
+    """Create API key"""
+    key_id = f"key_{uuid.uuid4().hex[:8]}"
+    api_key = f"ak_{uuid.uuid4().hex}"
+    key_data = {
+        "id": key_id,
+        "key": api_key,
+        "name": body.get("name", ""),
+        "scopes": body.get("scopes", ["read"]),
+        "rate_limit": body.get("rate_limit", 1000),
+        "expires_at": body.get("expires_at"),
+        "enabled": True,
+        "created_at": datetime.utcnow().isoformat(),
+        "last_used": None
+    }
+    API_KEYS[key_id] = key_data
+    return key_data
+
+
+@app.get("/gateway/api-keys")
+def list_api_keys():
+    """List API keys"""
+    keys = [{**k, "key": k["key"][:8] + "..."} for k in API_KEYS.values()]
+    return {"api_keys": keys, "total": len(keys)}
+
+
+@app.delete("/gateway/api-keys/{key_id}")
+def revoke_api_key(key_id: str):
+    """Revoke API key"""
+    if key_id not in API_KEYS:
+        raise HTTPException(status_code=404, detail="API key not found")
+    API_KEYS[key_id]["enabled"] = False
+    return {"message": "API key revoked", "id": key_id}
+
+
+@app.post("/gateway/policies")
+def create_route_policy(body: dict = Body(...)):
+    """Create routing policy"""
+    policy_id = f"policy_{uuid.uuid4().hex[:8]}"
+    policy = {
+        "id": policy_id,
+        "name": body.get("name", ""),
+        "type": body.get("type", "rate_limit"),
+        "rules": body.get("rules", []),
+        "actions": body.get("actions", []),
+        "priority": body.get("priority", 0),
+        "enabled": True,
+        "created_at": datetime.utcnow().isoformat()
+    }
+    ROUTE_POLICIES[policy_id] = policy
+    return policy
+
+
+@app.get("/gateway/policies")
+def list_route_policies():
+    """List routing policies"""
+    return {"policies": list(ROUTE_POLICIES.values()), "total": len(ROUTE_POLICIES)}
+
+
+# ============================================================================
+# Secret Management
+# ============================================================================
+
+SECRETS: Dict[str, Dict[str, Any]] = {}
+SECRET_VERSIONS: Dict[str, List[Dict[str, Any]]] = {}
+SECRET_ACCESS_LOGS: List[Dict[str, Any]] = []
+SECRET_POLICIES: Dict[str, Dict[str, Any]] = {}
+
+
+@app.post("/secrets")
+def create_secret(body: dict = Body(...)):
+    """Create secret"""
+    secret_id = f"secret_{uuid.uuid4().hex[:8]}"
+    secret = {
+        "id": secret_id,
+        "name": body.get("name", ""),
+        "description": body.get("description", ""),
+        "type": body.get("type", "generic"),
+        "version": 1,
+        "tags": body.get("tags", []),
+        "rotation_enabled": body.get("rotation_enabled", False),
+        "rotation_days": body.get("rotation_days", 90),
+        "created_at": datetime.utcnow().isoformat(),
+        "updated_at": datetime.utcnow().isoformat()
+    }
+    SECRETS[secret_id] = secret
+    SECRET_VERSIONS[secret_id] = [{
+        "version": 1,
+        "value_hash": hash(body.get("value", "")),
+        "created_at": datetime.utcnow().isoformat()
+    }]
+    return {**secret, "message": "Secret created (value stored securely)"}
+
+
+@app.get("/secrets")
+def list_secrets(type: Optional[str] = None, tag: Optional[str] = None):
+    """List secrets (metadata only)"""
+    secrets = list(SECRETS.values())
+    if type:
+        secrets = [s for s in secrets if s["type"] == type]
+    if tag:
+        secrets = [s for s in secrets if tag in s.get("tags", [])]
+    return {"secrets": secrets, "total": len(secrets)}
+
+
+@app.get("/secrets/{secret_id}")
+def get_secret(secret_id: str, version: Optional[int] = None):
+    """Get secret metadata"""
+    if secret_id not in SECRETS:
+        raise HTTPException(status_code=404, detail="Secret not found")
+
+    SECRET_ACCESS_LOGS.append({
+        "secret_id": secret_id,
+        "action": "read",
+        "timestamp": datetime.utcnow().isoformat()
+    })
+
+    return {
+        "secret": SECRETS[secret_id],
+        "versions": len(SECRET_VERSIONS.get(secret_id, []))
+    }
+
+
+@app.post("/secrets/{secret_id}/rotate")
+def rotate_secret(secret_id: str, body: dict = Body(...)):
+    """Rotate secret value"""
+    if secret_id not in SECRETS:
+        raise HTTPException(status_code=404, detail="Secret not found")
+
+    secret = SECRETS[secret_id]
+    new_version = secret["version"] + 1
+    secret["version"] = new_version
+    secret["updated_at"] = datetime.utcnow().isoformat()
+
+    SECRET_VERSIONS[secret_id].append({
+        "version": new_version,
+        "value_hash": hash(body.get("value", "")),
+        "created_at": datetime.utcnow().isoformat()
+    })
+
+    return {"message": "Secret rotated", "version": new_version}
+
+
+@app.delete("/secrets/{secret_id}")
+def delete_secret(secret_id: str):
+    """Delete secret"""
+    if secret_id not in SECRETS:
+        raise HTTPException(status_code=404, detail="Secret not found")
+    del SECRETS[secret_id]
+    SECRET_VERSIONS.pop(secret_id, None)
+    return {"message": "Secret deleted", "id": secret_id}
+
+
+@app.get("/secrets/{secret_id}/versions")
+def get_secret_versions(secret_id: str):
+    """Get secret version history"""
+    if secret_id not in SECRETS:
+        raise HTTPException(status_code=404, detail="Secret not found")
+    return {"versions": SECRET_VERSIONS.get(secret_id, []), "current": SECRETS[secret_id]["version"]}
+
+
+@app.post("/secrets/policies")
+def create_secret_policy(body: dict = Body(...)):
+    """Create secret access policy"""
+    policy_id = f"sp_{uuid.uuid4().hex[:8]}"
+    policy = {
+        "id": policy_id,
+        "name": body.get("name", ""),
+        "secrets": body.get("secrets", []),
+        "principals": body.get("principals", []),
+        "permissions": body.get("permissions", ["read"]),
+        "conditions": body.get("conditions", {}),
+        "created_at": datetime.utcnow().isoformat()
+    }
+    SECRET_POLICIES[policy_id] = policy
+    return policy
+
+
+@app.get("/secrets/access-log")
+def get_secret_access_log(secret_id: Optional[str] = None, limit: int = 100):
+    """Get secret access logs"""
+    logs = SECRET_ACCESS_LOGS
+    if secret_id:
+        logs = [l for l in logs if l["secret_id"] == secret_id]
+    return {"logs": logs[-limit:], "total": len(logs)}
+
+
+# ============================================================================
+# Backup & Recovery
+# ============================================================================
+
+BACKUPS: Dict[str, Dict[str, Any]] = {}
+BACKUP_SCHEDULES: Dict[str, Dict[str, Any]] = {}
+RECOVERY_POINTS: Dict[str, List[Dict[str, Any]]] = {}
+RESTORE_JOBS: Dict[str, Dict[str, Any]] = {}
+
+
+@app.post("/backups")
+def create_backup(body: dict = Body(...)):
+    """Create backup"""
+    backup_id = f"backup_{uuid.uuid4().hex[:12]}"
+    backup = {
+        "id": backup_id,
+        "name": body.get("name", f"backup-{datetime.utcnow().strftime('%Y%m%d-%H%M%S')}"),
+        "type": body.get("type", "full"),
+        "scope": body.get("scope", ["all"]),
+        "status": "in_progress",
+        "size_bytes": 0,
+        "location": body.get("location", "local"),
+        "encryption": body.get("encryption", True),
+        "started_at": datetime.utcnow().isoformat(),
+        "completed_at": None
+    }
+    BACKUPS[backup_id] = backup
+
+    backup["status"] = "completed"
+    backup["completed_at"] = datetime.utcnow().isoformat()
+    backup["size_bytes"] = random.randint(1000000, 100000000)
+
+    resource_id = body.get("resource_id", "system")
+    if resource_id not in RECOVERY_POINTS:
+        RECOVERY_POINTS[resource_id] = []
+    RECOVERY_POINTS[resource_id].append({
+        "backup_id": backup_id,
+        "timestamp": backup["completed_at"],
+        "type": backup["type"]
+    })
+
+    return backup
+
+
+@app.get("/backups")
+def list_backups(type: Optional[str] = None, status: Optional[str] = None):
+    """List backups"""
+    backups = list(BACKUPS.values())
+    if type:
+        backups = [b for b in backups if b["type"] == type]
+    if status:
+        backups = [b for b in backups if b["status"] == status]
+    return {"backups": backups, "total": len(backups)}
+
+
+@app.get("/backups/{backup_id}")
+def get_backup(backup_id: str):
+    """Get backup details"""
+    if backup_id not in BACKUPS:
+        raise HTTPException(status_code=404, detail="Backup not found")
+    return BACKUPS[backup_id]
+
+
+@app.delete("/backups/{backup_id}")
+def delete_backup(backup_id: str):
+    """Delete backup"""
+    if backup_id not in BACKUPS:
+        raise HTTPException(status_code=404, detail="Backup not found")
+    del BACKUPS[backup_id]
+    return {"message": "Backup deleted", "id": backup_id}
+
+
+@app.post("/backups/schedules")
+def create_backup_schedule(body: dict = Body(...)):
+    """Create backup schedule"""
+    schedule_id = f"sched_{uuid.uuid4().hex[:8]}"
+    schedule = {
+        "id": schedule_id,
+        "name": body.get("name", ""),
+        "cron": body.get("cron", "0 2 * * *"),
+        "type": body.get("type", "incremental"),
+        "retention_days": body.get("retention_days", 30),
+        "scope": body.get("scope", ["all"]),
+        "enabled": True,
+        "last_run": None,
+        "next_run": datetime.utcnow().isoformat(),
+        "created_at": datetime.utcnow().isoformat()
+    }
+    BACKUP_SCHEDULES[schedule_id] = schedule
+    return schedule
+
+
+@app.get("/backups/schedules")
+def list_backup_schedules():
+    """List backup schedules"""
+    return {"schedules": list(BACKUP_SCHEDULES.values()), "total": len(BACKUP_SCHEDULES)}
+
+
+@app.post("/backups/restore")
+def restore_backup(body: dict = Body(...)):
+    """Restore from backup"""
+    backup_id = body.get("backup_id")
+    if backup_id not in BACKUPS:
+        raise HTTPException(status_code=404, detail="Backup not found")
+
+    job_id = f"restore_{uuid.uuid4().hex[:8]}"
+    job = {
+        "id": job_id,
+        "backup_id": backup_id,
+        "target": body.get("target", "original"),
+        "status": "in_progress",
+        "progress_percent": 0,
+        "started_at": datetime.utcnow().isoformat(),
+        "completed_at": None
+    }
+    RESTORE_JOBS[job_id] = job
+
+    job["status"] = "completed"
+    job["progress_percent"] = 100
+    job["completed_at"] = datetime.utcnow().isoformat()
+
+    return job
+
+
+@app.get("/backups/restore/{job_id}")
+def get_restore_status(job_id: str):
+    """Get restore job status"""
+    if job_id not in RESTORE_JOBS:
+        raise HTTPException(status_code=404, detail="Restore job not found")
+    return RESTORE_JOBS[job_id]
+
+
+@app.get("/backups/recovery-points/{resource_id}")
+def get_recovery_points(resource_id: str):
+    """Get recovery points for resource"""
+    return {"recovery_points": RECOVERY_POINTS.get(resource_id, []), "resource_id": resource_id}
+
+
+# ============================================================================
+# Compliance & Governance
+# ============================================================================
+
+COMPLIANCE_FRAMEWORKS: Dict[str, Dict[str, Any]] = {}
+COMPLIANCE_CONTROLS: Dict[str, List[Dict[str, Any]]] = {}
+COMPLIANCE_ASSESSMENTS: Dict[str, Dict[str, Any]] = {}
+GOVERNANCE_POLICIES: Dict[str, Dict[str, Any]] = {}
+
+
+@app.post("/compliance/frameworks")
+def create_compliance_framework(body: dict = Body(...)):
+    """Create compliance framework"""
+    framework_id = f"cf_{uuid.uuid4().hex[:8]}"
+    framework = {
+        "id": framework_id,
+        "name": body.get("name", ""),
+        "version": body.get("version", "1.0"),
+        "description": body.get("description", ""),
+        "type": body.get("type", "regulatory"),
+        "controls_count": 0,
+        "status": "active",
+        "created_at": datetime.utcnow().isoformat()
+    }
+    COMPLIANCE_FRAMEWORKS[framework_id] = framework
+    COMPLIANCE_CONTROLS[framework_id] = []
+    return framework
+
+
+@app.get("/compliance/frameworks")
+def list_compliance_frameworks(type: Optional[str] = None):
+    """List compliance frameworks"""
+    frameworks = list(COMPLIANCE_FRAMEWORKS.values())
+    if type:
+        frameworks = [f for f in frameworks if f["type"] == type]
+    return {"frameworks": frameworks, "total": len(frameworks)}
+
+
+@app.get("/compliance/frameworks/{framework_id}")
+def get_compliance_framework(framework_id: str):
+    """Get compliance framework details"""
+    if framework_id not in COMPLIANCE_FRAMEWORKS:
+        raise HTTPException(status_code=404, detail="Framework not found")
+    return {
+        "framework": COMPLIANCE_FRAMEWORKS[framework_id],
+        "controls": COMPLIANCE_CONTROLS.get(framework_id, [])
+    }
+
+
+@app.post("/compliance/frameworks/{framework_id}/controls")
+def add_compliance_control(framework_id: str, body: dict = Body(...)):
+    """Add control to framework"""
+    if framework_id not in COMPLIANCE_FRAMEWORKS:
+        raise HTTPException(status_code=404, detail="Framework not found")
+
+    control = {
+        "id": f"ctrl_{uuid.uuid4().hex[:8]}",
+        "code": body.get("code", ""),
+        "name": body.get("name", ""),
+        "description": body.get("description", ""),
+        "category": body.get("category", "general"),
+        "severity": body.get("severity", "medium"),
+        "status": "not_assessed",
+        "evidence_required": body.get("evidence_required", [])
+    }
+
+    COMPLIANCE_CONTROLS[framework_id].append(control)
+    COMPLIANCE_FRAMEWORKS[framework_id]["controls_count"] += 1
+
+    return control
+
+
+@app.post("/compliance/assessments")
+def create_assessment(body: dict = Body(...)):
+    """Create compliance assessment"""
+    assessment_id = f"assess_{uuid.uuid4().hex[:8]}"
+    assessment = {
+        "id": assessment_id,
+        "framework_id": body.get("framework_id"),
+        "name": body.get("name", ""),
+        "scope": body.get("scope", []),
+        "status": "in_progress",
+        "results": {},
+        "overall_score": 0,
+        "started_at": datetime.utcnow().isoformat(),
+        "completed_at": None
+    }
+    COMPLIANCE_ASSESSMENTS[assessment_id] = assessment
+    return assessment
+
+
+@app.get("/compliance/assessments/{assessment_id}")
+def get_assessment(assessment_id: str):
+    """Get assessment details"""
+    if assessment_id not in COMPLIANCE_ASSESSMENTS:
+        raise HTTPException(status_code=404, detail="Assessment not found")
+    return COMPLIANCE_ASSESSMENTS[assessment_id]
+
+
+@app.post("/compliance/assessments/{assessment_id}/evaluate")
+def evaluate_control(assessment_id: str, body: dict = Body(...)):
+    """Evaluate control in assessment"""
+    if assessment_id not in COMPLIANCE_ASSESSMENTS:
+        raise HTTPException(status_code=404, detail="Assessment not found")
+
+    control_id = body.get("control_id")
+    result = {
+        "status": body.get("status", "compliant"),
+        "evidence": body.get("evidence", []),
+        "notes": body.get("notes", ""),
+        "evaluated_at": datetime.utcnow().isoformat()
+    }
+
+    COMPLIANCE_ASSESSMENTS[assessment_id]["results"][control_id] = result
+    return {"control_id": control_id, "result": result}
+
+
+@app.post("/governance/policies")
+def create_governance_policy(body: dict = Body(...)):
+    """Create governance policy"""
+    policy_id = f"gov_{uuid.uuid4().hex[:8]}"
+    policy = {
+        "id": policy_id,
+        "name": body.get("name", ""),
+        "type": body.get("type", "data"),
+        "description": body.get("description", ""),
+        "rules": body.get("rules", []),
+        "enforcement": body.get("enforcement", "advisory"),
+        "scope": body.get("scope", ["all"]),
+        "enabled": True,
+        "created_at": datetime.utcnow().isoformat()
+    }
+    GOVERNANCE_POLICIES[policy_id] = policy
+    return policy
+
+
+@app.get("/governance/policies")
+def list_governance_policies(type: Optional[str] = None):
+    """List governance policies"""
+    policies = list(GOVERNANCE_POLICIES.values())
+    if type:
+        policies = [p for p in policies if p["type"] == type]
+    return {"policies": policies, "total": len(policies)}
+
+
+@app.get("/compliance/dashboard")
+def compliance_dashboard():
+    """Get compliance dashboard"""
+    dashboard = {
+        "frameworks": len(COMPLIANCE_FRAMEWORKS),
+        "total_controls": sum(len(c) for c in COMPLIANCE_CONTROLS.values()),
+        "assessments": len(COMPLIANCE_ASSESSMENTS),
+        "governance_policies": len(GOVERNANCE_POLICIES),
+        "compliance_by_framework": []
+    }
+
+    for fid, framework in COMPLIANCE_FRAMEWORKS.items():
+        controls = COMPLIANCE_CONTROLS.get(fid, [])
+        compliant = len([c for c in controls if c["status"] == "compliant"])
+        dashboard["compliance_by_framework"].append({
+            "framework": framework["name"],
+            "total_controls": len(controls),
+            "compliant": compliant,
+            "compliance_percent": (compliant / max(1, len(controls))) * 100
+        })
+
+    return dashboard
+
+
+# ============================================================================
+# Capacity Planning
+# ============================================================================
+
+CAPACITY_PLANS: Dict[str, Dict[str, Any]] = {}
+RESOURCE_FORECASTS: Dict[str, Dict[str, Any]] = {}
+SCALING_RECOMMENDATIONS: List[Dict[str, Any]] = []
+CAPACITY_METRICS: Dict[str, List[Dict[str, Any]]] = {}
+
+
+@app.post("/capacity/plans")
+def create_capacity_plan(body: dict = Body(...)):
+    """Create capacity plan"""
+    plan_id = f"cap_{uuid.uuid4().hex[:8]}"
+    plan = {
+        "id": plan_id,
+        "name": body.get("name", ""),
+        "resources": body.get("resources", []),
+        "target_utilization": body.get("target_utilization", 70),
+        "planning_horizon_days": body.get("planning_horizon_days", 90),
+        "growth_rate_percent": body.get("growth_rate_percent", 10),
+        "buffer_percent": body.get("buffer_percent", 20),
+        "status": "active",
+        "created_at": datetime.utcnow().isoformat()
+    }
+    CAPACITY_PLANS[plan_id] = plan
+    return plan
+
+
+@app.get("/capacity/plans")
+def list_capacity_plans():
+    """List capacity plans"""
+    return {"plans": list(CAPACITY_PLANS.values()), "total": len(CAPACITY_PLANS)}
+
+
+@app.get("/capacity/plans/{plan_id}")
+def get_capacity_plan(plan_id: str):
+    """Get capacity plan details"""
+    if plan_id not in CAPACITY_PLANS:
+        raise HTTPException(status_code=404, detail="Capacity plan not found")
+    return CAPACITY_PLANS[plan_id]
+
+
+@app.post("/capacity/forecasts")
+def create_resource_forecast(body: dict = Body(...)):
+    """Create resource forecast"""
+    forecast_id = f"forecast_{uuid.uuid4().hex[:8]}"
+    resource_type = body.get("resource_type", "compute")
+
+    current = body.get("current_usage", 50)
+    growth = body.get("growth_rate", 10)
+
+    forecast = {
+        "id": forecast_id,
+        "resource_type": resource_type,
+        "current_usage": current,
+        "growth_rate_percent": growth,
+        "forecast_days": body.get("forecast_days", 90),
+        "predictions": [
+            {"day": 30, "predicted_usage": current * (1 + growth/100)},
+            {"day": 60, "predicted_usage": current * (1 + growth/100) ** 2},
+            {"day": 90, "predicted_usage": current * (1 + growth/100) ** 3}
+        ],
+        "confidence": 0.85,
+        "created_at": datetime.utcnow().isoformat()
+    }
+    RESOURCE_FORECASTS[forecast_id] = forecast
+    return forecast
+
+
+@app.get("/capacity/forecasts")
+def list_forecasts(resource_type: Optional[str] = None):
+    """List resource forecasts"""
+    forecasts = list(RESOURCE_FORECASTS.values())
+    if resource_type:
+        forecasts = [f for f in forecasts if f["resource_type"] == resource_type]
+    return {"forecasts": forecasts, "total": len(forecasts)}
+
+
+@app.post("/capacity/metrics")
+def record_capacity_metric(body: dict = Body(...)):
+    """Record capacity metric"""
+    resource_id = body.get("resource_id", "default")
+    metric = {
+        "timestamp": datetime.utcnow().isoformat(),
+        "utilization_percent": body.get("utilization_percent", 0),
+        "total_capacity": body.get("total_capacity", 100),
+        "used_capacity": body.get("used_capacity", 0),
+        "available_capacity": body.get("total_capacity", 100) - body.get("used_capacity", 0)
+    }
+
+    if resource_id not in CAPACITY_METRICS:
+        CAPACITY_METRICS[resource_id] = []
+    CAPACITY_METRICS[resource_id].append(metric)
+
+    if metric["utilization_percent"] > 80:
+        SCALING_RECOMMENDATIONS.append({
+            "resource_id": resource_id,
+            "type": "scale_up",
+            "reason": f"High utilization: {metric['utilization_percent']}%",
+            "recommended_action": "Increase capacity by 25%",
+            "created_at": datetime.utcnow().isoformat()
+        })
+
+    return metric
+
+
+@app.get("/capacity/metrics/{resource_id}")
+def get_capacity_metrics(resource_id: str, limit: int = 100):
+    """Get capacity metrics for resource"""
+    return {"metrics": CAPACITY_METRICS.get(resource_id, [])[-limit:], "resource_id": resource_id}
+
+
+@app.get("/capacity/recommendations")
+def get_scaling_recommendations(resource_id: Optional[str] = None):
+    """Get scaling recommendations"""
+    recs = SCALING_RECOMMENDATIONS
+    if resource_id:
+        recs = [r for r in recs if r["resource_id"] == resource_id]
+    return {"recommendations": recs[-20:], "total": len(recs)}
+
+
+# ============================================================================
+# A/B Testing
+# ============================================================================
+
+AB_EXPERIMENTS: Dict[str, Dict[str, Any]] = {}
+AB_VARIANTS: Dict[str, List[Dict[str, Any]]] = {}
+AB_ASSIGNMENTS: Dict[str, Dict[str, str]] = {}
+AB_RESULTS: Dict[str, Dict[str, Any]] = {}
+
+
+@app.post("/experiments")
+def create_experiment(body: dict = Body(...)):
+    """Create A/B experiment"""
+    exp_id = f"exp_{uuid.uuid4().hex[:8]}"
+    experiment = {
+        "id": exp_id,
+        "name": body.get("name", ""),
+        "description": body.get("description", ""),
+        "hypothesis": body.get("hypothesis", ""),
+        "metric": body.get("metric", "conversion_rate"),
+        "traffic_percent": body.get("traffic_percent", 100),
+        "status": "draft",
+        "started_at": None,
+        "ended_at": None,
+        "created_at": datetime.utcnow().isoformat()
+    }
+    AB_EXPERIMENTS[exp_id] = experiment
+    AB_VARIANTS[exp_id] = []
+    AB_RESULTS[exp_id] = {"variants": {}}
+    return experiment
+
+
+@app.get("/experiments")
+def list_experiments(status: Optional[str] = None):
+    """List experiments"""
+    exps = list(AB_EXPERIMENTS.values())
+    if status:
+        exps = [e for e in exps if e["status"] == status]
+    return {"experiments": exps, "total": len(exps)}
+
+
+@app.get("/experiments/{exp_id}")
+def get_experiment(exp_id: str):
+    """Get experiment details"""
+    if exp_id not in AB_EXPERIMENTS:
+        raise HTTPException(status_code=404, detail="Experiment not found")
+    return {
+        "experiment": AB_EXPERIMENTS[exp_id],
+        "variants": AB_VARIANTS.get(exp_id, []),
+        "results": AB_RESULTS.get(exp_id, {})
+    }
+
+
+@app.post("/experiments/{exp_id}/variants")
+def add_variant(exp_id: str, body: dict = Body(...)):
+    """Add variant to experiment"""
+    if exp_id not in AB_EXPERIMENTS:
+        raise HTTPException(status_code=404, detail="Experiment not found")
+
+    variant = {
+        "id": f"var_{uuid.uuid4().hex[:8]}",
+        "name": body.get("name", ""),
+        "description": body.get("description", ""),
+        "weight": body.get("weight", 50),
+        "config": body.get("config", {}),
+        "is_control": body.get("is_control", False)
+    }
+
+    AB_VARIANTS[exp_id].append(variant)
+    AB_RESULTS[exp_id]["variants"][variant["id"]] = {
+        "impressions": 0,
+        "conversions": 0,
+        "conversion_rate": 0
+    }
+
+    return variant
+
+
+@app.post("/experiments/{exp_id}/start")
+def start_experiment(exp_id: str):
+    """Start experiment"""
+    if exp_id not in AB_EXPERIMENTS:
+        raise HTTPException(status_code=404, detail="Experiment not found")
+
+    AB_EXPERIMENTS[exp_id]["status"] = "running"
+    AB_EXPERIMENTS[exp_id]["started_at"] = datetime.utcnow().isoformat()
+    return {"message": "Experiment started", "experiment_id": exp_id}
+
+
+@app.post("/experiments/{exp_id}/stop")
+def stop_experiment(exp_id: str):
+    """Stop experiment"""
+    if exp_id not in AB_EXPERIMENTS:
+        raise HTTPException(status_code=404, detail="Experiment not found")
+
+    AB_EXPERIMENTS[exp_id]["status"] = "completed"
+    AB_EXPERIMENTS[exp_id]["ended_at"] = datetime.utcnow().isoformat()
+    return {"message": "Experiment stopped", "experiment_id": exp_id}
+
+
+@app.post("/experiments/{exp_id}/assign")
+def assign_variant(exp_id: str, body: dict = Body(...)):
+    """Assign user to variant"""
+    if exp_id not in AB_EXPERIMENTS:
+        raise HTTPException(status_code=404, detail="Experiment not found")
+
+    user_id = body.get("user_id")
+    variants = AB_VARIANTS.get(exp_id, [])
+
+    if not variants:
+        raise HTTPException(status_code=400, detail="No variants defined")
+
+    assignment_key = f"{exp_id}:{user_id}"
+    if assignment_key in AB_ASSIGNMENTS:
+        variant_id = AB_ASSIGNMENTS[assignment_key]
+    else:
+        weights = [v["weight"] for v in variants]
+        total = sum(weights)
+        r = random.uniform(0, total)
+        cumulative = 0
+        variant_id = variants[0]["id"]
+        for v in variants:
+            cumulative += v["weight"]
+            if r <= cumulative:
+                variant_id = v["id"]
+                break
+        AB_ASSIGNMENTS[assignment_key] = variant_id
+
+    AB_RESULTS[exp_id]["variants"][variant_id]["impressions"] += 1
+
+    variant = next((v for v in variants if v["id"] == variant_id), None)
+    return {"variant_id": variant_id, "variant": variant}
+
+
+@app.post("/experiments/{exp_id}/convert")
+def record_conversion(exp_id: str, body: dict = Body(...)):
+    """Record conversion event"""
+    if exp_id not in AB_EXPERIMENTS:
+        raise HTTPException(status_code=404, detail="Experiment not found")
+
+    user_id = body.get("user_id")
+    assignment_key = f"{exp_id}:{user_id}"
+
+    if assignment_key not in AB_ASSIGNMENTS:
+        raise HTTPException(status_code=400, detail="User not assigned to experiment")
+
+    variant_id = AB_ASSIGNMENTS[assignment_key]
+    results = AB_RESULTS[exp_id]["variants"][variant_id]
+    results["conversions"] += 1
+    results["conversion_rate"] = results["conversions"] / max(1, results["impressions"]) * 100
+
+    return {"message": "Conversion recorded", "variant_id": variant_id}
+
+
+@app.get("/experiments/{exp_id}/results")
+def get_experiment_results(exp_id: str):
+    """Get experiment results"""
+    if exp_id not in AB_EXPERIMENTS:
+        raise HTTPException(status_code=404, detail="Experiment not found")
+
+    results = AB_RESULTS.get(exp_id, {})
+    variants = AB_VARIANTS.get(exp_id, [])
+
+    winner = None
+    best_rate = 0
+    for vid, stats in results.get("variants", {}).items():
+        if stats["conversion_rate"] > best_rate:
+            best_rate = stats["conversion_rate"]
+            winner = vid
+
+    return {
+        "experiment_id": exp_id,
+        "status": AB_EXPERIMENTS[exp_id]["status"],
+        "variants": results.get("variants", {}),
+        "winner": winner,
+        "statistical_significance": random.uniform(0.8, 0.99) if winner else None
+    }
+
+
+# ============================================================================
+# Event Sourcing
+# ============================================================================
+
+EVENT_STORES: Dict[str, Dict[str, Any]] = {}
+EVENT_STREAMS: Dict[str, List[Dict[str, Any]]] = {}
+AGGREGATE_SNAPSHOTS: Dict[str, Dict[str, Any]] = {}
+EVENT_PROJECTIONS: Dict[str, Dict[str, Any]] = {}
+
+
+@app.post("/event-stores")
+def create_event_store(body: dict = Body(...)):
+    """Create event store"""
+    store_id = f"store_{uuid.uuid4().hex[:8]}"
+    store = {
+        "id": store_id,
+        "name": body.get("name", ""),
+        "retention_days": body.get("retention_days", 365),
+        "compression": body.get("compression", True),
+        "partitioning": body.get("partitioning", "daily"),
+        "created_at": datetime.utcnow().isoformat()
+    }
+    EVENT_STORES[store_id] = store
+    return store
+
+
+@app.get("/event-stores")
+def list_event_stores():
+    """List event stores"""
+    return {"stores": list(EVENT_STORES.values()), "total": len(EVENT_STORES)}
+
+
+@app.post("/event-streams/{stream_id}/events")
+def append_event(stream_id: str, body: dict = Body(...)):
+    """Append event to stream"""
+    event = {
+        "id": f"evt_{uuid.uuid4().hex[:12]}",
+        "stream_id": stream_id,
+        "type": body.get("type", ""),
+        "data": body.get("data", {}),
+        "metadata": body.get("metadata", {}),
+        "version": len(EVENT_STREAMS.get(stream_id, [])) + 1,
+        "timestamp": datetime.utcnow().isoformat()
+    }
+
+    if stream_id not in EVENT_STREAMS:
+        EVENT_STREAMS[stream_id] = []
+    EVENT_STREAMS[stream_id].append(event)
+
+    return event
+
+
+@app.get("/event-streams/{stream_id}")
+def get_event_stream(stream_id: str, from_version: int = 0, limit: int = 100):
+    """Get events from stream"""
+    events = EVENT_STREAMS.get(stream_id, [])
+    filtered = [e for e in events if e["version"] > from_version]
+    return {"events": filtered[:limit], "stream_id": stream_id, "total": len(events)}
+
+
+@app.get("/event-streams/{stream_id}/aggregate")
+def get_aggregate(stream_id: str):
+    """Get current aggregate state"""
+    events = EVENT_STREAMS.get(stream_id, [])
+
+    if stream_id in AGGREGATE_SNAPSHOTS:
+        snapshot = AGGREGATE_SNAPSHOTS[stream_id]
+        start_version = snapshot["version"]
+        state = snapshot["state"].copy()
+    else:
+        start_version = 0
+        state = {}
+
+    for event in events:
+        if event["version"] > start_version:
+            state.update(event.get("data", {}))
+
+    return {
+        "stream_id": stream_id,
+        "state": state,
+        "version": len(events),
+        "event_count": len(events)
+    }
+
+
+@app.post("/event-streams/{stream_id}/snapshot")
+def create_snapshot(stream_id: str):
+    """Create aggregate snapshot"""
+    events = EVENT_STREAMS.get(stream_id, [])
+    state = {}
+    for event in events:
+        state.update(event.get("data", {}))
+
+    snapshot = {
+        "stream_id": stream_id,
+        "state": state,
+        "version": len(events),
+        "created_at": datetime.utcnow().isoformat()
+    }
+    AGGREGATE_SNAPSHOTS[stream_id] = snapshot
+    return snapshot
+
+
+@app.post("/event-projections")
+def create_projection(body: dict = Body(...)):
+    """Create event projection"""
+    proj_id = f"proj_{uuid.uuid4().hex[:8]}"
+    projection = {
+        "id": proj_id,
+        "name": body.get("name", ""),
+        "source_streams": body.get("source_streams", []),
+        "event_types": body.get("event_types", ["*"]),
+        "handler": body.get("handler", ""),
+        "state": {},
+        "position": 0,
+        "status": "running",
+        "created_at": datetime.utcnow().isoformat()
+    }
+    EVENT_PROJECTIONS[proj_id] = projection
+    return projection
+
+
+@app.get("/event-projections")
+def list_projections():
+    """List event projections"""
+    return {"projections": list(EVENT_PROJECTIONS.values()), "total": len(EVENT_PROJECTIONS)}
+
+
+@app.get("/event-projections/{proj_id}/state")
+def get_projection_state(proj_id: str):
+    """Get projection state"""
+    if proj_id not in EVENT_PROJECTIONS:
+        raise HTTPException(status_code=404, detail="Projection not found")
+    return {
+        "projection_id": proj_id,
+        "state": EVENT_PROJECTIONS[proj_id]["state"],
+        "position": EVENT_PROJECTIONS[proj_id]["position"]
+    }
+
+
+# ============================================================================
+# License Management
+# ============================================================================
+
+LICENSES: Dict[str, Dict[str, Any]] = {}
+LICENSE_ALLOCATIONS: Dict[str, List[Dict[str, Any]]] = {}
+LICENSE_USAGE: Dict[str, Dict[str, Any]] = {}
+ENTITLEMENTS: Dict[str, Dict[str, Any]] = {}
+
+
+@app.post("/licenses")
+def create_license(body: dict = Body(...)):
+    """Create license"""
+    license_id = f"lic_{uuid.uuid4().hex[:8]}"
+    license_key = f"LIC-{uuid.uuid4().hex[:4].upper()}-{uuid.uuid4().hex[:4].upper()}-{uuid.uuid4().hex[:4].upper()}"
+    license_data = {
+        "id": license_id,
+        "key": license_key,
+        "product": body.get("product", ""),
+        "type": body.get("type", "subscription"),
+        "seats": body.get("seats", 1),
+        "seats_used": 0,
+        "features": body.get("features", []),
+        "valid_from": body.get("valid_from", datetime.utcnow().isoformat()),
+        "valid_until": body.get("valid_until"),
+        "status": "active",
+        "created_at": datetime.utcnow().isoformat()
+    }
+    LICENSES[license_id] = license_data
+    LICENSE_ALLOCATIONS[license_id] = []
+    LICENSE_USAGE[license_id] = {"total_activations": 0, "active_sessions": 0}
+    return license_data
+
+
+@app.get("/licenses")
+def list_licenses(product: Optional[str] = None, status: Optional[str] = None):
+    """List licenses"""
+    licenses = list(LICENSES.values())
+    if product:
+        licenses = [l for l in licenses if l["product"] == product]
+    if status:
+        licenses = [l for l in licenses if l["status"] == status]
+    return {"licenses": licenses, "total": len(licenses)}
+
+
+@app.get("/licenses/{license_id}")
+def get_license(license_id: str):
+    """Get license details"""
+    if license_id not in LICENSES:
+        raise HTTPException(status_code=404, detail="License not found")
+    return {
+        "license": LICENSES[license_id],
+        "allocations": LICENSE_ALLOCATIONS.get(license_id, []),
+        "usage": LICENSE_USAGE.get(license_id, {})
+    }
+
+
+@app.post("/licenses/{license_id}/allocate")
+def allocate_license(license_id: str, body: dict = Body(...)):
+    """Allocate license seat"""
+    if license_id not in LICENSES:
+        raise HTTPException(status_code=404, detail="License not found")
+
+    license_data = LICENSES[license_id]
+    if license_data["seats_used"] >= license_data["seats"]:
+        raise HTTPException(status_code=400, detail="No seats available")
+
+    allocation = {
+        "id": f"alloc_{uuid.uuid4().hex[:8]}",
+        "user_id": body.get("user_id"),
+        "machine_id": body.get("machine_id"),
+        "allocated_at": datetime.utcnow().isoformat(),
+        "status": "active"
+    }
+
+    LICENSE_ALLOCATIONS[license_id].append(allocation)
+    license_data["seats_used"] += 1
+    LICENSE_USAGE[license_id]["total_activations"] += 1
+    LICENSE_USAGE[license_id]["active_sessions"] += 1
+
+    return allocation
+
+
+@app.post("/licenses/{license_id}/release")
+def release_license(license_id: str, body: dict = Body(...)):
+    """Release license seat"""
+    if license_id not in LICENSES:
+        raise HTTPException(status_code=404, detail="License not found")
+
+    allocation_id = body.get("allocation_id")
+    allocations = LICENSE_ALLOCATIONS.get(license_id, [])
+
+    for alloc in allocations:
+        if alloc["id"] == allocation_id:
+            alloc["status"] = "released"
+            LICENSES[license_id]["seats_used"] -= 1
+            LICENSE_USAGE[license_id]["active_sessions"] -= 1
+            return {"message": "License seat released", "allocation_id": allocation_id}
+
+    raise HTTPException(status_code=404, detail="Allocation not found")
+
+
+@app.post("/licenses/validate")
+def validate_license(body: dict = Body(...)):
+    """Validate license key"""
+    license_key = body.get("key")
+
+    for license_data in LICENSES.values():
+        if license_data["key"] == license_key:
+            if license_data["status"] != "active":
+                return {"valid": False, "reason": "License is not active"}
+            if license_data.get("valid_until"):
+                if datetime.fromisoformat(license_data["valid_until"]) < datetime.utcnow():
+                    return {"valid": False, "reason": "License has expired"}
+            return {
+                "valid": True,
+                "license_id": license_data["id"],
+                "features": license_data["features"],
+                "seats_available": license_data["seats"] - license_data["seats_used"]
+            }
+
+    return {"valid": False, "reason": "Invalid license key"}
+
+
+@app.post("/entitlements")
+def create_entitlement(body: dict = Body(...)):
+    """Create feature entitlement"""
+    ent_id = f"ent_{uuid.uuid4().hex[:8]}"
+    entitlement = {
+        "id": ent_id,
+        "name": body.get("name", ""),
+        "feature_code": body.get("feature_code", ""),
+        "description": body.get("description", ""),
+        "type": body.get("type", "boolean"),
+        "default_value": body.get("default_value", False),
+        "created_at": datetime.utcnow().isoformat()
+    }
+    ENTITLEMENTS[ent_id] = entitlement
+    return entitlement
+
+
+@app.get("/entitlements")
+def list_entitlements():
+    """List entitlements"""
+    return {"entitlements": list(ENTITLEMENTS.values()), "total": len(ENTITLEMENTS)}
+
+
+@app.get("/licenses/dashboard")
+def license_dashboard():
+    """Get license dashboard"""
+    total_seats = sum(l["seats"] for l in LICENSES.values())
+    used_seats = sum(l["seats_used"] for l in LICENSES.values())
+
+    return {
+        "total_licenses": len(LICENSES),
+        "active_licenses": len([l for l in LICENSES.values() if l["status"] == "active"]),
+        "total_seats": total_seats,
+        "used_seats": used_seats,
+        "utilization_percent": (used_seats / max(1, total_seats)) * 100,
+        "by_product": {}
+    }
+
+
+# ============================================================================
 # Run Server
 # ============================================================================
 
