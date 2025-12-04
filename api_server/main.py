@@ -29886,6 +29886,665 @@ def list_task_locks(status: str = None):
 
 
 # ============================================================================
+# API Keys Management
+# ============================================================================
+
+API_KEYS: Dict[str, Dict[str, Any]] = {}
+API_KEY_USAGE: Dict[str, List[Dict[str, Any]]] = {}
+
+@app.post("/api-keys")
+def create_api_key(data: Dict[str, Any]):
+    """Create an API key"""
+    key_id = f"key_{uuid.uuid4().hex[:12]}"
+    api_key = f"sk_{uuid.uuid4().hex}"
+    API_KEYS[key_id] = {
+        "key_id": key_id,
+        "name": data.get("name"),
+        "prefix": api_key[:10],
+        "scopes": data.get("scopes", ["read"]),
+        "rate_limit": data.get("rate_limit", 1000),
+        "expires_at": data.get("expires_at"),
+        "status": "active",
+        "last_used": None,
+        "created_at": datetime.utcnow().isoformat() + "Z"
+    }
+    API_KEY_USAGE[key_id] = []
+    return {"key_id": key_id, "api_key": api_key, "message": "API key created"}
+
+@app.get("/api-keys")
+def list_api_keys(status: str = None):
+    """List all API keys"""
+    keys = list(API_KEYS.values())
+    if status:
+        keys = [k for k in keys if k["status"] == status]
+    return {"keys": keys, "count": len(keys)}
+
+@app.get("/api-keys/{key_id}")
+def get_api_key(key_id: str):
+    """Get API key details"""
+    if key_id not in API_KEYS:
+        raise HTTPException(status_code=404, detail="API key not found")
+    key = API_KEYS[key_id].copy()
+    key["usage_count"] = len(API_KEY_USAGE.get(key_id, []))
+    return key
+
+@app.put("/api-keys/{key_id}/scopes")
+def update_api_key_scopes(key_id: str, data: Dict[str, Any]):
+    """Update API key scopes"""
+    if key_id not in API_KEYS:
+        raise HTTPException(status_code=404, detail="API key not found")
+    API_KEYS[key_id]["scopes"] = data.get("scopes", [])
+    API_KEYS[key_id]["updated_at"] = datetime.utcnow().isoformat() + "Z"
+    return {"message": "Scopes updated"}
+
+@app.post("/api-keys/{key_id}/rotate")
+def rotate_api_key(key_id: str):
+    """Rotate an API key"""
+    if key_id not in API_KEYS:
+        raise HTTPException(status_code=404, detail="API key not found")
+    new_key = f"sk_{uuid.uuid4().hex}"
+    API_KEYS[key_id]["prefix"] = new_key[:10]
+    API_KEYS[key_id]["rotated_at"] = datetime.utcnow().isoformat() + "Z"
+    return {"api_key": new_key, "message": "Key rotated"}
+
+@app.post("/api-keys/{key_id}/revoke")
+def revoke_api_key(key_id: str):
+    """Revoke an API key"""
+    if key_id not in API_KEYS:
+        raise HTTPException(status_code=404, detail="API key not found")
+    API_KEYS[key_id]["status"] = "revoked"
+    API_KEYS[key_id]["revoked_at"] = datetime.utcnow().isoformat() + "Z"
+    return {"message": "API key revoked"}
+
+@app.post("/api-keys/{key_id}/usage")
+def record_api_key_usage(key_id: str, data: Dict[str, Any]):
+    """Record API key usage"""
+    if key_id not in API_KEYS:
+        raise HTTPException(status_code=404, detail="API key not found")
+    usage = {
+        "endpoint": data.get("endpoint"),
+        "method": data.get("method"),
+        "status_code": data.get("status_code"),
+        "timestamp": datetime.utcnow().isoformat() + "Z"
+    }
+    API_KEY_USAGE[key_id].append(usage)
+    API_KEYS[key_id]["last_used"] = datetime.utcnow().isoformat() + "Z"
+    return {"message": "Usage recorded"}
+
+@app.get("/api-keys/{key_id}/usage")
+def get_api_key_usage(key_id: str, limit: int = 100):
+    """Get API key usage history"""
+    if key_id not in API_KEY_USAGE:
+        raise HTTPException(status_code=404, detail="API key not found")
+    return {"usage": API_KEY_USAGE[key_id][-limit:], "count": len(API_KEY_USAGE[key_id])}
+
+
+# ============================================================================
+# IP Allowlisting
+# ============================================================================
+
+IP_ALLOWLISTS: Dict[str, Dict[str, Any]] = {}
+IP_RULES: Dict[str, List[Dict[str, Any]]] = {}
+
+@app.post("/ip-allowlists")
+def create_ip_allowlist(data: Dict[str, Any]):
+    """Create an IP allowlist"""
+    list_id = f"iplist_{uuid.uuid4().hex[:12]}"
+    IP_ALLOWLISTS[list_id] = {
+        "list_id": list_id,
+        "name": data.get("name"),
+        "description": data.get("description", ""),
+        "mode": data.get("mode", "allowlist"),
+        "enabled": data.get("enabled", True),
+        "created_at": datetime.utcnow().isoformat() + "Z"
+    }
+    IP_RULES[list_id] = []
+    return {"list_id": list_id, "message": "IP allowlist created"}
+
+@app.get("/ip-allowlists")
+def list_ip_allowlists(enabled: bool = None):
+    """List all IP allowlists"""
+    lists = list(IP_ALLOWLISTS.values())
+    if enabled is not None:
+        lists = [l for l in lists if l["enabled"] == enabled]
+    return {"lists": lists, "count": len(lists)}
+
+@app.get("/ip-allowlists/{list_id}")
+def get_ip_allowlist(list_id: str):
+    """Get IP allowlist details"""
+    if list_id not in IP_ALLOWLISTS:
+        raise HTTPException(status_code=404, detail="Allowlist not found")
+    allowlist = IP_ALLOWLISTS[list_id].copy()
+    allowlist["rules"] = IP_RULES.get(list_id, [])
+    return allowlist
+
+@app.post("/ip-allowlists/{list_id}/rules")
+def add_ip_rule(list_id: str, data: Dict[str, Any]):
+    """Add an IP rule to an allowlist"""
+    if list_id not in IP_ALLOWLISTS:
+        raise HTTPException(status_code=404, detail="Allowlist not found")
+    rule_id = f"iprule_{uuid.uuid4().hex[:8]}"
+    rule = {
+        "rule_id": rule_id,
+        "ip": data.get("ip"),
+        "cidr": data.get("cidr"),
+        "description": data.get("description", ""),
+        "expires_at": data.get("expires_at"),
+        "created_at": datetime.utcnow().isoformat() + "Z"
+    }
+    IP_RULES[list_id].append(rule)
+    return {"rule_id": rule_id, "message": "Rule added"}
+
+@app.delete("/ip-allowlists/{list_id}/rules/{rule_id}")
+def remove_ip_rule(list_id: str, rule_id: str):
+    """Remove an IP rule from an allowlist"""
+    if list_id not in IP_RULES:
+        raise HTTPException(status_code=404, detail="Allowlist not found")
+    IP_RULES[list_id] = [r for r in IP_RULES[list_id] if r["rule_id"] != rule_id]
+    return {"message": "Rule removed"}
+
+@app.post("/ip-allowlists/validate")
+def validate_ip(data: Dict[str, Any]):
+    """Validate an IP against allowlists"""
+    ip = data.get("ip")
+    list_id = data.get("list_id")
+    if list_id and list_id in IP_RULES:
+        rules = IP_RULES[list_id]
+        for rule in rules:
+            if rule["ip"] == ip:
+                return {"allowed": True, "matched_rule": rule["rule_id"]}
+    return {"allowed": False, "reason": "no_matching_rule"}
+
+
+# ============================================================================
+# Request Logging
+# ============================================================================
+
+REQUEST_LOGS: List[Dict[str, Any]] = []
+REQUEST_LOG_SETTINGS: Dict[str, Any] = {"enabled": True, "retention_days": 30}
+
+@app.post("/request-logs")
+def log_request(data: Dict[str, Any]):
+    """Log a request"""
+    log_id = f"reqlog_{uuid.uuid4().hex[:12]}"
+    log_entry = {
+        "log_id": log_id,
+        "method": data.get("method"),
+        "path": data.get("path"),
+        "query_params": data.get("query_params", {}),
+        "headers": data.get("headers", {}),
+        "body_size": data.get("body_size", 0),
+        "status_code": data.get("status_code"),
+        "response_time_ms": data.get("response_time_ms"),
+        "ip_address": data.get("ip_address"),
+        "user_agent": data.get("user_agent"),
+        "user_id": data.get("user_id"),
+        "timestamp": datetime.utcnow().isoformat() + "Z"
+    }
+    REQUEST_LOGS.append(log_entry)
+    return {"log_id": log_id, "message": "Request logged"}
+
+@app.get("/request-logs")
+def list_request_logs(path: str = None, method: str = None, status_code: int = None, limit: int = 100):
+    """List request logs"""
+    logs = REQUEST_LOGS
+    if path:
+        logs = [l for l in logs if path in l.get("path", "")]
+    if method:
+        logs = [l for l in logs if l["method"] == method]
+    if status_code:
+        logs = [l for l in logs if l["status_code"] == status_code]
+    logs.sort(key=lambda x: x["timestamp"], reverse=True)
+    return {"logs": logs[:limit], "total": len(logs)}
+
+@app.post("/request-logs/search")
+def search_request_logs(data: Dict[str, Any]):
+    """Search request logs"""
+    query = data.get("query", "")
+    filters = data.get("filters", {})
+    results = REQUEST_LOGS
+    if query:
+        results = [l for l in results if query.lower() in str(l).lower()]
+    if filters.get("path"):
+        results = [l for l in results if filters["path"] in l.get("path", "")]
+    if filters.get("min_response_time"):
+        results = [l for l in results if l.get("response_time_ms", 0) >= filters["min_response_time"]]
+    return {"results": results[:100], "total": len(results)}
+
+@app.get("/request-logs/analytics")
+def get_request_analytics():
+    """Get request log analytics"""
+    total = len(REQUEST_LOGS)
+    if total == 0:
+        return {"total_requests": 0, "avg_response_time": 0, "error_rate": 0}
+    total_time = sum(l.get("response_time_ms", 0) for l in REQUEST_LOGS)
+    errors = len([l for l in REQUEST_LOGS if l.get("status_code", 200) >= 400])
+    paths = {}
+    for log in REQUEST_LOGS:
+        path = log.get("path", "unknown")
+        paths[path] = paths.get(path, 0) + 1
+    return {
+        "total_requests": total,
+        "avg_response_time_ms": total_time / total,
+        "error_rate": errors / total,
+        "top_paths": sorted(paths.items(), key=lambda x: x[1], reverse=True)[:10]
+    }
+
+
+# ============================================================================
+# Response Caching
+# ============================================================================
+
+RESPONSE_CACHE: Dict[str, Dict[str, Any]] = {}
+CACHE_STATS: Dict[str, int] = {"hits": 0, "misses": 0}
+
+@app.post("/response-cache/entries")
+def cache_response(data: Dict[str, Any]):
+    """Cache a response"""
+    cache_key = data.get("key")
+    RESPONSE_CACHE[cache_key] = {
+        "key": cache_key,
+        "value": data.get("value"),
+        "content_type": data.get("content_type", "application/json"),
+        "ttl_seconds": data.get("ttl_seconds", 300),
+        "tags": data.get("tags", []),
+        "created_at": datetime.utcnow().isoformat() + "Z"
+    }
+    return {"message": "Response cached", "key": cache_key}
+
+@app.get("/response-cache/entries/{cache_key}")
+def get_cached_response(cache_key: str):
+    """Get a cached response"""
+    if cache_key not in RESPONSE_CACHE:
+        CACHE_STATS["misses"] += 1
+        raise HTTPException(status_code=404, detail="Cache miss")
+    CACHE_STATS["hits"] += 1
+    return RESPONSE_CACHE[cache_key]
+
+@app.delete("/response-cache/entries/{cache_key}")
+def invalidate_cache_entry(cache_key: str):
+    """Invalidate a cache entry"""
+    if cache_key in RESPONSE_CACHE:
+        del RESPONSE_CACHE[cache_key]
+    return {"message": "Cache entry invalidated"}
+
+@app.post("/response-cache/invalidate-by-tag")
+def invalidate_by_tag(data: Dict[str, Any]):
+    """Invalidate cache entries by tag"""
+    tag = data.get("tag")
+    count = 0
+    keys_to_remove = []
+    for key, entry in RESPONSE_CACHE.items():
+        if tag in entry.get("tags", []):
+            keys_to_remove.append(key)
+            count += 1
+    for key in keys_to_remove:
+        del RESPONSE_CACHE[key]
+    return {"message": "Cache entries invalidated", "count": count}
+
+@app.get("/response-cache/stats")
+def get_cache_stats():
+    """Get cache statistics"""
+    total = CACHE_STATS["hits"] + CACHE_STATS["misses"]
+    return {
+        "total_entries": len(RESPONSE_CACHE),
+        "hits": CACHE_STATS["hits"],
+        "misses": CACHE_STATS["misses"],
+        "hit_rate": CACHE_STATS["hits"] / max(total, 1)
+    }
+
+@app.post("/response-cache/flush")
+def flush_cache():
+    """Flush all cache entries"""
+    count = len(RESPONSE_CACHE)
+    RESPONSE_CACHE.clear()
+    return {"message": "Cache flushed", "entries_removed": count}
+
+
+# ============================================================================
+# Load Testing
+# ============================================================================
+
+LOAD_TEST_SCENARIOS: Dict[str, Dict[str, Any]] = {}
+LOAD_TEST_RUNS: Dict[str, List[Dict[str, Any]]] = {}
+
+@app.post("/load-tests/scenarios")
+def create_load_test_scenario(data: Dict[str, Any]):
+    """Create a load test scenario"""
+    scenario_id = f"scenario_{uuid.uuid4().hex[:12]}"
+    LOAD_TEST_SCENARIOS[scenario_id] = {
+        "scenario_id": scenario_id,
+        "name": data.get("name"),
+        "description": data.get("description", ""),
+        "endpoints": data.get("endpoints", []),
+        "duration_seconds": data.get("duration_seconds", 60),
+        "users": data.get("users", 10),
+        "ramp_up_seconds": data.get("ramp_up_seconds", 10),
+        "created_at": datetime.utcnow().isoformat() + "Z"
+    }
+    LOAD_TEST_RUNS[scenario_id] = []
+    return {"scenario_id": scenario_id, "message": "Scenario created"}
+
+@app.get("/load-tests/scenarios")
+def list_load_test_scenarios():
+    """List all load test scenarios"""
+    return {"scenarios": list(LOAD_TEST_SCENARIOS.values()), "count": len(LOAD_TEST_SCENARIOS)}
+
+@app.get("/load-tests/scenarios/{scenario_id}")
+def get_load_test_scenario(scenario_id: str):
+    """Get load test scenario details"""
+    if scenario_id not in LOAD_TEST_SCENARIOS:
+        raise HTTPException(status_code=404, detail="Scenario not found")
+    scenario = LOAD_TEST_SCENARIOS[scenario_id].copy()
+    scenario["runs"] = LOAD_TEST_RUNS.get(scenario_id, [])[-5:]
+    return scenario
+
+@app.post("/load-tests/scenarios/{scenario_id}/run")
+def run_load_test(scenario_id: str, data: Dict[str, Any]):
+    """Run a load test"""
+    if scenario_id not in LOAD_TEST_SCENARIOS:
+        raise HTTPException(status_code=404, detail="Scenario not found")
+    run_id = f"run_{uuid.uuid4().hex[:12]}"
+    run = {
+        "run_id": run_id,
+        "scenario_id": scenario_id,
+        "status": "running",
+        "started_at": datetime.utcnow().isoformat() + "Z",
+        "ended_at": None,
+        "results": None
+    }
+    LOAD_TEST_RUNS[scenario_id].append(run)
+    return {"run_id": run_id, "message": "Load test started"}
+
+@app.post("/load-tests/runs/{run_id}/complete")
+def complete_load_test(run_id: str, data: Dict[str, Any]):
+    """Complete a load test run"""
+    for scenario_id, runs in LOAD_TEST_RUNS.items():
+        for run in runs:
+            if run["run_id"] == run_id:
+                run["status"] = "completed"
+                run["ended_at"] = datetime.utcnow().isoformat() + "Z"
+                run["results"] = data.get("results", {
+                    "total_requests": 1000,
+                    "successful_requests": 980,
+                    "failed_requests": 20,
+                    "avg_response_time_ms": 150,
+                    "p95_response_time_ms": 350,
+                    "p99_response_time_ms": 500,
+                    "requests_per_second": 50
+                })
+                return {"message": "Load test completed"}
+    raise HTTPException(status_code=404, detail="Run not found")
+
+@app.get("/load-tests/scenarios/{scenario_id}/runs")
+def get_load_test_runs(scenario_id: str, limit: int = 20):
+    """Get load test runs for a scenario"""
+    if scenario_id not in LOAD_TEST_RUNS:
+        raise HTTPException(status_code=404, detail="Scenario not found")
+    runs = LOAD_TEST_RUNS[scenario_id]
+    runs.sort(key=lambda x: x["started_at"], reverse=True)
+    return {"runs": runs[:limit], "count": len(runs)}
+
+
+# ============================================================================
+# API Documentation
+# ============================================================================
+
+API_DOCS: Dict[str, Dict[str, Any]] = {}
+API_DOC_VERSIONS: Dict[str, List[Dict[str, Any]]] = {}
+
+@app.post("/api-docs")
+def create_api_doc(data: Dict[str, Any]):
+    """Create API documentation"""
+    doc_id = f"doc_{uuid.uuid4().hex[:12]}"
+    API_DOCS[doc_id] = {
+        "doc_id": doc_id,
+        "title": data.get("title"),
+        "description": data.get("description", ""),
+        "version": data.get("version", "1.0.0"),
+        "base_url": data.get("base_url"),
+        "endpoints": data.get("endpoints", []),
+        "schemas": data.get("schemas", {}),
+        "published": data.get("published", False),
+        "created_at": datetime.utcnow().isoformat() + "Z"
+    }
+    API_DOC_VERSIONS[doc_id] = [{"version": data.get("version", "1.0.0"), "created_at": datetime.utcnow().isoformat() + "Z"}]
+    return {"doc_id": doc_id, "message": "Documentation created"}
+
+@app.get("/api-docs")
+def list_api_docs(published: bool = None):
+    """List all API documentation"""
+    docs = list(API_DOCS.values())
+    if published is not None:
+        docs = [d for d in docs if d["published"] == published]
+    return {"docs": docs, "count": len(docs)}
+
+@app.get("/api-docs/{doc_id}")
+def get_api_doc(doc_id: str):
+    """Get API documentation details"""
+    if doc_id not in API_DOCS:
+        raise HTTPException(status_code=404, detail="Documentation not found")
+    return API_DOCS[doc_id]
+
+@app.put("/api-docs/{doc_id}")
+def update_api_doc(doc_id: str, data: Dict[str, Any]):
+    """Update API documentation"""
+    if doc_id not in API_DOCS:
+        raise HTTPException(status_code=404, detail="Documentation not found")
+    API_DOCS[doc_id].update({
+        "title": data.get("title", API_DOCS[doc_id]["title"]),
+        "description": data.get("description", API_DOCS[doc_id]["description"]),
+        "endpoints": data.get("endpoints", API_DOCS[doc_id]["endpoints"]),
+        "updated_at": datetime.utcnow().isoformat() + "Z"
+    })
+    return {"message": "Documentation updated"}
+
+@app.post("/api-docs/{doc_id}/publish")
+def publish_api_doc(doc_id: str):
+    """Publish API documentation"""
+    if doc_id not in API_DOCS:
+        raise HTTPException(status_code=404, detail="Documentation not found")
+    API_DOCS[doc_id]["published"] = True
+    API_DOCS[doc_id]["published_at"] = datetime.utcnow().isoformat() + "Z"
+    return {"message": "Documentation published"}
+
+@app.post("/api-docs/{doc_id}/versions")
+def create_doc_version(doc_id: str, data: Dict[str, Any]):
+    """Create a new documentation version"""
+    if doc_id not in API_DOCS:
+        raise HTTPException(status_code=404, detail="Documentation not found")
+    version = data.get("version")
+    API_DOC_VERSIONS[doc_id].append({"version": version, "created_at": datetime.utcnow().isoformat() + "Z"})
+    API_DOCS[doc_id]["version"] = version
+    return {"message": "Version created", "version": version}
+
+
+# ============================================================================
+# SDK Generation
+# ============================================================================
+
+SDK_CONFIGS: Dict[str, Dict[str, Any]] = {}
+SDK_BUILDS: Dict[str, List[Dict[str, Any]]] = {}
+
+@app.post("/sdks")
+def create_sdk_config(data: Dict[str, Any]):
+    """Create an SDK configuration"""
+    sdk_id = f"sdk_{uuid.uuid4().hex[:12]}"
+    SDK_CONFIGS[sdk_id] = {
+        "sdk_id": sdk_id,
+        "name": data.get("name"),
+        "language": data.get("language", "python"),
+        "api_doc_id": data.get("api_doc_id"),
+        "package_name": data.get("package_name"),
+        "version": data.get("version", "1.0.0"),
+        "settings": data.get("settings", {}),
+        "created_at": datetime.utcnow().isoformat() + "Z"
+    }
+    SDK_BUILDS[sdk_id] = []
+    return {"sdk_id": sdk_id, "message": "SDK configuration created"}
+
+@app.get("/sdks")
+def list_sdk_configs(language: str = None):
+    """List all SDK configurations"""
+    configs = list(SDK_CONFIGS.values())
+    if language:
+        configs = [c for c in configs if c["language"] == language]
+    return {"sdks": configs, "count": len(configs)}
+
+@app.get("/sdks/{sdk_id}")
+def get_sdk_config(sdk_id: str):
+    """Get SDK configuration details"""
+    if sdk_id not in SDK_CONFIGS:
+        raise HTTPException(status_code=404, detail="SDK not found")
+    sdk = SDK_CONFIGS[sdk_id].copy()
+    sdk["builds"] = SDK_BUILDS.get(sdk_id, [])[-5:]
+    return sdk
+
+@app.post("/sdks/{sdk_id}/build")
+def build_sdk(sdk_id: str):
+    """Build an SDK"""
+    if sdk_id not in SDK_CONFIGS:
+        raise HTTPException(status_code=404, detail="SDK not found")
+    build_id = f"build_{uuid.uuid4().hex[:12]}"
+    build = {
+        "build_id": build_id,
+        "sdk_id": sdk_id,
+        "status": "building",
+        "download_url": None,
+        "started_at": datetime.utcnow().isoformat() + "Z",
+        "completed_at": None
+    }
+    SDK_BUILDS[sdk_id].append(build)
+    return {"build_id": build_id, "message": "SDK build started"}
+
+@app.post("/sdks/builds/{build_id}/complete")
+def complete_sdk_build(build_id: str, data: Dict[str, Any]):
+    """Complete an SDK build"""
+    for sdk_id, builds in SDK_BUILDS.items():
+        for build in builds:
+            if build["build_id"] == build_id:
+                build["status"] = "completed"
+                build["download_url"] = data.get("download_url", f"/downloads/sdk/{build_id}.zip")
+                build["completed_at"] = datetime.utcnow().isoformat() + "Z"
+                return {"message": "Build completed", "download_url": build["download_url"]}
+    raise HTTPException(status_code=404, detail="Build not found")
+
+@app.get("/sdks/{sdk_id}/builds")
+def get_sdk_builds(sdk_id: str, limit: int = 10):
+    """Get SDK build history"""
+    if sdk_id not in SDK_BUILDS:
+        raise HTTPException(status_code=404, detail="SDK not found")
+    return {"builds": SDK_BUILDS[sdk_id][-limit:], "count": len(SDK_BUILDS[sdk_id])}
+
+
+# ============================================================================
+# Developer Portal
+# ============================================================================
+
+DEVELOPERS: Dict[str, Dict[str, Any]] = {}
+DEVELOPER_APPS: Dict[str, List[Dict[str, Any]]] = {}
+
+@app.post("/developers")
+def register_developer(data: Dict[str, Any]):
+    """Register a developer"""
+    dev_id = f"dev_{uuid.uuid4().hex[:12]}"
+    DEVELOPERS[dev_id] = {
+        "developer_id": dev_id,
+        "email": data.get("email"),
+        "name": data.get("name"),
+        "company": data.get("company"),
+        "plan": data.get("plan", "free"),
+        "status": "active",
+        "created_at": datetime.utcnow().isoformat() + "Z"
+    }
+    DEVELOPER_APPS[dev_id] = []
+    return {"developer_id": dev_id, "message": "Developer registered"}
+
+@app.get("/developers")
+def list_developers(plan: str = None, status: str = None):
+    """List all developers"""
+    devs = list(DEVELOPERS.values())
+    if plan:
+        devs = [d for d in devs if d["plan"] == plan]
+    if status:
+        devs = [d for d in devs if d["status"] == status]
+    return {"developers": devs, "count": len(devs)}
+
+@app.get("/developers/{dev_id}")
+def get_developer(dev_id: str):
+    """Get developer details"""
+    if dev_id not in DEVELOPERS:
+        raise HTTPException(status_code=404, detail="Developer not found")
+    dev = DEVELOPERS[dev_id].copy()
+    dev["apps"] = DEVELOPER_APPS.get(dev_id, [])
+    return dev
+
+@app.put("/developers/{dev_id}")
+def update_developer(dev_id: str, data: Dict[str, Any]):
+    """Update developer details"""
+    if dev_id not in DEVELOPERS:
+        raise HTTPException(status_code=404, detail="Developer not found")
+    DEVELOPERS[dev_id].update({
+        "name": data.get("name", DEVELOPERS[dev_id]["name"]),
+        "company": data.get("company", DEVELOPERS[dev_id]["company"]),
+        "plan": data.get("plan", DEVELOPERS[dev_id]["plan"]),
+        "updated_at": datetime.utcnow().isoformat() + "Z"
+    })
+    return {"message": "Developer updated"}
+
+@app.post("/developers/{dev_id}/apps")
+def create_developer_app(dev_id: str, data: Dict[str, Any]):
+    """Create a developer app"""
+    if dev_id not in DEVELOPERS:
+        raise HTTPException(status_code=404, detail="Developer not found")
+    app_id = f"app_{uuid.uuid4().hex[:12]}"
+    client_id = f"client_{uuid.uuid4().hex[:16]}"
+    client_secret = f"secret_{uuid.uuid4().hex}"
+    app = {
+        "app_id": app_id,
+        "name": data.get("name"),
+        "description": data.get("description", ""),
+        "client_id": client_id,
+        "redirect_uris": data.get("redirect_uris", []),
+        "scopes": data.get("scopes", ["read"]),
+        "status": "active",
+        "created_at": datetime.utcnow().isoformat() + "Z"
+    }
+    DEVELOPER_APPS[dev_id].append(app)
+    return {"app_id": app_id, "client_id": client_id, "client_secret": client_secret}
+
+@app.get("/developers/{dev_id}/apps")
+def list_developer_apps(dev_id: str):
+    """List developer apps"""
+    if dev_id not in DEVELOPER_APPS:
+        raise HTTPException(status_code=404, detail="Developer not found")
+    return {"apps": DEVELOPER_APPS[dev_id], "count": len(DEVELOPER_APPS[dev_id])}
+
+@app.delete("/developers/{dev_id}/apps/{app_id}")
+def delete_developer_app(dev_id: str, app_id: str):
+    """Delete a developer app"""
+    if dev_id not in DEVELOPER_APPS:
+        raise HTTPException(status_code=404, detail="Developer not found")
+    DEVELOPER_APPS[dev_id] = [a for a in DEVELOPER_APPS[dev_id] if a["app_id"] != app_id]
+    return {"message": "App deleted"}
+
+@app.get("/developers/portal/stats")
+def get_portal_stats():
+    """Get developer portal statistics"""
+    total_devs = len(DEVELOPERS)
+    total_apps = sum(len(apps) for apps in DEVELOPER_APPS.values())
+    plans = {}
+    for dev in DEVELOPERS.values():
+        plan = dev["plan"]
+        plans[plan] = plans.get(plan, 0) + 1
+    return {
+        "total_developers": total_devs,
+        "total_apps": total_apps,
+        "developers_by_plan": plans
+    }
+
+
+# ============================================================================
 # Run Server
 # ============================================================================
 
