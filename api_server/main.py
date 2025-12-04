@@ -30545,6 +30545,821 @@ def get_portal_stats():
 
 
 # ============================================================================
+# GraphQL Gateway
+# ============================================================================
+
+GRAPHQL_SCHEMAS: Dict[str, Dict[str, Any]] = {}
+GRAPHQL_RESOLVERS: Dict[str, Dict[str, Any]] = {}
+GRAPHQL_QUERIES: List[Dict[str, Any]] = []
+
+@app.post("/graphql/schemas")
+def create_graphql_schema(data: Dict[str, Any]):
+    """Create a GraphQL schema"""
+    schema_id = f"gql_{uuid.uuid4().hex[:12]}"
+    GRAPHQL_SCHEMAS[schema_id] = {
+        "schema_id": schema_id,
+        "name": data.get("name"),
+        "version": data.get("version", "1.0.0"),
+        "types": data.get("types", []),
+        "queries": data.get("queries", []),
+        "mutations": data.get("mutations", []),
+        "subscriptions": data.get("subscriptions", []),
+        "directives": data.get("directives", []),
+        "status": "draft",
+        "created_at": datetime.utcnow().isoformat() + "Z"
+    }
+    return {"schema_id": schema_id, "message": "Schema created"}
+
+@app.get("/graphql/schemas")
+def list_graphql_schemas(status: str = None):
+    """List all GraphQL schemas"""
+    schemas = list(GRAPHQL_SCHEMAS.values())
+    if status:
+        schemas = [s for s in schemas if s["status"] == status]
+    return {"schemas": schemas, "count": len(schemas)}
+
+@app.get("/graphql/schemas/{schema_id}")
+def get_graphql_schema(schema_id: str):
+    """Get GraphQL schema details"""
+    if schema_id not in GRAPHQL_SCHEMAS:
+        raise HTTPException(status_code=404, detail="Schema not found")
+    return GRAPHQL_SCHEMAS[schema_id]
+
+@app.post("/graphql/schemas/{schema_id}/publish")
+def publish_graphql_schema(schema_id: str):
+    """Publish a GraphQL schema"""
+    if schema_id not in GRAPHQL_SCHEMAS:
+        raise HTTPException(status_code=404, detail="Schema not found")
+    GRAPHQL_SCHEMAS[schema_id]["status"] = "published"
+    GRAPHQL_SCHEMAS[schema_id]["published_at"] = datetime.utcnow().isoformat() + "Z"
+    return {"message": "Schema published"}
+
+@app.post("/graphql/resolvers")
+def create_graphql_resolver(data: Dict[str, Any]):
+    """Create a GraphQL resolver"""
+    resolver_id = f"resolver_{uuid.uuid4().hex[:12]}"
+    GRAPHQL_RESOLVERS[resolver_id] = {
+        "resolver_id": resolver_id,
+        "schema_id": data.get("schema_id"),
+        "type": data.get("type"),
+        "field": data.get("field"),
+        "handler": data.get("handler"),
+        "data_source": data.get("data_source", {}),
+        "caching": data.get("caching", {"enabled": False}),
+        "created_at": datetime.utcnow().isoformat() + "Z"
+    }
+    return {"resolver_id": resolver_id, "message": "Resolver created"}
+
+@app.get("/graphql/resolvers")
+def list_graphql_resolvers(schema_id: str = None):
+    """List all GraphQL resolvers"""
+    resolvers = list(GRAPHQL_RESOLVERS.values())
+    if schema_id:
+        resolvers = [r for r in resolvers if r["schema_id"] == schema_id]
+    return {"resolvers": resolvers, "count": len(resolvers)}
+
+@app.post("/graphql/execute")
+def execute_graphql_query(data: Dict[str, Any]):
+    """Execute a GraphQL query"""
+    query_id = f"query_{uuid.uuid4().hex[:12]}"
+    query = {
+        "query_id": query_id,
+        "schema_id": data.get("schema_id"),
+        "query": data.get("query"),
+        "variables": data.get("variables", {}),
+        "operation_name": data.get("operation_name"),
+        "result": {"data": {}, "errors": []},
+        "execution_time_ms": 25,
+        "executed_at": datetime.utcnow().isoformat() + "Z"
+    }
+    GRAPHQL_QUERIES.append(query)
+    return {"query_id": query_id, "result": query["result"], "execution_time_ms": query["execution_time_ms"]}
+
+@app.get("/graphql/queries")
+def get_graphql_query_history(schema_id: str = None, limit: int = 50):
+    """Get GraphQL query history"""
+    queries = GRAPHQL_QUERIES
+    if schema_id:
+        queries = [q for q in queries if q["schema_id"] == schema_id]
+    return {"queries": queries[-limit:], "count": len(queries)}
+
+
+# ============================================================================
+# Data Synchronization
+# ============================================================================
+
+SYNC_CONFIGS: Dict[str, Dict[str, Any]] = {}
+SYNC_JOBS: Dict[str, List[Dict[str, Any]]] = {}
+SYNC_CONFLICTS: List[Dict[str, Any]] = []
+
+@app.post("/sync/configs")
+def create_sync_config(data: Dict[str, Any]):
+    """Create a sync configuration"""
+    config_id = f"sync_{uuid.uuid4().hex[:12]}"
+    SYNC_CONFIGS[config_id] = {
+        "config_id": config_id,
+        "name": data.get("name"),
+        "source": data.get("source", {}),
+        "destination": data.get("destination", {}),
+        "strategy": data.get("strategy", "two_way"),
+        "conflict_resolution": data.get("conflict_resolution", "source_wins"),
+        "schedule": data.get("schedule"),
+        "enabled": data.get("enabled", True),
+        "created_at": datetime.utcnow().isoformat() + "Z"
+    }
+    SYNC_JOBS[config_id] = []
+    return {"config_id": config_id, "message": "Sync config created"}
+
+@app.get("/sync/configs")
+def list_sync_configs(enabled: bool = None):
+    """List all sync configurations"""
+    configs = list(SYNC_CONFIGS.values())
+    if enabled is not None:
+        configs = [c for c in configs if c["enabled"] == enabled]
+    return {"configs": configs, "count": len(configs)}
+
+@app.get("/sync/configs/{config_id}")
+def get_sync_config(config_id: str):
+    """Get sync configuration details"""
+    if config_id not in SYNC_CONFIGS:
+        raise HTTPException(status_code=404, detail="Config not found")
+    config = SYNC_CONFIGS[config_id].copy()
+    config["recent_jobs"] = SYNC_JOBS.get(config_id, [])[-5:]
+    return config
+
+@app.post("/sync/configs/{config_id}/run")
+def run_sync(config_id: str):
+    """Run a sync job"""
+    if config_id not in SYNC_CONFIGS:
+        raise HTTPException(status_code=404, detail="Config not found")
+    job_id = f"syncjob_{uuid.uuid4().hex[:12]}"
+    job = {
+        "job_id": job_id,
+        "config_id": config_id,
+        "status": "running",
+        "records_synced": 0,
+        "conflicts": 0,
+        "started_at": datetime.utcnow().isoformat() + "Z",
+        "ended_at": None
+    }
+    SYNC_JOBS[config_id].append(job)
+    return {"job_id": job_id, "message": "Sync started"}
+
+@app.post("/sync/jobs/{job_id}/complete")
+def complete_sync_job(job_id: str, data: Dict[str, Any]):
+    """Complete a sync job"""
+    for config_id, jobs in SYNC_JOBS.items():
+        for job in jobs:
+            if job["job_id"] == job_id:
+                job["status"] = data.get("status", "completed")
+                job["records_synced"] = data.get("records_synced", 0)
+                job["conflicts"] = data.get("conflicts", 0)
+                job["ended_at"] = datetime.utcnow().isoformat() + "Z"
+                return {"message": "Sync completed"}
+    raise HTTPException(status_code=404, detail="Job not found")
+
+@app.get("/sync/configs/{config_id}/jobs")
+def get_sync_jobs(config_id: str, limit: int = 20):
+    """Get sync job history"""
+    if config_id not in SYNC_JOBS:
+        raise HTTPException(status_code=404, detail="Config not found")
+    return {"jobs": SYNC_JOBS[config_id][-limit:], "count": len(SYNC_JOBS[config_id])}
+
+@app.post("/sync/conflicts")
+def report_sync_conflict(data: Dict[str, Any]):
+    """Report a sync conflict"""
+    conflict_id = f"conflict_{uuid.uuid4().hex[:12]}"
+    conflict = {
+        "conflict_id": conflict_id,
+        "config_id": data.get("config_id"),
+        "job_id": data.get("job_id"),
+        "record_id": data.get("record_id"),
+        "source_value": data.get("source_value"),
+        "destination_value": data.get("destination_value"),
+        "resolution": None,
+        "status": "pending",
+        "created_at": datetime.utcnow().isoformat() + "Z"
+    }
+    SYNC_CONFLICTS.append(conflict)
+    return {"conflict_id": conflict_id, "message": "Conflict reported"}
+
+@app.get("/sync/conflicts")
+def list_sync_conflicts(status: str = None, limit: int = 50):
+    """List sync conflicts"""
+    conflicts = SYNC_CONFLICTS
+    if status:
+        conflicts = [c for c in conflicts if c["status"] == status]
+    return {"conflicts": conflicts[-limit:], "count": len(conflicts)}
+
+@app.post("/sync/conflicts/{conflict_id}/resolve")
+def resolve_sync_conflict(conflict_id: str, data: Dict[str, Any]):
+    """Resolve a sync conflict"""
+    for conflict in SYNC_CONFLICTS:
+        if conflict["conflict_id"] == conflict_id:
+            conflict["resolution"] = data.get("resolution")
+            conflict["status"] = "resolved"
+            conflict["resolved_at"] = datetime.utcnow().isoformat() + "Z"
+            return {"message": "Conflict resolved"}
+    raise HTTPException(status_code=404, detail="Conflict not found")
+
+
+# ============================================================================
+# Content Management
+# ============================================================================
+
+CONTENT_ITEMS: Dict[str, Dict[str, Any]] = {}
+CONTENT_CATEGORIES: Dict[str, Dict[str, Any]] = {}
+CONTENT_REVISIONS: Dict[str, List[Dict[str, Any]]] = {}
+
+@app.post("/content")
+def create_content(data: Dict[str, Any]):
+    """Create content"""
+    content_id = f"content_{uuid.uuid4().hex[:12]}"
+    CONTENT_ITEMS[content_id] = {
+        "content_id": content_id,
+        "title": data.get("title"),
+        "slug": data.get("slug"),
+        "body": data.get("body"),
+        "type": data.get("type", "article"),
+        "category_id": data.get("category_id"),
+        "tags": data.get("tags", []),
+        "metadata": data.get("metadata", {}),
+        "status": "draft",
+        "author_id": data.get("author_id"),
+        "created_at": datetime.utcnow().isoformat() + "Z",
+        "published_at": None
+    }
+    CONTENT_REVISIONS[content_id] = [{"revision": 1, "body": data.get("body"), "created_at": datetime.utcnow().isoformat() + "Z"}]
+    return {"content_id": content_id, "message": "Content created"}
+
+@app.get("/content")
+def list_content(status: str = None, type: str = None, category_id: str = None):
+    """List all content"""
+    items = list(CONTENT_ITEMS.values())
+    if status:
+        items = [i for i in items if i["status"] == status]
+    if type:
+        items = [i for i in items if i["type"] == type]
+    if category_id:
+        items = [i for i in items if i["category_id"] == category_id]
+    return {"content": items, "count": len(items)}
+
+@app.get("/content/{content_id}")
+def get_content(content_id: str):
+    """Get content details"""
+    if content_id not in CONTENT_ITEMS:
+        raise HTTPException(status_code=404, detail="Content not found")
+    content = CONTENT_ITEMS[content_id].copy()
+    content["revisions"] = len(CONTENT_REVISIONS.get(content_id, []))
+    return content
+
+@app.put("/content/{content_id}")
+def update_content(content_id: str, data: Dict[str, Any]):
+    """Update content"""
+    if content_id not in CONTENT_ITEMS:
+        raise HTTPException(status_code=404, detail="Content not found")
+    CONTENT_ITEMS[content_id].update({
+        "title": data.get("title", CONTENT_ITEMS[content_id]["title"]),
+        "body": data.get("body", CONTENT_ITEMS[content_id]["body"]),
+        "tags": data.get("tags", CONTENT_ITEMS[content_id]["tags"]),
+        "updated_at": datetime.utcnow().isoformat() + "Z"
+    })
+    if data.get("body"):
+        revision = len(CONTENT_REVISIONS[content_id]) + 1
+        CONTENT_REVISIONS[content_id].append({"revision": revision, "body": data.get("body"), "created_at": datetime.utcnow().isoformat() + "Z"})
+    return {"message": "Content updated"}
+
+@app.post("/content/{content_id}/publish")
+def publish_content(content_id: str):
+    """Publish content"""
+    if content_id not in CONTENT_ITEMS:
+        raise HTTPException(status_code=404, detail="Content not found")
+    CONTENT_ITEMS[content_id]["status"] = "published"
+    CONTENT_ITEMS[content_id]["published_at"] = datetime.utcnow().isoformat() + "Z"
+    return {"message": "Content published"}
+
+@app.post("/content/{content_id}/unpublish")
+def unpublish_content(content_id: str):
+    """Unpublish content"""
+    if content_id not in CONTENT_ITEMS:
+        raise HTTPException(status_code=404, detail="Content not found")
+    CONTENT_ITEMS[content_id]["status"] = "draft"
+    return {"message": "Content unpublished"}
+
+@app.get("/content/{content_id}/revisions")
+def get_content_revisions(content_id: str):
+    """Get content revision history"""
+    if content_id not in CONTENT_REVISIONS:
+        raise HTTPException(status_code=404, detail="Content not found")
+    return {"revisions": CONTENT_REVISIONS[content_id], "count": len(CONTENT_REVISIONS[content_id])}
+
+@app.post("/content/categories")
+def create_content_category(data: Dict[str, Any]):
+    """Create a content category"""
+    category_id = f"cat_{uuid.uuid4().hex[:12]}"
+    CONTENT_CATEGORIES[category_id] = {
+        "category_id": category_id,
+        "name": data.get("name"),
+        "slug": data.get("slug"),
+        "description": data.get("description", ""),
+        "parent_id": data.get("parent_id"),
+        "created_at": datetime.utcnow().isoformat() + "Z"
+    }
+    return {"category_id": category_id, "message": "Category created"}
+
+@app.get("/content/categories")
+def list_content_categories():
+    """List all content categories"""
+    return {"categories": list(CONTENT_CATEGORIES.values()), "count": len(CONTENT_CATEGORIES)}
+
+
+# ============================================================================
+# User Preferences
+# ============================================================================
+
+USER_PREFERENCES: Dict[str, Dict[str, Any]] = {}
+PREFERENCE_SCHEMAS: Dict[str, Dict[str, Any]] = {}
+
+@app.post("/preferences/{user_id}")
+def set_user_preferences(user_id: str, data: Dict[str, Any]):
+    """Set user preferences"""
+    USER_PREFERENCES[user_id] = {
+        "user_id": user_id,
+        "theme": data.get("theme", "light"),
+        "language": data.get("language", "en"),
+        "timezone": data.get("timezone", "UTC"),
+        "date_format": data.get("date_format", "YYYY-MM-DD"),
+        "notifications": data.get("notifications", {}),
+        "accessibility": data.get("accessibility", {}),
+        "custom": data.get("custom", {}),
+        "updated_at": datetime.utcnow().isoformat() + "Z"
+    }
+    return {"message": "Preferences saved"}
+
+@app.get("/preferences/{user_id}")
+def get_user_preferences(user_id: str):
+    """Get user preferences"""
+    if user_id not in USER_PREFERENCES:
+        return {
+            "user_id": user_id,
+            "theme": "light",
+            "language": "en",
+            "timezone": "UTC",
+            "date_format": "YYYY-MM-DD",
+            "notifications": {},
+            "accessibility": {},
+            "custom": {}
+        }
+    return USER_PREFERENCES[user_id]
+
+@app.patch("/preferences/{user_id}")
+def update_user_preferences(user_id: str, data: Dict[str, Any]):
+    """Partially update user preferences"""
+    if user_id not in USER_PREFERENCES:
+        USER_PREFERENCES[user_id] = {"user_id": user_id}
+    USER_PREFERENCES[user_id].update(data)
+    USER_PREFERENCES[user_id]["updated_at"] = datetime.utcnow().isoformat() + "Z"
+    return {"message": "Preferences updated"}
+
+@app.delete("/preferences/{user_id}")
+def reset_user_preferences(user_id: str):
+    """Reset user preferences to defaults"""
+    if user_id in USER_PREFERENCES:
+        del USER_PREFERENCES[user_id]
+    return {"message": "Preferences reset"}
+
+@app.post("/preferences/schemas")
+def create_preference_schema(data: Dict[str, Any]):
+    """Create a preference schema"""
+    schema_id = f"prefschema_{uuid.uuid4().hex[:12]}"
+    PREFERENCE_SCHEMAS[schema_id] = {
+        "schema_id": schema_id,
+        "name": data.get("name"),
+        "fields": data.get("fields", []),
+        "defaults": data.get("defaults", {}),
+        "created_at": datetime.utcnow().isoformat() + "Z"
+    }
+    return {"schema_id": schema_id, "message": "Schema created"}
+
+@app.get("/preferences/schemas")
+def list_preference_schemas():
+    """List all preference schemas"""
+    return {"schemas": list(PREFERENCE_SCHEMAS.values()), "count": len(PREFERENCE_SCHEMAS)}
+
+
+# ============================================================================
+# API Mocking
+# ============================================================================
+
+MOCK_ENDPOINTS: Dict[str, Dict[str, Any]] = {}
+MOCK_RESPONSES: Dict[str, List[Dict[str, Any]]] = {}
+MOCK_SCENARIOS: Dict[str, Dict[str, Any]] = {}
+
+@app.post("/mocks/endpoints")
+def create_mock_endpoint(data: Dict[str, Any]):
+    """Create a mock endpoint"""
+    mock_id = f"mock_{uuid.uuid4().hex[:12]}"
+    MOCK_ENDPOINTS[mock_id] = {
+        "mock_id": mock_id,
+        "path": data.get("path"),
+        "method": data.get("method", "GET"),
+        "description": data.get("description", ""),
+        "default_response": data.get("default_response", {}),
+        "default_status": data.get("default_status", 200),
+        "delay_ms": data.get("delay_ms", 0),
+        "enabled": data.get("enabled", True),
+        "created_at": datetime.utcnow().isoformat() + "Z"
+    }
+    MOCK_RESPONSES[mock_id] = []
+    return {"mock_id": mock_id, "message": "Mock endpoint created"}
+
+@app.get("/mocks/endpoints")
+def list_mock_endpoints(enabled: bool = None):
+    """List all mock endpoints"""
+    mocks = list(MOCK_ENDPOINTS.values())
+    if enabled is not None:
+        mocks = [m for m in mocks if m["enabled"] == enabled]
+    return {"mocks": mocks, "count": len(mocks)}
+
+@app.get("/mocks/endpoints/{mock_id}")
+def get_mock_endpoint(mock_id: str):
+    """Get mock endpoint details"""
+    if mock_id not in MOCK_ENDPOINTS:
+        raise HTTPException(status_code=404, detail="Mock not found")
+    mock = MOCK_ENDPOINTS[mock_id].copy()
+    mock["responses"] = MOCK_RESPONSES.get(mock_id, [])
+    return mock
+
+@app.post("/mocks/endpoints/{mock_id}/responses")
+def add_mock_response(mock_id: str, data: Dict[str, Any]):
+    """Add a conditional response to a mock"""
+    if mock_id not in MOCK_ENDPOINTS:
+        raise HTTPException(status_code=404, detail="Mock not found")
+    response_id = f"resp_{uuid.uuid4().hex[:8]}"
+    response = {
+        "response_id": response_id,
+        "condition": data.get("condition", {}),
+        "body": data.get("body", {}),
+        "status": data.get("status", 200),
+        "headers": data.get("headers", {}),
+        "priority": data.get("priority", 0)
+    }
+    MOCK_RESPONSES[mock_id].append(response)
+    return {"response_id": response_id, "message": "Response added"}
+
+@app.post("/mocks/scenarios")
+def create_mock_scenario(data: Dict[str, Any]):
+    """Create a mock scenario"""
+    scenario_id = f"scenario_{uuid.uuid4().hex[:12]}"
+    MOCK_SCENARIOS[scenario_id] = {
+        "scenario_id": scenario_id,
+        "name": data.get("name"),
+        "description": data.get("description", ""),
+        "mocks": data.get("mocks", []),
+        "enabled": data.get("enabled", False),
+        "created_at": datetime.utcnow().isoformat() + "Z"
+    }
+    return {"scenario_id": scenario_id, "message": "Scenario created"}
+
+@app.get("/mocks/scenarios")
+def list_mock_scenarios():
+    """List all mock scenarios"""
+    return {"scenarios": list(MOCK_SCENARIOS.values()), "count": len(MOCK_SCENARIOS)}
+
+@app.post("/mocks/scenarios/{scenario_id}/activate")
+def activate_mock_scenario(scenario_id: str):
+    """Activate a mock scenario"""
+    if scenario_id not in MOCK_SCENARIOS:
+        raise HTTPException(status_code=404, detail="Scenario not found")
+    for s in MOCK_SCENARIOS.values():
+        s["enabled"] = False
+    MOCK_SCENARIOS[scenario_id]["enabled"] = True
+    return {"message": "Scenario activated"}
+
+
+# ============================================================================
+# Service Discovery v2
+# ============================================================================
+
+DISCOVERED_SERVICES: Dict[str, Dict[str, Any]] = {}
+SERVICE_HEALTH_CHECKS: Dict[str, List[Dict[str, Any]]] = {}
+SERVICE_ROUTES: Dict[str, Dict[str, Any]] = {}
+
+@app.post("/discovery/services")
+def register_discovered_service(data: Dict[str, Any]):
+    """Register a service for discovery"""
+    service_id = f"dsvc_{uuid.uuid4().hex[:12]}"
+    DISCOVERED_SERVICES[service_id] = {
+        "service_id": service_id,
+        "name": data.get("name"),
+        "version": data.get("version", "1.0.0"),
+        "host": data.get("host"),
+        "port": data.get("port"),
+        "protocol": data.get("protocol", "http"),
+        "tags": data.get("tags", []),
+        "metadata": data.get("metadata", {}),
+        "health_check": data.get("health_check", "/health"),
+        "status": "healthy",
+        "registered_at": datetime.utcnow().isoformat() + "Z"
+    }
+    SERVICE_HEALTH_CHECKS[service_id] = []
+    return {"service_id": service_id, "message": "Service registered"}
+
+@app.get("/discovery/services")
+def list_discovered_services(status: str = None, tag: str = None):
+    """List all discovered services"""
+    services = list(DISCOVERED_SERVICES.values())
+    if status:
+        services = [s for s in services if s["status"] == status]
+    if tag:
+        services = [s for s in services if tag in s.get("tags", [])]
+    return {"services": services, "count": len(services)}
+
+@app.get("/discovery/services/{service_id}")
+def get_discovered_service(service_id: str):
+    """Get discovered service details"""
+    if service_id not in DISCOVERED_SERVICES:
+        raise HTTPException(status_code=404, detail="Service not found")
+    service = DISCOVERED_SERVICES[service_id].copy()
+    service["health_history"] = SERVICE_HEALTH_CHECKS.get(service_id, [])[-10:]
+    return service
+
+@app.post("/discovery/services/{service_id}/heartbeat")
+def service_heartbeat(service_id: str):
+    """Send a service heartbeat"""
+    if service_id not in DISCOVERED_SERVICES:
+        raise HTTPException(status_code=404, detail="Service not found")
+    DISCOVERED_SERVICES[service_id]["last_heartbeat"] = datetime.utcnow().isoformat() + "Z"
+    DISCOVERED_SERVICES[service_id]["status"] = "healthy"
+    return {"message": "Heartbeat received"}
+
+@app.post("/discovery/services/{service_id}/health")
+def record_service_health(service_id: str, data: Dict[str, Any]):
+    """Record service health check result"""
+    if service_id not in DISCOVERED_SERVICES:
+        raise HTTPException(status_code=404, detail="Service not found")
+    check = {
+        "status": data.get("status", "healthy"),
+        "response_time_ms": data.get("response_time_ms", 0),
+        "checked_at": datetime.utcnow().isoformat() + "Z"
+    }
+    SERVICE_HEALTH_CHECKS[service_id].append(check)
+    DISCOVERED_SERVICES[service_id]["status"] = data.get("status", "healthy")
+    return {"message": "Health recorded"}
+
+@app.delete("/discovery/services/{service_id}")
+def deregister_service(service_id: str):
+    """Deregister a service"""
+    if service_id not in DISCOVERED_SERVICES:
+        raise HTTPException(status_code=404, detail="Service not found")
+    del DISCOVERED_SERVICES[service_id]
+    return {"message": "Service deregistered"}
+
+@app.post("/discovery/routes")
+def create_service_route(data: Dict[str, Any]):
+    """Create a service route"""
+    route_id = f"route_{uuid.uuid4().hex[:12]}"
+    SERVICE_ROUTES[route_id] = {
+        "route_id": route_id,
+        "path": data.get("path"),
+        "service_id": data.get("service_id"),
+        "load_balancing": data.get("load_balancing", "round_robin"),
+        "timeout_ms": data.get("timeout_ms", 30000),
+        "retries": data.get("retries", 3),
+        "enabled": data.get("enabled", True),
+        "created_at": datetime.utcnow().isoformat() + "Z"
+    }
+    return {"route_id": route_id, "message": "Route created"}
+
+@app.get("/discovery/routes")
+def list_service_routes():
+    """List all service routes"""
+    return {"routes": list(SERVICE_ROUTES.values()), "count": len(SERVICE_ROUTES)}
+
+
+# ============================================================================
+# Cost Management
+# ============================================================================
+
+COST_CENTERS: Dict[str, Dict[str, Any]] = {}
+COST_ENTRIES: Dict[str, List[Dict[str, Any]]] = {}
+COST_BUDGETS: Dict[str, Dict[str, Any]] = {}
+COST_ALERTS: List[Dict[str, Any]] = []
+
+@app.post("/costs/centers")
+def create_cost_center(data: Dict[str, Any]):
+    """Create a cost center"""
+    center_id = f"cost_{uuid.uuid4().hex[:12]}"
+    COST_CENTERS[center_id] = {
+        "center_id": center_id,
+        "name": data.get("name"),
+        "description": data.get("description", ""),
+        "owner": data.get("owner"),
+        "tags": data.get("tags", []),
+        "created_at": datetime.utcnow().isoformat() + "Z"
+    }
+    COST_ENTRIES[center_id] = []
+    return {"center_id": center_id, "message": "Cost center created"}
+
+@app.get("/costs/centers")
+def list_cost_centers():
+    """List all cost centers"""
+    centers = list(COST_CENTERS.values())
+    for center in centers:
+        entries = COST_ENTRIES.get(center["center_id"], [])
+        center["total_cost"] = sum(e.get("amount", 0) for e in entries)
+    return {"centers": centers, "count": len(centers)}
+
+@app.get("/costs/centers/{center_id}")
+def get_cost_center(center_id: str):
+    """Get cost center details"""
+    if center_id not in COST_CENTERS:
+        raise HTTPException(status_code=404, detail="Cost center not found")
+    center = COST_CENTERS[center_id].copy()
+    center["entries"] = COST_ENTRIES.get(center_id, [])[-20:]
+    center["total_cost"] = sum(e.get("amount", 0) for e in COST_ENTRIES.get(center_id, []))
+    return center
+
+@app.post("/costs/centers/{center_id}/entries")
+def record_cost_entry(center_id: str, data: Dict[str, Any]):
+    """Record a cost entry"""
+    if center_id not in COST_CENTERS:
+        raise HTTPException(status_code=404, detail="Cost center not found")
+    entry_id = f"entry_{uuid.uuid4().hex[:8]}"
+    entry = {
+        "entry_id": entry_id,
+        "service": data.get("service"),
+        "resource": data.get("resource"),
+        "amount": data.get("amount", 0),
+        "currency": data.get("currency", "USD"),
+        "usage": data.get("usage", {}),
+        "period": data.get("period"),
+        "recorded_at": datetime.utcnow().isoformat() + "Z"
+    }
+    COST_ENTRIES[center_id].append(entry)
+    return {"entry_id": entry_id, "message": "Cost recorded"}
+
+@app.post("/costs/budgets")
+def create_cost_budget(data: Dict[str, Any]):
+    """Create a cost budget"""
+    budget_id = f"budget_{uuid.uuid4().hex[:12]}"
+    COST_BUDGETS[budget_id] = {
+        "budget_id": budget_id,
+        "name": data.get("name"),
+        "center_id": data.get("center_id"),
+        "amount": data.get("amount"),
+        "period": data.get("period", "monthly"),
+        "alert_thresholds": data.get("alert_thresholds", [50, 80, 100]),
+        "created_at": datetime.utcnow().isoformat() + "Z"
+    }
+    return {"budget_id": budget_id, "message": "Budget created"}
+
+@app.get("/costs/budgets")
+def list_cost_budgets():
+    """List all cost budgets"""
+    return {"budgets": list(COST_BUDGETS.values()), "count": len(COST_BUDGETS)}
+
+@app.get("/costs/budgets/{budget_id}")
+def get_cost_budget(budget_id: str):
+    """Get cost budget details"""
+    if budget_id not in COST_BUDGETS:
+        raise HTTPException(status_code=404, detail="Budget not found")
+    budget = COST_BUDGETS[budget_id].copy()
+    center_id = budget.get("center_id")
+    if center_id and center_id in COST_ENTRIES:
+        budget["current_spend"] = sum(e.get("amount", 0) for e in COST_ENTRIES[center_id])
+        budget["utilization"] = budget["current_spend"] / max(budget["amount"], 1) * 100
+    return budget
+
+@app.get("/costs/reports")
+def get_cost_report(period: str = "monthly"):
+    """Get cost report"""
+    total_cost = sum(sum(e.get("amount", 0) for e in entries) for entries in COST_ENTRIES.values())
+    by_center = {}
+    for center_id, entries in COST_ENTRIES.items():
+        by_center[center_id] = sum(e.get("amount", 0) for e in entries)
+    return {
+        "period": period,
+        "total_cost": total_cost,
+        "by_center": by_center,
+        "generated_at": datetime.utcnow().isoformat() + "Z"
+    }
+
+
+# ============================================================================
+# Compliance Management
+# ============================================================================
+
+COMPLIANCE_POLICIES: Dict[str, Dict[str, Any]] = {}
+COMPLIANCE_CHECKS: Dict[str, List[Dict[str, Any]]] = {}
+COMPLIANCE_CERTIFICATIONS: Dict[str, Dict[str, Any]] = {}
+
+@app.post("/compliance/policies")
+def create_compliance_policy(data: Dict[str, Any]):
+    """Create a compliance policy"""
+    policy_id = f"compol_{uuid.uuid4().hex[:12]}"
+    COMPLIANCE_POLICIES[policy_id] = {
+        "policy_id": policy_id,
+        "name": data.get("name"),
+        "description": data.get("description", ""),
+        "framework": data.get("framework", "custom"),
+        "requirements": data.get("requirements", []),
+        "controls": data.get("controls", []),
+        "severity": data.get("severity", "medium"),
+        "enabled": data.get("enabled", True),
+        "created_at": datetime.utcnow().isoformat() + "Z"
+    }
+    COMPLIANCE_CHECKS[policy_id] = []
+    return {"policy_id": policy_id, "message": "Policy created"}
+
+@app.get("/compliance/policies")
+def list_compliance_policies(framework: str = None, enabled: bool = None):
+    """List all compliance policies"""
+    policies = list(COMPLIANCE_POLICIES.values())
+    if framework:
+        policies = [p for p in policies if p["framework"] == framework]
+    if enabled is not None:
+        policies = [p for p in policies if p["enabled"] == enabled]
+    return {"policies": policies, "count": len(policies)}
+
+@app.get("/compliance/policies/{policy_id}")
+def get_compliance_policy(policy_id: str):
+    """Get compliance policy details"""
+    if policy_id not in COMPLIANCE_POLICIES:
+        raise HTTPException(status_code=404, detail="Policy not found")
+    policy = COMPLIANCE_POLICIES[policy_id].copy()
+    policy["checks"] = COMPLIANCE_CHECKS.get(policy_id, [])[-10:]
+    return policy
+
+@app.post("/compliance/policies/{policy_id}/check")
+def run_compliance_check(policy_id: str, data: Dict[str, Any]):
+    """Run a compliance check"""
+    if policy_id not in COMPLIANCE_POLICIES:
+        raise HTTPException(status_code=404, detail="Policy not found")
+    check_id = f"check_{uuid.uuid4().hex[:12]}"
+    check = {
+        "check_id": check_id,
+        "policy_id": policy_id,
+        "status": "passed",
+        "findings": data.get("findings", []),
+        "score": data.get("score", 100),
+        "checked_at": datetime.utcnow().isoformat() + "Z"
+    }
+    COMPLIANCE_CHECKS[policy_id].append(check)
+    return {"check_id": check_id, "status": check["status"], "score": check["score"]}
+
+@app.get("/compliance/policies/{policy_id}/checks")
+def get_compliance_checks(policy_id: str, limit: int = 20):
+    """Get compliance check history"""
+    if policy_id not in COMPLIANCE_CHECKS:
+        raise HTTPException(status_code=404, detail="Policy not found")
+    return {"checks": COMPLIANCE_CHECKS[policy_id][-limit:], "count": len(COMPLIANCE_CHECKS[policy_id])}
+
+@app.post("/compliance/certifications")
+def create_certification(data: Dict[str, Any]):
+    """Create a compliance certification"""
+    cert_id = f"cert_{uuid.uuid4().hex[:12]}"
+    COMPLIANCE_CERTIFICATIONS[cert_id] = {
+        "certification_id": cert_id,
+        "name": data.get("name"),
+        "framework": data.get("framework"),
+        "issued_by": data.get("issued_by"),
+        "issued_at": data.get("issued_at"),
+        "expires_at": data.get("expires_at"),
+        "scope": data.get("scope", []),
+        "status": "active",
+        "created_at": datetime.utcnow().isoformat() + "Z"
+    }
+    return {"certification_id": cert_id, "message": "Certification created"}
+
+@app.get("/compliance/certifications")
+def list_certifications(framework: str = None, status: str = None):
+    """List all certifications"""
+    certs = list(COMPLIANCE_CERTIFICATIONS.values())
+    if framework:
+        certs = [c for c in certs if c["framework"] == framework]
+    if status:
+        certs = [c for c in certs if c["status"] == status]
+    return {"certifications": certs, "count": len(certs)}
+
+@app.get("/compliance/dashboard")
+def get_compliance_dashboard():
+    """Get compliance dashboard"""
+    total_policies = len(COMPLIANCE_POLICIES)
+    enabled_policies = len([p for p in COMPLIANCE_POLICIES.values() if p["enabled"]])
+    total_checks = sum(len(checks) for checks in COMPLIANCE_CHECKS.values())
+    passed_checks = sum(len([c for c in checks if c["status"] == "passed"]) for checks in COMPLIANCE_CHECKS.values())
+    return {
+        "total_policies": total_policies,
+        "enabled_policies": enabled_policies,
+        "total_checks": total_checks,
+        "passed_checks": passed_checks,
+        "pass_rate": passed_checks / max(total_checks, 1) * 100,
+        "certifications": len(COMPLIANCE_CERTIFICATIONS)
+    }
+
+
+# ============================================================================
 # Run Server
 # ============================================================================
 
