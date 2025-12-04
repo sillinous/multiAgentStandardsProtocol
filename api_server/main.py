@@ -32370,6 +32370,940 @@ def get_popular_articles(limit: int = 10):
 
 
 # ============================================================================
+# Cost Management & Billing
+# ============================================================================
+
+COST_BUDGETS: Dict[str, Dict[str, Any]] = {}
+COST_ALERTS: Dict[str, List[Dict[str, Any]]] = {}
+INVOICES: Dict[str, Dict[str, Any]] = {}
+USAGE_COSTS: Dict[str, List[Dict[str, Any]]] = {}
+
+@app.post("/billing/budgets")
+def create_budget(data: Dict[str, Any]):
+    """Create a cost budget"""
+    budget_id = f"budget_{uuid.uuid4().hex[:12]}"
+    COST_BUDGETS[budget_id] = {
+        "budget_id": budget_id,
+        "name": data.get("name"),
+        "amount": data.get("amount"),
+        "currency": data.get("currency", "USD"),
+        "period": data.get("period", "monthly"),
+        "scope": data.get("scope", "organization"),
+        "scope_id": data.get("scope_id"),
+        "alert_thresholds": data.get("alert_thresholds", [50, 80, 100]),
+        "current_spend": 0,
+        "status": "active",
+        "created_at": datetime.utcnow().isoformat() + "Z"
+    }
+    COST_ALERTS[budget_id] = []
+    return {"budget_id": budget_id, "message": "Budget created"}
+
+@app.get("/billing/budgets")
+def list_budgets(scope: str = None):
+    """List all budgets"""
+    budgets = list(COST_BUDGETS.values())
+    if scope:
+        budgets = [b for b in budgets if b["scope"] == scope]
+    return {"budgets": budgets, "count": len(budgets)}
+
+@app.get("/billing/budgets/{budget_id}")
+def get_budget(budget_id: str):
+    """Get budget details"""
+    if budget_id not in COST_BUDGETS:
+        raise HTTPException(status_code=404, detail="Budget not found")
+    return COST_BUDGETS[budget_id]
+
+@app.put("/billing/budgets/{budget_id}/spend")
+def update_budget_spend(budget_id: str, data: Dict[str, Any]):
+    """Update budget spend and check thresholds"""
+    if budget_id not in COST_BUDGETS:
+        raise HTTPException(status_code=404, detail="Budget not found")
+    budget = COST_BUDGETS[budget_id]
+    budget["current_spend"] = data.get("amount", budget["current_spend"])
+    # Check thresholds
+    percentage = (budget["current_spend"] / budget["amount"]) * 100
+    for threshold in budget["alert_thresholds"]:
+        if percentage >= threshold:
+            alert = {
+                "alert_id": f"alert_{uuid.uuid4().hex[:8]}",
+                "threshold": threshold,
+                "current_percentage": percentage,
+                "triggered_at": datetime.utcnow().isoformat() + "Z"
+            }
+            if not any(a["threshold"] == threshold for a in COST_ALERTS[budget_id]):
+                COST_ALERTS[budget_id].append(alert)
+    return {"message": "Spend updated", "alerts_triggered": len(COST_ALERTS[budget_id])}
+
+@app.post("/billing/invoices")
+def create_invoice(data: Dict[str, Any]):
+    """Create an invoice"""
+    invoice_id = f"inv_{uuid.uuid4().hex[:12]}"
+    INVOICES[invoice_id] = {
+        "invoice_id": invoice_id,
+        "organization_id": data.get("organization_id"),
+        "period_start": data.get("period_start"),
+        "period_end": data.get("period_end"),
+        "line_items": data.get("line_items", []),
+        "subtotal": data.get("subtotal", 0),
+        "tax": data.get("tax", 0),
+        "total": data.get("total", 0),
+        "currency": data.get("currency", "USD"),
+        "status": "draft",
+        "due_date": data.get("due_date"),
+        "created_at": datetime.utcnow().isoformat() + "Z"
+    }
+    return {"invoice_id": invoice_id, "message": "Invoice created"}
+
+@app.get("/billing/invoices")
+def list_invoices(organization_id: str = None, status: str = None):
+    """List invoices"""
+    invoices = list(INVOICES.values())
+    if organization_id:
+        invoices = [i for i in invoices if i["organization_id"] == organization_id]
+    if status:
+        invoices = [i for i in invoices if i["status"] == status]
+    return {"invoices": invoices, "count": len(invoices)}
+
+@app.put("/billing/invoices/{invoice_id}/finalize")
+def finalize_invoice(invoice_id: str):
+    """Finalize an invoice for payment"""
+    if invoice_id not in INVOICES:
+        raise HTTPException(status_code=404, detail="Invoice not found")
+    INVOICES[invoice_id]["status"] = "finalized"
+    INVOICES[invoice_id]["finalized_at"] = datetime.utcnow().isoformat() + "Z"
+    return {"message": "Invoice finalized"}
+
+@app.put("/billing/invoices/{invoice_id}/pay")
+def pay_invoice(invoice_id: str, data: Dict[str, Any]):
+    """Mark invoice as paid"""
+    if invoice_id not in INVOICES:
+        raise HTTPException(status_code=404, detail="Invoice not found")
+    INVOICES[invoice_id]["status"] = "paid"
+    INVOICES[invoice_id]["payment_method"] = data.get("payment_method")
+    INVOICES[invoice_id]["paid_at"] = datetime.utcnow().isoformat() + "Z"
+    return {"message": "Invoice paid"}
+
+@app.post("/billing/usage")
+def record_usage_cost(data: Dict[str, Any]):
+    """Record usage cost entry"""
+    org_id = data.get("organization_id")
+    if org_id not in USAGE_COSTS:
+        USAGE_COSTS[org_id] = []
+    entry = {
+        "entry_id": f"cost_{uuid.uuid4().hex[:8]}",
+        "resource_type": data.get("resource_type"),
+        "resource_id": data.get("resource_id"),
+        "quantity": data.get("quantity"),
+        "unit_price": data.get("unit_price"),
+        "total_cost": data.get("quantity", 0) * data.get("unit_price", 0),
+        "timestamp": datetime.utcnow().isoformat() + "Z"
+    }
+    USAGE_COSTS[org_id].append(entry)
+    return {"entry_id": entry["entry_id"], "message": "Usage recorded"}
+
+@app.get("/billing/usage/{organization_id}")
+def get_usage_costs(organization_id: str, start_date: str = None, end_date: str = None):
+    """Get usage costs for organization"""
+    costs = USAGE_COSTS.get(organization_id, [])
+    total = sum(c["total_cost"] for c in costs)
+    return {"costs": costs, "total": total, "count": len(costs)}
+
+
+# ============================================================================
+# Usage Quotas
+# ============================================================================
+
+QUOTAS: Dict[str, Dict[str, Any]] = {}
+QUOTA_USAGE: Dict[str, Dict[str, int]] = {}
+
+@app.post("/quotas")
+def create_quota(data: Dict[str, Any]):
+    """Create a usage quota"""
+    quota_id = f"quota_{uuid.uuid4().hex[:12]}"
+    QUOTAS[quota_id] = {
+        "quota_id": quota_id,
+        "name": data.get("name"),
+        "resource_type": data.get("resource_type"),
+        "limit": data.get("limit"),
+        "period": data.get("period", "monthly"),
+        "scope": data.get("scope", "organization"),
+        "scope_id": data.get("scope_id"),
+        "action_on_exceed": data.get("action_on_exceed", "block"),
+        "warning_threshold": data.get("warning_threshold", 80),
+        "status": "active",
+        "created_at": datetime.utcnow().isoformat() + "Z"
+    }
+    QUOTA_USAGE[quota_id] = {"current": 0, "last_reset": datetime.utcnow().isoformat() + "Z"}
+    return {"quota_id": quota_id, "message": "Quota created"}
+
+@app.get("/quotas")
+def list_quotas(scope: str = None, resource_type: str = None):
+    """List quotas"""
+    quotas = list(QUOTAS.values())
+    if scope:
+        quotas = [q for q in quotas if q["scope"] == scope]
+    if resource_type:
+        quotas = [q for q in quotas if q["resource_type"] == resource_type]
+    return {"quotas": quotas, "count": len(quotas)}
+
+@app.get("/quotas/{quota_id}")
+def get_quota(quota_id: str):
+    """Get quota details with current usage"""
+    if quota_id not in QUOTAS:
+        raise HTTPException(status_code=404, detail="Quota not found")
+    quota = QUOTAS[quota_id].copy()
+    quota["usage"] = QUOTA_USAGE.get(quota_id, {"current": 0})
+    quota["percentage_used"] = (quota["usage"]["current"] / quota["limit"]) * 100 if quota["limit"] > 0 else 0
+    return quota
+
+@app.post("/quotas/{quota_id}/consume")
+def consume_quota(quota_id: str, data: Dict[str, Any]):
+    """Consume quota units"""
+    if quota_id not in QUOTAS:
+        raise HTTPException(status_code=404, detail="Quota not found")
+    quota = QUOTAS[quota_id]
+    amount = data.get("amount", 1)
+    current = QUOTA_USAGE[quota_id]["current"]
+    new_usage = current + amount
+
+    if new_usage > quota["limit"]:
+        if quota["action_on_exceed"] == "block":
+            raise HTTPException(status_code=429, detail="Quota exceeded")
+
+    QUOTA_USAGE[quota_id]["current"] = new_usage
+    percentage = (new_usage / quota["limit"]) * 100
+    warning = percentage >= quota["warning_threshold"]
+    return {"current_usage": new_usage, "limit": quota["limit"], "warning": warning}
+
+@app.put("/quotas/{quota_id}/reset")
+def reset_quota(quota_id: str):
+    """Reset quota usage"""
+    if quota_id not in QUOTAS:
+        raise HTTPException(status_code=404, detail="Quota not found")
+    QUOTA_USAGE[quota_id] = {"current": 0, "last_reset": datetime.utcnow().isoformat() + "Z"}
+    return {"message": "Quota reset"}
+
+@app.put("/quotas/{quota_id}")
+def update_quota(quota_id: str, data: Dict[str, Any]):
+    """Update quota settings"""
+    if quota_id not in QUOTAS:
+        raise HTTPException(status_code=404, detail="Quota not found")
+    QUOTAS[quota_id].update({
+        "limit": data.get("limit", QUOTAS[quota_id]["limit"]),
+        "warning_threshold": data.get("warning_threshold", QUOTAS[quota_id]["warning_threshold"]),
+        "action_on_exceed": data.get("action_on_exceed", QUOTAS[quota_id]["action_on_exceed"]),
+        "updated_at": datetime.utcnow().isoformat() + "Z"
+    })
+    return {"message": "Quota updated"}
+
+
+# ============================================================================
+# Data Retention Policies
+# ============================================================================
+
+RETENTION_POLICIES: Dict[str, Dict[str, Any]] = {}
+RETENTION_JOBS: Dict[str, Dict[str, Any]] = {}
+
+@app.post("/retention/policies")
+def create_retention_policy(data: Dict[str, Any]):
+    """Create a data retention policy"""
+    policy_id = f"retention_{uuid.uuid4().hex[:12]}"
+    RETENTION_POLICIES[policy_id] = {
+        "policy_id": policy_id,
+        "name": data.get("name"),
+        "description": data.get("description"),
+        "data_type": data.get("data_type"),
+        "retention_period_days": data.get("retention_period_days"),
+        "action": data.get("action", "delete"),
+        "archive_location": data.get("archive_location"),
+        "schedule": data.get("schedule", "0 0 * * *"),
+        "scope": data.get("scope", "organization"),
+        "scope_id": data.get("scope_id"),
+        "status": "active",
+        "created_at": datetime.utcnow().isoformat() + "Z"
+    }
+    return {"policy_id": policy_id, "message": "Retention policy created"}
+
+@app.get("/retention/policies")
+def list_retention_policies(data_type: str = None, status: str = None):
+    """List retention policies"""
+    policies = list(RETENTION_POLICIES.values())
+    if data_type:
+        policies = [p for p in policies if p["data_type"] == data_type]
+    if status:
+        policies = [p for p in policies if p["status"] == status]
+    return {"policies": policies, "count": len(policies)}
+
+@app.get("/retention/policies/{policy_id}")
+def get_retention_policy(policy_id: str):
+    """Get retention policy details"""
+    if policy_id not in RETENTION_POLICIES:
+        raise HTTPException(status_code=404, detail="Policy not found")
+    return RETENTION_POLICIES[policy_id]
+
+@app.put("/retention/policies/{policy_id}")
+def update_retention_policy(policy_id: str, data: Dict[str, Any]):
+    """Update retention policy"""
+    if policy_id not in RETENTION_POLICIES:
+        raise HTTPException(status_code=404, detail="Policy not found")
+    RETENTION_POLICIES[policy_id].update({
+        "retention_period_days": data.get("retention_period_days", RETENTION_POLICIES[policy_id]["retention_period_days"]),
+        "action": data.get("action", RETENTION_POLICIES[policy_id]["action"]),
+        "schedule": data.get("schedule", RETENTION_POLICIES[policy_id]["schedule"]),
+        "updated_at": datetime.utcnow().isoformat() + "Z"
+    })
+    return {"message": "Policy updated"}
+
+@app.post("/retention/policies/{policy_id}/execute")
+def execute_retention_policy(policy_id: str):
+    """Manually execute a retention policy"""
+    if policy_id not in RETENTION_POLICIES:
+        raise HTTPException(status_code=404, detail="Policy not found")
+    job_id = f"ret_job_{uuid.uuid4().hex[:8]}"
+    RETENTION_JOBS[job_id] = {
+        "job_id": job_id,
+        "policy_id": policy_id,
+        "status": "running",
+        "records_processed": 0,
+        "records_deleted": 0,
+        "records_archived": 0,
+        "started_at": datetime.utcnow().isoformat() + "Z"
+    }
+    return {"job_id": job_id, "message": "Retention job started"}
+
+@app.get("/retention/jobs")
+def list_retention_jobs(policy_id: str = None, status: str = None):
+    """List retention jobs"""
+    jobs = list(RETENTION_JOBS.values())
+    if policy_id:
+        jobs = [j for j in jobs if j["policy_id"] == policy_id]
+    if status:
+        jobs = [j for j in jobs if j["status"] == status]
+    return {"jobs": jobs, "count": len(jobs)}
+
+@app.get("/retention/jobs/{job_id}")
+def get_retention_job(job_id: str):
+    """Get retention job status"""
+    if job_id not in RETENTION_JOBS:
+        raise HTTPException(status_code=404, detail="Job not found")
+    return RETENTION_JOBS[job_id]
+
+
+# ============================================================================
+# Backup & Recovery
+# ============================================================================
+
+BACKUP_CONFIGS: Dict[str, Dict[str, Any]] = {}
+BACKUPS: Dict[str, Dict[str, Any]] = {}
+RESTORE_JOBS: Dict[str, Dict[str, Any]] = {}
+
+@app.post("/backup/configs")
+def create_backup_config(data: Dict[str, Any]):
+    """Create backup configuration"""
+    config_id = f"backup_cfg_{uuid.uuid4().hex[:12]}"
+    BACKUP_CONFIGS[config_id] = {
+        "config_id": config_id,
+        "name": data.get("name"),
+        "description": data.get("description"),
+        "backup_type": data.get("backup_type", "full"),
+        "schedule": data.get("schedule", "0 2 * * *"),
+        "retention_count": data.get("retention_count", 7),
+        "storage_location": data.get("storage_location"),
+        "encryption_enabled": data.get("encryption_enabled", True),
+        "compression_enabled": data.get("compression_enabled", True),
+        "include_patterns": data.get("include_patterns", ["*"]),
+        "exclude_patterns": data.get("exclude_patterns", []),
+        "status": "active",
+        "created_at": datetime.utcnow().isoformat() + "Z"
+    }
+    return {"config_id": config_id, "message": "Backup config created"}
+
+@app.get("/backup/configs")
+def list_backup_configs(status: str = None):
+    """List backup configurations"""
+    configs = list(BACKUP_CONFIGS.values())
+    if status:
+        configs = [c for c in configs if c["status"] == status]
+    return {"configs": configs, "count": len(configs)}
+
+@app.post("/backup/configs/{config_id}/run")
+def run_backup(config_id: str):
+    """Trigger a backup"""
+    if config_id not in BACKUP_CONFIGS:
+        raise HTTPException(status_code=404, detail="Config not found")
+    backup_id = f"backup_{uuid.uuid4().hex[:12]}"
+    BACKUPS[backup_id] = {
+        "backup_id": backup_id,
+        "config_id": config_id,
+        "backup_type": BACKUP_CONFIGS[config_id]["backup_type"],
+        "status": "in_progress",
+        "size_bytes": 0,
+        "files_count": 0,
+        "started_at": datetime.utcnow().isoformat() + "Z"
+    }
+    return {"backup_id": backup_id, "message": "Backup started"}
+
+@app.get("/backup/list")
+def list_backups(config_id: str = None, status: str = None):
+    """List backups"""
+    backups = list(BACKUPS.values())
+    if config_id:
+        backups = [b for b in backups if b["config_id"] == config_id]
+    if status:
+        backups = [b for b in backups if b["status"] == status]
+    return {"backups": backups, "count": len(backups)}
+
+@app.get("/backup/{backup_id}")
+def get_backup(backup_id: str):
+    """Get backup details"""
+    if backup_id not in BACKUPS:
+        raise HTTPException(status_code=404, detail="Backup not found")
+    return BACKUPS[backup_id]
+
+@app.post("/backup/{backup_id}/restore")
+def restore_backup(backup_id: str, data: Dict[str, Any]):
+    """Restore from a backup"""
+    if backup_id not in BACKUPS:
+        raise HTTPException(status_code=404, detail="Backup not found")
+    restore_id = f"restore_{uuid.uuid4().hex[:8]}"
+    RESTORE_JOBS[restore_id] = {
+        "restore_id": restore_id,
+        "backup_id": backup_id,
+        "target_location": data.get("target_location"),
+        "restore_type": data.get("restore_type", "full"),
+        "include_patterns": data.get("include_patterns", ["*"]),
+        "status": "in_progress",
+        "files_restored": 0,
+        "started_at": datetime.utcnow().isoformat() + "Z"
+    }
+    return {"restore_id": restore_id, "message": "Restore started"}
+
+@app.get("/backup/restores")
+def list_restore_jobs(status: str = None):
+    """List restore jobs"""
+    jobs = list(RESTORE_JOBS.values())
+    if status:
+        jobs = [j for j in jobs if j["status"] == status]
+    return {"jobs": jobs, "count": len(jobs)}
+
+@app.get("/backup/restores/{restore_id}")
+def get_restore_job(restore_id: str):
+    """Get restore job status"""
+    if restore_id not in RESTORE_JOBS:
+        raise HTTPException(status_code=404, detail="Restore job not found")
+    return RESTORE_JOBS[restore_id]
+
+@app.delete("/backup/{backup_id}")
+def delete_backup(backup_id: str):
+    """Delete a backup"""
+    if backup_id not in BACKUPS:
+        raise HTTPException(status_code=404, detail="Backup not found")
+    del BACKUPS[backup_id]
+    return {"message": "Backup deleted"}
+
+
+# ============================================================================
+# SSO Integration
+# ============================================================================
+
+SSO_PROVIDERS: Dict[str, Dict[str, Any]] = {}
+SSO_SESSIONS: Dict[str, Dict[str, Any]] = {}
+
+@app.post("/sso/providers")
+def create_sso_provider(data: Dict[str, Any]):
+    """Create an SSO provider configuration"""
+    provider_id = f"sso_{uuid.uuid4().hex[:12]}"
+    SSO_PROVIDERS[provider_id] = {
+        "provider_id": provider_id,
+        "name": data.get("name"),
+        "protocol": data.get("protocol", "saml"),
+        "issuer": data.get("issuer"),
+        "sso_url": data.get("sso_url"),
+        "slo_url": data.get("slo_url"),
+        "certificate": data.get("certificate"),
+        "metadata_url": data.get("metadata_url"),
+        "attribute_mapping": data.get("attribute_mapping", {}),
+        "default_role": data.get("default_role", "user"),
+        "auto_provision": data.get("auto_provision", True),
+        "domains": data.get("domains", []),
+        "status": "inactive",
+        "created_at": datetime.utcnow().isoformat() + "Z"
+    }
+    return {"provider_id": provider_id, "message": "SSO provider created"}
+
+@app.get("/sso/providers")
+def list_sso_providers(protocol: str = None, status: str = None):
+    """List SSO providers"""
+    providers = list(SSO_PROVIDERS.values())
+    if protocol:
+        providers = [p for p in providers if p["protocol"] == protocol]
+    if status:
+        providers = [p for p in providers if p["status"] == status]
+    return {"providers": providers, "count": len(providers)}
+
+@app.get("/sso/providers/{provider_id}")
+def get_sso_provider(provider_id: str):
+    """Get SSO provider details"""
+    if provider_id not in SSO_PROVIDERS:
+        raise HTTPException(status_code=404, detail="Provider not found")
+    return SSO_PROVIDERS[provider_id]
+
+@app.put("/sso/providers/{provider_id}")
+def update_sso_provider(provider_id: str, data: Dict[str, Any]):
+    """Update SSO provider"""
+    if provider_id not in SSO_PROVIDERS:
+        raise HTTPException(status_code=404, detail="Provider not found")
+    SSO_PROVIDERS[provider_id].update({
+        "sso_url": data.get("sso_url", SSO_PROVIDERS[provider_id]["sso_url"]),
+        "certificate": data.get("certificate", SSO_PROVIDERS[provider_id]["certificate"]),
+        "attribute_mapping": data.get("attribute_mapping", SSO_PROVIDERS[provider_id]["attribute_mapping"]),
+        "updated_at": datetime.utcnow().isoformat() + "Z"
+    })
+    return {"message": "Provider updated"}
+
+@app.put("/sso/providers/{provider_id}/activate")
+def activate_sso_provider(provider_id: str):
+    """Activate SSO provider"""
+    if provider_id not in SSO_PROVIDERS:
+        raise HTTPException(status_code=404, detail="Provider not found")
+    SSO_PROVIDERS[provider_id]["status"] = "active"
+    SSO_PROVIDERS[provider_id]["activated_at"] = datetime.utcnow().isoformat() + "Z"
+    return {"message": "SSO provider activated"}
+
+@app.post("/sso/providers/{provider_id}/test")
+def test_sso_provider(provider_id: str):
+    """Test SSO provider configuration"""
+    if provider_id not in SSO_PROVIDERS:
+        raise HTTPException(status_code=404, detail="Provider not found")
+    return {
+        "status": "success",
+        "metadata_valid": True,
+        "certificate_valid": True,
+        "test_completed_at": datetime.utcnow().isoformat() + "Z"
+    }
+
+@app.post("/sso/initiate/{provider_id}")
+def initiate_sso_login(provider_id: str, data: Dict[str, Any]):
+    """Initiate SSO login flow"""
+    if provider_id not in SSO_PROVIDERS:
+        raise HTTPException(status_code=404, detail="Provider not found")
+    session_id = f"sso_sess_{uuid.uuid4().hex[:12]}"
+    SSO_SESSIONS[session_id] = {
+        "session_id": session_id,
+        "provider_id": provider_id,
+        "state": uuid.uuid4().hex,
+        "relay_state": data.get("relay_state"),
+        "status": "pending",
+        "created_at": datetime.utcnow().isoformat() + "Z"
+    }
+    provider = SSO_PROVIDERS[provider_id]
+    return {
+        "session_id": session_id,
+        "redirect_url": provider["sso_url"],
+        "state": SSO_SESSIONS[session_id]["state"]
+    }
+
+@app.post("/sso/callback")
+def sso_callback(data: Dict[str, Any]):
+    """Handle SSO callback"""
+    session_id = data.get("session_id")
+    if session_id not in SSO_SESSIONS:
+        raise HTTPException(status_code=404, detail="Session not found")
+    SSO_SESSIONS[session_id]["status"] = "completed"
+    SSO_SESSIONS[session_id]["user_id"] = data.get("user_id")
+    SSO_SESSIONS[session_id]["completed_at"] = datetime.utcnow().isoformat() + "Z"
+    return {"message": "SSO login completed", "user_id": data.get("user_id")}
+
+
+# ============================================================================
+# MFA Management
+# ============================================================================
+
+MFA_CONFIGS: Dict[str, Dict[str, Any]] = {}
+MFA_DEVICES: Dict[str, List[Dict[str, Any]]] = {}
+MFA_CHALLENGES: Dict[str, Dict[str, Any]] = {}
+
+@app.post("/mfa/configure")
+def configure_mfa(data: Dict[str, Any]):
+    """Configure MFA for a user"""
+    user_id = data.get("user_id")
+    MFA_CONFIGS[user_id] = {
+        "user_id": user_id,
+        "enabled": False,
+        "required": data.get("required", False),
+        "methods": data.get("methods", ["totp"]),
+        "backup_codes_remaining": 10,
+        "created_at": datetime.utcnow().isoformat() + "Z"
+    }
+    MFA_DEVICES[user_id] = []
+    return {"message": "MFA configured", "user_id": user_id}
+
+@app.get("/mfa/status/{user_id}")
+def get_mfa_status(user_id: str):
+    """Get MFA status for a user"""
+    if user_id not in MFA_CONFIGS:
+        return {"enabled": False, "configured": False}
+    config = MFA_CONFIGS[user_id]
+    config["devices_count"] = len(MFA_DEVICES.get(user_id, []))
+    return config
+
+@app.post("/mfa/devices")
+def register_mfa_device(data: Dict[str, Any]):
+    """Register an MFA device"""
+    user_id = data.get("user_id")
+    if user_id not in MFA_DEVICES:
+        MFA_DEVICES[user_id] = []
+    device_id = f"mfa_dev_{uuid.uuid4().hex[:8]}"
+    device = {
+        "device_id": device_id,
+        "type": data.get("type", "totp"),
+        "name": data.get("name", "Authenticator"),
+        "verified": False,
+        "last_used": None,
+        "created_at": datetime.utcnow().isoformat() + "Z"
+    }
+    if data.get("type") == "totp":
+        device["secret"] = uuid.uuid4().hex[:32]
+    MFA_DEVICES[user_id].append(device)
+    return {"device_id": device_id, "secret": device.get("secret"), "message": "Device registered"}
+
+@app.get("/mfa/devices/{user_id}")
+def list_mfa_devices(user_id: str):
+    """List MFA devices for a user"""
+    devices = MFA_DEVICES.get(user_id, [])
+    return {"devices": devices, "count": len(devices)}
+
+@app.post("/mfa/devices/{device_id}/verify")
+def verify_mfa_device(device_id: str, data: Dict[str, Any]):
+    """Verify an MFA device with a code"""
+    for user_id, devices in MFA_DEVICES.items():
+        for device in devices:
+            if device["device_id"] == device_id:
+                device["verified"] = True
+                device["verified_at"] = datetime.utcnow().isoformat() + "Z"
+                MFA_CONFIGS[user_id]["enabled"] = True
+                return {"message": "Device verified", "mfa_enabled": True}
+    raise HTTPException(status_code=404, detail="Device not found")
+
+@app.delete("/mfa/devices/{device_id}")
+def remove_mfa_device(device_id: str):
+    """Remove an MFA device"""
+    for user_id, devices in MFA_DEVICES.items():
+        for i, device in enumerate(devices):
+            if device["device_id"] == device_id:
+                del devices[i]
+                if not any(d["verified"] for d in devices):
+                    MFA_CONFIGS[user_id]["enabled"] = False
+                return {"message": "Device removed"}
+    raise HTTPException(status_code=404, detail="Device not found")
+
+@app.post("/mfa/challenge")
+def create_mfa_challenge(data: Dict[str, Any]):
+    """Create an MFA challenge"""
+    user_id = data.get("user_id")
+    challenge_id = f"mfa_ch_{uuid.uuid4().hex[:8]}"
+    MFA_CHALLENGES[challenge_id] = {
+        "challenge_id": challenge_id,
+        "user_id": user_id,
+        "method": data.get("method", "totp"),
+        "status": "pending",
+        "attempts": 0,
+        "max_attempts": 3,
+        "expires_at": (datetime.utcnow() + timedelta(minutes=5)).isoformat() + "Z",
+        "created_at": datetime.utcnow().isoformat() + "Z"
+    }
+    return {"challenge_id": challenge_id, "expires_in": 300}
+
+@app.post("/mfa/challenge/{challenge_id}/verify")
+def verify_mfa_challenge(challenge_id: str, data: Dict[str, Any]):
+    """Verify an MFA challenge"""
+    if challenge_id not in MFA_CHALLENGES:
+        raise HTTPException(status_code=404, detail="Challenge not found")
+    challenge = MFA_CHALLENGES[challenge_id]
+    challenge["attempts"] += 1
+    if challenge["attempts"] > challenge["max_attempts"]:
+        challenge["status"] = "failed"
+        raise HTTPException(status_code=429, detail="Max attempts exceeded")
+    # In production, verify the actual code
+    challenge["status"] = "verified"
+    challenge["verified_at"] = datetime.utcnow().isoformat() + "Z"
+    return {"message": "MFA verified", "status": "verified"}
+
+@app.post("/mfa/backup-codes/{user_id}")
+def generate_backup_codes(user_id: str):
+    """Generate backup codes"""
+    codes = [uuid.uuid4().hex[:8] for _ in range(10)]
+    if user_id in MFA_CONFIGS:
+        MFA_CONFIGS[user_id]["backup_codes_remaining"] = 10
+    return {"codes": codes, "count": 10}
+
+
+# ============================================================================
+# Security Policies
+# ============================================================================
+
+SECURITY_POLICIES: Dict[str, Dict[str, Any]] = {}
+POLICY_VIOLATIONS: Dict[str, List[Dict[str, Any]]] = {}
+
+@app.post("/security/policies")
+def create_security_policy(data: Dict[str, Any]):
+    """Create a security policy"""
+    policy_id = f"sec_pol_{uuid.uuid4().hex[:12]}"
+    SECURITY_POLICIES[policy_id] = {
+        "policy_id": policy_id,
+        "name": data.get("name"),
+        "description": data.get("description"),
+        "policy_type": data.get("policy_type"),
+        "rules": data.get("rules", []),
+        "scope": data.get("scope", "organization"),
+        "scope_id": data.get("scope_id"),
+        "enforcement": data.get("enforcement", "enforce"),
+        "priority": data.get("priority", 100),
+        "status": "active",
+        "created_at": datetime.utcnow().isoformat() + "Z"
+    }
+    POLICY_VIOLATIONS[policy_id] = []
+    return {"policy_id": policy_id, "message": "Security policy created"}
+
+@app.get("/security/policies")
+def list_security_policies(policy_type: str = None, status: str = None):
+    """List security policies"""
+    policies = list(SECURITY_POLICIES.values())
+    if policy_type:
+        policies = [p for p in policies if p["policy_type"] == policy_type]
+    if status:
+        policies = [p for p in policies if p["status"] == status]
+    return {"policies": sorted(policies, key=lambda x: x["priority"]), "count": len(policies)}
+
+@app.get("/security/policies/{policy_id}")
+def get_security_policy(policy_id: str):
+    """Get security policy details"""
+    if policy_id not in SECURITY_POLICIES:
+        raise HTTPException(status_code=404, detail="Policy not found")
+    return SECURITY_POLICIES[policy_id]
+
+@app.put("/security/policies/{policy_id}")
+def update_security_policy(policy_id: str, data: Dict[str, Any]):
+    """Update security policy"""
+    if policy_id not in SECURITY_POLICIES:
+        raise HTTPException(status_code=404, detail="Policy not found")
+    SECURITY_POLICIES[policy_id].update({
+        "rules": data.get("rules", SECURITY_POLICIES[policy_id]["rules"]),
+        "enforcement": data.get("enforcement", SECURITY_POLICIES[policy_id]["enforcement"]),
+        "priority": data.get("priority", SECURITY_POLICIES[policy_id]["priority"]),
+        "updated_at": datetime.utcnow().isoformat() + "Z"
+    })
+    return {"message": "Policy updated"}
+
+@app.post("/security/policies/{policy_id}/evaluate")
+def evaluate_security_policy(policy_id: str, data: Dict[str, Any]):
+    """Evaluate a request against a security policy"""
+    if policy_id not in SECURITY_POLICIES:
+        raise HTTPException(status_code=404, detail="Policy not found")
+    policy = SECURITY_POLICIES[policy_id]
+    result = {
+        "policy_id": policy_id,
+        "allowed": True,
+        "violations": [],
+        "evaluated_at": datetime.utcnow().isoformat() + "Z"
+    }
+    # Simulate policy evaluation
+    context = data.get("context", {})
+    for rule in policy["rules"]:
+        if rule.get("condition") == "deny_all":
+            result["allowed"] = False
+            result["violations"].append(rule)
+    return result
+
+@app.post("/security/violations")
+def report_violation(data: Dict[str, Any]):
+    """Report a policy violation"""
+    policy_id = data.get("policy_id")
+    if policy_id not in SECURITY_POLICIES:
+        raise HTTPException(status_code=404, detail="Policy not found")
+    violation = {
+        "violation_id": f"viol_{uuid.uuid4().hex[:8]}",
+        "policy_id": policy_id,
+        "resource": data.get("resource"),
+        "action": data.get("action"),
+        "actor": data.get("actor"),
+        "severity": data.get("severity", "medium"),
+        "details": data.get("details"),
+        "timestamp": datetime.utcnow().isoformat() + "Z"
+    }
+    POLICY_VIOLATIONS[policy_id].append(violation)
+    return {"violation_id": violation["violation_id"], "message": "Violation recorded"}
+
+@app.get("/security/violations")
+def list_violations(policy_id: str = None, severity: str = None):
+    """List policy violations"""
+    all_violations = []
+    for pid, violations in POLICY_VIOLATIONS.items():
+        if policy_id and pid != policy_id:
+            continue
+        all_violations.extend(violations)
+    if severity:
+        all_violations = [v for v in all_violations if v["severity"] == severity]
+    return {"violations": all_violations, "count": len(all_violations)}
+
+
+# ============================================================================
+# Disaster Recovery
+# ============================================================================
+
+DR_CONFIGS: Dict[str, Dict[str, Any]] = {}
+DR_TESTS: Dict[str, Dict[str, Any]] = {}
+FAILOVER_EVENTS: Dict[str, Dict[str, Any]] = {}
+
+@app.post("/dr/configs")
+def create_dr_config(data: Dict[str, Any]):
+    """Create disaster recovery configuration"""
+    config_id = f"dr_{uuid.uuid4().hex[:12]}"
+    DR_CONFIGS[config_id] = {
+        "config_id": config_id,
+        "name": data.get("name"),
+        "description": data.get("description"),
+        "primary_region": data.get("primary_region"),
+        "secondary_region": data.get("secondary_region"),
+        "replication_mode": data.get("replication_mode", "async"),
+        "rpo_minutes": data.get("rpo_minutes", 15),
+        "rto_minutes": data.get("rto_minutes", 60),
+        "auto_failover": data.get("auto_failover", False),
+        "failover_threshold": data.get("failover_threshold", 3),
+        "health_check_interval": data.get("health_check_interval", 30),
+        "status": "active",
+        "current_state": "normal",
+        "created_at": datetime.utcnow().isoformat() + "Z"
+    }
+    return {"config_id": config_id, "message": "DR config created"}
+
+@app.get("/dr/configs")
+def list_dr_configs(status: str = None):
+    """List DR configurations"""
+    configs = list(DR_CONFIGS.values())
+    if status:
+        configs = [c for c in configs if c["status"] == status]
+    return {"configs": configs, "count": len(configs)}
+
+@app.get("/dr/configs/{config_id}")
+def get_dr_config(config_id: str):
+    """Get DR configuration details"""
+    if config_id not in DR_CONFIGS:
+        raise HTTPException(status_code=404, detail="Config not found")
+    return DR_CONFIGS[config_id]
+
+@app.put("/dr/configs/{config_id}")
+def update_dr_config(config_id: str, data: Dict[str, Any]):
+    """Update DR configuration"""
+    if config_id not in DR_CONFIGS:
+        raise HTTPException(status_code=404, detail="Config not found")
+    DR_CONFIGS[config_id].update({
+        "secondary_region": data.get("secondary_region", DR_CONFIGS[config_id]["secondary_region"]),
+        "rpo_minutes": data.get("rpo_minutes", DR_CONFIGS[config_id]["rpo_minutes"]),
+        "rto_minutes": data.get("rto_minutes", DR_CONFIGS[config_id]["rto_minutes"]),
+        "auto_failover": data.get("auto_failover", DR_CONFIGS[config_id]["auto_failover"]),
+        "updated_at": datetime.utcnow().isoformat() + "Z"
+    })
+    return {"message": "DR config updated"}
+
+@app.post("/dr/configs/{config_id}/failover")
+def initiate_failover(config_id: str, data: Dict[str, Any]):
+    """Initiate failover to secondary region"""
+    if config_id not in DR_CONFIGS:
+        raise HTTPException(status_code=404, detail="Config not found")
+    event_id = f"failover_{uuid.uuid4().hex[:8]}"
+    FAILOVER_EVENTS[event_id] = {
+        "event_id": event_id,
+        "config_id": config_id,
+        "type": "failover",
+        "reason": data.get("reason", "manual"),
+        "from_region": DR_CONFIGS[config_id]["primary_region"],
+        "to_region": DR_CONFIGS[config_id]["secondary_region"],
+        "status": "in_progress",
+        "started_at": datetime.utcnow().isoformat() + "Z"
+    }
+    DR_CONFIGS[config_id]["current_state"] = "failover_in_progress"
+    return {"event_id": event_id, "message": "Failover initiated"}
+
+@app.post("/dr/configs/{config_id}/failback")
+def initiate_failback(config_id: str, data: Dict[str, Any]):
+    """Initiate failback to primary region"""
+    if config_id not in DR_CONFIGS:
+        raise HTTPException(status_code=404, detail="Config not found")
+    event_id = f"failback_{uuid.uuid4().hex[:8]}"
+    FAILOVER_EVENTS[event_id] = {
+        "event_id": event_id,
+        "config_id": config_id,
+        "type": "failback",
+        "reason": data.get("reason", "manual"),
+        "from_region": DR_CONFIGS[config_id]["secondary_region"],
+        "to_region": DR_CONFIGS[config_id]["primary_region"],
+        "status": "in_progress",
+        "started_at": datetime.utcnow().isoformat() + "Z"
+    }
+    return {"event_id": event_id, "message": "Failback initiated"}
+
+@app.get("/dr/events")
+def list_dr_events(config_id: str = None, event_type: str = None):
+    """List DR events"""
+    events = list(FAILOVER_EVENTS.values())
+    if config_id:
+        events = [e for e in events if e["config_id"] == config_id]
+    if event_type:
+        events = [e for e in events if e["type"] == event_type]
+    return {"events": events, "count": len(events)}
+
+@app.post("/dr/configs/{config_id}/test")
+def test_dr_config(config_id: str, data: Dict[str, Any]):
+    """Run DR test"""
+    if config_id not in DR_CONFIGS:
+        raise HTTPException(status_code=404, detail="Config not found")
+    test_id = f"dr_test_{uuid.uuid4().hex[:8]}"
+    DR_TESTS[test_id] = {
+        "test_id": test_id,
+        "config_id": config_id,
+        "test_type": data.get("test_type", "connectivity"),
+        "status": "running",
+        "results": {},
+        "started_at": datetime.utcnow().isoformat() + "Z"
+    }
+    return {"test_id": test_id, "message": "DR test started"}
+
+@app.get("/dr/tests")
+def list_dr_tests(config_id: str = None, status: str = None):
+    """List DR tests"""
+    tests = list(DR_TESTS.values())
+    if config_id:
+        tests = [t for t in tests if t["config_id"] == config_id]
+    if status:
+        tests = [t for t in tests if t["status"] == status]
+    return {"tests": tests, "count": len(tests)}
+
+@app.get("/dr/tests/{test_id}")
+def get_dr_test(test_id: str):
+    """Get DR test results"""
+    if test_id not in DR_TESTS:
+        raise HTTPException(status_code=404, detail="Test not found")
+    return DR_TESTS[test_id]
+
+@app.get("/dr/status/{config_id}")
+def get_dr_status(config_id: str):
+    """Get current DR status"""
+    if config_id not in DR_CONFIGS:
+        raise HTTPException(status_code=404, detail="Config not found")
+    config = DR_CONFIGS[config_id]
+    return {
+        "config_id": config_id,
+        "current_state": config["current_state"],
+        "primary_region": config["primary_region"],
+        "secondary_region": config["secondary_region"],
+        "replication_lag_seconds": 5,
+        "last_sync": datetime.utcnow().isoformat() + "Z",
+        "health": "healthy"
+    }
+
+
+# ============================================================================
 # Run Server
 # ============================================================================
 
