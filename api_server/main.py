@@ -28064,6 +28064,943 @@ def get_rotation_audit(policy_id: str = None, limit: int = 100):
 
 
 # ============================================================================
+# API Analytics
+# ============================================================================
+
+API_ANALYTICS: Dict[str, Dict[str, Any]] = {}
+ENDPOINT_STATS: Dict[str, Dict[str, Any]] = {}
+ANALYTICS_REPORTS: Dict[str, Dict[str, Any]] = {}
+
+@app.post("/analytics/track")
+def track_api_call(data: Dict[str, Any]):
+    """Track an API call for analytics"""
+    endpoint = data.get("endpoint")
+    if endpoint not in ENDPOINT_STATS:
+        ENDPOINT_STATS[endpoint] = {
+            "endpoint": endpoint,
+            "total_calls": 0,
+            "total_latency_ms": 0,
+            "error_count": 0,
+            "status_codes": {},
+            "first_call": datetime.utcnow().isoformat() + "Z",
+            "last_call": None
+        }
+    stats = ENDPOINT_STATS[endpoint]
+    stats["total_calls"] += 1
+    stats["total_latency_ms"] += data.get("latency_ms", 0)
+    stats["last_call"] = datetime.utcnow().isoformat() + "Z"
+    status_code = str(data.get("status_code", 200))
+    stats["status_codes"][status_code] = stats["status_codes"].get(status_code, 0) + 1
+    if data.get("is_error", False):
+        stats["error_count"] += 1
+    return {"message": "Call tracked"}
+
+@app.get("/analytics/endpoints")
+def get_endpoint_analytics(sort_by: str = "total_calls", limit: int = 50):
+    """Get analytics for all endpoints"""
+    stats = list(ENDPOINT_STATS.values())
+    for s in stats:
+        s["avg_latency_ms"] = s["total_latency_ms"] / max(s["total_calls"], 1)
+        s["error_rate"] = s["error_count"] / max(s["total_calls"], 1)
+    if sort_by == "total_calls":
+        stats.sort(key=lambda x: x["total_calls"], reverse=True)
+    elif sort_by == "avg_latency":
+        stats.sort(key=lambda x: x["avg_latency_ms"], reverse=True)
+    elif sort_by == "error_rate":
+        stats.sort(key=lambda x: x["error_rate"], reverse=True)
+    return {"endpoints": stats[:limit], "count": len(stats)}
+
+@app.get("/analytics/endpoints/{endpoint_path:path}")
+def get_single_endpoint_analytics(endpoint_path: str):
+    """Get analytics for a specific endpoint"""
+    endpoint = f"/{endpoint_path}"
+    if endpoint not in ENDPOINT_STATS:
+        raise HTTPException(status_code=404, detail="Endpoint not found")
+    stats = ENDPOINT_STATS[endpoint].copy()
+    stats["avg_latency_ms"] = stats["total_latency_ms"] / max(stats["total_calls"], 1)
+    stats["error_rate"] = stats["error_count"] / max(stats["total_calls"], 1)
+    return stats
+
+@app.get("/analytics/summary")
+def get_analytics_summary():
+    """Get overall API analytics summary"""
+    total_calls = sum(s["total_calls"] for s in ENDPOINT_STATS.values())
+    total_errors = sum(s["error_count"] for s in ENDPOINT_STATS.values())
+    total_latency = sum(s["total_latency_ms"] for s in ENDPOINT_STATS.values())
+    return {
+        "total_endpoints": len(ENDPOINT_STATS),
+        "total_calls": total_calls,
+        "total_errors": total_errors,
+        "overall_error_rate": total_errors / max(total_calls, 1),
+        "avg_latency_ms": total_latency / max(total_calls, 1),
+        "top_endpoints": sorted(ENDPOINT_STATS.values(), key=lambda x: x["total_calls"], reverse=True)[:5]
+    }
+
+@app.post("/analytics/reports")
+def create_analytics_report(data: Dict[str, Any]):
+    """Create an analytics report"""
+    report_id = f"report_{uuid.uuid4().hex[:12]}"
+    ANALYTICS_REPORTS[report_id] = {
+        "report_id": report_id,
+        "name": data.get("name"),
+        "type": data.get("type", "daily"),
+        "metrics": data.get("metrics", ["calls", "latency", "errors"]),
+        "filters": data.get("filters", {}),
+        "schedule": data.get("schedule"),
+        "created_at": datetime.utcnow().isoformat() + "Z"
+    }
+    return {"report_id": report_id, "message": "Report created"}
+
+@app.get("/analytics/reports")
+def list_analytics_reports():
+    """List all analytics reports"""
+    return {"reports": list(ANALYTICS_REPORTS.values()), "count": len(ANALYTICS_REPORTS)}
+
+
+# ============================================================================
+# Multi-Tenancy
+# ============================================================================
+
+TENANTS: Dict[str, Dict[str, Any]] = {}
+TENANT_QUOTAS: Dict[str, Dict[str, Any]] = {}
+TENANT_USAGE: Dict[str, Dict[str, Any]] = {}
+
+@app.post("/tenants")
+def create_tenant(data: Dict[str, Any]):
+    """Create a new tenant"""
+    tenant_id = f"tenant_{uuid.uuid4().hex[:12]}"
+    TENANTS[tenant_id] = {
+        "tenant_id": tenant_id,
+        "name": data.get("name"),
+        "slug": data.get("slug"),
+        "plan": data.get("plan", "free"),
+        "status": "active",
+        "settings": data.get("settings", {}),
+        "metadata": data.get("metadata", {}),
+        "created_at": datetime.utcnow().isoformat() + "Z"
+    }
+    TENANT_QUOTAS[tenant_id] = {
+        "api_calls_monthly": data.get("api_calls_monthly", 10000),
+        "storage_gb": data.get("storage_gb", 1),
+        "users": data.get("users", 5),
+        "projects": data.get("projects", 3)
+    }
+    TENANT_USAGE[tenant_id] = {
+        "api_calls": 0,
+        "storage_used_gb": 0,
+        "users_count": 0,
+        "projects_count": 0
+    }
+    return {"tenant_id": tenant_id, "message": "Tenant created"}
+
+@app.get("/tenants")
+def list_tenants(status: str = None, plan: str = None):
+    """List all tenants"""
+    tenants = list(TENANTS.values())
+    if status:
+        tenants = [t for t in tenants if t["status"] == status]
+    if plan:
+        tenants = [t for t in tenants if t["plan"] == plan]
+    return {"tenants": tenants, "count": len(tenants)}
+
+@app.get("/tenants/{tenant_id}")
+def get_tenant(tenant_id: str):
+    """Get tenant details"""
+    if tenant_id not in TENANTS:
+        raise HTTPException(status_code=404, detail="Tenant not found")
+    tenant = TENANTS[tenant_id].copy()
+    tenant["quotas"] = TENANT_QUOTAS.get(tenant_id, {})
+    tenant["usage"] = TENANT_USAGE.get(tenant_id, {})
+    return tenant
+
+@app.put("/tenants/{tenant_id}")
+def update_tenant(tenant_id: str, data: Dict[str, Any]):
+    """Update tenant details"""
+    if tenant_id not in TENANTS:
+        raise HTTPException(status_code=404, detail="Tenant not found")
+    TENANTS[tenant_id].update({
+        "name": data.get("name", TENANTS[tenant_id]["name"]),
+        "plan": data.get("plan", TENANTS[tenant_id]["plan"]),
+        "settings": data.get("settings", TENANTS[tenant_id]["settings"]),
+        "updated_at": datetime.utcnow().isoformat() + "Z"
+    })
+    return {"message": "Tenant updated"}
+
+@app.put("/tenants/{tenant_id}/quotas")
+def update_tenant_quotas(tenant_id: str, data: Dict[str, Any]):
+    """Update tenant quotas"""
+    if tenant_id not in TENANTS:
+        raise HTTPException(status_code=404, detail="Tenant not found")
+    TENANT_QUOTAS[tenant_id].update(data)
+    return {"message": "Quotas updated", "quotas": TENANT_QUOTAS[tenant_id]}
+
+@app.post("/tenants/{tenant_id}/usage")
+def record_tenant_usage(tenant_id: str, data: Dict[str, Any]):
+    """Record usage for a tenant"""
+    if tenant_id not in TENANTS:
+        raise HTTPException(status_code=404, detail="Tenant not found")
+    usage = TENANT_USAGE[tenant_id]
+    usage["api_calls"] += data.get("api_calls", 0)
+    usage["storage_used_gb"] += data.get("storage_gb", 0)
+    return {"message": "Usage recorded", "usage": usage}
+
+@app.get("/tenants/{tenant_id}/check-quota")
+def check_tenant_quota(tenant_id: str, resource: str):
+    """Check if tenant has quota available"""
+    if tenant_id not in TENANTS:
+        raise HTTPException(status_code=404, detail="Tenant not found")
+    quotas = TENANT_QUOTAS.get(tenant_id, {})
+    usage = TENANT_USAGE.get(tenant_id, {})
+    quota_map = {"api_calls": ("api_calls_monthly", "api_calls"), "storage": ("storage_gb", "storage_used_gb")}
+    if resource not in quota_map:
+        raise HTTPException(status_code=400, detail="Invalid resource type")
+    quota_key, usage_key = quota_map[resource]
+    available = quotas.get(quota_key, 0) - usage.get(usage_key, 0)
+    return {"resource": resource, "quota": quotas.get(quota_key, 0), "used": usage.get(usage_key, 0), "available": max(0, available), "exceeded": available < 0}
+
+@app.put("/tenants/{tenant_id}/suspend")
+def suspend_tenant(tenant_id: str):
+    """Suspend a tenant"""
+    if tenant_id not in TENANTS:
+        raise HTTPException(status_code=404, detail="Tenant not found")
+    TENANTS[tenant_id]["status"] = "suspended"
+    TENANTS[tenant_id]["suspended_at"] = datetime.utcnow().isoformat() + "Z"
+    return {"message": "Tenant suspended"}
+
+@app.put("/tenants/{tenant_id}/activate")
+def activate_tenant(tenant_id: str):
+    """Activate a suspended tenant"""
+    if tenant_id not in TENANTS:
+        raise HTTPException(status_code=404, detail="Tenant not found")
+    TENANTS[tenant_id]["status"] = "active"
+    TENANTS[tenant_id]["activated_at"] = datetime.utcnow().isoformat() + "Z"
+    return {"message": "Tenant activated"}
+
+
+# ============================================================================
+# Distributed Tracing
+# ============================================================================
+
+TRACES: Dict[str, Dict[str, Any]] = {}
+SPANS: Dict[str, List[Dict[str, Any]]] = {}
+TRACE_CONTEXTS: Dict[str, Dict[str, Any]] = {}
+
+@app.post("/tracing/traces")
+def create_trace(data: Dict[str, Any]):
+    """Create a new trace"""
+    trace_id = f"trace_{uuid.uuid4().hex[:16]}"
+    TRACES[trace_id] = {
+        "trace_id": trace_id,
+        "name": data.get("name"),
+        "service": data.get("service"),
+        "environment": data.get("environment", "production"),
+        "status": "active",
+        "tags": data.get("tags", {}),
+        "started_at": datetime.utcnow().isoformat() + "Z",
+        "ended_at": None,
+        "duration_ms": None
+    }
+    SPANS[trace_id] = []
+    return {"trace_id": trace_id, "message": "Trace created"}
+
+@app.get("/tracing/traces")
+def list_traces(service: str = None, status: str = None, limit: int = 50):
+    """List all traces"""
+    traces = list(TRACES.values())
+    if service:
+        traces = [t for t in traces if t["service"] == service]
+    if status:
+        traces = [t for t in traces if t["status"] == status]
+    traces.sort(key=lambda x: x["started_at"], reverse=True)
+    return {"traces": traces[:limit], "count": len(traces)}
+
+@app.get("/tracing/traces/{trace_id}")
+def get_trace(trace_id: str):
+    """Get trace details with spans"""
+    if trace_id not in TRACES:
+        raise HTTPException(status_code=404, detail="Trace not found")
+    trace = TRACES[trace_id].copy()
+    trace["spans"] = SPANS.get(trace_id, [])
+    return trace
+
+@app.post("/tracing/traces/{trace_id}/spans")
+def create_span(trace_id: str, data: Dict[str, Any]):
+    """Create a span within a trace"""
+    if trace_id not in TRACES:
+        raise HTTPException(status_code=404, detail="Trace not found")
+    span_id = f"span_{uuid.uuid4().hex[:12]}"
+    span = {
+        "span_id": span_id,
+        "trace_id": trace_id,
+        "parent_span_id": data.get("parent_span_id"),
+        "name": data.get("name"),
+        "service": data.get("service"),
+        "operation": data.get("operation"),
+        "status": "active",
+        "tags": data.get("tags", {}),
+        "logs": [],
+        "started_at": datetime.utcnow().isoformat() + "Z",
+        "ended_at": None,
+        "duration_ms": None
+    }
+    SPANS[trace_id].append(span)
+    return {"span_id": span_id, "message": "Span created"}
+
+@app.post("/tracing/spans/{span_id}/end")
+def end_span(span_id: str, data: Dict[str, Any]):
+    """End a span"""
+    for trace_id, spans in SPANS.items():
+        for span in spans:
+            if span["span_id"] == span_id:
+                span["status"] = data.get("status", "completed")
+                span["ended_at"] = datetime.utcnow().isoformat() + "Z"
+                span["duration_ms"] = data.get("duration_ms", 0)
+                span["error"] = data.get("error")
+                return {"message": "Span ended"}
+    raise HTTPException(status_code=404, detail="Span not found")
+
+@app.post("/tracing/spans/{span_id}/log")
+def add_span_log(span_id: str, data: Dict[str, Any]):
+    """Add a log entry to a span"""
+    for trace_id, spans in SPANS.items():
+        for span in spans:
+            if span["span_id"] == span_id:
+                span["logs"].append({
+                    "message": data.get("message"),
+                    "level": data.get("level", "info"),
+                    "timestamp": datetime.utcnow().isoformat() + "Z"
+                })
+                return {"message": "Log added"}
+    raise HTTPException(status_code=404, detail="Span not found")
+
+@app.post("/tracing/traces/{trace_id}/end")
+def end_trace(trace_id: str, data: Dict[str, Any]):
+    """End a trace"""
+    if trace_id not in TRACES:
+        raise HTTPException(status_code=404, detail="Trace not found")
+    TRACES[trace_id]["status"] = data.get("status", "completed")
+    TRACES[trace_id]["ended_at"] = datetime.utcnow().isoformat() + "Z"
+    TRACES[trace_id]["duration_ms"] = data.get("duration_ms", 0)
+    return {"message": "Trace ended"}
+
+@app.post("/tracing/context")
+def create_trace_context(data: Dict[str, Any]):
+    """Create a trace context for propagation"""
+    context_id = f"ctx_{uuid.uuid4().hex[:12]}"
+    TRACE_CONTEXTS[context_id] = {
+        "context_id": context_id,
+        "trace_id": data.get("trace_id"),
+        "span_id": data.get("span_id"),
+        "baggage": data.get("baggage", {}),
+        "created_at": datetime.utcnow().isoformat() + "Z"
+    }
+    return {"context_id": context_id, "headers": {"X-Trace-ID": data.get("trace_id"), "X-Span-ID": data.get("span_id")}}
+
+
+# ============================================================================
+# Event Bus
+# ============================================================================
+
+EVENT_TOPICS: Dict[str, Dict[str, Any]] = {}
+EVENT_SUBSCRIPTIONS: Dict[str, List[Dict[str, Any]]] = {}
+EVENT_MESSAGES: Dict[str, List[Dict[str, Any]]] = {}
+EVENT_DEAD_LETTERS: List[Dict[str, Any]] = []
+
+@app.post("/events/topics")
+def create_event_topic(data: Dict[str, Any]):
+    """Create an event topic"""
+    topic_id = f"topic_{uuid.uuid4().hex[:12]}"
+    EVENT_TOPICS[topic_id] = {
+        "topic_id": topic_id,
+        "name": data.get("name"),
+        "description": data.get("description", ""),
+        "retention_hours": data.get("retention_hours", 168),
+        "partitions": data.get("partitions", 1),
+        "replication_factor": data.get("replication_factor", 1),
+        "created_at": datetime.utcnow().isoformat() + "Z"
+    }
+    EVENT_SUBSCRIPTIONS[topic_id] = []
+    EVENT_MESSAGES[topic_id] = []
+    return {"topic_id": topic_id, "message": "Topic created"}
+
+@app.get("/events/topics")
+def list_event_topics():
+    """List all event topics"""
+    topics = list(EVENT_TOPICS.values())
+    for topic in topics:
+        topic["subscriber_count"] = len(EVENT_SUBSCRIPTIONS.get(topic["topic_id"], []))
+        topic["message_count"] = len(EVENT_MESSAGES.get(topic["topic_id"], []))
+    return {"topics": topics, "count": len(topics)}
+
+@app.get("/events/topics/{topic_id}")
+def get_event_topic(topic_id: str):
+    """Get topic details"""
+    if topic_id not in EVENT_TOPICS:
+        raise HTTPException(status_code=404, detail="Topic not found")
+    topic = EVENT_TOPICS[topic_id].copy()
+    topic["subscriptions"] = EVENT_SUBSCRIPTIONS.get(topic_id, [])
+    return topic
+
+@app.post("/events/topics/{topic_id}/subscribe")
+def subscribe_to_topic(topic_id: str, data: Dict[str, Any]):
+    """Subscribe to an event topic"""
+    if topic_id not in EVENT_TOPICS:
+        raise HTTPException(status_code=404, detail="Topic not found")
+    sub_id = f"sub_{uuid.uuid4().hex[:12]}"
+    subscription = {
+        "subscription_id": sub_id,
+        "topic_id": topic_id,
+        "name": data.get("name"),
+        "endpoint": data.get("endpoint"),
+        "filter": data.get("filter", {}),
+        "delivery_mode": data.get("delivery_mode", "push"),
+        "status": "active",
+        "created_at": datetime.utcnow().isoformat() + "Z"
+    }
+    EVENT_SUBSCRIPTIONS[topic_id].append(subscription)
+    return {"subscription_id": sub_id, "message": "Subscribed"}
+
+@app.delete("/events/subscriptions/{sub_id}")
+def unsubscribe(sub_id: str):
+    """Unsubscribe from a topic"""
+    for topic_id, subs in EVENT_SUBSCRIPTIONS.items():
+        EVENT_SUBSCRIPTIONS[topic_id] = [s for s in subs if s["subscription_id"] != sub_id]
+    return {"message": "Unsubscribed"}
+
+@app.post("/events/topics/{topic_id}/publish")
+def publish_event(topic_id: str, data: Dict[str, Any]):
+    """Publish an event to a topic"""
+    if topic_id not in EVENT_TOPICS:
+        raise HTTPException(status_code=404, detail="Topic not found")
+    event_id = f"evt_{uuid.uuid4().hex[:12]}"
+    event = {
+        "event_id": event_id,
+        "topic_id": topic_id,
+        "type": data.get("type"),
+        "payload": data.get("payload", {}),
+        "metadata": data.get("metadata", {}),
+        "published_at": datetime.utcnow().isoformat() + "Z",
+        "delivered_to": []
+    }
+    EVENT_MESSAGES[topic_id].append(event)
+    subscriber_count = len(EVENT_SUBSCRIPTIONS.get(topic_id, []))
+    return {"event_id": event_id, "message": "Event published", "subscribers_notified": subscriber_count}
+
+@app.get("/events/topics/{topic_id}/messages")
+def get_topic_messages(topic_id: str, limit: int = 100):
+    """Get messages from a topic"""
+    if topic_id not in EVENT_MESSAGES:
+        raise HTTPException(status_code=404, detail="Topic not found")
+    return {"messages": EVENT_MESSAGES[topic_id][-limit:], "count": len(EVENT_MESSAGES[topic_id])}
+
+@app.get("/events/dead-letters")
+def get_dead_letter_events(limit: int = 100):
+    """Get dead letter events"""
+    return {"dead_letters": EVENT_DEAD_LETTERS[-limit:], "count": len(EVENT_DEAD_LETTERS)}
+
+
+# ============================================================================
+# Workflow Engine
+# ============================================================================
+
+WORKFLOW_DEFINITIONS: Dict[str, Dict[str, Any]] = {}
+WORKFLOW_EXECUTIONS: Dict[str, Dict[str, Any]] = {}
+WORKFLOW_STEPS: Dict[str, List[Dict[str, Any]]] = {}
+
+@app.post("/workflows/definitions")
+def create_workflow_definition(data: Dict[str, Any]):
+    """Create a workflow definition"""
+    workflow_id = f"wf_{uuid.uuid4().hex[:12]}"
+    WORKFLOW_DEFINITIONS[workflow_id] = {
+        "workflow_id": workflow_id,
+        "name": data.get("name"),
+        "description": data.get("description", ""),
+        "version": data.get("version", "1.0.0"),
+        "steps": data.get("steps", []),
+        "triggers": data.get("triggers", []),
+        "variables": data.get("variables", {}),
+        "status": "active",
+        "created_at": datetime.utcnow().isoformat() + "Z"
+    }
+    return {"workflow_id": workflow_id, "message": "Workflow definition created"}
+
+@app.get("/workflows/definitions")
+def list_workflow_definitions(status: str = None):
+    """List all workflow definitions"""
+    workflows = list(WORKFLOW_DEFINITIONS.values())
+    if status:
+        workflows = [w for w in workflows if w["status"] == status]
+    return {"workflows": workflows, "count": len(workflows)}
+
+@app.get("/workflows/definitions/{workflow_id}")
+def get_workflow_definition(workflow_id: str):
+    """Get workflow definition details"""
+    if workflow_id not in WORKFLOW_DEFINITIONS:
+        raise HTTPException(status_code=404, detail="Workflow not found")
+    return WORKFLOW_DEFINITIONS[workflow_id]
+
+@app.post("/workflows/definitions/{workflow_id}/execute")
+def execute_workflow(workflow_id: str, data: Dict[str, Any]):
+    """Execute a workflow"""
+    if workflow_id not in WORKFLOW_DEFINITIONS:
+        raise HTTPException(status_code=404, detail="Workflow not found")
+    execution_id = f"wfexec_{uuid.uuid4().hex[:12]}"
+    WORKFLOW_EXECUTIONS[execution_id] = {
+        "execution_id": execution_id,
+        "workflow_id": workflow_id,
+        "input": data.get("input", {}),
+        "variables": data.get("variables", {}),
+        "status": "running",
+        "current_step": 0,
+        "started_at": datetime.utcnow().isoformat() + "Z",
+        "ended_at": None,
+        "output": None
+    }
+    WORKFLOW_STEPS[execution_id] = []
+    return {"execution_id": execution_id, "message": "Workflow execution started"}
+
+@app.get("/workflows/executions")
+def list_workflow_executions(workflow_id: str = None, status: str = None, limit: int = 50):
+    """List workflow executions"""
+    executions = list(WORKFLOW_EXECUTIONS.values())
+    if workflow_id:
+        executions = [e for e in executions if e["workflow_id"] == workflow_id]
+    if status:
+        executions = [e for e in executions if e["status"] == status]
+    executions.sort(key=lambda x: x["started_at"], reverse=True)
+    return {"executions": executions[:limit], "count": len(executions)}
+
+@app.get("/workflows/executions/{execution_id}")
+def get_workflow_execution(execution_id: str):
+    """Get workflow execution details"""
+    if execution_id not in WORKFLOW_EXECUTIONS:
+        raise HTTPException(status_code=404, detail="Execution not found")
+    execution = WORKFLOW_EXECUTIONS[execution_id].copy()
+    execution["steps"] = WORKFLOW_STEPS.get(execution_id, [])
+    return execution
+
+@app.post("/workflows/executions/{execution_id}/step")
+def record_workflow_step(execution_id: str, data: Dict[str, Any]):
+    """Record a workflow step execution"""
+    if execution_id not in WORKFLOW_EXECUTIONS:
+        raise HTTPException(status_code=404, detail="Execution not found")
+    step = {
+        "step_id": f"step_{uuid.uuid4().hex[:8]}",
+        "name": data.get("name"),
+        "type": data.get("type"),
+        "status": data.get("status", "completed"),
+        "input": data.get("input", {}),
+        "output": data.get("output", {}),
+        "error": data.get("error"),
+        "started_at": data.get("started_at"),
+        "ended_at": datetime.utcnow().isoformat() + "Z"
+    }
+    WORKFLOW_STEPS[execution_id].append(step)
+    WORKFLOW_EXECUTIONS[execution_id]["current_step"] += 1
+    return {"step_id": step["step_id"], "message": "Step recorded"}
+
+@app.post("/workflows/executions/{execution_id}/complete")
+def complete_workflow_execution(execution_id: str, data: Dict[str, Any]):
+    """Complete a workflow execution"""
+    if execution_id not in WORKFLOW_EXECUTIONS:
+        raise HTTPException(status_code=404, detail="Execution not found")
+    WORKFLOW_EXECUTIONS[execution_id]["status"] = data.get("status", "completed")
+    WORKFLOW_EXECUTIONS[execution_id]["ended_at"] = datetime.utcnow().isoformat() + "Z"
+    WORKFLOW_EXECUTIONS[execution_id]["output"] = data.get("output", {})
+    return {"message": "Workflow execution completed"}
+
+@app.post("/workflows/executions/{execution_id}/cancel")
+def cancel_workflow_execution(execution_id: str):
+    """Cancel a workflow execution"""
+    if execution_id not in WORKFLOW_EXECUTIONS:
+        raise HTTPException(status_code=404, detail="Execution not found")
+    WORKFLOW_EXECUTIONS[execution_id]["status"] = "cancelled"
+    WORKFLOW_EXECUTIONS[execution_id]["ended_at"] = datetime.utcnow().isoformat() + "Z"
+    return {"message": "Workflow execution cancelled"}
+
+
+# ============================================================================
+# Data Pipeline
+# ============================================================================
+
+PIPELINES: Dict[str, Dict[str, Any]] = {}
+PIPELINE_STAGES: Dict[str, List[Dict[str, Any]]] = {}
+PIPELINE_RUNS: Dict[str, List[Dict[str, Any]]] = {}
+
+@app.post("/pipelines")
+def create_pipeline(data: Dict[str, Any]):
+    """Create a data pipeline"""
+    pipeline_id = f"pipe_{uuid.uuid4().hex[:12]}"
+    PIPELINES[pipeline_id] = {
+        "pipeline_id": pipeline_id,
+        "name": data.get("name"),
+        "description": data.get("description", ""),
+        "source": data.get("source", {}),
+        "destination": data.get("destination", {}),
+        "schedule": data.get("schedule"),
+        "status": "active",
+        "created_at": datetime.utcnow().isoformat() + "Z"
+    }
+    PIPELINE_STAGES[pipeline_id] = data.get("stages", [])
+    PIPELINE_RUNS[pipeline_id] = []
+    return {"pipeline_id": pipeline_id, "message": "Pipeline created"}
+
+@app.get("/pipelines")
+def list_pipelines(status: str = None):
+    """List all pipelines"""
+    pipelines = list(PIPELINES.values())
+    if status:
+        pipelines = [p for p in pipelines if p["status"] == status]
+    return {"pipelines": pipelines, "count": len(pipelines)}
+
+@app.get("/pipelines/{pipeline_id}")
+def get_pipeline(pipeline_id: str):
+    """Get pipeline details"""
+    if pipeline_id not in PIPELINES:
+        raise HTTPException(status_code=404, detail="Pipeline not found")
+    pipeline = PIPELINES[pipeline_id].copy()
+    pipeline["stages"] = PIPELINE_STAGES.get(pipeline_id, [])
+    return pipeline
+
+@app.post("/pipelines/{pipeline_id}/stages")
+def add_pipeline_stage(pipeline_id: str, data: Dict[str, Any]):
+    """Add a stage to a pipeline"""
+    if pipeline_id not in PIPELINES:
+        raise HTTPException(status_code=404, detail="Pipeline not found")
+    stage = {
+        "stage_id": f"stage_{uuid.uuid4().hex[:8]}",
+        "name": data.get("name"),
+        "type": data.get("type", "transform"),
+        "config": data.get("config", {}),
+        "order": len(PIPELINE_STAGES[pipeline_id])
+    }
+    PIPELINE_STAGES[pipeline_id].append(stage)
+    return {"stage_id": stage["stage_id"], "message": "Stage added"}
+
+@app.post("/pipelines/{pipeline_id}/run")
+def run_pipeline(pipeline_id: str, data: Dict[str, Any]):
+    """Run a pipeline"""
+    if pipeline_id not in PIPELINES:
+        raise HTTPException(status_code=404, detail="Pipeline not found")
+    run_id = f"run_{uuid.uuid4().hex[:12]}"
+    run = {
+        "run_id": run_id,
+        "pipeline_id": pipeline_id,
+        "status": "running",
+        "records_processed": 0,
+        "records_failed": 0,
+        "stage_results": [],
+        "started_at": datetime.utcnow().isoformat() + "Z",
+        "ended_at": None,
+        "error": None
+    }
+    PIPELINE_RUNS[pipeline_id].append(run)
+    return {"run_id": run_id, "message": "Pipeline run started"}
+
+@app.get("/pipelines/{pipeline_id}/runs")
+def get_pipeline_runs(pipeline_id: str, limit: int = 20):
+    """Get pipeline runs"""
+    if pipeline_id not in PIPELINE_RUNS:
+        raise HTTPException(status_code=404, detail="Pipeline not found")
+    runs = PIPELINE_RUNS[pipeline_id]
+    runs.sort(key=lambda x: x["started_at"], reverse=True)
+    return {"runs": runs[:limit], "count": len(runs)}
+
+@app.post("/pipelines/runs/{run_id}/update")
+def update_pipeline_run(run_id: str, data: Dict[str, Any]):
+    """Update a pipeline run"""
+    for pipeline_id, runs in PIPELINE_RUNS.items():
+        for run in runs:
+            if run["run_id"] == run_id:
+                run["records_processed"] = data.get("records_processed", run["records_processed"])
+                run["records_failed"] = data.get("records_failed", run["records_failed"])
+                if data.get("stage_result"):
+                    run["stage_results"].append(data["stage_result"])
+                return {"message": "Run updated"}
+    raise HTTPException(status_code=404, detail="Run not found")
+
+@app.post("/pipelines/runs/{run_id}/complete")
+def complete_pipeline_run(run_id: str, data: Dict[str, Any]):
+    """Complete a pipeline run"""
+    for pipeline_id, runs in PIPELINE_RUNS.items():
+        for run in runs:
+            if run["run_id"] == run_id:
+                run["status"] = data.get("status", "completed")
+                run["ended_at"] = datetime.utcnow().isoformat() + "Z"
+                run["error"] = data.get("error")
+                return {"message": "Run completed"}
+    raise HTTPException(status_code=404, detail="Run not found")
+
+
+# ============================================================================
+# RBAC (Role-Based Access Control)
+# ============================================================================
+
+RBAC_ROLES: Dict[str, Dict[str, Any]] = {}
+RBAC_PERMISSIONS: Dict[str, Dict[str, Any]] = {}
+RBAC_POLICIES: Dict[str, Dict[str, Any]] = {}
+RBAC_ASSIGNMENTS: Dict[str, List[Dict[str, Any]]] = {}
+
+@app.post("/rbac/roles")
+def create_role(data: Dict[str, Any]):
+    """Create a role"""
+    role_id = f"role_{uuid.uuid4().hex[:12]}"
+    RBAC_ROLES[role_id] = {
+        "role_id": role_id,
+        "name": data.get("name"),
+        "description": data.get("description", ""),
+        "permissions": data.get("permissions", []),
+        "parent_role": data.get("parent_role"),
+        "created_at": datetime.utcnow().isoformat() + "Z"
+    }
+    RBAC_ASSIGNMENTS[role_id] = []
+    return {"role_id": role_id, "message": "Role created"}
+
+@app.get("/rbac/roles")
+def list_roles():
+    """List all roles"""
+    roles = list(RBAC_ROLES.values())
+    for role in roles:
+        role["assignment_count"] = len(RBAC_ASSIGNMENTS.get(role["role_id"], []))
+    return {"roles": roles, "count": len(roles)}
+
+@app.get("/rbac/roles/{role_id}")
+def get_role(role_id: str):
+    """Get role details"""
+    if role_id not in RBAC_ROLES:
+        raise HTTPException(status_code=404, detail="Role not found")
+    role = RBAC_ROLES[role_id].copy()
+    role["assignments"] = RBAC_ASSIGNMENTS.get(role_id, [])
+    return role
+
+@app.put("/rbac/roles/{role_id}/permissions")
+def update_role_permissions(role_id: str, data: Dict[str, Any]):
+    """Update role permissions"""
+    if role_id not in RBAC_ROLES:
+        raise HTTPException(status_code=404, detail="Role not found")
+    RBAC_ROLES[role_id]["permissions"] = data.get("permissions", [])
+    RBAC_ROLES[role_id]["updated_at"] = datetime.utcnow().isoformat() + "Z"
+    return {"message": "Permissions updated"}
+
+@app.post("/rbac/permissions")
+def create_permission(data: Dict[str, Any]):
+    """Create a permission"""
+    perm_id = f"perm_{uuid.uuid4().hex[:12]}"
+    RBAC_PERMISSIONS[perm_id] = {
+        "permission_id": perm_id,
+        "name": data.get("name"),
+        "resource": data.get("resource"),
+        "actions": data.get("actions", ["read"]),
+        "description": data.get("description", ""),
+        "created_at": datetime.utcnow().isoformat() + "Z"
+    }
+    return {"permission_id": perm_id, "message": "Permission created"}
+
+@app.get("/rbac/permissions")
+def list_permissions(resource: str = None):
+    """List all permissions"""
+    permissions = list(RBAC_PERMISSIONS.values())
+    if resource:
+        permissions = [p for p in permissions if p["resource"] == resource]
+    return {"permissions": permissions, "count": len(permissions)}
+
+@app.post("/rbac/policies")
+def create_policy(data: Dict[str, Any]):
+    """Create an access policy"""
+    policy_id = f"policy_{uuid.uuid4().hex[:12]}"
+    RBAC_POLICIES[policy_id] = {
+        "policy_id": policy_id,
+        "name": data.get("name"),
+        "effect": data.get("effect", "allow"),
+        "principals": data.get("principals", []),
+        "resources": data.get("resources", []),
+        "actions": data.get("actions", []),
+        "conditions": data.get("conditions", {}),
+        "priority": data.get("priority", 0),
+        "created_at": datetime.utcnow().isoformat() + "Z"
+    }
+    return {"policy_id": policy_id, "message": "Policy created"}
+
+@app.get("/rbac/policies")
+def list_policies():
+    """List all policies"""
+    policies = list(RBAC_POLICIES.values())
+    policies.sort(key=lambda x: x["priority"], reverse=True)
+    return {"policies": policies, "count": len(policies)}
+
+@app.post("/rbac/roles/{role_id}/assign")
+def assign_role(role_id: str, data: Dict[str, Any]):
+    """Assign a role to a subject"""
+    if role_id not in RBAC_ROLES:
+        raise HTTPException(status_code=404, detail="Role not found")
+    assignment = {
+        "assignment_id": f"assign_{uuid.uuid4().hex[:8]}",
+        "subject_type": data.get("subject_type", "user"),
+        "subject_id": data.get("subject_id"),
+        "scope": data.get("scope", "global"),
+        "assigned_at": datetime.utcnow().isoformat() + "Z"
+    }
+    RBAC_ASSIGNMENTS[role_id].append(assignment)
+    return {"assignment_id": assignment["assignment_id"], "message": "Role assigned"}
+
+@app.post("/rbac/check")
+def check_access(data: Dict[str, Any]):
+    """Check if access is allowed"""
+    subject_id = data.get("subject_id")
+    resource = data.get("resource")
+    action = data.get("action")
+    subject_roles = []
+    for role_id, assignments in RBAC_ASSIGNMENTS.items():
+        for assignment in assignments:
+            if assignment["subject_id"] == subject_id:
+                subject_roles.append(role_id)
+    for role_id in subject_roles:
+        role = RBAC_ROLES.get(role_id, {})
+        if action in role.get("permissions", []):
+            return {"allowed": True, "role": role_id}
+    for policy in RBAC_POLICIES.values():
+        if subject_id in policy.get("principals", []) or "*" in policy.get("principals", []):
+            if resource in policy.get("resources", []) or "*" in policy.get("resources", []):
+                if action in policy.get("actions", []) or "*" in policy.get("actions", []):
+                    return {"allowed": policy["effect"] == "allow", "policy": policy["policy_id"]}
+    return {"allowed": False, "reason": "no_matching_policy"}
+
+
+# ============================================================================
+# Notification Service
+# ============================================================================
+
+NOTIFICATION_CHANNELS: Dict[str, Dict[str, Any]] = {}
+NOTIFICATION_TEMPLATES: Dict[str, Dict[str, Any]] = {}
+NOTIFICATIONS: List[Dict[str, Any]] = []
+NOTIFICATION_PREFERENCES: Dict[str, Dict[str, Any]] = {}
+
+@app.post("/notifications/channels")
+def create_notification_channel(data: Dict[str, Any]):
+    """Create a notification channel"""
+    channel_id = f"channel_{uuid.uuid4().hex[:12]}"
+    NOTIFICATION_CHANNELS[channel_id] = {
+        "channel_id": channel_id,
+        "name": data.get("name"),
+        "type": data.get("type", "email"),
+        "config": data.get("config", {}),
+        "enabled": data.get("enabled", True),
+        "created_at": datetime.utcnow().isoformat() + "Z"
+    }
+    return {"channel_id": channel_id, "message": "Channel created"}
+
+@app.get("/notifications/channels")
+def list_notification_channels(type: str = None, enabled: bool = None):
+    """List all notification channels"""
+    channels = list(NOTIFICATION_CHANNELS.values())
+    if type:
+        channels = [c for c in channels if c["type"] == type]
+    if enabled is not None:
+        channels = [c for c in channels if c["enabled"] == enabled]
+    return {"channels": channels, "count": len(channels)}
+
+@app.get("/notifications/channels/{channel_id}")
+def get_notification_channel(channel_id: str):
+    """Get notification channel details"""
+    if channel_id not in NOTIFICATION_CHANNELS:
+        raise HTTPException(status_code=404, detail="Channel not found")
+    return NOTIFICATION_CHANNELS[channel_id]
+
+@app.post("/notifications/templates")
+def create_notification_template(data: Dict[str, Any]):
+    """Create a notification template"""
+    template_id = f"tmpl_{uuid.uuid4().hex[:12]}"
+    NOTIFICATION_TEMPLATES[template_id] = {
+        "template_id": template_id,
+        "name": data.get("name"),
+        "type": data.get("type", "email"),
+        "subject": data.get("subject"),
+        "body": data.get("body"),
+        "variables": data.get("variables", []),
+        "created_at": datetime.utcnow().isoformat() + "Z"
+    }
+    return {"template_id": template_id, "message": "Template created"}
+
+@app.get("/notifications/templates")
+def list_notification_templates(type: str = None):
+    """List all notification templates"""
+    templates = list(NOTIFICATION_TEMPLATES.values())
+    if type:
+        templates = [t for t in templates if t["type"] == type]
+    return {"templates": templates, "count": len(templates)}
+
+@app.post("/notifications/send")
+def send_notification(data: Dict[str, Any]):
+    """Send a notification"""
+    notification_id = f"notif_{uuid.uuid4().hex[:12]}"
+    notification = {
+        "notification_id": notification_id,
+        "channel_id": data.get("channel_id"),
+        "template_id": data.get("template_id"),
+        "recipient": data.get("recipient"),
+        "subject": data.get("subject"),
+        "body": data.get("body"),
+        "variables": data.get("variables", {}),
+        "status": "sent",
+        "sent_at": datetime.utcnow().isoformat() + "Z",
+        "delivered_at": None,
+        "read_at": None
+    }
+    NOTIFICATIONS.append(notification)
+    return {"notification_id": notification_id, "message": "Notification sent"}
+
+@app.get("/notifications")
+def list_notifications(recipient: str = None, status: str = None, limit: int = 50):
+    """List notifications"""
+    notifications = NOTIFICATIONS
+    if recipient:
+        notifications = [n for n in notifications if n["recipient"] == recipient]
+    if status:
+        notifications = [n for n in notifications if n["status"] == status]
+    notifications.sort(key=lambda x: x["sent_at"], reverse=True)
+    return {"notifications": notifications[:limit], "count": len(notifications)}
+
+@app.post("/notifications/{notification_id}/delivered")
+def mark_notification_delivered(notification_id: str):
+    """Mark notification as delivered"""
+    for notification in NOTIFICATIONS:
+        if notification["notification_id"] == notification_id:
+            notification["status"] = "delivered"
+            notification["delivered_at"] = datetime.utcnow().isoformat() + "Z"
+            return {"message": "Marked as delivered"}
+    raise HTTPException(status_code=404, detail="Notification not found")
+
+@app.post("/notifications/{notification_id}/read")
+def mark_notification_read(notification_id: str):
+    """Mark notification as read"""
+    for notification in NOTIFICATIONS:
+        if notification["notification_id"] == notification_id:
+            notification["status"] = "read"
+            notification["read_at"] = datetime.utcnow().isoformat() + "Z"
+            return {"message": "Marked as read"}
+    raise HTTPException(status_code=404, detail="Notification not found")
+
+@app.post("/notifications/preferences/{user_id}")
+def set_notification_preferences(user_id: str, data: Dict[str, Any]):
+    """Set user notification preferences"""
+    NOTIFICATION_PREFERENCES[user_id] = {
+        "user_id": user_id,
+        "channels": data.get("channels", {}),
+        "frequency": data.get("frequency", "immediate"),
+        "quiet_hours": data.get("quiet_hours", {}),
+        "updated_at": datetime.utcnow().isoformat() + "Z"
+    }
+    return {"message": "Preferences saved"}
+
+@app.get("/notifications/preferences/{user_id}")
+def get_notification_preferences(user_id: str):
+    """Get user notification preferences"""
+    if user_id not in NOTIFICATION_PREFERENCES:
+        return {"user_id": user_id, "channels": {}, "frequency": "immediate", "quiet_hours": {}}
+    return NOTIFICATION_PREFERENCES[user_id]
+
+
+# ============================================================================
 # Run Server
 # ============================================================================
 
