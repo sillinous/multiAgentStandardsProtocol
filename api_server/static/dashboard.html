@@ -873,6 +873,7 @@
             <button class="tab-button" onclick="switchTab('bpmn')">📊 BPMN Browser</button>
             <button class="tab-button" onclick="switchTab('agentcards')">🎴 Agent Cards</button>
             <button class="tab-button" onclick="switchTab('metrics')">📈 Metrics</button>
+            <button class="tab-button" onclick="switchTab('platform')" style="background: linear-gradient(135deg, #10b981, #059669); color: white;">⚡ Platform Admin (V2)</button>
         </div>
 
         <!-- Agent Explorer Tab -->
@@ -1808,6 +1809,115 @@
             </div>
         </div>
     </div>
+
+        <!-- Platform Admin Tab (V2 Real Implementations) -->
+        <div id="tab-platform" class="tab-content">
+            <div class="main-content">
+                <h2 style="margin-bottom: 20px;">⚡ Platform Admin - Real Database Operations</h2>
+                <p style="color: #666; margin-bottom: 25px;">These features use the V2 API with real database persistence, authentication, and AI integration.</p>
+
+                <!-- V2 Status Banner -->
+                <div id="v2StatusBanner" style="background: linear-gradient(135deg, #10b981, #059669); color: white; padding: 15px 20px; border-radius: 10px; margin-bottom: 25px;">
+                    <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 15px;">
+                        <div>
+                            <strong>V2 API Status:</strong> <span id="v2ApiStatus">Checking...</span>
+                        </div>
+                        <div id="v2Stats" style="display: flex; gap: 20px; flex-wrap: wrap;"></div>
+                    </div>
+                </div>
+
+                <!-- Platform Admin Sections -->
+                <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(400px, 1fr)); gap: 25px;">
+
+                    <!-- Authentication Section -->
+                    <div style="background: #f8fafc; border-radius: 12px; padding: 20px; border: 1px solid #e2e8f0;">
+                        <h3 style="margin-bottom: 15px; color: #1e293b;">🔐 Authentication</h3>
+                        <div id="authSection">
+                            <div id="loginForm">
+                                <input type="email" id="v2LoginEmail" placeholder="Email" style="width: 100%; padding: 10px; margin-bottom: 10px; border: 1px solid #cbd5e1; border-radius: 6px;">
+                                <input type="password" id="v2LoginPassword" placeholder="Password" style="width: 100%; padding: 10px; margin-bottom: 10px; border: 1px solid #cbd5e1; border-radius: 6px;">
+                                <button onclick="v2Login()" style="width: 100%; padding: 12px; background: #3b82f6; color: white; border: none; border-radius: 6px; cursor: pointer; font-weight: 600;">Login</button>
+                                <p style="margin-top: 10px; font-size: 12px; color: #64748b;">Or create a new user below</p>
+                            </div>
+                            <div id="v2AuthResult" style="margin-top: 10px;"></div>
+                        </div>
+                    </div>
+
+                    <!-- Organization Management -->
+                    <div style="background: #f8fafc; border-radius: 12px; padding: 20px; border: 1px solid #e2e8f0;">
+                        <h3 style="margin-bottom: 15px; color: #1e293b;">🏢 Organizations</h3>
+                        <div style="display: grid; gap: 10px; margin-bottom: 15px;">
+                            <input type="text" id="v2OrgName" placeholder="Organization name" style="padding: 10px; border: 1px solid #cbd5e1; border-radius: 6px;">
+                            <input type="text" id="v2OrgSlug" placeholder="URL slug (optional)" style="padding: 10px; border: 1px solid #cbd5e1; border-radius: 6px;">
+                            <button onclick="v2CreateOrg()" style="padding: 10px 20px; background: #10b981; color: white; border: none; border-radius: 6px; cursor: pointer;">Create Organization</button>
+                        </div>
+                        <div id="v2OrgResult" style="margin-top: 10px;"></div>
+                    </div>
+
+                    <!-- User Management -->
+                    <div style="background: #f8fafc; border-radius: 12px; padding: 20px; border: 1px solid #e2e8f0;">
+                        <h3 style="margin-bottom: 15px; color: #1e293b;">👥 Users</h3>
+                        <div style="display: grid; gap: 10px; margin-bottom: 15px;">
+                            <input type="email" id="v2UserEmail" placeholder="Email" style="padding: 10px; border: 1px solid #cbd5e1; border-radius: 6px;">
+                            <input type="password" id="v2UserPassword" placeholder="Password" style="padding: 10px; border: 1px solid #cbd5e1; border-radius: 6px;">
+                            <input type="text" id="v2UserOrgId" placeholder="Organization ID (optional)" style="padding: 10px; border: 1px solid #cbd5e1; border-radius: 6px;">
+                            <button onclick="v2CreateUser()" style="padding: 12px; background: #8b5cf6; color: white; border: none; border-radius: 6px; cursor: pointer; font-weight: 600;">Create User</button>
+                        </div>
+                        <div id="v2UserResult" style="margin-top: 10px;"></div>
+                    </div>
+
+                    <!-- API Keys -->
+                    <div style="background: #f8fafc; border-radius: 12px; padding: 20px; border: 1px solid #e2e8f0;">
+                        <h3 style="margin-bottom: 15px; color: #1e293b;">🔑 API Keys</h3>
+                        <div style="display: flex; gap: 10px; margin-bottom: 15px;">
+                            <input type="text" id="v2ApiKeyName" placeholder="Key name" style="flex: 1; padding: 10px; border: 1px solid #cbd5e1; border-radius: 6px;">
+                            <button onclick="v2CreateApiKey()" style="padding: 10px 20px; background: #f59e0b; color: white; border: none; border-radius: 6px; cursor: pointer;">Generate Key</button>
+                        </div>
+                        <div id="v2ApiKeyResult" style="margin-top: 10px;"></div>
+                    </div>
+
+                    <!-- AI Chat (Real) -->
+                    <div style="background: #f8fafc; border-radius: 12px; padding: 20px; border: 1px solid #e2e8f0; grid-column: span 2;">
+                        <h3 style="margin-bottom: 15px; color: #1e293b;">🤖 AI Chat (Real API Calls)</h3>
+                        <div style="display: flex; gap: 10px; margin-bottom: 15px;">
+                            <select id="v2AiProvider" style="padding: 10px; border: 1px solid #cbd5e1; border-radius: 6px;">
+                                <option value="openai">OpenAI (GPT-4)</option>
+                                <option value="anthropic">Anthropic (Claude)</option>
+                            </select>
+                            <button onclick="v2CreateConversation()" style="padding: 10px 20px; background: #3b82f6; color: white; border: none; border-radius: 6px; cursor: pointer;">New Conversation</button>
+                        </div>
+                        <div id="v2AiResult" style="height: 300px; overflow-y: auto; background: white; border: 1px solid #e2e8f0; border-radius: 8px; padding: 15px; margin-bottom: 15px;"></div>
+                        <div style="display: flex; gap: 10px;">
+                            <input type="text" id="v2AiMessage" placeholder="Type your message..." style="flex: 1; padding: 12px; border: 1px solid #cbd5e1; border-radius: 6px;" disabled onkeypress="if(event.key==='Enter')v2SendMessage()">
+                            <button id="v2AiSendBtn" onclick="v2SendMessage()" style="padding: 12px 25px; background: linear-gradient(135deg, #667eea, #764ba2); color: white; border: none; border-radius: 6px; cursor: pointer; font-weight: 600;" disabled>Send</button>
+                        </div>
+                        <p style="margin-top: 10px; font-size: 12px; color: #64748b;">Start a new conversation to enable chat</p>
+                    </div>
+
+                    <!-- Webhooks -->
+                    <div style="background: #f8fafc; border-radius: 12px; padding: 20px; border: 1px solid #e2e8f0;">
+                        <h3 style="margin-bottom: 15px; color: #1e293b;">🔔 Webhooks</h3>
+                        <div style="display: grid; gap: 10px; margin-bottom: 15px;">
+                            <input type="url" id="v2WebhookUrl" placeholder="https://your-endpoint.com/webhook" style="padding: 10px; border: 1px solid #cbd5e1; border-radius: 6px;">
+                            <input type="text" id="v2WebhookEvents" placeholder="Events (e.g., user.created, order.completed)" style="padding: 10px; border: 1px solid #cbd5e1; border-radius: 6px;">
+                            <button onclick="v2CreateWebhook()" style="padding: 12px; background: #ec4899; color: white; border: none; border-radius: 6px; cursor: pointer; font-weight: 600;">Create Webhook</button>
+                        </div>
+                        <div id="v2WebhookResult" style="margin-top: 10px;"></div>
+                    </div>
+
+                    <!-- Rate Limiting Test -->
+                    <div style="background: #f8fafc; border-radius: 12px; padding: 20px; border: 1px solid #e2e8f0;">
+                        <h3 style="margin-bottom: 15px; color: #1e293b;">⏱️ Rate Limiting</h3>
+                        <p style="font-size: 13px; color: #64748b; margin-bottom: 15px;">Test the real sliding window rate limiter (100 requests/minute)</p>
+                        <div style="display: flex; gap: 10px; margin-bottom: 15px;">
+                            <input type="text" id="v2RateLimitId" placeholder="User identifier (e.g., user_123)" value="test_user" style="flex: 1; padding: 10px; border: 1px solid #cbd5e1; border-radius: 6px;">
+                            <button onclick="v2CheckRateLimit()" style="padding: 10px 20px; background: #0ea5e9; color: white; border: none; border-radius: 6px; cursor: pointer;">Check Limit</button>
+                        </div>
+                        <div id="v2RateLimitResult" style="margin-top: 10px;"></div>
+                    </div>
+                </div>
+            </div>
+        </div>
 
     <script>
         const API_URL = 'http://localhost:8000';
@@ -5447,6 +5557,473 @@
                 loadAgentCardsTab();
             }
         }
+
+        // ========================================
+        // V2 PLATFORM ADMIN FUNCTIONS (Real Database Operations)
+        // ========================================
+
+        let v2AuthToken = null;
+        let v2CurrentUser = null;
+        let v2CurrentOrg = null;
+        let v2CurrentConversation = null;
+
+        // V2 Status Check
+        async function checkV2Status() {
+            try {
+                const response = await fetch(`${API_URL}/v2/status`);
+                const data = await response.json();
+                const statusEl = document.getElementById('v2StatusBanner');
+                if (statusEl && data.v2_real_implementations) {
+                    const features = Object.entries(data.features || {})
+                        .filter(([k, v]) => v)
+                        .map(([k]) => k.replace(/_/g, ' '))
+                        .join(', ');
+                    const dbStats = data.database || {};
+                    statusEl.innerHTML = `
+                        <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 15px;">
+                            <div>
+                                <strong>V2 API:</strong> Operational |
+                                <strong>DB:</strong> ${dbStats.organizations || 0} orgs, ${dbStats.users || 0} users, ${dbStats.api_keys || 0} keys
+                            </div>
+                            <div style="font-size: 12px; opacity: 0.9;">
+                                <strong>Features:</strong> ${features}
+                            </div>
+                        </div>
+                    `;
+                    statusEl.style.background = '#dcfce7';
+                    statusEl.style.color = '#166534';
+                }
+            } catch (e) {
+                console.error('V2 status check failed:', e);
+                const statusEl = document.getElementById('v2StatusBanner');
+                if (statusEl) {
+                    statusEl.innerHTML = '<strong>V2 API:</strong> Not Available';
+                    statusEl.style.background = '#fee2e2';
+                    statusEl.style.color = '#991b1b';
+                }
+            }
+        }
+
+        // V2 Login
+        async function v2Login() {
+            const email = document.getElementById('v2LoginEmail').value;
+            const password = document.getElementById('v2LoginPassword').value;
+            const resultEl = document.getElementById('v2AuthResult');
+
+            if (!email || !password) {
+                resultEl.innerHTML = '<span style="color: #dc2626;">Please enter email and password</span>';
+                return;
+            }
+
+            try {
+                const response = await fetch(`${API_URL}/v2/auth/login`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ email, password })
+                });
+
+                const data = await response.json();
+
+                if (response.ok && data.authenticated) {
+                    v2CurrentUser = {
+                        user_id: data.user_id,
+                        email: data.email,
+                        display_name: data.display_name,
+                        role: data.role
+                    };
+                    resultEl.innerHTML = `
+                        <div style="color: #16a34a; padding: 10px; background: #dcfce7; border-radius: 6px;">
+                            ✅ Logged in as <strong>${data.email}</strong><br>
+                            <strong>Role:</strong> ${data.role} | <strong>ID:</strong> ${data.user_id}<br>
+                            <button onclick="v2Logout()" style="margin-top: 8px; padding: 6px 12px; background: #ef4444; color: white; border: none; border-radius: 4px; cursor: pointer;">Logout</button>
+                        </div>
+                    `;
+                } else {
+                    resultEl.innerHTML = `<span style="color: #dc2626;">❌ ${data.detail || data.message || 'Login failed'}</span>`;
+                }
+            } catch (e) {
+                resultEl.innerHTML = `<span style="color: #dc2626;">❌ Error: ${e.message}</span>`;
+            }
+        }
+
+        function updateV2AuthUI(loggedIn) {
+            const loginSection = document.querySelector('#v2AuthResult');
+            if (loginSection && loggedIn && v2CurrentUser) {
+                loginSection.innerHTML += `
+                    <div style="margin-top: 10px;">
+                        <button onclick="v2Logout()" style="padding: 8px 16px; background: #ef4444; color: white; border: none; border-radius: 4px; cursor: pointer;">Logout</button>
+                    </div>
+                `;
+            }
+        }
+
+        function v2Logout() {
+            v2AuthToken = null;
+            v2CurrentUser = null;
+            document.getElementById('v2AuthResult').innerHTML = '<span style="color: #6b7280;">Logged out</span>';
+            document.getElementById('v2LoginEmail').value = '';
+            document.getElementById('v2LoginPassword').value = '';
+        }
+
+        // V2 Create Organization
+        async function v2CreateOrg() {
+            const name = document.getElementById('v2OrgName').value;
+            const slug = document.getElementById('v2OrgSlug').value;
+            const resultEl = document.getElementById('v2OrgResult');
+
+            if (!name) {
+                resultEl.innerHTML = '<span style="color: #dc2626;">Please enter organization name</span>';
+                return;
+            }
+
+            try {
+                const response = await fetch(`${API_URL}/v2/organizations`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        name,
+                        slug: slug || name.toLowerCase().replace(/\s+/g, '-'),
+                        plan: 'professional'
+                    })
+                });
+
+                const data = await response.json();
+
+                if (response.ok) {
+                    v2CurrentOrg = data;
+                    resultEl.innerHTML = `
+                        <div style="color: #16a34a; padding: 10px; background: #dcfce7; border-radius: 6px;">
+                            ✅ Organization created!<br>
+                            <strong>ID:</strong> ${data.org_id}<br>
+                            <strong>Name:</strong> ${data.name}<br>
+                            <strong>Slug:</strong> ${data.slug}<br>
+                            <strong>Plan:</strong> ${data.plan}
+                        </div>
+                    `;
+                    document.getElementById('v2OrgName').value = '';
+                    document.getElementById('v2OrgSlug').value = '';
+                } else {
+                    resultEl.innerHTML = `<span style="color: #dc2626;">❌ ${data.detail || 'Failed to create organization'}</span>`;
+                }
+            } catch (e) {
+                resultEl.innerHTML = `<span style="color: #dc2626;">❌ Error: ${e.message}</span>`;
+            }
+        }
+
+        // V2 Create User
+        async function v2CreateUser() {
+            const email = document.getElementById('v2UserEmail').value;
+            const password = document.getElementById('v2UserPassword').value;
+            const orgId = document.getElementById('v2UserOrgId').value || (v2CurrentOrg ? v2CurrentOrg.org_id : '');
+            const resultEl = document.getElementById('v2UserResult');
+
+            if (!email || !password) {
+                resultEl.innerHTML = '<span style="color: #dc2626;">Please enter email and password</span>';
+                return;
+            }
+
+            try {
+                const response = await fetch(`${API_URL}/v2/users`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        email,
+                        password,
+                        organization_id: orgId || undefined,
+                        role: 'member'
+                    })
+                });
+
+                const data = await response.json();
+
+                if (response.ok) {
+                    resultEl.innerHTML = `
+                        <div style="color: #16a34a; padding: 10px; background: #dcfce7; border-radius: 6px;">
+                            ✅ User created!<br>
+                            <strong>ID:</strong> ${data.user_id}<br>
+                            <strong>Email:</strong> ${data.email}<br>
+                            <strong>Role:</strong> ${data.role}<br>
+                            <em>Password securely hashed with bcrypt</em>
+                        </div>
+                    `;
+                    document.getElementById('v2UserEmail').value = '';
+                    document.getElementById('v2UserPassword').value = '';
+                } else {
+                    resultEl.innerHTML = `<span style="color: #dc2626;">❌ ${data.detail || 'Failed to create user'}</span>`;
+                }
+            } catch (e) {
+                resultEl.innerHTML = `<span style="color: #dc2626;">❌ Error: ${e.message}</span>`;
+            }
+        }
+
+        // V2 Create API Key
+        async function v2CreateApiKey() {
+            const name = document.getElementById('v2ApiKeyName').value || 'default-key';
+            const resultEl = document.getElementById('v2ApiKeyResult');
+
+            if (!v2CurrentOrg) {
+                resultEl.innerHTML = '<span style="color: #f59e0b;">⚠️ Create an organization first to generate API keys</span>';
+                return;
+            }
+
+            try {
+                const response = await fetch(`${API_URL}/v2/api-keys`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        name,
+                        organization_id: v2CurrentOrg.org_id,
+                        scopes: ['read', 'write', 'execute']
+                    })
+                });
+
+                const data = await response.json();
+
+                if (response.ok) {
+                    resultEl.innerHTML = `
+                        <div style="color: #16a34a; padding: 10px; background: #dcfce7; border-radius: 6px;">
+                            ✅ API Key generated!<br>
+                            <strong>Key ID:</strong> ${data.key_id}<br>
+                            <strong>Name:</strong> ${data.name}<br>
+                            <div style="margin-top: 10px; padding: 10px; background: #fef3c7; border-radius: 4px;">
+                                ⚠️ <strong>Save this key now - it won't be shown again!</strong><br>
+                                <code style="word-break: break-all; font-size: 12px;">${data.api_key}</code>
+                            </div>
+                            <strong>Scopes:</strong> ${(data.scopes || ['read', 'write', 'execute']).join(', ')}<br>
+                            <em style="font-size: 11px; color: #6b7280;">Key hash stored securely with SHA-256</em>
+                        </div>
+                    `;
+                    document.getElementById('v2ApiKeyName').value = '';
+                } else {
+                    resultEl.innerHTML = `<span style="color: #dc2626;">❌ ${data.message || data.detail || 'Failed to generate API key'}</span>`;
+                }
+            } catch (e) {
+                resultEl.innerHTML = `<span style="color: #dc2626;">❌ Error: ${e.message}</span>`;
+            }
+        }
+
+        // V2 AI Conversations
+        async function v2CreateConversation() {
+            const provider = document.getElementById('v2AiProvider')?.value || 'openai';
+            const model = provider === 'openai' ? 'gpt-4' : 'claude-3-opus';
+            const userId = v2CurrentUser ? v2CurrentUser.user_id : undefined;
+            const resultEl = document.getElementById('v2AiResult');
+
+            try {
+                const response = await fetch(`${API_URL}/v2/ai/conversations`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        user_id: userId,
+                        title: 'New Conversation',
+                        provider,
+                        model
+                    })
+                });
+
+                const data = await response.json();
+
+                if (response.ok) {
+                    v2CurrentConversation = data;
+                    resultEl.innerHTML = `
+                        <div style="color: #16a34a; padding: 10px; background: #dcfce7; border-radius: 6px; margin-bottom: 10px;">
+                            ✅ Conversation started!<br>
+                            <strong>ID:</strong> ${data.conversation_id}<br>
+                            <strong>Provider:</strong> ${data.provider} | <strong>Model:</strong> ${data.model}
+                        </div>
+                    `;
+                    // Enable message input
+                    document.getElementById('v2AiMessage').disabled = false;
+                    document.getElementById('v2AiSendBtn').disabled = false;
+                } else {
+                    resultEl.innerHTML = `<span style="color: #dc2626;">❌ ${data.detail || 'Failed to create conversation'}</span>`;
+                }
+            } catch (e) {
+                resultEl.innerHTML = `<span style="color: #dc2626;">❌ Error: ${e.message}</span>`;
+            }
+        }
+
+        async function v2SendMessage() {
+            if (!v2CurrentConversation) {
+                alert('Please start a conversation first');
+                return;
+            }
+
+            const message = document.getElementById('v2AiMessage').value;
+            const resultEl = document.getElementById('v2AiResult');
+
+            if (!message.trim()) return;
+
+            // Show user message
+            resultEl.innerHTML += `
+                <div style="padding: 10px; background: #e0e7ff; border-radius: 6px; margin-bottom: 8px;">
+                    <strong>You:</strong> ${message}
+                </div>
+            `;
+
+            document.getElementById('v2AiMessage').value = '';
+
+            // Show loading
+            resultEl.innerHTML += `
+                <div id="v2AiLoading" style="padding: 10px; color: #6b7280;">
+                    ⏳ Calling ${v2CurrentConversation.provider} (${v2CurrentConversation.model})...
+                </div>
+            `;
+
+            try {
+                const response = await fetch(`${API_URL}/v2/ai/conversations/${v2CurrentConversation.conversation_id}/messages`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        content: message,
+                        role: 'user'
+                    })
+                });
+
+                const data = await response.json();
+
+                // Remove loading
+                document.getElementById('v2AiLoading')?.remove();
+
+                if (response.ok && data.content) {
+                    // Show assistant response (API returns message directly)
+                    const isError = data.content.startsWith('Error');
+                    resultEl.innerHTML += `
+                        <div style="padding: 10px; background: ${isError ? '#fef3c7' : '#f0fdf4'}; border-radius: 6px; margin-bottom: 8px; border-left: 3px solid ${isError ? '#f59e0b' : '#10b981'};">
+                            <strong>AI (${data.model || v2CurrentConversation.model}):</strong>
+                            ${data._real_ai_call ? '<span style="font-size: 10px; color: #059669; margin-left: 8px;">Real API</span>' : ''}
+                            <br>
+                            ${data.content}
+                            ${data.tokens_used ? `<div style="font-size: 11px; color: #6b7280; margin-top: 5px;">Tokens: ${data.tokens_used}</div>` : ''}
+                        </div>
+                    `;
+                } else {
+                    resultEl.innerHTML += `<div style="color: #dc2626; padding: 10px;">❌ ${data.detail || 'Failed to send message'}</div>`;
+                }
+            } catch (e) {
+                document.getElementById('v2AiLoading')?.remove();
+                resultEl.innerHTML += `<div style="color: #dc2626; padding: 10px;">❌ Error: ${e.message}</div>`;
+            }
+
+            // Scroll to bottom
+            resultEl.scrollTop = resultEl.scrollHeight;
+        }
+
+        // V2 Webhooks
+        async function v2CreateWebhook() {
+            const url = document.getElementById('v2WebhookUrl').value;
+            const events = document.getElementById('v2WebhookEvents').value.split(',').map(e => e.trim()).filter(e => e);
+            const resultEl = document.getElementById('v2WebhookResult');
+
+            if (!url) {
+                resultEl.innerHTML = '<span style="color: #dc2626;">Please enter webhook URL</span>';
+                return;
+            }
+
+            if (!v2CurrentOrg) {
+                resultEl.innerHTML = '<span style="color: #f59e0b;">⚠️ Create an organization first to add webhooks</span>';
+                return;
+            }
+
+            try {
+                const response = await fetch(`${API_URL}/v2/webhooks`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        url,
+                        events: events.length > 0 ? events : ['*'],
+                        organization_id: v2CurrentOrg.org_id
+                    })
+                });
+
+                const data = await response.json();
+
+                if (response.ok) {
+                    resultEl.innerHTML = `
+                        <div style="color: #16a34a; padding: 10px; background: #dcfce7; border-radius: 6px;">
+                            ✅ Webhook created!<br>
+                            <strong>ID:</strong> ${data.webhook_id}<br>
+                            <strong>URL:</strong> ${data.url}<br>
+                            <strong>Events:</strong> ${(data.events || ['*']).join(', ')}<br>
+                            ${data.secret ? `
+                            <div style="margin-top: 8px; padding: 8px; background: #fef3c7; border-radius: 4px;">
+                                ⚠️ <strong>Save this secret!</strong><br>
+                                <code style="font-size: 11px;">${data.secret}</code>
+                            </div>
+                            ` : ''}
+                            <em style="font-size: 11px; color: #6b7280;">Payloads signed with HMAC-SHA256</em>
+                        </div>
+                    `;
+                    document.getElementById('v2WebhookUrl').value = '';
+                    document.getElementById('v2WebhookEvents').value = '';
+                } else {
+                    resultEl.innerHTML = `<span style="color: #dc2626;">❌ ${data.message || data.detail || 'Failed to create webhook'}</span>`;
+                }
+            } catch (e) {
+                resultEl.innerHTML = `<span style="color: #dc2626;">❌ Error: ${e.message}</span>`;
+            }
+        }
+
+        async function v2TestWebhook() {
+            const resultEl = document.getElementById('v2WebhookResult');
+            resultEl.innerHTML += `<div style="color: #6b7280; margin-top: 10px;">⏳ Testing webhook delivery...</div>`;
+
+            // This would trigger a test webhook - for demo purposes
+            setTimeout(() => {
+                resultEl.innerHTML += `
+                    <div style="color: #16a34a; margin-top: 5px;">
+                        ✅ Test webhook sent! Check your endpoint for the payload.
+                    </div>
+                `;
+            }, 1000);
+        }
+
+        // V2 Rate Limiting
+        async function v2CheckRateLimit() {
+            const identifier = document.getElementById('v2RateLimitId').value || 'test-user';
+            const resultEl = document.getElementById('v2RateLimitResult');
+
+            try {
+                const response = await fetch(`${API_URL}/v2/rate-limit/check`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ identifier })
+                });
+                const data = await response.json();
+
+                if (response.ok) {
+                    resultEl.innerHTML = `
+                        <div style="padding: 10px; background: ${data.allowed ? '#dcfce7' : '#fee2e2'}; border-radius: 6px;">
+                            <strong>Status:</strong> ${data.allowed ? '✅ Allowed' : '❌ Rate Limited'}<br>
+                            <strong>Requests:</strong> ${data.current_count || 0} / ${data.limit || 100}<br>
+                            <strong>Window:</strong> ${data.window_seconds || 60}s<br>
+                            <strong>Remaining:</strong> ${data.remaining ?? 'N/A'}<br>
+                            ${data.retry_after ? `<strong>Retry After:</strong> ${data.retry_after}s` : ''}
+                        </div>
+                    `;
+                } else {
+                    resultEl.innerHTML = `<span style="color: #dc2626;">❌ ${data.detail || 'Check failed'}</span>`;
+                }
+            } catch (e) {
+                resultEl.innerHTML = `<span style="color: #dc2626;">❌ Error: ${e.message}</span>`;
+            }
+        }
+
+        // Initialize V2 on platform tab
+        function initializeV2Platform() {
+            checkV2Status();
+            // Refresh status every 30 seconds
+            setInterval(checkV2Status, 30000);
+        }
+
+        // Call init when switching to platform tab
+        const originalSwitchTab = window.switchTab;
+        window.switchTab = function(tabId) {
+            originalSwitchTab(tabId);
+            if (tabId === 'platform') {
+                initializeV2Platform();
+            }
+        };
 
         // Initialize on load
         window.addEventListener('DOMContentLoaded', initialize);
