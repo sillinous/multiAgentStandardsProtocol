@@ -21,7 +21,7 @@ from datetime import datetime
 from typing import Optional, Dict, Any, List
 from uuid import uuid4
 
-from fastapi import FastAPI, HTTPException, Depends, BackgroundTasks, Request
+from fastapi import FastAPI, HTTPException, Depends, BackgroundTasks, Request, Body
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.staticfiles import StaticFiles
 from fastapi.responses import FileResponse, JSONResponse, Response
@@ -67,7 +67,15 @@ if APQC_HIERARCHY_PATH.exists():
 # Add project root to path
 sys.path.insert(0, str(Path(__file__).parent.parent))
 
-from api_server.database import get_db, Agent, Workflow, AgentExecution, WorkflowStage, init_db, seed_agents, DATABASE_URL
+from api_server.database import (
+    get_db, Agent, Workflow, AgentExecution, WorkflowStage, init_db, seed_agents, DATABASE_URL,
+    Organization, User, Team, TeamMember, APIKey, Webhook, WebhookDelivery,
+    AIConversation, AIMessage
+)
+from api_server.services import (
+    OrganizationService, UserService, APIKeyService,
+    WebhookService, AIProviderService, RateLimiter
+)
 
 # Import our workflow
 sys.path.insert(0, str(Path(__file__).parent.parent))
@@ -33300,6 +33308,348 @@ def get_dr_status(config_id: str):
         "replication_lag_seconds": 5,
         "last_sync": datetime.utcnow().isoformat() + "Z",
         "health": "healthy"
+    }
+
+
+# ============================================================================
+# REAL IMPLEMENTATIONS (Database-Backed)
+# ============================================================================
+# These endpoints use actual database storage and real service implementations
+# instead of in-memory dictionaries.
+
+@app.post("/v2/organizations", tags=["V2 - Real Implementations"])
+async def create_organization_v2(data: Dict[str, Any], db: Session = Depends(get_db)):
+    """Create an organization (REAL - persisted to database)"""
+    org = OrganizationService.create(
+        db,
+        name=data.get("name"),
+        slug=data.get("slug", data.get("name", "").lower().replace(" ", "-")),
+        plan=data.get("plan", "free")
+    )
+    return {
+        "organization_id": org.org_id,
+        "name": org.name,
+        "slug": org.slug,
+        "plan": org.plan,
+        "status": org.status,
+        "created_at": org.created_at.isoformat() + "Z",
+        "_persisted": True
+    }
+
+
+@app.get("/v2/organizations", tags=["V2 - Real Implementations"])
+async def list_organizations_v2(db: Session = Depends(get_db)):
+    """List organizations (REAL - from database)"""
+    orgs = OrganizationService.list_all(db)
+    return {
+        "organizations": [{
+            "organization_id": o.org_id,
+            "name": o.name,
+            "slug": o.slug,
+            "plan": o.plan,
+            "status": o.status,
+            "created_at": o.created_at.isoformat() + "Z"
+        } for o in orgs],
+        "total": len(orgs),
+        "_persisted": True
+    }
+
+
+@app.get("/v2/organizations/{org_id}", tags=["V2 - Real Implementations"])
+async def get_organization_v2(org_id: str, db: Session = Depends(get_db)):
+    """Get organization details (REAL - from database)"""
+    org = OrganizationService.get_by_id(db, org_id)
+    if not org:
+        raise HTTPException(status_code=404, detail="Organization not found")
+    return {
+        "organization_id": org.org_id,
+        "name": org.name,
+        "slug": org.slug,
+        "plan": org.plan,
+        "status": org.status,
+        "max_users": org.max_users,
+        "max_teams": org.max_teams,
+        "max_api_calls_per_month": org.max_api_calls_per_month,
+        "current_api_calls": org.current_api_calls,
+        "created_at": org.created_at.isoformat() + "Z",
+        "_persisted": True
+    }
+
+
+@app.post("/v2/users", tags=["V2 - Real Implementations"])
+async def create_user_v2(data: Dict[str, Any], db: Session = Depends(get_db)):
+    """Create a user (REAL - persisted to database with hashed password)"""
+    # Check if org exists
+    org = None
+    if data.get("organization_id"):
+        org = OrganizationService.get_by_id(db, data["organization_id"])
+        if not org:
+            raise HTTPException(status_code=404, detail="Organization not found")
+
+    user = UserService.create(
+        db,
+        email=data.get("email"),
+        password=data.get("password", "changeme123"),
+        organization_id=org.id if org else None,
+        first_name=data.get("first_name"),
+        last_name=data.get("last_name"),
+        role=data.get("role", "member")
+    )
+    return {
+        "user_id": user.user_id,
+        "email": user.email,
+        "display_name": user.display_name,
+        "role": user.role,
+        "status": user.status,
+        "created_at": user.created_at.isoformat() + "Z",
+        "_persisted": True
+    }
+
+
+@app.post("/v2/auth/login", tags=["V2 - Real Implementations"])
+async def login_v2(data: Dict[str, Any], db: Session = Depends(get_db)):
+    """Authenticate user (REAL - verifies password hash)"""
+    user = UserService.authenticate(
+        db,
+        email=data.get("email"),
+        password=data.get("password")
+    )
+    if not user:
+        raise HTTPException(status_code=401, detail="Invalid credentials")
+    return {
+        "authenticated": True,
+        "user_id": user.user_id,
+        "email": user.email,
+        "display_name": user.display_name,
+        "role": user.role,
+        "last_login": user.last_login.isoformat() + "Z" if user.last_login else None,
+        "_persisted": True
+    }
+
+
+@app.post("/v2/api-keys", tags=["V2 - Real Implementations"])
+async def create_api_key_v2(data: Dict[str, Any], db: Session = Depends(get_db)):
+    """Create an API key (REAL - securely hashed, key shown once)"""
+    org = OrganizationService.get_by_id(db, data.get("organization_id"))
+    if not org:
+        raise HTTPException(status_code=404, detail="Organization not found")
+
+    api_key, raw_key = APIKeyService.create(
+        db,
+        organization_id=org.id,
+        name=data.get("name", "API Key"),
+        scopes=data.get("scopes", ["read"])
+    )
+    return {
+        "key_id": api_key.key_id,
+        "key": raw_key,  # Only shown once!
+        "key_prefix": api_key.key_prefix,
+        "name": api_key.name,
+        "scopes": api_key.scopes,
+        "created_at": api_key.created_at.isoformat() + "Z",
+        "_warning": "Save this key now - it cannot be retrieved later",
+        "_persisted": True
+    }
+
+
+@app.post("/v2/api-keys/validate", tags=["V2 - Real Implementations"])
+async def validate_api_key_v2(data: Dict[str, Any], db: Session = Depends(get_db)):
+    """Validate an API key (REAL - checks hash in database)"""
+    api_key = APIKeyService.validate(db, data.get("key"))
+    if not api_key:
+        return {"valid": False, "message": "Invalid or expired API key"}
+    return {
+        "valid": True,
+        "key_id": api_key.key_id,
+        "scopes": api_key.scopes,
+        "total_requests": api_key.total_requests,
+        "last_used_at": api_key.last_used_at.isoformat() + "Z" if api_key.last_used_at else None,
+        "_persisted": True
+    }
+
+
+@app.post("/v2/webhooks", tags=["V2 - Real Implementations"])
+async def create_webhook_v2(data: Dict[str, Any], db: Session = Depends(get_db)):
+    """Create a webhook (REAL - persisted with secret for signature verification)"""
+    org = OrganizationService.get_by_id(db, data.get("organization_id"))
+    if not org:
+        raise HTTPException(status_code=404, detail="Organization not found")
+
+    webhook = WebhookService.create(
+        db,
+        organization_id=org.id,
+        name=data.get("name"),
+        url=data.get("url"),
+        events=data.get("events", [])
+    )
+    return {
+        "webhook_id": webhook.webhook_id,
+        "name": webhook.name,
+        "url": webhook.url,
+        "secret": webhook.secret,  # For signature verification
+        "events": webhook.events,
+        "status": webhook.status,
+        "created_at": webhook.created_at.isoformat() + "Z",
+        "_persisted": True
+    }
+
+
+@app.post("/v2/webhooks/test/{webhook_id}", tags=["V2 - Real Implementations"])
+async def test_webhook_v2(webhook_id: str, db: Session = Depends(get_db)):
+    """Test webhook delivery (REAL - actually sends HTTP request)"""
+    webhook = db.query(Webhook).filter(Webhook.webhook_id == webhook_id).first()
+    if not webhook:
+        raise HTTPException(status_code=404, detail="Webhook not found")
+
+    # Send real test delivery
+    delivery = await WebhookService.deliver(
+        db, webhook,
+        event_type="webhook.test",
+        event_id=f"test_{uuid4().hex[:8]}",
+        payload={"test": True, "message": "This is a test webhook delivery"}
+    )
+    return {
+        "delivery_id": delivery.delivery_id,
+        "status": delivery.status,
+        "response_status_code": delivery.response_status_code,
+        "response_time_ms": delivery.response_time_ms,
+        "error_message": delivery.error_message,
+        "_real_http_request": True
+    }
+
+
+@app.post("/v2/ai/conversations", tags=["V2 - Real Implementations"])
+async def create_ai_conversation_v2(data: Dict[str, Any], db: Session = Depends(get_db)):
+    """Create an AI conversation (REAL - persisted to database)"""
+    conversation = AIConversation(
+        conversation_id=f"conv_{uuid4().hex[:12]}",
+        title=data.get("title", "New Conversation"),
+        model=data.get("model", "gpt-4"),
+        provider=data.get("provider", "openai"),
+        system_prompt=data.get("system_prompt"),
+        status="active"
+    )
+    db.add(conversation)
+    db.commit()
+    db.refresh(conversation)
+
+    return {
+        "conversation_id": conversation.conversation_id,
+        "title": conversation.title,
+        "model": conversation.model,
+        "provider": conversation.provider,
+        "created_at": conversation.created_at.isoformat() + "Z",
+        "_persisted": True
+    }
+
+
+@app.post("/v2/ai/conversations/{conversation_id}/messages", tags=["V2 - Real Implementations"])
+async def send_ai_message_v2(conversation_id: str, data: Dict[str, Any], db: Session = Depends(get_db)):
+    """Send a message and get AI response (REAL - calls actual AI APIs if configured)"""
+    conversation = db.query(AIConversation).filter(
+        AIConversation.conversation_id == conversation_id
+    ).first()
+    if not conversation:
+        raise HTTPException(status_code=404, detail="Conversation not found")
+
+    try:
+        response = await AIProviderService.chat(db, conversation.id, data.get("message"))
+        return {
+            "message_id": response.message_id,
+            "role": response.role,
+            "content": response.content,
+            "model": response.model,
+            "tokens_used": response.tokens_used,
+            "created_at": response.created_at.isoformat() + "Z",
+            "_real_ai_call": True
+        }
+    except Exception as e:
+        return {
+            "error": str(e),
+            "message": "AI provider not configured or error occurred",
+            "_tip": "Set OPENAI_API_KEY or ANTHROPIC_API_KEY environment variable"
+        }
+
+
+@app.get("/v2/ai/conversations/{conversation_id}/messages", tags=["V2 - Real Implementations"])
+async def get_ai_messages_v2(conversation_id: str, db: Session = Depends(get_db)):
+    """Get conversation messages (REAL - from database)"""
+    conversation = db.query(AIConversation).filter(
+        AIConversation.conversation_id == conversation_id
+    ).first()
+    if not conversation:
+        raise HTTPException(status_code=404, detail="Conversation not found")
+
+    messages = db.query(AIMessage).filter(
+        AIMessage.conversation_id == conversation.id
+    ).order_by(AIMessage.created_at).all()
+
+    return {
+        "conversation_id": conversation_id,
+        "messages": [{
+            "message_id": m.message_id,
+            "role": m.role,
+            "content": m.content,
+            "tokens_used": m.tokens_used,
+            "created_at": m.created_at.isoformat() + "Z"
+        } for m in messages],
+        "total": len(messages),
+        "_persisted": True
+    }
+
+
+@app.post("/v2/rate-limit/check", tags=["V2 - Real Implementations"])
+async def check_rate_limit_v2(data: Dict[str, Any]):
+    """Check rate limit (REAL - sliding window implementation)"""
+    key = data.get("key", "default")
+    limit = data.get("limit", 60)
+    window = data.get("window_seconds", 60)
+
+    allowed, remaining = RateLimiter.check(key, limit, window)
+    return {
+        "allowed": allowed,
+        "remaining": remaining,
+        "limit": limit,
+        "window_seconds": window,
+        "_real_rate_limiting": True
+    }
+
+
+@app.get("/v2/status", tags=["V2 - Real Implementations"])
+async def get_v2_status(db: Session = Depends(get_db)):
+    """Get status of real implementations"""
+    # Count real entities
+    org_count = db.query(Organization).count()
+    user_count = db.query(User).count()
+    api_key_count = db.query(APIKey).count()
+    webhook_count = db.query(Webhook).count()
+    conversation_count = db.query(AIConversation).count()
+
+    # Check AI provider availability
+    openai_available = bool(os.getenv("OPENAI_API_KEY"))
+    anthropic_available = bool(os.getenv("ANTHROPIC_API_KEY"))
+
+    return {
+        "v2_real_implementations": True,
+        "database": {
+            "organizations": org_count,
+            "users": user_count,
+            "api_keys": api_key_count,
+            "webhooks": webhook_count,
+            "ai_conversations": conversation_count
+        },
+        "ai_providers": {
+            "openai": openai_available,
+            "anthropic": anthropic_available
+        },
+        "features": {
+            "database_persistence": True,
+            "password_hashing": True,
+            "api_key_hashing": True,
+            "webhook_delivery": True,
+            "rate_limiting": True,
+            "ai_integration": openai_available or anthropic_available
+        }
     }
 
 

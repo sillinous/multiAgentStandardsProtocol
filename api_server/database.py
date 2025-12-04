@@ -142,6 +142,308 @@ class WorkflowStage(Base):
 
 
 # ============================================================================
+# Core Entity Models (Users, Teams, Organizations)
+# ============================================================================
+
+class Organization(Base):
+    """Organizations/Tenants"""
+    __tablename__ = "organizations"
+
+    id = Column(Integer, primary_key=True, index=True)
+    org_id = Column(String(50), unique=True, index=True, nullable=False)
+    name = Column(String(200), nullable=False)
+    slug = Column(String(100), unique=True, index=True)
+    description = Column(Text)
+
+    # Settings
+    plan = Column(String(50), default="free")  # free, starter, professional, enterprise
+    settings = Column(JSON, default={})
+
+    # Limits
+    max_users = Column(Integer, default=5)
+    max_teams = Column(Integer, default=3)
+    max_api_calls_per_month = Column(Integer, default=10000)
+    current_api_calls = Column(Integer, default=0)
+
+    # Status
+    status = Column(String(50), default="active")  # active, suspended, deleted
+
+    # Timestamps
+    created_at = Column(DateTime, default=datetime.utcnow)
+    updated_at = Column(DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
+
+    # Relationships
+    users = relationship("User", back_populates="organization")
+    teams = relationship("Team", back_populates="organization")
+    api_keys = relationship("APIKey", back_populates="organization")
+    webhooks = relationship("Webhook", back_populates="organization")
+
+
+class User(Base):
+    """Platform users"""
+    __tablename__ = "users"
+
+    id = Column(Integer, primary_key=True, index=True)
+    user_id = Column(String(50), unique=True, index=True, nullable=False)
+    email = Column(String(255), unique=True, index=True, nullable=False)
+    username = Column(String(100), unique=True, index=True)
+    password_hash = Column(String(255))  # bcrypt hashed
+
+    # Profile
+    first_name = Column(String(100))
+    last_name = Column(String(100))
+    display_name = Column(String(200))
+    avatar_url = Column(String(500))
+
+    # Organization
+    organization_id = Column(Integer, ForeignKey("organizations.id"))
+    role = Column(String(50), default="member")  # owner, admin, member, viewer
+
+    # Auth
+    email_verified = Column(Boolean, default=False)
+    mfa_enabled = Column(Boolean, default=False)
+    mfa_secret = Column(String(100))
+
+    # Status
+    status = Column(String(50), default="active")  # active, invited, suspended, deleted
+    last_login = Column(DateTime)
+
+    # Timestamps
+    created_at = Column(DateTime, default=datetime.utcnow)
+    updated_at = Column(DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
+
+    # Relationships
+    organization = relationship("Organization", back_populates="users")
+    team_memberships = relationship("TeamMember", back_populates="user")
+
+
+class Team(Base):
+    """Teams within organizations"""
+    __tablename__ = "teams"
+
+    id = Column(Integer, primary_key=True, index=True)
+    team_id = Column(String(50), unique=True, index=True, nullable=False)
+    name = Column(String(200), nullable=False)
+    description = Column(Text)
+
+    # Organization
+    organization_id = Column(Integer, ForeignKey("organizations.id"))
+
+    # Settings
+    settings = Column(JSON, default={})
+
+    # Status
+    status = Column(String(50), default="active")
+
+    # Timestamps
+    created_at = Column(DateTime, default=datetime.utcnow)
+    updated_at = Column(DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
+
+    # Relationships
+    organization = relationship("Organization", back_populates="teams")
+    members = relationship("TeamMember", back_populates="team")
+
+
+class TeamMember(Base):
+    """Team membership junction table"""
+    __tablename__ = "team_members"
+
+    id = Column(Integer, primary_key=True, index=True)
+    team_id = Column(Integer, ForeignKey("teams.id"))
+    user_id = Column(Integer, ForeignKey("users.id"))
+    role = Column(String(50), default="member")  # lead, member
+    joined_at = Column(DateTime, default=datetime.utcnow)
+
+    # Relationships
+    team = relationship("Team", back_populates="members")
+    user = relationship("User", back_populates="team_memberships")
+
+
+# ============================================================================
+# API Keys & Authentication
+# ============================================================================
+
+class APIKey(Base):
+    """API Keys for authentication"""
+    __tablename__ = "api_keys"
+
+    id = Column(Integer, primary_key=True, index=True)
+    key_id = Column(String(50), unique=True, index=True, nullable=False)
+    key_hash = Column(String(255), nullable=False)  # SHA-256 hash of actual key
+    key_prefix = Column(String(20))  # First 8 chars for identification
+
+    name = Column(String(200))
+    description = Column(Text)
+
+    # Organization & Permissions
+    organization_id = Column(Integer, ForeignKey("organizations.id"))
+    created_by_user_id = Column(Integer, ForeignKey("users.id"))
+    scopes = Column(JSON, default=["read"])  # read, write, admin, etc.
+
+    # Rate Limits
+    rate_limit_per_minute = Column(Integer, default=60)
+    rate_limit_per_day = Column(Integer, default=10000)
+
+    # Usage tracking
+    total_requests = Column(Integer, default=0)
+    last_used_at = Column(DateTime)
+
+    # Status
+    status = Column(String(50), default="active")  # active, revoked, expired
+    expires_at = Column(DateTime)
+
+    # Timestamps
+    created_at = Column(DateTime, default=datetime.utcnow)
+    revoked_at = Column(DateTime)
+
+    # Relationships
+    organization = relationship("Organization", back_populates="api_keys")
+
+
+# ============================================================================
+# Webhooks
+# ============================================================================
+
+class Webhook(Base):
+    """Webhook configurations"""
+    __tablename__ = "webhooks"
+
+    id = Column(Integer, primary_key=True, index=True)
+    webhook_id = Column(String(50), unique=True, index=True, nullable=False)
+
+    name = Column(String(200))
+    url = Column(String(500), nullable=False)
+    secret = Column(String(255))  # For signature verification
+
+    # Organization
+    organization_id = Column(Integer, ForeignKey("organizations.id"))
+
+    # Configuration
+    events = Column(JSON, default=[])  # workflow.completed, agent.executed, etc.
+    headers = Column(JSON, default={})  # Custom headers to include
+
+    # Status
+    status = Column(String(50), default="active")  # active, paused, failed
+
+    # Reliability
+    retry_count = Column(Integer, default=3)
+    timeout_seconds = Column(Integer, default=30)
+
+    # Stats
+    total_deliveries = Column(Integer, default=0)
+    successful_deliveries = Column(Integer, default=0)
+    failed_deliveries = Column(Integer, default=0)
+    last_triggered_at = Column(DateTime)
+    last_success_at = Column(DateTime)
+    last_failure_at = Column(DateTime)
+    last_failure_reason = Column(Text)
+
+    # Timestamps
+    created_at = Column(DateTime, default=datetime.utcnow)
+    updated_at = Column(DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
+
+    # Relationships
+    organization = relationship("Organization", back_populates="webhooks")
+    deliveries = relationship("WebhookDelivery", back_populates="webhook")
+
+
+class WebhookDelivery(Base):
+    """Webhook delivery attempts"""
+    __tablename__ = "webhook_deliveries"
+
+    id = Column(Integer, primary_key=True, index=True)
+    delivery_id = Column(String(50), unique=True, index=True, nullable=False)
+    webhook_id = Column(Integer, ForeignKey("webhooks.id"))
+
+    # Event
+    event_type = Column(String(100))
+    event_id = Column(String(100))
+    payload = Column(JSON)
+
+    # Delivery attempt
+    attempt_number = Column(Integer, default=1)
+    status = Column(String(50))  # pending, success, failed
+
+    # Response
+    response_status_code = Column(Integer)
+    response_body = Column(Text)
+    response_time_ms = Column(Float)
+
+    # Error
+    error_message = Column(Text)
+
+    # Timestamps
+    scheduled_at = Column(DateTime)
+    delivered_at = Column(DateTime)
+    created_at = Column(DateTime, default=datetime.utcnow)
+
+    # Relationships
+    webhook = relationship("Webhook", back_populates="deliveries")
+
+
+# ============================================================================
+# AI Conversations & Messages
+# ============================================================================
+
+class AIConversation(Base):
+    """AI chat conversations"""
+    __tablename__ = "ai_conversations"
+
+    id = Column(Integer, primary_key=True, index=True)
+    conversation_id = Column(String(50), unique=True, index=True, nullable=False)
+
+    # Owner
+    user_id = Column(Integer, ForeignKey("users.id"))
+    organization_id = Column(Integer, ForeignKey("organizations.id"))
+
+    # Configuration
+    title = Column(String(500))
+    model = Column(String(100), default="gpt-4")
+    provider = Column(String(50), default="openai")  # openai, anthropic, ollama
+    system_prompt = Column(Text)
+
+    # Context
+    context = Column(JSON, default={})
+
+    # Stats
+    message_count = Column(Integer, default=0)
+    total_tokens = Column(Integer, default=0)
+
+    # Status
+    status = Column(String(50), default="active")  # active, archived
+
+    # Timestamps
+    created_at = Column(DateTime, default=datetime.utcnow)
+    updated_at = Column(DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
+
+    # Relationships
+    messages = relationship("AIMessage", back_populates="conversation")
+
+
+class AIMessage(Base):
+    """Individual messages in AI conversations"""
+    __tablename__ = "ai_messages"
+
+    id = Column(Integer, primary_key=True, index=True)
+    message_id = Column(String(50), unique=True, index=True, nullable=False)
+    conversation_id = Column(Integer, ForeignKey("ai_conversations.id"))
+
+    # Content
+    role = Column(String(50))  # user, assistant, system
+    content = Column(Text)
+
+    # Metadata
+    model = Column(String(100))
+    tokens_used = Column(Integer, default=0)
+
+    # Timestamps
+    created_at = Column(DateTime, default=datetime.utcnow)
+
+    # Relationships
+    conversation = relationship("AIConversation", back_populates="messages")
+
+
+# ============================================================================
 # Database Utilities
 # ============================================================================
 
