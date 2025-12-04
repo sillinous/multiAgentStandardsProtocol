@@ -29001,6 +29001,891 @@ def get_notification_preferences(user_id: str):
 
 
 # ============================================================================
+# Session Management
+# ============================================================================
+
+SESSIONS: Dict[str, Dict[str, Any]] = {}
+SESSION_TOKENS: Dict[str, str] = {}
+SESSION_ACTIVITY: Dict[str, List[Dict[str, Any]]] = {}
+
+@app.post("/sessions")
+def create_session(data: Dict[str, Any]):
+    """Create a new session"""
+    session_id = f"sess_{uuid.uuid4().hex[:16]}"
+    token = f"tok_{uuid.uuid4().hex}"
+    SESSIONS[session_id] = {
+        "session_id": session_id,
+        "user_id": data.get("user_id"),
+        "device_info": data.get("device_info", {}),
+        "ip_address": data.get("ip_address"),
+        "user_agent": data.get("user_agent"),
+        "status": "active",
+        "created_at": datetime.utcnow().isoformat() + "Z",
+        "expires_at": data.get("expires_at"),
+        "last_activity": datetime.utcnow().isoformat() + "Z"
+    }
+    SESSION_TOKENS[token] = session_id
+    SESSION_ACTIVITY[session_id] = []
+    return {"session_id": session_id, "token": token, "message": "Session created"}
+
+@app.get("/sessions")
+def list_sessions(user_id: str = None, status: str = None):
+    """List all sessions"""
+    sessions = list(SESSIONS.values())
+    if user_id:
+        sessions = [s for s in sessions if s["user_id"] == user_id]
+    if status:
+        sessions = [s for s in sessions if s["status"] == status]
+    return {"sessions": sessions, "count": len(sessions)}
+
+@app.get("/sessions/{session_id}")
+def get_session(session_id: str):
+    """Get session details"""
+    if session_id not in SESSIONS:
+        raise HTTPException(status_code=404, detail="Session not found")
+    session = SESSIONS[session_id].copy()
+    session["activity"] = SESSION_ACTIVITY.get(session_id, [])[-10:]
+    return session
+
+@app.post("/sessions/validate")
+def validate_session_token(data: Dict[str, Any]):
+    """Validate a session token"""
+    token = data.get("token")
+    session_id = SESSION_TOKENS.get(token)
+    if not session_id or session_id not in SESSIONS:
+        return {"valid": False, "reason": "invalid_token"}
+    session = SESSIONS[session_id]
+    if session["status"] != "active":
+        return {"valid": False, "reason": "session_inactive"}
+    session["last_activity"] = datetime.utcnow().isoformat() + "Z"
+    return {"valid": True, "session_id": session_id, "user_id": session["user_id"]}
+
+@app.post("/sessions/{session_id}/activity")
+def record_session_activity(session_id: str, data: Dict[str, Any]):
+    """Record session activity"""
+    if session_id not in SESSIONS:
+        raise HTTPException(status_code=404, detail="Session not found")
+    activity = {
+        "action": data.get("action"),
+        "resource": data.get("resource"),
+        "metadata": data.get("metadata", {}),
+        "timestamp": datetime.utcnow().isoformat() + "Z"
+    }
+    SESSION_ACTIVITY[session_id].append(activity)
+    SESSIONS[session_id]["last_activity"] = datetime.utcnow().isoformat() + "Z"
+    return {"message": "Activity recorded"}
+
+@app.post("/sessions/{session_id}/invalidate")
+def invalidate_session(session_id: str):
+    """Invalidate a session"""
+    if session_id not in SESSIONS:
+        raise HTTPException(status_code=404, detail="Session not found")
+    SESSIONS[session_id]["status"] = "invalidated"
+    SESSIONS[session_id]["invalidated_at"] = datetime.utcnow().isoformat() + "Z"
+    tokens_to_remove = [t for t, s in SESSION_TOKENS.items() if s == session_id]
+    for token in tokens_to_remove:
+        del SESSION_TOKENS[token]
+    return {"message": "Session invalidated"}
+
+@app.post("/sessions/invalidate-all")
+def invalidate_all_user_sessions(data: Dict[str, Any]):
+    """Invalidate all sessions for a user"""
+    user_id = data.get("user_id")
+    count = 0
+    for session_id, session in SESSIONS.items():
+        if session["user_id"] == user_id and session["status"] == "active":
+            session["status"] = "invalidated"
+            session["invalidated_at"] = datetime.utcnow().isoformat() + "Z"
+            count += 1
+    return {"message": "Sessions invalidated", "count": count}
+
+@app.post("/sessions/{session_id}/refresh")
+def refresh_session(session_id: str, data: Dict[str, Any]):
+    """Refresh a session token"""
+    if session_id not in SESSIONS:
+        raise HTTPException(status_code=404, detail="Session not found")
+    old_token = data.get("token")
+    if old_token in SESSION_TOKENS:
+        del SESSION_TOKENS[old_token]
+    new_token = f"tok_{uuid.uuid4().hex}"
+    SESSION_TOKENS[new_token] = session_id
+    SESSIONS[session_id]["last_activity"] = datetime.utcnow().isoformat() + "Z"
+    return {"token": new_token, "message": "Token refreshed"}
+
+
+# ============================================================================
+# Content Delivery Network (CDN)
+# ============================================================================
+
+CDN_ORIGINS: Dict[str, Dict[str, Any]] = {}
+CDN_EDGE_LOCATIONS: Dict[str, Dict[str, Any]] = {}
+CDN_CACHE_RULES: Dict[str, Dict[str, Any]] = {}
+CDN_PURGE_REQUESTS: List[Dict[str, Any]] = []
+
+@app.post("/cdn/origins")
+def create_cdn_origin(data: Dict[str, Any]):
+    """Create a CDN origin"""
+    origin_id = f"origin_{uuid.uuid4().hex[:12]}"
+    CDN_ORIGINS[origin_id] = {
+        "origin_id": origin_id,
+        "name": data.get("name"),
+        "type": data.get("type", "s3"),
+        "endpoint": data.get("endpoint"),
+        "protocol": data.get("protocol", "https"),
+        "port": data.get("port", 443),
+        "path": data.get("path", "/"),
+        "headers": data.get("headers", {}),
+        "status": "active",
+        "created_at": datetime.utcnow().isoformat() + "Z"
+    }
+    return {"origin_id": origin_id, "message": "Origin created"}
+
+@app.get("/cdn/origins")
+def list_cdn_origins(status: str = None):
+    """List all CDN origins"""
+    origins = list(CDN_ORIGINS.values())
+    if status:
+        origins = [o for o in origins if o["status"] == status]
+    return {"origins": origins, "count": len(origins)}
+
+@app.get("/cdn/origins/{origin_id}")
+def get_cdn_origin(origin_id: str):
+    """Get CDN origin details"""
+    if origin_id not in CDN_ORIGINS:
+        raise HTTPException(status_code=404, detail="Origin not found")
+    return CDN_ORIGINS[origin_id]
+
+@app.post("/cdn/edge-locations")
+def create_edge_location(data: Dict[str, Any]):
+    """Create an edge location"""
+    location_id = f"edge_{uuid.uuid4().hex[:12]}"
+    CDN_EDGE_LOCATIONS[location_id] = {
+        "location_id": location_id,
+        "name": data.get("name"),
+        "region": data.get("region"),
+        "city": data.get("city"),
+        "coordinates": data.get("coordinates", {}),
+        "capacity_gbps": data.get("capacity_gbps", 100),
+        "status": "active",
+        "created_at": datetime.utcnow().isoformat() + "Z"
+    }
+    return {"location_id": location_id, "message": "Edge location created"}
+
+@app.get("/cdn/edge-locations")
+def list_edge_locations(region: str = None):
+    """List all edge locations"""
+    locations = list(CDN_EDGE_LOCATIONS.values())
+    if region:
+        locations = [l for l in locations if l["region"] == region]
+    return {"locations": locations, "count": len(locations)}
+
+@app.post("/cdn/cache-rules")
+def create_cache_rule(data: Dict[str, Any]):
+    """Create a cache rule"""
+    rule_id = f"cache_{uuid.uuid4().hex[:12]}"
+    CDN_CACHE_RULES[rule_id] = {
+        "rule_id": rule_id,
+        "origin_id": data.get("origin_id"),
+        "path_pattern": data.get("path_pattern", "/*"),
+        "ttl_seconds": data.get("ttl_seconds", 86400),
+        "cache_key": data.get("cache_key", ["path", "query"]),
+        "compress": data.get("compress", True),
+        "priority": data.get("priority", 0),
+        "created_at": datetime.utcnow().isoformat() + "Z"
+    }
+    return {"rule_id": rule_id, "message": "Cache rule created"}
+
+@app.get("/cdn/cache-rules")
+def list_cache_rules(origin_id: str = None):
+    """List all cache rules"""
+    rules = list(CDN_CACHE_RULES.values())
+    if origin_id:
+        rules = [r for r in rules if r["origin_id"] == origin_id]
+    rules.sort(key=lambda x: x["priority"], reverse=True)
+    return {"rules": rules, "count": len(rules)}
+
+@app.post("/cdn/purge")
+def purge_cdn_cache(data: Dict[str, Any]):
+    """Purge CDN cache"""
+    purge_id = f"purge_{uuid.uuid4().hex[:12]}"
+    purge = {
+        "purge_id": purge_id,
+        "origin_id": data.get("origin_id"),
+        "paths": data.get("paths", ["/*"]),
+        "type": data.get("type", "path"),
+        "status": "pending",
+        "requested_at": datetime.utcnow().isoformat() + "Z",
+        "completed_at": None
+    }
+    CDN_PURGE_REQUESTS.append(purge)
+    return {"purge_id": purge_id, "message": "Purge requested"}
+
+@app.get("/cdn/purge")
+def list_purge_requests(origin_id: str = None, limit: int = 50):
+    """List purge requests"""
+    purges = CDN_PURGE_REQUESTS
+    if origin_id:
+        purges = [p for p in purges if p["origin_id"] == origin_id]
+    return {"purges": purges[-limit:], "count": len(purges)}
+
+
+# ============================================================================
+# API Gateway v2
+# ============================================================================
+
+GATEWAY_ROUTES: Dict[str, Dict[str, Any]] = {}
+GATEWAY_MIDDLEWARE: Dict[str, Dict[str, Any]] = {}
+GATEWAY_TRANSFORMATIONS: Dict[str, Dict[str, Any]] = {}
+GATEWAY_THROTTLE_RULES: Dict[str, Dict[str, Any]] = {}
+
+@app.post("/gateway/routes")
+def create_gateway_route(data: Dict[str, Any]):
+    """Create a gateway route"""
+    route_id = f"route_{uuid.uuid4().hex[:12]}"
+    GATEWAY_ROUTES[route_id] = {
+        "route_id": route_id,
+        "name": data.get("name"),
+        "path": data.get("path"),
+        "methods": data.get("methods", ["GET"]),
+        "backend": data.get("backend", {}),
+        "middleware": data.get("middleware", []),
+        "transformations": data.get("transformations", {}),
+        "enabled": data.get("enabled", True),
+        "priority": data.get("priority", 0),
+        "created_at": datetime.utcnow().isoformat() + "Z"
+    }
+    return {"route_id": route_id, "message": "Route created"}
+
+@app.get("/gateway/routes")
+def list_gateway_routes(enabled: bool = None):
+    """List all gateway routes"""
+    routes = list(GATEWAY_ROUTES.values())
+    if enabled is not None:
+        routes = [r for r in routes if r["enabled"] == enabled]
+    routes.sort(key=lambda x: x["priority"], reverse=True)
+    return {"routes": routes, "count": len(routes)}
+
+@app.get("/gateway/routes/{route_id}")
+def get_gateway_route(route_id: str):
+    """Get gateway route details"""
+    if route_id not in GATEWAY_ROUTES:
+        raise HTTPException(status_code=404, detail="Route not found")
+    return GATEWAY_ROUTES[route_id]
+
+@app.put("/gateway/routes/{route_id}")
+def update_gateway_route(route_id: str, data: Dict[str, Any]):
+    """Update a gateway route"""
+    if route_id not in GATEWAY_ROUTES:
+        raise HTTPException(status_code=404, detail="Route not found")
+    GATEWAY_ROUTES[route_id].update({
+        "path": data.get("path", GATEWAY_ROUTES[route_id]["path"]),
+        "methods": data.get("methods", GATEWAY_ROUTES[route_id]["methods"]),
+        "backend": data.get("backend", GATEWAY_ROUTES[route_id]["backend"]),
+        "enabled": data.get("enabled", GATEWAY_ROUTES[route_id]["enabled"]),
+        "updated_at": datetime.utcnow().isoformat() + "Z"
+    })
+    return {"message": "Route updated"}
+
+@app.post("/gateway/middleware")
+def create_gateway_middleware(data: Dict[str, Any]):
+    """Create gateway middleware"""
+    middleware_id = f"mw_{uuid.uuid4().hex[:12]}"
+    GATEWAY_MIDDLEWARE[middleware_id] = {
+        "middleware_id": middleware_id,
+        "name": data.get("name"),
+        "type": data.get("type", "auth"),
+        "config": data.get("config", {}),
+        "order": data.get("order", 0),
+        "enabled": data.get("enabled", True),
+        "created_at": datetime.utcnow().isoformat() + "Z"
+    }
+    return {"middleware_id": middleware_id, "message": "Middleware created"}
+
+@app.get("/gateway/middleware")
+def list_gateway_middleware():
+    """List all gateway middleware"""
+    middleware = list(GATEWAY_MIDDLEWARE.values())
+    middleware.sort(key=lambda x: x["order"])
+    return {"middleware": middleware, "count": len(middleware)}
+
+@app.post("/gateway/transformations")
+def create_transformation(data: Dict[str, Any]):
+    """Create a request/response transformation"""
+    transform_id = f"transform_{uuid.uuid4().hex[:12]}"
+    GATEWAY_TRANSFORMATIONS[transform_id] = {
+        "transformation_id": transform_id,
+        "name": data.get("name"),
+        "type": data.get("type", "request"),
+        "operations": data.get("operations", []),
+        "created_at": datetime.utcnow().isoformat() + "Z"
+    }
+    return {"transformation_id": transform_id, "message": "Transformation created"}
+
+@app.post("/gateway/throttle-rules")
+def create_throttle_rule(data: Dict[str, Any]):
+    """Create a throttle rule"""
+    rule_id = f"throttle_{uuid.uuid4().hex[:12]}"
+    GATEWAY_THROTTLE_RULES[rule_id] = {
+        "rule_id": rule_id,
+        "name": data.get("name"),
+        "route_pattern": data.get("route_pattern", "/*"),
+        "requests_per_second": data.get("requests_per_second", 100),
+        "burst_size": data.get("burst_size", 200),
+        "enabled": data.get("enabled", True),
+        "created_at": datetime.utcnow().isoformat() + "Z"
+    }
+    return {"rule_id": rule_id, "message": "Throttle rule created"}
+
+@app.get("/gateway/throttle-rules")
+def list_throttle_rules():
+    """List all throttle rules"""
+    return {"rules": list(GATEWAY_THROTTLE_RULES.values()), "count": len(GATEWAY_THROTTLE_RULES)}
+
+
+# ============================================================================
+# Data Validation
+# ============================================================================
+
+VALIDATION_SCHEMAS: Dict[str, Dict[str, Any]] = {}
+VALIDATORS: Dict[str, Dict[str, Any]] = {}
+VALIDATION_RESULTS: List[Dict[str, Any]] = []
+
+@app.post("/validation/schemas")
+def create_validation_schema(data: Dict[str, Any]):
+    """Create a validation schema"""
+    schema_id = f"schema_{uuid.uuid4().hex[:12]}"
+    VALIDATION_SCHEMAS[schema_id] = {
+        "schema_id": schema_id,
+        "name": data.get("name"),
+        "version": data.get("version", "1.0.0"),
+        "type": data.get("type", "json"),
+        "definition": data.get("definition", {}),
+        "strict": data.get("strict", True),
+        "created_at": datetime.utcnow().isoformat() + "Z"
+    }
+    return {"schema_id": schema_id, "message": "Schema created"}
+
+@app.get("/validation/schemas")
+def list_validation_schemas(type: str = None):
+    """List all validation schemas"""
+    schemas = list(VALIDATION_SCHEMAS.values())
+    if type:
+        schemas = [s for s in schemas if s["type"] == type]
+    return {"schemas": schemas, "count": len(schemas)}
+
+@app.get("/validation/schemas/{schema_id}")
+def get_validation_schema(schema_id: str):
+    """Get validation schema details"""
+    if schema_id not in VALIDATION_SCHEMAS:
+        raise HTTPException(status_code=404, detail="Schema not found")
+    return VALIDATION_SCHEMAS[schema_id]
+
+@app.post("/validation/validators")
+def create_validator(data: Dict[str, Any]):
+    """Create a custom validator"""
+    validator_id = f"validator_{uuid.uuid4().hex[:12]}"
+    VALIDATORS[validator_id] = {
+        "validator_id": validator_id,
+        "name": data.get("name"),
+        "type": data.get("type", "regex"),
+        "pattern": data.get("pattern"),
+        "error_message": data.get("error_message", "Validation failed"),
+        "created_at": datetime.utcnow().isoformat() + "Z"
+    }
+    return {"validator_id": validator_id, "message": "Validator created"}
+
+@app.get("/validation/validators")
+def list_validators():
+    """List all validators"""
+    return {"validators": list(VALIDATORS.values()), "count": len(VALIDATORS)}
+
+@app.post("/validation/validate")
+def validate_data(data: Dict[str, Any]):
+    """Validate data against a schema"""
+    schema_id = data.get("schema_id")
+    payload = data.get("data", {})
+    if schema_id and schema_id not in VALIDATION_SCHEMAS:
+        raise HTTPException(status_code=404, detail="Schema not found")
+    result_id = f"result_{uuid.uuid4().hex[:12]}"
+    result = {
+        "result_id": result_id,
+        "schema_id": schema_id,
+        "valid": True,
+        "errors": [],
+        "validated_at": datetime.utcnow().isoformat() + "Z"
+    }
+    VALIDATION_RESULTS.append(result)
+    return result
+
+@app.get("/validation/results")
+def get_validation_results(schema_id: str = None, limit: int = 50):
+    """Get validation results"""
+    results = VALIDATION_RESULTS
+    if schema_id:
+        results = [r for r in results if r["schema_id"] == schema_id]
+    return {"results": results[-limit:], "count": len(results)}
+
+
+# ============================================================================
+# Asset Management
+# ============================================================================
+
+ASSETS: Dict[str, Dict[str, Any]] = {}
+ASSET_VERSIONS: Dict[str, List[Dict[str, Any]]] = {}
+ASSET_TRANSFORMATIONS: Dict[str, List[Dict[str, Any]]] = {}
+
+@app.post("/assets")
+def create_asset(data: Dict[str, Any]):
+    """Create an asset"""
+    asset_id = f"asset_{uuid.uuid4().hex[:12]}"
+    ASSETS[asset_id] = {
+        "asset_id": asset_id,
+        "name": data.get("name"),
+        "type": data.get("type", "image"),
+        "mime_type": data.get("mime_type"),
+        "size_bytes": data.get("size_bytes", 0),
+        "url": data.get("url"),
+        "metadata": data.get("metadata", {}),
+        "tags": data.get("tags", []),
+        "status": "active",
+        "created_at": datetime.utcnow().isoformat() + "Z"
+    }
+    ASSET_VERSIONS[asset_id] = [{"version": 1, "url": data.get("url"), "created_at": datetime.utcnow().isoformat() + "Z"}]
+    ASSET_TRANSFORMATIONS[asset_id] = []
+    return {"asset_id": asset_id, "message": "Asset created"}
+
+@app.get("/assets")
+def list_assets(type: str = None, tag: str = None):
+    """List all assets"""
+    assets = list(ASSETS.values())
+    if type:
+        assets = [a for a in assets if a["type"] == type]
+    if tag:
+        assets = [a for a in assets if tag in a.get("tags", [])]
+    return {"assets": assets, "count": len(assets)}
+
+@app.get("/assets/{asset_id}")
+def get_asset(asset_id: str):
+    """Get asset details"""
+    if asset_id not in ASSETS:
+        raise HTTPException(status_code=404, detail="Asset not found")
+    asset = ASSETS[asset_id].copy()
+    asset["versions"] = ASSET_VERSIONS.get(asset_id, [])
+    return asset
+
+@app.put("/assets/{asset_id}")
+def update_asset(asset_id: str, data: Dict[str, Any]):
+    """Update an asset"""
+    if asset_id not in ASSETS:
+        raise HTTPException(status_code=404, detail="Asset not found")
+    ASSETS[asset_id].update({
+        "name": data.get("name", ASSETS[asset_id]["name"]),
+        "metadata": data.get("metadata", ASSETS[asset_id]["metadata"]),
+        "tags": data.get("tags", ASSETS[asset_id]["tags"]),
+        "updated_at": datetime.utcnow().isoformat() + "Z"
+    })
+    return {"message": "Asset updated"}
+
+@app.post("/assets/{asset_id}/versions")
+def create_asset_version(asset_id: str, data: Dict[str, Any]):
+    """Create a new asset version"""
+    if asset_id not in ASSETS:
+        raise HTTPException(status_code=404, detail="Asset not found")
+    version_num = len(ASSET_VERSIONS[asset_id]) + 1
+    version = {
+        "version": version_num,
+        "url": data.get("url"),
+        "size_bytes": data.get("size_bytes", 0),
+        "changelog": data.get("changelog", ""),
+        "created_at": datetime.utcnow().isoformat() + "Z"
+    }
+    ASSET_VERSIONS[asset_id].append(version)
+    ASSETS[asset_id]["url"] = data.get("url")
+    return {"version": version_num, "message": "Version created"}
+
+@app.get("/assets/{asset_id}/versions")
+def get_asset_versions(asset_id: str):
+    """Get asset version history"""
+    if asset_id not in ASSET_VERSIONS:
+        raise HTTPException(status_code=404, detail="Asset not found")
+    return {"versions": ASSET_VERSIONS[asset_id], "count": len(ASSET_VERSIONS[asset_id])}
+
+@app.post("/assets/{asset_id}/transform")
+def transform_asset(asset_id: str, data: Dict[str, Any]):
+    """Create an asset transformation"""
+    if asset_id not in ASSETS:
+        raise HTTPException(status_code=404, detail="Asset not found")
+    transform_id = f"transform_{uuid.uuid4().hex[:8]}"
+    transformation = {
+        "transform_id": transform_id,
+        "type": data.get("type", "resize"),
+        "params": data.get("params", {}),
+        "output_url": f"/assets/{asset_id}/transformed/{transform_id}",
+        "created_at": datetime.utcnow().isoformat() + "Z"
+    }
+    ASSET_TRANSFORMATIONS[asset_id].append(transformation)
+    return {"transform_id": transform_id, "output_url": transformation["output_url"]}
+
+@app.delete("/assets/{asset_id}")
+def delete_asset(asset_id: str):
+    """Delete an asset"""
+    if asset_id not in ASSETS:
+        raise HTTPException(status_code=404, detail="Asset not found")
+    ASSETS[asset_id]["status"] = "deleted"
+    ASSETS[asset_id]["deleted_at"] = datetime.utcnow().isoformat() + "Z"
+    return {"message": "Asset deleted"}
+
+
+# ============================================================================
+# Audit Logging
+# ============================================================================
+
+AUDIT_EVENTS: List[Dict[str, Any]] = []
+AUDIT_POLICIES: Dict[str, Dict[str, Any]] = {}
+AUDIT_EXPORTS: Dict[str, Dict[str, Any]] = {}
+
+@app.post("/audit/events")
+def log_audit_event(data: Dict[str, Any]):
+    """Log an audit event"""
+    event_id = f"audit_{uuid.uuid4().hex[:12]}"
+    event = {
+        "event_id": event_id,
+        "type": data.get("type"),
+        "action": data.get("action"),
+        "actor": data.get("actor", {}),
+        "resource": data.get("resource", {}),
+        "changes": data.get("changes", {}),
+        "ip_address": data.get("ip_address"),
+        "user_agent": data.get("user_agent"),
+        "metadata": data.get("metadata", {}),
+        "timestamp": datetime.utcnow().isoformat() + "Z"
+    }
+    AUDIT_EVENTS.append(event)
+    return {"event_id": event_id, "message": "Event logged"}
+
+@app.get("/audit/events")
+def list_audit_events(type: str = None, action: str = None, actor_id: str = None, limit: int = 100):
+    """List audit events"""
+    events = AUDIT_EVENTS
+    if type:
+        events = [e for e in events if e["type"] == type]
+    if action:
+        events = [e for e in events if e["action"] == action]
+    if actor_id:
+        events = [e for e in events if e.get("actor", {}).get("id") == actor_id]
+    events.sort(key=lambda x: x["timestamp"], reverse=True)
+    return {"events": events[:limit], "total": len(events)}
+
+@app.post("/audit/search")
+def search_audit_events(data: Dict[str, Any]):
+    """Search audit events"""
+    query = data.get("query", "")
+    filters = data.get("filters", {})
+    date_from = data.get("date_from")
+    date_to = data.get("date_to")
+    results = AUDIT_EVENTS
+    if query:
+        results = [e for e in results if query.lower() in str(e).lower()]
+    if filters.get("type"):
+        results = [e for e in results if e["type"] == filters["type"]]
+    if filters.get("action"):
+        results = [e for e in results if e["action"] == filters["action"]]
+    return {"results": results[:100], "total": len(results)}
+
+@app.post("/audit/policies")
+def create_audit_policy(data: Dict[str, Any]):
+    """Create an audit retention policy"""
+    policy_id = f"auditpol_{uuid.uuid4().hex[:12]}"
+    AUDIT_POLICIES[policy_id] = {
+        "policy_id": policy_id,
+        "name": data.get("name"),
+        "retention_days": data.get("retention_days", 365),
+        "archive_enabled": data.get("archive_enabled", False),
+        "archive_destination": data.get("archive_destination"),
+        "event_types": data.get("event_types", ["*"]),
+        "created_at": datetime.utcnow().isoformat() + "Z"
+    }
+    return {"policy_id": policy_id, "message": "Policy created"}
+
+@app.get("/audit/policies")
+def list_audit_policies():
+    """List audit policies"""
+    return {"policies": list(AUDIT_POLICIES.values()), "count": len(AUDIT_POLICIES)}
+
+@app.post("/audit/export")
+def export_audit_events(data: Dict[str, Any]):
+    """Export audit events"""
+    export_id = f"export_{uuid.uuid4().hex[:12]}"
+    AUDIT_EXPORTS[export_id] = {
+        "export_id": export_id,
+        "format": data.get("format", "json"),
+        "filters": data.get("filters", {}),
+        "date_range": data.get("date_range", {}),
+        "status": "processing",
+        "download_url": None,
+        "created_at": datetime.utcnow().isoformat() + "Z"
+    }
+    return {"export_id": export_id, "message": "Export started"}
+
+@app.get("/audit/exports/{export_id}")
+def get_audit_export(export_id: str):
+    """Get audit export status"""
+    if export_id not in AUDIT_EXPORTS:
+        raise HTTPException(status_code=404, detail="Export not found")
+    return AUDIT_EXPORTS[export_id]
+
+
+# ============================================================================
+# Webhooks v2
+# ============================================================================
+
+WEBHOOK_ENDPOINTS: Dict[str, Dict[str, Any]] = {}
+WEBHOOK_DELIVERIES: Dict[str, List[Dict[str, Any]]] = {}
+WEBHOOK_SECRETS: Dict[str, str] = {}
+
+@app.post("/webhooks/endpoints")
+def create_webhook_endpoint(data: Dict[str, Any]):
+    """Create a webhook endpoint"""
+    endpoint_id = f"wh_{uuid.uuid4().hex[:12]}"
+    secret = f"whsec_{uuid.uuid4().hex}"
+    WEBHOOK_ENDPOINTS[endpoint_id] = {
+        "endpoint_id": endpoint_id,
+        "url": data.get("url"),
+        "events": data.get("events", ["*"]),
+        "description": data.get("description", ""),
+        "enabled": data.get("enabled", True),
+        "retry_policy": data.get("retry_policy", {"max_retries": 3, "backoff": "exponential"}),
+        "headers": data.get("headers", {}),
+        "status": "active",
+        "created_at": datetime.utcnow().isoformat() + "Z"
+    }
+    WEBHOOK_SECRETS[endpoint_id] = secret
+    WEBHOOK_DELIVERIES[endpoint_id] = []
+    return {"endpoint_id": endpoint_id, "secret": secret, "message": "Endpoint created"}
+
+@app.get("/webhooks/endpoints")
+def list_webhook_endpoints(enabled: bool = None):
+    """List all webhook endpoints"""
+    endpoints = list(WEBHOOK_ENDPOINTS.values())
+    if enabled is not None:
+        endpoints = [e for e in endpoints if e["enabled"] == enabled]
+    return {"endpoints": endpoints, "count": len(endpoints)}
+
+@app.get("/webhooks/endpoints/{endpoint_id}")
+def get_webhook_endpoint(endpoint_id: str):
+    """Get webhook endpoint details"""
+    if endpoint_id not in WEBHOOK_ENDPOINTS:
+        raise HTTPException(status_code=404, detail="Endpoint not found")
+    endpoint = WEBHOOK_ENDPOINTS[endpoint_id].copy()
+    endpoint["recent_deliveries"] = WEBHOOK_DELIVERIES.get(endpoint_id, [])[-5:]
+    return endpoint
+
+@app.put("/webhooks/endpoints/{endpoint_id}")
+def update_webhook_endpoint(endpoint_id: str, data: Dict[str, Any]):
+    """Update a webhook endpoint"""
+    if endpoint_id not in WEBHOOK_ENDPOINTS:
+        raise HTTPException(status_code=404, detail="Endpoint not found")
+    WEBHOOK_ENDPOINTS[endpoint_id].update({
+        "url": data.get("url", WEBHOOK_ENDPOINTS[endpoint_id]["url"]),
+        "events": data.get("events", WEBHOOK_ENDPOINTS[endpoint_id]["events"]),
+        "enabled": data.get("enabled", WEBHOOK_ENDPOINTS[endpoint_id]["enabled"]),
+        "updated_at": datetime.utcnow().isoformat() + "Z"
+    })
+    return {"message": "Endpoint updated"}
+
+@app.post("/webhooks/endpoints/{endpoint_id}/rotate-secret")
+def rotate_webhook_secret(endpoint_id: str):
+    """Rotate webhook secret"""
+    if endpoint_id not in WEBHOOK_ENDPOINTS:
+        raise HTTPException(status_code=404, detail="Endpoint not found")
+    new_secret = f"whsec_{uuid.uuid4().hex}"
+    WEBHOOK_SECRETS[endpoint_id] = new_secret
+    return {"secret": new_secret, "message": "Secret rotated"}
+
+@app.post("/webhooks/endpoints/{endpoint_id}/test")
+def test_webhook_endpoint(endpoint_id: str):
+    """Send a test webhook"""
+    if endpoint_id not in WEBHOOK_ENDPOINTS:
+        raise HTTPException(status_code=404, detail="Endpoint not found")
+    delivery_id = f"del_{uuid.uuid4().hex[:12]}"
+    delivery = {
+        "delivery_id": delivery_id,
+        "event": "webhook.test",
+        "payload": {"test": True},
+        "status": "delivered",
+        "response_code": 200,
+        "response_time_ms": 150,
+        "attempts": 1,
+        "delivered_at": datetime.utcnow().isoformat() + "Z"
+    }
+    WEBHOOK_DELIVERIES[endpoint_id].append(delivery)
+    return {"delivery_id": delivery_id, "message": "Test webhook sent"}
+
+@app.get("/webhooks/endpoints/{endpoint_id}/deliveries")
+def get_webhook_deliveries(endpoint_id: str, limit: int = 50):
+    """Get webhook delivery history"""
+    if endpoint_id not in WEBHOOK_DELIVERIES:
+        raise HTTPException(status_code=404, detail="Endpoint not found")
+    deliveries = WEBHOOK_DELIVERIES[endpoint_id]
+    deliveries.sort(key=lambda x: x.get("delivered_at", ""), reverse=True)
+    return {"deliveries": deliveries[:limit], "count": len(deliveries)}
+
+@app.post("/webhooks/endpoints/{endpoint_id}/deliveries/{delivery_id}/retry")
+def retry_webhook_delivery(endpoint_id: str, delivery_id: str):
+    """Retry a failed webhook delivery"""
+    if endpoint_id not in WEBHOOK_DELIVERIES:
+        raise HTTPException(status_code=404, detail="Endpoint not found")
+    for delivery in WEBHOOK_DELIVERIES[endpoint_id]:
+        if delivery["delivery_id"] == delivery_id:
+            delivery["attempts"] += 1
+            delivery["status"] = "retrying"
+            delivery["last_retry"] = datetime.utcnow().isoformat() + "Z"
+            return {"message": "Retry initiated"}
+    raise HTTPException(status_code=404, detail="Delivery not found")
+
+
+# ============================================================================
+# Scheduled Tasks
+# ============================================================================
+
+TASK_DEFINITIONS: Dict[str, Dict[str, Any]] = {}
+TASK_SCHEDULES: Dict[str, Dict[str, Any]] = {}
+TASK_EXECUTIONS: Dict[str, List[Dict[str, Any]]] = {}
+TASK_LOCKS: Dict[str, Dict[str, Any]] = {}
+
+@app.post("/tasks/definitions")
+def create_task_definition(data: Dict[str, Any]):
+    """Create a task definition"""
+    task_id = f"task_{uuid.uuid4().hex[:12]}"
+    TASK_DEFINITIONS[task_id] = {
+        "task_id": task_id,
+        "name": data.get("name"),
+        "type": data.get("type", "cron"),
+        "handler": data.get("handler"),
+        "config": data.get("config", {}),
+        "timeout_seconds": data.get("timeout_seconds", 300),
+        "retry_policy": data.get("retry_policy", {}),
+        "enabled": data.get("enabled", True),
+        "created_at": datetime.utcnow().isoformat() + "Z"
+    }
+    TASK_EXECUTIONS[task_id] = []
+    return {"task_id": task_id, "message": "Task definition created"}
+
+@app.get("/tasks/definitions")
+def list_task_definitions(enabled: bool = None, type: str = None):
+    """List all task definitions"""
+    tasks = list(TASK_DEFINITIONS.values())
+    if enabled is not None:
+        tasks = [t for t in tasks if t["enabled"] == enabled]
+    if type:
+        tasks = [t for t in tasks if t["type"] == type]
+    return {"tasks": tasks, "count": len(tasks)}
+
+@app.get("/tasks/definitions/{task_id}")
+def get_task_definition(task_id: str):
+    """Get task definition details"""
+    if task_id not in TASK_DEFINITIONS:
+        raise HTTPException(status_code=404, detail="Task not found")
+    task = TASK_DEFINITIONS[task_id].copy()
+    task["schedule"] = TASK_SCHEDULES.get(task_id)
+    task["recent_executions"] = TASK_EXECUTIONS.get(task_id, [])[-5:]
+    return task
+
+@app.post("/tasks/definitions/{task_id}/schedule")
+def set_task_schedule(task_id: str, data: Dict[str, Any]):
+    """Set task schedule"""
+    if task_id not in TASK_DEFINITIONS:
+        raise HTTPException(status_code=404, detail="Task not found")
+    TASK_SCHEDULES[task_id] = {
+        "task_id": task_id,
+        "cron": data.get("cron"),
+        "timezone": data.get("timezone", "UTC"),
+        "next_run": data.get("next_run"),
+        "updated_at": datetime.utcnow().isoformat() + "Z"
+    }
+    return {"message": "Schedule set"}
+
+@app.post("/tasks/definitions/{task_id}/execute")
+def execute_task(task_id: str, data: Dict[str, Any]):
+    """Execute a task immediately"""
+    if task_id not in TASK_DEFINITIONS:
+        raise HTTPException(status_code=404, detail="Task not found")
+    execution_id = f"exec_{uuid.uuid4().hex[:12]}"
+    execution = {
+        "execution_id": execution_id,
+        "task_id": task_id,
+        "trigger": data.get("trigger", "manual"),
+        "input": data.get("input", {}),
+        "status": "running",
+        "started_at": datetime.utcnow().isoformat() + "Z",
+        "ended_at": None,
+        "result": None,
+        "error": None
+    }
+    TASK_EXECUTIONS[task_id].append(execution)
+    return {"execution_id": execution_id, "message": "Task execution started"}
+
+@app.get("/tasks/definitions/{task_id}/executions")
+def get_task_executions(task_id: str, limit: int = 20):
+    """Get task execution history"""
+    if task_id not in TASK_EXECUTIONS:
+        raise HTTPException(status_code=404, detail="Task not found")
+    executions = TASK_EXECUTIONS[task_id]
+    executions.sort(key=lambda x: x["started_at"], reverse=True)
+    return {"executions": executions[:limit], "count": len(executions)}
+
+@app.post("/tasks/executions/{execution_id}/complete")
+def complete_task_execution(execution_id: str, data: Dict[str, Any]):
+    """Complete a task execution"""
+    for task_id, executions in TASK_EXECUTIONS.items():
+        for execution in executions:
+            if execution["execution_id"] == execution_id:
+                execution["status"] = data.get("status", "completed")
+                execution["ended_at"] = datetime.utcnow().isoformat() + "Z"
+                execution["result"] = data.get("result")
+                execution["error"] = data.get("error")
+                return {"message": "Execution completed"}
+    raise HTTPException(status_code=404, detail="Execution not found")
+
+@app.post("/tasks/locks")
+def acquire_task_lock(data: Dict[str, Any]):
+    """Acquire a distributed task lock"""
+    lock_key = data.get("key")
+    ttl_seconds = data.get("ttl_seconds", 60)
+    if lock_key in TASK_LOCKS:
+        lock = TASK_LOCKS[lock_key]
+        if lock["status"] == "held":
+            return {"acquired": False, "holder": lock["holder"]}
+    lock_id = f"lock_{uuid.uuid4().hex[:12]}"
+    TASK_LOCKS[lock_key] = {
+        "lock_id": lock_id,
+        "key": lock_key,
+        "holder": data.get("holder"),
+        "status": "held",
+        "acquired_at": datetime.utcnow().isoformat() + "Z",
+        "expires_at": (datetime.utcnow()).isoformat() + "Z"
+    }
+    return {"acquired": True, "lock_id": lock_id}
+
+@app.delete("/tasks/locks/{lock_key}")
+def release_task_lock(lock_key: str):
+    """Release a task lock"""
+    if lock_key not in TASK_LOCKS:
+        raise HTTPException(status_code=404, detail="Lock not found")
+    TASK_LOCKS[lock_key]["status"] = "released"
+    TASK_LOCKS[lock_key]["released_at"] = datetime.utcnow().isoformat() + "Z"
+    return {"message": "Lock released"}
+
+@app.get("/tasks/locks")
+def list_task_locks(status: str = None):
+    """List all task locks"""
+    locks = list(TASK_LOCKS.values())
+    if status:
+        locks = [l for l in locks if l["status"] == status]
+    return {"locks": locks, "count": len(locks)}
+
+
+# ============================================================================
 # Run Server
 # ============================================================================
 
