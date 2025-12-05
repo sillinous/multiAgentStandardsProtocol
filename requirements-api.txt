@@ -20,3 +20,12 @@ python-dateutil==2.8.2
 # Data analysis and trading functionality
 pandas>=2.0.0
 numpy>=1.24.0
+
+# Database
+sqlalchemy>=2.0.0
+
+# Security - encryption for secrets
+cryptography>=41.0.0
+
+# HTTP client for AI provider calls
+httpx>=0.25.0
