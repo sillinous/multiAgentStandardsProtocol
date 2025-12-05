@@ -34248,6 +34248,581 @@ async def get_api_metrics():
 
 
 # ============================================================================
+# V2 - Analytics & Dashboard Charts (Database-Backed)
+# ============================================================================
+
+@app.get("/v2/analytics/overview", tags=["V2 - Analytics"])
+async def get_analytics_overview_v2(
+    time_range: str = "24h",
+    db: Session = Depends(get_db)
+):
+    """Get analytics overview with key metrics"""
+    from api_server.database import Agent, Workflow, AgentExecution, AIUsageLog, User
+
+    # Time range calculation
+    now = datetime.now(timezone.utc)
+    range_map = {"1h": 1, "6h": 6, "24h": 24, "7d": 168, "30d": 720, "90d": 2160}
+    hours = range_map.get(time_range, 24)
+    start_time = now - timedelta(hours=hours)
+
+    # Agent metrics
+    total_agents = db.query(Agent).count()
+    active_agents = db.query(Agent).filter(Agent.status == "active").count()
+
+    # Workflow metrics
+    total_workflows = db.query(Workflow).count()
+    recent_workflows = db.query(Workflow).filter(Workflow.created_at >= start_time).count()
+    completed_workflows = db.query(Workflow).filter(
+        Workflow.status.in_(["completed", "success"])
+    ).count()
+
+    # Execution metrics
+    total_executions = db.query(AgentExecution).count()
+    recent_executions = db.query(AgentExecution).filter(
+        AgentExecution.started_at >= start_time
+    ).count()
+    successful_executions = db.query(AgentExecution).filter(
+        AgentExecution.status == "completed"
+    ).count()
+    failed_executions = db.query(AgentExecution).filter(
+        AgentExecution.status == "failed"
+    ).count()
+
+    # AI usage metrics
+    ai_logs = db.query(AIUsageLog).filter(AIUsageLog.created_at >= start_time).all()
+    ai_requests = len(ai_logs)
+    ai_tokens = sum(log.total_tokens or 0 for log in ai_logs)
+    ai_cost_cents = sum(log.cost_cents or 0 for log in ai_logs)
+    ai_avg_latency = int(sum(log.latency_ms or 0 for log in ai_logs) / max(len(ai_logs), 1))
+
+    # User metrics
+    total_users = db.query(User).filter(User.status == "active").count()
+
+    return {
+        "time_range": time_range,
+        "period_start": start_time.isoformat() + "Z",
+        "period_end": now.isoformat() + "Z",
+        "agents": {
+            "total": total_agents,
+            "active": active_agents,
+            "inactive": total_agents - active_agents
+        },
+        "workflows": {
+            "total": total_workflows,
+            "recent": recent_workflows,
+            "completed": completed_workflows,
+            "completion_rate": round(completed_workflows / max(total_workflows, 1) * 100, 1)
+        },
+        "executions": {
+            "total": total_executions,
+            "recent": recent_executions,
+            "successful": successful_executions,
+            "failed": failed_executions,
+            "success_rate": round(successful_executions / max(total_executions, 1) * 100, 1)
+        },
+        "ai_usage": {
+            "requests": ai_requests,
+            "tokens": ai_tokens,
+            "cost_dollars": round(ai_cost_cents / 100, 2),
+            "avg_latency_ms": ai_avg_latency
+        },
+        "users": {
+            "total": total_users
+        },
+        "_persisted": True
+    }
+
+
+@app.get("/v2/analytics/time-series", tags=["V2 - Analytics"])
+async def get_analytics_time_series_v2(
+    metric: str = "executions",
+    time_range: str = "24h",
+    granularity: str = "hour",
+    db: Session = Depends(get_db)
+):
+    """Get time-series data for charts"""
+    from api_server.database import AgentExecution, AIUsageLog, Workflow
+    from sqlalchemy import func
+
+    # Time range calculation
+    now = datetime.now(timezone.utc)
+    range_map = {"1h": 1, "6h": 6, "24h": 24, "7d": 168, "30d": 720, "90d": 2160}
+    hours = range_map.get(time_range, 24)
+    start_time = now - timedelta(hours=hours)
+
+    # Granularity calculation
+    granularity_map = {"minute": 1, "hour": 60, "day": 1440, "week": 10080}
+    bucket_minutes = granularity_map.get(granularity, 60)
+
+    # Generate time buckets
+    buckets = []
+    current = start_time
+    while current < now:
+        bucket_end = min(current + timedelta(minutes=bucket_minutes), now)
+        buckets.append({"start": current, "end": bucket_end})
+        current = bucket_end
+
+    # Populate data based on metric
+    data_points = []
+
+    if metric == "executions":
+        for bucket in buckets:
+            count = db.query(AgentExecution).filter(
+                AgentExecution.started_at >= bucket["start"],
+                AgentExecution.started_at < bucket["end"]
+            ).count()
+            successful = db.query(AgentExecution).filter(
+                AgentExecution.started_at >= bucket["start"],
+                AgentExecution.started_at < bucket["end"],
+                AgentExecution.status == "completed"
+            ).count()
+            data_points.append({
+                "timestamp": bucket["start"].isoformat() + "Z",
+                "total": count,
+                "successful": successful,
+                "failed": count - successful
+            })
+
+    elif metric == "ai_usage":
+        for bucket in buckets:
+            logs = db.query(AIUsageLog).filter(
+                AIUsageLog.created_at >= bucket["start"],
+                AIUsageLog.created_at < bucket["end"]
+            ).all()
+            data_points.append({
+                "timestamp": bucket["start"].isoformat() + "Z",
+                "requests": len(logs),
+                "tokens": sum(log.total_tokens or 0 for log in logs),
+                "cost_cents": sum(log.cost_cents or 0 for log in logs)
+            })
+
+    elif metric == "workflows":
+        for bucket in buckets:
+            created = db.query(Workflow).filter(
+                Workflow.created_at >= bucket["start"],
+                Workflow.created_at < bucket["end"]
+            ).count()
+            completed = db.query(Workflow).filter(
+                Workflow.updated_at >= bucket["start"],
+                Workflow.updated_at < bucket["end"],
+                Workflow.status.in_(["completed", "success"])
+            ).count()
+            data_points.append({
+                "timestamp": bucket["start"].isoformat() + "Z",
+                "created": created,
+                "completed": completed
+            })
+
+    return {
+        "metric": metric,
+        "time_range": time_range,
+        "granularity": granularity,
+        "period_start": start_time.isoformat() + "Z",
+        "period_end": now.isoformat() + "Z",
+        "data_points": data_points,
+        "_persisted": True
+    }
+
+
+@app.get("/v2/analytics/ai-providers", tags=["V2 - Analytics"])
+async def get_ai_provider_analytics_v2(
+    time_range: str = "24h",
+    db: Session = Depends(get_db)
+):
+    """Get AI usage breakdown by provider"""
+    from api_server.database import AIUsageLog
+    from sqlalchemy import func
+
+    # Time range calculation
+    now = datetime.now(timezone.utc)
+    range_map = {"1h": 1, "6h": 6, "24h": 24, "7d": 168, "30d": 720, "90d": 2160}
+    hours = range_map.get(time_range, 24)
+    start_time = now - timedelta(hours=hours)
+
+    # Get aggregated data by provider
+    provider_data = db.query(
+        AIUsageLog.provider,
+        func.count(AIUsageLog.id).label('requests'),
+        func.sum(AIUsageLog.total_tokens).label('tokens'),
+        func.sum(AIUsageLog.cost_cents).label('cost_cents'),
+        func.avg(AIUsageLog.latency_ms).label('avg_latency')
+    ).filter(
+        AIUsageLog.created_at >= start_time
+    ).group_by(AIUsageLog.provider).all()
+
+    providers = []
+    for row in provider_data:
+        providers.append({
+            "provider": row.provider or "unknown",
+            "requests": row.requests or 0,
+            "tokens": int(row.tokens or 0),
+            "cost_dollars": round((row.cost_cents or 0) / 100, 2),
+            "avg_latency_ms": int(row.avg_latency or 0)
+        })
+
+    # Get model breakdown
+    model_data = db.query(
+        AIUsageLog.model,
+        AIUsageLog.provider,
+        func.count(AIUsageLog.id).label('requests'),
+        func.sum(AIUsageLog.total_tokens).label('tokens')
+    ).filter(
+        AIUsageLog.created_at >= start_time
+    ).group_by(AIUsageLog.model, AIUsageLog.provider).all()
+
+    models = []
+    for row in model_data:
+        models.append({
+            "model": row.model or "unknown",
+            "provider": row.provider or "unknown",
+            "requests": row.requests or 0,
+            "tokens": int(row.tokens or 0)
+        })
+
+    return {
+        "time_range": time_range,
+        "providers": providers,
+        "models": models,
+        "total_requests": sum(p["requests"] for p in providers),
+        "total_cost_dollars": round(sum(p["cost_dollars"] for p in providers), 2),
+        "_persisted": True
+    }
+
+
+@app.get("/v2/analytics/executions", tags=["V2 - Analytics"])
+async def get_execution_analytics_v2(
+    time_range: str = "24h",
+    db: Session = Depends(get_db)
+):
+    """Get execution analytics with status breakdown"""
+    from api_server.database import AgentExecution
+    from sqlalchemy import func
+
+    # Time range calculation
+    now = datetime.now(timezone.utc)
+    range_map = {"1h": 1, "6h": 6, "24h": 24, "7d": 168, "30d": 720, "90d": 2160}
+    hours = range_map.get(time_range, 24)
+    start_time = now - timedelta(hours=hours)
+
+    # Get status breakdown
+    status_data = db.query(
+        AgentExecution.status,
+        func.count(AgentExecution.id).label('count')
+    ).filter(
+        AgentExecution.started_at >= start_time
+    ).group_by(AgentExecution.status).all()
+
+    statuses = {row.status: row.count for row in status_data}
+
+    # Calculate duration stats
+    completed = db.query(AgentExecution).filter(
+        AgentExecution.started_at >= start_time,
+        AgentExecution.completed_at.isnot(None)
+    ).all()
+
+    durations = []
+    for exec in completed:
+        if exec.started_at and exec.completed_at:
+            duration = (exec.completed_at - exec.started_at).total_seconds() * 1000
+            durations.append(duration)
+
+    avg_duration = int(sum(durations) / max(len(durations), 1)) if durations else 0
+    min_duration = int(min(durations)) if durations else 0
+    max_duration = int(max(durations)) if durations else 0
+
+    # Sort for percentiles
+    durations.sort()
+    p50 = int(durations[len(durations) // 2]) if durations else 0
+    p95 = int(durations[int(len(durations) * 0.95)]) if len(durations) > 1 else 0
+    p99 = int(durations[int(len(durations) * 0.99)]) if len(durations) > 1 else 0
+
+    total = sum(statuses.values())
+
+    return {
+        "time_range": time_range,
+        "total_executions": total,
+        "status_breakdown": {
+            "completed": statuses.get("completed", 0),
+            "running": statuses.get("running", 0),
+            "pending": statuses.get("pending", 0),
+            "failed": statuses.get("failed", 0),
+            "cancelled": statuses.get("cancelled", 0)
+        },
+        "success_rate": round(statuses.get("completed", 0) / max(total, 1) * 100, 1),
+        "duration_stats": {
+            "avg_ms": avg_duration,
+            "min_ms": min_duration,
+            "max_ms": max_duration,
+            "p50_ms": p50,
+            "p95_ms": p95,
+            "p99_ms": p99
+        },
+        "_persisted": True
+    }
+
+
+@app.post("/v2/analytics/snapshots", tags=["V2 - Analytics"])
+async def create_analytics_snapshot_v2(
+    granularity: str = "hour",
+    db: Session = Depends(get_db)
+):
+    """Create an analytics snapshot (for scheduled jobs)"""
+    from api_server.database import (
+        AnalyticsSnapshot, Agent, Workflow, AgentExecution, AIUsageLog, User
+    )
+
+    now = datetime.now(timezone.utc)
+
+    # Gather current metrics
+    snapshot = AnalyticsSnapshot(
+        snapshot_id=f"snap_{uuid.uuid4().hex[:12]}",
+        snapshot_time=now,
+        granularity=granularity,
+        total_agents=db.query(Agent).count(),
+        active_agents=db.query(Agent).filter(Agent.status == "active").count(),
+        total_workflows=db.query(Workflow).count(),
+        active_workflows=db.query(Workflow).filter(Workflow.status == "running").count(),
+        completed_workflows=db.query(Workflow).filter(
+            Workflow.status.in_(["completed", "success"])
+        ).count(),
+        total_executions=db.query(AgentExecution).count(),
+        successful_executions=db.query(AgentExecution).filter(
+            AgentExecution.status == "completed"
+        ).count(),
+        failed_executions=db.query(AgentExecution).filter(
+            AgentExecution.status == "failed"
+        ).count(),
+        active_users=db.query(User).filter(User.status == "active").count()
+    )
+
+    db.add(snapshot)
+    db.commit()
+    db.refresh(snapshot)
+
+    return {
+        "snapshot_id": snapshot.snapshot_id,
+        "snapshot_time": snapshot.snapshot_time.isoformat() + "Z",
+        "granularity": snapshot.granularity,
+        "_persisted": True
+    }
+
+
+@app.get("/v2/analytics/snapshots", tags=["V2 - Analytics"])
+async def list_analytics_snapshots_v2(
+    granularity: str = None,
+    limit: int = 100,
+    db: Session = Depends(get_db)
+):
+    """List analytics snapshots"""
+    from api_server.database import AnalyticsSnapshot
+
+    query = db.query(AnalyticsSnapshot)
+    if granularity:
+        query = query.filter(AnalyticsSnapshot.granularity == granularity)
+
+    snapshots = query.order_by(AnalyticsSnapshot.snapshot_time.desc()).limit(limit).all()
+
+    return {
+        "snapshots": [{
+            "snapshot_id": s.snapshot_id,
+            "snapshot_time": s.snapshot_time.isoformat() + "Z",
+            "granularity": s.granularity,
+            "total_agents": s.total_agents,
+            "active_agents": s.active_agents,
+            "total_executions": s.total_executions,
+            "successful_executions": s.successful_executions,
+            "failed_executions": s.failed_executions,
+            "ai_requests": s.ai_requests,
+            "ai_tokens_used": s.ai_tokens_used
+        } for s in snapshots],
+        "count": len(snapshots),
+        "_persisted": True
+    }
+
+
+# Dashboard Widget Management
+
+@app.post("/v2/analytics/widgets", tags=["V2 - Analytics"])
+async def create_dashboard_widget_v2(data: Dict[str, Any], db: Session = Depends(get_db)):
+    """Create a dashboard widget"""
+    from api_server.database import DashboardWidget
+
+    widget = DashboardWidget(
+        widget_id=f"widget_{uuid.uuid4().hex[:12]}",
+        name=data.get("name", "New Widget"),
+        widget_type=data.get("widget_type", "line_chart"),
+        description=data.get("description"),
+        data_source=data.get("data_source", "executions"),
+        metric=data.get("metric"),
+        aggregation=data.get("aggregation", "count"),
+        group_by=data.get("group_by"),
+        time_range=data.get("time_range", "24h"),
+        refresh_interval_seconds=data.get("refresh_interval_seconds", 60),
+        position_x=data.get("position_x", 0),
+        position_y=data.get("position_y", 0),
+        width=data.get("width", 4),
+        height=data.get("height", 2),
+        color_scheme=data.get("color_scheme", "blue"),
+        display_options=data.get("display_options"),
+        user_id=data.get("user_id"),
+        organization_id=data.get("organization_id"),
+        is_default=data.get("is_default", False)
+    )
+    db.add(widget)
+    db.commit()
+    db.refresh(widget)
+
+    return {
+        "widget_id": widget.widget_id,
+        "name": widget.name,
+        "widget_type": widget.widget_type,
+        "data_source": widget.data_source,
+        "created_at": widget.created_at.isoformat() + "Z",
+        "_persisted": True
+    }
+
+
+@app.get("/v2/analytics/widgets", tags=["V2 - Analytics"])
+async def list_dashboard_widgets_v2(
+    user_id: int = None,
+    include_defaults: bool = True,
+    db: Session = Depends(get_db)
+):
+    """List dashboard widgets"""
+    from api_server.database import DashboardWidget
+    from sqlalchemy import or_
+
+    query = db.query(DashboardWidget).filter(DashboardWidget.status == "active")
+
+    conditions = []
+    if user_id:
+        conditions.append(DashboardWidget.user_id == user_id)
+    if include_defaults:
+        conditions.append(DashboardWidget.is_default == True)
+
+    if conditions:
+        query = query.filter(or_(*conditions))
+
+    widgets = query.order_by(DashboardWidget.position_y, DashboardWidget.position_x).all()
+
+    return {
+        "widgets": [{
+            "widget_id": w.widget_id,
+            "name": w.name,
+            "widget_type": w.widget_type,
+            "description": w.description,
+            "data_source": w.data_source,
+            "metric": w.metric,
+            "time_range": w.time_range,
+            "refresh_interval_seconds": w.refresh_interval_seconds,
+            "position": {"x": w.position_x, "y": w.position_y},
+            "size": {"width": w.width, "height": w.height},
+            "color_scheme": w.color_scheme,
+            "display_options": w.display_options,
+            "is_default": w.is_default
+        } for w in widgets],
+        "count": len(widgets),
+        "_persisted": True
+    }
+
+
+@app.get("/v2/analytics/widgets/{widget_id}/data", tags=["V2 - Analytics"])
+async def get_widget_data_v2(widget_id: str, db: Session = Depends(get_db)):
+    """Get data for a specific widget"""
+    from api_server.database import DashboardWidget
+
+    widget = db.query(DashboardWidget).filter(
+        DashboardWidget.widget_id == widget_id
+    ).first()
+    if not widget:
+        raise HTTPException(status_code=404, detail="Widget not found")
+
+    # Get data based on widget configuration
+    # This delegates to the appropriate analytics endpoint
+    if widget.data_source == "executions":
+        return await get_execution_analytics_v2(widget.time_range or "24h", db)
+    elif widget.data_source == "ai_usage":
+        return await get_ai_provider_analytics_v2(widget.time_range or "24h", db)
+    else:
+        return await get_analytics_overview_v2(widget.time_range or "24h", db)
+
+
+# Analytics Alerts
+
+@app.post("/v2/analytics/alerts", tags=["V2 - Analytics"])
+async def create_analytics_alert_v2(data: Dict[str, Any], db: Session = Depends(get_db)):
+    """Create an analytics alert"""
+    from api_server.database import AnalyticsAlert
+
+    alert = AnalyticsAlert(
+        alert_id=f"alert_{uuid.uuid4().hex[:12]}",
+        name=data.get("name", "New Alert"),
+        description=data.get("description"),
+        metric=data.get("metric"),
+        condition=data.get("condition", "gt"),
+        threshold=data.get("threshold", 0),
+        evaluation_window_minutes=data.get("evaluation_window_minutes", 5),
+        consecutive_breaches=data.get("consecutive_breaches", 1),
+        notification_channels=data.get("notification_channels", ["email"]),
+        notification_targets=data.get("notification_targets"),
+        cooldown_minutes=data.get("cooldown_minutes", 60),
+        severity=data.get("severity", "warning"),
+        organization_id=data.get("organization_id"),
+        created_by=data.get("created_by")
+    )
+    db.add(alert)
+    db.commit()
+    db.refresh(alert)
+
+    return {
+        "alert_id": alert.alert_id,
+        "name": alert.name,
+        "metric": alert.metric,
+        "condition": alert.condition,
+        "threshold": alert.threshold,
+        "severity": alert.severity,
+        "status": alert.status,
+        "created_at": alert.created_at.isoformat() + "Z",
+        "_persisted": True
+    }
+
+
+@app.get("/v2/analytics/alerts", tags=["V2 - Analytics"])
+async def list_analytics_alerts_v2(
+    status: str = None,
+    severity: str = None,
+    db: Session = Depends(get_db)
+):
+    """List analytics alerts"""
+    from api_server.database import AnalyticsAlert
+
+    query = db.query(AnalyticsAlert)
+    if status:
+        query = query.filter(AnalyticsAlert.status == status)
+    if severity:
+        query = query.filter(AnalyticsAlert.severity == severity)
+
+    alerts = query.order_by(AnalyticsAlert.created_at.desc()).all()
+
+    return {
+        "alerts": [{
+            "alert_id": a.alert_id,
+            "name": a.name,
+            "metric": a.metric,
+            "condition": a.condition,
+            "threshold": a.threshold,
+            "current_value": a.current_value,
+            "severity": a.severity,
+            "status": a.status,
+            "last_triggered_at": a.last_triggered_at.isoformat() + "Z" if a.last_triggered_at else None,
+            "created_at": a.created_at.isoformat() + "Z"
+        } for a in alerts],
+        "count": len(alerts),
+        "_persisted": True
+    }
+
+
+# ============================================================================
 # V2 - Additional CRUD Operations (Database-Backed)
 # ============================================================================
 

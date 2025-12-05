@@ -826,6 +826,8 @@
     <link rel="stylesheet" href="https://unpkg.com/bpmn-js@17.11.1/dist/assets/diagram-js.css">
     <link rel="stylesheet" href="https://unpkg.com/bpmn-js@17.11.1/dist/assets/bpmn-js.css">
     <link rel="stylesheet" href="https://unpkg.com/bpmn-js@17.11.1/dist/assets/bpmn-font/css/bpmn-embedded.css">
+    <!-- Chart.js for Analytics Charts -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
 </head>
 <body>
     <div class="container">
@@ -877,6 +879,7 @@
             <button class="tab-button" onclick="switchTab('enterprise')" style="background: linear-gradient(135deg, #f59e0b, #d97706); color: white;">🏢 Enterprise (V2)</button>
             <button class="tab-button" onclick="switchTab('operations')" style="background: linear-gradient(135deg, #8b5cf6, #7c3aed); color: white;">🎯 Operations (V2)</button>
             <button class="tab-button" onclick="switchTab('testing')" style="background: linear-gradient(135deg, #ef4444, #dc2626); color: white;">🧪 Testing (V2)</button>
+            <button class="tab-button" onclick="switchTab('analytics')" style="background: linear-gradient(135deg, #06b6d4, #0891b2); color: white;">📊 Analytics Charts</button>
         </div>
 
         <!-- Agent Explorer Tab -->
@@ -2726,6 +2729,126 @@
                             <button onclick="testGetMetrics()" style="padding: 8px 16px; background: #059669; color: white; border: none; border-radius: 4px; cursor: pointer;">System Metrics</button>
                         </div>
                         <div id="testHealthResult" style="margin-top: 10px; padding: 10px; background: white; border-radius: 4px; font-size: 0.9em; max-height: 300px; overflow-y: auto;"></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Analytics Charts Tab -->
+        <div id="tab-analytics" class="tab-content">
+            <div class="main-content">
+                <h2 style="margin-bottom: 20px;">📊 Analytics Dashboard</h2>
+                <p style="margin-bottom: 20px; color: #666;">Real-time metrics and visualizations for system performance.</p>
+
+                <!-- Time Range Selector -->
+                <div style="display: flex; gap: 15px; margin-bottom: 20px; align-items: center;">
+                    <label style="font-weight: bold; color: #333;">Time Range:</label>
+                    <select id="analyticsTimeRange" style="padding: 10px 15px; border: 2px solid #06b6d4; border-radius: 8px; font-size: 1em;" onchange="refreshAllCharts()">
+                        <option value="1h">Last 1 Hour</option>
+                        <option value="6h">Last 6 Hours</option>
+                        <option value="24h" selected>Last 24 Hours</option>
+                        <option value="7d">Last 7 Days</option>
+                        <option value="30d">Last 30 Days</option>
+                    </select>
+                    <button onclick="refreshAllCharts()" style="padding: 10px 20px; background: linear-gradient(135deg, #06b6d4, #0891b2); color: white; border: none; border-radius: 8px; cursor: pointer; font-weight: bold;">
+                        🔄 Refresh All
+                    </button>
+                </div>
+
+                <!-- Overview Stats Cards -->
+                <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 15px; margin-bottom: 25px;">
+                    <div style="background: linear-gradient(135deg, #dbeafe, #bfdbfe); padding: 20px; border-radius: 12px; border: 2px solid #3b82f6; text-align: center;">
+                        <div style="font-size: 2.5em; font-weight: bold; color: #1d4ed8;" id="chartTotalAgents">--</div>
+                        <div style="color: #1e40af; font-weight: 500;">Total Agents</div>
+                        <div style="color: #3b82f6; font-size: 0.85em; margin-top: 5px;" id="chartActiveAgents">-- active</div>
+                    </div>
+                    <div style="background: linear-gradient(135deg, #dcfce7, #bbf7d0); padding: 20px; border-radius: 12px; border: 2px solid #22c55e; text-align: center;">
+                        <div style="font-size: 2.5em; font-weight: bold; color: #15803d;" id="chartTotalExecutions">--</div>
+                        <div style="color: #166534; font-weight: 500;">Executions</div>
+                        <div style="color: #22c55e; font-size: 0.85em; margin-top: 5px;" id="chartSuccessRate">--% success</div>
+                    </div>
+                    <div style="background: linear-gradient(135deg, #f3e8ff, #e9d5ff); padding: 20px; border-radius: 12px; border: 2px solid #a855f7; text-align: center;">
+                        <div style="font-size: 2.5em; font-weight: bold; color: #7c3aed;" id="chartAIRequests">--</div>
+                        <div style="color: #6b21a8; font-weight: 500;">AI Requests</div>
+                        <div style="color: #a855f7; font-size: 0.85em; margin-top: 5px;" id="chartAITokens">-- tokens</div>
+                    </div>
+                    <div style="background: linear-gradient(135deg, #fef3c7, #fde68a); padding: 20px; border-radius: 12px; border: 2px solid #f59e0b; text-align: center;">
+                        <div style="font-size: 2.5em; font-weight: bold; color: #b45309;" id="chartAICost">$--</div>
+                        <div style="color: #92400e; font-weight: 500;">AI Cost</div>
+                        <div style="color: #f59e0b; font-size: 0.85em; margin-top: 5px;" id="chartAvgLatency">-- ms avg</div>
+                    </div>
+                </div>
+
+                <!-- Charts Grid -->
+                <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(450px, 1fr)); gap: 20px;">
+
+                    <!-- Executions Time Series Chart -->
+                    <div style="background: white; padding: 20px; border-radius: 12px; box-shadow: 0 2px 10px rgba(0,0,0,0.1);">
+                        <h3 style="margin-bottom: 15px; color: #333; display: flex; align-items: center; gap: 10px;">
+                            <span style="background: #22c55e; color: white; padding: 5px 10px; border-radius: 6px; font-size: 0.8em;">LIVE</span>
+                            Executions Over Time
+                        </h3>
+                        <div style="height: 300px;">
+                            <canvas id="executionsChart"></canvas>
+                        </div>
+                    </div>
+
+                    <!-- AI Usage Chart -->
+                    <div style="background: white; padding: 20px; border-radius: 12px; box-shadow: 0 2px 10px rgba(0,0,0,0.1);">
+                        <h3 style="margin-bottom: 15px; color: #333; display: flex; align-items: center; gap: 10px;">
+                            <span style="background: #a855f7; color: white; padding: 5px 10px; border-radius: 6px; font-size: 0.8em;">AI</span>
+                            AI Token Usage
+                        </h3>
+                        <div style="height: 300px;">
+                            <canvas id="aiUsageChart"></canvas>
+                        </div>
+                    </div>
+
+                    <!-- Execution Status Pie Chart -->
+                    <div style="background: white; padding: 20px; border-radius: 12px; box-shadow: 0 2px 10px rgba(0,0,0,0.1);">
+                        <h3 style="margin-bottom: 15px; color: #333;">Execution Status Distribution</h3>
+                        <div style="height: 300px; display: flex; justify-content: center;">
+                            <canvas id="statusPieChart"></canvas>
+                        </div>
+                    </div>
+
+                    <!-- AI Provider Breakdown -->
+                    <div style="background: white; padding: 20px; border-radius: 12px; box-shadow: 0 2px 10px rgba(0,0,0,0.1);">
+                        <h3 style="margin-bottom: 15px; color: #333;">AI Provider Usage</h3>
+                        <div style="height: 300px;">
+                            <canvas id="providerBarChart"></canvas>
+                        </div>
+                    </div>
+
+                    <!-- Latency Distribution -->
+                    <div style="background: white; padding: 20px; border-radius: 12px; box-shadow: 0 2px 10px rgba(0,0,0,0.1); grid-column: span 2;">
+                        <h3 style="margin-bottom: 15px; color: #333;">Execution Latency Percentiles</h3>
+                        <div style="display: grid; grid-template-columns: repeat(6, 1fr); gap: 15px; margin-top: 20px;">
+                            <div style="background: #f0f9ff; padding: 15px; border-radius: 8px; text-align: center;">
+                                <div style="font-size: 1.5em; font-weight: bold; color: #0369a1;" id="latencyMin">--</div>
+                                <div style="color: #0c4a6e; font-size: 0.85em;">Min</div>
+                            </div>
+                            <div style="background: #f0fdf4; padding: 15px; border-radius: 8px; text-align: center;">
+                                <div style="font-size: 1.5em; font-weight: bold; color: #15803d;" id="latencyP50">--</div>
+                                <div style="color: #166534; font-size: 0.85em;">P50</div>
+                            </div>
+                            <div style="background: #fffbeb; padding: 15px; border-radius: 8px; text-align: center;">
+                                <div style="font-size: 1.5em; font-weight: bold; color: #b45309;" id="latencyAvg">--</div>
+                                <div style="color: #92400e; font-size: 0.85em;">Avg</div>
+                            </div>
+                            <div style="background: #fff7ed; padding: 15px; border-radius: 8px; text-align: center;">
+                                <div style="font-size: 1.5em; font-weight: bold; color: #c2410c;" id="latencyP95">--</div>
+                                <div style="color: #9a3412; font-size: 0.85em;">P95</div>
+                            </div>
+                            <div style="background: #fef2f2; padding: 15px; border-radius: 8px; text-align: center;">
+                                <div style="font-size: 1.5em; font-weight: bold; color: #b91c1c;" id="latencyP99">--</div>
+                                <div style="color: #991b1b; font-size: 0.85em;">P99</div>
+                            </div>
+                            <div style="background: #fae8ff; padding: 15px; border-radius: 8px; text-align: center;">
+                                <div style="font-size: 1.5em; font-weight: bold; color: #a21caf;" id="latencyMax">--</div>
+                                <div style="color: #86198f; font-size: 0.85em;">Max</div>
+                            </div>
+                        </div>
                     </div>
                 </div>
             </div>
@@ -8434,6 +8557,277 @@
                 document.getElementById('testHealthResult').innerHTML = html;
             } catch (e) {
                 document.getElementById('testHealthResult').innerHTML = `<span style="color: red;">Error: ${e.message}</span>`;
+            }
+        }
+
+        // ========================================
+        // ANALYTICS CHARTS FUNCTIONS
+        // ========================================
+
+        let executionsChart = null;
+        let aiUsageChart = null;
+        let statusPieChart = null;
+        let providerBarChart = null;
+
+        async function refreshAllCharts() {
+            const timeRange = document.getElementById('analyticsTimeRange').value;
+            await Promise.all([
+                loadOverviewStats(timeRange),
+                loadExecutionsChart(timeRange),
+                loadAIUsageChart(timeRange),
+                loadStatusPieChart(timeRange),
+                loadProviderBarChart(timeRange),
+                loadLatencyStats(timeRange)
+            ]);
+        }
+
+        async function loadOverviewStats(timeRange) {
+            try {
+                const res = await fetch(`${API_URL}/v2/analytics/overview?time_range=${timeRange}`);
+                const data = await res.json();
+
+                document.getElementById('chartTotalAgents').textContent = data.agents?.total || 0;
+                document.getElementById('chartActiveAgents').textContent = `${data.agents?.active || 0} active`;
+
+                document.getElementById('chartTotalExecutions').textContent = data.executions?.recent || 0;
+                document.getElementById('chartSuccessRate').textContent = `${data.executions?.success_rate || 0}% success`;
+
+                document.getElementById('chartAIRequests').textContent = data.ai_usage?.requests || 0;
+                document.getElementById('chartAITokens').textContent = `${(data.ai_usage?.tokens || 0).toLocaleString()} tokens`;
+
+                document.getElementById('chartAICost').textContent = `$${data.ai_usage?.cost_dollars || 0}`;
+                document.getElementById('chartAvgLatency').textContent = `${data.ai_usage?.avg_latency_ms || 0} ms avg`;
+            } catch (e) {
+                console.error('Error loading overview stats:', e);
+            }
+        }
+
+        async function loadExecutionsChart(timeRange) {
+            try {
+                const granularity = timeRange === '1h' ? 'minute' : (timeRange === '24h' || timeRange === '6h' ? 'hour' : 'day');
+                const res = await fetch(`${API_URL}/v2/analytics/time-series?metric=executions&time_range=${timeRange}&granularity=${granularity}`);
+                const data = await res.json();
+
+                const labels = data.data_points.map(p => {
+                    const d = new Date(p.timestamp);
+                    return granularity === 'minute' ? d.toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'}) :
+                           granularity === 'hour' ? d.toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'}) :
+                           d.toLocaleDateString([], {month: 'short', day: 'numeric'});
+                });
+                const successful = data.data_points.map(p => p.successful || 0);
+                const failed = data.data_points.map(p => p.failed || 0);
+
+                const ctx = document.getElementById('executionsChart').getContext('2d');
+                if (executionsChart) executionsChart.destroy();
+
+                executionsChart = new Chart(ctx, {
+                    type: 'line',
+                    data: {
+                        labels: labels,
+                        datasets: [
+                            {
+                                label: 'Successful',
+                                data: successful,
+                                borderColor: '#22c55e',
+                                backgroundColor: 'rgba(34, 197, 94, 0.1)',
+                                fill: true,
+                                tension: 0.3
+                            },
+                            {
+                                label: 'Failed',
+                                data: failed,
+                                borderColor: '#ef4444',
+                                backgroundColor: 'rgba(239, 68, 68, 0.1)',
+                                fill: true,
+                                tension: 0.3
+                            }
+                        ]
+                    },
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        plugins: { legend: { position: 'top' } },
+                        scales: {
+                            y: { beginAtZero: true }
+                        }
+                    }
+                });
+            } catch (e) {
+                console.error('Error loading executions chart:', e);
+            }
+        }
+
+        async function loadAIUsageChart(timeRange) {
+            try {
+                const granularity = timeRange === '1h' ? 'minute' : (timeRange === '24h' || timeRange === '6h' ? 'hour' : 'day');
+                const res = await fetch(`${API_URL}/v2/analytics/time-series?metric=ai_usage&time_range=${timeRange}&granularity=${granularity}`);
+                const data = await res.json();
+
+                const labels = data.data_points.map(p => {
+                    const d = new Date(p.timestamp);
+                    return granularity === 'minute' ? d.toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'}) :
+                           granularity === 'hour' ? d.toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'}) :
+                           d.toLocaleDateString([], {month: 'short', day: 'numeric'});
+                });
+                const tokens = data.data_points.map(p => p.tokens || 0);
+                const requests = data.data_points.map(p => p.requests || 0);
+
+                const ctx = document.getElementById('aiUsageChart').getContext('2d');
+                if (aiUsageChart) aiUsageChart.destroy();
+
+                aiUsageChart = new Chart(ctx, {
+                    type: 'bar',
+                    data: {
+                        labels: labels,
+                        datasets: [
+                            {
+                                label: 'Tokens',
+                                data: tokens,
+                                backgroundColor: 'rgba(168, 85, 247, 0.7)',
+                                borderColor: '#a855f7',
+                                borderWidth: 1,
+                                yAxisID: 'y'
+                            },
+                            {
+                                label: 'Requests',
+                                data: requests,
+                                type: 'line',
+                                borderColor: '#06b6d4',
+                                backgroundColor: 'transparent',
+                                tension: 0.3,
+                                yAxisID: 'y1'
+                            }
+                        ]
+                    },
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        plugins: { legend: { position: 'top' } },
+                        scales: {
+                            y: {
+                                type: 'linear',
+                                position: 'left',
+                                title: { display: true, text: 'Tokens' }
+                            },
+                            y1: {
+                                type: 'linear',
+                                position: 'right',
+                                title: { display: true, text: 'Requests' },
+                                grid: { drawOnChartArea: false }
+                            }
+                        }
+                    }
+                });
+            } catch (e) {
+                console.error('Error loading AI usage chart:', e);
+            }
+        }
+
+        async function loadStatusPieChart(timeRange) {
+            try {
+                const res = await fetch(`${API_URL}/v2/analytics/executions?time_range=${timeRange}`);
+                const data = await res.json();
+
+                const breakdown = data.status_breakdown || {};
+                const labels = Object.keys(breakdown);
+                const values = Object.values(breakdown);
+                const colors = {
+                    completed: '#22c55e',
+                    running: '#3b82f6',
+                    pending: '#f59e0b',
+                    failed: '#ef4444',
+                    cancelled: '#6b7280'
+                };
+
+                const ctx = document.getElementById('statusPieChart').getContext('2d');
+                if (statusPieChart) statusPieChart.destroy();
+
+                statusPieChart = new Chart(ctx, {
+                    type: 'doughnut',
+                    data: {
+                        labels: labels.map(l => l.charAt(0).toUpperCase() + l.slice(1)),
+                        datasets: [{
+                            data: values,
+                            backgroundColor: labels.map(l => colors[l] || '#9ca3af'),
+                            borderWidth: 2,
+                            borderColor: '#fff'
+                        }]
+                    },
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        plugins: {
+                            legend: { position: 'right' }
+                        }
+                    }
+                });
+            } catch (e) {
+                console.error('Error loading status pie chart:', e);
+            }
+        }
+
+        async function loadProviderBarChart(timeRange) {
+            try {
+                const res = await fetch(`${API_URL}/v2/analytics/ai-providers?time_range=${timeRange}`);
+                const data = await res.json();
+
+                const providers = data.providers || [];
+                const labels = providers.map(p => p.provider.charAt(0).toUpperCase() + p.provider.slice(1));
+                const requests = providers.map(p => p.requests);
+                const costs = providers.map(p => p.cost_dollars);
+
+                const ctx = document.getElementById('providerBarChart').getContext('2d');
+                if (providerBarChart) providerBarChart.destroy();
+
+                providerBarChart = new Chart(ctx, {
+                    type: 'bar',
+                    data: {
+                        labels: labels,
+                        datasets: [
+                            {
+                                label: 'Requests',
+                                data: requests,
+                                backgroundColor: 'rgba(59, 130, 246, 0.7)',
+                                borderColor: '#3b82f6',
+                                borderWidth: 1
+                            },
+                            {
+                                label: 'Cost ($)',
+                                data: costs,
+                                backgroundColor: 'rgba(245, 158, 11, 0.7)',
+                                borderColor: '#f59e0b',
+                                borderWidth: 1
+                            }
+                        ]
+                    },
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        plugins: { legend: { position: 'top' } },
+                        scales: {
+                            y: { beginAtZero: true }
+                        }
+                    }
+                });
+            } catch (e) {
+                console.error('Error loading provider bar chart:', e);
+            }
+        }
+
+        async function loadLatencyStats(timeRange) {
+            try {
+                const res = await fetch(`${API_URL}/v2/analytics/executions?time_range=${timeRange}`);
+                const data = await res.json();
+
+                const stats = data.duration_stats || {};
+                document.getElementById('latencyMin').textContent = `${stats.min_ms || 0}ms`;
+                document.getElementById('latencyP50').textContent = `${stats.p50_ms || 0}ms`;
+                document.getElementById('latencyAvg').textContent = `${stats.avg_ms || 0}ms`;
+                document.getElementById('latencyP95').textContent = `${stats.p95_ms || 0}ms`;
+                document.getElementById('latencyP99').textContent = `${stats.p99_ms || 0}ms`;
+                document.getElementById('latencyMax').textContent = `${stats.max_ms || 0}ms`;
+            } catch (e) {
+                console.error('Error loading latency stats:', e);
             }
         }
 

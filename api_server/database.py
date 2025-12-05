@@ -544,6 +544,171 @@ class AIProviderConfig(Base):
 
 
 # ============================================================================
+# Analytics & Dashboard Metrics
+# ============================================================================
+
+class AnalyticsSnapshot(Base):
+    """Periodic snapshots of system metrics for time-series charts"""
+    __tablename__ = "analytics_snapshots"
+
+    id = Column(Integer, primary_key=True, index=True)
+    snapshot_id = Column(String(50), unique=True, index=True, nullable=False)
+
+    # Time bucketing
+    snapshot_time = Column(DateTime, index=True, nullable=False)
+    granularity = Column(String(20), index=True)  # minute, hour, day, week, month
+
+    # Agent metrics
+    total_agents = Column(Integer, default=0)
+    active_agents = Column(Integer, default=0)
+    agents_created = Column(Integer, default=0)
+    agents_deleted = Column(Integer, default=0)
+
+    # Execution metrics
+    total_executions = Column(Integer, default=0)
+    successful_executions = Column(Integer, default=0)
+    failed_executions = Column(Integer, default=0)
+    avg_execution_time_ms = Column(Integer)
+
+    # Workflow metrics
+    total_workflows = Column(Integer, default=0)
+    active_workflows = Column(Integer, default=0)
+    completed_workflows = Column(Integer, default=0)
+
+    # AI usage metrics
+    ai_requests = Column(Integer, default=0)
+    ai_tokens_used = Column(Integer, default=0)
+    ai_cost_cents = Column(Integer, default=0)
+    ai_avg_latency_ms = Column(Integer)
+
+    # User activity metrics
+    active_users = Column(Integer, default=0)
+    api_requests = Column(Integer, default=0)
+    unique_sessions = Column(Integer, default=0)
+
+    # System health metrics
+    cpu_usage_percent = Column(Float)
+    memory_usage_percent = Column(Float)
+    disk_usage_percent = Column(Float)
+    api_latency_p50_ms = Column(Integer)
+    api_latency_p95_ms = Column(Integer)
+    api_latency_p99_ms = Column(Integer)
+    error_rate_percent = Column(Float)
+
+    # Organization scope (optional)
+    organization_id = Column(Integer, ForeignKey("organizations.id"), index=True)
+
+    # Timestamps
+    created_at = Column(DateTime, default=datetime.utcnow)
+
+
+class DashboardWidget(Base):
+    """User-configurable dashboard widgets"""
+    __tablename__ = "dashboard_widgets"
+
+    id = Column(Integer, primary_key=True, index=True)
+    widget_id = Column(String(50), unique=True, index=True, nullable=False)
+
+    # Widget identity
+    name = Column(String(200), nullable=False)
+    widget_type = Column(String(50), nullable=False)  # line_chart, bar_chart, pie_chart, stat_card, gauge, table
+    description = Column(Text)
+
+    # Data configuration
+    data_source = Column(String(100))  # executions, ai_usage, workflows, agents, system_health
+    metric = Column(String(100))  # total_count, success_rate, avg_latency, cost, etc.
+    aggregation = Column(String(50))  # sum, avg, min, max, count
+    group_by = Column(String(100))  # provider, model, agent_type, status, etc.
+    time_range = Column(String(50))  # 1h, 24h, 7d, 30d, 90d
+    refresh_interval_seconds = Column(Integer, default=60)
+
+    # Display configuration
+    position_x = Column(Integer, default=0)
+    position_y = Column(Integer, default=0)
+    width = Column(Integer, default=4)  # Grid units
+    height = Column(Integer, default=2)  # Grid units
+    color_scheme = Column(String(50))  # blue, green, purple, etc.
+    display_options = Column(JSON)  # Additional chart-specific options
+
+    # Ownership
+    user_id = Column(Integer, ForeignKey("users.id"))
+    organization_id = Column(Integer, ForeignKey("organizations.id"))
+    is_default = Column(Boolean, default=False)  # System default widget
+
+    # Status
+    status = Column(String(50), default="active")
+
+    # Timestamps
+    created_at = Column(DateTime, default=datetime.utcnow)
+    updated_at = Column(DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
+
+
+class AnalyticsAlert(Base):
+    """Alerts based on analytics thresholds"""
+    __tablename__ = "analytics_alerts"
+
+    id = Column(Integer, primary_key=True, index=True)
+    alert_id = Column(String(50), unique=True, index=True, nullable=False)
+
+    # Alert identity
+    name = Column(String(200), nullable=False)
+    description = Column(Text)
+
+    # Trigger configuration
+    metric = Column(String(100), nullable=False)  # error_rate, latency_p95, cost, etc.
+    condition = Column(String(20), nullable=False)  # gt, lt, gte, lte, eq
+    threshold = Column(Float, nullable=False)
+    evaluation_window_minutes = Column(Integer, default=5)
+    consecutive_breaches = Column(Integer, default=1)
+
+    # Notification configuration
+    notification_channels = Column(JSON)  # ["email", "slack", "webhook"]
+    notification_targets = Column(JSON)  # Email addresses, Slack channels, webhook URLs
+    cooldown_minutes = Column(Integer, default=60)  # Don't re-alert within this period
+
+    # State tracking
+    current_value = Column(Float)
+    breach_count = Column(Integer, default=0)
+    last_triggered_at = Column(DateTime)
+    last_resolved_at = Column(DateTime)
+
+    # Status
+    status = Column(String(50), default="active")  # active, paused, triggered, resolved
+    severity = Column(String(20), default="warning")  # info, warning, critical
+
+    # Ownership
+    organization_id = Column(Integer, ForeignKey("organizations.id"))
+    created_by = Column(Integer, ForeignKey("users.id"))
+
+    # Timestamps
+    created_at = Column(DateTime, default=datetime.utcnow)
+    updated_at = Column(DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
+
+
+class AnalyticsAlertHistory(Base):
+    """History of alert triggers"""
+    __tablename__ = "analytics_alert_history"
+
+    id = Column(Integer, primary_key=True, index=True)
+    history_id = Column(String(50), unique=True, index=True, nullable=False)
+    alert_id = Column(Integer, ForeignKey("analytics_alerts.id"), index=True)
+
+    # Event details
+    event_type = Column(String(20))  # triggered, resolved, acknowledged
+    metric_value = Column(Float)
+    threshold_value = Column(Float)
+    message = Column(Text)
+
+    # Notification tracking
+    notifications_sent = Column(JSON)  # List of notification details
+    acknowledged_by = Column(Integer, ForeignKey("users.id"))
+    acknowledged_at = Column(DateTime)
+
+    # Timestamps
+    created_at = Column(DateTime, default=datetime.utcnow, index=True)
+
+
+# ============================================================================
 # Enterprise Features - Billing & Quotas
 # ============================================================================
 
