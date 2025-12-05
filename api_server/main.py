@@ -70,11 +70,18 @@ sys.path.insert(0, str(Path(__file__).parent.parent))
 from api_server.database import (
     get_db, Agent, Workflow, AgentExecution, WorkflowStage, init_db, seed_agents, DATABASE_URL,
     Organization, User, Team, TeamMember, APIKey, Webhook, WebhookDelivery,
-    AIConversation, AIMessage
+    AIConversation, AIMessage,
+    # Enterprise Features
+    BillingAccount, CostRecord, UsageQuota, Backup, RestoreJob,
+    SSOProvider, MFADevice, SecurityPolicy, PolicyViolation,
+    MarketplaceListing, MarketplaceReview, SubscriptionPlan, Subscription,
+    Deployment, SLADefinition, SLAMetric, SLAViolation,
+    KBCategory, KBArticle, DataRetentionPolicy
 )
 from api_server.services import (
     OrganizationService, UserService, APIKeyService,
-    WebhookService, AIProviderService, RateLimiter
+    WebhookService, AIProviderService, RateLimiter,
+    TeamService, OrganizationServiceExtensions
 )
 
 # Import our workflow
@@ -968,12 +975,29 @@ async def save_workflow(
     workflow_data: Dict[str, Any],
     db: Session = Depends(get_db)
 ):
-    """Save a custom orchestrated workflow"""
+    """Save a custom orchestrated workflow (REAL - persisted to database)"""
     workflow_name = workflow_data.get("name", "Untitled Workflow")
     agents = workflow_data.get("agents", [])
     connections = workflow_data.get("connections", [])
 
     workflow_id = f"custom_{uuid4().hex[:12]}"
+
+    # Create workflow in database
+    workflow = Workflow(
+        workflow_id=workflow_id,
+        workflow_name=workflow_name,
+        workflow_type="custom_orchestrated",
+        status="saved",
+        input_data={
+            "agents": agents,
+            "connections": connections,
+            "definition": workflow_data
+        },
+        total_agents=len(agents)
+    )
+    db.add(workflow)
+    db.commit()
+    db.refresh(workflow)
 
     return {
         "workflow_id": workflow_id,
@@ -981,7 +1005,9 @@ async def save_workflow(
         "name": workflow_name,
         "message": f"Workflow '{workflow_name}' saved successfully",
         "agents_count": len(agents),
-        "connections_count": len(connections)
+        "connections_count": len(connections),
+        "created_at": workflow.created_at.isoformat() + "Z",
+        "_persisted": True
     }
 
 
@@ -991,16 +1017,37 @@ async def execute_custom_workflow(
     sandbox: bool = True,
     db: Session = Depends(get_db)
 ):
-    """Execute a custom orchestrated workflow in sandbox or production"""
+    """Execute a custom orchestrated workflow in sandbox or production (REAL - persisted to database)"""
     workflow_id = f"exec_{uuid4().hex[:12]}"
     agents = workflow_data.get("agents", [])
+    workflow_name = workflow_data.get("name", "Custom Execution")
+
+    # Create workflow execution record in database
+    workflow = Workflow(
+        workflow_id=workflow_id,
+        workflow_name=workflow_name,
+        workflow_type="custom_execution",
+        status="running",
+        input_data={
+            "agents": agents,
+            "definition": workflow_data,
+            "sandbox": sandbox
+        },
+        started_at=datetime.now(timezone.utc),
+        total_agents=len(agents)
+    )
+    db.add(workflow)
+    db.commit()
+    db.refresh(workflow)
 
     return {
         "workflow_id": workflow_id,
         "status": "executing",
         "environment": "sandbox" if sandbox else "production",
         "message": f"Executing workflow with {len(agents)} agents",
-        "execution_url": f"/api/workflows/{workflow_id}"
+        "execution_url": f"/api/workflows/{workflow_id}",
+        "started_at": workflow.started_at.isoformat() + "Z",
+        "_persisted": True
     }
 
 
@@ -2620,8 +2667,8 @@ async def list_agent_card_versions(apqc_code: str):
                     with open(version_file, 'r') as f:
                         version_entry = json.load(f)
                         CARD_VERSION_HISTORY[apqc_code].append(version_entry)
-                except Exception:
-                    pass
+                except Exception as e:
+                    logger.warning(f"Failed to load version file {version_file}: {e}")
             # Sort by version number
             CARD_VERSION_HISTORY[apqc_code].sort(key=lambda x: x.get("version", 0))
 
@@ -2692,8 +2739,8 @@ async def restore_agent_card_version(apqc_code: str, version: int, create_backup
 
                     card_found = True
                     break
-            except Exception:
-                pass
+            except Exception as e:
+                logger.warning(f"Failed to read card file for restore: {e}")
 
     if not card_found:
         raise HTTPException(
@@ -2805,8 +2852,8 @@ async def list_templates(category: Optional[str] = None, tag: Optional[str] = No
                         "tags": template.get("tags", []),
                         "source_apqc_id": template.get("source_apqc_id")
                     })
-            except Exception:
-                pass
+            except Exception as e:
+                logger.warning(f"Failed to load template file {file}: {e}")
 
     return {
         "total": len(templates),
@@ -3063,8 +3110,8 @@ async def archive_agent_card(apqc_code: str, reason: str = ""):
                     card_file = file
                     card_data = card
                     break
-            except Exception:
-                pass
+            except Exception as e:
+                logger.warning(f"Failed to read card file {file} for archive: {e}")
 
     if not card_file:
         raise HTTPException(
@@ -3116,8 +3163,8 @@ async def list_archived_cards():
                         "archive_reason": card.get("archive_reason", ""),
                         "filename": file.name
                     })
-            except Exception:
-                pass
+            except Exception as e:
+                logger.warning(f"Failed to read archived card file {file}: {e}")
 
     return {
         "total": len(archived),
@@ -3143,8 +3190,8 @@ async def restore_archived_card(apqc_code: str):
                     archived_file = file
                     card_data = card
                     break
-            except Exception:
-                pass
+            except Exception as e:
+                logger.warning(f"Failed to read archived file {file} for restore: {e}")
 
     if not archived_file:
         raise HTTPException(
@@ -3204,8 +3251,8 @@ async def permanently_delete_archived_card(apqc_code: str):
                         "apqc_id": apqc_code,
                         "permanently_deleted": True
                     }
-            except Exception:
-                pass
+            except Exception as e:
+                logger.warning(f"Failed to delete archived file {file}: {e}")
 
     raise HTTPException(
         status_code=404,
@@ -4068,8 +4115,8 @@ async def list_ai_agents():
                                 "domain": domain_match.group(1) if domain_match else domain_dir.name,
                                 "ai_powered": True
                             })
-                    except Exception:
-                        pass
+                    except Exception as e:
+                        logger.warning(f"Failed to parse AI agent file {agent_file}: {e}")
 
     return {
         "total": len(ai_agents),
@@ -4934,8 +4981,8 @@ async def full_text_search(request: SearchRequest, db: Session = Depends(get_db)
                         "filename": file.name,
                         "score": score
                     })
-            except Exception:
-                pass
+            except Exception as e:
+                logger.warning(f"Failed to search card file {file}: {e}")
 
     # Search templates
     if "templates" in request.types and TEMPLATES_DIR.exists():
@@ -4959,8 +5006,8 @@ async def full_text_search(request: SearchRequest, db: Session = Depends(get_db)
                         "category": template.get("category"),
                         "score": score
                     })
-            except Exception:
-                pass
+            except Exception as e:
+                logger.warning(f"Failed to search template file {file}: {e}")
 
     # Sort by score
     results.sort(key=lambda x: x["score"], reverse=True)
@@ -5009,8 +5056,8 @@ async def get_search_suggestions(q: str, limit: int = 10, db: Session = Depends(
                         "type": "card",
                         "id": card.get("apqc_id")
                     })
-            except Exception:
-                pass
+            except Exception as e:
+                logger.warning(f"Failed to get suggestion from file {file}: {e}")
 
     return {"suggestions": suggestions[:limit]}
 
@@ -5313,8 +5360,8 @@ async def validate_workflow_definition(workflow_id: str, db: Session = Depends(g
                     if card.get("apqc_id") == step["card_id"]:
                         card_found = True
                         break
-                except Exception:
-                    pass
+                except Exception as e:
+                    logger.warning(f"Failed to validate card reference in file {file}: {e}")
             if not card_found:
                 issues.append({
                     "step": step["step_id"],
@@ -11410,9 +11457,12 @@ ORG_ROLES: Dict[str, Dict[str, Any]] = {
 
 
 @app.post("/organizations")
-def create_organization(request: Request):
+async def create_organization(request: Request):
     """Create a new organization"""
-    data = {}
+    try:
+        data = await request.json()
+    except Exception:
+        data = {}
     org_id = f"org_{uuid.uuid4().hex[:12]}"
 
     org = {
@@ -11464,12 +11514,15 @@ def get_organization(org_id: str):
 
 
 @app.put("/organizations/{org_id}")
-def update_organization(org_id: str, request: Request):
+async def update_organization(org_id: str, request: Request):
     """Update organization"""
     if org_id not in ORGANIZATIONS:
         raise HTTPException(status_code=404, detail="Organization not found")
 
-    data = {}
+    try:
+        data = await request.json()
+    except Exception:
+        data = {}
     org = ORGANIZATIONS[org_id]
 
     for field in ["name", "slug", "plan", "settings", "limits"]:
@@ -11500,12 +11553,15 @@ def delete_organization(org_id: str):
 
 
 @app.post("/organizations/{org_id}/teams")
-def create_team(org_id: str, request: Request):
+async def create_team(org_id: str, request: Request):
     """Create a team within an organization"""
     if org_id not in ORGANIZATIONS:
         raise HTTPException(status_code=404, detail="Organization not found")
 
-    data = {}
+    try:
+        data = await request.json()
+    except Exception:
+        data = {}
     team_id = f"team_{uuid.uuid4().hex[:12]}"
 
     team = {
@@ -11533,12 +11589,15 @@ def list_teams(org_id: str):
 
 
 @app.post("/organizations/{org_id}/members")
-def add_member(org_id: str, request: Request):
+async def add_member(org_id: str, request: Request):
     """Add a member to an organization"""
     if org_id not in ORGANIZATIONS:
         raise HTTPException(status_code=404, detail="Organization not found")
 
-    data = {}
+    try:
+        data = await request.json()
+    except Exception:
+        data = {}
     member_id = f"member_{uuid.uuid4().hex[:12]}"
 
     member = {
@@ -11568,12 +11627,15 @@ def list_members(org_id: str):
 
 
 @app.put("/organizations/{org_id}/members/{member_id}/role")
-def update_member_role(org_id: str, member_id: str, request: Request):
+async def update_member_role(org_id: str, member_id: str, request: Request):
     """Update a member's role"""
     if member_id not in ORG_MEMBERS:
         raise HTTPException(status_code=404, detail="Member not found")
 
-    data = {}
+    try:
+        data = await request.json()
+    except Exception:
+        data = {}
     new_role = data.get("role", "member")
 
     if new_role not in ORG_ROLES:
@@ -32811,11 +32873,8 @@ def delete_backup(backup_id: str):
 
 
 # ============================================================================
-# SSO Integration
+# SSO Integration (uses SSO_PROVIDERS and SSO_SESSIONS defined earlier)
 # ============================================================================
-
-SSO_PROVIDERS: Dict[str, Dict[str, Any]] = {}
-SSO_SESSIONS: Dict[str, Dict[str, Any]] = {}
 
 @app.post("/sso/providers")
 def create_sso_provider(data: Dict[str, Any]):
@@ -33598,6 +33657,408 @@ async def get_ai_messages_v2(conversation_id: str, db: Session = Depends(get_db)
     }
 
 
+@app.get("/v2/ai/conversations", tags=["V2 - Real Implementations"])
+async def list_ai_conversations_v2(
+    db: Session = Depends(get_db),
+    status: str = None,
+    provider: str = None,
+    limit: int = 50,
+    offset: int = 0
+):
+    """List all AI conversations (REAL - from database)"""
+    query = db.query(AIConversation)
+    if status:
+        query = query.filter(AIConversation.status == status)
+    if provider:
+        query = query.filter(AIConversation.provider == provider)
+
+    total = query.count()
+    conversations = query.order_by(AIConversation.updated_at.desc()).offset(offset).limit(limit).all()
+
+    return {
+        "conversations": [{
+            "conversation_id": c.conversation_id,
+            "title": c.title,
+            "model": c.model,
+            "provider": c.provider,
+            "status": c.status,
+            "message_count": c.message_count,
+            "total_tokens": c.total_tokens,
+            "created_at": c.created_at.isoformat() + "Z" if c.created_at else None,
+            "updated_at": c.updated_at.isoformat() + "Z" if c.updated_at else None
+        } for c in conversations],
+        "total": total,
+        "limit": limit,
+        "offset": offset,
+        "_persisted": True
+    }
+
+
+@app.get("/v2/ai/conversations/{conversation_id}", tags=["V2 - Real Implementations"])
+async def get_ai_conversation_v2(conversation_id: str, db: Session = Depends(get_db)):
+    """Get single AI conversation details (REAL - from database)"""
+    conversation = db.query(AIConversation).filter(
+        AIConversation.conversation_id == conversation_id
+    ).first()
+    if not conversation:
+        raise HTTPException(status_code=404, detail="Conversation not found")
+
+    return {
+        "conversation_id": conversation.conversation_id,
+        "title": conversation.title,
+        "model": conversation.model,
+        "provider": conversation.provider,
+        "system_prompt": conversation.system_prompt,
+        "context": conversation.context,
+        "status": conversation.status,
+        "message_count": conversation.message_count,
+        "total_tokens": conversation.total_tokens,
+        "user_id": conversation.user_id,
+        "organization_id": conversation.organization_id,
+        "created_at": conversation.created_at.isoformat() + "Z" if conversation.created_at else None,
+        "updated_at": conversation.updated_at.isoformat() + "Z" if conversation.updated_at else None,
+        "_persisted": True
+    }
+
+
+@app.put("/v2/ai/conversations/{conversation_id}", tags=["V2 - Real Implementations"])
+async def update_ai_conversation_v2(conversation_id: str, data: Dict[str, Any], db: Session = Depends(get_db)):
+    """Update AI conversation (REAL - persisted to database)"""
+    conversation = db.query(AIConversation).filter(
+        AIConversation.conversation_id == conversation_id
+    ).first()
+    if not conversation:
+        raise HTTPException(status_code=404, detail="Conversation not found")
+
+    # Update allowed fields
+    if "title" in data:
+        conversation.title = data["title"]
+    if "system_prompt" in data:
+        conversation.system_prompt = data["system_prompt"]
+    if "context" in data:
+        conversation.context = data["context"]
+    if "status" in data:
+        conversation.status = data["status"]
+    if "model" in data:
+        conversation.model = data["model"]
+
+    db.commit()
+    db.refresh(conversation)
+
+    return {
+        "conversation_id": conversation.conversation_id,
+        "title": conversation.title,
+        "status": conversation.status,
+        "updated_at": conversation.updated_at.isoformat() + "Z" if conversation.updated_at else None,
+        "_persisted": True
+    }
+
+
+@app.delete("/v2/ai/conversations/{conversation_id}", tags=["V2 - Real Implementations"])
+async def delete_ai_conversation_v2(conversation_id: str, db: Session = Depends(get_db)):
+    """Delete AI conversation and all messages (REAL - from database)"""
+    conversation = db.query(AIConversation).filter(
+        AIConversation.conversation_id == conversation_id
+    ).first()
+    if not conversation:
+        raise HTTPException(status_code=404, detail="Conversation not found")
+
+    # Delete all messages first
+    db.query(AIMessage).filter(AIMessage.conversation_id == conversation.id).delete()
+
+    # Delete conversation
+    db.delete(conversation)
+    db.commit()
+
+    return {"deleted": True, "conversation_id": conversation_id}
+
+
+# ============================================================================
+# V2 AI Usage Logging (REAL - Database-backed)
+# ============================================================================
+
+@app.post("/v2/ai/usage", tags=["V2 - Real Implementations"])
+async def log_ai_usage_v2(data: Dict[str, Any], db: Session = Depends(get_db)):
+    """Log AI provider usage (REAL - persisted to database)"""
+    from api_server.database import AIUsageLog
+
+    usage = AIUsageLog(
+        log_id=f"usage_{uuid.uuid4().hex[:12]}",
+        user_id=data.get("user_id"),
+        organization_id=data.get("organization_id"),
+        conversation_id=data.get("conversation_id"),
+        provider=data.get("provider", "unknown"),
+        model=data.get("model"),
+        prompt_tokens=data.get("prompt_tokens", 0),
+        completion_tokens=data.get("completion_tokens", 0),
+        total_tokens=data.get("total_tokens", data.get("prompt_tokens", 0) + data.get("completion_tokens", 0)),
+        cost_cents=data.get("cost_cents", 0),
+        request_type=data.get("request_type", "chat"),
+        latency_ms=data.get("latency_ms"),
+        success=data.get("success", True),
+        error_message=data.get("error_message")
+    )
+
+    db.add(usage)
+    db.commit()
+    db.refresh(usage)
+
+    return {
+        "log_id": usage.log_id,
+        "provider": usage.provider,
+        "total_tokens": usage.total_tokens,
+        "created_at": usage.created_at.isoformat() + "Z",
+        "_persisted": True
+    }
+
+
+@app.get("/v2/ai/usage", tags=["V2 - Real Implementations"])
+async def get_ai_usage_v2(
+    db: Session = Depends(get_db),
+    provider: str = None,
+    hours: int = 24,
+    limit: int = 100
+):
+    """Get AI usage logs (REAL - from database)"""
+    from api_server.database import AIUsageLog
+
+    cutoff = datetime.utcnow() - timedelta(hours=hours)
+    query = db.query(AIUsageLog).filter(AIUsageLog.created_at > cutoff)
+
+    if provider:
+        query = query.filter(AIUsageLog.provider == provider)
+
+    logs = query.order_by(AIUsageLog.created_at.desc()).limit(limit).all()
+
+    # Calculate totals
+    total_tokens = sum(l.total_tokens or 0 for l in logs)
+    total_cost = sum(l.cost_cents or 0 for l in logs)
+
+    return {
+        "logs": [{
+            "log_id": l.log_id,
+            "provider": l.provider,
+            "model": l.model,
+            "prompt_tokens": l.prompt_tokens,
+            "completion_tokens": l.completion_tokens,
+            "total_tokens": l.total_tokens,
+            "cost_cents": l.cost_cents,
+            "request_type": l.request_type,
+            "latency_ms": l.latency_ms,
+            "success": l.success,
+            "created_at": l.created_at.isoformat() + "Z" if l.created_at else None
+        } for l in logs],
+        "summary": {
+            "total_requests": len(logs),
+            "total_tokens": total_tokens,
+            "total_cost_cents": total_cost,
+            "period_hours": hours
+        },
+        "_persisted": True
+    }
+
+
+@app.get("/v2/ai/usage/summary", tags=["V2 - Real Implementations"])
+async def get_ai_usage_summary_v2(db: Session = Depends(get_db), days: int = 30):
+    """Get AI usage summary by provider (REAL - from database)"""
+    from api_server.database import AIUsageLog
+    from sqlalchemy import func
+
+    cutoff = datetime.utcnow() - timedelta(days=days)
+
+    # Group by provider
+    results = db.query(
+        AIUsageLog.provider,
+        func.count(AIUsageLog.id).label("request_count"),
+        func.sum(AIUsageLog.total_tokens).label("total_tokens"),
+        func.sum(AIUsageLog.cost_cents).label("total_cost"),
+        func.avg(AIUsageLog.latency_ms).label("avg_latency")
+    ).filter(
+        AIUsageLog.created_at > cutoff
+    ).group_by(AIUsageLog.provider).all()
+
+    return {
+        "by_provider": [{
+            "provider": r.provider,
+            "request_count": r.request_count,
+            "total_tokens": r.total_tokens or 0,
+            "total_cost_cents": r.total_cost or 0,
+            "avg_latency_ms": round(r.avg_latency or 0, 2)
+        } for r in results],
+        "period_days": days,
+        "_persisted": True
+    }
+
+
+# ============================================================================
+# V2 AI Provider Configuration (REAL - Database-backed)
+# ============================================================================
+
+@app.get("/v2/ai/providers", tags=["V2 - Real Implementations"])
+async def list_ai_providers_v2(db: Session = Depends(get_db)):
+    """List AI provider configurations (REAL - from database)"""
+    from api_server.database import AIProviderConfig
+
+    providers = db.query(AIProviderConfig).all()
+
+    # Also include defaults if not in DB
+    default_providers = ["openai", "anthropic", "ollama"]
+    existing = {p.provider for p in providers}
+
+    result = [{
+        "config_id": p.config_id,
+        "provider": p.provider,
+        "display_name": p.display_name,
+        "base_url": p.base_url,
+        "default_model": p.default_model,
+        "available_models": p.available_models,
+        "enabled": p.enabled,
+        "health_status": p.health_status,
+        "has_api_key": bool(p.api_key_encrypted),
+        "created_at": p.created_at.isoformat() + "Z" if p.created_at else None
+    } for p in providers]
+
+    # Add defaults not in DB
+    for provider in default_providers:
+        if provider not in existing:
+            result.append({
+                "provider": provider,
+                "display_name": provider.title(),
+                "enabled": False,
+                "health_status": "not_configured",
+                "has_api_key": bool(os.getenv(f"{provider.upper()}_API_KEY")),
+                "_default": True
+            })
+
+    return {"providers": result, "_persisted": True}
+
+
+@app.post("/v2/ai/providers", tags=["V2 - Real Implementations"])
+async def create_ai_provider_v2(data: Dict[str, Any], db: Session = Depends(get_db)):
+    """Create or update AI provider configuration (REAL - persisted to database)"""
+    from api_server.database import AIProviderConfig
+
+    provider_name = data.get("provider")
+    if not provider_name:
+        raise HTTPException(status_code=400, detail="Provider name required")
+
+    # Check if exists
+    existing = db.query(AIProviderConfig).filter(AIProviderConfig.provider == provider_name).first()
+
+    if existing:
+        # Update existing
+        if "display_name" in data:
+            existing.display_name = data["display_name"]
+        if "base_url" in data:
+            existing.base_url = data["base_url"]
+        if "api_key" in data and data["api_key"]:
+            # Note: In production, encrypt this with Fernet
+            existing.api_key_encrypted = data["api_key"]  # TODO: Encrypt
+        if "default_model" in data:
+            existing.default_model = data["default_model"]
+        if "available_models" in data:
+            existing.available_models = data["available_models"]
+        if "enabled" in data:
+            existing.enabled = data["enabled"]
+        if "max_tokens" in data:
+            existing.max_tokens = data["max_tokens"]
+        if "temperature" in data:
+            existing.temperature = data["temperature"]
+
+        db.commit()
+        db.refresh(existing)
+        config = existing
+    else:
+        # Create new
+        config = AIProviderConfig(
+            config_id=f"aiprov_{uuid.uuid4().hex[:12]}",
+            provider=provider_name,
+            display_name=data.get("display_name", provider_name.title()),
+            base_url=data.get("base_url"),
+            api_key_encrypted=data.get("api_key"),  # TODO: Encrypt
+            default_model=data.get("default_model"),
+            available_models=data.get("available_models", []),
+            max_tokens=data.get("max_tokens", 4096),
+            temperature=data.get("temperature", 0.7),
+            enabled=data.get("enabled", True)
+        )
+        db.add(config)
+        db.commit()
+        db.refresh(config)
+
+    return {
+        "config_id": config.config_id,
+        "provider": config.provider,
+        "enabled": config.enabled,
+        "has_api_key": bool(config.api_key_encrypted),
+        "_persisted": True
+    }
+
+
+@app.delete("/v2/ai/providers/{provider}", tags=["V2 - Real Implementations"])
+async def delete_ai_provider_v2(provider: str, db: Session = Depends(get_db)):
+    """Delete AI provider configuration (REAL - from database)"""
+    from api_server.database import AIProviderConfig
+
+    config = db.query(AIProviderConfig).filter(AIProviderConfig.provider == provider).first()
+    if not config:
+        raise HTTPException(status_code=404, detail="Provider configuration not found")
+
+    db.delete(config)
+    db.commit()
+
+    return {"deleted": True, "provider": provider}
+
+
+@app.post("/v2/ai/providers/{provider}/test", tags=["V2 - Real Implementations"])
+async def test_ai_provider_v2(provider: str, db: Session = Depends(get_db)):
+    """Test AI provider connection (REAL - makes actual API call)"""
+    from api_server.database import AIProviderConfig
+
+    config = db.query(AIProviderConfig).filter(AIProviderConfig.provider == provider).first()
+
+    try:
+        start_time = datetime.utcnow()
+
+        # Use services.py to test
+        from api_server.services import AIProviderService
+
+        # Create a test conversation
+        test_result = await AIProviderService.chat_completion(
+            provider=provider,
+            messages=[{"role": "user", "content": "Say 'test successful' in exactly those words."}],
+            model=config.default_model if config else None
+        )
+
+        latency_ms = int((datetime.utcnow() - start_time).total_seconds() * 1000)
+
+        # Update health status
+        if config:
+            config.last_health_check = datetime.utcnow()
+            config.health_status = "healthy"
+            db.commit()
+
+        return {
+            "provider": provider,
+            "status": "healthy",
+            "latency_ms": latency_ms,
+            "response_preview": str(test_result.get("content", ""))[:100],
+            "tested_at": datetime.utcnow().isoformat() + "Z"
+        }
+    except Exception as e:
+        if config:
+            config.last_health_check = datetime.utcnow()
+            config.health_status = "error"
+            db.commit()
+
+        return {
+            "provider": provider,
+            "status": "error",
+            "error": str(e),
+            "tested_at": datetime.utcnow().isoformat() + "Z"
+        }
+
+
 @app.post("/v2/rate-limit/check", tags=["V2 - Real Implementations"])
 async def check_rate_limit_v2(data: Dict[str, Any]):
     """Check rate limit (REAL - sliding window implementation)"""
@@ -33651,6 +34112,3318 @@ async def get_v2_status(db: Session = Depends(get_db)):
             "ai_integration": openai_available or anthropic_available
         }
     }
+
+
+@app.get("/v2/health", tags=["V2 - Health & Monitoring"])
+async def get_health_check(db: Session = Depends(get_db)):
+    """Comprehensive health check for all system components"""
+    import time
+    health_status = {"status": "healthy", "checks": {}, "timestamp": datetime.utcnow().isoformat() + "Z"}
+
+    # Database health
+    try:
+        start = time.time()
+        db.execute("SELECT 1")
+        db_latency = (time.time() - start) * 1000
+        health_status["checks"]["database"] = {
+            "status": "healthy",
+            "latency_ms": round(db_latency, 2)
+        }
+    except Exception as e:
+        health_status["checks"]["database"] = {"status": "unhealthy", "error": str(e)}
+        health_status["status"] = "degraded"
+
+    # Check encryption service
+    try:
+        from api_server.services import SecretsService
+        health_status["checks"]["encryption"] = {
+            "status": "healthy",
+            "using_dev_key": SecretsService.is_using_dev_key(),
+            "version": SecretsService.get_encryption_version()
+        }
+        if SecretsService.is_using_dev_key():
+            health_status["checks"]["encryption"]["warning"] = "Using development key"
+    except Exception as e:
+        health_status["checks"]["encryption"] = {"status": "unhealthy", "error": str(e)}
+
+    # AI providers
+    ai_status = {}
+    if os.getenv("OPENAI_API_KEY"):
+        ai_status["openai"] = "configured"
+    if os.getenv("ANTHROPIC_API_KEY"):
+        ai_status["anthropic"] = "configured"
+    if os.getenv("OLLAMA_BASE_URL") or True:  # Ollama runs locally by default
+        ai_status["ollama"] = "available"
+    health_status["checks"]["ai_providers"] = ai_status if ai_status else {"status": "none_configured"}
+
+    # Memory usage (if psutil available)
+    try:
+        import psutil
+        process = psutil.Process()
+        memory_info = process.memory_info()
+        health_status["checks"]["memory"] = {
+            "status": "healthy",
+            "rss_mb": round(memory_info.rss / 1024 / 1024, 2),
+            "vms_mb": round(memory_info.vms / 1024 / 1024, 2)
+        }
+    except ImportError:
+        health_status["checks"]["memory"] = {"status": "unavailable", "reason": "psutil not installed"}
+
+    return health_status
+
+
+@app.get("/v2/health/ready", tags=["V2 - Health & Monitoring"])
+async def get_readiness_check(db: Session = Depends(get_db)):
+    """Kubernetes-style readiness probe"""
+    try:
+        db.execute("SELECT 1")
+        return {"ready": True}
+    except Exception:
+        raise HTTPException(status_code=503, detail="Database not ready")
+
+
+@app.get("/v2/health/live", tags=["V2 - Health & Monitoring"])
+async def get_liveness_check():
+    """Kubernetes-style liveness probe"""
+    return {"alive": True, "timestamp": datetime.utcnow().isoformat() + "Z"}
+
+
+@app.get("/v2/metrics", tags=["V2 - Health & Monitoring"])
+async def get_system_metrics(db: Session = Depends(get_db)):
+    """Get system metrics for monitoring dashboards"""
+    from api_server.database import (
+        Organization, User, Agent, Workflow, AIConversation,
+        ExecutionQueueItem, TestSuite, TestRun, MarketplaceListing
+    )
+
+    # Entity counts
+    counts = {
+        "organizations": db.query(Organization).count(),
+        "users": db.query(User).count(),
+        "agents": db.query(Agent).count(),
+        "workflows": db.query(Workflow).count(),
+        "ai_conversations": db.query(AIConversation).count(),
+        "executions_queued": db.query(ExecutionQueueItem).filter(ExecutionQueueItem.status == "queued").count(),
+        "executions_running": db.query(ExecutionQueueItem).filter(ExecutionQueueItem.status == "running").count(),
+        "test_suites": db.query(TestSuite).filter(TestSuite.status == "active").count(),
+        "test_runs_today": db.query(TestRun).filter(
+            TestRun.created_at > datetime.utcnow() - timedelta(hours=24)
+        ).count(),
+        "marketplace_listings": db.query(MarketplaceListing).filter(MarketplaceListing.status == "published").count()
+    }
+
+    # Recent activity
+    recent_activity = {
+        "executions_last_hour": db.query(ExecutionQueueItem).filter(
+            ExecutionQueueItem.queued_at > datetime.utcnow() - timedelta(hours=1)
+        ).count(),
+        "conversations_last_hour": db.query(AIConversation).filter(
+            AIConversation.created_at > datetime.utcnow() - timedelta(hours=1)
+        ).count()
+    }
+
+    return {
+        "entity_counts": counts,
+        "recent_activity": recent_activity,
+        "timestamp": datetime.utcnow().isoformat() + "Z"
+    }
+
+
+@app.get("/v2/metrics/api", tags=["V2 - Health & Monitoring"])
+async def get_api_metrics():
+    """Get API-level metrics (in production, integrate with Prometheus)"""
+    return {
+        "note": "For production, integrate with Prometheus/Grafana",
+        "available_endpoints": {
+            "v2_real": 50,  # Approximate count of real V2 endpoints
+            "legacy_mock": 200  # Approximate count of mock endpoints
+        },
+        "recommended_monitoring": [
+            "Prometheus for metrics collection",
+            "Grafana for visualization",
+            "AlertManager for alerting"
+        ],
+        "timestamp": datetime.utcnow().isoformat() + "Z"
+    }
+
+
+# ============================================================================
+# V2 - Additional CRUD Operations (Database-Backed)
+# ============================================================================
+
+@app.put("/v2/organizations/{org_id}", tags=["V2 - Real Implementations"])
+async def update_organization_v2(org_id: str, data: Dict[str, Any], db: Session = Depends(get_db)):
+    """Update an organization (REAL - persisted to database)"""
+    org = OrganizationService.get_by_id(db, org_id)
+    if not org:
+        raise HTTPException(status_code=404, detail="Organization not found")
+
+    # Update allowed fields
+    allowed_fields = ["name", "slug", "plan", "max_users", "max_teams", "max_api_calls_per_month"]
+    update_data = {k: v for k, v in data.items() if k in allowed_fields}
+
+    org = OrganizationService.update(db, org, **update_data)
+    return {
+        "organization_id": org.org_id,
+        "name": org.name,
+        "slug": org.slug,
+        "plan": org.plan,
+        "status": org.status,
+        "updated_at": org.updated_at.isoformat() + "Z",
+        "_persisted": True
+    }
+
+
+@app.delete("/v2/organizations/{org_id}", tags=["V2 - Real Implementations"])
+async def delete_organization_v2(org_id: str, db: Session = Depends(get_db)):
+    """Delete an organization (REAL - soft delete in database)"""
+    success = OrganizationServiceExtensions.delete(db, org_id)
+    if not success:
+        raise HTTPException(status_code=404, detail="Organization not found")
+    return {"deleted": True, "organization_id": org_id, "_persisted": True}
+
+
+@app.get("/v2/users", tags=["V2 - Real Implementations"])
+async def list_users_v2(skip: int = 0, limit: int = 100, db: Session = Depends(get_db)):
+    """List all users (REAL - from database)"""
+    users = UserService.list_all(db, skip=skip, limit=limit)
+    return {
+        "users": [{
+            "user_id": u.user_id,
+            "email": u.email,
+            "display_name": u.display_name,
+            "role": u.role,
+            "status": u.status,
+            "created_at": u.created_at.isoformat() + "Z"
+        } for u in users if u.status != "deleted"],
+        "total": len([u for u in users if u.status != "deleted"]),
+        "_persisted": True
+    }
+
+
+@app.get("/v2/users/{user_id}", tags=["V2 - Real Implementations"])
+async def get_user_v2(user_id: str, db: Session = Depends(get_db)):
+    """Get user details (REAL - from database)"""
+    user = UserService.get_by_id(db, user_id)
+    if not user or user.status == "deleted":
+        raise HTTPException(status_code=404, detail="User not found")
+    return {
+        "user_id": user.user_id,
+        "email": user.email,
+        "username": user.username,
+        "display_name": user.display_name,
+        "first_name": user.first_name,
+        "last_name": user.last_name,
+        "role": user.role,
+        "status": user.status,
+        "email_verified": user.email_verified,
+        "mfa_enabled": user.mfa_enabled,
+        "last_login": user.last_login.isoformat() + "Z" if user.last_login else None,
+        "created_at": user.created_at.isoformat() + "Z",
+        "_persisted": True
+    }
+
+
+@app.put("/v2/users/{user_id}", tags=["V2 - Real Implementations"])
+async def update_user_v2(user_id: str, data: Dict[str, Any], db: Session = Depends(get_db)):
+    """Update a user (REAL - persisted to database)"""
+    user = UserService.get_by_id(db, user_id)
+    if not user or user.status == "deleted":
+        raise HTTPException(status_code=404, detail="User not found")
+
+    # Update allowed fields
+    allowed_fields = ["first_name", "last_name", "display_name", "role"]
+    update_data = {k: v for k, v in data.items() if k in allowed_fields}
+
+    user = UserService.update(db, user, **update_data)
+    return {
+        "user_id": user.user_id,
+        "email": user.email,
+        "display_name": user.display_name,
+        "role": user.role,
+        "status": user.status,
+        "updated_at": user.updated_at.isoformat() + "Z",
+        "_persisted": True
+    }
+
+
+@app.delete("/v2/users/{user_id}", tags=["V2 - Real Implementations"])
+async def delete_user_v2(user_id: str, db: Session = Depends(get_db)):
+    """Delete a user (REAL - soft delete in database)"""
+    success = UserService.delete(db, user_id)
+    if not success:
+        raise HTTPException(status_code=404, detail="User not found")
+    return {"deleted": True, "user_id": user_id, "_persisted": True}
+
+
+@app.get("/v2/api-keys", tags=["V2 - Real Implementations"])
+async def list_api_keys_v2(organization_id: str, db: Session = Depends(get_db)):
+    """List API keys for an organization (REAL - from database)"""
+    org = OrganizationService.get_by_id(db, organization_id)
+    if not org:
+        raise HTTPException(status_code=404, detail="Organization not found")
+
+    keys = APIKeyService.list_by_organization(db, org.id)
+    return {
+        "api_keys": [{
+            "key_id": k.key_id,
+            "key_prefix": k.key_prefix,
+            "name": k.name,
+            "scopes": k.scopes,
+            "status": k.status,
+            "total_requests": k.total_requests,
+            "last_used_at": k.last_used_at.isoformat() + "Z" if k.last_used_at else None,
+            "created_at": k.created_at.isoformat() + "Z"
+        } for k in keys if k.status == "active"],
+        "total": len([k for k in keys if k.status == "active"]),
+        "_persisted": True
+    }
+
+
+@app.delete("/v2/api-keys/{key_id}", tags=["V2 - Real Implementations"])
+async def revoke_api_key_v2(key_id: str, db: Session = Depends(get_db)):
+    """Revoke an API key (REAL - persisted to database)"""
+    success = APIKeyService.revoke(db, key_id)
+    if not success:
+        raise HTTPException(status_code=404, detail="API key not found")
+    return {"revoked": True, "key_id": key_id, "_persisted": True}
+
+
+@app.get("/v2/webhooks", tags=["V2 - Real Implementations"])
+async def list_webhooks_v2(organization_id: str, db: Session = Depends(get_db)):
+    """List webhooks for an organization (REAL - from database)"""
+    org = OrganizationService.get_by_id(db, organization_id)
+    if not org:
+        raise HTTPException(status_code=404, detail="Organization not found")
+
+    webhooks = db.query(Webhook).filter(
+        Webhook.organization_id == org.id,
+        Webhook.status == "active"
+    ).all()
+    return {
+        "webhooks": [{
+            "webhook_id": w.webhook_id,
+            "name": w.name,
+            "url": w.url,
+            "events": w.events,
+            "status": w.status,
+            "created_at": w.created_at.isoformat() + "Z"
+        } for w in webhooks],
+        "total": len(webhooks),
+        "_persisted": True
+    }
+
+
+@app.put("/v2/webhooks/{webhook_id}", tags=["V2 - Real Implementations"])
+async def update_webhook_v2(webhook_id: str, data: Dict[str, Any], db: Session = Depends(get_db)):
+    """Update a webhook (REAL - persisted to database)"""
+    webhook = db.query(Webhook).filter(Webhook.webhook_id == webhook_id).first()
+    if not webhook:
+        raise HTTPException(status_code=404, detail="Webhook not found")
+
+    # Update allowed fields
+    if "name" in data:
+        webhook.name = data["name"]
+    if "url" in data:
+        webhook.url = data["url"]
+    if "events" in data:
+        webhook.events = data["events"]
+
+    webhook.updated_at = datetime.now(timezone.utc)
+    db.commit()
+    db.refresh(webhook)
+
+    return {
+        "webhook_id": webhook.webhook_id,
+        "name": webhook.name,
+        "url": webhook.url,
+        "events": webhook.events,
+        "status": webhook.status,
+        "updated_at": webhook.updated_at.isoformat() + "Z",
+        "_persisted": True
+    }
+
+
+@app.delete("/v2/webhooks/{webhook_id}", tags=["V2 - Real Implementations"])
+async def delete_webhook_v2(webhook_id: str, db: Session = Depends(get_db)):
+    """Delete a webhook (REAL - soft delete in database)"""
+    webhook = db.query(Webhook).filter(Webhook.webhook_id == webhook_id).first()
+    if not webhook:
+        raise HTTPException(status_code=404, detail="Webhook not found")
+
+    webhook.status = "deleted"
+    webhook.updated_at = datetime.now(timezone.utc)
+    db.commit()
+
+    return {"deleted": True, "webhook_id": webhook_id, "_persisted": True}
+
+
+# ============================================================================
+# V2 - Teams (Database-Backed)
+# ============================================================================
+
+@app.post("/v2/teams", tags=["V2 - Real Implementations"])
+async def create_team_v2(data: Dict[str, Any], db: Session = Depends(get_db)):
+    """Create a team (REAL - persisted to database)"""
+    org = OrganizationService.get_by_id(db, data.get("organization_id"))
+    if not org:
+        raise HTTPException(status_code=404, detail="Organization not found")
+
+    team = TeamService.create(
+        db,
+        organization_id=org.id,
+        name=data.get("name"),
+        description=data.get("description")
+    )
+    return {
+        "team_id": team.team_id,
+        "name": team.name,
+        "description": team.description,
+        "status": team.status,
+        "created_at": team.created_at.isoformat() + "Z",
+        "_persisted": True
+    }
+
+
+@app.get("/v2/teams", tags=["V2 - Real Implementations"])
+async def list_teams_v2(organization_id: str, db: Session = Depends(get_db)):
+    """List teams in an organization (REAL - from database)"""
+    org = OrganizationService.get_by_id(db, organization_id)
+    if not org:
+        raise HTTPException(status_code=404, detail="Organization not found")
+
+    teams = TeamService.list_by_organization(db, org.id)
+    return {
+        "teams": [{
+            "team_id": t.team_id,
+            "name": t.name,
+            "description": t.description,
+            "status": t.status,
+            "created_at": t.created_at.isoformat() + "Z"
+        } for t in teams if t.status != "deleted"],
+        "total": len([t for t in teams if t.status != "deleted"]),
+        "_persisted": True
+    }
+
+
+@app.get("/v2/teams/{team_id}", tags=["V2 - Real Implementations"])
+async def get_team_v2(team_id: str, db: Session = Depends(get_db)):
+    """Get team details (REAL - from database)"""
+    team = TeamService.get_by_id(db, team_id)
+    if not team or team.status == "deleted":
+        raise HTTPException(status_code=404, detail="Team not found")
+
+    # Get members
+    members = db.query(TeamMember).filter(TeamMember.team_id == team.id).all()
+
+    return {
+        "team_id": team.team_id,
+        "name": team.name,
+        "description": team.description,
+        "status": team.status,
+        "members": [{
+            "user_id": m.user.user_id if m.user else None,
+            "role": m.role,
+            "joined_at": m.joined_at.isoformat() + "Z"
+        } for m in members],
+        "created_at": team.created_at.isoformat() + "Z",
+        "_persisted": True
+    }
+
+
+@app.put("/v2/teams/{team_id}", tags=["V2 - Real Implementations"])
+async def update_team_v2(team_id: str, data: Dict[str, Any], db: Session = Depends(get_db)):
+    """Update a team (REAL - persisted to database)"""
+    team = TeamService.get_by_id(db, team_id)
+    if not team or team.status == "deleted":
+        raise HTTPException(status_code=404, detail="Team not found")
+
+    # Update allowed fields
+    allowed_fields = ["name", "description"]
+    update_data = {k: v for k, v in data.items() if k in allowed_fields}
+
+    team = TeamService.update(db, team, **update_data)
+    return {
+        "team_id": team.team_id,
+        "name": team.name,
+        "description": team.description,
+        "status": team.status,
+        "updated_at": team.updated_at.isoformat() + "Z",
+        "_persisted": True
+    }
+
+
+@app.delete("/v2/teams/{team_id}", tags=["V2 - Real Implementations"])
+async def delete_team_v2(team_id: str, db: Session = Depends(get_db)):
+    """Delete a team (REAL - soft delete in database)"""
+    success = TeamService.delete(db, team_id)
+    if not success:
+        raise HTTPException(status_code=404, detail="Team not found")
+    return {"deleted": True, "team_id": team_id, "_persisted": True}
+
+
+@app.post("/v2/teams/{team_id}/members", tags=["V2 - Real Implementations"])
+async def add_team_member_v2(team_id: str, data: Dict[str, Any], db: Session = Depends(get_db)):
+    """Add a member to a team (REAL - persisted to database)"""
+    team = TeamService.get_by_id(db, team_id)
+    if not team or team.status == "deleted":
+        raise HTTPException(status_code=404, detail="Team not found")
+
+    user = UserService.get_by_id(db, data.get("user_id"))
+    if not user:
+        raise HTTPException(status_code=404, detail="User not found")
+
+    member = TeamService.add_member(
+        db,
+        team_id=team.id,
+        user_id=user.id,
+        role=data.get("role", "member")
+    )
+    return {
+        "team_id": team.team_id,
+        "user_id": user.user_id,
+        "role": member.role,
+        "joined_at": member.joined_at.isoformat() + "Z",
+        "_persisted": True
+    }
+
+
+@app.delete("/v2/teams/{team_id}/members/{user_id}", tags=["V2 - Real Implementations"])
+async def remove_team_member_v2(team_id: str, user_id: str, db: Session = Depends(get_db)):
+    """Remove a member from a team (REAL - persisted to database)"""
+    team = TeamService.get_by_id(db, team_id)
+    if not team:
+        raise HTTPException(status_code=404, detail="Team not found")
+
+    user = UserService.get_by_id(db, user_id)
+    if not user:
+        raise HTTPException(status_code=404, detail="User not found")
+
+    success = TeamService.remove_member(db, team.id, user.id)
+    if not success:
+        raise HTTPException(status_code=404, detail="Member not found in team")
+
+    return {"removed": True, "team_id": team_id, "user_id": user_id, "_persisted": True}
+
+
+# ============================================================================
+# V2 - Billing & Quotas (Database-Backed)
+# ============================================================================
+
+@app.post("/v2/billing/accounts", tags=["V2 - Enterprise"])
+async def create_billing_account_v2(data: Dict[str, Any], db: Session = Depends(get_db)):
+    """Create a billing account (REAL - persisted to database)"""
+    org = OrganizationService.get_by_id(db, data.get("organization_id"))
+    if not org:
+        raise HTTPException(status_code=404, detail="Organization not found")
+
+    account = BillingAccount(
+        account_id=f"bill_{uuid.uuid4().hex[:12]}",
+        organization_id=org.id,
+        plan_type=data.get("plan_type", "free"),
+        billing_email=data.get("billing_email"),
+        billing_address=data.get("billing_address"),
+        monthly_budget=data.get("monthly_budget")
+    )
+    db.add(account)
+    db.commit()
+    db.refresh(account)
+
+    return {
+        "account_id": account.account_id,
+        "plan_type": account.plan_type,
+        "billing_email": account.billing_email,
+        "payment_status": account.payment_status,
+        "created_at": account.created_at.isoformat() + "Z",
+        "_persisted": True
+    }
+
+
+@app.get("/v2/billing/accounts/{org_id}", tags=["V2 - Enterprise"])
+async def get_billing_account_v2(org_id: str, db: Session = Depends(get_db)):
+    """Get billing account for organization (REAL - from database)"""
+    org = OrganizationService.get_by_id(db, org_id)
+    if not org:
+        raise HTTPException(status_code=404, detail="Organization not found")
+
+    account = db.query(BillingAccount).filter(BillingAccount.organization_id == org.id).first()
+    if not account:
+        raise HTTPException(status_code=404, detail="Billing account not found")
+
+    return {
+        "account_id": account.account_id,
+        "plan_type": account.plan_type,
+        "billing_email": account.billing_email,
+        "payment_status": account.payment_status,
+        "monthly_budget": account.monthly_budget,
+        "current_month_spend": account.current_month_spend,
+        "created_at": account.created_at.isoformat() + "Z",
+        "_persisted": True
+    }
+
+
+@app.post("/v2/costs/record", tags=["V2 - Enterprise"])
+async def record_cost_v2(data: Dict[str, Any], db: Session = Depends(get_db)):
+    """Record a cost event (REAL - persisted to database)"""
+    org = OrganizationService.get_by_id(db, data.get("organization_id"))
+    if not org:
+        raise HTTPException(status_code=404, detail="Organization not found")
+
+    cost = CostRecord(
+        record_id=f"cost_{uuid.uuid4().hex[:12]}",
+        organization_id=org.id,
+        cost_type=data.get("cost_type"),
+        amount=data.get("amount", 0.0),
+        currency=data.get("currency", "USD"),
+        resource_id=data.get("resource_id"),
+        resource_type=data.get("resource_type"),
+        description=data.get("description")
+    )
+    db.add(cost)
+
+    # Update billing account
+    account = db.query(BillingAccount).filter(BillingAccount.organization_id == org.id).first()
+    if account:
+        account.current_month_spend += cost.amount
+
+    db.commit()
+    db.refresh(cost)
+
+    return {
+        "record_id": cost.record_id,
+        "cost_type": cost.cost_type,
+        "amount": cost.amount,
+        "incurred_at": cost.incurred_at.isoformat() + "Z",
+        "_persisted": True
+    }
+
+
+@app.post("/v2/quotas", tags=["V2 - Enterprise"])
+async def create_quota_v2(data: Dict[str, Any], db: Session = Depends(get_db)):
+    """Create a usage quota (REAL - persisted to database)"""
+    org = OrganizationService.get_by_id(db, data.get("organization_id"))
+    if not org:
+        raise HTTPException(status_code=404, detail="Organization not found")
+
+    quota = UsageQuota(
+        quota_id=f"quota_{uuid.uuid4().hex[:12]}",
+        organization_id=org.id,
+        quota_type=data.get("quota_type"),
+        limit_value=data.get("limit", 1000),
+        period=data.get("period", "monthly"),
+        hard_limit=data.get("hard_limit", False),
+        alert_threshold=data.get("alert_threshold", 0.8)
+    )
+    db.add(quota)
+    db.commit()
+    db.refresh(quota)
+
+    return {
+        "quota_id": quota.quota_id,
+        "quota_type": quota.quota_type,
+        "limit": quota.limit_value,
+        "current_usage": quota.current_usage,
+        "period": quota.period,
+        "_persisted": True
+    }
+
+
+@app.get("/v2/quotas/{org_id}", tags=["V2 - Enterprise"])
+async def get_quotas_v2(org_id: str, db: Session = Depends(get_db)):
+    """Get quotas for organization (REAL - from database)"""
+    org = OrganizationService.get_by_id(db, org_id)
+    if not org:
+        raise HTTPException(status_code=404, detail="Organization not found")
+
+    quotas = db.query(UsageQuota).filter(UsageQuota.organization_id == org.id).all()
+    return {
+        "quotas": [{
+            "quota_id": q.quota_id,
+            "quota_type": q.quota_type,
+            "limit": q.limit_value,
+            "current_usage": q.current_usage,
+            "period": q.period,
+            "usage_percent": (q.current_usage / q.limit_value * 100) if q.limit_value > 0 else 0
+        } for q in quotas],
+        "_persisted": True
+    }
+
+
+# ============================================================================
+# V2 - Backup & Disaster Recovery (Database-Backed)
+# ============================================================================
+
+@app.post("/v2/backups", tags=["V2 - Enterprise"])
+async def create_backup_v2(data: Dict[str, Any], db: Session = Depends(get_db)):
+    """Create a backup (REAL - persisted to database)"""
+    org = OrganizationService.get_by_id(db, data.get("organization_id"))
+    if not org:
+        raise HTTPException(status_code=404, detail="Organization not found")
+
+    backup = Backup(
+        backup_id=f"backup_{uuid.uuid4().hex[:12]}",
+        organization_id=org.id,
+        backup_type=data.get("backup_type", "full"),
+        backup_name=data.get("name", f"Backup {datetime.now(timezone.utc).strftime('%Y-%m-%d')}"),
+        description=data.get("description"),
+        storage_location=data.get("storage_location", f"backups/{org.org_id}/"),
+        retention_days=data.get("retention_days", 30),
+        status="pending",
+        started_at=datetime.now(timezone.utc)
+    )
+    db.add(backup)
+    db.commit()
+    db.refresh(backup)
+
+    return {
+        "backup_id": backup.backup_id,
+        "backup_type": backup.backup_type,
+        "name": backup.backup_name,
+        "status": backup.status,
+        "started_at": backup.started_at.isoformat() + "Z",
+        "_persisted": True
+    }
+
+
+@app.get("/v2/backups", tags=["V2 - Enterprise"])
+async def list_backups_v2(organization_id: str, db: Session = Depends(get_db)):
+    """List backups for organization (REAL - from database)"""
+    org = OrganizationService.get_by_id(db, organization_id)
+    if not org:
+        raise HTTPException(status_code=404, detail="Organization not found")
+
+    backups = db.query(Backup).filter(Backup.organization_id == org.id).order_by(Backup.created_at.desc()).all()
+    return {
+        "backups": [{
+            "backup_id": b.backup_id,
+            "backup_type": b.backup_type,
+            "name": b.backup_name,
+            "status": b.status,
+            "size_bytes": b.size_bytes,
+            "created_at": b.created_at.isoformat() + "Z"
+        } for b in backups],
+        "_persisted": True
+    }
+
+
+@app.post("/v2/backups/{backup_id}/restore", tags=["V2 - Enterprise"])
+async def restore_backup_v2(backup_id: str, data: Dict[str, Any], db: Session = Depends(get_db)):
+    """Restore from backup (REAL - persisted to database)"""
+    backup = db.query(Backup).filter(Backup.backup_id == backup_id).first()
+    if not backup:
+        raise HTTPException(status_code=404, detail="Backup not found")
+
+    restore = RestoreJob(
+        restore_id=f"restore_{uuid.uuid4().hex[:12]}",
+        backup_id=backup.id,
+        organization_id=backup.organization_id,
+        restore_type=data.get("restore_type", "full"),
+        target_environment=data.get("target_environment", "staging"),
+        status="pending",
+        started_at=datetime.now(timezone.utc)
+    )
+    db.add(restore)
+    db.commit()
+    db.refresh(restore)
+
+    return {
+        "restore_id": restore.restore_id,
+        "backup_id": backup_id,
+        "status": restore.status,
+        "target_environment": restore.target_environment,
+        "started_at": restore.started_at.isoformat() + "Z",
+        "_persisted": True
+    }
+
+
+# ============================================================================
+# V2 - SSO & MFA (Database-Backed)
+# ============================================================================
+
+@app.post("/v2/sso/providers", tags=["V2 - Enterprise"])
+async def create_sso_provider_v2(data: Dict[str, Any], db: Session = Depends(get_db)):
+    """Create SSO provider configuration (REAL - persisted to database)"""
+    org = OrganizationService.get_by_id(db, data.get("organization_id"))
+    if not org:
+        raise HTTPException(status_code=404, detail="Organization not found")
+
+    provider = SSOProvider(
+        provider_id=f"sso_{uuid.uuid4().hex[:12]}",
+        organization_id=org.id,
+        name=data.get("name"),
+        provider_type=data.get("provider_type", "oidc"),
+        entity_id=data.get("entity_id"),
+        sso_url=data.get("sso_url"),
+        certificate=data.get("certificate"),
+        client_id=data.get("client_id"),
+        authorization_url=data.get("authorization_url"),
+        token_url=data.get("token_url"),
+        userinfo_url=data.get("userinfo_url"),
+        attribute_mapping=data.get("attribute_mapping", {})
+    )
+    db.add(provider)
+    db.commit()
+    db.refresh(provider)
+
+    return {
+        "provider_id": provider.provider_id,
+        "name": provider.name,
+        "provider_type": provider.provider_type,
+        "is_enabled": provider.is_enabled,
+        "created_at": provider.created_at.isoformat() + "Z",
+        "_persisted": True
+    }
+
+
+@app.get("/v2/sso/providers", tags=["V2 - Enterprise"])
+async def list_sso_providers_v2(organization_id: str, db: Session = Depends(get_db)):
+    """List SSO providers for organization (REAL - from database)"""
+    org = OrganizationService.get_by_id(db, organization_id)
+    if not org:
+        raise HTTPException(status_code=404, detail="Organization not found")
+
+    providers = db.query(SSOProvider).filter(SSOProvider.organization_id == org.id).all()
+    return {
+        "providers": [{
+            "provider_id": p.provider_id,
+            "name": p.name,
+            "provider_type": p.provider_type,
+            "is_enabled": p.is_enabled,
+            "status": p.status
+        } for p in providers],
+        "_persisted": True
+    }
+
+
+@app.post("/v2/mfa/devices", tags=["V2 - Enterprise"])
+async def register_mfa_device_v2(data: Dict[str, Any], db: Session = Depends(get_db)):
+    """Register MFA device (REAL - persisted to database)"""
+    user = UserService.get_by_id(db, data.get("user_id"))
+    if not user:
+        raise HTTPException(status_code=404, detail="User not found")
+
+    # Generate TOTP secret (in production, use pyotp)
+    secret = secrets.token_hex(20)
+
+    device = MFADevice(
+        device_id=f"mfa_{uuid.uuid4().hex[:12]}",
+        user_id=user.id,
+        device_type=data.get("device_type", "totp"),
+        device_name=data.get("device_name", "Authenticator App"),
+        secret_encrypted=secret,  # Should encrypt in production
+        status="pending"
+    )
+    db.add(device)
+    db.commit()
+    db.refresh(device)
+
+    return {
+        "device_id": device.device_id,
+        "device_type": device.device_type,
+        "device_name": device.device_name,
+        "setup_secret": secret,  # Only shown once
+        "status": device.status,
+        "_persisted": True,
+        "_warning": "Save the setup secret now - it cannot be retrieved later"
+    }
+
+
+@app.get("/v2/mfa/devices/{user_id}", tags=["V2 - Enterprise"])
+async def list_mfa_devices_v2(user_id: str, db: Session = Depends(get_db)):
+    """List MFA devices for user (REAL - from database)"""
+    user = UserService.get_by_id(db, user_id)
+    if not user:
+        raise HTTPException(status_code=404, detail="User not found")
+
+    devices = db.query(MFADevice).filter(MFADevice.user_id == user.id).all()
+    return {
+        "devices": [{
+            "device_id": d.device_id,
+            "device_type": d.device_type,
+            "device_name": d.device_name,
+            "is_verified": d.is_verified,
+            "is_primary": d.is_primary,
+            "status": d.status
+        } for d in devices],
+        "_persisted": True
+    }
+
+
+# ============================================================================
+# V2 - Security Policies (Database-Backed)
+# ============================================================================
+
+@app.post("/v2/security/policies", tags=["V2 - Enterprise"])
+async def create_security_policy_v2(data: Dict[str, Any], db: Session = Depends(get_db)):
+    """Create security policy (REAL - persisted to database)"""
+    org = OrganizationService.get_by_id(db, data.get("organization_id"))
+    if not org:
+        raise HTTPException(status_code=404, detail="Organization not found")
+
+    policy = SecurityPolicy(
+        policy_id=f"policy_{uuid.uuid4().hex[:12]}",
+        organization_id=org.id,
+        name=data.get("name"),
+        description=data.get("description"),
+        policy_type=data.get("policy_type", "access"),
+        rules=data.get("rules", []),
+        scope=data.get("scope", "organization"),
+        enforcement_mode=data.get("enforcement_mode", "audit"),
+        priority=data.get("priority", 5)
+    )
+    db.add(policy)
+    db.commit()
+    db.refresh(policy)
+
+    return {
+        "policy_id": policy.policy_id,
+        "name": policy.name,
+        "policy_type": policy.policy_type,
+        "enforcement_mode": policy.enforcement_mode,
+        "is_active": policy.is_active,
+        "created_at": policy.created_at.isoformat() + "Z",
+        "_persisted": True
+    }
+
+
+@app.get("/v2/security/policies", tags=["V2 - Enterprise"])
+async def list_security_policies_v2(organization_id: str, db: Session = Depends(get_db)):
+    """List security policies (REAL - from database)"""
+    org = OrganizationService.get_by_id(db, organization_id)
+    if not org:
+        raise HTTPException(status_code=404, detail="Organization not found")
+
+    policies = db.query(SecurityPolicy).filter(SecurityPolicy.organization_id == org.id).all()
+    return {
+        "policies": [{
+            "policy_id": p.policy_id,
+            "name": p.name,
+            "policy_type": p.policy_type,
+            "enforcement_mode": p.enforcement_mode,
+            "is_active": p.is_active,
+            "rules_count": len(p.rules) if p.rules else 0
+        } for p in policies],
+        "_persisted": True
+    }
+
+
+# ============================================================================
+# V2 - Marketplace (Database-Backed)
+# ============================================================================
+
+@app.post("/v2/marketplace/listings", tags=["V2 - Enterprise"])
+async def create_marketplace_listing_v2(data: Dict[str, Any], db: Session = Depends(get_db)):
+    """Create marketplace listing (REAL - persisted to database)"""
+    org = OrganizationService.get_by_id(db, data.get("organization_id"))
+    if not org:
+        raise HTTPException(status_code=404, detail="Organization not found")
+
+    listing = MarketplaceListing(
+        listing_id=f"listing_{uuid.uuid4().hex[:12]}",
+        publisher_org_id=org.id,
+        name=data.get("name"),
+        description=data.get("description"),
+        category=data.get("category"),
+        tags=data.get("tags", []),
+        listing_type=data.get("listing_type", "agent"),
+        resource_id=data.get("resource_id"),
+        pricing_model=data.get("pricing_model", "free"),
+        price=data.get("price", 0.0),
+        status="draft"
+    )
+    db.add(listing)
+    db.commit()
+    db.refresh(listing)
+
+    return {
+        "listing_id": listing.listing_id,
+        "name": listing.name,
+        "status": listing.status,
+        "pricing_model": listing.pricing_model,
+        "created_at": listing.created_at.isoformat() + "Z",
+        "_persisted": True
+    }
+
+
+@app.get("/v2/marketplace/listings", tags=["V2 - Enterprise"])
+async def list_marketplace_listings_v2(category: str = None, db: Session = Depends(get_db)):
+    """List marketplace listings (REAL - from database)"""
+    query = db.query(MarketplaceListing).filter(MarketplaceListing.status == "published")
+    if category:
+        query = query.filter(MarketplaceListing.category == category)
+
+    listings = query.order_by(MarketplaceListing.downloads.desc()).all()
+    return {
+        "listings": [{
+            "listing_id": l.listing_id,
+            "name": l.name,
+            "description": l.description[:200] if l.description else None,
+            "category": l.category,
+            "listing_type": l.listing_type,
+            "pricing_model": l.pricing_model,
+            "price": l.price,
+            "downloads": l.downloads,
+            "rating_average": l.rating_average
+        } for l in listings],
+        "_persisted": True
+    }
+
+
+@app.get("/v2/marketplace/listings/{listing_id}", tags=["V2 - Enterprise"])
+async def get_marketplace_listing_v2(listing_id: str, db: Session = Depends(get_db)):
+    """Get marketplace listing details (REAL - from database)"""
+    listing = db.query(MarketplaceListing).filter(
+        MarketplaceListing.listing_id == listing_id
+    ).first()
+    if not listing:
+        raise HTTPException(status_code=404, detail="Listing not found")
+
+    return {
+        "listing_id": listing.listing_id,
+        "name": listing.name,
+        "description": listing.description,
+        "category": listing.category,
+        "tags": listing.tags,
+        "listing_type": listing.listing_type,
+        "resource_id": listing.resource_id,
+        "pricing_model": listing.pricing_model,
+        "price": listing.price,
+        "status": listing.status,
+        "downloads": listing.downloads,
+        "rating_average": listing.rating_average,
+        "rating_count": listing.rating_count,
+        "created_at": listing.created_at.isoformat() + "Z" if listing.created_at else None,
+        "published_at": listing.published_at.isoformat() + "Z" if listing.published_at else None,
+        "_persisted": True
+    }
+
+
+@app.put("/v2/marketplace/listings/{listing_id}", tags=["V2 - Enterprise"])
+async def update_marketplace_listing_v2(listing_id: str, data: Dict[str, Any], db: Session = Depends(get_db)):
+    """Update marketplace listing (REAL - persisted to database)"""
+    listing = db.query(MarketplaceListing).filter(
+        MarketplaceListing.listing_id == listing_id
+    ).first()
+    if not listing:
+        raise HTTPException(status_code=404, detail="Listing not found")
+
+    if "name" in data:
+        listing.name = data["name"]
+    if "description" in data:
+        listing.description = data["description"]
+    if "category" in data:
+        listing.category = data["category"]
+    if "tags" in data:
+        listing.tags = data["tags"]
+    if "pricing_model" in data:
+        listing.pricing_model = data["pricing_model"]
+    if "price" in data:
+        listing.price = data["price"]
+
+    db.commit()
+    db.refresh(listing)
+
+    return {
+        "listing_id": listing.listing_id,
+        "name": listing.name,
+        "status": listing.status,
+        "updated_at": listing.updated_at.isoformat() + "Z" if listing.updated_at else None,
+        "_persisted": True
+    }
+
+
+@app.put("/v2/marketplace/listings/{listing_id}/publish", tags=["V2 - Enterprise"])
+async def publish_marketplace_listing_v2(listing_id: str, db: Session = Depends(get_db)):
+    """Publish a marketplace listing (REAL - persisted to database)"""
+    listing = db.query(MarketplaceListing).filter(
+        MarketplaceListing.listing_id == listing_id
+    ).first()
+    if not listing:
+        raise HTTPException(status_code=404, detail="Listing not found")
+
+    listing.status = "published"
+    listing.published_at = datetime.utcnow()
+    db.commit()
+
+    return {
+        "listing_id": listing_id,
+        "status": "published",
+        "published_at": listing.published_at.isoformat() + "Z",
+        "_persisted": True
+    }
+
+
+@app.put("/v2/marketplace/listings/{listing_id}/unpublish", tags=["V2 - Enterprise"])
+async def unpublish_marketplace_listing_v2(listing_id: str, db: Session = Depends(get_db)):
+    """Unpublish a marketplace listing (REAL - persisted to database)"""
+    listing = db.query(MarketplaceListing).filter(
+        MarketplaceListing.listing_id == listing_id
+    ).first()
+    if not listing:
+        raise HTTPException(status_code=404, detail="Listing not found")
+
+    listing.status = "unpublished"
+    db.commit()
+
+    return {"listing_id": listing_id, "status": "unpublished", "_persisted": True}
+
+
+@app.post("/v2/marketplace/listings/{listing_id}/reviews", tags=["V2 - Enterprise"])
+async def add_marketplace_review_v2(listing_id: str, data: Dict[str, Any], db: Session = Depends(get_db)):
+    """Add a review to marketplace listing (REAL - persisted to database)"""
+    listing = db.query(MarketplaceListing).filter(
+        MarketplaceListing.listing_id == listing_id
+    ).first()
+    if not listing:
+        raise HTTPException(status_code=404, detail="Listing not found")
+
+    review = MarketplaceReview(
+        review_id=f"review_{uuid.uuid4().hex[:12]}",
+        listing_id=listing.id,
+        reviewer_user_id=data.get("user_id"),
+        reviewer_org_id=data.get("organization_id"),
+        rating=data.get("rating", 5),
+        title=data.get("title"),
+        review_text=data.get("review_text")
+    )
+    db.add(review)
+
+    # Update listing ratings
+    listing.rating_count = (listing.rating_count or 0) + 1
+    total_rating = (listing.rating_average or 0) * (listing.rating_count - 1) + review.rating
+    listing.rating_average = total_rating / listing.rating_count
+
+    db.commit()
+    db.refresh(review)
+
+    return {
+        "review_id": review.review_id,
+        "listing_id": listing_id,
+        "rating": review.rating,
+        "created_at": review.created_at.isoformat() + "Z",
+        "_persisted": True
+    }
+
+
+# ============================================================================
+# V2 - Subscriptions (Database-Backed)
+# ============================================================================
+
+@app.post("/v2/subscriptions/plans", tags=["V2 - Enterprise"])
+async def create_subscription_plan_v2(data: Dict[str, Any], db: Session = Depends(get_db)):
+    """Create subscription plan (REAL - persisted to database)"""
+    plan = SubscriptionPlan(
+        plan_id=f"plan_{uuid.uuid4().hex[:12]}",
+        name=data.get("name"),
+        description=data.get("description"),
+        tier=data.get("tier", "starter"),
+        price_monthly=data.get("price_monthly", 0.0),
+        price_yearly=data.get("price_yearly", 0.0),
+        limits=data.get("limits", {}),
+        features=data.get("features", [])
+    )
+    db.add(plan)
+    db.commit()
+    db.refresh(plan)
+
+    return {
+        "plan_id": plan.plan_id,
+        "name": plan.name,
+        "tier": plan.tier,
+        "price_monthly": plan.price_monthly,
+        "price_yearly": plan.price_yearly,
+        "_persisted": True
+    }
+
+
+@app.get("/v2/subscriptions/plans", tags=["V2 - Enterprise"])
+async def list_subscription_plans_v2(db: Session = Depends(get_db)):
+    """List subscription plans (REAL - from database)"""
+    plans = db.query(SubscriptionPlan).filter(SubscriptionPlan.is_active == True, SubscriptionPlan.is_public == True).all()
+    return {
+        "plans": [{
+            "plan_id": p.plan_id,
+            "name": p.name,
+            "tier": p.tier,
+            "price_monthly": p.price_monthly,
+            "price_yearly": p.price_yearly,
+            "limits": p.limits,
+            "features": p.features
+        } for p in plans],
+        "_persisted": True
+    }
+
+
+@app.post("/v2/subscriptions", tags=["V2 - Enterprise"])
+async def create_subscription_v2(data: Dict[str, Any], db: Session = Depends(get_db)):
+    """Create subscription for organization (REAL - persisted to database)"""
+    org = OrganizationService.get_by_id(db, data.get("organization_id"))
+    if not org:
+        raise HTTPException(status_code=404, detail="Organization not found")
+
+    plan = db.query(SubscriptionPlan).filter(SubscriptionPlan.plan_id == data.get("plan_id")).first()
+    if not plan:
+        raise HTTPException(status_code=404, detail="Plan not found")
+
+    subscription = Subscription(
+        subscription_id=f"sub_{uuid.uuid4().hex[:12]}",
+        organization_id=org.id,
+        plan_id=plan.id,
+        billing_cycle=data.get("billing_cycle", "monthly"),
+        status="active",
+        current_period_start=datetime.now(timezone.utc),
+        current_period_end=datetime.now(timezone.utc) + timedelta(days=30 if data.get("billing_cycle") == "monthly" else 365)
+    )
+    db.add(subscription)
+    db.commit()
+    db.refresh(subscription)
+
+    return {
+        "subscription_id": subscription.subscription_id,
+        "plan_id": plan.plan_id,
+        "status": subscription.status,
+        "billing_cycle": subscription.billing_cycle,
+        "current_period_end": subscription.current_period_end.isoformat() + "Z",
+        "_persisted": True
+    }
+
+
+# ============================================================================
+# V2 - Deployments (Database-Backed)
+# ============================================================================
+
+@app.post("/v2/deployments", tags=["V2 - Enterprise"])
+async def create_deployment_v2(data: Dict[str, Any], db: Session = Depends(get_db)):
+    """Create deployment (REAL - persisted to database)"""
+    org = OrganizationService.get_by_id(db, data.get("organization_id"))
+    if not org:
+        raise HTTPException(status_code=404, detail="Organization not found")
+
+    deployment = Deployment(
+        deployment_id=f"deploy_{uuid.uuid4().hex[:12]}",
+        organization_id=org.id,
+        name=data.get("name"),
+        description=data.get("description"),
+        environment=data.get("environment", "staging"),
+        version=data.get("version", "1.0.0"),
+        strategy=data.get("strategy", "rolling"),
+        rollout_config=data.get("rollout_config"),
+        resources_deployed=data.get("resources", []),
+        status="pending"
+    )
+    db.add(deployment)
+    db.commit()
+    db.refresh(deployment)
+
+    return {
+        "deployment_id": deployment.deployment_id,
+        "name": deployment.name,
+        "environment": deployment.environment,
+        "status": deployment.status,
+        "strategy": deployment.strategy,
+        "created_at": deployment.created_at.isoformat() + "Z",
+        "_persisted": True
+    }
+
+
+@app.get("/v2/deployments", tags=["V2 - Enterprise"])
+async def list_deployments_v2(organization_id: str, db: Session = Depends(get_db)):
+    """List deployments (REAL - from database)"""
+    org = OrganizationService.get_by_id(db, organization_id)
+    if not org:
+        raise HTTPException(status_code=404, detail="Organization not found")
+
+    deployments = db.query(Deployment).filter(Deployment.organization_id == org.id).order_by(Deployment.created_at.desc()).all()
+    return {
+        "deployments": [{
+            "deployment_id": d.deployment_id,
+            "name": d.name,
+            "environment": d.environment,
+            "version": d.version,
+            "status": d.status,
+            "progress_percent": d.progress_percent,
+            "created_at": d.created_at.isoformat() + "Z"
+        } for d in deployments],
+        "_persisted": True
+    }
+
+
+# ============================================================================
+# V2 - SLAs (Database-Backed)
+# ============================================================================
+
+@app.post("/v2/slas", tags=["V2 - Enterprise"])
+async def create_sla_v2(data: Dict[str, Any], db: Session = Depends(get_db)):
+    """Create SLA definition (REAL - persisted to database)"""
+    org = OrganizationService.get_by_id(db, data.get("organization_id"))
+    if not org:
+        raise HTTPException(status_code=404, detail="Organization not found")
+
+    sla = SLADefinition(
+        sla_id=f"sla_{uuid.uuid4().hex[:12]}",
+        organization_id=org.id,
+        name=data.get("name"),
+        description=data.get("description"),
+        service_type=data.get("service_type"),
+        uptime_target=data.get("uptime_target", 99.9),
+        response_time_target_ms=data.get("response_time_target_ms", 200),
+        error_rate_target=data.get("error_rate_target", 0.1),
+        measurement_window=data.get("measurement_window", "monthly")
+    )
+    db.add(sla)
+    db.commit()
+    db.refresh(sla)
+
+    return {
+        "sla_id": sla.sla_id,
+        "name": sla.name,
+        "uptime_target": sla.uptime_target,
+        "response_time_target_ms": sla.response_time_target_ms,
+        "is_active": sla.is_active,
+        "_persisted": True
+    }
+
+
+@app.get("/v2/slas", tags=["V2 - Enterprise"])
+async def list_slas_v2(organization_id: str, db: Session = Depends(get_db)):
+    """List SLAs (REAL - from database)"""
+    org = OrganizationService.get_by_id(db, organization_id)
+    if not org:
+        raise HTTPException(status_code=404, detail="Organization not found")
+
+    slas = db.query(SLADefinition).filter(SLADefinition.organization_id == org.id).all()
+    return {
+        "slas": [{
+            "sla_id": s.sla_id,
+            "name": s.name,
+            "uptime_target": s.uptime_target,
+            "response_time_target_ms": s.response_time_target_ms,
+            "error_rate_target": s.error_rate_target,
+            "is_active": s.is_active
+        } for s in slas],
+        "_persisted": True
+    }
+
+
+# ============================================================================
+# V2 - Knowledge Base (Database-Backed)
+# ============================================================================
+
+@app.post("/v2/knowledge-base/categories", tags=["V2 - Enterprise"])
+async def create_kb_category_v2(data: Dict[str, Any], db: Session = Depends(get_db)):
+    """Create knowledge base category (REAL - persisted to database)"""
+    org = OrganizationService.get_by_id(db, data.get("organization_id"))
+    if not org:
+        raise HTTPException(status_code=404, detail="Organization not found")
+
+    category = KBCategory(
+        category_id=f"kbcat_{uuid.uuid4().hex[:12]}",
+        organization_id=org.id,
+        name=data.get("name"),
+        description=data.get("description"),
+        slug=data.get("slug", data.get("name", "").lower().replace(" ", "-")),
+        icon=data.get("icon"),
+        sort_order=data.get("sort_order", 0)
+    )
+    db.add(category)
+    db.commit()
+    db.refresh(category)
+
+    return {
+        "category_id": category.category_id,
+        "name": category.name,
+        "slug": category.slug,
+        "_persisted": True
+    }
+
+
+@app.post("/v2/knowledge-base/articles", tags=["V2 - Enterprise"])
+async def create_kb_article_v2(data: Dict[str, Any], db: Session = Depends(get_db)):
+    """Create knowledge base article (REAL - persisted to database)"""
+    org = OrganizationService.get_by_id(db, data.get("organization_id"))
+    if not org:
+        raise HTTPException(status_code=404, detail="Organization not found")
+
+    article = KBArticle(
+        article_id=f"kbart_{uuid.uuid4().hex[:12]}",
+        organization_id=org.id,
+        category_id=data.get("category_id"),
+        author_id=data.get("author_id"),
+        title=data.get("title"),
+        slug=data.get("slug", data.get("title", "").lower().replace(" ", "-")),
+        content=data.get("content"),
+        content_format=data.get("content_format", "markdown"),
+        tags=data.get("tags", []),
+        keywords=data.get("keywords", []),
+        status="draft"
+    )
+    db.add(article)
+    db.commit()
+    db.refresh(article)
+
+    return {
+        "article_id": article.article_id,
+        "title": article.title,
+        "status": article.status,
+        "_persisted": True
+    }
+
+
+@app.get("/v2/knowledge-base/articles", tags=["V2 - Enterprise"])
+async def list_kb_articles_v2(organization_id: str, status: str = "published", db: Session = Depends(get_db)):
+    """List knowledge base articles (REAL - from database)"""
+    org = OrganizationService.get_by_id(db, organization_id)
+    if not org:
+        raise HTTPException(status_code=404, detail="Organization not found")
+
+    articles = db.query(KBArticle).filter(
+        KBArticle.organization_id == org.id,
+        KBArticle.status == status
+    ).order_by(KBArticle.created_at.desc()).all()
+
+    return {
+        "articles": [{
+            "article_id": a.article_id,
+            "title": a.title,
+            "slug": a.slug,
+            "views": a.views,
+            "helpful_votes": a.helpful_votes,
+            "status": a.status,
+            "created_at": a.created_at.isoformat() + "Z"
+        } for a in articles],
+        "_persisted": True
+    }
+
+
+# ============================================================================
+# V2 - Scheduled Jobs (Database-Backed)
+# ============================================================================
+
+@app.post("/v2/jobs/scheduled", tags=["V2 - Operations"])
+async def create_scheduled_job_v2(data: Dict[str, Any], db: Session = Depends(get_db)):
+    """Create a scheduled job (REAL - persisted to database)"""
+    from api_server.database import ScheduledJob
+
+    job = ScheduledJob(
+        job_id=f"job_{uuid.uuid4().hex[:12]}",
+        name=data.get("name", "Unnamed Job"),
+        description=data.get("description"),
+        job_type=data.get("job_type", "agent_execution"),
+        target_id=data.get("target_id"),
+        target_type=data.get("target_type"),
+        schedule_type=data.get("schedule_type", "cron"),
+        cron_expression=data.get("cron_expression"),
+        interval_seconds=data.get("interval_seconds"),
+        input_data=data.get("input_data"),
+        organization_id=data.get("organization_id"),
+        created_by=data.get("created_by")
+    )
+    db.add(job)
+    db.commit()
+    db.refresh(job)
+
+    return {
+        "job_id": job.job_id,
+        "name": job.name,
+        "job_type": job.job_type,
+        "schedule_type": job.schedule_type,
+        "status": job.status,
+        "created_at": job.created_at.isoformat() + "Z",
+        "_persisted": True
+    }
+
+
+@app.get("/v2/jobs/scheduled", tags=["V2 - Operations"])
+async def list_scheduled_jobs_v2(organization_id: int = None, status: str = None, db: Session = Depends(get_db)):
+    """List scheduled jobs (REAL - from database)"""
+    from api_server.database import ScheduledJob
+
+    query = db.query(ScheduledJob)
+    if organization_id:
+        query = query.filter(ScheduledJob.organization_id == organization_id)
+    if status:
+        query = query.filter(ScheduledJob.status == status)
+
+    jobs = query.order_by(ScheduledJob.created_at.desc()).limit(100).all()
+
+    return {
+        "jobs": [{
+            "job_id": j.job_id,
+            "name": j.name,
+            "job_type": j.job_type,
+            "schedule_type": j.schedule_type,
+            "cron_expression": j.cron_expression,
+            "status": j.status,
+            "run_count": j.run_count,
+            "next_run_at": j.next_run_at.isoformat() + "Z" if j.next_run_at else None,
+            "last_run_at": j.last_run_at.isoformat() + "Z" if j.last_run_at else None,
+            "created_at": j.created_at.isoformat() + "Z"
+        } for j in jobs],
+        "_persisted": True
+    }
+
+
+@app.put("/v2/jobs/scheduled/{job_id}/pause", tags=["V2 - Operations"])
+async def pause_scheduled_job_v2(job_id: str, db: Session = Depends(get_db)):
+    """Pause a scheduled job (REAL - persisted to database)"""
+    from api_server.database import ScheduledJob
+
+    job = db.query(ScheduledJob).filter(ScheduledJob.job_id == job_id).first()
+    if not job:
+        raise HTTPException(status_code=404, detail="Scheduled job not found")
+
+    job.status = "paused"
+    db.commit()
+
+    return {"job_id": job_id, "status": "paused", "_persisted": True}
+
+
+@app.put("/v2/jobs/scheduled/{job_id}/resume", tags=["V2 - Operations"])
+async def resume_scheduled_job_v2(job_id: str, db: Session = Depends(get_db)):
+    """Resume a paused scheduled job (REAL - persisted to database)"""
+    from api_server.database import ScheduledJob
+
+    job = db.query(ScheduledJob).filter(ScheduledJob.job_id == job_id).first()
+    if not job:
+        raise HTTPException(status_code=404, detail="Scheduled job not found")
+
+    job.status = "active"
+    db.commit()
+
+    return {"job_id": job_id, "status": "active", "_persisted": True}
+
+
+@app.delete("/v2/jobs/scheduled/{job_id}", tags=["V2 - Operations"])
+async def delete_scheduled_job_v2(job_id: str, db: Session = Depends(get_db)):
+    """Delete a scheduled job (REAL - persisted to database)"""
+    from api_server.database import ScheduledJob
+
+    job = db.query(ScheduledJob).filter(ScheduledJob.job_id == job_id).first()
+    if not job:
+        raise HTTPException(status_code=404, detail="Scheduled job not found")
+
+    db.delete(job)
+    db.commit()
+
+    return {"deleted": True, "job_id": job_id, "_persisted": True}
+
+
+# ============================================================================
+# V2 - Event System (Database-Backed)
+# ============================================================================
+
+@app.post("/v2/events", tags=["V2 - Operations"])
+async def create_event_v2(data: Dict[str, Any], db: Session = Depends(get_db)):
+    """Log an event (REAL - persisted to database)"""
+    from api_server.database import EventLog
+
+    event = EventLog(
+        event_id=f"evt_{uuid.uuid4().hex[:12]}",
+        event_type=data.get("event_type", "system.event"),
+        severity=data.get("severity", "info"),
+        source=data.get("source"),
+        entity_type=data.get("entity_type"),
+        entity_id=data.get("entity_id"),
+        organization_id=data.get("organization_id"),
+        user_id=data.get("user_id"),
+        data=data.get("data"),
+        message=data.get("message")
+    )
+    db.add(event)
+    db.commit()
+    db.refresh(event)
+
+    return {
+        "event_id": event.event_id,
+        "event_type": event.event_type,
+        "severity": event.severity,
+        "created_at": event.created_at.isoformat() + "Z",
+        "_persisted": True
+    }
+
+
+@app.get("/v2/events", tags=["V2 - Operations"])
+async def list_events_v2(
+    organization_id: int = None,
+    event_type: str = None,
+    severity: str = None,
+    limit: int = 100,
+    db: Session = Depends(get_db)
+):
+    """List events (REAL - from database)"""
+    from api_server.database import EventLog
+
+    query = db.query(EventLog)
+    if organization_id:
+        query = query.filter(EventLog.organization_id == organization_id)
+    if event_type:
+        query = query.filter(EventLog.event_type == event_type)
+    if severity:
+        query = query.filter(EventLog.severity == severity)
+
+    events = query.order_by(EventLog.created_at.desc()).limit(limit).all()
+
+    return {
+        "events": [{
+            "event_id": e.event_id,
+            "event_type": e.event_type,
+            "severity": e.severity,
+            "source": e.source,
+            "entity_type": e.entity_type,
+            "entity_id": e.entity_id,
+            "message": e.message,
+            "created_at": e.created_at.isoformat() + "Z"
+        } for e in events],
+        "_persisted": True
+    }
+
+
+@app.post("/v2/events/subscriptions", tags=["V2 - Operations"])
+async def create_event_subscription_v2(data: Dict[str, Any], db: Session = Depends(get_db)):
+    """Create an event subscription (REAL - persisted to database)"""
+    from api_server.database import EventSubscription
+
+    subscription = EventSubscription(
+        subscription_id=f"sub_{uuid.uuid4().hex[:12]}",
+        subscriber_type=data.get("subscriber_type", "webhook"),
+        subscriber_id=data.get("subscriber_id"),
+        event_types=data.get("event_types", []),
+        entity_filter=data.get("entity_filter"),
+        organization_id=data.get("organization_id")
+    )
+    db.add(subscription)
+    db.commit()
+    db.refresh(subscription)
+
+    return {
+        "subscription_id": subscription.subscription_id,
+        "subscriber_type": subscription.subscriber_type,
+        "event_types": subscription.event_types,
+        "status": subscription.status,
+        "created_at": subscription.created_at.isoformat() + "Z",
+        "_persisted": True
+    }
+
+
+# ============================================================================
+# V2 - Notifications (Database-Backed)
+# ============================================================================
+
+@app.post("/v2/notifications/channels", tags=["V2 - Operations"])
+async def create_notification_channel_v2(data: Dict[str, Any], db: Session = Depends(get_db)):
+    """Create a notification channel (REAL - persisted to database)"""
+    from api_server.database import NotificationChannel
+
+    channel = NotificationChannel(
+        channel_id=f"ch_{uuid.uuid4().hex[:12]}",
+        name=data.get("name", "Unnamed Channel"),
+        channel_type=data.get("channel_type", "email"),
+        configuration=data.get("configuration"),
+        organization_id=data.get("organization_id")
+    )
+    db.add(channel)
+    db.commit()
+    db.refresh(channel)
+
+    return {
+        "channel_id": channel.channel_id,
+        "name": channel.name,
+        "channel_type": channel.channel_type,
+        "status": channel.status,
+        "created_at": channel.created_at.isoformat() + "Z",
+        "_persisted": True
+    }
+
+
+@app.get("/v2/notifications/channels", tags=["V2 - Operations"])
+async def list_notification_channels_v2(organization_id: int = None, db: Session = Depends(get_db)):
+    """List notification channels (REAL - from database)"""
+    from api_server.database import NotificationChannel
+
+    query = db.query(NotificationChannel)
+    if organization_id:
+        query = query.filter(NotificationChannel.organization_id == organization_id)
+
+    channels = query.order_by(NotificationChannel.created_at.desc()).all()
+
+    return {
+        "channels": [{
+            "channel_id": c.channel_id,
+            "name": c.name,
+            "channel_type": c.channel_type,
+            "status": c.status,
+            "last_used_at": c.last_used_at.isoformat() + "Z" if c.last_used_at else None,
+            "created_at": c.created_at.isoformat() + "Z"
+        } for c in channels],
+        "_persisted": True
+    }
+
+
+@app.post("/v2/notifications", tags=["V2 - Operations"])
+async def create_notification_v2(data: Dict[str, Any], db: Session = Depends(get_db)):
+    """Create and send a notification (REAL - persisted to database)"""
+    from api_server.database import Notification
+
+    notification = Notification(
+        notification_id=f"notif_{uuid.uuid4().hex[:12]}",
+        title=data.get("title"),
+        message=data.get("message"),
+        notification_type=data.get("notification_type", "info"),
+        channel_id=data.get("channel_id"),
+        recipient_type=data.get("recipient_type", "user"),
+        recipient_id=data.get("recipient_id"),
+        entity_type=data.get("entity_type"),
+        entity_id=data.get("entity_id"),
+        action_url=data.get("action_url"),
+        organization_id=data.get("organization_id")
+    )
+    db.add(notification)
+    db.commit()
+    db.refresh(notification)
+
+    return {
+        "notification_id": notification.notification_id,
+        "title": notification.title,
+        "notification_type": notification.notification_type,
+        "status": notification.status,
+        "created_at": notification.created_at.isoformat() + "Z",
+        "_persisted": True
+    }
+
+
+# ============================================================================
+# V2 - Secrets Management (Database-Backed)
+# ============================================================================
+
+@app.post("/v2/secrets", tags=["V2 - Security"])
+async def create_secret_v2(data: Dict[str, Any], db: Session = Depends(get_db)):
+    """Create a secret (REAL - persisted to database, value encrypted with Fernet)"""
+    from api_server.database import Secret, SecretVersion
+    from api_server.services import SecretsService
+
+    # Encrypt the secret value using Fernet
+    value = data.get("value", "")
+    encrypted = SecretsService.encrypt(value)
+    encryption_version = SecretsService.get_encryption_version()
+
+    secret = Secret(
+        secret_id=f"sec_{uuid.uuid4().hex[:12]}",
+        name=data.get("name", "Unnamed Secret"),
+        description=data.get("description"),
+        secret_type=data.get("secret_type", "api_key"),
+        encrypted_value=encrypted,
+        encryption_version=encryption_version,
+        tags=data.get("tags"),
+        expires_at=datetime.fromisoformat(data["expires_at"]) if data.get("expires_at") else None,
+        allowed_agents=data.get("allowed_agents"),
+        allowed_workflows=data.get("allowed_workflows"),
+        organization_id=data.get("organization_id"),
+        created_by=data.get("created_by")
+    )
+    db.add(secret)
+    db.commit()
+    db.refresh(secret)
+
+    # Create initial version
+    version = SecretVersion(
+        secret_id=secret.id,
+        version=1,
+        encrypted_value=encrypted,
+        created_by=data.get("created_by"),
+        change_reason="Initial creation"
+    )
+    db.add(version)
+    db.commit()
+
+    return {
+        "secret_id": secret.secret_id,
+        "name": secret.name,
+        "secret_type": secret.secret_type,
+        "status": secret.status,
+        "encryption_version": encryption_version,
+        "created_at": secret.created_at.isoformat() + "Z",
+        "_persisted": True,
+        "_using_dev_key": SecretsService.is_using_dev_key()
+    }
+
+
+@app.get("/v2/secrets", tags=["V2 - Security"])
+async def list_secrets_v2(organization_id: int = None, db: Session = Depends(get_db)):
+    """List secrets (without values) (REAL - from database)"""
+    from api_server.database import Secret
+
+    query = db.query(Secret).filter(Secret.status == "active")
+    if organization_id:
+        query = query.filter(Secret.organization_id == organization_id)
+
+    secrets = query.order_by(Secret.created_at.desc()).all()
+
+    return {
+        "secrets": [{
+            "secret_id": s.secret_id,
+            "name": s.name,
+            "secret_type": s.secret_type,
+            "tags": s.tags,
+            "status": s.status,
+            "expires_at": s.expires_at.isoformat() + "Z" if s.expires_at else None,
+            "last_rotated_at": s.last_rotated_at.isoformat() + "Z" if s.last_rotated_at else None,
+            "created_at": s.created_at.isoformat() + "Z"
+        } for s in secrets],
+        "_persisted": True
+    }
+
+
+@app.get("/v2/secrets/{secret_id}", tags=["V2 - Security"])
+async def get_secret_v2(secret_id: str, db: Session = Depends(get_db)):
+    """Get secret metadata (without value) (REAL - from database)"""
+    from api_server.database import Secret
+
+    secret = db.query(Secret).filter(Secret.secret_id == secret_id).first()
+    if not secret:
+        raise HTTPException(status_code=404, detail="Secret not found")
+
+    return {
+        "secret_id": secret.secret_id,
+        "name": secret.name,
+        "description": secret.description,
+        "secret_type": secret.secret_type,
+        "tags": secret.tags,
+        "status": secret.status,
+        "encryption_version": secret.encryption_version,
+        "expires_at": secret.expires_at.isoformat() + "Z" if secret.expires_at else None,
+        "last_rotated_at": secret.last_rotated_at.isoformat() + "Z" if secret.last_rotated_at else None,
+        "allowed_agents": secret.allowed_agents,
+        "allowed_workflows": secret.allowed_workflows,
+        "created_at": secret.created_at.isoformat() + "Z",
+        "updated_at": secret.updated_at.isoformat() + "Z" if secret.updated_at else None,
+        "_persisted": True
+    }
+
+
+@app.post("/v2/secrets/{secret_id}/reveal", tags=["V2 - Security"])
+async def reveal_secret_v2(
+    secret_id: str,
+    data: Dict[str, Any] = Body(default={}),
+    db: Session = Depends(get_db)
+):
+    """
+    Reveal the decrypted secret value (REAL - decrypted from database).
+
+    This endpoint should be protected with additional authorization.
+    Access should be logged for audit purposes.
+    """
+    from api_server.database import Secret, AuditLog
+    from api_server.services import SecretsService
+
+    secret = db.query(Secret).filter(Secret.secret_id == secret_id).first()
+    if not secret:
+        raise HTTPException(status_code=404, detail="Secret not found")
+
+    if secret.status != "active":
+        raise HTTPException(status_code=400, detail=f"Secret is {secret.status}, cannot reveal")
+
+    # Check if expired
+    if secret.expires_at and secret.expires_at < datetime.utcnow():
+        raise HTTPException(status_code=400, detail="Secret has expired")
+
+    # Check access permissions
+    requester_agent = data.get("agent_id")
+    requester_workflow = data.get("workflow_id")
+
+    if secret.allowed_agents and requester_agent:
+        if requester_agent not in secret.allowed_agents:
+            raise HTTPException(status_code=403, detail="Agent not authorized to access this secret")
+
+    if secret.allowed_workflows and requester_workflow:
+        if requester_workflow not in secret.allowed_workflows:
+            raise HTTPException(status_code=403, detail="Workflow not authorized to access this secret")
+
+    try:
+        decrypted_value = SecretsService.decrypt(secret.encrypted_value)
+    except ValueError as e:
+        raise HTTPException(status_code=500, detail=f"Failed to decrypt secret: {e}")
+
+    # Log the access
+    audit = AuditLog(
+        audit_id=f"aud_{uuid.uuid4().hex[:12]}",
+        action="secret_revealed",
+        action_category="security",
+        actor_type="agent" if requester_agent else "user",
+        actor_id=requester_agent or data.get("user_id"),
+        resource_type="secret",
+        resource_id=secret_id,
+        result="success",
+        ip_address=data.get("ip_address")
+    )
+    db.add(audit)
+    db.commit()
+
+    return {
+        "secret_id": secret_id,
+        "name": secret.name,
+        "value": decrypted_value,
+        "_decrypted": True,
+        "_access_logged": True
+    }
+
+
+@app.put("/v2/secrets/{secret_id}", tags=["V2 - Security"])
+async def update_secret_v2(secret_id: str, data: Dict[str, Any], db: Session = Depends(get_db)):
+    """Update a secret value (REAL - re-encrypted and persisted)"""
+    from api_server.database import Secret, SecretVersion
+    from api_server.services import SecretsService
+
+    secret = db.query(Secret).filter(Secret.secret_id == secret_id).first()
+    if not secret:
+        raise HTTPException(status_code=404, detail="Secret not found")
+
+    if secret.status != "active":
+        raise HTTPException(status_code=400, detail=f"Cannot update {secret.status} secret")
+
+    # Get current version number
+    current_version = db.query(SecretVersion).filter(
+        SecretVersion.secret_id == secret.id
+    ).count()
+
+    # Update value if provided
+    if "value" in data:
+        encrypted = SecretsService.encrypt(data["value"])
+        secret.encrypted_value = encrypted
+        secret.encryption_version = SecretsService.get_encryption_version()
+
+        # Create new version
+        version = SecretVersion(
+            secret_id=secret.id,
+            version=current_version + 1,
+            encrypted_value=encrypted,
+            created_by=data.get("updated_by"),
+            change_reason=data.get("reason", "Value updated")
+        )
+        db.add(version)
+
+        # Deprecate old versions
+        db.query(SecretVersion).filter(
+            SecretVersion.secret_id == secret.id,
+            SecretVersion.version < current_version + 1
+        ).update({"status": "deprecated"})
+
+    # Update metadata
+    if "name" in data:
+        secret.name = data["name"]
+    if "description" in data:
+        secret.description = data["description"]
+    if "tags" in data:
+        secret.tags = data["tags"]
+    if "expires_at" in data:
+        secret.expires_at = datetime.fromisoformat(data["expires_at"]) if data["expires_at"] else None
+    if "allowed_agents" in data:
+        secret.allowed_agents = data["allowed_agents"]
+    if "allowed_workflows" in data:
+        secret.allowed_workflows = data["allowed_workflows"]
+
+    db.commit()
+    db.refresh(secret)
+
+    return {
+        "secret_id": secret.secret_id,
+        "name": secret.name,
+        "version": current_version + 1 if "value" in data else current_version,
+        "updated_at": secret.updated_at.isoformat() + "Z",
+        "_persisted": True
+    }
+
+
+@app.post("/v2/secrets/{secret_id}/rotate", tags=["V2 - Security"])
+async def rotate_secret_v2(secret_id: str, data: Dict[str, Any], db: Session = Depends(get_db)):
+    """Rotate a secret with a new value (REAL - creates new version)"""
+    from api_server.database import Secret, SecretVersion
+    from api_server.services import SecretsService
+
+    secret = db.query(Secret).filter(Secret.secret_id == secret_id).first()
+    if not secret:
+        raise HTTPException(status_code=404, detail="Secret not found")
+
+    if secret.status != "active":
+        raise HTTPException(status_code=400, detail=f"Cannot rotate {secret.status} secret")
+
+    new_value = data.get("value")
+    if not new_value:
+        raise HTTPException(status_code=400, detail="New value required for rotation")
+
+    # Get current version
+    current_version = db.query(SecretVersion).filter(
+        SecretVersion.secret_id == secret.id
+    ).count()
+
+    # Encrypt new value
+    encrypted = SecretsService.encrypt(new_value)
+
+    # Update secret
+    secret.encrypted_value = encrypted
+    secret.encryption_version = SecretsService.get_encryption_version()
+    secret.last_rotated_at = datetime.utcnow()
+
+    # Create new version
+    version = SecretVersion(
+        secret_id=secret.id,
+        version=current_version + 1,
+        encrypted_value=encrypted,
+        created_by=data.get("rotated_by"),
+        change_reason=data.get("reason", "Secret rotation")
+    )
+    db.add(version)
+
+    # Mark previous versions as deprecated
+    db.query(SecretVersion).filter(
+        SecretVersion.secret_id == secret.id,
+        SecretVersion.version < current_version + 1
+    ).update({"status": "deprecated"})
+
+    db.commit()
+    db.refresh(secret)
+
+    return {
+        "secret_id": secret.secret_id,
+        "name": secret.name,
+        "new_version": current_version + 1,
+        "rotated_at": secret.last_rotated_at.isoformat() + "Z",
+        "_persisted": True
+    }
+
+
+@app.get("/v2/secrets/{secret_id}/versions", tags=["V2 - Security"])
+async def list_secret_versions_v2(secret_id: str, db: Session = Depends(get_db)):
+    """List all versions of a secret (REAL - from database)"""
+    from api_server.database import Secret, SecretVersion
+
+    secret = db.query(Secret).filter(Secret.secret_id == secret_id).first()
+    if not secret:
+        raise HTTPException(status_code=404, detail="Secret not found")
+
+    versions = db.query(SecretVersion).filter(
+        SecretVersion.secret_id == secret.id
+    ).order_by(SecretVersion.version.desc()).all()
+
+    return {
+        "secret_id": secret_id,
+        "name": secret.name,
+        "versions": [{
+            "version": v.version,
+            "status": v.status,
+            "change_reason": v.change_reason,
+            "created_by": v.created_by,
+            "created_at": v.created_at.isoformat() + "Z" if v.created_at else None
+        } for v in versions],
+        "current_version": versions[0].version if versions else 0,
+        "_persisted": True
+    }
+
+
+@app.delete("/v2/secrets/{secret_id}", tags=["V2 - Security"])
+async def revoke_secret_v2(secret_id: str, db: Session = Depends(get_db)):
+    """Revoke a secret (REAL - persisted to database)"""
+    from api_server.database import Secret, SecretVersion
+
+    secret = db.query(Secret).filter(Secret.secret_id == secret_id).first()
+    if not secret:
+        raise HTTPException(status_code=404, detail="Secret not found")
+
+    secret.status = "revoked"
+
+    # Revoke all versions too
+    db.query(SecretVersion).filter(
+        SecretVersion.secret_id == secret.id
+    ).update({"status": "revoked"})
+
+    db.commit()
+
+    return {"secret_id": secret_id, "status": "revoked", "_persisted": True}
+
+
+@app.get("/v2/secrets/encryption-status", tags=["V2 - Security"])
+async def get_secrets_encryption_status():
+    """Get current encryption status and configuration"""
+    from api_server.services import SecretsService
+
+    return {
+        "encryption_version": SecretsService.get_encryption_version(),
+        "using_dev_key": SecretsService.is_using_dev_key(),
+        "encryption_type": "fernet" if SecretsService.get_encryption_version() >= 1 else "base64_fallback",
+        "_warning": "Development key in use - set SECRETS_ENCRYPTION_KEY for production" if SecretsService.is_using_dev_key() else None
+    }
+
+
+# ============================================================================
+# V2 - Audit Logs (Database-Backed)
+# ============================================================================
+
+@app.post("/v2/audit-logs", tags=["V2 - Security"])
+async def create_audit_log_v2(data: Dict[str, Any], db: Session = Depends(get_db)):
+    """Create an audit log entry (REAL - persisted to database)"""
+    from api_server.database import AuditLog
+
+    audit = AuditLog(
+        audit_id=f"aud_{uuid.uuid4().hex[:12]}",
+        action=data.get("action", "unknown"),
+        action_category=data.get("action_category"),
+        actor_type=data.get("actor_type", "user"),
+        actor_id=data.get("actor_id"),
+        actor_name=data.get("actor_name"),
+        ip_address=data.get("ip_address"),
+        user_agent=data.get("user_agent"),
+        target_type=data.get("target_type"),
+        target_id=data.get("target_id"),
+        target_name=data.get("target_name"),
+        old_value=data.get("old_value"),
+        new_value=data.get("new_value"),
+        change_summary=data.get("change_summary"),
+        organization_id=data.get("organization_id"),
+        request_id=data.get("request_id"),
+        status=data.get("status", "success"),
+        error_message=data.get("error_message")
+    )
+    db.add(audit)
+    db.commit()
+    db.refresh(audit)
+
+    return {
+        "audit_id": audit.audit_id,
+        "action": audit.action,
+        "actor_type": audit.actor_type,
+        "status": audit.status,
+        "created_at": audit.created_at.isoformat() + "Z",
+        "_persisted": True
+    }
+
+
+@app.get("/v2/audit-logs", tags=["V2 - Security"])
+async def list_audit_logs_v2(
+    organization_id: int = None,
+    action: str = None,
+    actor_id: str = None,
+    target_type: str = None,
+    limit: int = 100,
+    db: Session = Depends(get_db)
+):
+    """List audit logs (REAL - from database)"""
+    from api_server.database import AuditLog
+
+    query = db.query(AuditLog)
+    if organization_id:
+        query = query.filter(AuditLog.organization_id == organization_id)
+    if action:
+        query = query.filter(AuditLog.action == action)
+    if actor_id:
+        query = query.filter(AuditLog.actor_id == actor_id)
+    if target_type:
+        query = query.filter(AuditLog.target_type == target_type)
+
+    logs = query.order_by(AuditLog.created_at.desc()).limit(limit).all()
+
+    return {
+        "audit_logs": [{
+            "audit_id": a.audit_id,
+            "action": a.action,
+            "action_category": a.action_category,
+            "actor_type": a.actor_type,
+            "actor_id": a.actor_id,
+            "actor_name": a.actor_name,
+            "target_type": a.target_type,
+            "target_id": a.target_id,
+            "target_name": a.target_name,
+            "status": a.status,
+            "ip_address": a.ip_address,
+            "created_at": a.created_at.isoformat() + "Z"
+        } for a in logs],
+        "_persisted": True
+    }
+
+
+# ============================================================================
+# V2 - Feature Flags (Database-Backed)
+# ============================================================================
+
+@app.post("/v2/feature-flags", tags=["V2 - Operations"])
+async def create_feature_flag_v2(data: Dict[str, Any], db: Session = Depends(get_db)):
+    """Create a feature flag (REAL - persisted to database)"""
+    from api_server.database import FeatureFlag
+
+    flag = FeatureFlag(
+        flag_id=f"flag_{uuid.uuid4().hex[:12]}",
+        name=data.get("name", "Unnamed Flag"),
+        description=data.get("description"),
+        enabled=data.get("enabled", False),
+        rollout_percentage=data.get("rollout_percentage", 0),
+        targeting_rules=data.get("targeting_rules"),
+        default_value=data.get("default_value"),
+        variants=data.get("variants"),
+        organization_id=data.get("organization_id")
+    )
+    db.add(flag)
+    db.commit()
+    db.refresh(flag)
+
+    return {
+        "flag_id": flag.flag_id,
+        "name": flag.name,
+        "enabled": flag.enabled,
+        "rollout_percentage": flag.rollout_percentage,
+        "created_at": flag.created_at.isoformat() + "Z",
+        "_persisted": True
+    }
+
+
+@app.get("/v2/feature-flags", tags=["V2 - Operations"])
+async def list_feature_flags_v2(organization_id: int = None, db: Session = Depends(get_db)):
+    """List feature flags (REAL - from database)"""
+    from api_server.database import FeatureFlag
+
+    query = db.query(FeatureFlag)
+    if organization_id:
+        query = query.filter(FeatureFlag.organization_id == organization_id)
+
+    flags = query.order_by(FeatureFlag.created_at.desc()).all()
+
+    return {
+        "feature_flags": [{
+            "flag_id": f.flag_id,
+            "name": f.name,
+            "description": f.description,
+            "enabled": f.enabled,
+            "rollout_percentage": f.rollout_percentage,
+            "created_at": f.created_at.isoformat() + "Z",
+            "updated_at": f.updated_at.isoformat() + "Z"
+        } for f in flags],
+        "_persisted": True
+    }
+
+
+@app.put("/v2/feature-flags/{flag_id}", tags=["V2 - Operations"])
+async def update_feature_flag_v2(flag_id: str, data: Dict[str, Any], db: Session = Depends(get_db)):
+    """Update a feature flag (REAL - persisted to database)"""
+    from api_server.database import FeatureFlag
+
+    flag = db.query(FeatureFlag).filter(FeatureFlag.flag_id == flag_id).first()
+    if not flag:
+        raise HTTPException(status_code=404, detail="Feature flag not found")
+
+    if "enabled" in data:
+        flag.enabled = data["enabled"]
+    if "rollout_percentage" in data:
+        flag.rollout_percentage = data["rollout_percentage"]
+    if "targeting_rules" in data:
+        flag.targeting_rules = data["targeting_rules"]
+
+    db.commit()
+
+    return {
+        "flag_id": flag.flag_id,
+        "name": flag.name,
+        "enabled": flag.enabled,
+        "rollout_percentage": flag.rollout_percentage,
+        "updated_at": flag.updated_at.isoformat() + "Z",
+        "_persisted": True
+    }
+
+
+# ============================================================================
+# V2 - A/B Experiments (Database-Backed)
+# ============================================================================
+
+@app.post("/v2/experiments", tags=["V2 - Operations"])
+async def create_experiment_v2(data: Dict[str, Any], db: Session = Depends(get_db)):
+    """Create an A/B experiment (REAL - persisted to database)"""
+    from api_server.database import ABExperiment
+
+    experiment = ABExperiment(
+        experiment_id=f"exp_{uuid.uuid4().hex[:12]}",
+        name=data.get("name", "Unnamed Experiment"),
+        description=data.get("description"),
+        hypothesis=data.get("hypothesis"),
+        variants=data.get("variants", [{"name": "control", "weight": 50}, {"name": "treatment", "weight": 50}]),
+        target_metric=data.get("target_metric"),
+        audience_filter=data.get("audience_filter"),
+        traffic_allocation=data.get("traffic_allocation", 100),
+        min_sample_size=data.get("min_sample_size"),
+        organization_id=data.get("organization_id"),
+        created_by=data.get("created_by")
+    )
+    db.add(experiment)
+    db.commit()
+    db.refresh(experiment)
+
+    return {
+        "experiment_id": experiment.experiment_id,
+        "name": experiment.name,
+        "status": experiment.status,
+        "variants": experiment.variants,
+        "created_at": experiment.created_at.isoformat() + "Z",
+        "_persisted": True
+    }
+
+
+@app.get("/v2/experiments", tags=["V2 - Operations"])
+async def list_experiments_v2(organization_id: int = None, status: str = None, db: Session = Depends(get_db)):
+    """List A/B experiments (REAL - from database)"""
+    from api_server.database import ABExperiment
+
+    query = db.query(ABExperiment)
+    if organization_id:
+        query = query.filter(ABExperiment.organization_id == organization_id)
+    if status:
+        query = query.filter(ABExperiment.status == status)
+
+    experiments = query.order_by(ABExperiment.created_at.desc()).all()
+
+    return {
+        "experiments": [{
+            "experiment_id": e.experiment_id,
+            "name": e.name,
+            "status": e.status,
+            "variants": e.variants,
+            "target_metric": e.target_metric,
+            "traffic_allocation": e.traffic_allocation,
+            "start_date": e.start_date.isoformat() + "Z" if e.start_date else None,
+            "end_date": e.end_date.isoformat() + "Z" if e.end_date else None,
+            "created_at": e.created_at.isoformat() + "Z"
+        } for e in experiments],
+        "_persisted": True
+    }
+
+
+@app.put("/v2/experiments/{experiment_id}/start", tags=["V2 - Operations"])
+async def start_experiment_v2(experiment_id: str, db: Session = Depends(get_db)):
+    """Start an A/B experiment (REAL - persisted to database)"""
+    from api_server.database import ABExperiment
+
+    experiment = db.query(ABExperiment).filter(ABExperiment.experiment_id == experiment_id).first()
+    if not experiment:
+        raise HTTPException(status_code=404, detail="Experiment not found")
+
+    experiment.status = "running"
+    experiment.start_date = datetime.utcnow()
+    db.commit()
+
+    return {
+        "experiment_id": experiment_id,
+        "status": "running",
+        "start_date": experiment.start_date.isoformat() + "Z",
+        "_persisted": True
+    }
+
+
+@app.put("/v2/experiments/{experiment_id}/stop", tags=["V2 - Operations"])
+async def stop_experiment_v2(experiment_id: str, db: Session = Depends(get_db)):
+    """Stop an A/B experiment (REAL - persisted to database)"""
+    from api_server.database import ABExperiment
+
+    experiment = db.query(ABExperiment).filter(ABExperiment.experiment_id == experiment_id).first()
+    if not experiment:
+        raise HTTPException(status_code=404, detail="Experiment not found")
+
+    experiment.status = "completed"
+    experiment.end_date = datetime.utcnow()
+    db.commit()
+
+    return {
+        "experiment_id": experiment_id,
+        "status": "completed",
+        "end_date": experiment.end_date.isoformat() + "Z",
+        "_persisted": True
+    }
+
+
+# ============================================================================
+# V2 - Connectors (Database-Backed)
+# ============================================================================
+
+@app.post("/v2/connectors", tags=["V2 - Integrations"])
+async def create_connector_v2(data: Dict[str, Any], db: Session = Depends(get_db)):
+    """Create a connector definition (REAL - persisted to database)"""
+    from api_server.database import Connector
+
+    connector = Connector(
+        connector_id=f"conn_{uuid.uuid4().hex[:12]}",
+        name=data.get("name", "Unnamed Connector"),
+        description=data.get("description"),
+        connector_type=data.get("connector_type", "api"),
+        provider=data.get("provider"),
+        config_schema=data.get("config_schema"),
+        auth_type=data.get("auth_type", "api_key")
+    )
+    db.add(connector)
+    db.commit()
+    db.refresh(connector)
+
+    return {
+        "connector_id": connector.connector_id,
+        "name": connector.name,
+        "connector_type": connector.connector_type,
+        "provider": connector.provider,
+        "status": connector.status,
+        "created_at": connector.created_at.isoformat() + "Z",
+        "_persisted": True
+    }
+
+
+@app.get("/v2/connectors", tags=["V2 - Integrations"])
+async def list_connectors_v2(connector_type: str = None, db: Session = Depends(get_db)):
+    """List connector definitions (REAL - from database)"""
+    from api_server.database import Connector
+
+    query = db.query(Connector)
+    if connector_type:
+        query = query.filter(Connector.connector_type == connector_type)
+
+    connectors = query.order_by(Connector.name).all()
+
+    return {
+        "connectors": [{
+            "connector_id": c.connector_id,
+            "name": c.name,
+            "description": c.description,
+            "connector_type": c.connector_type,
+            "provider": c.provider,
+            "auth_type": c.auth_type,
+            "status": c.status
+        } for c in connectors],
+        "_persisted": True
+    }
+
+
+@app.post("/v2/connectors/instances", tags=["V2 - Integrations"])
+async def create_connector_instance_v2(data: Dict[str, Any], db: Session = Depends(get_db)):
+    """Create a connector instance (REAL - persisted to database)"""
+    from api_server.database import ConnectorInstance, Connector
+
+    connector = db.query(Connector).filter(Connector.connector_id == data.get("connector_id")).first()
+    if not connector:
+        raise HTTPException(status_code=404, detail="Connector not found")
+
+    instance = ConnectorInstance(
+        instance_id=f"inst_{uuid.uuid4().hex[:12]}",
+        name=data.get("name", f"{connector.name} Instance"),
+        connector_id=connector.id,
+        configuration=data.get("configuration"),
+        credentials_secret_id=data.get("credentials_secret_id"),
+        organization_id=data.get("organization_id"),
+        created_by=data.get("created_by")
+    )
+    db.add(instance)
+    db.commit()
+    db.refresh(instance)
+
+    return {
+        "instance_id": instance.instance_id,
+        "name": instance.name,
+        "status": instance.status,
+        "created_at": instance.created_at.isoformat() + "Z",
+        "_persisted": True
+    }
+
+
+@app.get("/v2/connectors/instances", tags=["V2 - Integrations"])
+async def list_connector_instances_v2(organization_id: int = None, db: Session = Depends(get_db)):
+    """List connector instances (REAL - from database)"""
+    from api_server.database import ConnectorInstance
+
+    query = db.query(ConnectorInstance)
+    if organization_id:
+        query = query.filter(ConnectorInstance.organization_id == organization_id)
+
+    instances = query.order_by(ConnectorInstance.created_at.desc()).all()
+
+    return {
+        "instances": [{
+            "instance_id": i.instance_id,
+            "name": i.name,
+            "status": i.status,
+            "health_status": i.health_status,
+            "last_connected_at": i.last_connected_at.isoformat() + "Z" if i.last_connected_at else None,
+            "created_at": i.created_at.isoformat() + "Z"
+        } for i in instances],
+        "_persisted": True
+    }
+
+
+# ============================================================================
+# V2 - Batch Jobs (Database-Backed)
+# ============================================================================
+
+@app.post("/v2/batch-jobs", tags=["V2 - Operations"])
+async def create_batch_job_v2(data: Dict[str, Any], db: Session = Depends(get_db)):
+    """Create a batch job (REAL - persisted to database)"""
+    from api_server.database import BatchJob
+
+    job = BatchJob(
+        job_id=f"batch_{uuid.uuid4().hex[:12]}",
+        name=data.get("name", "Unnamed Batch Job"),
+        description=data.get("description"),
+        job_type=data.get("job_type", "agent_batch"),
+        input_source=data.get("input_source"),
+        input_location=data.get("input_location"),
+        input_format=data.get("input_format", "json"),
+        total_items=data.get("total_items"),
+        agent_id=data.get("agent_id"),
+        workflow_id=data.get("workflow_id"),
+        batch_size=data.get("batch_size", 100),
+        concurrency=data.get("concurrency", 5),
+        output_location=data.get("output_location"),
+        organization_id=data.get("organization_id"),
+        created_by=data.get("created_by")
+    )
+    db.add(job)
+    db.commit()
+    db.refresh(job)
+
+    return {
+        "job_id": job.job_id,
+        "name": job.name,
+        "job_type": job.job_type,
+        "status": job.status,
+        "total_items": job.total_items,
+        "created_at": job.created_at.isoformat() + "Z",
+        "_persisted": True
+    }
+
+
+@app.get("/v2/batch-jobs", tags=["V2 - Operations"])
+async def list_batch_jobs_v2(organization_id: int = None, status: str = None, db: Session = Depends(get_db)):
+    """List batch jobs (REAL - from database)"""
+    from api_server.database import BatchJob
+
+    query = db.query(BatchJob)
+    if organization_id:
+        query = query.filter(BatchJob.organization_id == organization_id)
+    if status:
+        query = query.filter(BatchJob.status == status)
+
+    jobs = query.order_by(BatchJob.created_at.desc()).limit(100).all()
+
+    return {
+        "batch_jobs": [{
+            "job_id": j.job_id,
+            "name": j.name,
+            "job_type": j.job_type,
+            "status": j.status,
+            "total_items": j.total_items,
+            "processed_items": j.processed_items,
+            "successful_items": j.successful_items,
+            "failed_items": j.failed_items,
+            "progress_percentage": j.progress_percentage,
+            "started_at": j.started_at.isoformat() + "Z" if j.started_at else None,
+            "completed_at": j.completed_at.isoformat() + "Z" if j.completed_at else None,
+            "created_at": j.created_at.isoformat() + "Z"
+        } for j in jobs],
+        "_persisted": True
+    }
+
+
+@app.put("/v2/batch-jobs/{job_id}/start", tags=["V2 - Operations"])
+async def start_batch_job_v2(job_id: str, db: Session = Depends(get_db)):
+    """Start a batch job (REAL - persisted to database)"""
+    from api_server.database import BatchJob
+
+    job = db.query(BatchJob).filter(BatchJob.job_id == job_id).first()
+    if not job:
+        raise HTTPException(status_code=404, detail="Batch job not found")
+
+    job.status = "running"
+    job.started_at = datetime.utcnow()
+    db.commit()
+
+    return {
+        "job_id": job_id,
+        "status": "running",
+        "started_at": job.started_at.isoformat() + "Z",
+        "_persisted": True
+    }
+
+
+@app.put("/v2/batch-jobs/{job_id}/cancel", tags=["V2 - Operations"])
+async def cancel_batch_job_v2(job_id: str, db: Session = Depends(get_db)):
+    """Cancel a batch job (REAL - persisted to database)"""
+    from api_server.database import BatchJob
+
+    job = db.query(BatchJob).filter(BatchJob.job_id == job_id).first()
+    if not job:
+        raise HTTPException(status_code=404, detail="Batch job not found")
+
+    job.status = "cancelled"
+    job.completed_at = datetime.utcnow()
+    db.commit()
+
+    return {
+        "job_id": job_id,
+        "status": "cancelled",
+        "_persisted": True
+    }
+
+
+# ============================================================================
+# V2 - Workflow Definitions (Database-Backed)
+# ============================================================================
+
+@app.post("/v2/workflow-definitions", tags=["V2 - Workflows"])
+async def create_workflow_definition_v2(data: Dict[str, Any], db: Session = Depends(get_db)):
+    """Create a workflow definition (REAL - persisted to database)"""
+    from api_server.database import WorkflowDefinition
+
+    # Validate steps if provided
+    steps = data.get("steps", [])
+    step_ids = {step.get("step_id") for step in steps if step.get("step_id")}
+    for step in steps:
+        for dep in step.get("dependencies", []):
+            if dep not in step_ids:
+                raise HTTPException(
+                    status_code=400,
+                    detail=f"Step '{step.get('step_id')}' depends on non-existent step '{dep}'"
+                )
+
+    definition = WorkflowDefinition(
+        definition_id=f"wf_def_{uuid.uuid4().hex[:12]}",
+        name=data.get("name", "Unnamed Workflow"),
+        description=data.get("description"),
+        steps=steps,
+        triggers=data.get("triggers", []),
+        variables=data.get("variables", {}),
+        error_handling=data.get("error_handling", {}),
+        tags=data.get("tags", []),
+        version=1,
+        organization_id=data.get("organization_id"),
+        created_by=data.get("created_by"),
+        status=data.get("status", "active")
+    )
+    db.add(definition)
+    db.commit()
+    db.refresh(definition)
+
+    return {
+        "definition_id": definition.definition_id,
+        "name": definition.name,
+        "version": definition.version,
+        "status": definition.status,
+        "steps_count": len(steps),
+        "created_at": definition.created_at.isoformat() + "Z",
+        "_persisted": True
+    }
+
+
+@app.get("/v2/workflow-definitions", tags=["V2 - Workflows"])
+async def list_workflow_definitions_v2(
+    tag: str = None,
+    status: str = None,
+    limit: int = 50,
+    db: Session = Depends(get_db)
+):
+    """List workflow definitions (REAL - from database)"""
+    from api_server.database import WorkflowDefinition
+
+    query = db.query(WorkflowDefinition)
+    if status:
+        query = query.filter(WorkflowDefinition.status == status)
+
+    definitions = query.order_by(WorkflowDefinition.updated_at.desc()).limit(limit).all()
+
+    # Filter by tag if specified
+    if tag:
+        definitions = [d for d in definitions if tag in (d.tags or [])]
+
+    return {
+        "definitions": [{
+            "definition_id": d.definition_id,
+            "name": d.name,
+            "description": d.description,
+            "status": d.status,
+            "version": d.version,
+            "tags": d.tags,
+            "steps_count": len(d.steps or []),
+            "created_at": d.created_at.isoformat() + "Z" if d.created_at else None,
+            "updated_at": d.updated_at.isoformat() + "Z" if d.updated_at else None
+        } for d in definitions],
+        "total": len(definitions),
+        "_persisted": True
+    }
+
+
+@app.get("/v2/workflow-definitions/{definition_id}", tags=["V2 - Workflows"])
+async def get_workflow_definition_v2(definition_id: str, db: Session = Depends(get_db)):
+    """Get a workflow definition (REAL - from database)"""
+    from api_server.database import WorkflowDefinition
+
+    definition = db.query(WorkflowDefinition).filter(
+        WorkflowDefinition.definition_id == definition_id
+    ).first()
+    if not definition:
+        raise HTTPException(status_code=404, detail="Workflow definition not found")
+
+    return {
+        "definition_id": definition.definition_id,
+        "name": definition.name,
+        "description": definition.description,
+        "steps": definition.steps,
+        "triggers": definition.triggers,
+        "variables": definition.variables,
+        "error_handling": definition.error_handling,
+        "tags": definition.tags,
+        "version": definition.version,
+        "status": definition.status,
+        "organization_id": definition.organization_id,
+        "created_by": definition.created_by,
+        "created_at": definition.created_at.isoformat() + "Z" if definition.created_at else None,
+        "updated_at": definition.updated_at.isoformat() + "Z" if definition.updated_at else None,
+        "_persisted": True
+    }
+
+
+@app.put("/v2/workflow-definitions/{definition_id}", tags=["V2 - Workflows"])
+async def update_workflow_definition_v2(definition_id: str, data: Dict[str, Any], db: Session = Depends(get_db)):
+    """Update a workflow definition (REAL - persisted to database, creates new version)"""
+    from api_server.database import WorkflowDefinition
+
+    definition = db.query(WorkflowDefinition).filter(
+        WorkflowDefinition.definition_id == definition_id
+    ).first()
+    if not definition:
+        raise HTTPException(status_code=404, detail="Workflow definition not found")
+
+    # Validate steps if provided
+    if "steps" in data:
+        steps = data["steps"]
+        step_ids = {step.get("step_id") for step in steps if step.get("step_id")}
+        for step in steps:
+            for dep in step.get("dependencies", []):
+                if dep not in step_ids:
+                    raise HTTPException(
+                        status_code=400,
+                        detail=f"Step '{step.get('step_id')}' depends on non-existent step '{dep}'"
+                    )
+        definition.steps = steps
+
+    # Update other fields
+    if "name" in data:
+        definition.name = data["name"]
+    if "description" in data:
+        definition.description = data["description"]
+    if "triggers" in data:
+        definition.triggers = data["triggers"]
+    if "variables" in data:
+        definition.variables = data["variables"]
+    if "error_handling" in data:
+        definition.error_handling = data["error_handling"]
+    if "tags" in data:
+        definition.tags = data["tags"]
+    if "status" in data:
+        definition.status = data["status"]
+
+    # Increment version
+    definition.version += 1
+
+    db.commit()
+    db.refresh(definition)
+
+    return {
+        "definition_id": definition.definition_id,
+        "name": definition.name,
+        "version": definition.version,
+        "status": definition.status,
+        "updated_at": definition.updated_at.isoformat() + "Z",
+        "_persisted": True
+    }
+
+
+@app.delete("/v2/workflow-definitions/{definition_id}", tags=["V2 - Workflows"])
+async def delete_workflow_definition_v2(definition_id: str, db: Session = Depends(get_db)):
+    """Delete a workflow definition (REAL - marks as archived)"""
+    from api_server.database import WorkflowDefinition
+
+    definition = db.query(WorkflowDefinition).filter(
+        WorkflowDefinition.definition_id == definition_id
+    ).first()
+    if not definition:
+        raise HTTPException(status_code=404, detail="Workflow definition not found")
+
+    definition.status = "archived"
+    db.commit()
+
+    return {"definition_id": definition_id, "status": "archived", "_persisted": True}
+
+
+@app.post("/v2/workflow-definitions/{definition_id}/clone", tags=["V2 - Workflows"])
+async def clone_workflow_definition_v2(definition_id: str, data: Dict[str, Any], db: Session = Depends(get_db)):
+    """Clone a workflow definition (REAL - creates new definition from existing)"""
+    from api_server.database import WorkflowDefinition
+
+    source = db.query(WorkflowDefinition).filter(
+        WorkflowDefinition.definition_id == definition_id
+    ).first()
+    if not source:
+        raise HTTPException(status_code=404, detail="Source workflow definition not found")
+
+    clone = WorkflowDefinition(
+        definition_id=f"wf_def_{uuid.uuid4().hex[:12]}",
+        name=data.get("name", f"{source.name} (Copy)"),
+        description=data.get("description", source.description),
+        steps=source.steps,
+        triggers=source.triggers,
+        variables=source.variables,
+        error_handling=source.error_handling,
+        tags=data.get("tags", source.tags),
+        version=1,
+        organization_id=data.get("organization_id", source.organization_id),
+        created_by=data.get("created_by"),
+        status="draft"
+    )
+    db.add(clone)
+    db.commit()
+    db.refresh(clone)
+
+    return {
+        "definition_id": clone.definition_id,
+        "name": clone.name,
+        "cloned_from": definition_id,
+        "status": clone.status,
+        "created_at": clone.created_at.isoformat() + "Z",
+        "_persisted": True
+    }
+
+
+# ============================================================================
+# V2 - Test Suites (Database-Backed)
+# ============================================================================
+
+@app.post("/v2/test-suites", tags=["V2 - Testing"])
+async def create_test_suite_v2(data: Dict[str, Any], db: Session = Depends(get_db)):
+    """Create a test suite (REAL - persisted to database)"""
+    from api_server.database import TestSuite
+
+    test_cases = data.get("test_cases", [])
+
+    suite = TestSuite(
+        suite_id=f"suite_{uuid.uuid4().hex[:12]}",
+        name=data.get("name", "Unnamed Test Suite"),
+        description=data.get("description"),
+        target_type=data.get("target_type"),
+        target_id=data.get("target_id"),
+        test_cases=test_cases,
+        total_tests=len(test_cases),
+        config=data.get("config", {}),
+        tags=data.get("tags", []),
+        organization_id=data.get("organization_id"),
+        created_by=data.get("created_by"),
+        status="active"
+    )
+    db.add(suite)
+    db.commit()
+    db.refresh(suite)
+
+    return {
+        "suite_id": suite.suite_id,
+        "name": suite.name,
+        "target_type": suite.target_type,
+        "target_id": suite.target_id,
+        "total_tests": suite.total_tests,
+        "status": suite.status,
+        "created_at": suite.created_at.isoformat() + "Z",
+        "_persisted": True
+    }
+
+
+@app.get("/v2/test-suites", tags=["V2 - Testing"])
+async def list_test_suites_v2(
+    target_type: str = None,
+    target_id: str = None,
+    status: str = None,
+    limit: int = 50,
+    db: Session = Depends(get_db)
+):
+    """List test suites (REAL - from database)"""
+    from api_server.database import TestSuite
+
+    query = db.query(TestSuite)
+    if target_type:
+        query = query.filter(TestSuite.target_type == target_type)
+    if target_id:
+        query = query.filter(TestSuite.target_id == target_id)
+    if status:
+        query = query.filter(TestSuite.status == status)
+
+    suites = query.order_by(TestSuite.updated_at.desc()).limit(limit).all()
+
+    return {
+        "suites": [{
+            "suite_id": s.suite_id,
+            "name": s.name,
+            "description": s.description,
+            "target_type": s.target_type,
+            "target_id": s.target_id,
+            "total_tests": s.total_tests,
+            "tags": s.tags,
+            "status": s.status,
+            "created_at": s.created_at.isoformat() + "Z" if s.created_at else None
+        } for s in suites],
+        "total": len(suites),
+        "_persisted": True
+    }
+
+
+@app.get("/v2/test-suites/{suite_id}", tags=["V2 - Testing"])
+async def get_test_suite_v2(suite_id: str, db: Session = Depends(get_db)):
+    """Get test suite details (REAL - from database)"""
+    from api_server.database import TestSuite
+
+    suite = db.query(TestSuite).filter(TestSuite.suite_id == suite_id).first()
+    if not suite:
+        raise HTTPException(status_code=404, detail="Test suite not found")
+
+    return {
+        "suite_id": suite.suite_id,
+        "name": suite.name,
+        "description": suite.description,
+        "target_type": suite.target_type,
+        "target_id": suite.target_id,
+        "test_cases": suite.test_cases,
+        "total_tests": suite.total_tests,
+        "config": suite.config,
+        "tags": suite.tags,
+        "status": suite.status,
+        "created_at": suite.created_at.isoformat() + "Z" if suite.created_at else None,
+        "updated_at": suite.updated_at.isoformat() + "Z" if suite.updated_at else None,
+        "_persisted": True
+    }
+
+
+@app.put("/v2/test-suites/{suite_id}", tags=["V2 - Testing"])
+async def update_test_suite_v2(suite_id: str, data: Dict[str, Any], db: Session = Depends(get_db)):
+    """Update test suite (REAL - persisted to database)"""
+    from api_server.database import TestSuite
+
+    suite = db.query(TestSuite).filter(TestSuite.suite_id == suite_id).first()
+    if not suite:
+        raise HTTPException(status_code=404, detail="Test suite not found")
+
+    if "name" in data:
+        suite.name = data["name"]
+    if "description" in data:
+        suite.description = data["description"]
+    if "test_cases" in data:
+        suite.test_cases = data["test_cases"]
+        suite.total_tests = len(data["test_cases"])
+    if "config" in data:
+        suite.config = data["config"]
+    if "tags" in data:
+        suite.tags = data["tags"]
+    if "status" in data:
+        suite.status = data["status"]
+
+    db.commit()
+    db.refresh(suite)
+
+    return {
+        "suite_id": suite.suite_id,
+        "name": suite.name,
+        "total_tests": suite.total_tests,
+        "updated_at": suite.updated_at.isoformat() + "Z",
+        "_persisted": True
+    }
+
+
+@app.delete("/v2/test-suites/{suite_id}", tags=["V2 - Testing"])
+async def delete_test_suite_v2(suite_id: str, db: Session = Depends(get_db)):
+    """Archive test suite (REAL - soft delete)"""
+    from api_server.database import TestSuite
+
+    suite = db.query(TestSuite).filter(TestSuite.suite_id == suite_id).first()
+    if not suite:
+        raise HTTPException(status_code=404, detail="Test suite not found")
+
+    suite.status = "archived"
+    db.commit()
+
+    return {"suite_id": suite_id, "status": "archived", "_persisted": True}
+
+
+@app.post("/v2/test-suites/{suite_id}/run", tags=["V2 - Testing"])
+async def run_test_suite_v2(suite_id: str, data: Dict[str, Any], db: Session = Depends(get_db)):
+    """Execute a test suite (REAL - creates test run record)"""
+    from api_server.database import TestSuite, TestRun
+
+    suite = db.query(TestSuite).filter(TestSuite.suite_id == suite_id).first()
+    if not suite:
+        raise HTTPException(status_code=404, detail="Test suite not found")
+
+    run = TestRun(
+        run_id=f"run_{uuid.uuid4().hex[:12]}",
+        suite_id=suite.id,
+        status="running",
+        environment=data.get("environment", "development"),
+        total_tests=suite.total_tests,
+        started_at=datetime.utcnow(),
+        triggered_by=data.get("user_id"),
+        trigger_type=data.get("trigger_type", "manual")
+    )
+    db.add(run)
+    db.commit()
+    db.refresh(run)
+
+    # In a real implementation, this would trigger actual test execution
+    # For now, we just create the run record
+
+    return {
+        "run_id": run.run_id,
+        "suite_id": suite_id,
+        "status": run.status,
+        "environment": run.environment,
+        "total_tests": run.total_tests,
+        "started_at": run.started_at.isoformat() + "Z",
+        "_persisted": True,
+        "_note": "Test execution would be triggered asynchronously"
+    }
+
+
+@app.get("/v2/test-runs", tags=["V2 - Testing"])
+async def list_test_runs_v2(
+    suite_id: str = None,
+    status: str = None,
+    limit: int = 50,
+    db: Session = Depends(get_db)
+):
+    """List test runs (REAL - from database)"""
+    from api_server.database import TestRun, TestSuite
+
+    query = db.query(TestRun)
+    if suite_id:
+        suite = db.query(TestSuite).filter(TestSuite.suite_id == suite_id).first()
+        if suite:
+            query = query.filter(TestRun.suite_id == suite.id)
+    if status:
+        query = query.filter(TestRun.status == status)
+
+    runs = query.order_by(TestRun.created_at.desc()).limit(limit).all()
+
+    return {
+        "runs": [{
+            "run_id": r.run_id,
+            "status": r.status,
+            "environment": r.environment,
+            "total_tests": r.total_tests,
+            "passed": r.passed,
+            "failed": r.failed,
+            "skipped": r.skipped,
+            "duration_ms": r.duration_ms,
+            "started_at": r.started_at.isoformat() + "Z" if r.started_at else None,
+            "completed_at": r.completed_at.isoformat() + "Z" if r.completed_at else None
+        } for r in runs],
+        "total": len(runs),
+        "_persisted": True
+    }
+
+
+@app.get("/v2/test-runs/{run_id}", tags=["V2 - Testing"])
+async def get_test_run_v2(run_id: str, db: Session = Depends(get_db)):
+    """Get test run details (REAL - from database)"""
+    from api_server.database import TestRun
+
+    run = db.query(TestRun).filter(TestRun.run_id == run_id).first()
+    if not run:
+        raise HTTPException(status_code=404, detail="Test run not found")
+
+    return {
+        "run_id": run.run_id,
+        "status": run.status,
+        "environment": run.environment,
+        "total_tests": run.total_tests,
+        "passed": run.passed,
+        "failed": run.failed,
+        "skipped": run.skipped,
+        "duration_ms": run.duration_ms,
+        "test_results": run.test_results,
+        "summary": run.summary,
+        "trigger_type": run.trigger_type,
+        "started_at": run.started_at.isoformat() + "Z" if run.started_at else None,
+        "completed_at": run.completed_at.isoformat() + "Z" if run.completed_at else None,
+        "_persisted": True
+    }
+
+
+@app.put("/v2/test-runs/{run_id}/complete", tags=["V2 - Testing"])
+async def complete_test_run_v2(run_id: str, data: Dict[str, Any], db: Session = Depends(get_db)):
+    """Mark test run as complete with results (REAL - persisted to database)"""
+    from api_server.database import TestRun
+
+    run = db.query(TestRun).filter(TestRun.run_id == run_id).first()
+    if not run:
+        raise HTTPException(status_code=404, detail="Test run not found")
+
+    run.status = data.get("status", "completed")
+    run.passed = data.get("passed", 0)
+    run.failed = data.get("failed", 0)
+    run.skipped = data.get("skipped", 0)
+    run.duration_ms = data.get("duration_ms")
+    run.test_results = data.get("test_results", [])
+    run.summary = data.get("summary")
+    run.completed_at = datetime.utcnow()
+
+    db.commit()
+    db.refresh(run)
+
+    return {
+        "run_id": run.run_id,
+        "status": run.status,
+        "passed": run.passed,
+        "failed": run.failed,
+        "skipped": run.skipped,
+        "completed_at": run.completed_at.isoformat() + "Z",
+        "_persisted": True
+    }
+
+
+# ============================================================================
+# V2 - Execution Queue (Database-Backed)
+# ============================================================================
+
+@app.post("/v2/executions", tags=["V2 - Operations"])
+async def create_execution_v2(data: Dict[str, Any], db: Session = Depends(get_db)):
+    """Queue an agent or workflow for execution (REAL - persisted to database)"""
+    from api_server.database import ExecutionQueueItem
+
+    execution = ExecutionQueueItem(
+        execution_id=f"exec_{uuid.uuid4().hex[:12]}",
+        agent_id=data.get("agent_id"),
+        workflow_id=data.get("workflow_id"),
+        input_data=data.get("input_data"),
+        priority=data.get("priority", 5),
+        scheduled_at=datetime.fromisoformat(data["scheduled_at"]) if data.get("scheduled_at") else None,
+        callback_url=data.get("callback_url"),
+        timeout_seconds=data.get("timeout_seconds", 300),
+        max_retries=data.get("retry_count", 3),
+        tags=data.get("tags"),
+        organization_id=data.get("organization_id"),
+        user_id=data.get("user_id")
+    )
+    db.add(execution)
+    db.commit()
+    db.refresh(execution)
+
+    return {
+        "execution_id": execution.execution_id,
+        "agent_id": execution.agent_id,
+        "workflow_id": execution.workflow_id,
+        "status": execution.status,
+        "priority": execution.priority,
+        "queued_at": execution.queued_at.isoformat() + "Z",
+        "_persisted": True
+    }
+
+
+@app.get("/v2/executions", tags=["V2 - Operations"])
+async def list_executions_v2(
+    status: str = None,
+    agent_id: str = None,
+    workflow_id: str = None,
+    limit: int = 50,
+    db: Session = Depends(get_db)
+):
+    """List executions (REAL - from database)"""
+    from api_server.database import ExecutionQueueItem
+
+    query = db.query(ExecutionQueueItem)
+    if status:
+        query = query.filter(ExecutionQueueItem.status == status)
+    if agent_id:
+        query = query.filter(ExecutionQueueItem.agent_id == agent_id)
+    if workflow_id:
+        query = query.filter(ExecutionQueueItem.workflow_id == workflow_id)
+
+    executions = query.order_by(ExecutionQueueItem.priority, ExecutionQueueItem.created_at).limit(limit).all()
+
+    return {
+        "executions": [{
+            "execution_id": e.execution_id,
+            "agent_id": e.agent_id,
+            "workflow_id": e.workflow_id,
+            "status": e.status,
+            "priority": e.priority,
+            "progress": e.progress,
+            "current_step": e.current_step,
+            "queued_at": e.queued_at.isoformat() + "Z" if e.queued_at else None,
+            "started_at": e.started_at.isoformat() + "Z" if e.started_at else None,
+            "completed_at": e.completed_at.isoformat() + "Z" if e.completed_at else None
+        } for e in executions],
+        "_persisted": True
+    }
+
+
+@app.get("/v2/executions/{execution_id}", tags=["V2 - Operations"])
+async def get_execution_v2(execution_id: str, db: Session = Depends(get_db)):
+    """Get execution status (REAL - from database)"""
+    from api_server.database import ExecutionQueueItem
+
+    execution = db.query(ExecutionQueueItem).filter(
+        ExecutionQueueItem.execution_id == execution_id
+    ).first()
+
+    if not execution:
+        raise HTTPException(status_code=404, detail="Execution not found")
+
+    return {
+        "execution_id": execution.execution_id,
+        "agent_id": execution.agent_id,
+        "workflow_id": execution.workflow_id,
+        "status": execution.status,
+        "priority": execution.priority,
+        "progress": execution.progress,
+        "current_step": execution.current_step,
+        "input_data": execution.input_data,
+        "result_data": execution.result_data,
+        "error_message": execution.error_message,
+        "queued_at": execution.queued_at.isoformat() + "Z" if execution.queued_at else None,
+        "started_at": execution.started_at.isoformat() + "Z" if execution.started_at else None,
+        "completed_at": execution.completed_at.isoformat() + "Z" if execution.completed_at else None,
+        "execution_time_ms": execution.execution_time_ms,
+        "_persisted": True
+    }
+
+
+@app.put("/v2/executions/{execution_id}/cancel", tags=["V2 - Operations"])
+async def cancel_execution_v2(execution_id: str, db: Session = Depends(get_db)):
+    """Cancel a queued or running execution (REAL - persisted to database)"""
+    from api_server.database import ExecutionQueueItem
+
+    execution = db.query(ExecutionQueueItem).filter(
+        ExecutionQueueItem.execution_id == execution_id
+    ).first()
+
+    if not execution:
+        raise HTTPException(status_code=404, detail="Execution not found")
+
+    if execution.status in ["completed", "failed", "cancelled"]:
+        raise HTTPException(status_code=400, detail=f"Cannot cancel execution with status: {execution.status}")
+
+    execution.status = "cancelled"
+    execution.completed_at = datetime.utcnow()
+    db.commit()
+
+    return {"execution_id": execution_id, "status": "cancelled", "_persisted": True}
+
+
+@app.put("/v2/executions/{execution_id}/progress", tags=["V2 - Operations"])
+async def update_execution_progress_v2(execution_id: str, data: Dict[str, Any], db: Session = Depends(get_db)):
+    """Update execution progress (REAL - persisted to database)"""
+    from api_server.database import ExecutionQueueItem
+
+    execution = db.query(ExecutionQueueItem).filter(
+        ExecutionQueueItem.execution_id == execution_id
+    ).first()
+
+    if not execution:
+        raise HTTPException(status_code=404, detail="Execution not found")
+
+    if "progress" in data:
+        execution.progress = data["progress"]
+    if "current_step" in data:
+        execution.current_step = data["current_step"]
+    if "status" in data:
+        execution.status = data["status"]
+        if data["status"] == "running" and not execution.started_at:
+            execution.started_at = datetime.utcnow()
+        elif data["status"] in ["completed", "failed"]:
+            execution.completed_at = datetime.utcnow()
+            if execution.started_at:
+                execution.execution_time_ms = (execution.completed_at - execution.started_at).total_seconds() * 1000
+    if "result_data" in data:
+        execution.result_data = data["result_data"]
+    if "error_message" in data:
+        execution.error_message = data["error_message"]
+
+    db.commit()
+
+    return {
+        "execution_id": execution_id,
+        "status": execution.status,
+        "progress": execution.progress,
+        "_persisted": True
+    }
+
+
+@app.get("/v2/executions/history", tags=["V2 - Operations"])
+async def list_execution_history_v2(
+    agent_id: str = None,
+    workflow_id: str = None,
+    status: str = None,
+    limit: int = 100,
+    db: Session = Depends(get_db)
+):
+    """List execution history (REAL - from database)"""
+    from api_server.database import ExecutionHistory
+
+    query = db.query(ExecutionHistory)
+    if agent_id:
+        query = query.filter(ExecutionHistory.agent_id == agent_id)
+    if workflow_id:
+        query = query.filter(ExecutionHistory.workflow_id == workflow_id)
+    if status:
+        query = query.filter(ExecutionHistory.status == status)
+
+    history = query.order_by(ExecutionHistory.archived_at.desc()).limit(limit).all()
+
+    return {
+        "history": [{
+            "execution_id": h.execution_id,
+            "execution_type": h.execution_type,
+            "agent_id": h.agent_id,
+            "workflow_id": h.workflow_id,
+            "status": h.status,
+            "execution_time_ms": h.execution_time_ms,
+            "started_at": h.started_at.isoformat() + "Z" if h.started_at else None,
+            "completed_at": h.completed_at.isoformat() + "Z" if h.completed_at else None,
+            "archived_at": h.archived_at.isoformat() + "Z" if h.archived_at else None
+        } for h in history],
+        "_persisted": True
+    }
+
+
+@app.post("/v2/executions/{execution_id}/archive", tags=["V2 - Operations"])
+async def archive_execution_v2(execution_id: str, db: Session = Depends(get_db)):
+    """Move completed execution to history (REAL - persisted to database)"""
+    from api_server.database import ExecutionQueueItem, ExecutionHistory
+
+    execution = db.query(ExecutionQueueItem).filter(
+        ExecutionQueueItem.execution_id == execution_id
+    ).first()
+
+    if not execution:
+        raise HTTPException(status_code=404, detail="Execution not found")
+
+    if execution.status not in ["completed", "failed", "cancelled"]:
+        raise HTTPException(status_code=400, detail="Can only archive completed, failed, or cancelled executions")
+
+    # Create history record
+    history = ExecutionHistory(
+        execution_id=execution.execution_id,
+        execution_type="agent" if execution.agent_id else "workflow",
+        agent_id=execution.agent_id,
+        workflow_id=execution.workflow_id,
+        input_data=execution.input_data,
+        output_data=execution.result_data,
+        status=execution.status,
+        error_message=execution.error_message,
+        execution_time_ms=execution.execution_time_ms,
+        tags=execution.tags,
+        priority=execution.priority,
+        queued_at=execution.queued_at,
+        started_at=execution.started_at,
+        completed_at=execution.completed_at,
+        organization_id=execution.organization_id,
+        user_id=execution.user_id
+    )
+    db.add(history)
+
+    # Delete from queue
+    db.delete(execution)
+    db.commit()
+
+    return {"archived": True, "execution_id": execution_id, "_persisted": True}
 
 
 # ============================================================================

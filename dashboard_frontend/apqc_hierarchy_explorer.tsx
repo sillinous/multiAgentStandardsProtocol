@@ -95,6 +95,9 @@ function APQCHierarchyExplorer({ onClose }: { onClose: () => void }) {
     const loadTasks = async () => {
         try {
             const response = await fetch('/api/apqc/tasks');
+            if (!response.ok) {
+                throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+            }
             const data = await response.json();
             setTasks(data);
             setLoading(false);
@@ -107,6 +110,9 @@ function APQCHierarchyExplorer({ onClose }: { onClose: () => void }) {
     const loadStats = async () => {
         try {
             const response = await fetch('/api/apqc/stats');
+            if (!response.ok) {
+                throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+            }
             const data = await response.json();
             setStats(data);
         } catch (error) {
@@ -302,13 +308,18 @@ function APQCHierarchyExplorer({ onClose }: { onClose: () => void }) {
 
     const updateTaskConfig = async (agentId: string, updates: Partial<APQCTask>) => {
         try {
-            await fetch(`/api/apqc/tasks/${agentId}`, {
+            const response = await fetch(`/api/apqc/tasks/${agentId}`, {
                 method: 'PUT',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify(updates)
             });
 
-            // Update local state
+            if (!response.ok) {
+                const errorData = await response.json().catch(() => ({}));
+                throw new Error(errorData.detail || `HTTP ${response.status}: ${response.statusText}`);
+            }
+
+            // Update local state only on success
             setTasks(tasks.map(t => t.agent_id === agentId ? { ...t, ...updates } : t));
             if (selectedTask?.agent_id === agentId) {
                 setSelectedTask({ ...selectedTask, ...updates });
@@ -318,6 +329,7 @@ function APQCHierarchyExplorer({ onClose }: { onClose: () => void }) {
             loadStats();
         } catch (error) {
             console.error('Failed to update task:', error);
+            alert(`Failed to update task: ${error instanceof Error ? error.message : 'Unknown error'}`);
         }
     };
 

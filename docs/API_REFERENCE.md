@@ -22,6 +22,18 @@ Complete reference for the Agentic Forge REST API.
 - [Protocols](#protocols)
 - [Error Handling](#error-handling)
 - [Rate Limiting](#rate-limiting)
+- [V2 API - Database-Backed](#v2-api---database-backed-implementations)
+  - [AI Conversations](#ai-conversations-v2)
+  - [AI Usage Logging](#ai-usage-logging-v2)
+  - [AI Provider Configuration](#ai-provider-configuration-v2)
+  - [Execution Queue](#execution-queue-v2)
+  - [Secrets Management](#secrets-management-v2)
+  - [Enterprise Operations](#enterprise-operations-v2)
+  - [Platform Operations](#platform-operations-v2)
+  - [Workflow Definitions](#workflow-definitions-v2)
+  - [Test Suites](#test-suites-v2)
+  - [Marketplace](#marketplace-v2)
+  - [Health & Monitoring](#health--monitoring-v2)
 
 ---
 
@@ -982,9 +994,794 @@ GET /api/agents?role=worker&tags=standard&sort=created_at:desc
 
 ---
 
+## V2 API - Database-Backed Implementations
+
+The V2 API provides persistent, database-backed implementations of all features. These endpoints should be used for production deployments.
+
+**Base URL**: `http://localhost:8000/v2`
+
+### V2 Status
+
+```http
+GET /v2/status
+```
+
+Returns status of all V2 implementations and database counts.
+
+---
+
+### AI Conversations (V2)
+
+All conversation data is persisted to SQLite database.
+
+#### Create Conversation
+
+```http
+POST /v2/ai/conversations
+Content-Type: application/json
+
+{
+  "model": "gpt-4",
+  "provider": "openai",
+  "title": "Code Review Session",
+  "system_prompt": "You are a helpful code reviewer."
+}
+```
+
+#### List Conversations
+
+```http
+GET /v2/ai/conversations?status=active&provider=openai&limit=50
+```
+
+#### Get Conversation
+
+```http
+GET /v2/ai/conversations/{conversation_id}
+```
+
+#### Update Conversation
+
+```http
+PUT /v2/ai/conversations/{conversation_id}
+Content-Type: application/json
+
+{
+  "title": "Updated Title",
+  "status": "archived"
+}
+```
+
+#### Delete Conversation
+
+```http
+DELETE /v2/ai/conversations/{conversation_id}
+```
+
+#### Send Message
+
+```http
+POST /v2/ai/conversations/{conversation_id}/messages
+Content-Type: application/json
+
+{
+  "content": "Please review this code snippet..."
+}
+```
+
+#### Get Messages
+
+```http
+GET /v2/ai/conversations/{conversation_id}/messages
+```
+
+---
+
+### AI Usage Logging (V2)
+
+Track token usage and costs across providers.
+
+#### Log Usage
+
+```http
+POST /v2/ai/usage
+Content-Type: application/json
+
+{
+  "provider": "openai",
+  "model": "gpt-4",
+  "prompt_tokens": 150,
+  "completion_tokens": 200,
+  "cost_cents": 5,
+  "latency_ms": 1200
+}
+```
+
+#### Get Usage Logs
+
+```http
+GET /v2/ai/usage?provider=openai&hours=24&limit=100
+```
+
+#### Get Usage Summary
+
+```http
+GET /v2/ai/usage/summary?days=30
+```
+
+---
+
+### AI Provider Configuration (V2)
+
+Manage AI provider settings and credentials.
+
+#### List Providers
+
+```http
+GET /v2/ai/providers
+```
+
+#### Configure Provider
+
+```http
+POST /v2/ai/providers
+Content-Type: application/json
+
+{
+  "provider": "openai",
+  "display_name": "OpenAI GPT",
+  "api_key": "sk-...",
+  "default_model": "gpt-4",
+  "enabled": true
+}
+```
+
+#### Test Provider Connection
+
+```http
+POST /v2/ai/providers/{provider}/test
+```
+
+#### Delete Provider
+
+```http
+DELETE /v2/ai/providers/{provider}
+```
+
+---
+
+### Execution Queue (V2)
+
+Queue and track agent/workflow executions.
+
+#### Queue Execution
+
+```http
+POST /v2/executions
+Content-Type: application/json
+
+{
+  "agent_id": "agent_abc123",
+  "input_data": {"task": "process data"},
+  "priority": 5
+}
+```
+
+#### List Executions
+
+```http
+GET /v2/executions?status=running&limit=50
+```
+
+#### Get Execution Status
+
+```http
+GET /v2/executions/{execution_id}
+```
+
+#### Cancel Execution
+
+```http
+PUT /v2/executions/{execution_id}/cancel
+```
+
+#### Update Progress
+
+```http
+PUT /v2/executions/{execution_id}/progress
+Content-Type: application/json
+
+{
+  "progress": 75.5,
+  "current_step": "Processing batch 3 of 4"
+}
+```
+
+#### Get Execution History
+
+```http
+GET /v2/executions/history?status=completed&hours=24
+```
+
+#### Archive Execution
+
+```http
+POST /v2/executions/{execution_id}/archive
+```
+
+---
+
+### Secrets Management (V2)
+
+Encrypted secrets storage with Fernet (AES-128-CBC) encryption.
+
+**Note**: Set `SECRETS_ENCRYPTION_KEY` environment variable for production!
+
+#### Create Secret
+
+```http
+POST /v2/secrets
+Content-Type: application/json
+
+{
+  "name": "API_KEY_SERVICE_X",
+  "value": "secret-value-here",
+  "secret_type": "api_key",
+  "description": "API key for Service X",
+  "expires_at": "2025-12-31T23:59:59Z",
+  "allowed_agents": ["agent_abc123"]
+}
+```
+
+#### List Secrets
+
+```http
+GET /v2/secrets?organization_id=1
+```
+
+**Note**: Values are never returned in list responses.
+
+#### Get Secret Metadata
+
+```http
+GET /v2/secrets/{secret_id}
+```
+
+#### Reveal Secret Value
+
+```http
+POST /v2/secrets/{secret_id}/reveal
+Content-Type: application/json
+
+{
+  "agent_id": "agent_abc123"
+}
+```
+
+**Note**: Access is logged for audit purposes.
+
+#### Update Secret
+
+```http
+PUT /v2/secrets/{secret_id}
+Content-Type: application/json
+
+{
+  "value": "new-secret-value",
+  "reason": "Scheduled rotation"
+}
+```
+
+#### Rotate Secret
+
+```http
+POST /v2/secrets/{secret_id}/rotate
+Content-Type: application/json
+
+{
+  "value": "rotated-secret-value",
+  "reason": "Security policy rotation"
+}
+```
+
+#### List Secret Versions
+
+```http
+GET /v2/secrets/{secret_id}/versions
+```
+
+#### Revoke Secret
+
+```http
+DELETE /v2/secrets/{secret_id}
+```
+
+#### Check Encryption Status
+
+```http
+GET /v2/secrets/encryption-status
+```
+
+Returns whether using development key or production key.
+
+---
+
+### Enterprise Operations (V2)
+
+See the Enterprise tab in the dashboard for:
+- Billing Management
+- Quota Management
+- Data Retention
+- Backup/Restore
+- SSO Configuration
+- MFA Setup
+- Security Policies
+- Disaster Recovery
+
+---
+
+### Platform Operations (V2)
+
+See the Operations tab in the dashboard for:
+- Scheduled Jobs
+- Event Management
+- Notifications
+- Audit Logs
+- Feature Flags
+- A/B Experiments
+- Connectors
+- Batch Processing
+
+---
+
+### Workflow Definitions (V2)
+
+Manage reusable workflow definitions with step validation and versioning.
+
+#### Create Workflow Definition
+
+```http
+POST /v2/workflow-definitions
+Content-Type: application/json
+
+{
+  "name": "Invoice Processing",
+  "description": "Automated invoice processing workflow",
+  "steps": [
+    {"step_id": "extract", "agent_id": "agent_001", "dependencies": []},
+    {"step_id": "validate", "agent_id": "agent_002", "dependencies": ["extract"]},
+    {"step_id": "approve", "agent_id": "agent_003", "dependencies": ["validate"]}
+  ],
+  "triggers": [{"type": "webhook", "config": {}}],
+  "variables": {"threshold": 1000},
+  "error_handling": {"retry_count": 3},
+  "tags": ["finance", "automation"]
+}
+```
+
+#### List Workflow Definitions
+
+```http
+GET /v2/workflow-definitions?tag=finance&status=active&limit=50
+```
+
+#### Get Workflow Definition
+
+```http
+GET /v2/workflow-definitions/{definition_id}
+```
+
+#### Update Workflow Definition
+
+```http
+PUT /v2/workflow-definitions/{definition_id}
+Content-Type: application/json
+
+{
+  "name": "Updated Workflow Name",
+  "steps": [...],
+  "status": "active"
+}
+```
+
+**Note**: Updates increment the version number automatically.
+
+#### Clone Workflow Definition
+
+```http
+POST /v2/workflow-definitions/{definition_id}/clone
+Content-Type: application/json
+
+{
+  "name": "Cloned Workflow",
+  "tags": ["cloned"]
+}
+```
+
+#### Archive Workflow Definition
+
+```http
+DELETE /v2/workflow-definitions/{definition_id}
+```
+
+**Note**: Soft delete - sets status to "archived".
+
+---
+
+### Test Suites (V2)
+
+Manage test suites and test runs for agents and workflows.
+
+#### Create Test Suite
+
+```http
+POST /v2/test-suites
+Content-Type: application/json
+
+{
+  "name": "Invoice Processing Tests",
+  "description": "Tests for the invoice processing workflow",
+  "target_type": "workflow",
+  "target_id": "wf_def_abc123",
+  "test_cases": [
+    {"name": "valid_invoice", "input": {...}, "expected_output": {...}},
+    {"name": "invalid_amount", "input": {...}, "expected_output": {...}}
+  ],
+  "tags": ["finance", "critical"]
+}
+```
+
+#### List Test Suites
+
+```http
+GET /v2/test-suites?target_type=workflow&status=active&limit=50
+```
+
+#### Get Test Suite
+
+```http
+GET /v2/test-suites/{suite_id}
+```
+
+#### Update Test Suite
+
+```http
+PUT /v2/test-suites/{suite_id}
+Content-Type: application/json
+
+{
+  "name": "Updated Suite Name",
+  "test_cases": [...]
+}
+```
+
+#### Run Test Suite
+
+```http
+POST /v2/test-suites/{suite_id}/run
+Content-Type: application/json
+
+{
+  "environment": "staging",
+  "trigger_type": "manual"
+}
+```
+
+#### List Test Runs
+
+```http
+GET /v2/test-runs?suite_id=suite_abc123&status=completed&limit=50
+```
+
+#### Get Test Run Details
+
+```http
+GET /v2/test-runs/{run_id}
+```
+
+#### Complete Test Run
+
+```http
+PUT /v2/test-runs/{run_id}/complete
+Content-Type: application/json
+
+{
+  "status": "completed",
+  "passed": 8,
+  "failed": 2,
+  "skipped": 0,
+  "duration_ms": 5432,
+  "test_results": [
+    {"test_name": "valid_invoice", "status": "passed", "duration_ms": 234},
+    {"test_name": "invalid_amount", "status": "failed", "error": "Expected error not thrown"}
+  ],
+  "summary": "8/10 tests passed"
+}
+```
+
+---
+
+### Marketplace (V2)
+
+Manage marketplace listings for agents, workflows, and templates.
+
+#### Create Listing
+
+```http
+POST /v2/marketplace/listings
+Content-Type: application/json
+
+{
+  "organization_id": 1,
+  "name": "Invoice Processor Agent",
+  "description": "Automated invoice processing with ML extraction",
+  "category": "finance",
+  "listing_type": "agent",
+  "resource_id": "agent_abc123",
+  "pricing_model": "subscription",
+  "price": 49.99,
+  "tags": ["finance", "automation", "ml"]
+}
+```
+
+#### List Published Listings
+
+```http
+GET /v2/marketplace/listings?category=finance
+```
+
+#### Get Listing Details
+
+```http
+GET /v2/marketplace/listings/{listing_id}
+```
+
+#### Update Listing
+
+```http
+PUT /v2/marketplace/listings/{listing_id}
+Content-Type: application/json
+
+{
+  "name": "Updated Listing Name",
+  "price": 59.99
+}
+```
+
+#### Publish Listing
+
+```http
+PUT /v2/marketplace/listings/{listing_id}/publish
+```
+
+#### Unpublish Listing
+
+```http
+PUT /v2/marketplace/listings/{listing_id}/unpublish
+```
+
+#### Add Review
+
+```http
+POST /v2/marketplace/listings/{listing_id}/reviews
+Content-Type: application/json
+
+{
+  "user_id": 1,
+  "rating": 5,
+  "title": "Excellent agent!",
+  "review_text": "Saved us hours of manual work..."
+}
+```
+
+---
+
+### Health & Monitoring (V2)
+
+Production-ready health checks and system metrics for monitoring and orchestration.
+
+#### Comprehensive Health Check
+
+```http
+GET /v2/health
+```
+
+**Response**:
+```json
+{
+  "status": "healthy",
+  "timestamp": "2024-01-15T10:30:00Z",
+  "components": {
+    "database": {
+      "status": "healthy",
+      "latency_ms": 2.5,
+      "agent_count": 42,
+      "workflow_count": 15
+    },
+    "encryption": {
+      "status": "healthy",
+      "algorithm": "Fernet (AES-128-CBC)"
+    },
+    "ai_providers": {
+      "status": "healthy",
+      "configured_count": 3,
+      "providers": ["openai", "anthropic", "ollama"]
+    },
+    "memory": {
+      "status": "healthy",
+      "used_mb": 256.5,
+      "available_mb": 1024.0,
+      "percent_used": 25.0
+    }
+  },
+  "version": "0.3.0-alpha"
+}
+```
+
+#### Kubernetes Readiness Probe
+
+```http
+GET /v2/health/ready
+```
+
+Returns 200 if the service is ready to accept traffic, 503 if not ready.
+
+**Response (healthy)**:
+```json
+{
+  "ready": true,
+  "checks": {
+    "database": true,
+    "encryption": true
+  }
+}
+```
+
+**Response (unhealthy)** - HTTP 503:
+```json
+{
+  "ready": false,
+  "checks": {
+    "database": false,
+    "encryption": true
+  },
+  "reason": "Database connection failed"
+}
+```
+
+#### Kubernetes Liveness Probe
+
+```http
+GET /v2/health/live
+```
+
+Simple liveness check - returns 200 if the service is running.
+
+**Response**:
+```json
+{
+  "alive": true,
+  "timestamp": "2024-01-15T10:30:00Z"
+}
+```
+
+#### System Metrics
+
+```http
+GET /v2/metrics
+```
+
+**Response**:
+```json
+{
+  "timestamp": "2024-01-15T10:30:00Z",
+  "system": {
+    "cpu_percent": 15.5,
+    "memory_used_mb": 256.5,
+    "memory_available_mb": 1024.0,
+    "memory_percent": 25.0,
+    "disk_used_gb": 50.2,
+    "disk_free_gb": 200.8,
+    "disk_percent": 20.0
+  },
+  "database": {
+    "agents": 42,
+    "workflows": 15,
+    "conversations": 128,
+    "executions_pending": 5,
+    "executions_completed": 230,
+    "test_suites": 12,
+    "marketplace_listings": 45
+  },
+  "uptime_seconds": 86400.5
+}
+```
+
+#### API Request Metrics
+
+```http
+GET /v2/metrics/api
+```
+
+**Response**:
+```json
+{
+  "timestamp": "2024-01-15T10:30:00Z",
+  "requests": {
+    "total": 15420,
+    "by_method": {
+      "GET": 12000,
+      "POST": 2500,
+      "PUT": 800,
+      "DELETE": 120
+    },
+    "by_status": {
+      "2xx": 14800,
+      "4xx": 520,
+      "5xx": 100
+    }
+  },
+  "latency": {
+    "avg_ms": 45.2,
+    "p50_ms": 32.0,
+    "p95_ms": 120.5,
+    "p99_ms": 250.0
+  },
+  "errors": {
+    "rate_percent": 4.02,
+    "recent": [
+      {
+        "timestamp": "2024-01-15T10:29:55Z",
+        "endpoint": "/v2/executions",
+        "method": "POST",
+        "status": 500,
+        "message": "Execution timeout"
+      }
+    ]
+  }
+}
+```
+
+---
+
 ## Changelog
 
-### v0.2.0-alpha (Current)
+### v0.3.0-alpha (Current)
+- **V2 Database-Backed API**: All critical data now persisted to SQLite
+- **Health & Monitoring**: Production-ready health checks and metrics
+  - Comprehensive health check with component status
+  - Kubernetes-style readiness and liveness probes
+  - System metrics (CPU, memory, disk)
+  - API request metrics with latency percentiles
+- **Dashboard Enhancements**:
+  - V2 System Health & Metrics visualization in Metrics tab
+  - AI Usage Analytics with provider cost tracking and token usage
+  - AI Conversations browser with message history viewer
+  - AI Provider Management (configure, test connections)
+  - Workflow Definitions management (create, list, clone)
+  - Marketplace listings management (create, browse, publish)
+  - Data Export functionality (JSON export of agents, workflows, conversations)
+  - Statistics Export (system metrics, AI usage, health status)
+  - Testing tab with test suite management and system health
+- AI Conversations with full CRUD and message history
+- AI Usage Logging with provider analytics and cost tracking
+- AI Provider Configuration with dynamic provider management
+- Execution Queue with progress tracking, history, and cancellation
+- Secrets Management with Fernet encryption (AES-128-CBC)
+- Secret versioning and rotation support
+- Audit logging for secret access
+- Workflow Definitions with step validation and versioning
+- Workflow cloning support
+- Test Suites with test case management and run tracking
+- Test Runs with detailed results and history
+- Marketplace Listings with full CRUD, publish/unpublish, reviews
+- Dashboard Execution Queue UI with real-time status
+- Ollama local LLM provider support
+- Added cryptography package for production encryption
+- Silent exception handlers now properly log errors
+- Fixed duplicate variable definition issues
+
+### v0.2.0-alpha
 - Agent Card management endpoints (copy, clone, CRUD)
 - Bulk copy operations for agent cards
 - Version tracking with snapshot/restore

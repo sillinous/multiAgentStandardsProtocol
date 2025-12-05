@@ -154,6 +154,146 @@ class UserService:
         """List users in an organization"""
         return db.query(User).filter(User.organization_id == organization_id).all()
 
+    @staticmethod
+    def list_all(db: Session, skip: int = 0, limit: int = 100) -> List[User]:
+        """List all users"""
+        return db.query(User).offset(skip).limit(limit).all()
+
+    @staticmethod
+    def update(db: Session, user: User, **kwargs) -> User:
+        """Update user"""
+        # Don't allow updating password_hash directly
+        kwargs.pop('password_hash', None)
+        kwargs.pop('password', None)
+
+        for key, value in kwargs.items():
+            if hasattr(user, key):
+                setattr(user, key, value)
+        user.updated_at = datetime.utcnow()
+        db.commit()
+        db.refresh(user)
+        return user
+
+    @staticmethod
+    def update_password(db: Session, user: User, new_password: str) -> User:
+        """Update user password"""
+        user.password_hash = hash_password(new_password)
+        user.updated_at = datetime.utcnow()
+        db.commit()
+        db.refresh(user)
+        return user
+
+    @staticmethod
+    def delete(db: Session, user_id: str) -> bool:
+        """Delete user (soft delete by setting status to deleted)"""
+        user = UserService.get_by_id(db, user_id)
+        if user:
+            user.status = "deleted"
+            user.updated_at = datetime.utcnow()
+            db.commit()
+            return True
+        return False
+
+
+# ============================================================================
+# Organization Service Extensions
+# ============================================================================
+
+class OrganizationServiceExtensions:
+    """Additional organization operations"""
+
+    @staticmethod
+    def delete(db: Session, org_id: str) -> bool:
+        """Delete organization (soft delete)"""
+        org = OrganizationService.get_by_id(db, org_id)
+        if org:
+            org.status = "deleted"
+            org.updated_at = datetime.utcnow()
+            db.commit()
+            return True
+        return False
+
+
+# ============================================================================
+# Team Service
+# ============================================================================
+
+class TeamService:
+    """Real database operations for teams"""
+
+    @staticmethod
+    def create(db: Session, organization_id: int, name: str, description: str = None) -> Team:
+        """Create a new team"""
+        team = Team(
+            team_id=f"team_{secrets.token_hex(8)}",
+            name=name,
+            description=description,
+            organization_id=organization_id,
+            status="active"
+        )
+        db.add(team)
+        db.commit()
+        db.refresh(team)
+        return team
+
+    @staticmethod
+    def get_by_id(db: Session, team_id: str) -> Optional[Team]:
+        """Get team by ID"""
+        return db.query(Team).filter(Team.team_id == team_id).first()
+
+    @staticmethod
+    def list_by_organization(db: Session, organization_id: int) -> List[Team]:
+        """List teams in an organization"""
+        return db.query(Team).filter(Team.organization_id == organization_id).all()
+
+    @staticmethod
+    def update(db: Session, team: Team, **kwargs) -> Team:
+        """Update team"""
+        for key, value in kwargs.items():
+            if hasattr(team, key):
+                setattr(team, key, value)
+        team.updated_at = datetime.utcnow()
+        db.commit()
+        db.refresh(team)
+        return team
+
+    @staticmethod
+    def delete(db: Session, team_id: str) -> bool:
+        """Delete team (soft delete)"""
+        team = TeamService.get_by_id(db, team_id)
+        if team:
+            team.status = "deleted"
+            team.updated_at = datetime.utcnow()
+            db.commit()
+            return True
+        return False
+
+    @staticmethod
+    def add_member(db: Session, team_id: int, user_id: int, role: str = "member") -> TeamMember:
+        """Add a member to a team"""
+        member = TeamMember(
+            team_id=team_id,
+            user_id=user_id,
+            role=role
+        )
+        db.add(member)
+        db.commit()
+        db.refresh(member)
+        return member
+
+    @staticmethod
+    def remove_member(db: Session, team_id: int, user_id: int) -> bool:
+        """Remove a member from a team"""
+        member = db.query(TeamMember).filter(
+            TeamMember.team_id == team_id,
+            TeamMember.user_id == user_id
+        ).first()
+        if member:
+            db.delete(member)
+            db.commit()
+            return True
+        return False
+
 
 # ============================================================================
 # API Key Service
@@ -364,11 +504,15 @@ class AIProviderService:
     PROVIDERS = {
         "openai": {
             "base_url": "https://api.openai.com/v1",
-            "models": ["gpt-4", "gpt-4-turbo", "gpt-3.5-turbo"]
+            "models": ["gpt-4", "gpt-4-turbo", "gpt-3.5-turbo", "gpt-4o", "gpt-4o-mini"]
         },
         "anthropic": {
             "base_url": "https://api.anthropic.com/v1",
-            "models": ["claude-3-opus-20240229", "claude-3-sonnet-20240229", "claude-3-haiku-20240307"]
+            "models": ["claude-3-opus-20240229", "claude-3-sonnet-20240229", "claude-3-haiku-20240307", "claude-sonnet-4-20250514"]
+        },
+        "ollama": {
+            "base_url": os.getenv("OLLAMA_BASE_URL", "http://localhost:11434"),
+            "models": ["llama3", "llama3:70b", "mixtral", "codellama", "mistral"]
         }
     }
 
@@ -443,6 +587,36 @@ class AIProviderService:
             return response.json()
 
     @staticmethod
+    async def chat_completion_ollama(messages: List[Dict], model: str = "llama3",
+                                     system: str = None) -> Dict[str, Any]:
+        """Call Ollama local API for chat completion"""
+        base_url = AIProviderService.PROVIDERS["ollama"]["base_url"]
+
+        # Build the prompt from messages
+        ollama_messages = []
+        if system:
+            ollama_messages.append({"role": "system", "content": system})
+        ollama_messages.extend(messages)
+
+        async with httpx.AsyncClient() as client:
+            response = await client.post(
+                f"{base_url}/api/chat",
+                json={
+                    "model": model,
+                    "messages": ollama_messages,
+                    "stream": False
+                },
+                timeout=120.0  # Local models can be slower
+            )
+            response.raise_for_status()
+            result = response.json()
+            return {
+                "content": result.get("message", {}).get("content", ""),
+                "model": model,
+                "tokens_used": result.get("eval_count", 0) + result.get("prompt_eval_count", 0)
+            }
+
+    @staticmethod
     async def chat(db: Session, conversation_id: int, user_message: str) -> AIMessage:
         """Send a message in a conversation and get AI response"""
         conversation = db.query(AIConversation).filter(
@@ -487,10 +661,18 @@ class AIProviderService:
                 assistant_content = result["content"][0]["text"]
                 tokens_used = result.get("usage", {}).get("input_tokens", 0) + \
                              result.get("usage", {}).get("output_tokens", 0)
+
+            elif conversation.provider == "ollama":
+                result = await AIProviderService.chat_completion_ollama(
+                    messages, model=conversation.model, system=conversation.system_prompt
+                )
+                assistant_content = result["content"]
+                tokens_used = result.get("tokens_used", 0)
+
             else:
-                # Mock response for unsupported providers
-                assistant_content = f"[Mock response from {conversation.provider}] Echo: {user_message}"
-                tokens_used = len(user_message.split())
+                # Unsupported provider - return helpful error instead of mock
+                supported = list(AIProviderService.PROVIDERS.keys())
+                raise ValueError(f"Unsupported AI provider: '{conversation.provider}'. Supported providers: {supported}")
 
         except Exception as e:
             assistant_content = f"Error calling {conversation.provider}: {str(e)}"
@@ -557,3 +739,171 @@ class RateLimiter:
         """Reset rate limit for a key"""
         if key in cls._requests:
             del cls._requests[key]
+
+
+# ============================================================================
+# Secrets Encryption Service (Fernet)
+# ============================================================================
+
+class SecretsService:
+    """
+    Secure secrets encryption/decryption using Fernet (AES-128-CBC).
+
+    Key Management:
+    - Primary key is loaded from SECRETS_ENCRYPTION_KEY env var
+    - If not set, a development key is generated (NOT for production!)
+    - The key should be a 32-byte URL-safe base64-encoded string
+
+    Usage:
+        SecretsService.encrypt("my-secret-value") -> encrypted string
+        SecretsService.decrypt(encrypted_string) -> "my-secret-value"
+    """
+
+    _fernet = None
+    _key = None
+    _is_dev_key = False
+
+    @classmethod
+    def _ensure_initialized(cls):
+        """Initialize the Fernet cipher if not already done"""
+        if cls._fernet is not None:
+            return
+
+        try:
+            from cryptography.fernet import Fernet
+        except ImportError:
+            # cryptography not installed - use fallback
+            import logging
+            logging.warning("cryptography package not installed. Using base64 fallback (NOT SECURE!).")
+            cls._fernet = "fallback"
+            return
+
+        # Try to get key from environment
+        key = os.getenv("SECRETS_ENCRYPTION_KEY")
+
+        if key:
+            cls._key = key.encode() if isinstance(key, str) else key
+            cls._is_dev_key = False
+        else:
+            # Generate a development key - NOT for production
+            import logging
+            cls._key = Fernet.generate_key()
+            cls._is_dev_key = True
+            logging.warning(
+                f"No SECRETS_ENCRYPTION_KEY set. Using generated dev key. "
+                f"Set SECRETS_ENCRYPTION_KEY for production!"
+            )
+
+        cls._fernet = Fernet(cls._key)
+
+    @classmethod
+    def encrypt(cls, plaintext: str) -> str:
+        """
+        Encrypt a plaintext string.
+
+        Returns: URL-safe base64-encoded encrypted string
+        """
+        cls._ensure_initialized()
+
+        if cls._fernet == "fallback":
+            # Fallback to base64 when cryptography is not installed
+            import base64
+            return "b64:" + base64.urlsafe_b64encode(plaintext.encode()).decode()
+
+        encrypted = cls._fernet.encrypt(plaintext.encode())
+        return "fernet:" + encrypted.decode()
+
+    @classmethod
+    def decrypt(cls, encrypted: str) -> str:
+        """
+        Decrypt an encrypted string.
+
+        Raises:
+            ValueError: If decryption fails (wrong key, corrupted data, etc.)
+        """
+        cls._ensure_initialized()
+
+        # Handle legacy base64-only encryption
+        if encrypted.startswith("b64:"):
+            import base64
+            return base64.urlsafe_b64decode(encrypted[4:].encode()).decode()
+
+        # Handle fernet encryption
+        if encrypted.startswith("fernet:"):
+            if cls._fernet == "fallback":
+                raise ValueError("Cannot decrypt fernet-encrypted data without cryptography package")
+
+            try:
+                decrypted = cls._fernet.decrypt(encrypted[7:].encode())
+                return decrypted.decode()
+            except Exception as e:
+                raise ValueError(f"Decryption failed: {e}")
+
+        # Legacy: try base64 for old untagged data
+        try:
+            import base64
+            return base64.b64decode(encrypted.encode()).decode()
+        except:
+            raise ValueError("Unknown encryption format")
+
+    @classmethod
+    def rotate_key(cls, old_key: str, new_key: str, encrypted_value: str) -> str:
+        """
+        Re-encrypt a value with a new key.
+
+        Args:
+            old_key: The previous encryption key
+            new_key: The new encryption key
+            encrypted_value: Value encrypted with old key
+
+        Returns:
+            Value encrypted with new key
+        """
+        try:
+            from cryptography.fernet import Fernet
+        except ImportError:
+            raise ValueError("cryptography package required for key rotation")
+
+        # Decrypt with old key
+        old_fernet = Fernet(old_key.encode() if isinstance(old_key, str) else old_key)
+
+        if encrypted_value.startswith("fernet:"):
+            encrypted_value = encrypted_value[7:]
+
+        plaintext = old_fernet.decrypt(encrypted_value.encode()).decode()
+
+        # Encrypt with new key
+        new_fernet = Fernet(new_key.encode() if isinstance(new_key, str) else new_key)
+        new_encrypted = new_fernet.encrypt(plaintext.encode())
+
+        return "fernet:" + new_encrypted.decode()
+
+    @classmethod
+    def generate_key(cls) -> str:
+        """
+        Generate a new Fernet key.
+
+        Returns:
+            URL-safe base64-encoded 32-byte key
+        """
+        try:
+            from cryptography.fernet import Fernet
+            return Fernet.generate_key().decode()
+        except ImportError:
+            # Fallback - generate a random key
+            import base64
+            return base64.urlsafe_b64encode(secrets.token_bytes(32)).decode()
+
+    @classmethod
+    def is_using_dev_key(cls) -> bool:
+        """Check if using a generated development key (insecure)"""
+        cls._ensure_initialized()
+        return cls._is_dev_key
+
+    @classmethod
+    def get_encryption_version(cls) -> int:
+        """Get the current encryption version for audit purposes"""
+        cls._ensure_initialized()
+        if cls._fernet == "fallback":
+            return 0  # Base64 fallback
+        return 1  # Fernet v1

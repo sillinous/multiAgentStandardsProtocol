@@ -7,7 +7,7 @@ SQLAlchemy models for storing agent executions, workflows, and results.
 
 from datetime import datetime
 from typing import Optional
-from sqlalchemy import create_engine, Column, Integer, String, Float, Boolean, DateTime, Text, ForeignKey, JSON
+from sqlalchemy import create_engine, Column, Integer, BigInteger, String, Float, Boolean, DateTime, Text, ForeignKey, JSON
 from sqlalchemy.orm import declarative_base
 from sqlalchemy.orm import sessionmaker, relationship
 import os
@@ -139,6 +139,39 @@ class WorkflowStage(Base):
     error_message = Column(Text)
 
     created_at = Column(DateTime, default=datetime.utcnow)
+
+
+class WorkflowDefinition(Base):
+    """Reusable workflow definitions/templates"""
+    __tablename__ = "workflow_definitions"
+
+    id = Column(Integer, primary_key=True, index=True)
+    definition_id = Column(String(100), unique=True, index=True, nullable=False)
+
+    # Basic info
+    name = Column(String(200), nullable=False)
+    description = Column(Text)
+
+    # Workflow configuration (JSON)
+    steps = Column(JSON)  # Array of step definitions
+    triggers = Column(JSON)  # Array of trigger configurations
+    variables = Column(JSON)  # Variable definitions
+    error_handling = Column(JSON)  # Error handling configuration
+
+    # Metadata
+    tags = Column(JSON)  # Array of tags
+    version = Column(Integer, default=1)
+
+    # Ownership
+    organization_id = Column(Integer, ForeignKey("organizations.id"))
+    created_by = Column(Integer, ForeignKey("users.id"))
+
+    # Status
+    status = Column(String(50), default="active")  # active, draft, archived
+
+    # Timestamps
+    created_at = Column(DateTime, default=datetime.utcnow)
+    updated_at = Column(DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
 
 
 # ============================================================================
@@ -441,6 +474,1462 @@ class AIMessage(Base):
 
     # Relationships
     conversation = relationship("AIConversation", back_populates="messages")
+
+
+class AIUsageLog(Base):
+    """AI provider usage logging for analytics and billing"""
+    __tablename__ = "ai_usage_logs"
+
+    id = Column(Integer, primary_key=True, index=True)
+    log_id = Column(String(50), unique=True, index=True, nullable=False)
+
+    # Association
+    user_id = Column(Integer, ForeignKey("users.id"))
+    organization_id = Column(Integer, ForeignKey("organizations.id"))
+    conversation_id = Column(Integer, ForeignKey("ai_conversations.id"))
+
+    # Provider details
+    provider = Column(String(50), index=True)  # openai, anthropic, ollama
+    model = Column(String(100), index=True)
+
+    # Token usage
+    prompt_tokens = Column(Integer, default=0)
+    completion_tokens = Column(Integer, default=0)
+    total_tokens = Column(Integer, default=0)
+
+    # Cost tracking (in cents)
+    cost_cents = Column(Integer, default=0)
+
+    # Request metadata
+    request_type = Column(String(50))  # chat, completion, embedding
+    latency_ms = Column(Integer)
+    success = Column(Boolean, default=True)
+    error_message = Column(Text)
+
+    # Timestamps
+    created_at = Column(DateTime, default=datetime.utcnow, index=True)
+
+
+class AIProviderConfig(Base):
+    """AI provider configurations (stored credentials and settings)"""
+    __tablename__ = "ai_provider_configs"
+
+    id = Column(Integer, primary_key=True, index=True)
+    config_id = Column(String(50), unique=True, index=True, nullable=False)
+
+    # Provider identity
+    provider = Column(String(50), unique=True, nullable=False)  # openai, anthropic, ollama
+    display_name = Column(String(200))
+
+    # Configuration
+    base_url = Column(String(500))
+    api_key_encrypted = Column(Text)  # Encrypted API key
+    default_model = Column(String(100))
+    available_models = Column(JSON, default=[])  # List of available models
+
+    # Settings
+    max_tokens = Column(Integer, default=4096)
+    temperature = Column(Float, default=0.7)
+    rate_limit_rpm = Column(Integer)  # Requests per minute
+    timeout_seconds = Column(Integer, default=60)
+
+    # Status
+    enabled = Column(Boolean, default=True)
+    last_health_check = Column(DateTime)
+    health_status = Column(String(50), default="unknown")  # healthy, degraded, down, unknown
+
+    # Timestamps
+    created_at = Column(DateTime, default=datetime.utcnow)
+    updated_at = Column(DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
+
+
+# ============================================================================
+# Enterprise Features - Billing & Quotas
+# ============================================================================
+
+class BillingAccount(Base):
+    """Billing accounts for organizations"""
+    __tablename__ = "billing_accounts"
+
+    id = Column(Integer, primary_key=True, index=True)
+    account_id = Column(String(50), unique=True, index=True, nullable=False)
+    organization_id = Column(Integer, ForeignKey("organizations.id"))
+
+    # Plan details
+    plan_type = Column(String(50), default="free")  # free, starter, professional, enterprise
+    billing_email = Column(String(200))
+    billing_address = Column(JSON)
+
+    # Payment
+    payment_method = Column(String(50))  # card, invoice, wire
+    payment_status = Column(String(50), default="active")  # active, past_due, cancelled
+
+    # Limits
+    monthly_budget = Column(Float)
+    current_month_spend = Column(Float, default=0.0)
+
+    # Timestamps
+    billing_cycle_start = Column(DateTime)
+    next_billing_date = Column(DateTime)
+    created_at = Column(DateTime, default=datetime.utcnow)
+    updated_at = Column(DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
+
+
+class CostRecord(Base):
+    """Cost tracking records"""
+    __tablename__ = "cost_records"
+
+    id = Column(Integer, primary_key=True, index=True)
+    record_id = Column(String(50), unique=True, index=True, nullable=False)
+    organization_id = Column(Integer, ForeignKey("organizations.id"))
+    billing_account_id = Column(Integer, ForeignKey("billing_accounts.id"))
+
+    # Cost details
+    cost_type = Column(String(50))  # agent_execution, workflow, ai_call, storage, api_request
+    amount = Column(Float, nullable=False)
+    currency = Column(String(10), default="USD")
+
+    # Reference
+    resource_id = Column(String(100))
+    resource_type = Column(String(50))
+    description = Column(Text)
+
+    # Timestamps
+    incurred_at = Column(DateTime, default=datetime.utcnow)
+    created_at = Column(DateTime, default=datetime.utcnow)
+
+
+class UsageQuota(Base):
+    """Usage quotas for organizations"""
+    __tablename__ = "usage_quotas"
+
+    id = Column(Integer, primary_key=True, index=True)
+    quota_id = Column(String(50), unique=True, index=True, nullable=False)
+    organization_id = Column(Integer, ForeignKey("organizations.id"))
+
+    # Quota type
+    quota_type = Column(String(50))  # executions, api_calls, storage_gb, ai_tokens
+    limit_value = Column(Integer, nullable=False)
+    current_usage = Column(Integer, default=0)
+    period = Column(String(20), default="monthly")  # daily, monthly, yearly
+
+    # Enforcement
+    hard_limit = Column(Boolean, default=False)  # True = block when exceeded
+    alert_threshold = Column(Float, default=0.8)  # Alert at 80%
+
+    # Reset
+    reset_at = Column(DateTime)
+    last_reset = Column(DateTime)
+
+    # Timestamps
+    created_at = Column(DateTime, default=datetime.utcnow)
+    updated_at = Column(DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
+
+
+# ============================================================================
+# Enterprise Features - Backup & Disaster Recovery
+# ============================================================================
+
+class Backup(Base):
+    """Backup records"""
+    __tablename__ = "backups"
+
+    id = Column(Integer, primary_key=True, index=True)
+    backup_id = Column(String(50), unique=True, index=True, nullable=False)
+    organization_id = Column(Integer, ForeignKey("organizations.id"))
+
+    # Backup details
+    backup_type = Column(String(50))  # full, incremental, differential
+    backup_name = Column(String(200))
+    description = Column(Text)
+
+    # Storage
+    storage_location = Column(String(500))  # S3 path, file path, etc.
+    size_bytes = Column(BigInteger)
+    checksum = Column(String(100))
+
+    # Status
+    status = Column(String(50), default="pending")  # pending, running, completed, failed
+    error_message = Column(Text)
+
+    # Timing
+    started_at = Column(DateTime)
+    completed_at = Column(DateTime)
+    expires_at = Column(DateTime)
+    retention_days = Column(Integer, default=30)
+
+    # Timestamps
+    created_at = Column(DateTime, default=datetime.utcnow)
+
+
+class RestoreJob(Base):
+    """Restore job records"""
+    __tablename__ = "restore_jobs"
+
+    id = Column(Integer, primary_key=True, index=True)
+    restore_id = Column(String(50), unique=True, index=True, nullable=False)
+    backup_id = Column(Integer, ForeignKey("backups.id"))
+    organization_id = Column(Integer, ForeignKey("organizations.id"))
+
+    # Restore details
+    restore_type = Column(String(50))  # full, partial
+    target_environment = Column(String(100))
+
+    # Status
+    status = Column(String(50), default="pending")  # pending, running, completed, failed
+    progress_percent = Column(Integer, default=0)
+    error_message = Column(Text)
+
+    # Timing
+    started_at = Column(DateTime)
+    completed_at = Column(DateTime)
+
+    # Timestamps
+    created_at = Column(DateTime, default=datetime.utcnow)
+
+
+# ============================================================================
+# Enterprise Features - SSO & MFA
+# ============================================================================
+
+class SSOProvider(Base):
+    """SSO provider configurations"""
+    __tablename__ = "sso_providers"
+
+    id = Column(Integer, primary_key=True, index=True)
+    provider_id = Column(String(50), unique=True, index=True, nullable=False)
+    organization_id = Column(Integer, ForeignKey("organizations.id"))
+
+    # Provider details
+    name = Column(String(200), nullable=False)
+    provider_type = Column(String(50))  # saml, oidc
+    is_enabled = Column(Boolean, default=True)
+
+    # SAML config
+    entity_id = Column(String(500))
+    sso_url = Column(String(500))
+    certificate = Column(Text)
+
+    # OIDC config
+    client_id = Column(String(200))
+    client_secret_encrypted = Column(String(500))  # Encrypted
+    authorization_url = Column(String(500))
+    token_url = Column(String(500))
+    userinfo_url = Column(String(500))
+
+    # Attribute mapping
+    attribute_mapping = Column(JSON)
+
+    # Status
+    status = Column(String(50), default="active")
+    last_used_at = Column(DateTime)
+
+    # Timestamps
+    created_at = Column(DateTime, default=datetime.utcnow)
+    updated_at = Column(DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
+
+
+class MFADevice(Base):
+    """MFA device registrations"""
+    __tablename__ = "mfa_devices"
+
+    id = Column(Integer, primary_key=True, index=True)
+    device_id = Column(String(50), unique=True, index=True, nullable=False)
+    user_id = Column(Integer, ForeignKey("users.id"))
+
+    # Device details
+    device_type = Column(String(50))  # totp, sms, email, hardware_key
+    device_name = Column(String(200))
+
+    # TOTP
+    secret_encrypted = Column(String(500))  # Encrypted TOTP secret
+    backup_codes_encrypted = Column(Text)  # Encrypted backup codes
+
+    # Status
+    is_verified = Column(Boolean, default=False)
+    is_primary = Column(Boolean, default=False)
+    status = Column(String(50), default="pending")  # pending, active, disabled
+
+    # Usage
+    last_used_at = Column(DateTime)
+    use_count = Column(Integer, default=0)
+
+    # Timestamps
+    created_at = Column(DateTime, default=datetime.utcnow)
+    verified_at = Column(DateTime)
+
+
+# ============================================================================
+# Enterprise Features - Security Policies
+# ============================================================================
+
+class SecurityPolicy(Base):
+    """Security policies"""
+    __tablename__ = "security_policies"
+
+    id = Column(Integer, primary_key=True, index=True)
+    policy_id = Column(String(50), unique=True, index=True, nullable=False)
+    organization_id = Column(Integer, ForeignKey("organizations.id"))
+
+    # Policy details
+    name = Column(String(200), nullable=False)
+    description = Column(Text)
+    policy_type = Column(String(50))  # access, data, network, compliance
+
+    # Rules
+    rules = Column(JSON)  # Array of rule definitions
+    scope = Column(String(50), default="organization")  # organization, team, user
+
+    # Enforcement
+    enforcement_mode = Column(String(50), default="audit")  # audit, enforce, disabled
+    priority = Column(Integer, default=5)
+
+    # Status
+    is_active = Column(Boolean, default=True)
+
+    # Timestamps
+    created_at = Column(DateTime, default=datetime.utcnow)
+    updated_at = Column(DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
+
+
+class PolicyViolation(Base):
+    """Policy violation records"""
+    __tablename__ = "policy_violations"
+
+    id = Column(Integer, primary_key=True, index=True)
+    violation_id = Column(String(50), unique=True, index=True, nullable=False)
+    policy_id = Column(Integer, ForeignKey("security_policies.id"))
+    organization_id = Column(Integer, ForeignKey("organizations.id"))
+
+    # Violation details
+    severity = Column(String(20))  # low, medium, high, critical
+    description = Column(Text)
+    resource_type = Column(String(100))
+    resource_id = Column(String(100))
+
+    # Actor
+    user_id = Column(Integer, ForeignKey("users.id"))
+    ip_address = Column(String(50))
+    user_agent = Column(Text)
+
+    # Resolution
+    status = Column(String(50), default="open")  # open, acknowledged, resolved, false_positive
+    resolved_by = Column(Integer, ForeignKey("users.id"))
+    resolved_at = Column(DateTime)
+    resolution_notes = Column(Text)
+
+    # Timestamps
+    occurred_at = Column(DateTime, default=datetime.utcnow)
+    created_at = Column(DateTime, default=datetime.utcnow)
+
+
+# ============================================================================
+# Enterprise Features - Marketplace
+# ============================================================================
+
+class MarketplaceListing(Base):
+    """Marketplace listings"""
+    __tablename__ = "marketplace_listings"
+
+    id = Column(Integer, primary_key=True, index=True)
+    listing_id = Column(String(50), unique=True, index=True, nullable=False)
+    publisher_org_id = Column(Integer, ForeignKey("organizations.id"))
+
+    # Listing details
+    name = Column(String(200), nullable=False)
+    description = Column(Text)
+    category = Column(String(100))
+    tags = Column(JSON)
+
+    # Type
+    listing_type = Column(String(50))  # agent, workflow, integration, template
+    resource_id = Column(String(100))
+
+    # Pricing
+    pricing_model = Column(String(50), default="free")  # free, one_time, subscription
+    price = Column(Float, default=0.0)
+    currency = Column(String(10), default="USD")
+
+    # Stats
+    downloads = Column(Integer, default=0)
+    rating_average = Column(Float, default=0.0)
+    rating_count = Column(Integer, default=0)
+
+    # Status
+    status = Column(String(50), default="draft")  # draft, pending_review, published, rejected
+    published_at = Column(DateTime)
+
+    # Timestamps
+    created_at = Column(DateTime, default=datetime.utcnow)
+    updated_at = Column(DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
+
+
+class MarketplaceReview(Base):
+    """Marketplace reviews"""
+    __tablename__ = "marketplace_reviews"
+
+    id = Column(Integer, primary_key=True, index=True)
+    review_id = Column(String(50), unique=True, index=True, nullable=False)
+    listing_id = Column(Integer, ForeignKey("marketplace_listings.id"))
+    user_id = Column(Integer, ForeignKey("users.id"))
+
+    # Review content
+    rating = Column(Integer)  # 1-5
+    title = Column(String(200))
+    content = Column(Text)
+
+    # Status
+    status = Column(String(50), default="published")  # published, hidden, flagged
+
+    # Timestamps
+    created_at = Column(DateTime, default=datetime.utcnow)
+    updated_at = Column(DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
+
+
+# ============================================================================
+# Enterprise Features - Subscriptions
+# ============================================================================
+
+class SubscriptionPlan(Base):
+    """Subscription plans"""
+    __tablename__ = "subscription_plans"
+
+    id = Column(Integer, primary_key=True, index=True)
+    plan_id = Column(String(50), unique=True, index=True, nullable=False)
+
+    # Plan details
+    name = Column(String(200), nullable=False)
+    description = Column(Text)
+    tier = Column(String(50))  # free, starter, professional, enterprise
+
+    # Pricing
+    price_monthly = Column(Float, default=0.0)
+    price_yearly = Column(Float, default=0.0)
+    currency = Column(String(10), default="USD")
+
+    # Limits
+    limits = Column(JSON)  # {agents: 10, workflows: 5, api_calls: 1000}
+
+    # Features
+    features = Column(JSON)  # ["feature1", "feature2"]
+
+    # Status
+    is_active = Column(Boolean, default=True)
+    is_public = Column(Boolean, default=True)
+
+    # Timestamps
+    created_at = Column(DateTime, default=datetime.utcnow)
+    updated_at = Column(DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
+
+
+class Subscription(Base):
+    """User/Organization subscriptions"""
+    __tablename__ = "subscriptions"
+
+    id = Column(Integer, primary_key=True, index=True)
+    subscription_id = Column(String(50), unique=True, index=True, nullable=False)
+    organization_id = Column(Integer, ForeignKey("organizations.id"))
+    plan_id = Column(Integer, ForeignKey("subscription_plans.id"))
+
+    # Subscription details
+    billing_cycle = Column(String(20), default="monthly")  # monthly, yearly
+    status = Column(String(50), default="active")  # active, cancelled, past_due, trialing
+
+    # Trial
+    trial_ends_at = Column(DateTime)
+
+    # Billing
+    current_period_start = Column(DateTime)
+    current_period_end = Column(DateTime)
+    cancelled_at = Column(DateTime)
+
+    # Timestamps
+    created_at = Column(DateTime, default=datetime.utcnow)
+    updated_at = Column(DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
+
+
+# ============================================================================
+# Enterprise Features - Deployments
+# ============================================================================
+
+class Deployment(Base):
+    """Deployment records"""
+    __tablename__ = "deployments"
+
+    id = Column(Integer, primary_key=True, index=True)
+    deployment_id = Column(String(50), unique=True, index=True, nullable=False)
+    organization_id = Column(Integer, ForeignKey("organizations.id"))
+
+    # Deployment details
+    name = Column(String(200))
+    description = Column(Text)
+    environment = Column(String(50))  # development, staging, production
+    version = Column(String(50))
+
+    # Strategy
+    strategy = Column(String(50), default="rolling")  # rolling, canary, blue_green
+    rollout_config = Column(JSON)
+
+    # Status
+    status = Column(String(50), default="pending")  # pending, running, completed, failed, rolled_back
+    progress_percent = Column(Integer, default=0)
+    error_message = Column(Text)
+
+    # Resources
+    resources_deployed = Column(JSON)  # List of deployed resources
+
+    # Timing
+    started_at = Column(DateTime)
+    completed_at = Column(DateTime)
+
+    # Timestamps
+    created_at = Column(DateTime, default=datetime.utcnow)
+    updated_at = Column(DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
+
+
+# ============================================================================
+# Enterprise Features - SLAs
+# ============================================================================
+
+class SLADefinition(Base):
+    """SLA definitions"""
+    __tablename__ = "sla_definitions"
+
+    id = Column(Integer, primary_key=True, index=True)
+    sla_id = Column(String(50), unique=True, index=True, nullable=False)
+    organization_id = Column(Integer, ForeignKey("organizations.id"))
+
+    # SLA details
+    name = Column(String(200), nullable=False)
+    description = Column(Text)
+    service_type = Column(String(100))
+
+    # Targets
+    uptime_target = Column(Float)  # 99.9
+    response_time_target_ms = Column(Integer)
+    error_rate_target = Column(Float)  # 0.1
+
+    # Measurement
+    measurement_window = Column(String(20), default="monthly")  # daily, weekly, monthly
+
+    # Status
+    is_active = Column(Boolean, default=True)
+
+    # Timestamps
+    created_at = Column(DateTime, default=datetime.utcnow)
+    updated_at = Column(DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
+
+
+class SLAMetric(Base):
+    """SLA metrics records"""
+    __tablename__ = "sla_metrics"
+
+    id = Column(Integer, primary_key=True, index=True)
+    metric_id = Column(String(50), unique=True, index=True, nullable=False)
+    sla_id = Column(Integer, ForeignKey("sla_definitions.id"))
+
+    # Metric details
+    metric_type = Column(String(50))  # uptime, response_time, error_rate
+    value = Column(Float)
+    period_start = Column(DateTime)
+    period_end = Column(DateTime)
+
+    # Status
+    target_met = Column(Boolean)
+
+    # Timestamps
+    recorded_at = Column(DateTime, default=datetime.utcnow)
+
+
+class SLAViolation(Base):
+    """SLA violation records"""
+    __tablename__ = "sla_violations"
+
+    id = Column(Integer, primary_key=True, index=True)
+    violation_id = Column(String(50), unique=True, index=True, nullable=False)
+    sla_id = Column(Integer, ForeignKey("sla_definitions.id"))
+
+    # Violation details
+    metric_type = Column(String(50))
+    target_value = Column(Float)
+    actual_value = Column(Float)
+    duration_minutes = Column(Integer)
+
+    # Impact
+    severity = Column(String(20))  # minor, major, critical
+
+    # Resolution
+    status = Column(String(50), default="open")  # open, acknowledged, resolved
+    resolution_notes = Column(Text)
+
+    # Timestamps
+    occurred_at = Column(DateTime, default=datetime.utcnow)
+    resolved_at = Column(DateTime)
+    created_at = Column(DateTime, default=datetime.utcnow)
+
+
+# ============================================================================
+# Enterprise Features - Knowledge Base
+# ============================================================================
+
+class KBCategory(Base):
+    """Knowledge base categories"""
+    __tablename__ = "kb_categories"
+
+    id = Column(Integer, primary_key=True, index=True)
+    category_id = Column(String(50), unique=True, index=True, nullable=False)
+    organization_id = Column(Integer, ForeignKey("organizations.id"))
+
+    # Category details
+    name = Column(String(200), nullable=False)
+    description = Column(Text)
+    slug = Column(String(200))
+    parent_id = Column(Integer, ForeignKey("kb_categories.id"))
+
+    # Display
+    icon = Column(String(50))
+    sort_order = Column(Integer, default=0)
+
+    # Status
+    is_public = Column(Boolean, default=True)
+
+    # Timestamps
+    created_at = Column(DateTime, default=datetime.utcnow)
+    updated_at = Column(DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
+
+
+class KBArticle(Base):
+    """Knowledge base articles"""
+    __tablename__ = "kb_articles"
+
+    id = Column(Integer, primary_key=True, index=True)
+    article_id = Column(String(50), unique=True, index=True, nullable=False)
+    organization_id = Column(Integer, ForeignKey("organizations.id"))
+    category_id = Column(Integer, ForeignKey("kb_categories.id"))
+    author_id = Column(Integer, ForeignKey("users.id"))
+
+    # Article content
+    title = Column(String(300), nullable=False)
+    slug = Column(String(300))
+    content = Column(Text)
+    content_format = Column(String(20), default="markdown")  # markdown, html
+
+    # Metadata
+    tags = Column(JSON)
+    keywords = Column(JSON)
+
+    # Stats
+    views = Column(Integer, default=0)
+    helpful_votes = Column(Integer, default=0)
+    not_helpful_votes = Column(Integer, default=0)
+
+    # Status
+    status = Column(String(50), default="draft")  # draft, published, archived
+    published_at = Column(DateTime)
+
+    # Timestamps
+    created_at = Column(DateTime, default=datetime.utcnow)
+    updated_at = Column(DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
+
+
+# ============================================================================
+# Data Retention & Compliance
+# ============================================================================
+
+class DataRetentionPolicy(Base):
+    """Data retention policies"""
+    __tablename__ = "data_retention_policies"
+
+    id = Column(Integer, primary_key=True, index=True)
+    policy_id = Column(String(50), unique=True, index=True, nullable=False)
+    organization_id = Column(Integer, ForeignKey("organizations.id"))
+
+    # Policy details
+    name = Column(String(200), nullable=False)
+    description = Column(Text)
+    data_type = Column(String(100))  # logs, executions, messages, etc.
+
+    # Retention
+    retention_days = Column(Integer, nullable=False)
+    action = Column(String(50), default="delete")  # delete, archive, anonymize
+
+    # Schedule
+    is_active = Column(Boolean, default=True)
+    last_run = Column(DateTime)
+    next_run = Column(DateTime)
+
+    # Stats
+    records_affected = Column(Integer, default=0)
+
+    # Timestamps
+    created_at = Column(DateTime, default=datetime.utcnow)
+    updated_at = Column(DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
+
+
+# ============================================================================
+# Job Scheduling & Execution Queue
+# ============================================================================
+
+class ScheduledJob(Base):
+    """Scheduled jobs for recurring or delayed execution"""
+    __tablename__ = "scheduled_jobs"
+
+    id = Column(Integer, primary_key=True, index=True)
+    job_id = Column(String(50), unique=True, index=True, nullable=False)
+    name = Column(String(200), nullable=False)
+    description = Column(Text)
+
+    # Job configuration
+    job_type = Column(String(50))  # agent_execution, workflow, backup, cleanup
+    target_id = Column(String(100))  # agent_id or workflow_id
+    target_type = Column(String(50))  # agent, workflow
+
+    # Schedule
+    schedule_type = Column(String(50))  # cron, interval, once
+    cron_expression = Column(String(100))  # "0 0 * * *" for daily
+    interval_seconds = Column(Integer)
+    next_run_at = Column(DateTime)
+    last_run_at = Column(DateTime)
+
+    # Status
+    status = Column(String(50), default="active")  # active, paused, disabled
+    run_count = Column(Integer, default=0)
+    failure_count = Column(Integer, default=0)
+    max_failures = Column(Integer, default=3)  # disable after this many failures
+
+    # Input data
+    input_data = Column(JSON)
+
+    # Ownership
+    organization_id = Column(Integer, ForeignKey("organizations.id"))
+    created_by = Column(Integer, ForeignKey("users.id"))
+
+    # Timestamps
+    created_at = Column(DateTime, default=datetime.utcnow)
+    updated_at = Column(DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
+
+
+class JobExecution(Base):
+    """Individual job execution records"""
+    __tablename__ = "job_executions"
+
+    id = Column(Integer, primary_key=True, index=True)
+    execution_id = Column(String(50), unique=True, index=True, nullable=False)
+    job_id = Column(Integer, ForeignKey("scheduled_jobs.id"), index=True)
+
+    # Execution details
+    status = Column(String(50), default="pending")  # pending, running, completed, failed
+    started_at = Column(DateTime)
+    completed_at = Column(DateTime)
+    execution_time_ms = Column(Float)
+
+    # Results
+    output_data = Column(JSON)
+    error_message = Column(Text)
+
+    # Timestamps
+    created_at = Column(DateTime, default=datetime.utcnow)
+
+
+class ExecutionQueueItem(Base):
+    """Execution queue for agents and workflows"""
+    __tablename__ = "execution_queue"
+
+    id = Column(Integer, primary_key=True, index=True)
+    execution_id = Column(String(50), unique=True, index=True, nullable=False)
+
+    # Target
+    agent_id = Column(String(100), index=True)
+    workflow_id = Column(String(100), index=True)
+
+    # Input
+    input_data = Column(JSON)
+
+    # Queue management
+    priority = Column(Integer, default=5)  # 1=highest, 10=lowest
+    status = Column(String(50), default="queued", index=True)  # queued, running, completed, failed, cancelled
+    progress = Column(Float, default=0.0)
+    current_step = Column(String(200))
+
+    # Scheduling
+    scheduled_at = Column(DateTime)
+    callback_url = Column(String(500))
+    timeout_seconds = Column(Integer, default=300)
+    retry_count = Column(Integer, default=0)
+    max_retries = Column(Integer, default=3)
+    tags = Column(JSON)
+
+    # Execution timing
+    queued_at = Column(DateTime, default=datetime.utcnow)
+    started_at = Column(DateTime)
+    completed_at = Column(DateTime)
+    execution_time_ms = Column(Float)
+
+    # Results
+    result_data = Column(JSON)
+    error_message = Column(Text)
+
+    # Ownership
+    organization_id = Column(Integer, ForeignKey("organizations.id"))
+    user_id = Column(Integer, ForeignKey("users.id"))
+
+    # Timestamps
+    created_at = Column(DateTime, default=datetime.utcnow)
+    updated_at = Column(DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
+
+
+class ExecutionHistory(Base):
+    """Historical record of all executions"""
+    __tablename__ = "execution_history"
+
+    id = Column(Integer, primary_key=True, index=True)
+    execution_id = Column(String(50), index=True, nullable=False)
+
+    # What was executed
+    execution_type = Column(String(50))  # agent, workflow
+    agent_id = Column(String(100), index=True)
+    workflow_id = Column(String(100), index=True)
+
+    # Input/Output
+    input_data = Column(JSON)
+    output_data = Column(JSON)
+
+    # Execution details
+    status = Column(String(50))  # completed, failed, cancelled
+    error_message = Column(Text)
+    execution_time_ms = Column(Float)
+
+    # Metadata
+    tags = Column(JSON)
+    priority = Column(Integer)
+
+    # Timing
+    queued_at = Column(DateTime)
+    started_at = Column(DateTime)
+    completed_at = Column(DateTime)
+
+    # Ownership
+    organization_id = Column(Integer, ForeignKey("organizations.id"))
+    user_id = Column(Integer, ForeignKey("users.id"))
+
+    # Archive timestamp
+    archived_at = Column(DateTime, default=datetime.utcnow)
+
+
+# ============================================================================
+# Event System
+# ============================================================================
+
+class EventLog(Base):
+    """System event log for audit and tracking"""
+    __tablename__ = "event_logs"
+
+    id = Column(Integer, primary_key=True, index=True)
+    event_id = Column(String(50), unique=True, index=True, nullable=False)
+
+    # Event details
+    event_type = Column(String(100), index=True, nullable=False)  # agent.executed, workflow.completed, etc.
+    severity = Column(String(20), default="info")  # debug, info, warning, error, critical
+    source = Column(String(100))  # component that generated the event
+
+    # Context
+    entity_type = Column(String(50))  # agent, workflow, user, etc.
+    entity_id = Column(String(100))  # ID of the related entity
+    organization_id = Column(Integer, ForeignKey("organizations.id"))
+    user_id = Column(Integer, ForeignKey("users.id"))
+
+    # Event data
+    data = Column(JSON)
+    message = Column(Text)
+
+    # Timestamp
+    created_at = Column(DateTime, default=datetime.utcnow, index=True)
+
+
+class EventSubscription(Base):
+    """Subscriptions to events for webhooks/notifications"""
+    __tablename__ = "event_subscriptions"
+
+    id = Column(Integer, primary_key=True, index=True)
+    subscription_id = Column(String(50), unique=True, index=True, nullable=False)
+
+    # Subscriber
+    subscriber_type = Column(String(50))  # webhook, notification_channel, integration
+    subscriber_id = Column(String(100))
+
+    # Event filter
+    event_types = Column(JSON)  # List of event types to subscribe to
+    entity_filter = Column(JSON)  # Optional filter by entity type/id
+
+    # Status
+    status = Column(String(50), default="active")  # active, paused, disabled
+
+    # Ownership
+    organization_id = Column(Integer, ForeignKey("organizations.id"))
+
+    # Timestamps
+    created_at = Column(DateTime, default=datetime.utcnow)
+    updated_at = Column(DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
+
+
+# ============================================================================
+# Notifications
+# ============================================================================
+
+class NotificationChannel(Base):
+    """Notification channels (email, slack, teams, etc.)"""
+    __tablename__ = "notification_channels"
+
+    id = Column(Integer, primary_key=True, index=True)
+    channel_id = Column(String(50), unique=True, index=True, nullable=False)
+    name = Column(String(200), nullable=False)
+
+    # Channel type
+    channel_type = Column(String(50))  # email, slack, teams, webhook, sms
+    configuration = Column(JSON)  # Channel-specific config (api keys, endpoints, etc.)
+
+    # Status
+    status = Column(String(50), default="active")  # active, disabled, failed
+    last_error = Column(Text)
+    last_used_at = Column(DateTime)
+
+    # Ownership
+    organization_id = Column(Integer, ForeignKey("organizations.id"))
+
+    # Timestamps
+    created_at = Column(DateTime, default=datetime.utcnow)
+    updated_at = Column(DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
+
+
+class Notification(Base):
+    """Individual notifications"""
+    __tablename__ = "notifications"
+
+    id = Column(Integer, primary_key=True, index=True)
+    notification_id = Column(String(50), unique=True, index=True, nullable=False)
+
+    # Notification details
+    title = Column(String(300))
+    message = Column(Text)
+    notification_type = Column(String(50))  # info, success, warning, error, alert
+
+    # Delivery
+    channel_id = Column(Integer, ForeignKey("notification_channels.id"))
+    recipient_type = Column(String(50))  # user, team, broadcast
+    recipient_id = Column(String(100))
+
+    # Status
+    status = Column(String(50), default="pending")  # pending, sent, delivered, failed
+    sent_at = Column(DateTime)
+    delivered_at = Column(DateTime)
+    read_at = Column(DateTime)
+    error_message = Column(Text)
+
+    # Context
+    entity_type = Column(String(50))
+    entity_id = Column(String(100))
+    action_url = Column(String(500))
+
+    # Ownership
+    organization_id = Column(Integer, ForeignKey("organizations.id"))
+
+    # Timestamps
+    created_at = Column(DateTime, default=datetime.utcnow)
+
+
+class NotificationPreference(Base):
+    """User notification preferences"""
+    __tablename__ = "notification_preferences"
+
+    id = Column(Integer, primary_key=True, index=True)
+    user_id = Column(Integer, ForeignKey("users.id"), index=True, nullable=False)
+
+    # Preferences by type
+    notification_type = Column(String(50))  # email, in_app, slack, etc.
+    event_types = Column(JSON)  # List of event types to receive
+    enabled = Column(Boolean, default=True)
+
+    # Schedule
+    quiet_hours_start = Column(String(10))  # "22:00"
+    quiet_hours_end = Column(String(10))  # "08:00"
+    timezone = Column(String(50), default="UTC")
+
+    # Timestamps
+    created_at = Column(DateTime, default=datetime.utcnow)
+    updated_at = Column(DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
+
+
+# ============================================================================
+# Secrets Management
+# ============================================================================
+
+class Secret(Base):
+    """Secure secrets storage"""
+    __tablename__ = "secrets"
+
+    id = Column(Integer, primary_key=True, index=True)
+    secret_id = Column(String(50), unique=True, index=True, nullable=False)
+    name = Column(String(200), nullable=False)
+    description = Column(Text)
+
+    # Secret data (encrypted)
+    secret_type = Column(String(50))  # api_key, password, certificate, token
+    encrypted_value = Column(Text, nullable=False)  # Encrypted using app secret
+    encryption_version = Column(Integer, default=1)
+
+    # Metadata
+    tags = Column(JSON)
+    expires_at = Column(DateTime)
+    last_rotated_at = Column(DateTime)
+    rotation_policy = Column(JSON)  # Auto-rotation config
+
+    # Access control
+    allowed_agents = Column(JSON)  # List of agent IDs that can access
+    allowed_workflows = Column(JSON)  # List of workflow IDs that can access
+
+    # Ownership
+    organization_id = Column(Integer, ForeignKey("organizations.id"))
+    created_by = Column(Integer, ForeignKey("users.id"))
+
+    # Status
+    status = Column(String(50), default="active")  # active, expired, revoked
+
+    # Timestamps
+    created_at = Column(DateTime, default=datetime.utcnow)
+    updated_at = Column(DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
+
+
+class SecretVersion(Base):
+    """Secret version history"""
+    __tablename__ = "secret_versions"
+
+    id = Column(Integer, primary_key=True, index=True)
+    secret_id = Column(Integer, ForeignKey("secrets.id"), index=True, nullable=False)
+    version = Column(Integer, nullable=False)
+
+    # Encrypted value at this version
+    encrypted_value = Column(Text, nullable=False)
+
+    # Metadata
+    created_by = Column(Integer, ForeignKey("users.id"))
+    change_reason = Column(Text)
+
+    # Status
+    status = Column(String(50), default="current")  # current, deprecated, revoked
+
+    # Timestamp
+    created_at = Column(DateTime, default=datetime.utcnow)
+
+
+# ============================================================================
+# Audit Logs
+# ============================================================================
+
+class AuditLog(Base):
+    """Comprehensive audit log for compliance"""
+    __tablename__ = "audit_logs"
+
+    id = Column(Integer, primary_key=True, index=True)
+    audit_id = Column(String(50), unique=True, index=True, nullable=False)
+
+    # Action details
+    action = Column(String(100), nullable=False)  # create, update, delete, execute, login, etc.
+    action_category = Column(String(50))  # user_management, data_access, system_config, etc.
+
+    # Actor
+    actor_type = Column(String(50))  # user, system, agent, api_key
+    actor_id = Column(String(100))
+    actor_name = Column(String(200))
+    ip_address = Column(String(50))
+    user_agent = Column(String(500))
+
+    # Target
+    target_type = Column(String(50))  # agent, workflow, user, organization, etc.
+    target_id = Column(String(100))
+    target_name = Column(String(200))
+
+    # Change details
+    old_value = Column(JSON)
+    new_value = Column(JSON)
+    change_summary = Column(Text)
+
+    # Context
+    organization_id = Column(Integer, ForeignKey("organizations.id"))
+    request_id = Column(String(50))  # For correlating related operations
+
+    # Status
+    status = Column(String(50))  # success, failure
+    error_message = Column(Text)
+
+    # Timestamp
+    created_at = Column(DateTime, default=datetime.utcnow, index=True)
+
+
+# ============================================================================
+# Feature Flags & A/B Testing
+# ============================================================================
+
+class FeatureFlag(Base):
+    """Feature flags for gradual rollouts"""
+    __tablename__ = "feature_flags"
+
+    id = Column(Integer, primary_key=True, index=True)
+    flag_id = Column(String(50), unique=True, index=True, nullable=False)
+    name = Column(String(200), nullable=False)
+    description = Column(Text)
+
+    # Flag configuration
+    enabled = Column(Boolean, default=False)
+    rollout_percentage = Column(Integer, default=0)  # 0-100
+    targeting_rules = Column(JSON)  # Rules for who gets the flag
+
+    # Default value
+    default_value = Column(JSON)
+    variants = Column(JSON)  # For multivariate flags
+
+    # Ownership
+    organization_id = Column(Integer, ForeignKey("organizations.id"))
+
+    # Timestamps
+    created_at = Column(DateTime, default=datetime.utcnow)
+    updated_at = Column(DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
+
+
+class FeatureFlagOverride(Base):
+    """Per-user or per-team feature flag overrides"""
+    __tablename__ = "feature_flag_overrides"
+
+    id = Column(Integer, primary_key=True, index=True)
+    flag_id = Column(Integer, ForeignKey("feature_flags.id"), index=True)
+
+    # Override target
+    target_type = Column(String(50))  # user, team, organization
+    target_id = Column(String(100))
+
+    # Override value
+    enabled = Column(Boolean)
+    value = Column(JSON)
+
+    # Timestamps
+    created_at = Column(DateTime, default=datetime.utcnow)
+    updated_at = Column(DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
+
+
+class ABExperiment(Base):
+    """A/B experiments"""
+    __tablename__ = "ab_experiments"
+
+    id = Column(Integer, primary_key=True, index=True)
+    experiment_id = Column(String(50), unique=True, index=True, nullable=False)
+    name = Column(String(200), nullable=False)
+    description = Column(Text)
+    hypothesis = Column(Text)
+
+    # Experiment configuration
+    status = Column(String(50), default="draft")  # draft, running, paused, completed
+    variants = Column(JSON)  # [{"name": "control", "weight": 50}, {"name": "treatment", "weight": 50}]
+    target_metric = Column(String(100))  # Primary metric to measure
+
+    # Targeting
+    audience_filter = Column(JSON)  # Rules for who is included
+    traffic_allocation = Column(Integer, default=100)  # % of traffic in experiment
+
+    # Duration
+    start_date = Column(DateTime)
+    end_date = Column(DateTime)
+    min_sample_size = Column(Integer)
+
+    # Results
+    results = Column(JSON)
+    winner_variant = Column(String(50))
+    statistical_significance = Column(Float)
+
+    # Ownership
+    organization_id = Column(Integer, ForeignKey("organizations.id"))
+    created_by = Column(Integer, ForeignKey("users.id"))
+
+    # Timestamps
+    created_at = Column(DateTime, default=datetime.utcnow)
+    updated_at = Column(DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
+
+
+class ABAssignment(Base):
+    """User assignments to A/B experiment variants"""
+    __tablename__ = "ab_assignments"
+
+    id = Column(Integer, primary_key=True, index=True)
+    experiment_id = Column(Integer, ForeignKey("ab_experiments.id"), index=True)
+    user_id = Column(Integer, ForeignKey("users.id"), index=True)
+
+    # Assignment
+    variant = Column(String(50), nullable=False)
+    assigned_at = Column(DateTime, default=datetime.utcnow)
+
+    # Tracking
+    exposure_logged = Column(Boolean, default=False)
+    conversion_logged = Column(Boolean, default=False)
+    conversion_at = Column(DateTime)
+
+
+# ============================================================================
+# Testing & Quality Assurance
+# ============================================================================
+
+class TestSuite(Base):
+    """Test suites for agents and workflows"""
+    __tablename__ = "test_suites"
+
+    id = Column(Integer, primary_key=True, index=True)
+    suite_id = Column(String(50), unique=True, index=True, nullable=False)
+    name = Column(String(200), nullable=False)
+    description = Column(Text)
+
+    # Target configuration
+    target_type = Column(String(50))  # agent, workflow, api
+    target_id = Column(String(100))  # ID of the agent/workflow being tested
+
+    # Test cases (JSON array)
+    test_cases = Column(JSON)  # [{name, description, input, expected_output, timeout_ms}]
+    total_tests = Column(Integer, default=0)
+
+    # Configuration
+    config = Column(JSON)  # Suite-level configuration
+    tags = Column(JSON)
+
+    # Ownership
+    organization_id = Column(Integer, ForeignKey("organizations.id"))
+    created_by = Column(Integer, ForeignKey("users.id"))
+
+    # Status
+    status = Column(String(50), default="active")  # active, archived
+
+    # Timestamps
+    created_at = Column(DateTime, default=datetime.utcnow)
+    updated_at = Column(DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
+
+
+class TestRun(Base):
+    """Individual test run executions"""
+    __tablename__ = "test_runs"
+
+    id = Column(Integer, primary_key=True, index=True)
+    run_id = Column(String(50), unique=True, index=True, nullable=False)
+    suite_id = Column(Integer, ForeignKey("test_suites.id"), index=True)
+
+    # Execution details
+    status = Column(String(50), default="pending")  # pending, running, completed, failed
+    environment = Column(String(50))  # development, staging, production
+
+    # Results
+    total_tests = Column(Integer, default=0)
+    passed = Column(Integer, default=0)
+    failed = Column(Integer, default=0)
+    skipped = Column(Integer, default=0)
+    duration_ms = Column(Float)
+
+    # Detailed results (JSON)
+    test_results = Column(JSON)  # [{test_name, status, duration_ms, output, error}]
+    summary = Column(Text)
+
+    # Timing
+    started_at = Column(DateTime)
+    completed_at = Column(DateTime)
+
+    # Who triggered
+    triggered_by = Column(Integer, ForeignKey("users.id"))
+    trigger_type = Column(String(50))  # manual, scheduled, ci_cd
+
+    # Timestamps
+    created_at = Column(DateTime, default=datetime.utcnow)
+
+
+# ============================================================================
+# Connectors & Integrations
+# ============================================================================
+
+class Connector(Base):
+    """Integration connector definitions"""
+    __tablename__ = "connectors"
+
+    id = Column(Integer, primary_key=True, index=True)
+    connector_id = Column(String(50), unique=True, index=True, nullable=False)
+    name = Column(String(200), nullable=False)
+    description = Column(Text)
+
+    # Connector type
+    connector_type = Column(String(50))  # database, api, file, messaging
+    provider = Column(String(100))  # postgres, mysql, salesforce, s3, etc.
+
+    # Configuration schema
+    config_schema = Column(JSON)  # JSON schema for configuration
+    auth_type = Column(String(50))  # oauth, api_key, basic, none
+
+    # Status
+    status = Column(String(50), default="available")  # available, deprecated, coming_soon
+
+    # Timestamps
+    created_at = Column(DateTime, default=datetime.utcnow)
+    updated_at = Column(DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
+
+
+class ConnectorInstance(Base):
+    """Configured connector instances"""
+    __tablename__ = "connector_instances"
+
+    id = Column(Integer, primary_key=True, index=True)
+    instance_id = Column(String(50), unique=True, index=True, nullable=False)
+    name = Column(String(200), nullable=False)
+    connector_id = Column(Integer, ForeignKey("connectors.id"))
+
+    # Configuration (encrypted credentials)
+    configuration = Column(JSON)  # Non-sensitive config
+    credentials_secret_id = Column(Integer, ForeignKey("secrets.id"))  # Reference to encrypted credentials
+
+    # Connection status
+    status = Column(String(50), default="configured")  # configured, connected, failed, disconnected
+    last_connected_at = Column(DateTime)
+    last_error = Column(Text)
+
+    # Health check
+    health_check_enabled = Column(Boolean, default=True)
+    last_health_check_at = Column(DateTime)
+    health_status = Column(String(50))  # healthy, degraded, unhealthy
+
+    # Ownership
+    organization_id = Column(Integer, ForeignKey("organizations.id"))
+    created_by = Column(Integer, ForeignKey("users.id"))
+
+    # Timestamps
+    created_at = Column(DateTime, default=datetime.utcnow)
+    updated_at = Column(DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
+
+
+# ============================================================================
+# Agent Memory & Context
+# ============================================================================
+
+class AgentMemory(Base):
+    """Persistent memory for agents"""
+    __tablename__ = "agent_memories"
+
+    id = Column(Integer, primary_key=True, index=True)
+    memory_id = Column(String(50), unique=True, index=True, nullable=False)
+    agent_id = Column(Integer, ForeignKey("agents.id"), index=True)
+
+    # Memory type
+    memory_type = Column(String(50))  # short_term, long_term, episodic, semantic
+    scope = Column(String(50))  # session, user, global
+
+    # Content
+    key = Column(String(200))
+    value = Column(JSON)
+    embedding = Column(JSON)  # Vector embedding for semantic search
+
+    # Context
+    session_id = Column(String(100))
+    user_id = Column(Integer, ForeignKey("users.id"))
+
+    # Metadata
+    importance = Column(Float, default=1.0)
+    access_count = Column(Integer, default=0)
+    last_accessed_at = Column(DateTime)
+    expires_at = Column(DateTime)
+
+    # Timestamps
+    created_at = Column(DateTime, default=datetime.utcnow)
+    updated_at = Column(DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
+
+
+class ConversationContext(Base):
+    """Conversation context and state"""
+    __tablename__ = "conversation_contexts"
+
+    id = Column(Integer, primary_key=True, index=True)
+    context_id = Column(String(50), unique=True, index=True, nullable=False)
+    conversation_id = Column(Integer, ForeignKey("ai_conversations.id"), index=True)
+
+    # Context data
+    context_type = Column(String(50))  # user_info, task_state, preferences
+    data = Column(JSON)
+
+    # TTL
+    expires_at = Column(DateTime)
+
+    # Timestamps
+    created_at = Column(DateTime, default=datetime.utcnow)
+    updated_at = Column(DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
+
+
+# ============================================================================
+# Batch Processing
+# ============================================================================
+
+class BatchJob(Base):
+    """Batch processing jobs"""
+    __tablename__ = "batch_jobs"
+
+    id = Column(Integer, primary_key=True, index=True)
+    job_id = Column(String(50), unique=True, index=True, nullable=False)
+    name = Column(String(200), nullable=False)
+    description = Column(Text)
+
+    # Job type
+    job_type = Column(String(50))  # agent_batch, data_import, data_export, analysis
+
+    # Input
+    input_source = Column(String(100))  # file, api, database
+    input_location = Column(String(500))  # path or URL
+    input_format = Column(String(50))  # json, csv, jsonl
+    total_items = Column(Integer)
+
+    # Processing
+    agent_id = Column(Integer, ForeignKey("agents.id"))
+    workflow_id = Column(Integer, ForeignKey("workflows.id"))
+    batch_size = Column(Integer, default=100)
+    concurrency = Column(Integer, default=5)
+
+    # Progress
+    status = Column(String(50), default="pending")  # pending, running, paused, completed, failed
+    processed_items = Column(Integer, default=0)
+    successful_items = Column(Integer, default=0)
+    failed_items = Column(Integer, default=0)
+    progress_percentage = Column(Float, default=0.0)
+
+    # Timing
+    started_at = Column(DateTime)
+    completed_at = Column(DateTime)
+    estimated_completion = Column(DateTime)
+
+    # Output
+    output_location = Column(String(500))
+    error_log_location = Column(String(500))
+
+    # Ownership
+    organization_id = Column(Integer, ForeignKey("organizations.id"))
+    created_by = Column(Integer, ForeignKey("users.id"))
+
+    # Timestamps
+    created_at = Column(DateTime, default=datetime.utcnow)
+    updated_at = Column(DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
+
+
+class BatchResult(Base):
+    """Individual batch job results"""
+    __tablename__ = "batch_results"
+
+    id = Column(Integer, primary_key=True, index=True)
+    job_id = Column(Integer, ForeignKey("batch_jobs.id"), index=True)
+    item_index = Column(Integer)
+
+    # Result
+    status = Column(String(50))  # success, failed, skipped
+    input_data = Column(JSON)
+    output_data = Column(JSON)
+    error_message = Column(Text)
+
+    # Timing
+    processed_at = Column(DateTime, default=datetime.utcnow)
+    processing_time_ms = Column(Float)
 
 
 # ============================================================================

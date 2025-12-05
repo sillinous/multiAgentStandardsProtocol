@@ -874,6 +874,9 @@
             <button class="tab-button" onclick="switchTab('agentcards')">🎴 Agent Cards</button>
             <button class="tab-button" onclick="switchTab('metrics')">📈 Metrics</button>
             <button class="tab-button" onclick="switchTab('platform')" style="background: linear-gradient(135deg, #10b981, #059669); color: white;">⚡ Platform Admin (V2)</button>
+            <button class="tab-button" onclick="switchTab('enterprise')" style="background: linear-gradient(135deg, #f59e0b, #d97706); color: white;">🏢 Enterprise (V2)</button>
+            <button class="tab-button" onclick="switchTab('operations')" style="background: linear-gradient(135deg, #8b5cf6, #7c3aed); color: white;">🎯 Operations (V2)</button>
+            <button class="tab-button" onclick="switchTab('testing')" style="background: linear-gradient(135deg, #ef4444, #dc2626); color: white;">🧪 Testing (V2)</button>
         </div>
 
         <!-- Agent Explorer Tab -->
@@ -903,6 +906,55 @@
                                 <a href="#" onclick="switchTab('metrics'); return false;" style="display: block; padding: 12px 16px; color: #333; text-decoration: none; border-bottom: 1px solid #eee;">📈 Platform Metrics</a>
                                 <a href="/docs" target="_blank" style="display: block; padding: 12px 16px; color: #333; text-decoration: none;">📚 API Docs</a>
                             </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Dashboard Summary Widget -->
+                <div id="dashboardSummary" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 15px; margin-bottom: 20px;">
+                    <div style="background: linear-gradient(135deg, #10b981, #059669); border-radius: 10px; padding: 15px; color: white;">
+                        <div style="display: flex; justify-content: space-between; align-items: center;">
+                            <div>
+                                <div style="font-size: 1.8em; font-weight: bold;" id="summaryHealthStatus">--</div>
+                                <div style="font-size: 0.8em; opacity: 0.9;">System Health</div>
+                            </div>
+                            <div style="font-size: 2em;">💚</div>
+                        </div>
+                    </div>
+                    <div style="background: linear-gradient(135deg, #3b82f6, #1d4ed8); border-radius: 10px; padding: 15px; color: white;">
+                        <div style="display: flex; justify-content: space-between; align-items: center;">
+                            <div>
+                                <div style="font-size: 1.8em; font-weight: bold;" id="summaryAgentCount">--</div>
+                                <div style="font-size: 0.8em; opacity: 0.9;">Total Agents</div>
+                            </div>
+                            <div style="font-size: 2em;">🤖</div>
+                        </div>
+                    </div>
+                    <div style="background: linear-gradient(135deg, #8b5cf6, #6d28d9); border-radius: 10px; padding: 15px; color: white;">
+                        <div style="display: flex; justify-content: space-between; align-items: center;">
+                            <div>
+                                <div style="font-size: 1.8em; font-weight: bold;" id="summaryAIUsage">--</div>
+                                <div style="font-size: 0.8em; opacity: 0.9;">AI Requests (30d)</div>
+                            </div>
+                            <div style="font-size: 2em;">📊</div>
+                        </div>
+                    </div>
+                    <div style="background: linear-gradient(135deg, #f59e0b, #d97706); border-radius: 10px; padding: 15px; color: white;">
+                        <div style="display: flex; justify-content: space-between; align-items: center;">
+                            <div>
+                                <div style="font-size: 1.8em; font-weight: bold;" id="summaryAICost">--</div>
+                                <div style="font-size: 0.8em; opacity: 0.9;">AI Cost (30d)</div>
+                            </div>
+                            <div style="font-size: 2em;">💰</div>
+                        </div>
+                    </div>
+                    <div style="background: linear-gradient(135deg, #ec4899, #db2777); border-radius: 10px; padding: 15px; color: white;">
+                        <div style="display: flex; justify-content: space-between; align-items: center;">
+                            <div>
+                                <div style="font-size: 1.8em; font-weight: bold;" id="summaryExecutions">--</div>
+                                <div style="font-size: 0.8em; opacity: 0.9;">Executions</div>
+                            </div>
+                            <div style="font-size: 2em;">⚡</div>
                         </div>
                     </div>
                 </div>
@@ -1506,6 +1558,125 @@
 
                 <!-- Status -->
                 <div id="metricsStatus" style="text-align: center; margin-top: 20px; color: #999; font-size: 0.9em;"></div>
+
+                <!-- V2 System Health Section -->
+                <div style="margin-top: 30px; background: linear-gradient(135deg, #d1fae5, #a7f3d0); border-radius: 12px; padding: 20px; border: 1px solid #10b981;">
+                    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px;">
+                        <h3 style="color: #065f46; margin: 0;">💚 V2 System Health (Database-Backed)</h3>
+                        <button onclick="loadV2SystemHealth()" style="padding: 8px 16px; background: #10b981; color: white; border: none; border-radius: 4px; cursor: pointer;">↻ Refresh</button>
+                    </div>
+                    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 15px;" id="v2HealthGrid">
+                        <div style="background: white; border-radius: 8px; padding: 15px; text-align: center;">
+                            <div style="font-size: 1.5em; font-weight: bold; color: #10b981;" id="v2HealthStatus">--</div>
+                            <div style="color: #666; font-size: 0.85em;">Overall Status</div>
+                        </div>
+                        <div style="background: white; border-radius: 8px; padding: 15px; text-align: center;">
+                            <div style="font-size: 1.5em; font-weight: bold; color: #3b82f6;" id="v2DbLatency">--</div>
+                            <div style="color: #666; font-size: 0.85em;">DB Latency (ms)</div>
+                        </div>
+                        <div style="background: white; border-radius: 8px; padding: 15px; text-align: center;">
+                            <div style="font-size: 1.5em; font-weight: bold; color: #8b5cf6;" id="v2MemoryUsed">--</div>
+                            <div style="color: #666; font-size: 0.85em;">Memory Used (MB)</div>
+                        </div>
+                        <div style="background: white; border-radius: 8px; padding: 15px; text-align: center;">
+                            <div style="font-size: 1.5em; font-weight: bold; color: #f59e0b;" id="v2AIProviders">--</div>
+                            <div style="color: #666; font-size: 0.85em;">AI Providers</div>
+                        </div>
+                    </div>
+                    <div id="v2HealthDetails" style="margin-top: 15px; padding: 10px; background: white; border-radius: 4px; font-size: 0.85em; display: none;"></div>
+                </div>
+
+                <!-- V2 System Metrics Section -->
+                <div style="margin-top: 20px; background: linear-gradient(135deg, #dbeafe, #bfdbfe); border-radius: 12px; padding: 20px; border: 1px solid #3b82f6;">
+                    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px;">
+                        <h3 style="color: #1e40af; margin: 0;">📊 V2 System Metrics (Database-Backed)</h3>
+                        <button onclick="loadV2SystemMetrics()" style="padding: 8px 16px; background: #3b82f6; color: white; border: none; border-radius: 4px; cursor: pointer;">↻ Refresh</button>
+                    </div>
+                    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 10px;" id="v2MetricsGrid">
+                        <div style="background: white; border-radius: 8px; padding: 12px; text-align: center;">
+                            <div style="font-size: 1.3em; font-weight: bold; color: #3b82f6;" id="v2CpuPercent">--</div>
+                            <div style="color: #666; font-size: 0.8em;">CPU %</div>
+                        </div>
+                        <div style="background: white; border-radius: 8px; padding: 12px; text-align: center;">
+                            <div style="font-size: 1.3em; font-weight: bold; color: #8b5cf6;" id="v2MemPercent">--</div>
+                            <div style="color: #666; font-size: 0.8em;">Memory %</div>
+                        </div>
+                        <div style="background: white; border-radius: 8px; padding: 12px; text-align: center;">
+                            <div style="font-size: 1.3em; font-weight: bold; color: #10b981;" id="v2DiskPercent">--</div>
+                            <div style="color: #666; font-size: 0.8em;">Disk %</div>
+                        </div>
+                        <div style="background: white; border-radius: 8px; padding: 12px; text-align: center;">
+                            <div style="font-size: 1.3em; font-weight: bold; color: #f59e0b;" id="v2Uptime">--</div>
+                            <div style="color: #666; font-size: 0.8em;">Uptime</div>
+                        </div>
+                    </div>
+                    <div style="margin-top: 15px; display: grid; grid-template-columns: repeat(auto-fit, minmax(120px, 1fr)); gap: 10px;" id="v2DbStatsGrid">
+                        <div style="background: white; border-radius: 8px; padding: 12px; text-align: center;">
+                            <div style="font-size: 1.2em; font-weight: bold; color: #667eea;" id="v2AgentCount">--</div>
+                            <div style="color: #666; font-size: 0.75em;">Agents</div>
+                        </div>
+                        <div style="background: white; border-radius: 8px; padding: 12px; text-align: center;">
+                            <div style="font-size: 1.2em; font-weight: bold; color: #764ba2;" id="v2WorkflowCount">--</div>
+                            <div style="color: #666; font-size: 0.75em;">Workflows</div>
+                        </div>
+                        <div style="background: white; border-radius: 8px; padding: 12px; text-align: center;">
+                            <div style="font-size: 1.2em; font-weight: bold; color: #27ae60;" id="v2ConversationCount">--</div>
+                            <div style="color: #666; font-size: 0.75em;">Conversations</div>
+                        </div>
+                        <div style="background: white; border-radius: 8px; padding: 12px; text-align: center;">
+                            <div style="font-size: 1.2em; font-weight: bold; color: #e74c3c;" id="v2ExecutionPending">--</div>
+                            <div style="color: #666; font-size: 0.75em;">Pending Exec</div>
+                        </div>
+                        <div style="background: white; border-radius: 8px; padding: 12px; text-align: center;">
+                            <div style="font-size: 1.2em; font-weight: bold; color: #3498db;" id="v2ExecutionCompleted">--</div>
+                            <div style="color: #666; font-size: 0.75em;">Completed Exec</div>
+                        </div>
+                        <div style="background: white; border-radius: 8px; padding: 12px; text-align: center;">
+                            <div style="font-size: 1.2em; font-weight: bold; color: #9b59b6;" id="v2TestSuites">--</div>
+                            <div style="color: #666; font-size: 0.75em;">Test Suites</div>
+                        </div>
+                        <div style="background: white; border-radius: 8px; padding: 12px; text-align: center;">
+                            <div style="font-size: 1.2em; font-weight: bold; color: #1abc9c;" id="v2MarketplaceListings">--</div>
+                            <div style="color: #666; font-size: 0.75em;">Marketplace</div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- V2 API Metrics Section -->
+                <div style="margin-top: 20px; background: linear-gradient(135deg, #fef3c7, #fde68a); border-radius: 12px; padding: 20px; border: 1px solid #f59e0b;">
+                    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px;">
+                        <h3 style="color: #92400e; margin: 0;">📈 V2 API Metrics (Request Statistics)</h3>
+                        <button onclick="loadV2ApiMetrics()" style="padding: 8px 16px; background: #f59e0b; color: white; border: none; border-radius: 4px; cursor: pointer;">↻ Refresh</button>
+                    </div>
+                    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 15px;" id="v2ApiMetricsGrid">
+                        <div style="background: white; border-radius: 8px; padding: 15px; text-align: center;">
+                            <div style="font-size: 1.5em; font-weight: bold; color: #f59e0b;" id="v2TotalRequests">--</div>
+                            <div style="color: #666; font-size: 0.85em;">Total Requests</div>
+                        </div>
+                        <div style="background: white; border-radius: 8px; padding: 15px; text-align: center;">
+                            <div style="font-size: 1.5em; font-weight: bold; color: #10b981;" id="v2SuccessRate">--</div>
+                            <div style="color: #666; font-size: 0.85em;">Success Rate</div>
+                        </div>
+                        <div style="background: white; border-radius: 8px; padding: 15px; text-align: center;">
+                            <div style="font-size: 1.5em; font-weight: bold; color: #3b82f6;" id="v2AvgLatency">--</div>
+                            <div style="color: #666; font-size: 0.85em;">Avg Latency (ms)</div>
+                        </div>
+                        <div style="background: white; border-radius: 8px; padding: 15px; text-align: center;">
+                            <div style="font-size: 1.5em; font-weight: bold; color: #ef4444;" id="v2ErrorRate">--</div>
+                            <div style="color: #666; font-size: 0.85em;">Error Rate</div>
+                        </div>
+                    </div>
+                    <div style="margin-top: 15px; display: grid; grid-template-columns: 1fr 1fr; gap: 15px;">
+                        <div style="background: white; border-radius: 8px; padding: 15px;">
+                            <h4 style="margin: 0 0 10px 0; color: #666; font-size: 0.9em;">Requests by Method</h4>
+                            <div id="v2MethodStats" style="display: flex; gap: 10px; flex-wrap: wrap;">--</div>
+                        </div>
+                        <div style="background: white; border-radius: 8px; padding: 15px;">
+                            <h4 style="margin: 0 0 10px 0; color: #666; font-size: 0.9em;">Latency Percentiles</h4>
+                            <div id="v2LatencyStats" style="display: flex; gap: 10px; flex-wrap: wrap;">--</div>
+                        </div>
+                    </div>
+                </div>
             </div>
         </div>
     </div>
@@ -1817,13 +1988,27 @@
                 <p style="color: #666; margin-bottom: 25px;">These features use the V2 API with real database persistence, authentication, and AI integration.</p>
 
                 <!-- V2 Status Banner -->
-                <div id="v2StatusBanner" style="background: linear-gradient(135deg, #10b981, #059669); color: white; padding: 15px 20px; border-radius: 10px; margin-bottom: 25px;">
+                <div id="v2StatusBanner" style="background: linear-gradient(135deg, #10b981, #059669); color: white; padding: 15px 20px; border-radius: 10px; margin-bottom: 20px;">
                     <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 15px;">
                         <div>
                             <strong>V2 API Status:</strong> <span id="v2ApiStatus">Checking...</span>
                         </div>
                         <div id="v2Stats" style="display: flex; gap: 20px; flex-wrap: wrap;"></div>
                     </div>
+                </div>
+
+                <!-- Quick Actions Panel -->
+                <div style="background: linear-gradient(135deg, #f8fafc, #f1f5f9); border-radius: 10px; padding: 15px 20px; margin-bottom: 25px; border: 1px solid #e2e8f0;">
+                    <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 15px;">
+                        <div style="font-weight: 600; color: #334155;">⚡ Quick Actions</div>
+                        <div style="display: flex; gap: 10px; flex-wrap: wrap;">
+                            <button onclick="quickHealthCheck()" style="padding: 8px 16px; background: #10b981; color: white; border: none; border-radius: 6px; cursor: pointer; font-size: 0.85em;">💚 Health Check</button>
+                            <button onclick="quickRefreshAll()" style="padding: 8px 16px; background: #3b82f6; color: white; border: none; border-radius: 6px; cursor: pointer; font-size: 0.85em;">🔄 Refresh All</button>
+                            <button onclick="quickExport()" style="padding: 8px 16px; background: #8b5cf6; color: white; border: none; border-radius: 6px; cursor: pointer; font-size: 0.85em;">📦 Quick Export</button>
+                            <button onclick="quickNewConversation()" style="padding: 8px 16px; background: #f59e0b; color: white; border: none; border-radius: 6px; cursor: pointer; font-size: 0.85em;">💬 New AI Chat</button>
+                        </div>
+                    </div>
+                    <div id="quickActionResult" style="margin-top: 10px; font-size: 0.85em; color: #666; display: none;"></div>
                 </div>
 
                 <!-- Platform Admin Sections -->
@@ -1915,6 +2100,633 @@
                         </div>
                         <div id="v2RateLimitResult" style="margin-top: 10px;"></div>
                     </div>
+
+                    <!-- Marketplace Section -->
+                    <div style="background: #f8fafc; border-radius: 12px; padding: 20px; border: 1px solid #e2e8f0; grid-column: span 2;">
+                        <h3 style="margin-bottom: 15px; color: #1e293b;">🛒 Marketplace</h3>
+                        <p style="font-size: 13px; color: #64748b; margin-bottom: 15px;">Browse and manage marketplace listings for agents, workflows, and integrations.</p>
+                        <div style="display: flex; gap: 10px; flex-wrap: wrap; margin-bottom: 15px;">
+                            <input type="text" id="mpListingName" placeholder="Listing Name" style="flex: 1; padding: 10px; border: 1px solid #cbd5e1; border-radius: 6px;">
+                            <select id="mpListingType" style="padding: 10px; border: 1px solid #cbd5e1; border-radius: 6px;">
+                                <option value="agent">Agent</option>
+                                <option value="workflow">Workflow</option>
+                                <option value="template">Template</option>
+                                <option value="integration">Integration</option>
+                            </select>
+                            <select id="mpListingCategory" style="padding: 10px; border: 1px solid #cbd5e1; border-radius: 6px;">
+                                <option value="productivity">Productivity</option>
+                                <option value="automation">Automation</option>
+                                <option value="analytics">Analytics</option>
+                                <option value="integration">Integration</option>
+                                <option value="ai">AI/ML</option>
+                            </select>
+                        </div>
+                        <div style="display: flex; gap: 10px; flex-wrap: wrap; margin-bottom: 15px;">
+                            <input type="text" id="mpListingDesc" placeholder="Description" style="flex: 1; padding: 10px; border: 1px solid #cbd5e1; border-radius: 6px;">
+                            <input type="number" id="mpListingPrice" placeholder="Price" value="0" style="width: 100px; padding: 10px; border: 1px solid #cbd5e1; border-radius: 6px;">
+                        </div>
+                        <div style="display: flex; gap: 10px; flex-wrap: wrap;">
+                            <button onclick="mpCreateListing()" style="padding: 10px 20px; background: #10b981; color: white; border: none; border-radius: 6px; cursor: pointer;">Create Listing</button>
+                            <button onclick="mpListListings()" style="padding: 10px 20px; background: #059669; color: white; border: none; border-radius: 6px; cursor: pointer;">Browse Listings</button>
+                            <button onclick="mpPublishListing()" style="padding: 10px 20px; background: #0891b2; color: white; border: none; border-radius: 6px; cursor: pointer;">Publish Selected</button>
+                        </div>
+                        <div id="mpListingResult" style="margin-top: 15px; max-height: 300px; overflow-y: auto; background: white; border: 1px solid #e2e8f0; border-radius: 8px; padding: 15px;"></div>
+                    </div>
+
+                    <!-- AI Usage Analytics Section -->
+                    <div style="background: linear-gradient(135deg, #f3e8ff, #e9d5ff); border-radius: 12px; padding: 20px; border: 1px solid #a855f7; grid-column: span 2;">
+                        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px;">
+                            <h3 style="color: #6b21a8; margin: 0;">📊 AI Usage Analytics</h3>
+                            <div style="display: flex; gap: 10px;">
+                                <select id="aiAnalyticsPeriod" style="padding: 8px; border: 1px solid #cbd5e1; border-radius: 6px;" onchange="loadAIAnalytics()">
+                                    <option value="7">Last 7 days</option>
+                                    <option value="30" selected>Last 30 days</option>
+                                    <option value="90">Last 90 days</option>
+                                </select>
+                                <button onclick="loadAIAnalytics()" style="padding: 8px 16px; background: #a855f7; color: white; border: none; border-radius: 6px; cursor: pointer;">Refresh</button>
+                            </div>
+                        </div>
+
+                        <!-- Summary Stats Cards -->
+                        <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 15px; margin-bottom: 20px;">
+                            <div style="background: white; border-radius: 8px; padding: 15px; text-align: center;">
+                                <div style="font-size: 1.8em; font-weight: bold; color: #a855f7;" id="aiTotalRequests">--</div>
+                                <div style="color: #666; font-size: 0.85em;">Total Requests</div>
+                            </div>
+                            <div style="background: white; border-radius: 8px; padding: 15px; text-align: center;">
+                                <div style="font-size: 1.8em; font-weight: bold; color: #3b82f6;" id="aiTotalTokens">--</div>
+                                <div style="color: #666; font-size: 0.85em;">Total Tokens</div>
+                            </div>
+                            <div style="background: white; border-radius: 8px; padding: 15px; text-align: center;">
+                                <div style="font-size: 1.8em; font-weight: bold; color: #10b981;" id="aiTotalCost">--</div>
+                                <div style="color: #666; font-size: 0.85em;">Total Cost</div>
+                            </div>
+                            <div style="background: white; border-radius: 8px; padding: 15px; text-align: center;">
+                                <div style="font-size: 1.8em; font-weight: bold; color: #f59e0b;" id="aiAvgLatency">--</div>
+                                <div style="color: #666; font-size: 0.85em;">Avg Latency</div>
+                            </div>
+                        </div>
+
+                        <!-- Provider Breakdown -->
+                        <div style="background: white; border-radius: 8px; padding: 15px;">
+                            <h4 style="margin: 0 0 15px 0; color: #333;">Usage by Provider</h4>
+                            <div id="aiProviderBreakdown" style="min-height: 100px;">
+                                <div style="text-align: center; color: #888; padding: 20px;">Click Refresh to load analytics</div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- AI Provider Management Section -->
+                    <div style="background: linear-gradient(135deg, #fef3c7, #fde68a); border-radius: 12px; padding: 20px; border: 1px solid #f59e0b;">
+                        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px;">
+                            <h3 style="color: #92400e; margin: 0;">⚙️ AI Provider Config</h3>
+                            <button onclick="loadAIProviders()" style="padding: 8px 16px; background: #f59e0b; color: white; border: none; border-radius: 6px; cursor: pointer;">Refresh</button>
+                        </div>
+                        <div style="display: flex; gap: 10px; flex-wrap: wrap; margin-bottom: 15px;">
+                            <select id="providerSelect" style="flex: 1; padding: 8px; border: 1px solid #cbd5e1; border-radius: 6px;">
+                                <option value="openai">OpenAI</option>
+                                <option value="anthropic">Anthropic</option>
+                                <option value="ollama">Ollama</option>
+                            </select>
+                            <input type="password" id="providerApiKey" placeholder="API Key (optional)" style="flex: 2; padding: 8px; border: 1px solid #cbd5e1; border-radius: 6px;">
+                        </div>
+                        <div style="display: flex; gap: 10px; flex-wrap: wrap; margin-bottom: 15px;">
+                            <input type="text" id="providerBaseUrl" placeholder="Base URL (optional)" style="flex: 1; padding: 8px; border: 1px solid #cbd5e1; border-radius: 6px;">
+                            <input type="text" id="providerModel" placeholder="Default Model" style="flex: 1; padding: 8px; border: 1px solid #cbd5e1; border-radius: 6px;">
+                        </div>
+                        <div style="display: flex; gap: 10px; flex-wrap: wrap;">
+                            <button onclick="saveAIProvider()" style="padding: 8px 16px; background: #10b981; color: white; border: none; border-radius: 6px; cursor: pointer;">Save Config</button>
+                            <button onclick="testAIProvider()" style="padding: 8px 16px; background: #3b82f6; color: white; border: none; border-radius: 6px; cursor: pointer;">Test Connection</button>
+                        </div>
+                        <div id="providersList" style="margin-top: 15px; max-height: 200px; overflow-y: auto; background: white; border-radius: 8px; padding: 10px;">
+                            <div style="text-align: center; color: #888; padding: 10px;">Click Refresh to load providers</div>
+                        </div>
+                    </div>
+
+                    <!-- Secrets Vault Section -->
+                    <div style="background: linear-gradient(135deg, #fef2f2, #fecaca); border-radius: 12px; padding: 20px; border: 1px solid #ef4444;">
+                        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px;">
+                            <h3 style="color: #991b1b; margin: 0;">🔐 Secrets Vault</h3>
+                            <button onclick="loadSecrets()" style="padding: 8px 16px; background: #ef4444; color: white; border: none; border-radius: 6px; cursor: pointer;">Refresh</button>
+                        </div>
+                        <p style="font-size: 0.8em; color: #666; margin-bottom: 15px;">Securely store API keys and credentials. All secrets are encrypted with Fernet (AES-128-CBC).</p>
+                        <div style="display: flex; gap: 10px; flex-wrap: wrap; margin-bottom: 10px;">
+                            <input type="text" id="secretName" placeholder="Secret Name" style="flex: 1; padding: 8px; border: 1px solid #cbd5e1; border-radius: 6px;">
+                            <select id="secretType" style="padding: 8px; border: 1px solid #cbd5e1; border-radius: 6px;">
+                                <option value="api_key">API Key</option>
+                                <option value="password">Password</option>
+                                <option value="token">Token</option>
+                                <option value="certificate">Certificate</option>
+                                <option value="connection_string">Connection String</option>
+                            </select>
+                        </div>
+                        <div style="display: flex; gap: 10px; flex-wrap: wrap; margin-bottom: 10px;">
+                            <input type="password" id="secretValue" placeholder="Secret Value" style="flex: 1; padding: 8px; border: 1px solid #cbd5e1; border-radius: 6px;">
+                            <input type="text" id="secretDescription" placeholder="Description (optional)" style="flex: 1; padding: 8px; border: 1px solid #cbd5e1; border-radius: 6px;">
+                        </div>
+                        <div style="display: flex; gap: 10px; flex-wrap: wrap;">
+                            <button onclick="createSecret()" style="padding: 8px 16px; background: #10b981; color: white; border: none; border-radius: 6px; cursor: pointer;">Create Secret</button>
+                            <button onclick="checkEncryptionStatus()" style="padding: 8px 16px; background: #6366f1; color: white; border: none; border-radius: 6px; cursor: pointer;">Check Encryption</button>
+                        </div>
+                        <div id="secretsList" style="margin-top: 15px; max-height: 250px; overflow-y: auto; background: white; border-radius: 8px; padding: 10px;">
+                            <div style="text-align: center; color: #888; padding: 10px;">Click Refresh to load secrets</div>
+                        </div>
+                    </div>
+
+                    <!-- Data Export/Import Section -->
+                    <div style="background: linear-gradient(135deg, #dcfce7, #bbf7d0); border-radius: 12px; padding: 20px; border: 1px solid #22c55e;">
+                        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px;">
+                            <h3 style="color: #166534; margin: 0;">📦 Data Export / Import</h3>
+                        </div>
+
+                        <!-- Export Section -->
+                        <div style="margin-bottom: 20px; padding-bottom: 15px; border-bottom: 1px solid #86efac;">
+                            <h4 style="font-size: 0.9em; color: #166534; margin: 0 0 10px 0;">Export Data</h4>
+                            <div style="display: flex; gap: 10px; flex-wrap: wrap; margin-bottom: 10px;">
+                                <label style="display: flex; align-items: center; gap: 5px; font-size: 0.85em;">
+                                    <input type="checkbox" id="exportAgents" checked> Agents
+                                </label>
+                                <label style="display: flex; align-items: center; gap: 5px; font-size: 0.85em;">
+                                    <input type="checkbox" id="exportWorkflows" checked> Workflows
+                                </label>
+                                <label style="display: flex; align-items: center; gap: 5px; font-size: 0.85em;">
+                                    <input type="checkbox" id="exportConversations"> Conversations
+                                </label>
+                                <label style="display: flex; align-items: center; gap: 5px; font-size: 0.85em;">
+                                    <input type="checkbox" id="exportTestSuites"> Test Suites
+                                </label>
+                            </div>
+                            <div style="display: flex; gap: 10px; flex-wrap: wrap;">
+                                <button onclick="exportData()" style="padding: 6px 14px; background: #22c55e; color: white; border: none; border-radius: 6px; cursor: pointer; font-size: 0.9em;">Export JSON</button>
+                                <button onclick="exportStats()" style="padding: 6px 14px; background: #16a34a; color: white; border: none; border-radius: 6px; cursor: pointer; font-size: 0.9em;">Export Stats</button>
+                            </div>
+                        </div>
+
+                        <!-- Import Section -->
+                        <div>
+                            <h4 style="font-size: 0.9em; color: #166534; margin: 0 0 10px 0;">Import Data</h4>
+                            <div style="display: flex; gap: 10px; flex-wrap: wrap; align-items: center;">
+                                <input type="file" id="importFile" accept=".json" style="font-size: 0.85em;">
+                                <button onclick="importData()" style="padding: 6px 14px; background: #3b82f6; color: white; border: none; border-radius: 6px; cursor: pointer; font-size: 0.9em;">Import JSON</button>
+                            </div>
+                            <p style="font-size: 0.75em; color: #666; margin-top: 8px;">Import data from a previously exported JSON file.</p>
+                        </div>
+
+                        <div id="exportResult" style="margin-top: 10px; font-size: 0.85em; color: #666;"></div>
+                    </div>
+
+                    <!-- AI Conversations Section -->
+                    <div style="background: linear-gradient(135deg, #dbeafe, #bfdbfe); border-radius: 12px; padding: 20px; border: 1px solid #3b82f6; grid-column: span 2;">
+                        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px;">
+                            <h3 style="color: #1e40af; margin: 0;">💬 AI Conversations</h3>
+                            <div style="display: flex; gap: 10px;">
+                                <button onclick="loadAIConversations()" style="padding: 8px 16px; background: #3b82f6; color: white; border: none; border-radius: 6px; cursor: pointer;">List Conversations</button>
+                                <button onclick="viewConversation()" style="padding: 8px 16px; background: #1d4ed8; color: white; border: none; border-radius: 6px; cursor: pointer;">View Selected</button>
+                            </div>
+                        </div>
+
+                        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px;">
+                            <!-- Conversations List -->
+                            <div style="background: white; border-radius: 8px; padding: 15px; max-height: 350px; overflow-y: auto;">
+                                <h4 style="margin: 0 0 10px 0; color: #333; font-size: 0.9em;">Recent Conversations</h4>
+                                <div id="aiConversationsList">
+                                    <div style="text-align: center; color: #888; padding: 20px;">Click "List Conversations" to load</div>
+                                </div>
+                            </div>
+
+                            <!-- Conversation Messages -->
+                            <div style="background: white; border-radius: 8px; padding: 15px; max-height: 350px; overflow-y: auto;">
+                                <h4 style="margin: 0 0 10px 0; color: #333; font-size: 0.9em;">Conversation Messages</h4>
+                                <div id="aiConversationMessages">
+                                    <div style="text-align: center; color: #888; padding: 20px;">Select a conversation to view messages</div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Enterprise Tab (V2 Database-Backed) -->
+        <div id="tab-enterprise" class="tab-content">
+            <div class="main-content">
+                <h2 style="margin-bottom: 20px;">🏢 Enterprise Management (V2 - Database Backed)</h2>
+                <p style="margin-bottom: 20px; color: #666;">All enterprise features use real database persistence. Data survives server restarts.</p>
+
+                <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(400px, 1fr)); gap: 20px;">
+                    <!-- Billing Section -->
+                    <div style="background: linear-gradient(135deg, #fef3c7, #fde68a); padding: 20px; border-radius: 12px; border: 1px solid #f59e0b;">
+                        <h3 style="margin-bottom: 15px; color: #92400e;">💳 Billing & Costs</h3>
+                        <div style="display: flex; gap: 10px; flex-wrap: wrap;">
+                            <input type="text" id="entBillingOrgId" placeholder="Organization ID" style="flex: 1; padding: 8px; border: 1px solid #ccc; border-radius: 4px;">
+                            <button onclick="entGetBilling()" style="padding: 8px 16px; background: #f59e0b; color: white; border: none; border-radius: 4px; cursor: pointer;">Get Billing</button>
+                        </div>
+                        <div style="margin-top: 15px;">
+                            <input type="text" id="entBillingEmail" placeholder="Billing Email" style="width: 100%; padding: 8px; border: 1px solid #ccc; border-radius: 4px; margin-bottom: 8px;">
+                            <button onclick="entCreateBilling()" style="padding: 8px 16px; background: #10b981; color: white; border: none; border-radius: 4px; cursor: pointer;">Create Billing Account</button>
+                        </div>
+                        <div id="entBillingResult" style="margin-top: 10px; padding: 10px; background: white; border-radius: 4px; font-size: 0.9em;"></div>
+                    </div>
+
+                    <!-- Quotas Section -->
+                    <div style="background: linear-gradient(135deg, #dbeafe, #bfdbfe); padding: 20px; border-radius: 12px; border: 1px solid #3b82f6;">
+                        <h3 style="margin-bottom: 15px; color: #1e40af;">📊 Usage Quotas</h3>
+                        <div style="display: flex; gap: 10px; flex-wrap: wrap;">
+                            <input type="text" id="entQuotaOrgId" placeholder="Organization ID" style="flex: 1; padding: 8px; border: 1px solid #ccc; border-radius: 4px;">
+                            <button onclick="entGetQuotas()" style="padding: 8px 16px; background: #3b82f6; color: white; border: none; border-radius: 4px; cursor: pointer;">Get Quotas</button>
+                        </div>
+                        <div style="margin-top: 15px; display: grid; grid-template-columns: 1fr 1fr; gap: 8px;">
+                            <select id="entQuotaType" style="padding: 8px; border: 1px solid #ccc; border-radius: 4px;">
+                                <option value="executions">Executions</option>
+                                <option value="api_calls">API Calls</option>
+                                <option value="storage_gb">Storage GB</option>
+                                <option value="ai_tokens">AI Tokens</option>
+                            </select>
+                            <input type="number" id="entQuotaLimit" placeholder="Limit" value="1000" style="padding: 8px; border: 1px solid #ccc; border-radius: 4px;">
+                        </div>
+                        <button onclick="entCreateQuota()" style="margin-top: 8px; padding: 8px 16px; background: #10b981; color: white; border: none; border-radius: 4px; cursor: pointer;">Create Quota</button>
+                        <div id="entQuotaResult" style="margin-top: 10px; padding: 10px; background: white; border-radius: 4px; font-size: 0.9em;"></div>
+                    </div>
+
+                    <!-- Backups Section -->
+                    <div style="background: linear-gradient(135deg, #dcfce7, #bbf7d0); padding: 20px; border-radius: 12px; border: 1px solid #22c55e;">
+                        <h3 style="margin-bottom: 15px; color: #166534;">💾 Backups & DR</h3>
+                        <div style="display: flex; gap: 10px; flex-wrap: wrap;">
+                            <input type="text" id="entBackupOrgId" placeholder="Organization ID" style="flex: 1; padding: 8px; border: 1px solid #ccc; border-radius: 4px;">
+                            <button onclick="entListBackups()" style="padding: 8px 16px; background: #22c55e; color: white; border: none; border-radius: 4px; cursor: pointer;">List Backups</button>
+                        </div>
+                        <div style="margin-top: 15px; display: grid; grid-template-columns: 1fr 1fr; gap: 8px;">
+                            <input type="text" id="entBackupName" placeholder="Backup Name" style="padding: 8px; border: 1px solid #ccc; border-radius: 4px;">
+                            <select id="entBackupType" style="padding: 8px; border: 1px solid #ccc; border-radius: 4px;">
+                                <option value="full">Full</option>
+                                <option value="incremental">Incremental</option>
+                                <option value="differential">Differential</option>
+                            </select>
+                        </div>
+                        <button onclick="entCreateBackup()" style="margin-top: 8px; padding: 8px 16px; background: #10b981; color: white; border: none; border-radius: 4px; cursor: pointer;">Create Backup</button>
+                        <div id="entBackupResult" style="margin-top: 10px; padding: 10px; background: white; border-radius: 4px; font-size: 0.9em;"></div>
+                    </div>
+
+                    <!-- SSO Section -->
+                    <div style="background: linear-gradient(135deg, #f3e8ff, #e9d5ff); padding: 20px; border-radius: 12px; border: 1px solid #a855f7;">
+                        <h3 style="margin-bottom: 15px; color: #6b21a8;">🔐 SSO Providers</h3>
+                        <div style="display: flex; gap: 10px; flex-wrap: wrap;">
+                            <input type="text" id="entSSOOrgId" placeholder="Organization ID" style="flex: 1; padding: 8px; border: 1px solid #ccc; border-radius: 4px;">
+                            <button onclick="entListSSO()" style="padding: 8px 16px; background: #a855f7; color: white; border: none; border-radius: 4px; cursor: pointer;">List Providers</button>
+                        </div>
+                        <div style="margin-top: 15px; display: grid; grid-template-columns: 1fr 1fr; gap: 8px;">
+                            <input type="text" id="entSSOName" placeholder="Provider Name" style="padding: 8px; border: 1px solid #ccc; border-radius: 4px;">
+                            <select id="entSSOType" style="padding: 8px; border: 1px solid #ccc; border-radius: 4px;">
+                                <option value="oidc">OIDC</option>
+                                <option value="saml">SAML</option>
+                            </select>
+                        </div>
+                        <button onclick="entCreateSSO()" style="margin-top: 8px; padding: 8px 16px; background: #10b981; color: white; border: none; border-radius: 4px; cursor: pointer;">Create SSO Provider</button>
+                        <div id="entSSOResult" style="margin-top: 10px; padding: 10px; background: white; border-radius: 4px; font-size: 0.9em;"></div>
+                    </div>
+
+                    <!-- Security Policies Section -->
+                    <div style="background: linear-gradient(135deg, #fee2e2, #fecaca); padding: 20px; border-radius: 12px; border: 1px solid #ef4444;">
+                        <h3 style="margin-bottom: 15px; color: #991b1b;">🛡️ Security Policies</h3>
+                        <div style="display: flex; gap: 10px; flex-wrap: wrap;">
+                            <input type="text" id="entPolicyOrgId" placeholder="Organization ID" style="flex: 1; padding: 8px; border: 1px solid #ccc; border-radius: 4px;">
+                            <button onclick="entListPolicies()" style="padding: 8px 16px; background: #ef4444; color: white; border: none; border-radius: 4px; cursor: pointer;">List Policies</button>
+                        </div>
+                        <div style="margin-top: 15px;">
+                            <input type="text" id="entPolicyName" placeholder="Policy Name" style="width: 100%; padding: 8px; border: 1px solid #ccc; border-radius: 4px; margin-bottom: 8px;">
+                            <select id="entPolicyType" style="width: 100%; padding: 8px; border: 1px solid #ccc; border-radius: 4px;">
+                                <option value="access">Access Control</option>
+                                <option value="data">Data Protection</option>
+                                <option value="network">Network Security</option>
+                                <option value="compliance">Compliance</option>
+                            </select>
+                        </div>
+                        <button onclick="entCreatePolicy()" style="margin-top: 8px; padding: 8px 16px; background: #10b981; color: white; border: none; border-radius: 4px; cursor: pointer;">Create Policy</button>
+                        <div id="entPolicyResult" style="margin-top: 10px; padding: 10px; background: white; border-radius: 4px; font-size: 0.9em;"></div>
+                    </div>
+
+                    <!-- Deployments Section -->
+                    <div style="background: linear-gradient(135deg, #ecfdf5, #d1fae5); padding: 20px; border-radius: 12px; border: 1px solid #10b981;">
+                        <h3 style="margin-bottom: 15px; color: #065f46;">🚀 Deployments</h3>
+                        <div style="display: flex; gap: 10px; flex-wrap: wrap;">
+                            <input type="text" id="entDeployOrgId" placeholder="Organization ID" style="flex: 1; padding: 8px; border: 1px solid #ccc; border-radius: 4px;">
+                            <button onclick="entListDeployments()" style="padding: 8px 16px; background: #10b981; color: white; border: none; border-radius: 4px; cursor: pointer;">List Deployments</button>
+                        </div>
+                        <div style="margin-top: 15px; display: grid; grid-template-columns: 1fr 1fr; gap: 8px;">
+                            <input type="text" id="entDeployName" placeholder="Deployment Name" style="padding: 8px; border: 1px solid #ccc; border-radius: 4px;">
+                            <select id="entDeployEnv" style="padding: 8px; border: 1px solid #ccc; border-radius: 4px;">
+                                <option value="staging">Staging</option>
+                                <option value="production">Production</option>
+                            </select>
+                        </div>
+                        <button onclick="entCreateDeployment()" style="margin-top: 8px; padding: 8px 16px; background: #3b82f6; color: white; border: none; border-radius: 4px; cursor: pointer;">Create Deployment</button>
+                        <div id="entDeployResult" style="margin-top: 10px; padding: 10px; background: white; border-radius: 4px; font-size: 0.9em;"></div>
+                    </div>
+
+                    <!-- SLAs Section -->
+                    <div style="background: linear-gradient(135deg, #fef9c3, #fef08a); padding: 20px; border-radius: 12px; border: 1px solid #eab308;">
+                        <h3 style="margin-bottom: 15px; color: #854d0e;">📋 SLAs</h3>
+                        <div style="display: flex; gap: 10px; flex-wrap: wrap;">
+                            <input type="text" id="entSLAOrgId" placeholder="Organization ID" style="flex: 1; padding: 8px; border: 1px solid #ccc; border-radius: 4px;">
+                            <button onclick="entListSLAs()" style="padding: 8px 16px; background: #eab308; color: white; border: none; border-radius: 4px; cursor: pointer;">List SLAs</button>
+                        </div>
+                        <div style="margin-top: 15px; display: grid; grid-template-columns: 1fr 1fr; gap: 8px;">
+                            <input type="text" id="entSLAName" placeholder="SLA Name" style="padding: 8px; border: 1px solid #ccc; border-radius: 4px;">
+                            <input type="number" id="entSLAUptime" placeholder="Uptime %" value="99.9" step="0.1" style="padding: 8px; border: 1px solid #ccc; border-radius: 4px;">
+                        </div>
+                        <button onclick="entCreateSLA()" style="margin-top: 8px; padding: 8px 16px; background: #10b981; color: white; border: none; border-radius: 4px; cursor: pointer;">Create SLA</button>
+                        <div id="entSLAResult" style="margin-top: 10px; padding: 10px; background: white; border-radius: 4px; font-size: 0.9em;"></div>
+                    </div>
+
+                    <!-- Knowledge Base Section -->
+                    <div style="background: linear-gradient(135deg, #e0f2fe, #bae6fd); padding: 20px; border-radius: 12px; border: 1px solid #0ea5e9;">
+                        <h3 style="margin-bottom: 15px; color: #075985;">📚 Knowledge Base</h3>
+                        <div style="display: flex; gap: 10px; flex-wrap: wrap;">
+                            <input type="text" id="entKBOrgId" placeholder="Organization ID" style="flex: 1; padding: 8px; border: 1px solid #ccc; border-radius: 4px;">
+                            <button onclick="entListKBArticles()" style="padding: 8px 16px; background: #0ea5e9; color: white; border: none; border-radius: 4px; cursor: pointer;">List Articles</button>
+                        </div>
+                        <div style="margin-top: 15px;">
+                            <input type="text" id="entKBTitle" placeholder="Article Title" style="width: 100%; padding: 8px; border: 1px solid #ccc; border-radius: 4px; margin-bottom: 8px;">
+                            <textarea id="entKBContent" placeholder="Article Content (Markdown)" style="width: 100%; padding: 8px; border: 1px solid #ccc; border-radius: 4px; height: 60px;"></textarea>
+                        </div>
+                        <button onclick="entCreateKBArticle()" style="margin-top: 8px; padding: 8px 16px; background: #10b981; color: white; border: none; border-radius: 4px; cursor: pointer;">Create Article</button>
+                        <div id="entKBResult" style="margin-top: 10px; padding: 10px; background: white; border-radius: 4px; font-size: 0.9em;"></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Operations Tab (V2 Database-Backed) -->
+        <div id="tab-operations" class="tab-content">
+            <div class="main-content">
+                <h2 style="margin-bottom: 20px;">🎯 Platform Operations (V2 - Database Backed)</h2>
+                <p style="margin-bottom: 20px; color: #666;">Job scheduling, events, notifications, secrets, audit logs, feature flags, experiments, connectors, and batch processing.</p>
+
+                <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(400px, 1fr)); gap: 20px;">
+                    <!-- Scheduled Jobs Section -->
+                    <div style="background: linear-gradient(135deg, #ede9fe, #ddd6fe); padding: 20px; border-radius: 12px; border: 1px solid #8b5cf6;">
+                        <h3 style="margin-bottom: 15px; color: #5b21b6;">⏰ Scheduled Jobs</h3>
+                        <div style="display: flex; gap: 10px; flex-wrap: wrap; margin-bottom: 10px;">
+                            <input type="text" id="opsJobName" placeholder="Job Name" style="flex: 1; padding: 8px; border: 1px solid #ccc; border-radius: 4px;">
+                            <select id="opsJobType" style="padding: 8px; border: 1px solid #ccc; border-radius: 4px;">
+                                <option value="agent_execution">Agent Execution</option>
+                                <option value="workflow">Workflow</option>
+                                <option value="backup">Backup</option>
+                                <option value="cleanup">Cleanup</option>
+                            </select>
+                        </div>
+                        <div style="display: flex; gap: 10px; flex-wrap: wrap;">
+                            <input type="text" id="opsCronExpr" placeholder="Cron: 0 0 * * *" style="flex: 1; padding: 8px; border: 1px solid #ccc; border-radius: 4px;">
+                            <button onclick="opsCreateJob()" style="padding: 8px 16px; background: #8b5cf6; color: white; border: none; border-radius: 4px; cursor: pointer;">Create Job</button>
+                            <button onclick="opsListJobs()" style="padding: 8px 16px; background: #6366f1; color: white; border: none; border-radius: 4px; cursor: pointer;">List Jobs</button>
+                        </div>
+                        <div id="opsJobResult" style="margin-top: 10px; padding: 10px; background: white; border-radius: 4px; font-size: 0.9em; max-height: 200px; overflow-y: auto;"></div>
+                    </div>
+
+                    <!-- Events Section -->
+                    <div style="background: linear-gradient(135deg, #fce7f3, #fbcfe8); padding: 20px; border-radius: 12px; border: 1px solid #ec4899;">
+                        <h3 style="margin-bottom: 15px; color: #9d174d;">📡 Event System</h3>
+                        <div style="display: flex; gap: 10px; flex-wrap: wrap; margin-bottom: 10px;">
+                            <input type="text" id="opsEventType" placeholder="Event Type (e.g. agent.executed)" style="flex: 1; padding: 8px; border: 1px solid #ccc; border-radius: 4px;">
+                            <select id="opsEventSeverity" style="padding: 8px; border: 1px solid #ccc; border-radius: 4px;">
+                                <option value="info">Info</option>
+                                <option value="warning">Warning</option>
+                                <option value="error">Error</option>
+                            </select>
+                        </div>
+                        <div style="display: flex; gap: 10px; flex-wrap: wrap;">
+                            <input type="text" id="opsEventMessage" placeholder="Event message" style="flex: 1; padding: 8px; border: 1px solid #ccc; border-radius: 4px;">
+                            <button onclick="opsCreateEvent()" style="padding: 8px 16px; background: #ec4899; color: white; border: none; border-radius: 4px; cursor: pointer;">Log Event</button>
+                            <button onclick="opsListEvents()" style="padding: 8px 16px; background: #db2777; color: white; border: none; border-radius: 4px; cursor: pointer;">List Events</button>
+                        </div>
+                        <div id="opsEventResult" style="margin-top: 10px; padding: 10px; background: white; border-radius: 4px; font-size: 0.9em; max-height: 200px; overflow-y: auto;"></div>
+                    </div>
+
+                    <!-- Notifications Section -->
+                    <div style="background: linear-gradient(135deg, #dbeafe, #bfdbfe); padding: 20px; border-radius: 12px; border: 1px solid #3b82f6;">
+                        <h3 style="margin-bottom: 15px; color: #1e40af;">🔔 Notifications</h3>
+                        <div style="display: flex; gap: 10px; flex-wrap: wrap; margin-bottom: 10px;">
+                            <input type="text" id="opsNotifTitle" placeholder="Notification Title" style="flex: 1; padding: 8px; border: 1px solid #ccc; border-radius: 4px;">
+                            <select id="opsNotifType" style="padding: 8px; border: 1px solid #ccc; border-radius: 4px;">
+                                <option value="info">Info</option>
+                                <option value="success">Success</option>
+                                <option value="warning">Warning</option>
+                                <option value="error">Error</option>
+                            </select>
+                        </div>
+                        <div style="display: flex; gap: 10px; flex-wrap: wrap;">
+                            <input type="text" id="opsNotifMessage" placeholder="Message" style="flex: 1; padding: 8px; border: 1px solid #ccc; border-radius: 4px;">
+                            <button onclick="opsCreateNotification()" style="padding: 8px 16px; background: #3b82f6; color: white; border: none; border-radius: 4px; cursor: pointer;">Send</button>
+                        </div>
+                        <div id="opsNotifResult" style="margin-top: 10px; padding: 10px; background: white; border-radius: 4px; font-size: 0.9em;"></div>
+                    </div>
+
+                    <!-- Secrets Section -->
+                    <div style="background: linear-gradient(135deg, #fef3c7, #fde68a); padding: 20px; border-radius: 12px; border: 1px solid #f59e0b;">
+                        <h3 style="margin-bottom: 15px; color: #92400e;">🔐 Secrets Management</h3>
+                        <div style="display: flex; gap: 10px; flex-wrap: wrap; margin-bottom: 10px;">
+                            <input type="text" id="opsSecretName" placeholder="Secret Name" style="flex: 1; padding: 8px; border: 1px solid #ccc; border-radius: 4px;">
+                            <select id="opsSecretType" style="padding: 8px; border: 1px solid #ccc; border-radius: 4px;">
+                                <option value="api_key">API Key</option>
+                                <option value="password">Password</option>
+                                <option value="token">Token</option>
+                                <option value="certificate">Certificate</option>
+                            </select>
+                        </div>
+                        <div style="display: flex; gap: 10px; flex-wrap: wrap;">
+                            <input type="password" id="opsSecretValue" placeholder="Secret Value" style="flex: 1; padding: 8px; border: 1px solid #ccc; border-radius: 4px;">
+                            <button onclick="opsCreateSecret()" style="padding: 8px 16px; background: #f59e0b; color: white; border: none; border-radius: 4px; cursor: pointer;">Create</button>
+                            <button onclick="opsListSecrets()" style="padding: 8px 16px; background: #d97706; color: white; border: none; border-radius: 4px; cursor: pointer;">List</button>
+                        </div>
+                        <div id="opsSecretResult" style="margin-top: 10px; padding: 10px; background: white; border-radius: 4px; font-size: 0.9em; max-height: 200px; overflow-y: auto;"></div>
+                    </div>
+
+                    <!-- Audit Logs Section -->
+                    <div style="background: linear-gradient(135deg, #f3e8ff, #e9d5ff); padding: 20px; border-radius: 12px; border: 1px solid #a855f7;">
+                        <h3 style="margin-bottom: 15px; color: #6b21a8;">📜 Audit Logs</h3>
+                        <div style="display: flex; gap: 10px; flex-wrap: wrap; margin-bottom: 10px;">
+                            <select id="opsAuditAction" style="flex: 1; padding: 8px; border: 1px solid #ccc; border-radius: 4px;">
+                                <option value="">All Actions</option>
+                                <option value="create">Create</option>
+                                <option value="update">Update</option>
+                                <option value="delete">Delete</option>
+                                <option value="execute">Execute</option>
+                                <option value="login">Login</option>
+                            </select>
+                            <input type="text" id="opsAuditLimit" placeholder="Limit (default: 50)" style="width: 100px; padding: 8px; border: 1px solid #ccc; border-radius: 4px;">
+                        </div>
+                        <button onclick="opsListAuditLogs()" style="padding: 8px 16px; background: #a855f7; color: white; border: none; border-radius: 4px; cursor: pointer;">View Audit Logs</button>
+                        <div id="opsAuditResult" style="margin-top: 10px; padding: 10px; background: white; border-radius: 4px; font-size: 0.9em; max-height: 250px; overflow-y: auto;"></div>
+                    </div>
+
+                    <!-- Feature Flags Section -->
+                    <div style="background: linear-gradient(135deg, #d1fae5, #a7f3d0); padding: 20px; border-radius: 12px; border: 1px solid #10b981;">
+                        <h3 style="margin-bottom: 15px; color: #065f46;">🚩 Feature Flags</h3>
+                        <div style="display: flex; gap: 10px; flex-wrap: wrap; margin-bottom: 10px;">
+                            <input type="text" id="opsFlagName" placeholder="Flag Name" style="flex: 1; padding: 8px; border: 1px solid #ccc; border-radius: 4px;">
+                            <input type="number" id="opsFlagRollout" placeholder="Rollout %" value="0" min="0" max="100" style="width: 80px; padding: 8px; border: 1px solid #ccc; border-radius: 4px;">
+                        </div>
+                        <div style="display: flex; gap: 10px; flex-wrap: wrap;">
+                            <label style="display: flex; align-items: center; gap: 5px;">
+                                <input type="checkbox" id="opsFlagEnabled"> Enabled
+                            </label>
+                            <button onclick="opsCreateFlag()" style="padding: 8px 16px; background: #10b981; color: white; border: none; border-radius: 4px; cursor: pointer;">Create Flag</button>
+                            <button onclick="opsListFlags()" style="padding: 8px 16px; background: #059669; color: white; border: none; border-radius: 4px; cursor: pointer;">List Flags</button>
+                        </div>
+                        <div id="opsFlagResult" style="margin-top: 10px; padding: 10px; background: white; border-radius: 4px; font-size: 0.9em; max-height: 200px; overflow-y: auto;"></div>
+                    </div>
+
+                    <!-- A/B Experiments Section -->
+                    <div style="background: linear-gradient(135deg, #fee2e2, #fecaca); padding: 20px; border-radius: 12px; border: 1px solid #ef4444;">
+                        <h3 style="margin-bottom: 15px; color: #991b1b;">🧪 A/B Experiments</h3>
+                        <div style="display: flex; gap: 10px; flex-wrap: wrap; margin-bottom: 10px;">
+                            <input type="text" id="opsExpName" placeholder="Experiment Name" style="flex: 1; padding: 8px; border: 1px solid #ccc; border-radius: 4px;">
+                            <input type="text" id="opsExpMetric" placeholder="Target Metric" style="flex: 1; padding: 8px; border: 1px solid #ccc; border-radius: 4px;">
+                        </div>
+                        <div style="display: flex; gap: 10px; flex-wrap: wrap;">
+                            <button onclick="opsCreateExperiment()" style="padding: 8px 16px; background: #ef4444; color: white; border: none; border-radius: 4px; cursor: pointer;">Create</button>
+                            <button onclick="opsListExperiments()" style="padding: 8px 16px; background: #dc2626; color: white; border: none; border-radius: 4px; cursor: pointer;">List</button>
+                        </div>
+                        <div id="opsExpResult" style="margin-top: 10px; padding: 10px; background: white; border-radius: 4px; font-size: 0.9em; max-height: 200px; overflow-y: auto;"></div>
+                    </div>
+
+                    <!-- Connectors Section -->
+                    <div style="background: linear-gradient(135deg, #e0e7ff, #c7d2fe); padding: 20px; border-radius: 12px; border: 1px solid #6366f1;">
+                        <h3 style="margin-bottom: 15px; color: #3730a3;">🔌 Connectors</h3>
+                        <div style="display: flex; gap: 10px; flex-wrap: wrap; margin-bottom: 10px;">
+                            <input type="text" id="opsConnName" placeholder="Connector Name" style="flex: 1; padding: 8px; border: 1px solid #ccc; border-radius: 4px;">
+                            <select id="opsConnType" style="padding: 8px; border: 1px solid #ccc; border-radius: 4px;">
+                                <option value="api">API</option>
+                                <option value="database">Database</option>
+                                <option value="file">File Storage</option>
+                                <option value="messaging">Messaging</option>
+                            </select>
+                        </div>
+                        <div style="display: flex; gap: 10px; flex-wrap: wrap;">
+                            <input type="text" id="opsConnProvider" placeholder="Provider (e.g., postgres, s3)" style="flex: 1; padding: 8px; border: 1px solid #ccc; border-radius: 4px;">
+                            <button onclick="opsCreateConnector()" style="padding: 8px 16px; background: #6366f1; color: white; border: none; border-radius: 4px; cursor: pointer;">Create</button>
+                            <button onclick="opsListConnectors()" style="padding: 8px 16px; background: #4f46e5; color: white; border: none; border-radius: 4px; cursor: pointer;">List</button>
+                        </div>
+                        <div id="opsConnResult" style="margin-top: 10px; padding: 10px; background: white; border-radius: 4px; font-size: 0.9em; max-height: 200px; overflow-y: auto;"></div>
+                    </div>
+
+                    <!-- Execution Queue Section -->
+                    <div style="background: linear-gradient(135deg, #fef9c3, #fde047); padding: 20px; border-radius: 12px; border: 1px solid #eab308;">
+                        <h3 style="margin-bottom: 15px; color: #854d0e;">⚡ Execution Queue</h3>
+                        <div style="display: flex; gap: 10px; flex-wrap: wrap; margin-bottom: 10px;">
+                            <input type="text" id="opsExecAgentId" placeholder="Agent ID" style="flex: 1; padding: 8px; border: 1px solid #ccc; border-radius: 4px;">
+                            <input type="number" id="opsExecPriority" placeholder="Priority (1-10)" value="5" min="1" max="10" style="width: 100px; padding: 8px; border: 1px solid #ccc; border-radius: 4px;">
+                        </div>
+                        <div style="display: flex; gap: 10px; flex-wrap: wrap;">
+                            <button onclick="opsQueueExecution()" style="padding: 8px 16px; background: #eab308; color: white; border: none; border-radius: 4px; cursor: pointer;">Queue</button>
+                            <button onclick="opsListExecutions()" style="padding: 8px 16px; background: #ca8a04; color: white; border: none; border-radius: 4px; cursor: pointer;">List Queue</button>
+                            <button onclick="opsListExecutionHistory()" style="padding: 8px 16px; background: #a16207; color: white; border: none; border-radius: 4px; cursor: pointer;">History</button>
+                        </div>
+                        <div id="opsExecResult" style="margin-top: 10px; padding: 10px; background: white; border-radius: 4px; font-size: 0.9em; max-height: 200px; overflow-y: auto;"></div>
+                    </div>
+
+                    <!-- Batch Jobs Section -->
+                    <div style="background: linear-gradient(135deg, #cffafe, #a5f3fc); padding: 20px; border-radius: 12px; border: 1px solid #06b6d4;">
+                        <h3 style="margin-bottom: 15px; color: #0e7490;">📦 Batch Jobs</h3>
+                        <div style="display: flex; gap: 10px; flex-wrap: wrap; margin-bottom: 10px;">
+                            <input type="text" id="opsBatchName" placeholder="Batch Job Name" style="flex: 1; padding: 8px; border: 1px solid #ccc; border-radius: 4px;">
+                            <select id="opsBatchType" style="padding: 8px; border: 1px solid #ccc; border-radius: 4px;">
+                                <option value="agent_batch">Agent Batch</option>
+                                <option value="data_import">Data Import</option>
+                                <option value="data_export">Data Export</option>
+                                <option value="analysis">Analysis</option>
+                            </select>
+                        </div>
+                        <div style="display: flex; gap: 10px; flex-wrap: wrap;">
+                            <input type="number" id="opsBatchItems" placeholder="Total Items" style="width: 100px; padding: 8px; border: 1px solid #ccc; border-radius: 4px;">
+                            <button onclick="opsCreateBatch()" style="padding: 8px 16px; background: #06b6d4; color: white; border: none; border-radius: 4px; cursor: pointer;">Create</button>
+                            <button onclick="opsListBatches()" style="padding: 8px 16px; background: #0891b2; color: white; border: none; border-radius: 4px; cursor: pointer;">List</button>
+                        </div>
+                        <div id="opsBatchResult" style="margin-top: 10px; padding: 10px; background: white; border-radius: 4px; font-size: 0.9em; max-height: 200px; overflow-y: auto;"></div>
+                    </div>
+
+                    <!-- Workflow Definitions Section -->
+                    <div style="background: linear-gradient(135deg, #f0fdf4, #dcfce7); padding: 20px; border-radius: 12px; border: 1px solid #22c55e;">
+                        <h3 style="margin-bottom: 15px; color: #166534;">📋 Workflow Definitions</h3>
+                        <div style="display: flex; gap: 10px; flex-wrap: wrap; margin-bottom: 10px;">
+                            <input type="text" id="wfDefName" placeholder="Workflow Name" style="flex: 1; padding: 8px; border: 1px solid #ccc; border-radius: 4px;">
+                            <select id="wfDefCategory" style="padding: 8px; border: 1px solid #ccc; border-radius: 4px;">
+                                <option value="automation">Automation</option>
+                                <option value="data_processing">Data Processing</option>
+                                <option value="integration">Integration</option>
+                                <option value="analysis">Analysis</option>
+                                <option value="reporting">Reporting</option>
+                            </select>
+                        </div>
+                        <div style="display: flex; gap: 10px; flex-wrap: wrap; margin-bottom: 10px;">
+                            <input type="text" id="wfDefDescription" placeholder="Description" style="flex: 1; padding: 8px; border: 1px solid #ccc; border-radius: 4px;">
+                        </div>
+                        <div style="display: flex; gap: 10px; flex-wrap: wrap;">
+                            <button onclick="wfDefCreate()" style="padding: 8px 16px; background: #22c55e; color: white; border: none; border-radius: 4px; cursor: pointer;">Create</button>
+                            <button onclick="wfDefList()" style="padding: 8px 16px; background: #16a34a; color: white; border: none; border-radius: 4px; cursor: pointer;">List</button>
+                            <button onclick="wfDefClone()" style="padding: 8px 16px; background: #15803d; color: white; border: none; border-radius: 4px; cursor: pointer;">Clone Selected</button>
+                        </div>
+                        <div id="wfDefResult" style="margin-top: 10px; padding: 10px; background: white; border-radius: 4px; font-size: 0.9em; max-height: 250px; overflow-y: auto;"></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Testing Tab (V2 Database-Backed) -->
+        <div id="tab-testing" class="tab-content">
+            <div class="main-content">
+                <h2 style="margin-bottom: 20px;">🧪 Testing & Quality Assurance (V2 - Database Backed)</h2>
+                <p style="margin-bottom: 20px; color: #666;">Manage test suites, run tests, and track test history for agents and workflows.</p>
+
+                <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(450px, 1fr)); gap: 20px;">
+                    <!-- Test Suites Section -->
+                    <div style="background: linear-gradient(135deg, #fee2e2, #fecaca); padding: 20px; border-radius: 12px; border: 1px solid #ef4444;">
+                        <h3 style="margin-bottom: 15px; color: #991b1b;">📋 Test Suites</h3>
+                        <div style="display: flex; gap: 10px; flex-wrap: wrap; margin-bottom: 10px;">
+                            <input type="text" id="testSuiteName" placeholder="Test Suite Name" style="flex: 1; padding: 8px; border: 1px solid #ccc; border-radius: 4px;">
+                            <select id="testTargetType" style="padding: 8px; border: 1px solid #ccc; border-radius: 4px;">
+                                <option value="agent">Agent</option>
+                                <option value="workflow">Workflow</option>
+                                <option value="api">API</option>
+                            </select>
+                        </div>
+                        <div style="display: flex; gap: 10px; flex-wrap: wrap; margin-bottom: 10px;">
+                            <input type="text" id="testTargetId" placeholder="Target ID (agent/workflow)" style="flex: 1; padding: 8px; border: 1px solid #ccc; border-radius: 4px;">
+                        </div>
+                        <div style="display: flex; gap: 10px; flex-wrap: wrap;">
+                            <button onclick="testCreateSuite()" style="padding: 8px 16px; background: #ef4444; color: white; border: none; border-radius: 4px; cursor: pointer;">Create Suite</button>
+                            <button onclick="testListSuites()" style="padding: 8px 16px; background: #dc2626; color: white; border: none; border-radius: 4px; cursor: pointer;">List Suites</button>
+                        </div>
+                        <div id="testSuiteResult" style="margin-top: 10px; padding: 10px; background: white; border-radius: 4px; font-size: 0.9em; max-height: 250px; overflow-y: auto;"></div>
+                    </div>
+
+                    <!-- Test Runs Section -->
+                    <div style="background: linear-gradient(135deg, #fef3c7, #fde68a); padding: 20px; border-radius: 12px; border: 1px solid #f59e0b;">
+                        <h3 style="margin-bottom: 15px; color: #92400e;">🏃 Test Runs</h3>
+                        <div style="display: flex; gap: 10px; flex-wrap: wrap; margin-bottom: 10px;">
+                            <input type="text" id="testRunSuiteId" placeholder="Suite ID to run" style="flex: 1; padding: 8px; border: 1px solid #ccc; border-radius: 4px;">
+                            <select id="testRunEnv" style="padding: 8px; border: 1px solid #ccc; border-radius: 4px;">
+                                <option value="development">Development</option>
+                                <option value="staging">Staging</option>
+                                <option value="production">Production</option>
+                            </select>
+                        </div>
+                        <div style="display: flex; gap: 10px; flex-wrap: wrap;">
+                            <button onclick="testRunSuite()" style="padding: 8px 16px; background: #f59e0b; color: white; border: none; border-radius: 4px; cursor: pointer;">Run Tests</button>
+                            <button onclick="testListRuns()" style="padding: 8px 16px; background: #d97706; color: white; border: none; border-radius: 4px; cursor: pointer;">List Runs</button>
+                        </div>
+                        <div id="testRunResult" style="margin-top: 10px; padding: 10px; background: white; border-radius: 4px; font-size: 0.9em; max-height: 250px; overflow-y: auto;"></div>
+                    </div>
+
+                    <!-- System Health Section -->
+                    <div style="background: linear-gradient(135deg, #d1fae5, #a7f3d0); padding: 20px; border-radius: 12px; border: 1px solid #10b981;">
+                        <h3 style="margin-bottom: 15px; color: #065f46;">💚 System Health</h3>
+                        <div style="display: flex; gap: 10px; flex-wrap: wrap;">
+                            <button onclick="testHealthCheck()" style="padding: 8px 16px; background: #10b981; color: white; border: none; border-radius: 4px; cursor: pointer;">Health Check</button>
+                            <button onclick="testGetMetrics()" style="padding: 8px 16px; background: #059669; color: white; border: none; border-radius: 4px; cursor: pointer;">System Metrics</button>
+                        </div>
+                        <div id="testHealthResult" style="margin-top: 10px; padding: 10px; background: white; border-radius: 4px; font-size: 0.9em; max-height: 300px; overflow-y: auto;"></div>
+                    </div>
                 </div>
             </div>
         </div>
@@ -1939,6 +2751,7 @@
             await loadCategories();
             await loadAllAgents();
             await checkApiHealth();
+            loadDashboardSummary();  // Load V2 summary stats
 
             // Set default invoice date
             document.getElementById('invoiceDate').valueAsDate = new Date();
@@ -1958,6 +2771,43 @@
 
             // Periodically check API health
             setInterval(checkApiHealth, 60000); // Every 60 seconds
+
+            // Periodically refresh dashboard summary
+            setInterval(loadDashboardSummary, 30000); // Every 30 seconds
+        }
+
+        // Load Dashboard Summary Widget
+        async function loadDashboardSummary() {
+            try {
+                // Fetch health status
+                const healthRes = await fetch(`${API_URL}/v2/health`);
+                const healthData = await healthRes.json();
+                document.getElementById('summaryHealthStatus').textContent = healthData.status === 'healthy' ? 'Healthy' : 'Warning';
+
+                // Fetch metrics for agent/workflow counts
+                const metricsRes = await fetch(`${API_URL}/v2/metrics`);
+                const metricsData = await metricsRes.json();
+                if (metricsData.database) {
+                    document.getElementById('summaryAgentCount').textContent = metricsData.database.agents || 0;
+                    const executions = (metricsData.database.executions_pending || 0) + (metricsData.database.executions_completed || 0);
+                    document.getElementById('summaryExecutions').textContent = executions;
+                }
+
+                // Fetch AI usage summary
+                const aiRes = await fetch(`${API_URL}/v2/ai/usage/summary?days=30`);
+                const aiData = await aiRes.json();
+                if (aiData.by_provider) {
+                    let totalRequests = 0, totalCost = 0;
+                    aiData.by_provider.forEach(p => {
+                        totalRequests += p.request_count || 0;
+                        totalCost += p.total_cost_cents || 0;
+                    });
+                    document.getElementById('summaryAIUsage').textContent = totalRequests;
+                    document.getElementById('summaryAICost').textContent = '$' + (totalCost / 100).toFixed(2);
+                }
+            } catch (e) {
+                console.error('Error loading dashboard summary:', e);
+            }
         }
 
         // Check API health status
@@ -2022,6 +2872,9 @@
                 loadAgentCards();
             } else if (tabName === 'metrics') {
                 loadMetricsTab();
+                loadV2SystemHealth();
+                loadV2SystemMetrics();
+                loadV2ApiMetrics();
             }
         }
 
@@ -2107,6 +2960,120 @@
             } catch (error) {
                 console.error('Error loading metrics:', error);
                 document.getElementById('metricsStatus').innerHTML = `<span style="color: #e74c3c;">Error loading metrics: ${error.message}</span>`;
+            }
+        }
+
+        // V2 System Health
+        async function loadV2SystemHealth() {
+            try {
+                const response = await fetch(`${API_URL}/v2/health`);
+                const data = await response.json();
+
+                // Update health cards
+                document.getElementById('v2HealthStatus').textContent = data.status === 'healthy' ? 'Healthy' : 'Unhealthy';
+                document.getElementById('v2HealthStatus').style.color = data.status === 'healthy' ? '#10b981' : '#ef4444';
+
+                if (data.components?.database) {
+                    document.getElementById('v2DbLatency').textContent = data.components.database.latency_ms?.toFixed(1) || '--';
+                }
+                if (data.components?.memory) {
+                    document.getElementById('v2MemoryUsed').textContent = data.components.memory.used_mb?.toFixed(0) || '--';
+                }
+                if (data.components?.ai_providers) {
+                    document.getElementById('v2AIProviders').textContent = data.components.ai_providers.configured_count || 0;
+                }
+
+                // Show details
+                const details = document.getElementById('v2HealthDetails');
+                details.style.display = 'block';
+                details.innerHTML = `<strong>Version:</strong> ${data.version || 'unknown'} | <strong>Timestamp:</strong> ${new Date(data.timestamp).toLocaleString()} | <strong>Encryption:</strong> ${data.components?.encryption?.status || 'unknown'}`;
+            } catch (error) {
+                console.error('Error loading V2 health:', error);
+                document.getElementById('v2HealthStatus').textContent = 'Error';
+                document.getElementById('v2HealthStatus').style.color = '#ef4444';
+            }
+        }
+
+        // V2 System Metrics
+        async function loadV2SystemMetrics() {
+            try {
+                const response = await fetch(`${API_URL}/v2/metrics`);
+                const data = await response.json();
+
+                // System metrics
+                if (data.system) {
+                    document.getElementById('v2CpuPercent').textContent = data.system.cpu_percent?.toFixed(1) + '%' || '--';
+                    document.getElementById('v2MemPercent').textContent = data.system.memory_percent?.toFixed(1) + '%' || '--';
+                    document.getElementById('v2DiskPercent').textContent = data.system.disk_percent?.toFixed(1) + '%' || '--';
+                }
+
+                // Uptime
+                if (data.uptime_seconds) {
+                    const hours = Math.floor(data.uptime_seconds / 3600);
+                    const mins = Math.floor((data.uptime_seconds % 3600) / 60);
+                    document.getElementById('v2Uptime').textContent = hours > 0 ? `${hours}h ${mins}m` : `${mins}m`;
+                }
+
+                // Database stats
+                if (data.database) {
+                    document.getElementById('v2AgentCount').textContent = data.database.agents || 0;
+                    document.getElementById('v2WorkflowCount').textContent = data.database.workflows || 0;
+                    document.getElementById('v2ConversationCount').textContent = data.database.conversations || 0;
+                    document.getElementById('v2ExecutionPending').textContent = data.database.executions_pending || 0;
+                    document.getElementById('v2ExecutionCompleted').textContent = data.database.executions_completed || 0;
+                    document.getElementById('v2TestSuites').textContent = data.database.test_suites || 0;
+                    document.getElementById('v2MarketplaceListings').textContent = data.database.marketplace_listings || 0;
+                }
+            } catch (error) {
+                console.error('Error loading V2 metrics:', error);
+            }
+        }
+
+        // V2 API Metrics
+        async function loadV2ApiMetrics() {
+            try {
+                const response = await fetch(`${API_URL}/v2/metrics/api`);
+                const data = await response.json();
+
+                // Total requests
+                if (data.requests) {
+                    document.getElementById('v2TotalRequests').textContent = data.requests.total?.toLocaleString() || '0';
+
+                    // Calculate success rate
+                    if (data.requests.by_status) {
+                        const success = data.requests.by_status['2xx'] || 0;
+                        const total = data.requests.total || 1;
+                        const successRate = ((success / total) * 100).toFixed(1);
+                        document.getElementById('v2SuccessRate').textContent = successRate + '%';
+                    }
+
+                    // Method stats
+                    if (data.requests.by_method) {
+                        const methodHtml = Object.entries(data.requests.by_method).map(([method, count]) =>
+                            `<span style="background: #f3f4f6; padding: 4px 8px; border-radius: 4px; font-size: 0.85em;"><strong>${method}:</strong> ${count}</span>`
+                        ).join('');
+                        document.getElementById('v2MethodStats').innerHTML = methodHtml || '--';
+                    }
+                }
+
+                // Latency
+                if (data.latency) {
+                    document.getElementById('v2AvgLatency').textContent = data.latency.avg_ms?.toFixed(1) || '--';
+
+                    const latencyHtml = [
+                        `<span style="background: #d1fae5; padding: 4px 8px; border-radius: 4px; font-size: 0.85em;"><strong>p50:</strong> ${data.latency.p50_ms?.toFixed(0)}ms</span>`,
+                        `<span style="background: #fef3c7; padding: 4px 8px; border-radius: 4px; font-size: 0.85em;"><strong>p95:</strong> ${data.latency.p95_ms?.toFixed(0)}ms</span>`,
+                        `<span style="background: #fee2e2; padding: 4px 8px; border-radius: 4px; font-size: 0.85em;"><strong>p99:</strong> ${data.latency.p99_ms?.toFixed(0)}ms</span>`
+                    ].join('');
+                    document.getElementById('v2LatencyStats').innerHTML = latencyHtml;
+                }
+
+                // Error rate
+                if (data.errors) {
+                    document.getElementById('v2ErrorRate').textContent = data.errors.rate_percent?.toFixed(2) + '%' || '0%';
+                }
+            } catch (error) {
+                console.error('Error loading V2 API metrics:', error);
             }
         }
 
@@ -6009,11 +6976,104 @@
             }
         }
 
+        // ============================================================
+        // Quick Actions Functions
+        // ============================================================
+
+        async function quickHealthCheck() {
+            const resultEl = document.getElementById('quickActionResult');
+            resultEl.style.display = 'block';
+            resultEl.innerHTML = '<span style="color: #3b82f6;">Checking health...</span>';
+
+            try {
+                const res = await fetch(`${API_URL}/v2/health`);
+                const data = await res.json();
+
+                if (data.status === 'healthy') {
+                    resultEl.innerHTML = `<span style="color: #10b981;">✅ System healthy! DB: ${data.components?.database?.latency_ms?.toFixed(1)}ms | Memory: ${data.components?.memory?.percent_used?.toFixed(0)}% | AI Providers: ${data.components?.ai_providers?.configured_count || 0}</span>`;
+                } else {
+                    resultEl.innerHTML = `<span style="color: #f59e0b;">⚠️ System status: ${data.status}</span>`;
+                }
+
+                setTimeout(() => { resultEl.style.display = 'none'; }, 5000);
+            } catch (e) {
+                resultEl.innerHTML = `<span style="color: red;">❌ Health check failed: ${e.message}</span>`;
+            }
+        }
+
+        async function quickRefreshAll() {
+            const resultEl = document.getElementById('quickActionResult');
+            resultEl.style.display = 'block';
+            resultEl.innerHTML = '<span style="color: #3b82f6;">Refreshing all data...</span>';
+
+            try {
+                await Promise.all([
+                    checkV2Status(),
+                    loadAIAnalytics(),
+                    loadAIProviders(),
+                    loadAIConversations(),
+                    mpListListings()
+                ]);
+                resultEl.innerHTML = '<span style="color: #10b981;">✅ All sections refreshed!</span>';
+                setTimeout(() => { resultEl.style.display = 'none'; }, 3000);
+            } catch (e) {
+                resultEl.innerHTML = `<span style="color: red;">❌ Refresh failed: ${e.message}</span>`;
+            }
+        }
+
+        async function quickExport() {
+            const resultEl = document.getElementById('quickActionResult');
+            resultEl.style.display = 'block';
+            resultEl.innerHTML = '<span style="color: #3b82f6;">Exporting all data...</span>';
+
+            // Set all checkboxes and trigger export
+            document.getElementById('exportAgents').checked = true;
+            document.getElementById('exportWorkflows').checked = true;
+            document.getElementById('exportConversations').checked = true;
+            document.getElementById('exportTestSuites').checked = true;
+
+            await exportData();
+            resultEl.innerHTML = '<span style="color: #10b981;">✅ Export complete!</span>';
+            setTimeout(() => { resultEl.style.display = 'none'; }, 3000);
+        }
+
+        function quickNewConversation() {
+            // Scroll to AI Chat section and focus
+            const aiSection = document.querySelector('#v2AiProvider');
+            if (aiSection) {
+                aiSection.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                v2CreateConversation();
+            }
+        }
+
         // Initialize V2 on platform tab
+        let v2PlatformInitialized = false;
+
         function initializeV2Platform() {
             checkV2Status();
-            // Refresh status every 30 seconds
-            setInterval(checkV2Status, 30000);
+
+            // Auto-load all sections on first visit
+            if (!v2PlatformInitialized) {
+                v2PlatformInitialized = true;
+
+                // Load AI Analytics
+                loadAIAnalytics();
+
+                // Load AI Providers
+                loadAIProviders();
+
+                // Load AI Conversations
+                loadAIConversations();
+
+                // Load Marketplace listings
+                mpListListings();
+
+                // Refresh status every 30 seconds
+                setInterval(checkV2Status, 30000);
+
+                // Refresh AI Analytics every 60 seconds
+                setInterval(loadAIAnalytics, 60000);
+            }
         }
 
         // Call init when switching to platform tab
@@ -6024,6 +7084,1358 @@
                 initializeV2Platform();
             }
         };
+
+        // ============================================================
+        // Marketplace V2 Functions (Database-Backed)
+        // ============================================================
+        let selectedMarketplaceId = null;
+
+        async function mpCreateListing() {
+            const name = document.getElementById('mpListingName').value;
+            const type = document.getElementById('mpListingType').value;
+            const category = document.getElementById('mpListingCategory').value;
+            const description = document.getElementById('mpListingDesc').value;
+            const price = parseFloat(document.getElementById('mpListingPrice').value) || 0;
+
+            if (!name) { alert('Please enter a listing name'); return; }
+
+            try {
+                const res = await fetch(`${API_URL}/v2/marketplace/listings`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        name,
+                        listing_type: type,
+                        category,
+                        description: description || `${type} for ${category}`,
+                        price,
+                        tags: [category, type],
+                        screenshots: [],
+                        documentation_url: '',
+                        is_published: false
+                    })
+                });
+                const data = await res.json();
+                document.getElementById('mpListingResult').innerHTML = `<span style="color: green;">Created!</span><pre>${JSON.stringify(data, null, 2)}</pre>`;
+                document.getElementById('mpListingName').value = '';
+                document.getElementById('mpListingDesc').value = '';
+            } catch (e) {
+                document.getElementById('mpListingResult').innerHTML = `<span style="color: red;">Error: ${e.message}</span>`;
+            }
+        }
+
+        async function mpListListings() {
+            try {
+                const res = await fetch(`${API_URL}/v2/marketplace/listings`);
+                const data = await res.json();
+                if (data.listings && data.listings.length > 0) {
+                    const html = data.listings.map(l => `
+                        <div style="padding: 12px; border-bottom: 1px solid #eee; cursor: pointer; ${selectedMarketplaceId === l.id ? 'background: #d1fae5;' : ''}" onclick="selectMarketplaceListing(${l.id})">
+                            <div style="display: flex; justify-content: space-between; align-items: center;">
+                                <strong>${l.name}</strong>
+                                <span style="padding: 2px 8px; border-radius: 4px; font-size: 0.75em; background: ${l.is_published ? '#d1fae5' : '#fef3c7'}; color: ${l.is_published ? '#166534' : '#92400e'};">${l.is_published ? 'Published' : 'Draft'}</span>
+                            </div>
+                            <div style="font-size: 0.85em; color: #666; margin-top: 4px;">
+                                ${l.listing_type} | ${l.category} | $${l.price || 0}
+                            </div>
+                            <div style="font-size: 0.8em; color: #888; margin-top: 2px;">
+                                ${l.description || 'No description'} | Downloads: ${l.download_count || 0} | Rating: ${l.average_rating?.toFixed(1) || 'N/A'}
+                            </div>
+                        </div>
+                    `).join('');
+                    document.getElementById('mpListingResult').innerHTML = html;
+                } else {
+                    document.getElementById('mpListingResult').innerHTML = '<em style="color: #888;">No marketplace listings found. Create one above!</em>';
+                }
+            } catch (e) {
+                document.getElementById('mpListingResult').innerHTML = `<span style="color: red;">Error: ${e.message}</span>`;
+            }
+        }
+
+        function selectMarketplaceListing(id) {
+            selectedMarketplaceId = selectedMarketplaceId === id ? null : id;
+            mpListListings();
+        }
+
+        async function mpPublishListing() {
+            if (!selectedMarketplaceId) { alert('Please select a listing to publish'); return; }
+            try {
+                const res = await fetch(`${API_URL}/v2/marketplace/listings/${selectedMarketplaceId}/publish`, {
+                    method: 'PUT'
+                });
+                const data = await res.json();
+                document.getElementById('mpListingResult').innerHTML = `<span style="color: green;">Published!</span><pre>${JSON.stringify(data, null, 2)}</pre>`;
+                selectedMarketplaceId = null;
+            } catch (e) {
+                document.getElementById('mpListingResult').innerHTML = `<span style="color: red;">Error: ${e.message}</span>`;
+            }
+        }
+
+        // ============================================================
+        // AI Usage Analytics Functions (Database-Backed)
+        // ============================================================
+
+        async function loadAIAnalytics() {
+            const days = document.getElementById('aiAnalyticsPeriod').value;
+            try {
+                const res = await fetch(`${API_URL}/v2/ai/usage/summary?days=${days}`);
+                const data = await res.json();
+
+                if (data.by_provider && data.by_provider.length > 0) {
+                    // Calculate totals
+                    let totalRequests = 0, totalTokens = 0, totalCost = 0, totalLatency = 0;
+                    data.by_provider.forEach(p => {
+                        totalRequests += p.request_count || 0;
+                        totalTokens += p.total_tokens || 0;
+                        totalCost += p.total_cost_cents || 0;
+                        totalLatency += (p.avg_latency_ms || 0) * (p.request_count || 1);
+                    });
+                    const avgLatency = totalRequests > 0 ? totalLatency / totalRequests : 0;
+
+                    // Update summary cards
+                    document.getElementById('aiTotalRequests').textContent = totalRequests.toLocaleString();
+                    document.getElementById('aiTotalTokens').textContent = formatNumber(totalTokens);
+                    document.getElementById('aiTotalCost').textContent = '$' + (totalCost / 100).toFixed(2);
+                    document.getElementById('aiAvgLatency').textContent = avgLatency.toFixed(0) + 'ms';
+
+                    // Provider breakdown
+                    const providerHtml = data.by_provider.map(p => `
+                        <div style="display: flex; justify-content: space-between; align-items: center; padding: 12px; border-bottom: 1px solid #f0f0f0;">
+                            <div>
+                                <strong style="color: ${getProviderColor(p.provider)};">${p.provider.toUpperCase()}</strong>
+                                <div style="font-size: 0.85em; color: #666;">${p.request_count} requests</div>
+                            </div>
+                            <div style="text-align: right;">
+                                <div style="font-weight: 600; color: #333;">${formatNumber(p.total_tokens)} tokens</div>
+                                <div style="font-size: 0.85em; color: #10b981;">$${(p.total_cost_cents / 100).toFixed(2)}</div>
+                            </div>
+                            <div style="text-align: right;">
+                                <div style="font-size: 0.9em; color: #f59e0b;">${p.avg_latency_ms.toFixed(0)}ms avg</div>
+                            </div>
+                        </div>
+                    `).join('');
+                    document.getElementById('aiProviderBreakdown').innerHTML = providerHtml;
+                } else {
+                    document.getElementById('aiTotalRequests').textContent = '0';
+                    document.getElementById('aiTotalTokens').textContent = '0';
+                    document.getElementById('aiTotalCost').textContent = '$0.00';
+                    document.getElementById('aiAvgLatency').textContent = '--';
+                    document.getElementById('aiProviderBreakdown').innerHTML = '<div style="text-align: center; color: #888; padding: 20px;">No AI usage data for this period. Start a conversation above!</div>';
+                }
+            } catch (e) {
+                console.error('Error loading AI analytics:', e);
+                document.getElementById('aiProviderBreakdown').innerHTML = `<div style="color: red; padding: 10px;">Error: ${e.message}</div>`;
+            }
+        }
+
+        function formatNumber(num) {
+            if (num >= 1000000) return (num / 1000000).toFixed(1) + 'M';
+            if (num >= 1000) return (num / 1000).toFixed(1) + 'K';
+            return num.toString();
+        }
+
+        function getProviderColor(provider) {
+            const colors = {
+                'openai': '#10b981',
+                'anthropic': '#f59e0b',
+                'ollama': '#3b82f6',
+                'mock': '#8b5cf6'
+            };
+            return colors[provider.toLowerCase()] || '#666';
+        }
+
+        // ============================================================
+        // AI Conversations Functions (Database-Backed)
+        // ============================================================
+        let selectedConversationId = null;
+
+        async function loadAIConversations() {
+            try {
+                const res = await fetch(`${API_URL}/v2/ai/conversations?limit=20`);
+                const data = await res.json();
+
+                if (data.conversations && data.conversations.length > 0) {
+                    const html = data.conversations.map(c => `
+                        <div style="padding: 10px; border-bottom: 1px solid #eee; cursor: pointer; ${selectedConversationId === c.id ? 'background: #dbeafe;' : ''}" onclick="selectConversation('${c.id}')">
+                            <div style="display: flex; justify-content: space-between; align-items: center;">
+                                <strong style="font-size: 0.9em;">${c.title || 'Untitled'}</strong>
+                                <span style="font-size: 0.75em; color: ${getProviderColor(c.provider)};">${c.provider}</span>
+                            </div>
+                            <div style="font-size: 0.8em; color: #666; margin-top: 2px;">
+                                ${c.message_count || 0} messages | ${new Date(c.updated_at || c.created_at).toLocaleDateString()}
+                            </div>
+                        </div>
+                    `).join('');
+                    document.getElementById('aiConversationsList').innerHTML = html;
+                } else {
+                    document.getElementById('aiConversationsList').innerHTML = '<div style="text-align: center; color: #888; padding: 20px;">No conversations yet. Use the AI Chat above to start one!</div>';
+                }
+            } catch (e) {
+                document.getElementById('aiConversationsList').innerHTML = `<div style="color: red; padding: 10px;">Error: ${e.message}</div>`;
+            }
+        }
+
+        function selectConversation(id) {
+            selectedConversationId = selectedConversationId === id ? null : id;
+            loadAIConversations();
+            if (selectedConversationId) {
+                loadConversationMessages(selectedConversationId);
+            } else {
+                document.getElementById('aiConversationMessages').innerHTML = '<div style="text-align: center; color: #888; padding: 20px;">Select a conversation to view messages</div>';
+            }
+        }
+
+        async function viewConversation() {
+            if (!selectedConversationId) {
+                alert('Please select a conversation first');
+                return;
+            }
+            await loadConversationMessages(selectedConversationId);
+        }
+
+        async function loadConversationMessages(conversationId) {
+            try {
+                const res = await fetch(`${API_URL}/v2/ai/conversations/${conversationId}/messages`);
+                const data = await res.json();
+
+                if (data.messages && data.messages.length > 0) {
+                    const html = data.messages.map(m => `
+                        <div style="margin-bottom: 12px; padding: 10px; border-radius: 8px; background: ${m.role === 'user' ? '#f3f4f6' : '#e0f2fe'};">
+                            <div style="font-size: 0.75em; font-weight: 600; color: ${m.role === 'user' ? '#374151' : '#1e40af'}; margin-bottom: 4px;">
+                                ${m.role === 'user' ? '👤 You' : '🤖 Assistant'}
+                            </div>
+                            <div style="font-size: 0.85em; color: #333; white-space: pre-wrap;">${m.content}</div>
+                            <div style="font-size: 0.7em; color: #999; margin-top: 4px;">${new Date(m.created_at).toLocaleString()}</div>
+                        </div>
+                    `).join('');
+                    document.getElementById('aiConversationMessages').innerHTML = html;
+                } else {
+                    document.getElementById('aiConversationMessages').innerHTML = '<div style="text-align: center; color: #888; padding: 20px;">No messages in this conversation</div>';
+                }
+            } catch (e) {
+                document.getElementById('aiConversationMessages').innerHTML = `<div style="color: red; padding: 10px;">Error: ${e.message}</div>`;
+            }
+        }
+
+        // ============================================================
+        // AI Provider Management Functions (Database-Backed)
+        // ============================================================
+
+        async function loadAIProviders() {
+            try {
+                const res = await fetch(`${API_URL}/v2/ai/providers`);
+                const data = await res.json();
+
+                if (data.providers && data.providers.length > 0) {
+                    const html = data.providers.map(p => `
+                        <div style="display: flex; justify-content: space-between; align-items: center; padding: 10px; border-bottom: 1px solid #eee;">
+                            <div>
+                                <strong style="color: ${getProviderColor(p.provider)};">${p.display_name || p.provider.toUpperCase()}</strong>
+                                <span style="font-size: 0.75em; padding: 2px 6px; border-radius: 3px; margin-left: 8px; background: ${p.enabled ? '#d1fae5' : '#fee2e2'}; color: ${p.enabled ? '#166534' : '#991b1b'};">
+                                    ${p.enabled ? 'Enabled' : 'Disabled'}
+                                </span>
+                            </div>
+                            <div style="display: flex; align-items: center; gap: 10px;">
+                                <span style="font-size: 0.8em; color: ${p.health_status === 'healthy' ? '#10b981' : p.health_status === 'not_configured' ? '#f59e0b' : '#ef4444'};">
+                                    ${p.health_status || 'unknown'}
+                                </span>
+                                <span style="font-size: 0.75em; color: #888;">
+                                    ${p.has_api_key ? '🔑' : '⚠️ No key'}
+                                </span>
+                            </div>
+                        </div>
+                    `).join('');
+                    document.getElementById('providersList').innerHTML = html;
+                } else {
+                    document.getElementById('providersList').innerHTML = '<div style="text-align: center; color: #888; padding: 10px;">No providers configured</div>';
+                }
+            } catch (e) {
+                document.getElementById('providersList').innerHTML = `<div style="color: red; padding: 10px;">Error: ${e.message}</div>`;
+            }
+        }
+
+        async function saveAIProvider() {
+            const provider = document.getElementById('providerSelect').value;
+            const apiKey = document.getElementById('providerApiKey').value;
+            const baseUrl = document.getElementById('providerBaseUrl').value;
+            const defaultModel = document.getElementById('providerModel').value;
+
+            try {
+                const payload = {
+                    provider,
+                    display_name: provider.charAt(0).toUpperCase() + provider.slice(1),
+                    enabled: true
+                };
+                if (apiKey) payload.api_key = apiKey;
+                if (baseUrl) payload.base_url = baseUrl;
+                if (defaultModel) payload.default_model = defaultModel;
+
+                const res = await fetch(`${API_URL}/v2/ai/providers`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(payload)
+                });
+                const data = await res.json();
+
+                if (res.ok) {
+                    alert('Provider configuration saved!');
+                    document.getElementById('providerApiKey').value = '';
+                    loadAIProviders();
+                } else {
+                    alert('Error: ' + (data.detail || 'Failed to save'));
+                }
+            } catch (e) {
+                alert('Error: ' + e.message);
+            }
+        }
+
+        async function testAIProvider() {
+            const provider = document.getElementById('providerSelect').value;
+            try {
+                const res = await fetch(`${API_URL}/v2/ai/providers/${provider}/test`, {
+                    method: 'POST'
+                });
+                const data = await res.json();
+
+                if (data.success) {
+                    alert(`✅ ${provider} connection successful!\nLatency: ${data.latency_ms}ms`);
+                } else {
+                    alert(`❌ ${provider} test failed: ${data.error || 'Unknown error'}`);
+                }
+                loadAIProviders();
+            } catch (e) {
+                alert('Error testing provider: ' + e.message);
+            }
+        }
+
+        // ============================================================
+        // Data Export Functions
+        // ============================================================
+
+        async function exportData() {
+            const includeAgents = document.getElementById('exportAgents').checked;
+            const includeWorkflows = document.getElementById('exportWorkflows').checked;
+            const includeConversations = document.getElementById('exportConversations').checked;
+            const includeTestSuites = document.getElementById('exportTestSuites').checked;
+
+            document.getElementById('exportResult').innerHTML = '<span style="color: #3b82f6;">Exporting data...</span>';
+
+            try {
+                const exportData = {
+                    exported_at: new Date().toISOString(),
+                    version: '1.0',
+                    data: {}
+                };
+
+                // Export agents
+                if (includeAgents) {
+                    const res = await fetch(`${API_URL}/api/agents`);
+                    exportData.data.agents = await res.json();
+                }
+
+                // Export workflows
+                if (includeWorkflows) {
+                    const res = await fetch(`${API_URL}/v2/workflow-definitions`);
+                    const data = await res.json();
+                    exportData.data.workflow_definitions = data.workflow_definitions || [];
+                }
+
+                // Export conversations
+                if (includeConversations) {
+                    const res = await fetch(`${API_URL}/v2/ai/conversations?limit=100`);
+                    const data = await res.json();
+                    exportData.data.conversations = data.conversations || [];
+                }
+
+                // Export test suites
+                if (includeTestSuites) {
+                    const res = await fetch(`${API_URL}/v2/test-suites`);
+                    const data = await res.json();
+                    exportData.data.test_suites = data.test_suites || [];
+                }
+
+                // Download as JSON file
+                const blob = new Blob([JSON.stringify(exportData, null, 2)], { type: 'application/json' });
+                const url = URL.createObjectURL(blob);
+                const a = document.createElement('a');
+                a.href = url;
+                a.download = `agentic-forge-export-${new Date().toISOString().split('T')[0]}.json`;
+                document.body.appendChild(a);
+                a.click();
+                document.body.removeChild(a);
+                URL.revokeObjectURL(url);
+
+                const itemCount = Object.values(exportData.data).reduce((sum, arr) => sum + (Array.isArray(arr) ? arr.length : 1), 0);
+                document.getElementById('exportResult').innerHTML = `<span style="color: #10b981;">✅ Exported ${itemCount} items successfully!</span>`;
+            } catch (e) {
+                document.getElementById('exportResult').innerHTML = `<span style="color: red;">❌ Error: ${e.message}</span>`;
+            }
+        }
+
+        async function exportStats() {
+            document.getElementById('exportResult').innerHTML = '<span style="color: #3b82f6;">Gathering statistics...</span>';
+
+            try {
+                const stats = {
+                    exported_at: new Date().toISOString(),
+                    type: 'statistics',
+                    data: {}
+                };
+
+                // Get V2 metrics
+                try {
+                    const metricsRes = await fetch(`${API_URL}/v2/metrics`);
+                    stats.data.system_metrics = await metricsRes.json();
+                } catch (e) { stats.data.system_metrics = { error: e.message }; }
+
+                // Get AI usage summary
+                try {
+                    const aiRes = await fetch(`${API_URL}/v2/ai/usage/summary?days=30`);
+                    stats.data.ai_usage = await aiRes.json();
+                } catch (e) { stats.data.ai_usage = { error: e.message }; }
+
+                // Get health status
+                try {
+                    const healthRes = await fetch(`${API_URL}/v2/health`);
+                    stats.data.health = await healthRes.json();
+                } catch (e) { stats.data.health = { error: e.message }; }
+
+                // Download as JSON file
+                const blob = new Blob([JSON.stringify(stats, null, 2)], { type: 'application/json' });
+                const url = URL.createObjectURL(blob);
+                const a = document.createElement('a');
+                a.href = url;
+                a.download = `agentic-forge-stats-${new Date().toISOString().split('T')[0]}.json`;
+                document.body.appendChild(a);
+                a.click();
+                document.body.removeChild(a);
+                URL.revokeObjectURL(url);
+
+                document.getElementById('exportResult').innerHTML = `<span style="color: #10b981;">✅ Statistics exported!</span>`;
+            } catch (e) {
+                document.getElementById('exportResult').innerHTML = `<span style="color: red;">❌ Error: ${e.message}</span>`;
+            }
+        }
+
+        async function importData() {
+            const fileInput = document.getElementById('importFile');
+            const resultEl = document.getElementById('exportResult');
+
+            if (!fileInput.files || fileInput.files.length === 0) {
+                resultEl.innerHTML = '<span style="color: #f59e0b;">⚠️ Please select a file to import</span>';
+                return;
+            }
+
+            const file = fileInput.files[0];
+            resultEl.innerHTML = '<span style="color: #3b82f6;">Importing data...</span>';
+
+            try {
+                const text = await file.text();
+                const importData = JSON.parse(text);
+
+                if (!importData.data) {
+                    resultEl.innerHTML = '<span style="color: red;">❌ Invalid export file format</span>';
+                    return;
+                }
+
+                let imported = { agents: 0, workflows: 0, conversations: 0, test_suites: 0 };
+                let errors = [];
+
+                // Import workflow definitions
+                if (importData.data.workflow_definitions && importData.data.workflow_definitions.length > 0) {
+                    for (const wf of importData.data.workflow_definitions) {
+                        try {
+                            const res = await fetch(`${API_URL}/v2/workflow-definitions`, {
+                                method: 'POST',
+                                headers: { 'Content-Type': 'application/json' },
+                                body: JSON.stringify({
+                                    name: wf.name + ' (imported)',
+                                    description: wf.description,
+                                    category: wf.category,
+                                    steps: wf.steps || [],
+                                    variables: wf.variables || {},
+                                    triggers: wf.triggers || [],
+                                    is_published: false
+                                })
+                            });
+                            if (res.ok) imported.workflows++;
+                        } catch (e) {
+                            errors.push(`Workflow ${wf.name}: ${e.message}`);
+                        }
+                    }
+                }
+
+                // Import test suites
+                if (importData.data.test_suites && importData.data.test_suites.length > 0) {
+                    for (const ts of importData.data.test_suites) {
+                        try {
+                            const res = await fetch(`${API_URL}/v2/test-suites`, {
+                                method: 'POST',
+                                headers: { 'Content-Type': 'application/json' },
+                                body: JSON.stringify({
+                                    name: ts.name + ' (imported)',
+                                    description: ts.description,
+                                    test_cases: ts.test_cases || [],
+                                    tags: ts.tags || []
+                                })
+                            });
+                            if (res.ok) imported.test_suites++;
+                        } catch (e) {
+                            errors.push(`Test Suite ${ts.name}: ${e.message}`);
+                        }
+                    }
+                }
+
+                const totalImported = Object.values(imported).reduce((a, b) => a + b, 0);
+                let message = `<span style="color: #10b981;">✅ Imported ${totalImported} items (${imported.workflows} workflows, ${imported.test_suites} test suites)</span>`;
+
+                if (errors.length > 0) {
+                    message += `<br><span style="color: #f59e0b;">⚠️ ${errors.length} errors occurred</span>`;
+                }
+
+                resultEl.innerHTML = message;
+                fileInput.value = '';
+
+            } catch (e) {
+                resultEl.innerHTML = `<span style="color: red;">❌ Error parsing file: ${e.message}</span>`;
+            }
+        }
+
+        // ============================================================
+        // Enterprise V2 Functions (Database-Backed)
+        // ============================================================
+
+        // Billing Functions
+        async function entGetBilling() {
+            const orgId = document.getElementById('entBillingOrgId').value;
+            if (!orgId) { alert('Please enter Organization ID'); return; }
+            try {
+                const res = await fetch(`${API_URL}/v2/billing/accounts/${orgId}`);
+                const data = await res.json();
+                document.getElementById('entBillingResult').innerHTML = `<pre>${JSON.stringify(data, null, 2)}</pre>`;
+            } catch (e) {
+                document.getElementById('entBillingResult').innerHTML = `<span style="color: red;">Error: ${e.message}</span>`;
+            }
+        }
+
+        async function entCreateBilling() {
+            const orgId = document.getElementById('entBillingOrgId').value;
+            const email = document.getElementById('entBillingEmail').value;
+            if (!orgId) { alert('Please enter Organization ID'); return; }
+            try {
+                const res = await fetch(`${API_URL}/v2/billing/accounts`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ organization_id: orgId, billing_email: email })
+                });
+                const data = await res.json();
+                document.getElementById('entBillingResult').innerHTML = `<span style="color: green;">✓ Created!</span><pre>${JSON.stringify(data, null, 2)}</pre>`;
+            } catch (e) {
+                document.getElementById('entBillingResult').innerHTML = `<span style="color: red;">Error: ${e.message}</span>`;
+            }
+        }
+
+        // Quota Functions
+        async function entGetQuotas() {
+            const orgId = document.getElementById('entQuotaOrgId').value;
+            if (!orgId) { alert('Please enter Organization ID'); return; }
+            try {
+                const res = await fetch(`${API_URL}/v2/quotas/${orgId}`);
+                const data = await res.json();
+                document.getElementById('entQuotaResult').innerHTML = `<pre>${JSON.stringify(data, null, 2)}</pre>`;
+            } catch (e) {
+                document.getElementById('entQuotaResult').innerHTML = `<span style="color: red;">Error: ${e.message}</span>`;
+            }
+        }
+
+        async function entCreateQuota() {
+            const orgId = document.getElementById('entQuotaOrgId').value;
+            const quotaType = document.getElementById('entQuotaType').value;
+            const limit = document.getElementById('entQuotaLimit').value;
+            if (!orgId) { alert('Please enter Organization ID'); return; }
+            try {
+                const res = await fetch(`${API_URL}/v2/quotas`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ organization_id: orgId, quota_type: quotaType, limit: parseInt(limit) })
+                });
+                const data = await res.json();
+                document.getElementById('entQuotaResult').innerHTML = `<span style="color: green;">✓ Created!</span><pre>${JSON.stringify(data, null, 2)}</pre>`;
+            } catch (e) {
+                document.getElementById('entQuotaResult').innerHTML = `<span style="color: red;">Error: ${e.message}</span>`;
+            }
+        }
+
+        // Backup Functions
+        async function entListBackups() {
+            const orgId = document.getElementById('entBackupOrgId').value;
+            if (!orgId) { alert('Please enter Organization ID'); return; }
+            try {
+                const res = await fetch(`${API_URL}/v2/backups?organization_id=${orgId}`);
+                const data = await res.json();
+                document.getElementById('entBackupResult').innerHTML = `<pre>${JSON.stringify(data, null, 2)}</pre>`;
+            } catch (e) {
+                document.getElementById('entBackupResult').innerHTML = `<span style="color: red;">Error: ${e.message}</span>`;
+            }
+        }
+
+        async function entCreateBackup() {
+            const orgId = document.getElementById('entBackupOrgId').value;
+            const name = document.getElementById('entBackupName').value;
+            const backupType = document.getElementById('entBackupType').value;
+            if (!orgId) { alert('Please enter Organization ID'); return; }
+            try {
+                const res = await fetch(`${API_URL}/v2/backups`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ organization_id: orgId, name: name, backup_type: backupType })
+                });
+                const data = await res.json();
+                document.getElementById('entBackupResult').innerHTML = `<span style="color: green;">✓ Created!</span><pre>${JSON.stringify(data, null, 2)}</pre>`;
+            } catch (e) {
+                document.getElementById('entBackupResult').innerHTML = `<span style="color: red;">Error: ${e.message}</span>`;
+            }
+        }
+
+        // SSO Functions
+        async function entListSSO() {
+            const orgId = document.getElementById('entSSOOrgId').value;
+            if (!orgId) { alert('Please enter Organization ID'); return; }
+            try {
+                const res = await fetch(`${API_URL}/v2/sso/providers?organization_id=${orgId}`);
+                const data = await res.json();
+                document.getElementById('entSSOResult').innerHTML = `<pre>${JSON.stringify(data, null, 2)}</pre>`;
+            } catch (e) {
+                document.getElementById('entSSOResult').innerHTML = `<span style="color: red;">Error: ${e.message}</span>`;
+            }
+        }
+
+        async function entCreateSSO() {
+            const orgId = document.getElementById('entSSOOrgId').value;
+            const name = document.getElementById('entSSOName').value;
+            const providerType = document.getElementById('entSSOType').value;
+            if (!orgId || !name) { alert('Please enter Organization ID and Provider Name'); return; }
+            try {
+                const res = await fetch(`${API_URL}/v2/sso/providers`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ organization_id: orgId, name: name, provider_type: providerType })
+                });
+                const data = await res.json();
+                document.getElementById('entSSOResult').innerHTML = `<span style="color: green;">✓ Created!</span><pre>${JSON.stringify(data, null, 2)}</pre>`;
+            } catch (e) {
+                document.getElementById('entSSOResult').innerHTML = `<span style="color: red;">Error: ${e.message}</span>`;
+            }
+        }
+
+        // Security Policy Functions
+        async function entListPolicies() {
+            const orgId = document.getElementById('entPolicyOrgId').value;
+            if (!orgId) { alert('Please enter Organization ID'); return; }
+            try {
+                const res = await fetch(`${API_URL}/v2/security/policies?organization_id=${orgId}`);
+                const data = await res.json();
+                document.getElementById('entPolicyResult').innerHTML = `<pre>${JSON.stringify(data, null, 2)}</pre>`;
+            } catch (e) {
+                document.getElementById('entPolicyResult').innerHTML = `<span style="color: red;">Error: ${e.message}</span>`;
+            }
+        }
+
+        async function entCreatePolicy() {
+            const orgId = document.getElementById('entPolicyOrgId').value;
+            const name = document.getElementById('entPolicyName').value;
+            const policyType = document.getElementById('entPolicyType').value;
+            if (!orgId || !name) { alert('Please enter Organization ID and Policy Name'); return; }
+            try {
+                const res = await fetch(`${API_URL}/v2/security/policies`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ organization_id: orgId, name: name, policy_type: policyType })
+                });
+                const data = await res.json();
+                document.getElementById('entPolicyResult').innerHTML = `<span style="color: green;">✓ Created!</span><pre>${JSON.stringify(data, null, 2)}</pre>`;
+            } catch (e) {
+                document.getElementById('entPolicyResult').innerHTML = `<span style="color: red;">Error: ${e.message}</span>`;
+            }
+        }
+
+        // Deployment Functions
+        async function entListDeployments() {
+            const orgId = document.getElementById('entDeployOrgId').value;
+            if (!orgId) { alert('Please enter Organization ID'); return; }
+            try {
+                const res = await fetch(`${API_URL}/v2/deployments?organization_id=${orgId}`);
+                const data = await res.json();
+                document.getElementById('entDeployResult').innerHTML = `<pre>${JSON.stringify(data, null, 2)}</pre>`;
+            } catch (e) {
+                document.getElementById('entDeployResult').innerHTML = `<span style="color: red;">Error: ${e.message}</span>`;
+            }
+        }
+
+        async function entCreateDeployment() {
+            const orgId = document.getElementById('entDeployOrgId').value;
+            const name = document.getElementById('entDeployName').value;
+            const env = document.getElementById('entDeployEnv').value;
+            if (!orgId) { alert('Please enter Organization ID'); return; }
+            try {
+                const res = await fetch(`${API_URL}/v2/deployments`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ organization_id: orgId, name: name, environment: env })
+                });
+                const data = await res.json();
+                document.getElementById('entDeployResult').innerHTML = `<span style="color: green;">✓ Created!</span><pre>${JSON.stringify(data, null, 2)}</pre>`;
+            } catch (e) {
+                document.getElementById('entDeployResult').innerHTML = `<span style="color: red;">Error: ${e.message}</span>`;
+            }
+        }
+
+        // SLA Functions
+        async function entListSLAs() {
+            const orgId = document.getElementById('entSLAOrgId').value;
+            if (!orgId) { alert('Please enter Organization ID'); return; }
+            try {
+                const res = await fetch(`${API_URL}/v2/slas?organization_id=${orgId}`);
+                const data = await res.json();
+                document.getElementById('entSLAResult').innerHTML = `<pre>${JSON.stringify(data, null, 2)}</pre>`;
+            } catch (e) {
+                document.getElementById('entSLAResult').innerHTML = `<span style="color: red;">Error: ${e.message}</span>`;
+            }
+        }
+
+        async function entCreateSLA() {
+            const orgId = document.getElementById('entSLAOrgId').value;
+            const name = document.getElementById('entSLAName').value;
+            const uptime = document.getElementById('entSLAUptime').value;
+            if (!orgId || !name) { alert('Please enter Organization ID and SLA Name'); return; }
+            try {
+                const res = await fetch(`${API_URL}/v2/slas`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ organization_id: orgId, name: name, uptime_target: parseFloat(uptime) })
+                });
+                const data = await res.json();
+                document.getElementById('entSLAResult').innerHTML = `<span style="color: green;">✓ Created!</span><pre>${JSON.stringify(data, null, 2)}</pre>`;
+            } catch (e) {
+                document.getElementById('entSLAResult').innerHTML = `<span style="color: red;">Error: ${e.message}</span>`;
+            }
+        }
+
+        // Knowledge Base Functions
+        async function entListKBArticles() {
+            const orgId = document.getElementById('entKBOrgId').value;
+            if (!orgId) { alert('Please enter Organization ID'); return; }
+            try {
+                const res = await fetch(`${API_URL}/v2/knowledge-base/articles?organization_id=${orgId}&status=draft`);
+                const data = await res.json();
+                document.getElementById('entKBResult').innerHTML = `<pre>${JSON.stringify(data, null, 2)}</pre>`;
+            } catch (e) {
+                document.getElementById('entKBResult').innerHTML = `<span style="color: red;">Error: ${e.message}</span>`;
+            }
+        }
+
+        async function entCreateKBArticle() {
+            const orgId = document.getElementById('entKBOrgId').value;
+            const title = document.getElementById('entKBTitle').value;
+            const content = document.getElementById('entKBContent').value;
+            if (!orgId || !title) { alert('Please enter Organization ID and Article Title'); return; }
+            try {
+                const res = await fetch(`${API_URL}/v2/knowledge-base/articles`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ organization_id: orgId, title: title, content: content })
+                });
+                const data = await res.json();
+                document.getElementById('entKBResult').innerHTML = `<span style="color: green;">✓ Created!</span><pre>${JSON.stringify(data, null, 2)}</pre>`;
+            } catch (e) {
+                document.getElementById('entKBResult').innerHTML = `<span style="color: red;">Error: ${e.message}</span>`;
+            }
+        }
+
+        // ============================================
+        // OPERATIONS TAB FUNCTIONS (V2 Database-Backed)
+        // ============================================
+
+        // Scheduled Jobs
+        async function opsCreateJob() {
+            const name = document.getElementById('opsJobName').value;
+            const jobType = document.getElementById('opsJobType').value;
+            const cron = document.getElementById('opsCronExpr').value;
+            if (!name) { alert('Please enter a job name'); return; }
+            try {
+                const res = await fetch(`${API_URL}/v2/jobs/scheduled`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ name, job_type: jobType, schedule_type: 'cron', cron_expression: cron })
+                });
+                const data = await res.json();
+                document.getElementById('opsJobResult').innerHTML = `<span style="color: green;">Created!</span><pre>${JSON.stringify(data, null, 2)}</pre>`;
+            } catch (e) {
+                document.getElementById('opsJobResult').innerHTML = `<span style="color: red;">Error: ${e.message}</span>`;
+            }
+        }
+
+        async function opsListJobs() {
+            try {
+                const res = await fetch(`${API_URL}/v2/jobs/scheduled`);
+                const data = await res.json();
+                if (data.jobs && data.jobs.length > 0) {
+                    const html = data.jobs.map(j => `<div style="padding: 8px; border-bottom: 1px solid #eee;"><strong>${j.name}</strong> (${j.job_type}) - ${j.status} - ${j.cron_expression || 'N/A'}</div>`).join('');
+                    document.getElementById('opsJobResult').innerHTML = html;
+                } else {
+                    document.getElementById('opsJobResult').innerHTML = '<em>No scheduled jobs found</em>';
+                }
+            } catch (e) {
+                document.getElementById('opsJobResult').innerHTML = `<span style="color: red;">Error: ${e.message}</span>`;
+            }
+        }
+
+        // Events
+        async function opsCreateEvent() {
+            const eventType = document.getElementById('opsEventType').value;
+            const severity = document.getElementById('opsEventSeverity').value;
+            const message = document.getElementById('opsEventMessage').value;
+            if (!eventType) { alert('Please enter an event type'); return; }
+            try {
+                const res = await fetch(`${API_URL}/v2/events`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ event_type: eventType, severity, message })
+                });
+                const data = await res.json();
+                document.getElementById('opsEventResult').innerHTML = `<span style="color: green;">Logged!</span><pre>${JSON.stringify(data, null, 2)}</pre>`;
+            } catch (e) {
+                document.getElementById('opsEventResult').innerHTML = `<span style="color: red;">Error: ${e.message}</span>`;
+            }
+        }
+
+        async function opsListEvents() {
+            try {
+                const res = await fetch(`${API_URL}/v2/events?limit=20`);
+                const data = await res.json();
+                if (data.events && data.events.length > 0) {
+                    const html = data.events.map(e => `<div style="padding: 6px; border-bottom: 1px solid #eee;"><span style="color: ${e.severity === 'error' ? 'red' : e.severity === 'warning' ? 'orange' : 'green'};">[${e.severity}]</span> ${e.event_type}: ${e.message || 'N/A'}</div>`).join('');
+                    document.getElementById('opsEventResult').innerHTML = html;
+                } else {
+                    document.getElementById('opsEventResult').innerHTML = '<em>No events found</em>';
+                }
+            } catch (e) {
+                document.getElementById('opsEventResult').innerHTML = `<span style="color: red;">Error: ${e.message}</span>`;
+            }
+        }
+
+        // Notifications
+        async function opsCreateNotification() {
+            const title = document.getElementById('opsNotifTitle').value;
+            const message = document.getElementById('opsNotifMessage').value;
+            const notifType = document.getElementById('opsNotifType').value;
+            if (!title) { alert('Please enter a notification title'); return; }
+            try {
+                const res = await fetch(`${API_URL}/v2/notifications`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ title, message, notification_type: notifType })
+                });
+                const data = await res.json();
+                document.getElementById('opsNotifResult').innerHTML = `<span style="color: green;">Sent!</span><pre>${JSON.stringify(data, null, 2)}</pre>`;
+            } catch (e) {
+                document.getElementById('opsNotifResult').innerHTML = `<span style="color: red;">Error: ${e.message}</span>`;
+            }
+        }
+
+        // Secrets
+        async function opsCreateSecret() {
+            const name = document.getElementById('opsSecretName').value;
+            const secretType = document.getElementById('opsSecretType').value;
+            const value = document.getElementById('opsSecretValue').value;
+            if (!name || !value) { alert('Please enter secret name and value'); return; }
+            try {
+                const res = await fetch(`${API_URL}/v2/secrets`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ name, secret_type: secretType, value })
+                });
+                const data = await res.json();
+                document.getElementById('opsSecretResult').innerHTML = `<span style="color: green;">Created!</span><pre>${JSON.stringify(data, null, 2)}</pre>`;
+            } catch (e) {
+                document.getElementById('opsSecretResult').innerHTML = `<span style="color: red;">Error: ${e.message}</span>`;
+            }
+        }
+
+        async function opsListSecrets() {
+            try {
+                const res = await fetch(`${API_URL}/v2/secrets`);
+                const data = await res.json();
+                if (data.secrets && data.secrets.length > 0) {
+                    const html = data.secrets.map(s => `<div style="padding: 6px; border-bottom: 1px solid #eee;"><strong>${s.name}</strong> (${s.secret_type}) - ${s.status}</div>`).join('');
+                    document.getElementById('opsSecretResult').innerHTML = html;
+                } else {
+                    document.getElementById('opsSecretResult').innerHTML = '<em>No secrets found</em>';
+                }
+            } catch (e) {
+                document.getElementById('opsSecretResult').innerHTML = `<span style="color: red;">Error: ${e.message}</span>`;
+            }
+        }
+
+        // Audit Logs
+        async function opsListAuditLogs() {
+            const action = document.getElementById('opsAuditAction').value;
+            const limit = document.getElementById('opsAuditLimit').value || 50;
+            try {
+                let url = `${API_URL}/v2/audit-logs?limit=${limit}`;
+                if (action) url += `&action=${action}`;
+                const res = await fetch(url);
+                const data = await res.json();
+                if (data.audit_logs && data.audit_logs.length > 0) {
+                    const html = data.audit_logs.map(a => `<div style="padding: 6px; border-bottom: 1px solid #eee;"><span style="color: ${a.status === 'success' ? 'green' : 'red'};">[${a.action}]</span> ${a.actor_name || a.actor_id} -> ${a.target_type}/${a.target_id}</div>`).join('');
+                    document.getElementById('opsAuditResult').innerHTML = html;
+                } else {
+                    document.getElementById('opsAuditResult').innerHTML = '<em>No audit logs found</em>';
+                }
+            } catch (e) {
+                document.getElementById('opsAuditResult').innerHTML = `<span style="color: red;">Error: ${e.message}</span>`;
+            }
+        }
+
+        // Feature Flags
+        async function opsCreateFlag() {
+            const name = document.getElementById('opsFlagName').value;
+            const enabled = document.getElementById('opsFlagEnabled').checked;
+            const rollout = parseInt(document.getElementById('opsFlagRollout').value) || 0;
+            if (!name) { alert('Please enter a flag name'); return; }
+            try {
+                const res = await fetch(`${API_URL}/v2/feature-flags`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ name, enabled, rollout_percentage: rollout })
+                });
+                const data = await res.json();
+                document.getElementById('opsFlagResult').innerHTML = `<span style="color: green;">Created!</span><pre>${JSON.stringify(data, null, 2)}</pre>`;
+            } catch (e) {
+                document.getElementById('opsFlagResult').innerHTML = `<span style="color: red;">Error: ${e.message}</span>`;
+            }
+        }
+
+        async function opsListFlags() {
+            try {
+                const res = await fetch(`${API_URL}/v2/feature-flags`);
+                const data = await res.json();
+                if (data.feature_flags && data.feature_flags.length > 0) {
+                    const html = data.feature_flags.map(f => `<div style="padding: 6px; border-bottom: 1px solid #eee;"><strong>${f.name}</strong> - ${f.enabled ? '<span style="color: green;">ON</span>' : '<span style="color: red;">OFF</span>'} (${f.rollout_percentage}%)</div>`).join('');
+                    document.getElementById('opsFlagResult').innerHTML = html;
+                } else {
+                    document.getElementById('opsFlagResult').innerHTML = '<em>No feature flags found</em>';
+                }
+            } catch (e) {
+                document.getElementById('opsFlagResult').innerHTML = `<span style="color: red;">Error: ${e.message}</span>`;
+            }
+        }
+
+        // A/B Experiments
+        async function opsCreateExperiment() {
+            const name = document.getElementById('opsExpName').value;
+            const metric = document.getElementById('opsExpMetric').value;
+            if (!name) { alert('Please enter an experiment name'); return; }
+            try {
+                const res = await fetch(`${API_URL}/v2/experiments`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ name, target_metric: metric })
+                });
+                const data = await res.json();
+                document.getElementById('opsExpResult').innerHTML = `<span style="color: green;">Created!</span><pre>${JSON.stringify(data, null, 2)}</pre>`;
+            } catch (e) {
+                document.getElementById('opsExpResult').innerHTML = `<span style="color: red;">Error: ${e.message}</span>`;
+            }
+        }
+
+        async function opsListExperiments() {
+            try {
+                const res = await fetch(`${API_URL}/v2/experiments`);
+                const data = await res.json();
+                if (data.experiments && data.experiments.length > 0) {
+                    const html = data.experiments.map(e => `<div style="padding: 6px; border-bottom: 1px solid #eee;"><strong>${e.name}</strong> - ${e.status} (${e.target_metric || 'N/A'})</div>`).join('');
+                    document.getElementById('opsExpResult').innerHTML = html;
+                } else {
+                    document.getElementById('opsExpResult').innerHTML = '<em>No experiments found</em>';
+                }
+            } catch (e) {
+                document.getElementById('opsExpResult').innerHTML = `<span style="color: red;">Error: ${e.message}</span>`;
+            }
+        }
+
+        // Connectors
+        async function opsCreateConnector() {
+            const name = document.getElementById('opsConnName').value;
+            const connType = document.getElementById('opsConnType').value;
+            const provider = document.getElementById('opsConnProvider').value;
+            if (!name) { alert('Please enter a connector name'); return; }
+            try {
+                const res = await fetch(`${API_URL}/v2/connectors`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ name, connector_type: connType, provider })
+                });
+                const data = await res.json();
+                document.getElementById('opsConnResult').innerHTML = `<span style="color: green;">Created!</span><pre>${JSON.stringify(data, null, 2)}</pre>`;
+            } catch (e) {
+                document.getElementById('opsConnResult').innerHTML = `<span style="color: red;">Error: ${e.message}</span>`;
+            }
+        }
+
+        async function opsListConnectors() {
+            try {
+                const res = await fetch(`${API_URL}/v2/connectors`);
+                const data = await res.json();
+                if (data.connectors && data.connectors.length > 0) {
+                    const html = data.connectors.map(c => `<div style="padding: 6px; border-bottom: 1px solid #eee;"><strong>${c.name}</strong> (${c.connector_type}) - ${c.provider || 'N/A'}</div>`).join('');
+                    document.getElementById('opsConnResult').innerHTML = html;
+                } else {
+                    document.getElementById('opsConnResult').innerHTML = '<em>No connectors found</em>';
+                }
+            } catch (e) {
+                document.getElementById('opsConnResult').innerHTML = `<span style="color: red;">Error: ${e.message}</span>`;
+            }
+        }
+
+        // Batch Jobs
+        async function opsCreateBatch() {
+            const name = document.getElementById('opsBatchName').value;
+            const jobType = document.getElementById('opsBatchType').value;
+            const totalItems = parseInt(document.getElementById('opsBatchItems').value) || 0;
+            if (!name) { alert('Please enter a batch job name'); return; }
+            try {
+                const res = await fetch(`${API_URL}/v2/batch-jobs`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ name, job_type: jobType, total_items: totalItems })
+                });
+                const data = await res.json();
+                document.getElementById('opsBatchResult').innerHTML = `<span style="color: green;">Created!</span><pre>${JSON.stringify(data, null, 2)}</pre>`;
+            } catch (e) {
+                document.getElementById('opsBatchResult').innerHTML = `<span style="color: red;">Error: ${e.message}</span>`;
+            }
+        }
+
+        async function opsListBatches() {
+            try {
+                const res = await fetch(`${API_URL}/v2/batch-jobs`);
+                const data = await res.json();
+                if (data.batch_jobs && data.batch_jobs.length > 0) {
+                    const html = data.batch_jobs.map(j => `<div style="padding: 6px; border-bottom: 1px solid #eee;"><strong>${j.name}</strong> (${j.job_type}) - ${j.status} - ${j.processed_items || 0}/${j.total_items || 0}</div>`).join('');
+                    document.getElementById('opsBatchResult').innerHTML = html;
+                } else {
+                    document.getElementById('opsBatchResult').innerHTML = '<em>No batch jobs found</em>';
+                }
+            } catch (e) {
+                document.getElementById('opsBatchResult').innerHTML = `<span style="color: red;">Error: ${e.message}</span>`;
+            }
+        }
+
+        // Workflow Definitions
+        let selectedWorkflowDefId = null;
+
+        async function wfDefCreate() {
+            const name = document.getElementById('wfDefName').value;
+            const category = document.getElementById('wfDefCategory').value;
+            const description = document.getElementById('wfDefDescription').value;
+            if (!name) { alert('Please enter a workflow name'); return; }
+            try {
+                const res = await fetch(`${API_URL}/v2/workflow-definitions`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        name,
+                        description: description || `${category} workflow`,
+                        category,
+                        steps: [
+                            { step_id: 'step_1', name: 'Initialize', type: 'setup', config: {} },
+                            { step_id: 'step_2', name: 'Process', type: 'execute', config: {} },
+                            { step_id: 'step_3', name: 'Finalize', type: 'cleanup', config: {} }
+                        ],
+                        variables: { input: null, output: null },
+                        triggers: [],
+                        is_published: false
+                    })
+                });
+                const data = await res.json();
+                document.getElementById('wfDefResult').innerHTML = `<span style="color: green;">Created!</span><pre>${JSON.stringify(data, null, 2)}</pre>`;
+                document.getElementById('wfDefName').value = '';
+                document.getElementById('wfDefDescription').value = '';
+            } catch (e) {
+                document.getElementById('wfDefResult').innerHTML = `<span style="color: red;">Error: ${e.message}</span>`;
+            }
+        }
+
+        async function wfDefList() {
+            try {
+                const res = await fetch(`${API_URL}/v2/workflow-definitions`);
+                const data = await res.json();
+                if (data.workflow_definitions && data.workflow_definitions.length > 0) {
+                    const html = data.workflow_definitions.map(wf => `
+                        <div style="padding: 8px; border-bottom: 1px solid #eee; cursor: pointer; ${selectedWorkflowDefId === wf.id ? 'background: #d1fae5;' : ''}" onclick="selectWorkflowDef(${wf.id})">
+                            <strong>${wf.name}</strong> <span style="color: #888; font-size: 0.85em;">v${wf.version}</span>
+                            <span style="color: ${wf.is_published ? '#22c55e' : '#f59e0b'}; font-size: 0.85em;">[${wf.is_published ? 'Published' : 'Draft'}]</span>
+                            <div style="font-size: 0.85em; color: #666;">
+                                ${wf.category || 'Uncategorized'} | ${(wf.steps || []).length} steps
+                            </div>
+                            <div style="font-size: 0.8em; color: #888;">${wf.description || 'No description'}</div>
+                        </div>
+                    `).join('');
+                    document.getElementById('wfDefResult').innerHTML = html;
+                } else {
+                    document.getElementById('wfDefResult').innerHTML = '<em>No workflow definitions found</em>';
+                }
+            } catch (e) {
+                document.getElementById('wfDefResult').innerHTML = `<span style="color: red;">Error: ${e.message}</span>`;
+            }
+        }
+
+        function selectWorkflowDef(id) {
+            selectedWorkflowDefId = selectedWorkflowDefId === id ? null : id;
+            wfDefList();
+        }
+
+        async function wfDefClone() {
+            if (!selectedWorkflowDefId) { alert('Please select a workflow definition to clone'); return; }
+            const newName = prompt('Enter name for cloned workflow:');
+            if (!newName) return;
+            try {
+                const res = await fetch(`${API_URL}/v2/workflow-definitions/${selectedWorkflowDefId}/clone`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ new_name: newName })
+                });
+                const data = await res.json();
+                document.getElementById('wfDefResult').innerHTML = `<span style="color: green;">Cloned!</span><pre>${JSON.stringify(data, null, 2)}</pre>`;
+                selectedWorkflowDefId = null;
+            } catch (e) {
+                document.getElementById('wfDefResult').innerHTML = `<span style="color: red;">Error: ${e.message}</span>`;
+            }
+        }
+
+        // Execution Queue
+        async function opsQueueExecution() {
+            const agentId = document.getElementById('opsExecAgentId').value;
+            const priority = parseInt(document.getElementById('opsExecPriority').value) || 5;
+            if (!agentId) { alert('Please enter an Agent ID'); return; }
+            try {
+                const res = await fetch(`${API_URL}/v2/executions`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ agent_id: agentId, priority, input_data: {} })
+                });
+                const data = await res.json();
+                document.getElementById('opsExecResult').innerHTML = `<span style="color: green;">Queued!</span><pre>${JSON.stringify(data, null, 2)}</pre>`;
+            } catch (e) {
+                document.getElementById('opsExecResult').innerHTML = `<span style="color: red;">Error: ${e.message}</span>`;
+            }
+        }
+
+        async function opsListExecutions() {
+            try {
+                const res = await fetch(`${API_URL}/v2/executions`);
+                const data = await res.json();
+                if (data.executions && data.executions.length > 0) {
+                    const html = data.executions.map(e => `
+                        <div style="padding: 8px; border-bottom: 1px solid #eee;">
+                            <strong>${e.execution_id}</strong>
+                            <span style="color: ${e.status === 'completed' ? 'green' : e.status === 'failed' ? 'red' : 'orange'};">[${e.status}]</span>
+                            <div style="font-size: 0.85em; color: #666;">
+                                ${e.agent_id || e.workflow_id || 'N/A'} | Priority: ${e.priority} | Progress: ${Math.round(e.progress || 0)}%
+                            </div>
+                            ${e.status === 'running' || e.status === 'queued' ? `<button onclick="opsCancelExecution('${e.execution_id}')" style="margin-top: 4px; padding: 2px 8px; font-size: 0.8em; background: #ef4444; color: white; border: none; border-radius: 3px; cursor: pointer;">Cancel</button>` : ''}
+                        </div>
+                    `).join('');
+                    document.getElementById('opsExecResult').innerHTML = html;
+                } else {
+                    document.getElementById('opsExecResult').innerHTML = '<em>No executions in queue</em>';
+                }
+            } catch (e) {
+                document.getElementById('opsExecResult').innerHTML = `<span style="color: red;">Error: ${e.message}</span>`;
+            }
+        }
+
+        async function opsListExecutionHistory() {
+            try {
+                const res = await fetch(`${API_URL}/v2/executions/history?hours=24`);
+                const data = await res.json();
+                if (data.history && data.history.length > 0) {
+                    const html = data.history.map(h => `
+                        <div style="padding: 6px; border-bottom: 1px solid #eee;">
+                            <strong>${h.execution_id}</strong>
+                            <span style="color: ${h.status === 'completed' ? 'green' : 'red'};">[${h.status}]</span>
+                            <div style="font-size: 0.85em; color: #666;">
+                                Duration: ${h.duration_seconds ? h.duration_seconds.toFixed(1) + 's' : 'N/A'} | Archived: ${h.archived_at ? new Date(h.archived_at).toLocaleString() : 'N/A'}
+                            </div>
+                        </div>
+                    `).join('');
+                    document.getElementById('opsExecResult').innerHTML = html;
+                } else {
+                    document.getElementById('opsExecResult').innerHTML = '<em>No execution history found</em>';
+                }
+            } catch (e) {
+                document.getElementById('opsExecResult').innerHTML = `<span style="color: red;">Error: ${e.message}</span>`;
+            }
+        }
+
+        async function opsCancelExecution(executionId) {
+            try {
+                const res = await fetch(`${API_URL}/v2/executions/${executionId}/cancel`, { method: 'PUT' });
+                const data = await res.json();
+                document.getElementById('opsExecResult').innerHTML = `<span style="color: orange;">Cancelled!</span><pre>${JSON.stringify(data, null, 2)}</pre>`;
+                // Refresh the list
+                setTimeout(opsListExecutions, 500);
+            } catch (e) {
+                document.getElementById('opsExecResult').innerHTML = `<span style="color: red;">Error: ${e.message}</span>`;
+            }
+        }
+
+        // ============================================
+        // TESTING TAB FUNCTIONS (V2 Database-Backed)
+        // ============================================
+
+        // Test Suites
+        async function testCreateSuite() {
+            const name = document.getElementById('testSuiteName').value;
+            const targetType = document.getElementById('testTargetType').value;
+            const targetId = document.getElementById('testTargetId').value;
+            if (!name) { alert('Please enter a test suite name'); return; }
+            try {
+                const res = await fetch(`${API_URL}/v2/test-suites`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        name,
+                        target_type: targetType,
+                        target_id: targetId,
+                        test_cases: [],
+                        tags: []
+                    })
+                });
+                const data = await res.json();
+                document.getElementById('testSuiteResult').innerHTML = `<span style="color: green;">Created!</span><pre>${JSON.stringify(data, null, 2)}</pre>`;
+            } catch (e) {
+                document.getElementById('testSuiteResult').innerHTML = `<span style="color: red;">Error: ${e.message}</span>`;
+            }
+        }
+
+        async function testListSuites() {
+            try {
+                const res = await fetch(`${API_URL}/v2/test-suites?status=active`);
+                const data = await res.json();
+                if (data.suites && data.suites.length > 0) {
+                    const html = data.suites.map(s => `
+                        <div style="padding: 8px; border-bottom: 1px solid #eee;">
+                            <strong>${s.name}</strong> <span style="color: #666;">(${s.suite_id})</span>
+                            <div style="font-size: 0.85em; color: #666;">
+                                Type: ${s.target_type || 'N/A'} | Tests: ${s.total_tests} | Status: ${s.status}
+                            </div>
+                            <button onclick="document.getElementById('testRunSuiteId').value='${s.suite_id}'" style="margin-top: 4px; padding: 2px 8px; font-size: 0.8em; background: #f59e0b; color: white; border: none; border-radius: 3px; cursor: pointer;">Select for Run</button>
+                        </div>
+                    `).join('');
+                    document.getElementById('testSuiteResult').innerHTML = html;
+                } else {
+                    document.getElementById('testSuiteResult').innerHTML = '<em>No test suites found</em>';
+                }
+            } catch (e) {
+                document.getElementById('testSuiteResult').innerHTML = `<span style="color: red;">Error: ${e.message}</span>`;
+            }
+        }
+
+        // Test Runs
+        async function testRunSuite() {
+            const suiteId = document.getElementById('testRunSuiteId').value;
+            const environment = document.getElementById('testRunEnv').value;
+            if (!suiteId) { alert('Please enter or select a Suite ID'); return; }
+            try {
+                const res = await fetch(`${API_URL}/v2/test-suites/${suiteId}/run`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ environment, trigger_type: 'manual' })
+                });
+                const data = await res.json();
+                document.getElementById('testRunResult').innerHTML = `<span style="color: green;">Test Run Started!</span><pre>${JSON.stringify(data, null, 2)}</pre>`;
+            } catch (e) {
+                document.getElementById('testRunResult').innerHTML = `<span style="color: red;">Error: ${e.message}</span>`;
+            }
+        }
+
+        async function testListRuns() {
+            try {
+                const res = await fetch(`${API_URL}/v2/test-runs?limit=20`);
+                const data = await res.json();
+                if (data.runs && data.runs.length > 0) {
+                    const html = data.runs.map(r => `
+                        <div style="padding: 8px; border-bottom: 1px solid #eee;">
+                            <strong>${r.run_id}</strong>
+                            <span style="color: ${r.status === 'completed' ? 'green' : r.status === 'failed' ? 'red' : 'orange'};">[${r.status}]</span>
+                            <div style="font-size: 0.85em; color: #666;">
+                                Env: ${r.environment || 'N/A'} |
+                                ${r.passed !== null ? `✓ ${r.passed}` : ''}
+                                ${r.failed !== null ? `✗ ${r.failed}` : ''}
+                                ${r.skipped !== null ? `⊘ ${r.skipped}` : ''}
+                                ${r.duration_ms ? ` | ${r.duration_ms}ms` : ''}
+                            </div>
+                        </div>
+                    `).join('');
+                    document.getElementById('testRunResult').innerHTML = html;
+                } else {
+                    document.getElementById('testRunResult').innerHTML = '<em>No test runs found</em>';
+                }
+            } catch (e) {
+                document.getElementById('testRunResult').innerHTML = `<span style="color: red;">Error: ${e.message}</span>`;
+            }
+        }
+
+        // Health Check
+        async function testHealthCheck() {
+            try {
+                const res = await fetch(`${API_URL}/v2/health`);
+                const data = await res.json();
+                const statusColor = data.status === 'healthy' ? 'green' : data.status === 'degraded' ? 'orange' : 'red';
+                let html = `<div style="margin-bottom: 10px;"><strong>Status:</strong> <span style="color: ${statusColor}; font-weight: bold;">${data.status.toUpperCase()}</span></div>`;
+
+                if (data.checks) {
+                    html += '<div style="margin-bottom: 5px;"><strong>Checks:</strong></div>';
+                    for (const [name, check] of Object.entries(data.checks)) {
+                        const checkStatus = typeof check === 'object' && check.status ? check.status : 'unknown';
+                        const checkColor = checkStatus === 'healthy' ? 'green' : checkStatus === 'unhealthy' ? 'red' : '#666';
+                        html += `<div style="padding: 4px 0; border-bottom: 1px solid #eee;">
+                            <span style="color: ${checkColor};">●</span> <strong>${name}</strong>: ${JSON.stringify(check)}
+                        </div>`;
+                    }
+                }
+                document.getElementById('testHealthResult').innerHTML = html;
+            } catch (e) {
+                document.getElementById('testHealthResult').innerHTML = `<span style="color: red;">Error: ${e.message}</span>`;
+            }
+        }
+
+        async function testGetMetrics() {
+            try {
+                const res = await fetch(`${API_URL}/v2/metrics`);
+                const data = await res.json();
+                let html = '<div style="margin-bottom: 10px;"><strong>Entity Counts:</strong></div>';
+
+                if (data.entity_counts) {
+                    for (const [name, count] of Object.entries(data.entity_counts)) {
+                        html += `<div style="padding: 2px 0;">${name}: <strong>${count}</strong></div>`;
+                    }
+                }
+
+                if (data.recent_activity) {
+                    html += '<div style="margin: 10px 0 5px;"><strong>Recent Activity:</strong></div>';
+                    for (const [name, count] of Object.entries(data.recent_activity)) {
+                        html += `<div style="padding: 2px 0;">${name}: <strong>${count}</strong></div>`;
+                    }
+                }
+
+                document.getElementById('testHealthResult').innerHTML = html;
+            } catch (e) {
+                document.getElementById('testHealthResult').innerHTML = `<span style="color: red;">Error: ${e.message}</span>`;
+            }
+        }
 
         // Initialize on load
         window.addEventListener('DOMContentLoaded', initialize);
