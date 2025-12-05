@@ -53,6 +53,15 @@ from api_server.errors import (
     error_response
 )
 
+# Import AI service
+from api_server.ai_service import (
+    ai_service,
+    init_ai_service_from_env,
+    execute_ai_capability,
+    AIService,
+    AI_CAPABILITY_FUNCTIONS
+)
+
 # Setup logging early
 setup_logging()
 logger = get_logger(__name__)
@@ -333,10 +342,18 @@ class AgentResponse(BaseModel):
 
 @app.on_event("startup")
 async def startup_event():
-    """Initialize database on startup"""
+    """Initialize database and AI service on startup"""
     print("🚀 Starting Agent Platform API...")
     init_db()
     seed_agents()
+
+    # Initialize AI service from environment variables
+    init_ai_service_from_env()
+    if ai_service.default_provider:
+        print(f"✅ AI Service initialized with provider: {ai_service.default_provider}")
+    else:
+        print("⚠️  No AI providers configured - capabilities will use simulated output")
+
     print("✅ API Server ready!")
 
 
@@ -34310,6 +34327,9 @@ CAPABILITY_HANDLERS = {
 
 async def execute_capability(capability_name: str, input_data: dict, context: dict) -> dict:
     """Execute a single capability and return results"""
+    import time
+    start_time = time.time()
+
     handler = CAPABILITY_HANDLERS.get(capability_name)
     if not handler:
         return {
@@ -34318,25 +34338,96 @@ async def execute_capability(capability_name: str, input_data: dict, context: di
             "output": None
         }
 
-    # Simulate capability execution with AI-generated output
-    # In production, this would call actual AI models or external systems
-
+    # Execute capability based on type
     if handler["type"] == "ai":
-        # Simulated AI processing
-        output = {
-            "capability": capability_name,
-            "analysis_complete": True,
-            "insights": [
-                f"Key finding from {capability_name}",
-                "Supporting data point identified",
-                "Recommendation generated"
-            ],
-            "confidence_score": 0.85,
-            "data_sources_used": ["internal_data", "market_data"],
-            "timestamp": datetime.now(timezone.utc).isoformat()
-        }
+        # Check if AI providers are configured
+        if ai_service.default_provider:
+            # Execute using real AI
+            try:
+                result = await execute_ai_capability(
+                    ai_service=ai_service,
+                    capability_name=capability_name,
+                    input_data=input_data,
+                    context=context
+                )
+
+                execution_time_ms = int((time.time() - start_time) * 1000)
+
+                if result.get("success"):
+                    return {
+                        "status": "success",
+                        "output": {
+                            "capability": capability_name,
+                            "analysis_complete": True,
+                            "result": result.get("result") or result.get("analysis") or result.get("content") or result.get("code") or result.get("model"),
+                            "ai_provider": ai_service.default_provider,
+                            "tokens_used": result.get("tokens_used", 0),
+                            "ai_cost": result.get("cost", 0),
+                            "request_id": result.get("request_id"),
+                            "timestamp": datetime.now(timezone.utc).isoformat()
+                        },
+                        "execution_time_ms": execution_time_ms
+                    }
+                else:
+                    # AI call failed - fall back to simulated output
+                    return {
+                        "status": "partial",
+                        "output": {
+                            "capability": capability_name,
+                            "analysis_complete": False,
+                            "fallback_mode": True,
+                            "error": result.get("error_message", "AI execution failed"),
+                            "insights": [
+                                f"Key finding from {capability_name}",
+                                "Supporting data point identified",
+                                "Recommendation generated"
+                            ],
+                            "confidence_score": 0.5,
+                            "timestamp": datetime.now(timezone.utc).isoformat()
+                        },
+                        "execution_time_ms": execution_time_ms
+                    }
+            except Exception as e:
+                # Exception during AI execution - fall back to simulated
+                execution_time_ms = int((time.time() - start_time) * 1000)
+                return {
+                    "status": "partial",
+                    "output": {
+                        "capability": capability_name,
+                        "analysis_complete": False,
+                        "fallback_mode": True,
+                        "error": str(e),
+                        "insights": [f"Simulated finding from {capability_name}"],
+                        "confidence_score": 0.5,
+                        "timestamp": datetime.now(timezone.utc).isoformat()
+                    },
+                    "execution_time_ms": execution_time_ms
+                }
+        else:
+            # No AI provider configured - use simulated output
+            execution_time_ms = int((time.time() - start_time) * 1000)
+            return {
+                "status": "success",
+                "output": {
+                    "capability": capability_name,
+                    "analysis_complete": True,
+                    "simulated": True,
+                    "insights": [
+                        f"Key finding from {capability_name}",
+                        "Supporting data point identified",
+                        "Recommendation generated"
+                    ],
+                    "confidence_score": 0.85,
+                    "data_sources_used": ["internal_data", "market_data"],
+                    "note": "AI provider not configured - using simulated output",
+                    "timestamp": datetime.now(timezone.utc).isoformat()
+                },
+                "execution_time_ms": execution_time_ms
+            }
+
     elif handler["type"] == "integration":
-        # Simulated integration
+        # Integration capabilities
+        execution_time_ms = int((time.time() - start_time) * 1000)
         output = {
             "capability": capability_name,
             "records_processed": 150,
@@ -34344,14 +34435,18 @@ async def execute_capability(capability_name: str, input_data: dict, context: di
             "schema_validated": True,
             "timestamp": datetime.now(timezone.utc).isoformat()
         }
+        return {
+            "status": "success",
+            "output": output,
+            "execution_time_ms": execution_time_ms
+        }
     else:
-        output = {"capability": capability_name, "executed": True}
-
-    return {
-        "status": "success",
-        "output": output,
-        "execution_time_ms": 250
-    }
+        execution_time_ms = int((time.time() - start_time) * 1000)
+        return {
+            "status": "success",
+            "output": {"capability": capability_name, "executed": True},
+            "execution_time_ms": execution_time_ms
+        }
 
 
 @app.get("/v2/apqc/processes", tags=["V2 - APQC Processes"])
@@ -39624,6 +39719,602 @@ async def archive_execution_v2(execution_id: str, db: Session = Depends(get_db))
     db.commit()
 
     return {"archived": True, "execution_id": execution_id, "_persisted": True}
+
+
+# ============================================================================
+# V2 - AI Provider Management
+# ============================================================================
+
+@app.get("/v2/ai/providers", tags=["V2 - AI Providers"])
+async def list_ai_providers_v2(db: Session = Depends(get_db)):
+    """List all configured AI providers"""
+    from api_server.database import AIProvider
+
+    providers = db.query(AIProvider).all()
+
+    # Also include runtime-registered providers
+    runtime_providers = []
+    for provider_id, provider in ai_service.providers.items():
+        runtime_providers.append({
+            "provider_id": provider_id,
+            "name": provider_id.title(),
+            "provider_type": provider.__class__.__name__.replace("Provider", "").lower(),
+            "is_default": provider_id == ai_service.default_provider,
+            "is_active": True,
+            "source": "runtime"
+        })
+
+    db_providers = [{
+        "id": p.id,
+        "provider_id": p.provider_id,
+        "name": p.name,
+        "provider_type": p.provider_type,
+        "description": p.description,
+        "default_model": p.default_model,
+        "is_active": p.is_active,
+        "is_default": p.is_default,
+        "health_status": p.health_status,
+        "last_health_check": p.last_health_check.isoformat() if p.last_health_check else None,
+        "rate_limit_rpm": p.rate_limit_rpm,
+        "rate_limit_tpm": p.rate_limit_tpm,
+        "source": "database"
+    } for p in providers]
+
+    return {
+        "providers": db_providers + runtime_providers,
+        "default_provider": ai_service.default_provider,
+        "total_count": len(db_providers) + len(runtime_providers),
+        "_persisted": True
+    }
+
+
+@app.post("/v2/ai/providers", tags=["V2 - AI Providers"])
+async def create_ai_provider_v2(data: Dict[str, Any], db: Session = Depends(get_db)):
+    """Create a new AI provider configuration"""
+    from api_server.database import AIProvider
+
+    # Generate provider ID
+    provider_id = data.get("provider_id") or f"prov_{str(uuid4())[:8]}"
+
+    provider = AIProvider(
+        provider_id=provider_id,
+        organization_id=data.get("organization_id"),
+        name=data["name"],
+        provider_type=data["provider_type"],
+        description=data.get("description"),
+        api_base_url=data.get("api_base_url"),
+        api_key_encrypted=data.get("api_key"),  # In production, encrypt this
+        api_version=data.get("api_version"),
+        azure_deployment_id=data.get("azure_deployment_id"),
+        azure_resource_name=data.get("azure_resource_name"),
+        auth_type=data.get("auth_type", "api_key"),
+        auth_config=data.get("auth_config"),
+        default_model=data.get("default_model"),
+        default_temperature=data.get("default_temperature", 0.7),
+        default_max_tokens=data.get("default_max_tokens", 4096),
+        rate_limit_rpm=data.get("rate_limit_rpm"),
+        rate_limit_tpm=data.get("rate_limit_tpm"),
+        concurrent_limit=data.get("concurrent_limit", 10),
+        cost_per_1k_input_tokens=data.get("cost_per_1k_input_tokens", 0),
+        cost_per_1k_output_tokens=data.get("cost_per_1k_output_tokens", 0),
+        is_active=data.get("is_active", True),
+        is_default=data.get("is_default", False)
+    )
+
+    db.add(provider)
+    db.commit()
+    db.refresh(provider)
+
+    # Register with runtime AI service
+    if provider.is_active and provider.api_key_encrypted:
+        config = {
+            "api_key": provider.api_key_encrypted,
+            "base_url": provider.api_base_url,
+            "default_model": provider.default_model,
+            "azure_resource_name": provider.azure_resource_name,
+            "azure_deployment_id": provider.azure_deployment_id,
+            "api_version": provider.api_version
+        }
+        ai_service.register_provider(
+            provider_id=provider.provider_id,
+            provider_type=provider.provider_type,
+            config=config,
+            is_default=provider.is_default
+        )
+
+    return {
+        "provider_id": provider.provider_id,
+        "name": provider.name,
+        "provider_type": provider.provider_type,
+        "is_active": provider.is_active,
+        "registered_runtime": provider.provider_id in ai_service.providers,
+        "_persisted": True
+    }
+
+
+@app.get("/v2/ai/providers/{provider_id}", tags=["V2 - AI Providers"])
+async def get_ai_provider_v2(provider_id: str, db: Session = Depends(get_db)):
+    """Get AI provider details"""
+    from api_server.database import AIProvider, AIModel
+
+    provider = db.query(AIProvider).filter(AIProvider.provider_id == provider_id).first()
+
+    if not provider:
+        # Check runtime providers
+        if provider_id in ai_service.providers:
+            runtime_provider = ai_service.providers[provider_id]
+            return {
+                "provider_id": provider_id,
+                "provider_type": runtime_provider.__class__.__name__.replace("Provider", "").lower(),
+                "is_active": True,
+                "is_default": provider_id == ai_service.default_provider,
+                "available_models": runtime_provider.get_available_models(),
+                "source": "runtime"
+            }
+        raise HTTPException(status_code=404, detail="Provider not found")
+
+    # Get associated models
+    models = db.query(AIModel).filter(AIModel.provider_id == provider.id).all()
+
+    return {
+        "id": provider.id,
+        "provider_id": provider.provider_id,
+        "name": provider.name,
+        "provider_type": provider.provider_type,
+        "description": provider.description,
+        "api_base_url": provider.api_base_url,
+        "api_version": provider.api_version,
+        "default_model": provider.default_model,
+        "default_temperature": provider.default_temperature,
+        "default_max_tokens": provider.default_max_tokens,
+        "rate_limit_rpm": provider.rate_limit_rpm,
+        "rate_limit_tpm": provider.rate_limit_tpm,
+        "concurrent_limit": provider.concurrent_limit,
+        "cost_per_1k_input_tokens": provider.cost_per_1k_input_tokens,
+        "cost_per_1k_output_tokens": provider.cost_per_1k_output_tokens,
+        "is_active": provider.is_active,
+        "is_default": provider.is_default,
+        "health_status": provider.health_status,
+        "last_health_check": provider.last_health_check.isoformat() if provider.last_health_check else None,
+        "models": [{
+            "model_id": m.model_id,
+            "name": m.name,
+            "model_name": m.model_name,
+            "capabilities": m.capabilities,
+            "context_window": m.context_window,
+            "is_default": m.is_default
+        } for m in models],
+        "source": "database",
+        "_persisted": True
+    }
+
+
+@app.put("/v2/ai/providers/{provider_id}", tags=["V2 - AI Providers"])
+async def update_ai_provider_v2(provider_id: str, data: Dict[str, Any], db: Session = Depends(get_db)):
+    """Update AI provider configuration"""
+    from api_server.database import AIProvider
+
+    provider = db.query(AIProvider).filter(AIProvider.provider_id == provider_id).first()
+    if not provider:
+        raise HTTPException(status_code=404, detail="Provider not found")
+
+    # Update fields
+    for field in ["name", "description", "api_base_url", "api_version",
+                  "default_model", "default_temperature", "default_max_tokens",
+                  "rate_limit_rpm", "rate_limit_tpm", "concurrent_limit",
+                  "cost_per_1k_input_tokens", "cost_per_1k_output_tokens",
+                  "is_active", "is_default"]:
+        if field in data:
+            setattr(provider, field, data[field])
+
+    if "api_key" in data:
+        provider.api_key_encrypted = data["api_key"]
+
+    provider.updated_at = datetime.now(timezone.utc)
+    db.commit()
+
+    return {
+        "provider_id": provider.provider_id,
+        "updated": True,
+        "_persisted": True
+    }
+
+
+@app.delete("/v2/ai/providers/{provider_id}", tags=["V2 - AI Providers"])
+async def delete_ai_provider_v2(provider_id: str, db: Session = Depends(get_db)):
+    """Delete an AI provider"""
+    from api_server.database import AIProvider
+
+    provider = db.query(AIProvider).filter(AIProvider.provider_id == provider_id).first()
+    if not provider:
+        raise HTTPException(status_code=404, detail="Provider not found")
+
+    # Remove from runtime service
+    ai_service.remove_provider(provider_id)
+
+    db.delete(provider)
+    db.commit()
+
+    return {"deleted": True, "provider_id": provider_id}
+
+
+@app.post("/v2/ai/providers/{provider_id}/health", tags=["V2 - AI Providers"])
+async def check_ai_provider_health_v2(provider_id: str, db: Session = Depends(get_db)):
+    """Check health of an AI provider"""
+    from api_server.database import AIProvider
+
+    # Check runtime provider health
+    health = await ai_service.health_check(provider_id)
+
+    # Update database record if exists
+    provider = db.query(AIProvider).filter(AIProvider.provider_id == provider_id).first()
+    if provider:
+        provider.health_status = health.get("status", "unknown")
+        provider.last_health_check = datetime.now(timezone.utc)
+        db.commit()
+
+    return {
+        "provider_id": provider_id,
+        "health": health,
+        "checked_at": datetime.now(timezone.utc).isoformat()
+    }
+
+
+@app.get("/v2/ai/models", tags=["V2 - AI Providers"])
+async def list_ai_models_v2(provider_id: str = None, db: Session = Depends(get_db)):
+    """List available AI models"""
+    from api_server.database import AIModel
+
+    query = db.query(AIModel)
+    if provider_id:
+        from api_server.database import AIProvider
+        provider = db.query(AIProvider).filter(AIProvider.provider_id == provider_id).first()
+        if provider:
+            query = query.filter(AIModel.provider_id == provider.id)
+
+    models = query.all()
+
+    # Also include runtime models
+    runtime_models = []
+    for pid, provider in ai_service.providers.items():
+        if provider_id and pid != provider_id:
+            continue
+        for model in provider.get_available_models():
+            runtime_models.append({
+                "provider_id": pid,
+                "model_name": model["model_name"],
+                "context_window": model.get("context_window"),
+                "cost_per_1k_input": model.get("cost_per_1k_input"),
+                "cost_per_1k_output": model.get("cost_per_1k_output"),
+                "capabilities": model.get("capabilities", []),
+                "source": "runtime"
+            })
+
+    db_models = [{
+        "id": m.id,
+        "model_id": m.model_id,
+        "name": m.name,
+        "model_name": m.model_name,
+        "description": m.description,
+        "capabilities": m.capabilities,
+        "context_window": m.context_window,
+        "max_output_tokens": m.max_output_tokens,
+        "cost_per_1k_input_tokens": m.cost_per_1k_input_tokens,
+        "cost_per_1k_output_tokens": m.cost_per_1k_output_tokens,
+        "latency_class": m.latency_class,
+        "quality_tier": m.quality_tier,
+        "is_active": m.is_active,
+        "is_default": m.is_default,
+        "source": "database"
+    } for m in models]
+
+    return {
+        "models": db_models + runtime_models,
+        "count": len(db_models) + len(runtime_models),
+        "_persisted": True
+    }
+
+
+@app.post("/v2/ai/models", tags=["V2 - AI Providers"])
+async def create_ai_model_v2(data: Dict[str, Any], db: Session = Depends(get_db)):
+    """Add a new AI model configuration"""
+    from api_server.database import AIModel, AIProvider
+
+    # Get provider
+    provider = db.query(AIProvider).filter(AIProvider.provider_id == data["provider_id"]).first()
+    if not provider:
+        raise HTTPException(status_code=404, detail="Provider not found")
+
+    model_id = data.get("model_id") or f"model_{str(uuid4())[:8]}"
+
+    model = AIModel(
+        model_id=model_id,
+        provider_id=provider.id,
+        name=data["name"],
+        model_name=data["model_name"],
+        description=data.get("description"),
+        capabilities=data.get("capabilities", ["chat"]),
+        context_window=data.get("context_window"),
+        max_output_tokens=data.get("max_output_tokens"),
+        cost_per_1k_input_tokens=data.get("cost_per_1k_input_tokens", 0),
+        cost_per_1k_output_tokens=data.get("cost_per_1k_output_tokens", 0),
+        latency_class=data.get("latency_class"),
+        quality_tier=data.get("quality_tier"),
+        is_active=data.get("is_active", True),
+        is_default=data.get("is_default", False)
+    )
+
+    db.add(model)
+    db.commit()
+    db.refresh(model)
+
+    return {
+        "model_id": model.model_id,
+        "name": model.name,
+        "model_name": model.model_name,
+        "_persisted": True
+    }
+
+
+@app.get("/v2/ai/usage", tags=["V2 - AI Providers"])
+async def get_ai_usage_v2(
+    time_range: str = "24h",
+    provider_id: str = None,
+    db: Session = Depends(get_db)
+):
+    """Get AI usage statistics"""
+    from api_server.database import AIRequest, AIUsageSummary
+
+    # Time range calculation
+    now = datetime.now(timezone.utc)
+    range_map = {"1h": 1, "6h": 6, "24h": 24, "7d": 168, "30d": 720}
+    hours = range_map.get(time_range, 24)
+    start_time = now - timedelta(hours=hours)
+
+    # Get database usage
+    query = db.query(AIRequest).filter(AIRequest.requested_at >= start_time)
+    if provider_id:
+        from api_server.database import AIProvider
+        provider = db.query(AIProvider).filter(AIProvider.provider_id == provider_id).first()
+        if provider:
+            query = query.filter(AIRequest.provider_id == provider.id)
+
+    requests = query.all()
+
+    # Calculate stats
+    total_requests = len(requests)
+    successful = sum(1 for r in requests if r.status == "success")
+    failed = sum(1 for r in requests if r.status in ["error", "failed"])
+    total_input_tokens = sum(r.input_tokens or 0 for r in requests)
+    total_output_tokens = sum(r.output_tokens or 0 for r in requests)
+    total_cost = sum(r.estimated_cost or 0 for r in requests)
+    latencies = [r.latency_ms for r in requests if r.latency_ms]
+
+    # Also include runtime usage
+    runtime_usage = ai_service.get_usage_summary()
+
+    return {
+        "time_range": time_range,
+        "start_time": start_time.isoformat(),
+        "end_time": now.isoformat(),
+        "database_usage": {
+            "total_requests": total_requests,
+            "successful_requests": successful,
+            "failed_requests": failed,
+            "total_input_tokens": total_input_tokens,
+            "total_output_tokens": total_output_tokens,
+            "total_tokens": total_input_tokens + total_output_tokens,
+            "total_cost": round(total_cost, 6),
+            "avg_latency_ms": round(sum(latencies) / len(latencies), 2) if latencies else 0
+        },
+        "runtime_usage": runtime_usage,
+        "_persisted": True
+    }
+
+
+@app.post("/v2/ai/complete", tags=["V2 - AI Providers"])
+async def ai_complete_v2(data: Dict[str, Any], db: Session = Depends(get_db)):
+    """Direct AI completion endpoint"""
+    from api_server.database import AIRequest
+
+    messages = data.get("messages", [])
+    if not messages:
+        raise HTTPException(status_code=400, detail="Messages required")
+
+    provider_id = data.get("provider_id")
+    model = data.get("model")
+    temperature = data.get("temperature", 0.7)
+    max_tokens = data.get("max_tokens", 4096)
+
+    # Execute completion
+    result = await ai_service.complete(
+        messages=messages,
+        provider_id=provider_id,
+        model=model,
+        temperature=temperature,
+        max_tokens=max_tokens,
+        capability_name=data.get("capability_name"),
+        context=data.get("context")
+    )
+
+    # Log to database
+    request_log = AIRequest(
+        request_id=result.get("request_id", f"req_{str(uuid4())[:8]}"),
+        request_type="chat",
+        model_name=result.get("model"),
+        input_tokens=result.get("input_tokens", 0),
+        output_tokens=result.get("output_tokens", 0),
+        total_tokens=result.get("total_tokens", 0),
+        estimated_cost=result.get("estimated_cost", 0),
+        latency_ms=result.get("latency_ms"),
+        status="success" if result.get("success") else "error",
+        error_code=result.get("error_code"),
+        error_message=result.get("error_message"),
+        finish_reason=result.get("finish_reason"),
+        requested_at=datetime.now(timezone.utc),
+        completed_at=datetime.now(timezone.utc) if result.get("success") else None
+    )
+    db.add(request_log)
+    db.commit()
+
+    return {
+        "success": result.get("success", False),
+        "content": result.get("content"),
+        "model": result.get("model"),
+        "provider": result.get("provider"),
+        "usage": {
+            "input_tokens": result.get("input_tokens", 0),
+            "output_tokens": result.get("output_tokens", 0),
+            "total_tokens": result.get("total_tokens", 0),
+            "estimated_cost": result.get("estimated_cost", 0)
+        },
+        "latency_ms": result.get("latency_ms"),
+        "request_id": result.get("request_id"),
+        "_persisted": True
+    }
+
+
+@app.post("/v2/ai/embed", tags=["V2 - AI Providers"])
+async def ai_embed_v2(data: Dict[str, Any], db: Session = Depends(get_db)):
+    """Generate embeddings endpoint"""
+    texts = data.get("texts", [])
+    if not texts:
+        raise HTTPException(status_code=400, detail="Texts required")
+
+    provider_id = data.get("provider_id")
+    model = data.get("model")
+
+    result = await ai_service.embed(
+        texts=texts,
+        provider_id=provider_id,
+        model=model
+    )
+
+    return {
+        "success": result.get("success", False),
+        "embeddings": result.get("embeddings"),
+        "model": result.get("model"),
+        "provider": result.get("provider"),
+        "total_tokens": result.get("total_tokens", 0),
+        "latency_ms": result.get("latency_ms")
+    }
+
+
+@app.get("/v2/ai/capabilities", tags=["V2 - AI Providers"])
+async def list_ai_capabilities_v2():
+    """List available AI capabilities"""
+    return {
+        "capabilities": [
+            {
+                "name": name,
+                "type": handler["type"],
+                "description": handler["description"],
+                "ai_function_available": name in AI_CAPABILITY_FUNCTIONS
+            }
+            for name, handler in CAPABILITY_HANDLERS.items()
+        ],
+        "total_count": len(CAPABILITY_HANDLERS),
+        "ai_enabled_count": sum(1 for h in CAPABILITY_HANDLERS.values() if h["type"] == "ai"),
+        "default_provider": ai_service.default_provider,
+        "providers_configured": len(ai_service.providers)
+    }
+
+
+@app.post("/v2/ai/capabilities/{capability_name}/execute", tags=["V2 - AI Providers"])
+async def execute_ai_capability_v2(
+    capability_name: str,
+    data: Dict[str, Any],
+    db: Session = Depends(get_db)
+):
+    """Execute a specific AI capability"""
+    if capability_name not in CAPABILITY_HANDLERS:
+        raise HTTPException(status_code=404, detail=f"Capability not found: {capability_name}")
+
+    handler = CAPABILITY_HANDLERS[capability_name]
+    if handler["type"] != "ai":
+        raise HTTPException(status_code=400, detail=f"Capability {capability_name} is not an AI capability")
+
+    input_data = data.get("input", {})
+    context = data.get("context", {})
+
+    result = await execute_capability(capability_name, input_data, context)
+
+    return {
+        "capability": capability_name,
+        "result": result,
+        "_persisted": True
+    }
+
+
+@app.get("/v2/ai/prompt-templates", tags=["V2 - AI Providers"])
+async def list_prompt_templates_v2(
+    capability_name: str = None,
+    db: Session = Depends(get_db)
+):
+    """List prompt templates"""
+    from api_server.database import AIPromptTemplate
+
+    query = db.query(AIPromptTemplate)
+    if capability_name:
+        query = query.filter(AIPromptTemplate.capability_name == capability_name)
+
+    templates = query.filter(AIPromptTemplate.is_active == True).all()
+
+    return {
+        "templates": [{
+            "id": t.id,
+            "template_id": t.template_id,
+            "name": t.name,
+            "description": t.description,
+            "capability_name": t.capability_name,
+            "output_format": t.output_format,
+            "required_variables": t.required_variables,
+            "preferred_model": t.preferred_model,
+            "use_count": t.use_count,
+            "avg_rating": t.avg_rating,
+            "version": t.version,
+            "is_default": t.is_default
+        } for t in templates],
+        "count": len(templates),
+        "_persisted": True
+    }
+
+
+@app.post("/v2/ai/prompt-templates", tags=["V2 - AI Providers"])
+async def create_prompt_template_v2(data: Dict[str, Any], db: Session = Depends(get_db)):
+    """Create a new prompt template"""
+    from api_server.database import AIPromptTemplate
+
+    template_id = data.get("template_id") or f"tmpl_{str(uuid4())[:8]}"
+
+    template = AIPromptTemplate(
+        template_id=template_id,
+        organization_id=data.get("organization_id"),
+        name=data["name"],
+        description=data.get("description"),
+        capability_name=data.get("capability_name"),
+        system_prompt=data.get("system_prompt"),
+        user_prompt_template=data["user_prompt_template"],
+        output_format=data.get("output_format", "text"),
+        required_variables=data.get("required_variables", []),
+        default_values=data.get("default_values", {}),
+        preferred_model=data.get("preferred_model"),
+        temperature=data.get("temperature", 0.7),
+        max_tokens=data.get("max_tokens"),
+        is_active=data.get("is_active", True),
+        is_default=data.get("is_default", False),
+        version=data.get("version", "1.0.0")
+    )
+
+    db.add(template)
+    db.commit()
+    db.refresh(template)
+
+    return {
+        "template_id": template.template_id,
+        "name": template.name,
+        "_persisted": True
+    }
 
 
 # ============================================================================

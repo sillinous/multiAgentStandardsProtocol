@@ -880,6 +880,7 @@
             <button class="tab-button" onclick="switchTab('operations')" style="background: linear-gradient(135deg, #8b5cf6, #7c3aed); color: white;">🎯 Operations (V2)</button>
             <button class="tab-button" onclick="switchTab('testing')" style="background: linear-gradient(135deg, #ef4444, #dc2626); color: white;">🧪 Testing (V2)</button>
             <button class="tab-button" onclick="switchTab('analytics')" style="background: linear-gradient(135deg, #06b6d4, #0891b2); color: white;">📊 Analytics Charts</button>
+            <button class="tab-button" onclick="switchTab('aiproviders')" style="background: linear-gradient(135deg, #ec4899, #db2777); color: white;">🤖 AI Providers</button>
         </div>
 
         <!-- Agent Explorer Tab -->
@@ -2854,6 +2855,95 @@
             </div>
         </div>
 
+        <!-- AI Providers Tab -->
+        <div id="tab-aiproviders" class="tab-content">
+            <div class="main-content">
+                <h2 style="margin-bottom: 20px;">🤖 AI Provider Management</h2>
+
+                <!-- AI Status Banner -->
+                <div id="aiStatusBanner" style="background: linear-gradient(135deg, #ec4899, #db2777); border-radius: 12px; padding: 20px; color: white; margin-bottom: 20px;">
+                    <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 15px;">
+                        <div>
+                            <h3 style="margin: 0 0 5px 0;">AI Service Status</h3>
+                            <p style="margin: 0; opacity: 0.9;" id="aiStatusText">Checking...</p>
+                        </div>
+                        <div style="display: flex; gap: 10px;">
+                            <button class="btn" onclick="loadAIProviders()" style="background: rgba(255,255,255,0.2); color: white; border: 1px solid rgba(255,255,255,0.3);">🔄 Refresh</button>
+                            <button class="btn" onclick="openAddProviderModal()" style="background: white; color: #db2777;">➕ Add Provider</button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- AI Usage Stats -->
+                <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 15px; margin-bottom: 20px;">
+                    <div style="background: white; border-radius: 12px; padding: 20px; box-shadow: 0 2px 10px rgba(0,0,0,0.05);">
+                        <div style="font-size: 2em; font-weight: bold; color: #ec4899;" id="aiTotalRequests">0</div>
+                        <div style="color: #888;">Total Requests</div>
+                    </div>
+                    <div style="background: white; border-radius: 12px; padding: 20px; box-shadow: 0 2px 10px rgba(0,0,0,0.05);">
+                        <div style="font-size: 2em; font-weight: bold; color: #10b981;" id="aiSuccessRate">0%</div>
+                        <div style="color: #888;">Success Rate</div>
+                    </div>
+                    <div style="background: white; border-radius: 12px; padding: 20px; box-shadow: 0 2px 10px rgba(0,0,0,0.05);">
+                        <div style="font-size: 2em; font-weight: bold; color: #3b82f6;" id="aiTotalTokens">0</div>
+                        <div style="color: #888;">Total Tokens</div>
+                    </div>
+                    <div style="background: white; border-radius: 12px; padding: 20px; box-shadow: 0 2px 10px rgba(0,0,0,0.05);">
+                        <div style="font-size: 2em; font-weight: bold; color: #f59e0b;" id="aiTotalCost">$0.00</div>
+                        <div style="color: #888;">Estimated Cost</div>
+                    </div>
+                </div>
+
+                <!-- Configured Providers -->
+                <div style="background: white; border-radius: 12px; padding: 20px; box-shadow: 0 2px 10px rgba(0,0,0,0.05); margin-bottom: 20px;">
+                    <h3 style="margin: 0 0 15px 0;">Configured Providers</h3>
+                    <div id="aiProvidersList" style="display: grid; gap: 15px;">
+                        <div style="padding: 40px; text-align: center; color: #888;">Loading providers...</div>
+                    </div>
+                </div>
+
+                <!-- Available Models -->
+                <div style="background: white; border-radius: 12px; padding: 20px; box-shadow: 0 2px 10px rgba(0,0,0,0.05); margin-bottom: 20px;">
+                    <h3 style="margin: 0 0 15px 0;">Available Models</h3>
+                    <div id="aiModelsList" style="display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 15px;">
+                        <div style="padding: 40px; text-align: center; color: #888;">Loading models...</div>
+                    </div>
+                </div>
+
+                <!-- AI Capabilities -->
+                <div style="background: white; border-radius: 12px; padding: 20px; box-shadow: 0 2px 10px rgba(0,0,0,0.05); margin-bottom: 20px;">
+                    <h3 style="margin: 0 0 15px 0;">AI Capabilities</h3>
+                    <div id="aiCapabilitiesList" style="display: grid; grid-template-columns: repeat(auto-fill, minmax(250px, 1fr)); gap: 10px;">
+                        <div style="padding: 40px; text-align: center; color: #888;">Loading capabilities...</div>
+                    </div>
+                </div>
+
+                <!-- Test AI Completion -->
+                <div style="background: white; border-radius: 12px; padding: 20px; box-shadow: 0 2px 10px rgba(0,0,0,0.05);">
+                    <h3 style="margin: 0 0 15px 0;">Test AI Completion</h3>
+                    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px;">
+                        <div>
+                            <label style="display: block; margin-bottom: 5px; font-weight: 500;">Prompt:</label>
+                            <textarea id="aiTestPrompt" rows="4" style="width: 100%; padding: 10px; border: 1px solid #ddd; border-radius: 8px; font-family: inherit;" placeholder="Enter your test prompt here...">Explain the key benefits of process automation in 3 bullet points.</textarea>
+                            <div style="margin-top: 10px; display: flex; gap: 10px;">
+                                <select id="aiTestProvider" style="padding: 8px 12px; border: 1px solid #ddd; border-radius: 6px;">
+                                    <option value="">Default Provider</option>
+                                </select>
+                                <button class="btn" onclick="testAICompletion()" style="background: linear-gradient(135deg, #ec4899, #db2777);">🚀 Test</button>
+                            </div>
+                        </div>
+                        <div>
+                            <label style="display: block; margin-bottom: 5px; font-weight: 500;">Response:</label>
+                            <div id="aiTestResult" style="background: #f8f9fa; border-radius: 8px; padding: 15px; min-height: 120px; font-size: 0.9em; white-space: pre-wrap;">
+                                Click "Test" to see the AI response...
+                            </div>
+                            <div id="aiTestMeta" style="margin-top: 10px; font-size: 0.85em; color: #888;"></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
     <script>
         const API_URL = 'http://localhost:8000';
         let currentPage = 1;
@@ -2998,6 +3088,8 @@
                 loadV2SystemHealth();
                 loadV2SystemMetrics();
                 loadV2ApiMetrics();
+            } else if (tabName === 'aiproviders') {
+                loadAIProviders();
             }
         }
 
@@ -3197,6 +3289,263 @@
                 }
             } catch (error) {
                 console.error('Error loading V2 API metrics:', error);
+            }
+        }
+
+        // ========================================
+        // AI PROVIDERS TAB FUNCTIONS
+        // ========================================
+
+        async function loadAIProviders() {
+            try {
+                // Load providers
+                const providersRes = await fetch(`${API_URL}/v2/ai/providers`);
+                const providersData = await providersRes.json();
+
+                // Update status banner
+                const defaultProvider = providersData.default_provider;
+                const totalProviders = providersData.total_count || 0;
+
+                if (totalProviders > 0) {
+                    document.getElementById('aiStatusText').textContent = `${totalProviders} provider(s) configured. Default: ${defaultProvider || 'None'}`;
+                    document.getElementById('aiStatusBanner').style.background = 'linear-gradient(135deg, #10b981, #059669)';
+                } else {
+                    document.getElementById('aiStatusText').textContent = 'No AI providers configured. Add one to enable AI capabilities.';
+                    document.getElementById('aiStatusBanner').style.background = 'linear-gradient(135deg, #f59e0b, #d97706)';
+                }
+
+                // Render providers list
+                const providersHtml = providersData.providers.length > 0
+                    ? providersData.providers.map(p => `
+                        <div style="display: flex; justify-content: space-between; align-items: center; padding: 15px; border: 1px solid ${p.is_default ? '#10b981' : '#e5e7eb'}; border-radius: 8px; background: ${p.is_default ? '#f0fdf4' : 'white'};">
+                            <div>
+                                <div style="font-weight: 600; color: #333;">
+                                    ${p.name || p.provider_id}
+                                    ${p.is_default ? '<span style="background: #10b981; color: white; padding: 2px 8px; border-radius: 4px; font-size: 0.75em; margin-left: 8px;">DEFAULT</span>' : ''}
+                                </div>
+                                <div style="font-size: 0.9em; color: #666; margin-top: 4px;">
+                                    Type: <strong>${p.provider_type}</strong> | Model: ${p.default_model || 'default'} | Source: ${p.source}
+                                </div>
+                                ${p.health_status ? `<div style="font-size: 0.85em; color: ${p.health_status === 'healthy' ? '#10b981' : '#f59e0b'}; margin-top: 4px;">Health: ${p.health_status}</div>` : ''}
+                            </div>
+                            <div style="display: flex; gap: 8px;">
+                                <button onclick="checkProviderHealth('${p.provider_id}')" class="btn secondary" style="padding: 6px 12px; font-size: 0.85em;">🔍 Health</button>
+                                ${p.source === 'database' ? `<button onclick="deleteProvider('${p.provider_id}')" class="btn" style="padding: 6px 12px; font-size: 0.85em; background: #ef4444;">🗑️</button>` : ''}
+                            </div>
+                        </div>
+                    `).join('')
+                    : '<div style="padding: 40px; text-align: center; color: #888;">No providers configured. Click "Add Provider" to get started.</div>';
+
+                document.getElementById('aiProvidersList').innerHTML = providersHtml;
+
+                // Update provider dropdown for testing
+                const providerSelect = document.getElementById('aiTestProvider');
+                providerSelect.innerHTML = '<option value="">Default Provider</option>' +
+                    providersData.providers.map(p => `<option value="${p.provider_id}">${p.name || p.provider_id}</option>`).join('');
+
+                // Load models
+                await loadAIModels();
+
+                // Load capabilities
+                await loadAICapabilities();
+
+                // Load usage stats
+                await loadAIUsage();
+
+            } catch (error) {
+                console.error('Error loading AI providers:', error);
+                document.getElementById('aiProvidersList').innerHTML = '<div style="padding: 40px; text-align: center; color: #ef4444;">Error loading providers: ' + error.message + '</div>';
+            }
+        }
+
+        async function loadAIModels() {
+            try {
+                const response = await fetch(`${API_URL}/v2/ai/models`);
+                const data = await response.json();
+
+                const modelsHtml = data.models.length > 0
+                    ? data.models.map(m => `
+                        <div style="background: #f8f9fa; border-radius: 8px; padding: 12px;">
+                            <div style="font-weight: 600; color: #333; margin-bottom: 4px;">${m.model_name || m.name}</div>
+                            <div style="font-size: 0.85em; color: #666;">
+                                ${m.provider_id ? `Provider: ${m.provider_id}` : ''}
+                                ${m.context_window ? ` | Context: ${(m.context_window/1000).toFixed(0)}K` : ''}
+                            </div>
+                            ${m.capabilities ? `<div style="margin-top: 6px; display: flex; gap: 4px; flex-wrap: wrap;">${m.capabilities.map(c => `<span style="background: #dbeafe; color: #1e40af; padding: 2px 6px; border-radius: 4px; font-size: 0.75em;">${c}</span>`).join('')}</div>` : ''}
+                            ${m.cost_per_1k_input !== undefined ? `<div style="font-size: 0.8em; color: #888; margin-top: 4px;">Cost: $${m.cost_per_1k_input}/1K in, $${m.cost_per_1k_output}/1K out</div>` : ''}
+                        </div>
+                    `).join('')
+                    : '<div style="padding: 40px; text-align: center; color: #888;">No models available</div>';
+
+                document.getElementById('aiModelsList').innerHTML = modelsHtml;
+            } catch (error) {
+                console.error('Error loading AI models:', error);
+            }
+        }
+
+        async function loadAICapabilities() {
+            try {
+                const response = await fetch(`${API_URL}/v2/ai/capabilities`);
+                const data = await response.json();
+
+                const capsHtml = data.capabilities.map(c => `
+                    <div style="background: ${c.type === 'ai' ? '#fdf4ff' : '#f3f4f6'}; border-radius: 6px; padding: 10px; display: flex; justify-content: space-between; align-items: center;">
+                        <div>
+                            <div style="font-weight: 500; color: #333;">${c.name.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase())}</div>
+                            <div style="font-size: 0.8em; color: #666;">${c.description}</div>
+                        </div>
+                        <div style="display: flex; gap: 4px;">
+                            <span style="background: ${c.type === 'ai' ? '#ec4899' : '#6b7280'}; color: white; padding: 2px 8px; border-radius: 4px; font-size: 0.75em;">${c.type}</span>
+                            ${c.ai_function_available ? '<span style="background: #10b981; color: white; padding: 2px 6px; border-radius: 4px; font-size: 0.7em;">✓</span>' : ''}
+                        </div>
+                    </div>
+                `).join('');
+
+                document.getElementById('aiCapabilitiesList').innerHTML = capsHtml ||
+                    '<div style="padding: 40px; text-align: center; color: #888;">No capabilities defined</div>';
+            } catch (error) {
+                console.error('Error loading AI capabilities:', error);
+            }
+        }
+
+        async function loadAIUsage() {
+            try {
+                const response = await fetch(`${API_URL}/v2/ai/usage?time_range=24h`);
+                const data = await response.json();
+
+                const dbUsage = data.database_usage || {};
+                const runtimeUsage = data.runtime_usage || {};
+
+                // Combine stats
+                const totalRequests = (dbUsage.total_requests || 0) + (runtimeUsage.total_requests || 0);
+                const successfulRequests = (dbUsage.successful_requests || 0) + (runtimeUsage.successful_requests || 0);
+                const totalTokens = (dbUsage.total_tokens || 0) + (runtimeUsage.total_tokens || 0);
+                const totalCost = (dbUsage.total_cost || 0) + (runtimeUsage.total_cost || 0);
+
+                const successRate = totalRequests > 0 ? ((successfulRequests / totalRequests) * 100).toFixed(1) : 0;
+
+                document.getElementById('aiTotalRequests').textContent = totalRequests.toLocaleString();
+                document.getElementById('aiSuccessRate').textContent = successRate + '%';
+                document.getElementById('aiTotalTokens').textContent = totalTokens.toLocaleString();
+                document.getElementById('aiTotalCost').textContent = '$' + totalCost.toFixed(4);
+            } catch (error) {
+                console.error('Error loading AI usage:', error);
+            }
+        }
+
+        async function checkProviderHealth(providerId) {
+            try {
+                const response = await fetch(`${API_URL}/v2/ai/providers/${providerId}/health`, { method: 'POST' });
+                const data = await response.json();
+
+                alert(`Health Check for ${providerId}:\n\nStatus: ${data.health?.status || 'unknown'}\n${data.health?.latency_ms ? 'Latency: ' + data.health.latency_ms + 'ms' : ''}\n${data.health?.error || ''}`);
+
+                // Reload providers to show updated health
+                loadAIProviders();
+            } catch (error) {
+                alert('Health check failed: ' + error.message);
+            }
+        }
+
+        async function deleteProvider(providerId) {
+            if (!confirm(`Delete provider "${providerId}"? This cannot be undone.`)) return;
+
+            try {
+                const response = await fetch(`${API_URL}/v2/ai/providers/${providerId}`, { method: 'DELETE' });
+                if (response.ok) {
+                    alert('Provider deleted successfully');
+                    loadAIProviders();
+                } else {
+                    const error = await response.json();
+                    alert('Failed to delete: ' + (error.detail || 'Unknown error'));
+                }
+            } catch (error) {
+                alert('Delete failed: ' + error.message);
+            }
+        }
+
+        async function testAICompletion() {
+            const prompt = document.getElementById('aiTestPrompt').value;
+            const providerId = document.getElementById('aiTestProvider').value;
+
+            if (!prompt.trim()) {
+                alert('Please enter a prompt');
+                return;
+            }
+
+            document.getElementById('aiTestResult').textContent = 'Generating response...';
+            document.getElementById('aiTestMeta').textContent = '';
+
+            try {
+                const response = await fetch(`${API_URL}/v2/ai/complete`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        messages: [{ role: 'user', content: prompt }],
+                        provider_id: providerId || undefined,
+                        max_tokens: 1000
+                    })
+                });
+
+                const data = await response.json();
+
+                if (data.success) {
+                    document.getElementById('aiTestResult').textContent = data.content;
+                    document.getElementById('aiTestMeta').innerHTML = `
+                        <span style="background: #d1fae5; padding: 2px 8px; border-radius: 4px;">✓ Success</span>
+                        Model: ${data.model || 'N/A'} |
+                        Tokens: ${data.usage?.total_tokens || 0} |
+                        Cost: $${data.usage?.estimated_cost?.toFixed(6) || '0'} |
+                        Latency: ${data.latency_ms || 0}ms
+                    `;
+                } else {
+                    document.getElementById('aiTestResult').textContent = 'Error: ' + (data.error_message || 'Failed to generate response');
+                    document.getElementById('aiTestResult').style.color = '#ef4444';
+                }
+            } catch (error) {
+                document.getElementById('aiTestResult').textContent = 'Error: ' + error.message;
+                document.getElementById('aiTestResult').style.color = '#ef4444';
+            }
+        }
+
+        function openAddProviderModal() {
+            const providerType = prompt('Enter provider type (openai, anthropic, azure_openai, google, local):');
+            if (!providerType) return;
+
+            const apiKey = prompt('Enter API key:');
+            if (!apiKey && providerType !== 'local') {
+                alert('API key is required');
+                return;
+            }
+
+            const name = prompt('Enter a name for this provider:', providerType.charAt(0).toUpperCase() + providerType.slice(1));
+            if (!name) return;
+
+            addAIProvider(providerType, apiKey, name);
+        }
+
+        async function addAIProvider(providerType, apiKey, name) {
+            try {
+                const response = await fetch(`${API_URL}/v2/ai/providers`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        provider_type: providerType,
+                        api_key: apiKey,
+                        name: name,
+                        is_default: true
+                    })
+                });
+
+                if (response.ok) {
+                    alert('Provider added successfully!');
+                    loadAIProviders();
+                } else {
+                    const error = await response.json();
+                    alert('Failed to add provider: ' + (error.detail || 'Unknown error'));
+                }
+            } catch (error) {
+                alert('Failed to add provider: ' + error.message);
             }
         }
 

@@ -2687,6 +2687,285 @@ class APQCCapabilityHandler(Base):
 
 
 # ============================================================================
+# AI Provider Integration
+# ============================================================================
+
+class AIProvider(Base):
+    """AI/LLM provider configurations"""
+    __tablename__ = "ai_providers"
+
+    id = Column(Integer, primary_key=True, index=True)
+    provider_id = Column(String(50), unique=True, index=True, nullable=False)
+    organization_id = Column(Integer, ForeignKey("organizations.id"))
+
+    # Provider identity
+    name = Column(String(200), nullable=False)
+    provider_type = Column(String(50), nullable=False)  # openai, anthropic, azure_openai, google, local
+    description = Column(Text)
+
+    # API configuration
+    api_base_url = Column(String(500))  # Base URL for API calls
+    api_key_encrypted = Column(String(1000))  # Encrypted API key
+    api_version = Column(String(50))  # API version if applicable
+
+    # Azure-specific
+    azure_deployment_id = Column(String(200))
+    azure_resource_name = Column(String(200))
+
+    # Authentication
+    auth_type = Column(String(50), default="api_key")  # api_key, oauth, custom
+    auth_config = Column(JSON)  # Additional auth configuration
+
+    # Default settings
+    default_model = Column(String(100))
+    default_temperature = Column(Float, default=0.7)
+    default_max_tokens = Column(Integer, default=4096)
+
+    # Rate limiting
+    rate_limit_rpm = Column(Integer)  # Requests per minute
+    rate_limit_tpm = Column(Integer)  # Tokens per minute
+    concurrent_limit = Column(Integer, default=10)
+
+    # Cost tracking
+    cost_per_1k_input_tokens = Column(Float, default=0.0)
+    cost_per_1k_output_tokens = Column(Float, default=0.0)
+
+    # Status
+    is_active = Column(Boolean, default=True)
+    is_default = Column(Boolean, default=False)
+    health_status = Column(String(50), default="unknown")  # healthy, degraded, down, unknown
+    last_health_check = Column(DateTime)
+
+    # Timestamps
+    created_at = Column(DateTime, default=datetime.utcnow)
+    updated_at = Column(DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
+
+
+class AIModel(Base):
+    """Available AI models for each provider"""
+    __tablename__ = "ai_models"
+
+    id = Column(Integer, primary_key=True, index=True)
+    model_id = Column(String(50), unique=True, index=True, nullable=False)
+    provider_id = Column(Integer, ForeignKey("ai_providers.id"), index=True)
+
+    # Model identity
+    name = Column(String(200), nullable=False)
+    model_name = Column(String(200), nullable=False)  # Actual model name for API calls
+    description = Column(Text)
+
+    # Capabilities
+    capabilities = Column(JSON)  # ["chat", "completion", "embedding", "vision", "function_calling"]
+    context_window = Column(Integer)  # Max context window size
+    max_output_tokens = Column(Integer)
+
+    # Cost
+    cost_per_1k_input_tokens = Column(Float, default=0.0)
+    cost_per_1k_output_tokens = Column(Float, default=0.0)
+
+    # Performance characteristics
+    latency_class = Column(String(50))  # fast, medium, slow
+    quality_tier = Column(String(50))  # economy, standard, premium
+
+    # Status
+    is_active = Column(Boolean, default=True)
+    is_default = Column(Boolean, default=False)
+
+    # Timestamps
+    created_at = Column(DateTime, default=datetime.utcnow)
+    updated_at = Column(DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
+
+
+class AIRequest(Base):
+    """Log of AI API requests for tracking and billing"""
+    __tablename__ = "ai_requests"
+
+    id = Column(Integer, primary_key=True, index=True)
+    request_id = Column(String(50), unique=True, index=True, nullable=False)
+    organization_id = Column(Integer, ForeignKey("organizations.id"), index=True)
+    provider_id = Column(Integer, ForeignKey("ai_providers.id"), index=True)
+    model_id = Column(Integer, ForeignKey("ai_models.id"), index=True)
+
+    # Request context
+    capability_execution_id = Column(Integer, ForeignKey("apqc_capability_executions.id"))
+    process_execution_id = Column(Integer, ForeignKey("apqc_process_executions.id"))
+    user_id = Column(Integer, ForeignKey("users.id"))
+
+    # Request details
+    request_type = Column(String(50))  # chat, completion, embedding, vision
+    model_name = Column(String(200))
+    prompt_hash = Column(String(64))  # SHA-256 hash of prompt for deduplication
+
+    # Token usage
+    input_tokens = Column(Integer, default=0)
+    output_tokens = Column(Integer, default=0)
+    total_tokens = Column(Integer, default=0)
+
+    # Cost
+    estimated_cost = Column(Float, default=0.0)
+    currency = Column(String(10), default="USD")
+
+    # Performance
+    latency_ms = Column(Integer)  # Response time in milliseconds
+    time_to_first_token_ms = Column(Integer)
+
+    # Status
+    status = Column(String(50), default="pending")  # pending, success, error, timeout, rate_limited
+    error_code = Column(String(100))
+    error_message = Column(Text)
+
+    # Response metadata
+    finish_reason = Column(String(50))  # stop, length, function_call, content_filter
+    response_metadata = Column(JSON)
+
+    # Timestamps
+    requested_at = Column(DateTime, default=datetime.utcnow)
+    completed_at = Column(DateTime)
+
+
+class AIConversation(Base):
+    """Conversation threads for multi-turn AI interactions"""
+    __tablename__ = "ai_conversations"
+
+    id = Column(Integer, primary_key=True, index=True)
+    conversation_id = Column(String(50), unique=True, index=True, nullable=False)
+    organization_id = Column(Integer, ForeignKey("organizations.id"), index=True)
+
+    # Context
+    capability_execution_id = Column(Integer, ForeignKey("apqc_capability_executions.id"))
+    process_execution_id = Column(Integer, ForeignKey("apqc_process_executions.id"))
+    user_id = Column(Integer, ForeignKey("users.id"))
+
+    # Conversation details
+    title = Column(String(500))
+    system_prompt = Column(Text)
+    model_name = Column(String(200))
+    provider_id = Column(Integer, ForeignKey("ai_providers.id"))
+
+    # Message count
+    message_count = Column(Integer, default=0)
+    total_tokens = Column(Integer, default=0)
+    total_cost = Column(Float, default=0.0)
+
+    # Status
+    status = Column(String(50), default="active")  # active, archived, deleted
+
+    # Timestamps
+    created_at = Column(DateTime, default=datetime.utcnow)
+    updated_at = Column(DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
+    last_message_at = Column(DateTime)
+
+
+class AIMessage(Base):
+    """Individual messages in AI conversations"""
+    __tablename__ = "ai_messages"
+
+    id = Column(Integer, primary_key=True, index=True)
+    message_id = Column(String(50), unique=True, index=True, nullable=False)
+    conversation_id = Column(Integer, ForeignKey("ai_conversations.id"), index=True)
+    request_id = Column(Integer, ForeignKey("ai_requests.id"))
+
+    # Message details
+    role = Column(String(50), nullable=False)  # system, user, assistant, function, tool
+    content = Column(Text)
+    content_type = Column(String(50), default="text")  # text, function_call, tool_call, image
+
+    # Function/tool calls
+    function_call = Column(JSON)  # {name, arguments}
+    tool_calls = Column(JSON)  # [{id, type, function}]
+
+    # Token usage for this message
+    tokens = Column(Integer, default=0)
+
+    # Sequence
+    sequence_number = Column(Integer)
+
+    # Timestamps
+    created_at = Column(DateTime, default=datetime.utcnow)
+
+
+class AIPromptTemplate(Base):
+    """Reusable prompt templates for AI capabilities"""
+    __tablename__ = "ai_prompt_templates"
+
+    id = Column(Integer, primary_key=True, index=True)
+    template_id = Column(String(50), unique=True, index=True, nullable=False)
+    organization_id = Column(Integer, ForeignKey("organizations.id"))
+
+    # Template identity
+    name = Column(String(200), nullable=False)
+    description = Column(Text)
+    capability_name = Column(String(100), index=True)  # Associated capability
+
+    # Template content
+    system_prompt = Column(Text)
+    user_prompt_template = Column(Text, nullable=False)  # Uses {{variable}} placeholders
+    output_format = Column(String(50))  # text, json, markdown
+
+    # Variables
+    required_variables = Column(JSON)  # ["var1", "var2"]
+    default_values = Column(JSON)  # {var1: "default"}
+
+    # Model preferences
+    preferred_model = Column(String(200))
+    temperature = Column(Float, default=0.7)
+    max_tokens = Column(Integer)
+
+    # Usage stats
+    use_count = Column(Integer, default=0)
+    avg_rating = Column(Float)
+
+    # Status
+    is_active = Column(Boolean, default=True)
+    is_default = Column(Boolean, default=False)
+    version = Column(String(20), default="1.0.0")
+
+    # Timestamps
+    created_at = Column(DateTime, default=datetime.utcnow)
+    updated_at = Column(DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
+
+
+class AIUsageSummary(Base):
+    """Aggregated AI usage statistics"""
+    __tablename__ = "ai_usage_summaries"
+
+    id = Column(Integer, primary_key=True, index=True)
+    organization_id = Column(Integer, ForeignKey("organizations.id"), index=True)
+    provider_id = Column(Integer, ForeignKey("ai_providers.id"), index=True)
+    model_id = Column(Integer, ForeignKey("ai_models.id"), index=True)
+
+    # Time period
+    period_type = Column(String(20), nullable=False)  # hourly, daily, weekly, monthly
+    period_start = Column(DateTime, nullable=False, index=True)
+    period_end = Column(DateTime, nullable=False)
+
+    # Request counts
+    total_requests = Column(Integer, default=0)
+    successful_requests = Column(Integer, default=0)
+    failed_requests = Column(Integer, default=0)
+    rate_limited_requests = Column(Integer, default=0)
+
+    # Token usage
+    total_input_tokens = Column(Integer, default=0)
+    total_output_tokens = Column(Integer, default=0)
+    total_tokens = Column(Integer, default=0)
+
+    # Cost
+    total_cost = Column(Float, default=0.0)
+    currency = Column(String(10), default="USD")
+
+    # Performance
+    avg_latency_ms = Column(Float)
+    p50_latency_ms = Column(Float)
+    p95_latency_ms = Column(Float)
+    p99_latency_ms = Column(Float)
+
+    # Timestamps
+    created_at = Column(DateTime, default=datetime.utcnow)
+    updated_at = Column(DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
+
+
+# ============================================================================
 # Database Utilities
 # ============================================================================
 
