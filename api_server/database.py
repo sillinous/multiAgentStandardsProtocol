@@ -2429,6 +2429,264 @@ class BatchResult(Base):
 
 
 # ============================================================================
+# APQC Business Process Execution
+# ============================================================================
+
+class APQCProcessDefinition(Base):
+    """APQC business process definitions loaded from agent cards"""
+    __tablename__ = "apqc_process_definitions"
+
+    id = Column(Integer, primary_key=True, index=True)
+    process_id = Column(String(50), unique=True, index=True, nullable=False)
+
+    # APQC Classification
+    apqc_id = Column(String(20), index=True, nullable=False)  # e.g., "1.1.1.1"
+    apqc_name = Column(String(300), nullable=False)
+    category_id = Column(String(10), index=True)  # e.g., "1.0"
+    category_name = Column(String(200))
+
+    # Process metadata
+    description = Column(Text)
+    orchestration_pattern = Column(String(50))  # sequential, parallel, conditional, hybrid
+    total_steps = Column(Integer, default=0)
+    estimated_duration_seconds = Column(Integer)
+
+    # Compliance
+    compliance_frameworks = Column(JSON)  # ["SOX", "ISO 31000", etc.]
+    data_retention_days = Column(Integer)
+
+    # Process definition (JSON schema of all steps)
+    steps_definition = Column(JSON)  # Array of step definitions
+    integration_summary = Column(JSON)
+    kpis = Column(JSON)
+
+    # Status
+    status = Column(String(50), default="active")  # active, draft, deprecated
+    version = Column(String(20), default="1.0.0")
+
+    # Timestamps
+    created_at = Column(DateTime, default=datetime.utcnow)
+    updated_at = Column(DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
+
+
+class APQCProcessExecution(Base):
+    """Execution instance of an APQC business process"""
+    __tablename__ = "apqc_process_executions"
+
+    id = Column(Integer, primary_key=True, index=True)
+    execution_id = Column(String(50), unique=True, index=True, nullable=False)
+
+    # Process reference
+    process_definition_id = Column(Integer, ForeignKey("apqc_process_definitions.id"), index=True)
+    apqc_id = Column(String(20), index=True)
+
+    # Execution identity
+    name = Column(String(300))
+    description = Column(Text)
+    triggered_by = Column(String(100))  # user_id, schedule, webhook, etc.
+
+    # Input/Output
+    input_data = Column(JSON)  # Initial input to the process
+    output_data = Column(JSON)  # Final output from the process
+    context_data = Column(JSON)  # Accumulated context from all steps
+
+    # Execution state
+    status = Column(String(50), default="pending")  # pending, running, paused, completed, failed, cancelled
+    current_step = Column(Integer, default=0)
+    total_steps = Column(Integer)
+    progress_percent = Column(Float, default=0.0)
+
+    # Timing
+    started_at = Column(DateTime)
+    completed_at = Column(DateTime)
+    duration_seconds = Column(Float)
+
+    # Error handling
+    error_message = Column(Text)
+    error_step = Column(Integer)
+    retry_count = Column(Integer, default=0)
+    max_retries = Column(Integer, default=3)
+
+    # Outcome validation
+    outcome_validated = Column(Boolean, default=False)
+    outcome_score = Column(Float)  # 0-1 score of outcome quality
+    outcome_details = Column(JSON)
+
+    # Ownership
+    organization_id = Column(Integer, ForeignKey("organizations.id"), index=True)
+    created_by = Column(Integer, ForeignKey("users.id"))
+
+    # Timestamps
+    created_at = Column(DateTime, default=datetime.utcnow)
+    updated_at = Column(DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
+
+
+class APQCStepExecution(Base):
+    """Execution of individual steps within an APQC process"""
+    __tablename__ = "apqc_step_executions"
+
+    id = Column(Integer, primary_key=True, index=True)
+    step_execution_id = Column(String(50), unique=True, index=True, nullable=False)
+
+    # Parent process execution
+    process_execution_id = Column(Integer, ForeignKey("apqc_process_executions.id"), index=True)
+
+    # Step identity
+    step_number = Column(Integer, nullable=False)
+    step_name = Column(String(200), nullable=False)
+    step_id = Column(String(100))  # Original step ID from definition
+
+    # Capabilities being executed
+    capabilities = Column(JSON)  # List of capabilities used in this step
+
+    # Input/Output
+    input_data = Column(JSON)
+    output_data = Column(JSON)
+    expected_output_schema = Column(JSON)
+
+    # Execution state
+    status = Column(String(50), default="pending")  # pending, running, completed, failed, skipped
+
+    # Timing
+    started_at = Column(DateTime)
+    completed_at = Column(DateTime)
+    duration_ms = Column(Integer)
+
+    # Decision rules applied
+    decision_rules_triggered = Column(JSON)  # List of rule IDs that were triggered
+    decision_actions_taken = Column(JSON)  # Actions taken based on rules
+
+    # Error handling
+    error_type = Column(String(100))
+    error_message = Column(Text)
+    error_handler_used = Column(String(100))
+
+    # Output validation
+    output_validated = Column(Boolean, default=False)
+    validation_errors = Column(JSON)
+
+    # Timestamps
+    created_at = Column(DateTime, default=datetime.utcnow)
+
+
+class APQCCapabilityExecution(Base):
+    """Individual capability execution within a step"""
+    __tablename__ = "apqc_capability_executions"
+
+    id = Column(Integer, primary_key=True, index=True)
+    capability_execution_id = Column(String(50), unique=True, index=True, nullable=False)
+
+    # Parent step execution
+    step_execution_id = Column(Integer, ForeignKey("apqc_step_executions.id"), index=True)
+
+    # Capability identity
+    capability_name = Column(String(100), nullable=False)  # e.g., "market_research", "financial_modeling"
+    capability_type = Column(String(50))  # analysis, generation, validation, integration
+
+    # Execution details
+    handler_used = Column(String(200))  # The handler function/class used
+    parameters = Column(JSON)
+
+    # Input/Output
+    input_data = Column(JSON)
+    output_data = Column(JSON)
+
+    # External integrations used
+    integrations_called = Column(JSON)  # List of external systems called
+    api_calls_made = Column(Integer, default=0)
+    tokens_used = Column(Integer, default=0)
+
+    # Status
+    status = Column(String(50), default="pending")
+
+    # Timing
+    started_at = Column(DateTime)
+    completed_at = Column(DateTime)
+    duration_ms = Column(Integer)
+
+    # Error handling
+    error_message = Column(Text)
+    retries = Column(Integer, default=0)
+
+    # Timestamps
+    created_at = Column(DateTime, default=datetime.utcnow)
+
+
+class APQCProcessOutcome(Base):
+    """Expected and actual outcomes of APQC process executions"""
+    __tablename__ = "apqc_process_outcomes"
+
+    id = Column(Integer, primary_key=True, index=True)
+    outcome_id = Column(String(50), unique=True, index=True, nullable=False)
+
+    # Process execution reference
+    process_execution_id = Column(Integer, ForeignKey("apqc_process_executions.id"), index=True)
+    apqc_id = Column(String(20), index=True)
+
+    # Outcome definition
+    outcome_type = Column(String(50))  # deliverable, metric, state_change, approval
+    outcome_name = Column(String(200))
+    description = Column(Text)
+
+    # Expected vs Actual
+    expected_value = Column(JSON)
+    actual_value = Column(JSON)
+    tolerance = Column(Float)  # Acceptable deviation
+
+    # Validation
+    validation_status = Column(String(50))  # passed, failed, warning, not_validated
+    validation_score = Column(Float)  # 0-1
+    validation_message = Column(Text)
+
+    # KPI tracking
+    kpi_name = Column(String(200))
+    kpi_target = Column(String(200))
+    kpi_actual = Column(String(200))
+    kpi_met = Column(Boolean)
+
+    # Timestamps
+    validated_at = Column(DateTime)
+    created_at = Column(DateTime, default=datetime.utcnow)
+
+
+class APQCCapabilityHandler(Base):
+    """Registry of available capability handlers"""
+    __tablename__ = "apqc_capability_handlers"
+
+    id = Column(Integer, primary_key=True, index=True)
+    handler_id = Column(String(50), unique=True, index=True, nullable=False)
+
+    # Handler identity
+    capability_name = Column(String(100), unique=True, nullable=False)
+    handler_type = Column(String(50))  # builtin, external, ai, mock
+    description = Column(Text)
+
+    # Handler configuration
+    handler_class = Column(String(200))  # Python class path or function
+    handler_config = Column(JSON)  # Handler-specific configuration
+
+    # Required integrations
+    required_integrations = Column(JSON)
+    required_api_keys = Column(JSON)
+
+    # Capabilities provided
+    input_schema = Column(JSON)
+    output_schema = Column(JSON)
+
+    # Performance
+    avg_execution_time_ms = Column(Integer)
+    success_rate = Column(Float)
+    total_executions = Column(Integer, default=0)
+
+    # Status
+    status = Column(String(50), default="active")
+
+    # Timestamps
+    created_at = Column(DateTime, default=datetime.utcnow)
+    updated_at = Column(DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
+
+
+# ============================================================================
 # Database Utilities
 # ============================================================================
 
