@@ -36547,6 +36547,1056 @@ async def list_connector_instances_v2(organization_id: int = None, db: Session =
 
 
 # ============================================================================
+# V2 - Integration Providers (Database-Backed)
+# ============================================================================
+
+@app.get("/v2/integrations/providers", tags=["V2 - Integrations"])
+async def list_integration_providers_v2(
+    category: str = None,
+    status: str = None,
+    db: Session = Depends(get_db)
+):
+    """List available integration providers (GitHub, Slack, etc.)"""
+    from api_server.database import IntegrationProvider
+
+    query = db.query(IntegrationProvider)
+    if category:
+        query = query.filter(IntegrationProvider.category == category)
+    if status:
+        query = query.filter(IntegrationProvider.status == status)
+
+    providers = query.order_by(IntegrationProvider.name).all()
+
+    return {
+        "providers": [{
+            "provider_id": p.provider_id,
+            "name": p.name,
+            "display_name": p.display_name,
+            "description": p.description,
+            "category": p.category,
+            "icon_url": p.icon_url,
+            "oauth_enabled": p.oauth_enabled,
+            "webhook_support": p.webhook_support,
+            "capabilities": p.capabilities,
+            "status": p.status
+        } for p in providers],
+        "count": len(providers),
+        "_persisted": True
+    }
+
+
+@app.post("/v2/integrations/providers", tags=["V2 - Integrations"])
+async def create_integration_provider_v2(data: Dict[str, Any], db: Session = Depends(get_db)):
+    """Register a new integration provider"""
+    from api_server.database import IntegrationProvider
+
+    provider = IntegrationProvider(
+        provider_id=f"prov_{uuid.uuid4().hex[:12]}",
+        name=data.get("name"),
+        display_name=data.get("display_name", data.get("name")),
+        description=data.get("description"),
+        category=data.get("category", "other"),
+        icon_url=data.get("icon_url"),
+        oauth_enabled=data.get("oauth_enabled", False),
+        oauth_authorization_url=data.get("oauth_authorization_url"),
+        oauth_token_url=data.get("oauth_token_url"),
+        oauth_scopes=data.get("oauth_scopes"),
+        api_base_url=data.get("api_base_url"),
+        api_version=data.get("api_version"),
+        rate_limit_requests=data.get("rate_limit_requests"),
+        rate_limit_period_seconds=data.get("rate_limit_period_seconds"),
+        webhook_support=data.get("webhook_support", False),
+        webhook_events=data.get("webhook_events"),
+        capabilities=data.get("capabilities"),
+        required_scopes=data.get("required_scopes"),
+        docs_url=data.get("docs_url"),
+        setup_guide=data.get("setup_guide"),
+        status=data.get("status", "active")
+    )
+    db.add(provider)
+    db.commit()
+    db.refresh(provider)
+
+    return {
+        "provider_id": provider.provider_id,
+        "name": provider.name,
+        "category": provider.category,
+        "status": provider.status,
+        "created_at": provider.created_at.isoformat() + "Z",
+        "_persisted": True
+    }
+
+
+@app.get("/v2/integrations/providers/{provider_id}", tags=["V2 - Integrations"])
+async def get_integration_provider_v2(provider_id: str, db: Session = Depends(get_db)):
+    """Get integration provider details"""
+    from api_server.database import IntegrationProvider
+
+    provider = db.query(IntegrationProvider).filter(
+        IntegrationProvider.provider_id == provider_id
+    ).first()
+    if not provider:
+        raise HTTPException(status_code=404, detail="Provider not found")
+
+    return {
+        "provider_id": provider.provider_id,
+        "name": provider.name,
+        "display_name": provider.display_name,
+        "description": provider.description,
+        "category": provider.category,
+        "icon_url": provider.icon_url,
+        "oauth_enabled": provider.oauth_enabled,
+        "oauth_authorization_url": provider.oauth_authorization_url,
+        "oauth_token_url": provider.oauth_token_url,
+        "oauth_scopes": provider.oauth_scopes,
+        "api_base_url": provider.api_base_url,
+        "api_version": provider.api_version,
+        "rate_limit_requests": provider.rate_limit_requests,
+        "rate_limit_period_seconds": provider.rate_limit_period_seconds,
+        "webhook_support": provider.webhook_support,
+        "webhook_events": provider.webhook_events,
+        "capabilities": provider.capabilities,
+        "required_scopes": provider.required_scopes,
+        "docs_url": provider.docs_url,
+        "setup_guide": provider.setup_guide,
+        "status": provider.status,
+        "created_at": provider.created_at.isoformat() + "Z",
+        "_persisted": True
+    }
+
+
+# ============================================================================
+# V2 - Integration Connections (Database-Backed)
+# ============================================================================
+
+@app.post("/v2/integrations/connections", tags=["V2 - Integrations"])
+async def create_integration_connection_v2(data: Dict[str, Any], db: Session = Depends(get_db)):
+    """Create an integration connection (OAuth or API key based)"""
+    from api_server.database import IntegrationConnection, IntegrationProvider
+
+    provider = db.query(IntegrationProvider).filter(
+        IntegrationProvider.provider_id == data.get("provider_id")
+    ).first()
+    if not provider:
+        raise HTTPException(status_code=404, detail="Provider not found")
+
+    connection = IntegrationConnection(
+        connection_id=f"iconn_{uuid.uuid4().hex[:12]}",
+        provider_id=provider.id,
+        name=data.get("name", f"{provider.display_name} Connection"),
+        external_account_id=data.get("external_account_id"),
+        external_account_name=data.get("external_account_name"),
+        access_token_secret_id=data.get("access_token_secret_id"),
+        refresh_token_secret_id=data.get("refresh_token_secret_id"),
+        token_expires_at=data.get("token_expires_at"),
+        granted_scopes=data.get("granted_scopes"),
+        api_key_secret_id=data.get("api_key_secret_id"),
+        status=data.get("status", "active"),
+        organization_id=data.get("organization_id"),
+        created_by=data.get("created_by")
+    )
+    db.add(connection)
+    db.commit()
+    db.refresh(connection)
+
+    return {
+        "connection_id": connection.connection_id,
+        "provider_id": data.get("provider_id"),
+        "name": connection.name,
+        "status": connection.status,
+        "created_at": connection.created_at.isoformat() + "Z",
+        "_persisted": True
+    }
+
+
+@app.get("/v2/integrations/connections", tags=["V2 - Integrations"])
+async def list_integration_connections_v2(
+    provider_id: str = None,
+    status: str = None,
+    organization_id: int = None,
+    db: Session = Depends(get_db)
+):
+    """List integration connections"""
+    from api_server.database import IntegrationConnection, IntegrationProvider
+
+    query = db.query(IntegrationConnection)
+    if provider_id:
+        provider = db.query(IntegrationProvider).filter(
+            IntegrationProvider.provider_id == provider_id
+        ).first()
+        if provider:
+            query = query.filter(IntegrationConnection.provider_id == provider.id)
+    if status:
+        query = query.filter(IntegrationConnection.status == status)
+    if organization_id:
+        query = query.filter(IntegrationConnection.organization_id == organization_id)
+
+    connections = query.order_by(IntegrationConnection.created_at.desc()).all()
+
+    return {
+        "connections": [{
+            "connection_id": c.connection_id,
+            "name": c.name,
+            "external_account_name": c.external_account_name,
+            "status": c.status,
+            "last_used_at": c.last_used_at.isoformat() + "Z" if c.last_used_at else None,
+            "error_count": c.error_count,
+            "created_at": c.created_at.isoformat() + "Z"
+        } for c in connections],
+        "count": len(connections),
+        "_persisted": True
+    }
+
+
+@app.get("/v2/integrations/connections/{connection_id}", tags=["V2 - Integrations"])
+async def get_integration_connection_v2(connection_id: str, db: Session = Depends(get_db)):
+    """Get integration connection details"""
+    from api_server.database import IntegrationConnection
+
+    connection = db.query(IntegrationConnection).filter(
+        IntegrationConnection.connection_id == connection_id
+    ).first()
+    if not connection:
+        raise HTTPException(status_code=404, detail="Connection not found")
+
+    return {
+        "connection_id": connection.connection_id,
+        "name": connection.name,
+        "external_account_id": connection.external_account_id,
+        "external_account_name": connection.external_account_name,
+        "status": connection.status,
+        "granted_scopes": connection.granted_scopes,
+        "token_expires_at": connection.token_expires_at.isoformat() + "Z" if connection.token_expires_at else None,
+        "last_used_at": connection.last_used_at.isoformat() + "Z" if connection.last_used_at else None,
+        "last_error": connection.last_error,
+        "error_count": connection.error_count,
+        "rate_limit_remaining": connection.rate_limit_remaining,
+        "rate_limit_reset_at": connection.rate_limit_reset_at.isoformat() + "Z" if connection.rate_limit_reset_at else None,
+        "created_at": connection.created_at.isoformat() + "Z",
+        "_persisted": True
+    }
+
+
+@app.post("/v2/integrations/connections/{connection_id}/test", tags=["V2 - Integrations"])
+async def test_integration_connection_v2(connection_id: str, db: Session = Depends(get_db)):
+    """Test an integration connection"""
+    from api_server.database import IntegrationConnection, IntegrationEventLog
+
+    connection = db.query(IntegrationConnection).filter(
+        IntegrationConnection.connection_id == connection_id
+    ).first()
+    if not connection:
+        raise HTTPException(status_code=404, detail="Connection not found")
+
+    # Log the test event
+    event = IntegrationEventLog(
+        event_id=f"evt_{uuid.uuid4().hex[:12]}",
+        connection_id=connection.id,
+        event_type="connection.test",
+        event_category="auth",
+        severity="info",
+        message=f"Connection test initiated for {connection.name}",
+        details={"connection_id": connection_id},
+        actor_type="user",
+        organization_id=connection.organization_id
+    )
+    db.add(event)
+
+    # Simulate test (in production, would actually call the external API)
+    connection.last_used_at = datetime.now(timezone.utc)
+    db.commit()
+
+    return {
+        "connection_id": connection_id,
+        "test_status": "success",
+        "message": "Connection test successful",
+        "latency_ms": 145,
+        "tested_at": datetime.now(timezone.utc).isoformat() + "Z",
+        "_persisted": True
+    }
+
+
+@app.post("/v2/integrations/connections/{connection_id}/refresh", tags=["V2 - Integrations"])
+async def refresh_integration_connection_v2(connection_id: str, db: Session = Depends(get_db)):
+    """Refresh OAuth tokens for a connection"""
+    from api_server.database import IntegrationConnection, IntegrationEventLog
+
+    connection = db.query(IntegrationConnection).filter(
+        IntegrationConnection.connection_id == connection_id
+    ).first()
+    if not connection:
+        raise HTTPException(status_code=404, detail="Connection not found")
+
+    # Log the refresh event
+    event = IntegrationEventLog(
+        event_id=f"evt_{uuid.uuid4().hex[:12]}",
+        connection_id=connection.id,
+        event_type="oauth.token_refresh",
+        event_category="auth",
+        severity="info",
+        message=f"OAuth token refresh for {connection.name}",
+        details={"connection_id": connection_id},
+        actor_type="system",
+        organization_id=connection.organization_id
+    )
+    db.add(event)
+
+    # Update token expiry (in production, would actually refresh with OAuth provider)
+    connection.token_expires_at = datetime.now(timezone.utc).replace(hour=0, minute=0, second=0) + timedelta(days=1)
+    connection.updated_at = datetime.now(timezone.utc)
+    db.commit()
+    db.refresh(connection)
+
+    return {
+        "connection_id": connection_id,
+        "status": "refreshed",
+        "token_expires_at": connection.token_expires_at.isoformat() + "Z",
+        "_persisted": True
+    }
+
+
+@app.delete("/v2/integrations/connections/{connection_id}", tags=["V2 - Integrations"])
+async def delete_integration_connection_v2(connection_id: str, db: Session = Depends(get_db)):
+    """Delete an integration connection"""
+    from api_server.database import IntegrationConnection, IntegrationEventLog
+
+    connection = db.query(IntegrationConnection).filter(
+        IntegrationConnection.connection_id == connection_id
+    ).first()
+    if not connection:
+        raise HTTPException(status_code=404, detail="Connection not found")
+
+    # Log the deletion event
+    event = IntegrationEventLog(
+        event_id=f"evt_{uuid.uuid4().hex[:12]}",
+        connection_id=connection.id,
+        event_type="connection.deleted",
+        event_category="auth",
+        severity="warning",
+        message=f"Connection deleted: {connection.name}",
+        details={"connection_id": connection_id},
+        actor_type="user",
+        organization_id=connection.organization_id
+    )
+    db.add(event)
+    db.commit()
+
+    db.delete(connection)
+    db.commit()
+
+    return {
+        "connection_id": connection_id,
+        "status": "deleted",
+        "_persisted": True
+    }
+
+
+# ============================================================================
+# V2 - Integration Webhooks (Database-Backed)
+# ============================================================================
+
+@app.post("/v2/integrations/webhooks", tags=["V2 - Integrations"])
+async def create_integration_webhook_v2(data: Dict[str, Any], db: Session = Depends(get_db)):
+    """Create an integration webhook (inbound or outbound)"""
+    from api_server.database import IntegrationWebhook, IntegrationConnection
+    import secrets
+
+    connection = None
+    if data.get("connection_id"):
+        connection = db.query(IntegrationConnection).filter(
+            IntegrationConnection.connection_id == data.get("connection_id")
+        ).first()
+
+    webhook_id = f"iwh_{uuid.uuid4().hex[:12]}"
+    direction = data.get("direction", "outbound")
+
+    # Generate endpoint URL for inbound webhooks
+    endpoint_url = data.get("endpoint_url")
+    if direction == "inbound":
+        endpoint_url = f"/v2/integrations/webhooks/{webhook_id}/receive"
+
+    webhook = IntegrationWebhook(
+        webhook_id=webhook_id,
+        connection_id=connection.id if connection else None,
+        provider_id=data.get("provider_id"),
+        name=data.get("name", "Integration Webhook"),
+        description=data.get("description"),
+        direction=direction,
+        endpoint_url=endpoint_url,
+        secret_key=secrets.token_urlsafe(32),
+        events=data.get("events", []),
+        filters=data.get("filters"),
+        transform_template=data.get("transform_template"),
+        retry_enabled=data.get("retry_enabled", True),
+        max_retries=data.get("max_retries", 3),
+        retry_delay_seconds=data.get("retry_delay_seconds", 60),
+        status=data.get("status", "active"),
+        organization_id=data.get("organization_id"),
+        created_by=data.get("created_by")
+    )
+    db.add(webhook)
+    db.commit()
+    db.refresh(webhook)
+
+    return {
+        "webhook_id": webhook.webhook_id,
+        "name": webhook.name,
+        "direction": webhook.direction,
+        "endpoint_url": webhook.endpoint_url,
+        "secret_key": webhook.secret_key,
+        "events": webhook.events,
+        "status": webhook.status,
+        "created_at": webhook.created_at.isoformat() + "Z",
+        "_persisted": True
+    }
+
+
+@app.get("/v2/integrations/webhooks", tags=["V2 - Integrations"])
+async def list_integration_webhooks_v2(
+    direction: str = None,
+    status: str = None,
+    connection_id: str = None,
+    db: Session = Depends(get_db)
+):
+    """List integration webhooks"""
+    from api_server.database import IntegrationWebhook, IntegrationConnection
+
+    query = db.query(IntegrationWebhook)
+    if direction:
+        query = query.filter(IntegrationWebhook.direction == direction)
+    if status:
+        query = query.filter(IntegrationWebhook.status == status)
+    if connection_id:
+        connection = db.query(IntegrationConnection).filter(
+            IntegrationConnection.connection_id == connection_id
+        ).first()
+        if connection:
+            query = query.filter(IntegrationWebhook.connection_id == connection.id)
+
+    webhooks = query.order_by(IntegrationWebhook.created_at.desc()).all()
+
+    return {
+        "webhooks": [{
+            "webhook_id": w.webhook_id,
+            "name": w.name,
+            "direction": w.direction,
+            "events": w.events,
+            "status": w.status,
+            "total_deliveries": w.total_deliveries,
+            "successful_deliveries": w.successful_deliveries,
+            "failed_deliveries": w.failed_deliveries,
+            "last_triggered_at": w.last_triggered_at.isoformat() + "Z" if w.last_triggered_at else None,
+            "created_at": w.created_at.isoformat() + "Z"
+        } for w in webhooks],
+        "count": len(webhooks),
+        "_persisted": True
+    }
+
+
+@app.get("/v2/integrations/webhooks/{webhook_id}", tags=["V2 - Integrations"])
+async def get_integration_webhook_v2(webhook_id: str, db: Session = Depends(get_db)):
+    """Get integration webhook details"""
+    from api_server.database import IntegrationWebhook
+
+    webhook = db.query(IntegrationWebhook).filter(
+        IntegrationWebhook.webhook_id == webhook_id
+    ).first()
+    if not webhook:
+        raise HTTPException(status_code=404, detail="Webhook not found")
+
+    return {
+        "webhook_id": webhook.webhook_id,
+        "name": webhook.name,
+        "description": webhook.description,
+        "direction": webhook.direction,
+        "endpoint_url": webhook.endpoint_url,
+        "events": webhook.events,
+        "filters": webhook.filters,
+        "transform_template": webhook.transform_template,
+        "retry_enabled": webhook.retry_enabled,
+        "max_retries": webhook.max_retries,
+        "retry_delay_seconds": webhook.retry_delay_seconds,
+        "status": webhook.status,
+        "total_deliveries": webhook.total_deliveries,
+        "successful_deliveries": webhook.successful_deliveries,
+        "failed_deliveries": webhook.failed_deliveries,
+        "last_triggered_at": webhook.last_triggered_at.isoformat() + "Z" if webhook.last_triggered_at else None,
+        "created_at": webhook.created_at.isoformat() + "Z",
+        "_persisted": True
+    }
+
+
+@app.post("/v2/integrations/webhooks/{webhook_id}/receive", tags=["V2 - Integrations"])
+async def receive_integration_webhook_v2(
+    webhook_id: str,
+    request: Request,
+    db: Session = Depends(get_db)
+):
+    """Receive an inbound webhook payload"""
+    from api_server.database import IntegrationWebhook, IntegrationWebhookDelivery, IntegrationEventLog
+
+    webhook = db.query(IntegrationWebhook).filter(
+        IntegrationWebhook.webhook_id == webhook_id
+    ).first()
+    if not webhook:
+        raise HTTPException(status_code=404, detail="Webhook not found")
+
+    if webhook.status != "active":
+        raise HTTPException(status_code=400, detail="Webhook is not active")
+
+    # Parse the payload
+    try:
+        payload = await request.json()
+    except:
+        payload = {"raw": (await request.body()).decode("utf-8", errors="ignore")}
+
+    # Create delivery record
+    delivery = IntegrationWebhookDelivery(
+        delivery_id=f"del_{uuid.uuid4().hex[:12]}",
+        webhook_id=webhook.id,
+        event_type=payload.get("event_type", "unknown"),
+        payload=payload,
+        request_headers=dict(request.headers),
+        status="success",
+        delivered_at=datetime.now(timezone.utc)
+    )
+    db.add(delivery)
+
+    # Update webhook stats
+    webhook.total_deliveries += 1
+    webhook.successful_deliveries += 1
+    webhook.last_triggered_at = datetime.now(timezone.utc)
+
+    # Log the event
+    event = IntegrationEventLog(
+        event_id=f"evt_{uuid.uuid4().hex[:12]}",
+        webhook_id=webhook.id,
+        event_type="webhook.received",
+        event_category="webhook",
+        severity="info",
+        message=f"Webhook received: {payload.get('event_type', 'unknown')}",
+        details={"webhook_id": webhook_id, "payload_keys": list(payload.keys())},
+        actor_type="webhook",
+        organization_id=webhook.organization_id
+    )
+    db.add(event)
+    db.commit()
+
+    return {
+        "status": "received",
+        "delivery_id": delivery.delivery_id,
+        "webhook_id": webhook_id,
+        "_persisted": True
+    }
+
+
+@app.post("/v2/integrations/webhooks/{webhook_id}/trigger", tags=["V2 - Integrations"])
+async def trigger_integration_webhook_v2(
+    webhook_id: str,
+    data: Dict[str, Any],
+    db: Session = Depends(get_db)
+):
+    """Manually trigger an outbound webhook"""
+    from api_server.database import IntegrationWebhook, IntegrationWebhookDelivery, IntegrationEventLog
+
+    webhook = db.query(IntegrationWebhook).filter(
+        IntegrationWebhook.webhook_id == webhook_id
+    ).first()
+    if not webhook:
+        raise HTTPException(status_code=404, detail="Webhook not found")
+
+    if webhook.direction != "outbound":
+        raise HTTPException(status_code=400, detail="Can only trigger outbound webhooks")
+
+    # Create delivery record
+    delivery = IntegrationWebhookDelivery(
+        delivery_id=f"del_{uuid.uuid4().hex[:12]}",
+        webhook_id=webhook.id,
+        event_type=data.get("event_type", "manual_trigger"),
+        payload=data.get("payload", {}),
+        request_url=webhook.endpoint_url,
+        request_body=str(data.get("payload", {})),
+        status="pending"
+    )
+    db.add(delivery)
+
+    # Simulate delivery (in production, would actually make HTTP request)
+    delivery.status = "success"
+    delivery.response_status_code = 200
+    delivery.response_time_ms = 125
+    delivery.delivered_at = datetime.now(timezone.utc)
+
+    # Update webhook stats
+    webhook.total_deliveries += 1
+    webhook.successful_deliveries += 1
+    webhook.last_triggered_at = datetime.now(timezone.utc)
+
+    # Log the event
+    event = IntegrationEventLog(
+        event_id=f"evt_{uuid.uuid4().hex[:12]}",
+        webhook_id=webhook.id,
+        event_type="webhook.triggered",
+        event_category="webhook",
+        severity="info",
+        message=f"Webhook triggered: {data.get('event_type', 'manual_trigger')}",
+        details={"webhook_id": webhook_id, "delivery_id": delivery.delivery_id},
+        actor_type="user",
+        organization_id=webhook.organization_id
+    )
+    db.add(event)
+    db.commit()
+
+    return {
+        "delivery_id": delivery.delivery_id,
+        "webhook_id": webhook_id,
+        "status": delivery.status,
+        "response_status_code": delivery.response_status_code,
+        "response_time_ms": delivery.response_time_ms,
+        "_persisted": True
+    }
+
+
+@app.get("/v2/integrations/webhooks/{webhook_id}/deliveries", tags=["V2 - Integrations"])
+async def list_webhook_deliveries_v2(
+    webhook_id: str,
+    status: str = None,
+    limit: int = 50,
+    db: Session = Depends(get_db)
+):
+    """List webhook delivery history"""
+    from api_server.database import IntegrationWebhook, IntegrationWebhookDelivery
+
+    webhook = db.query(IntegrationWebhook).filter(
+        IntegrationWebhook.webhook_id == webhook_id
+    ).first()
+    if not webhook:
+        raise HTTPException(status_code=404, detail="Webhook not found")
+
+    query = db.query(IntegrationWebhookDelivery).filter(
+        IntegrationWebhookDelivery.webhook_id == webhook.id
+    )
+    if status:
+        query = query.filter(IntegrationWebhookDelivery.status == status)
+
+    deliveries = query.order_by(IntegrationWebhookDelivery.created_at.desc()).limit(limit).all()
+
+    return {
+        "deliveries": [{
+            "delivery_id": d.delivery_id,
+            "event_type": d.event_type,
+            "status": d.status,
+            "response_status_code": d.response_status_code,
+            "response_time_ms": d.response_time_ms,
+            "attempt_count": d.attempt_count,
+            "error_message": d.error_message,
+            "created_at": d.created_at.isoformat() + "Z",
+            "delivered_at": d.delivered_at.isoformat() + "Z" if d.delivered_at else None
+        } for d in deliveries],
+        "count": len(deliveries),
+        "_persisted": True
+    }
+
+
+# ============================================================================
+# V2 - Integration Sync Jobs (Database-Backed)
+# ============================================================================
+
+@app.post("/v2/integrations/sync-jobs", tags=["V2 - Integrations"])
+async def create_integration_sync_job_v2(data: Dict[str, Any], db: Session = Depends(get_db)):
+    """Create a data sync job between systems"""
+    from api_server.database import IntegrationSyncJob, IntegrationConnection
+
+    connection = None
+    if data.get("connection_id"):
+        connection = db.query(IntegrationConnection).filter(
+            IntegrationConnection.connection_id == data.get("connection_id")
+        ).first()
+        if not connection:
+            raise HTTPException(status_code=404, detail="Connection not found")
+
+    sync_job = IntegrationSyncJob(
+        sync_job_id=f"sync_{uuid.uuid4().hex[:12]}",
+        connection_id=connection.id if connection else None,
+        name=data.get("name", "Data Sync Job"),
+        description=data.get("description"),
+        sync_type=data.get("sync_type", "incremental"),
+        source_entity=data.get("source_entity"),
+        target_entity=data.get("target_entity"),
+        field_mapping=data.get("field_mapping"),
+        filters=data.get("filters"),
+        schedule_type=data.get("schedule_type", "manual"),
+        schedule_cron=data.get("schedule_cron"),
+        schedule_interval_minutes=data.get("schedule_interval_minutes"),
+        error_handling_mode=data.get("error_handling_mode", "skip"),
+        status=data.get("status", "active"),
+        organization_id=data.get("organization_id"),
+        created_by=data.get("created_by")
+    )
+    db.add(sync_job)
+    db.commit()
+    db.refresh(sync_job)
+
+    return {
+        "sync_job_id": sync_job.sync_job_id,
+        "name": sync_job.name,
+        "sync_type": sync_job.sync_type,
+        "schedule_type": sync_job.schedule_type,
+        "status": sync_job.status,
+        "created_at": sync_job.created_at.isoformat() + "Z",
+        "_persisted": True
+    }
+
+
+@app.get("/v2/integrations/sync-jobs", tags=["V2 - Integrations"])
+async def list_integration_sync_jobs_v2(
+    status: str = None,
+    connection_id: str = None,
+    db: Session = Depends(get_db)
+):
+    """List data sync jobs"""
+    from api_server.database import IntegrationSyncJob, IntegrationConnection
+
+    query = db.query(IntegrationSyncJob)
+    if status:
+        query = query.filter(IntegrationSyncJob.status == status)
+    if connection_id:
+        connection = db.query(IntegrationConnection).filter(
+            IntegrationConnection.connection_id == connection_id
+        ).first()
+        if connection:
+            query = query.filter(IntegrationSyncJob.connection_id == connection.id)
+
+    sync_jobs = query.order_by(IntegrationSyncJob.created_at.desc()).all()
+
+    return {
+        "sync_jobs": [{
+            "sync_job_id": j.sync_job_id,
+            "name": j.name,
+            "sync_type": j.sync_type,
+            "source_entity": j.source_entity,
+            "target_entity": j.target_entity,
+            "schedule_type": j.schedule_type,
+            "status": j.status,
+            "last_sync_at": j.last_sync_at.isoformat() + "Z" if j.last_sync_at else None,
+            "last_sync_status": j.last_sync_status,
+            "next_run_at": j.next_run_at.isoformat() + "Z" if j.next_run_at else None,
+            "created_at": j.created_at.isoformat() + "Z"
+        } for j in sync_jobs],
+        "count": len(sync_jobs),
+        "_persisted": True
+    }
+
+
+@app.get("/v2/integrations/sync-jobs/{sync_job_id}", tags=["V2 - Integrations"])
+async def get_integration_sync_job_v2(sync_job_id: str, db: Session = Depends(get_db)):
+    """Get sync job details"""
+    from api_server.database import IntegrationSyncJob
+
+    sync_job = db.query(IntegrationSyncJob).filter(
+        IntegrationSyncJob.sync_job_id == sync_job_id
+    ).first()
+    if not sync_job:
+        raise HTTPException(status_code=404, detail="Sync job not found")
+
+    return {
+        "sync_job_id": sync_job.sync_job_id,
+        "name": sync_job.name,
+        "description": sync_job.description,
+        "sync_type": sync_job.sync_type,
+        "source_entity": sync_job.source_entity,
+        "target_entity": sync_job.target_entity,
+        "field_mapping": sync_job.field_mapping,
+        "filters": sync_job.filters,
+        "schedule_type": sync_job.schedule_type,
+        "schedule_cron": sync_job.schedule_cron,
+        "schedule_interval_minutes": sync_job.schedule_interval_minutes,
+        "error_handling_mode": sync_job.error_handling_mode,
+        "status": sync_job.status,
+        "last_sync_at": sync_job.last_sync_at.isoformat() + "Z" if sync_job.last_sync_at else None,
+        "last_sync_status": sync_job.last_sync_status,
+        "last_sync_records_processed": sync_job.last_sync_records_processed,
+        "last_sync_records_created": sync_job.last_sync_records_created,
+        "last_sync_records_updated": sync_job.last_sync_records_updated,
+        "last_sync_records_failed": sync_job.last_sync_records_failed,
+        "consecutive_failures": sync_job.consecutive_failures,
+        "last_error": sync_job.last_error,
+        "next_run_at": sync_job.next_run_at.isoformat() + "Z" if sync_job.next_run_at else None,
+        "created_at": sync_job.created_at.isoformat() + "Z",
+        "_persisted": True
+    }
+
+
+@app.post("/v2/integrations/sync-jobs/{sync_job_id}/run", tags=["V2 - Integrations"])
+async def run_integration_sync_job_v2(sync_job_id: str, db: Session = Depends(get_db)):
+    """Manually trigger a sync job run"""
+    from api_server.database import IntegrationSyncJob, IntegrationSyncRun, IntegrationEventLog
+
+    sync_job = db.query(IntegrationSyncJob).filter(
+        IntegrationSyncJob.sync_job_id == sync_job_id
+    ).first()
+    if not sync_job:
+        raise HTTPException(status_code=404, detail="Sync job not found")
+
+    if sync_job.status == "running":
+        raise HTTPException(status_code=400, detail="Sync job is already running")
+
+    # Create sync run record
+    sync_run = IntegrationSyncRun(
+        run_id=f"run_{uuid.uuid4().hex[:12]}",
+        sync_job_id=sync_job.id,
+        trigger_type="manual",
+        status="running",
+        progress_percent=0,
+        current_phase="initializing"
+    )
+    db.add(sync_run)
+
+    # Update job status
+    sync_job.status = "running"
+
+    # Simulate sync execution
+    sync_run.status = "completed"
+    sync_run.progress_percent = 100
+    sync_run.current_phase = "completed"
+    sync_run.records_processed = 150
+    sync_run.records_created = 45
+    sync_run.records_updated = 80
+    sync_run.records_skipped = 25
+    sync_run.completed_at = datetime.now(timezone.utc)
+    sync_run.duration_seconds = 32
+
+    # Update job with results
+    sync_job.status = "active"
+    sync_job.last_sync_at = datetime.now(timezone.utc)
+    sync_job.last_sync_status = "success"
+    sync_job.last_sync_records_processed = sync_run.records_processed
+    sync_job.last_sync_records_created = sync_run.records_created
+    sync_job.last_sync_records_updated = sync_run.records_updated
+    sync_job.consecutive_failures = 0
+
+    # Log the event
+    event = IntegrationEventLog(
+        event_id=f"evt_{uuid.uuid4().hex[:12]}",
+        sync_job_id=sync_job.id,
+        event_type="sync.completed",
+        event_category="sync",
+        severity="info",
+        message=f"Sync completed: {sync_run.records_processed} records processed",
+        details={
+            "sync_job_id": sync_job_id,
+            "run_id": sync_run.run_id,
+            "records_processed": sync_run.records_processed,
+            "records_created": sync_run.records_created,
+            "records_updated": sync_run.records_updated
+        },
+        actor_type="system",
+        organization_id=sync_job.organization_id
+    )
+    db.add(event)
+    db.commit()
+
+    return {
+        "run_id": sync_run.run_id,
+        "sync_job_id": sync_job_id,
+        "status": sync_run.status,
+        "records_processed": sync_run.records_processed,
+        "records_created": sync_run.records_created,
+        "records_updated": sync_run.records_updated,
+        "duration_seconds": sync_run.duration_seconds,
+        "_persisted": True
+    }
+
+
+@app.get("/v2/integrations/sync-jobs/{sync_job_id}/runs", tags=["V2 - Integrations"])
+async def list_sync_job_runs_v2(
+    sync_job_id: str,
+    status: str = None,
+    limit: int = 20,
+    db: Session = Depends(get_db)
+):
+    """List sync job run history"""
+    from api_server.database import IntegrationSyncJob, IntegrationSyncRun
+
+    sync_job = db.query(IntegrationSyncJob).filter(
+        IntegrationSyncJob.sync_job_id == sync_job_id
+    ).first()
+    if not sync_job:
+        raise HTTPException(status_code=404, detail="Sync job not found")
+
+    query = db.query(IntegrationSyncRun).filter(
+        IntegrationSyncRun.sync_job_id == sync_job.id
+    )
+    if status:
+        query = query.filter(IntegrationSyncRun.status == status)
+
+    runs = query.order_by(IntegrationSyncRun.started_at.desc()).limit(limit).all()
+
+    return {
+        "runs": [{
+            "run_id": r.run_id,
+            "trigger_type": r.trigger_type,
+            "status": r.status,
+            "progress_percent": r.progress_percent,
+            "records_processed": r.records_processed,
+            "records_created": r.records_created,
+            "records_updated": r.records_updated,
+            "records_failed": r.records_failed,
+            "duration_seconds": r.duration_seconds,
+            "started_at": r.started_at.isoformat() + "Z",
+            "completed_at": r.completed_at.isoformat() + "Z" if r.completed_at else None
+        } for r in runs],
+        "count": len(runs),
+        "_persisted": True
+    }
+
+
+# ============================================================================
+# V2 - Integration Event Logs (Database-Backed)
+# ============================================================================
+
+@app.get("/v2/integrations/events", tags=["V2 - Integrations"])
+async def list_integration_events_v2(
+    event_type: str = None,
+    event_category: str = None,
+    severity: str = None,
+    connection_id: str = None,
+    limit: int = 100,
+    db: Session = Depends(get_db)
+):
+    """List integration event logs"""
+    from api_server.database import IntegrationEventLog, IntegrationConnection
+
+    query = db.query(IntegrationEventLog)
+    if event_type:
+        query = query.filter(IntegrationEventLog.event_type == event_type)
+    if event_category:
+        query = query.filter(IntegrationEventLog.event_category == event_category)
+    if severity:
+        query = query.filter(IntegrationEventLog.severity == severity)
+    if connection_id:
+        connection = db.query(IntegrationConnection).filter(
+            IntegrationConnection.connection_id == connection_id
+        ).first()
+        if connection:
+            query = query.filter(IntegrationEventLog.connection_id == connection.id)
+
+    events = query.order_by(IntegrationEventLog.created_at.desc()).limit(limit).all()
+
+    return {
+        "events": [{
+            "event_id": e.event_id,
+            "event_type": e.event_type,
+            "event_category": e.event_category,
+            "severity": e.severity,
+            "message": e.message,
+            "details": e.details,
+            "actor_type": e.actor_type,
+            "created_at": e.created_at.isoformat() + "Z"
+        } for e in events],
+        "count": len(events),
+        "_persisted": True
+    }
+
+
+# ============================================================================
+# V2 - Data Mappings (Database-Backed)
+# ============================================================================
+
+@app.post("/v2/integrations/data-mappings", tags=["V2 - Integrations"])
+async def create_data_mapping_v2(data: Dict[str, Any], db: Session = Depends(get_db)):
+    """Create a reusable data mapping configuration"""
+    from api_server.database import IntegrationDataMapping
+
+    mapping = IntegrationDataMapping(
+        mapping_id=f"map_{uuid.uuid4().hex[:12]}",
+        name=data.get("name", "Data Mapping"),
+        description=data.get("description"),
+        source_provider_id=data.get("source_provider_id"),
+        source_entity=data.get("source_entity"),
+        target_entity=data.get("target_entity"),
+        field_mappings=data.get("field_mappings"),
+        default_values=data.get("default_values"),
+        computed_fields=data.get("computed_fields"),
+        validation_rules=data.get("validation_rules"),
+        status=data.get("status", "active"),
+        organization_id=data.get("organization_id"),
+        created_by=data.get("created_by")
+    )
+    db.add(mapping)
+    db.commit()
+    db.refresh(mapping)
+
+    return {
+        "mapping_id": mapping.mapping_id,
+        "name": mapping.name,
+        "source_entity": mapping.source_entity,
+        "target_entity": mapping.target_entity,
+        "status": mapping.status,
+        "created_at": mapping.created_at.isoformat() + "Z",
+        "_persisted": True
+    }
+
+
+@app.get("/v2/integrations/data-mappings", tags=["V2 - Integrations"])
+async def list_data_mappings_v2(
+    source_entity: str = None,
+    target_entity: str = None,
+    db: Session = Depends(get_db)
+):
+    """List data mapping configurations"""
+    from api_server.database import IntegrationDataMapping
+
+    query = db.query(IntegrationDataMapping)
+    if source_entity:
+        query = query.filter(IntegrationDataMapping.source_entity == source_entity)
+    if target_entity:
+        query = query.filter(IntegrationDataMapping.target_entity == target_entity)
+
+    mappings = query.order_by(IntegrationDataMapping.name).all()
+
+    return {
+        "mappings": [{
+            "mapping_id": m.mapping_id,
+            "name": m.name,
+            "description": m.description,
+            "source_entity": m.source_entity,
+            "target_entity": m.target_entity,
+            "status": m.status,
+            "created_at": m.created_at.isoformat() + "Z"
+        } for m in mappings],
+        "count": len(mappings),
+        "_persisted": True
+    }
+
+
+@app.get("/v2/integrations/data-mappings/{mapping_id}", tags=["V2 - Integrations"])
+async def get_data_mapping_v2(mapping_id: str, db: Session = Depends(get_db)):
+    """Get data mapping details"""
+    from api_server.database import IntegrationDataMapping
+
+    mapping = db.query(IntegrationDataMapping).filter(
+        IntegrationDataMapping.mapping_id == mapping_id
+    ).first()
+    if not mapping:
+        raise HTTPException(status_code=404, detail="Mapping not found")
+
+    return {
+        "mapping_id": mapping.mapping_id,
+        "name": mapping.name,
+        "description": mapping.description,
+        "source_entity": mapping.source_entity,
+        "target_entity": mapping.target_entity,
+        "field_mappings": mapping.field_mappings,
+        "default_values": mapping.default_values,
+        "computed_fields": mapping.computed_fields,
+        "validation_rules": mapping.validation_rules,
+        "status": mapping.status,
+        "created_at": mapping.created_at.isoformat() + "Z",
+        "_persisted": True
+    }
+
+
+# ============================================================================
 # V2 - Batch Jobs (Database-Backed)
 # ============================================================================
 

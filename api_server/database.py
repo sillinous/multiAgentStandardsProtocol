@@ -1804,6 +1804,337 @@ class ConnectorInstance(Base):
     updated_at = Column(DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
 
 
+class IntegrationProvider(Base):
+    """Pre-built external service providers (GitHub, Slack, Jira, etc.)"""
+    __tablename__ = "integration_providers"
+
+    id = Column(Integer, primary_key=True, index=True)
+    provider_id = Column(String(50), unique=True, index=True, nullable=False)
+
+    # Provider identity
+    name = Column(String(200), nullable=False)
+    display_name = Column(String(200))
+    description = Column(Text)
+    category = Column(String(50))  # communication, dev_tools, productivity, crm, analytics
+    icon_url = Column(String(500))
+
+    # OAuth configuration
+    oauth_enabled = Column(Boolean, default=False)
+    oauth_authorization_url = Column(String(500))
+    oauth_token_url = Column(String(500))
+    oauth_scopes = Column(JSON)  # Available OAuth scopes
+
+    # API configuration
+    api_base_url = Column(String(500))
+    api_version = Column(String(50))
+    rate_limit_requests = Column(Integer)
+    rate_limit_period_seconds = Column(Integer)
+
+    # Webhook configuration
+    webhook_support = Column(Boolean, default=False)
+    webhook_events = Column(JSON)  # Available webhook event types
+
+    # Capabilities
+    capabilities = Column(JSON)  # List of supported operations
+    required_scopes = Column(JSON)  # Scopes needed for each capability
+
+    # Documentation
+    docs_url = Column(String(500))
+    setup_guide = Column(Text)
+
+    # Status
+    status = Column(String(50), default="active")  # active, beta, deprecated, maintenance
+
+    # Timestamps
+    created_at = Column(DateTime, default=datetime.utcnow)
+    updated_at = Column(DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
+
+
+class IntegrationConnection(Base):
+    """OAuth/API connections to external services"""
+    __tablename__ = "integration_connections"
+
+    id = Column(Integer, primary_key=True, index=True)
+    connection_id = Column(String(50), unique=True, index=True, nullable=False)
+
+    # Provider reference
+    provider_id = Column(Integer, ForeignKey("integration_providers.id"), index=True)
+
+    # Connection identity
+    name = Column(String(200))
+    external_account_id = Column(String(200))  # Account ID from external service
+    external_account_name = Column(String(200))  # Display name from external service
+
+    # OAuth tokens (stored securely)
+    access_token_secret_id = Column(Integer, ForeignKey("secrets.id"))
+    refresh_token_secret_id = Column(Integer, ForeignKey("secrets.id"))
+    token_expires_at = Column(DateTime)
+    granted_scopes = Column(JSON)  # Scopes granted during OAuth
+
+    # API Key auth (alternative to OAuth)
+    api_key_secret_id = Column(Integer, ForeignKey("secrets.id"))
+
+    # Connection status
+    status = Column(String(50), default="active")  # pending, active, expired, revoked, failed
+    last_used_at = Column(DateTime)
+    last_error = Column(Text)
+    error_count = Column(Integer, default=0)
+
+    # Rate limiting state
+    rate_limit_remaining = Column(Integer)
+    rate_limit_reset_at = Column(DateTime)
+
+    # Ownership
+    organization_id = Column(Integer, ForeignKey("organizations.id"), index=True)
+    created_by = Column(Integer, ForeignKey("users.id"))
+
+    # Timestamps
+    created_at = Column(DateTime, default=datetime.utcnow)
+    updated_at = Column(DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
+
+
+class IntegrationWebhook(Base):
+    """Inbound/outbound webhooks for integrations"""
+    __tablename__ = "integration_webhooks"
+
+    id = Column(Integer, primary_key=True, index=True)
+    webhook_id = Column(String(50), unique=True, index=True, nullable=False)
+
+    # Association
+    connection_id = Column(Integer, ForeignKey("integration_connections.id"), index=True)
+    provider_id = Column(Integer, ForeignKey("integration_providers.id"), index=True)
+
+    # Webhook identity
+    name = Column(String(200))
+    description = Column(Text)
+    direction = Column(String(20))  # inbound, outbound
+
+    # Configuration
+    endpoint_url = Column(String(500))  # For outbound: target URL; For inbound: our generated URL
+    secret_key = Column(String(200))  # Webhook signature verification key
+    events = Column(JSON)  # List of event types to trigger/receive
+
+    # Filtering
+    filters = Column(JSON)  # Event filtering rules
+    transform_template = Column(Text)  # Payload transformation template
+
+    # Retry policy (for outbound)
+    retry_enabled = Column(Boolean, default=True)
+    max_retries = Column(Integer, default=3)
+    retry_delay_seconds = Column(Integer, default=60)
+
+    # Statistics
+    total_deliveries = Column(Integer, default=0)
+    successful_deliveries = Column(Integer, default=0)
+    failed_deliveries = Column(Integer, default=0)
+    last_triggered_at = Column(DateTime)
+
+    # Status
+    status = Column(String(50), default="active")  # active, paused, disabled
+
+    # Ownership
+    organization_id = Column(Integer, ForeignKey("organizations.id"))
+    created_by = Column(Integer, ForeignKey("users.id"))
+
+    # Timestamps
+    created_at = Column(DateTime, default=datetime.utcnow)
+    updated_at = Column(DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
+
+
+class IntegrationWebhookDelivery(Base):
+    """Webhook delivery history and status"""
+    __tablename__ = "integration_webhook_deliveries"
+
+    id = Column(Integer, primary_key=True, index=True)
+    delivery_id = Column(String(50), unique=True, index=True, nullable=False)
+    webhook_id = Column(Integer, ForeignKey("integration_webhooks.id"), index=True)
+
+    # Delivery details
+    event_type = Column(String(100))
+    payload = Column(JSON)
+
+    # Request details (for outbound)
+    request_url = Column(String(500))
+    request_headers = Column(JSON)
+    request_body = Column(Text)
+
+    # Response details
+    response_status_code = Column(Integer)
+    response_headers = Column(JSON)
+    response_body = Column(Text)
+    response_time_ms = Column(Integer)
+
+    # Status
+    status = Column(String(50))  # pending, success, failed, retrying
+    attempt_count = Column(Integer, default=1)
+    error_message = Column(Text)
+    next_retry_at = Column(DateTime)
+
+    # Timestamps
+    created_at = Column(DateTime, default=datetime.utcnow)
+    delivered_at = Column(DateTime)
+
+
+class IntegrationSyncJob(Base):
+    """Scheduled sync jobs between systems"""
+    __tablename__ = "integration_sync_jobs"
+
+    id = Column(Integer, primary_key=True, index=True)
+    sync_job_id = Column(String(50), unique=True, index=True, nullable=False)
+
+    # Association
+    connection_id = Column(Integer, ForeignKey("integration_connections.id"), index=True)
+
+    # Job identity
+    name = Column(String(200))
+    description = Column(Text)
+
+    # Sync configuration
+    sync_type = Column(String(50))  # full, incremental, bidirectional
+    source_entity = Column(String(100))  # Entity type in source (e.g., "issues", "contacts")
+    target_entity = Column(String(100))  # Entity type in target
+    field_mapping = Column(JSON)  # Field mapping configuration
+    filters = Column(JSON)  # Data filtering rules
+
+    # Schedule
+    schedule_type = Column(String(50))  # manual, cron, interval, realtime
+    schedule_cron = Column(String(100))  # Cron expression if cron type
+    schedule_interval_minutes = Column(Integer)  # Interval in minutes
+
+    # State tracking
+    last_sync_at = Column(DateTime)
+    last_sync_status = Column(String(50))  # success, partial, failed
+    last_sync_records_processed = Column(Integer)
+    last_sync_records_created = Column(Integer)
+    last_sync_records_updated = Column(Integer)
+    last_sync_records_failed = Column(Integer)
+    last_sync_cursor = Column(String(500))  # Cursor for incremental sync
+
+    # Error handling
+    error_handling_mode = Column(String(50))  # skip, fail, retry
+    last_error = Column(Text)
+    consecutive_failures = Column(Integer, default=0)
+
+    # Status
+    status = Column(String(50), default="active")  # active, paused, disabled, running
+    next_run_at = Column(DateTime)
+
+    # Ownership
+    organization_id = Column(Integer, ForeignKey("organizations.id"))
+    created_by = Column(Integer, ForeignKey("users.id"))
+
+    # Timestamps
+    created_at = Column(DateTime, default=datetime.utcnow)
+    updated_at = Column(DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
+
+
+class IntegrationSyncRun(Base):
+    """History of sync job executions"""
+    __tablename__ = "integration_sync_runs"
+
+    id = Column(Integer, primary_key=True, index=True)
+    run_id = Column(String(50), unique=True, index=True, nullable=False)
+    sync_job_id = Column(Integer, ForeignKey("integration_sync_jobs.id"), index=True)
+
+    # Run details
+    trigger_type = Column(String(50))  # scheduled, manual, webhook
+    triggered_by = Column(Integer, ForeignKey("users.id"))
+
+    # Progress tracking
+    status = Column(String(50))  # running, completed, failed, cancelled
+    progress_percent = Column(Integer, default=0)
+    current_phase = Column(String(100))
+
+    # Statistics
+    records_processed = Column(Integer, default=0)
+    records_created = Column(Integer, default=0)
+    records_updated = Column(Integer, default=0)
+    records_deleted = Column(Integer, default=0)
+    records_skipped = Column(Integer, default=0)
+    records_failed = Column(Integer, default=0)
+
+    # Error details
+    errors = Column(JSON)  # Array of error records
+
+    # Timing
+    started_at = Column(DateTime, default=datetime.utcnow)
+    completed_at = Column(DateTime)
+    duration_seconds = Column(Integer)
+
+
+class IntegrationEventLog(Base):
+    """Activity logs for integration events"""
+    __tablename__ = "integration_event_logs"
+
+    id = Column(Integer, primary_key=True, index=True)
+    event_id = Column(String(50), unique=True, index=True, nullable=False)
+
+    # Event source
+    provider_id = Column(Integer, ForeignKey("integration_providers.id"), index=True)
+    connection_id = Column(Integer, ForeignKey("integration_connections.id"), index=True)
+    webhook_id = Column(Integer, ForeignKey("integration_webhooks.id"))
+    sync_job_id = Column(Integer, ForeignKey("integration_sync_jobs.id"))
+
+    # Event details
+    event_type = Column(String(100), index=True)  # oauth.connected, webhook.received, sync.completed, etc.
+    event_category = Column(String(50))  # auth, webhook, sync, error, rate_limit
+    severity = Column(String(20))  # info, warning, error
+
+    # Event data
+    message = Column(Text)
+    details = Column(JSON)
+
+    # Actor
+    actor_type = Column(String(50))  # user, system, webhook
+    actor_id = Column(String(100))
+
+    # Request context
+    request_id = Column(String(100))
+    ip_address = Column(String(50))
+
+    # Organization
+    organization_id = Column(Integer, ForeignKey("organizations.id"), index=True)
+
+    # Timestamps
+    created_at = Column(DateTime, default=datetime.utcnow, index=True)
+
+
+class IntegrationDataMapping(Base):
+    """Reusable data mapping configurations"""
+    __tablename__ = "integration_data_mappings"
+
+    id = Column(Integer, primary_key=True, index=True)
+    mapping_id = Column(String(50), unique=True, index=True, nullable=False)
+
+    # Mapping identity
+    name = Column(String(200), nullable=False)
+    description = Column(Text)
+
+    # Source/Target
+    source_provider_id = Column(Integer, ForeignKey("integration_providers.id"))
+    source_entity = Column(String(100))
+    target_entity = Column(String(100))
+
+    # Mapping configuration
+    field_mappings = Column(JSON)  # Array of {source_field, target_field, transform}
+    default_values = Column(JSON)  # Default values for target fields
+    computed_fields = Column(JSON)  # Dynamically computed fields
+
+    # Validation
+    validation_rules = Column(JSON)  # Data validation rules
+
+    # Status
+    status = Column(String(50), default="active")
+
+    # Ownership
+    organization_id = Column(Integer, ForeignKey("organizations.id"))
+    created_by = Column(Integer, ForeignKey("users.id"))
+
+    # Timestamps
+    created_at = Column(DateTime, default=datetime.utcnow)
+    updated_at = Column(DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
+
+
 # ============================================================================
 # Agent Memory & Context
 # ============================================================================

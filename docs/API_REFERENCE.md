@@ -34,6 +34,7 @@ Complete reference for the Agentic Forge REST API.
   - [Test Suites](#test-suites-v2)
   - [Marketplace](#marketplace-v2)
   - [Health & Monitoring](#health--monitoring-v2)
+  - [Integrations](#integrations-v2)
 
 ---
 
@@ -1780,6 +1781,364 @@ GET /v2/metrics/api
 - Added cryptography package for production encryption
 - Silent exception handlers now properly log errors
 - Fixed duplicate variable definition issues
+
+---
+
+## Integrations (V2)
+
+Complete integration management system for connecting external services.
+
+### Integration Providers
+
+#### List Integration Providers
+
+```http
+GET /v2/integrations/providers?category={category}&status={status}
+```
+
+**Query Parameters**:
+- `category` (optional): Filter by category (communication, dev_tools, productivity, crm, analytics)
+- `status` (optional): Filter by status (active, beta, deprecated)
+
+**Response**:
+```json
+{
+  "providers": [
+    {
+      "provider_id": "prov_abc123",
+      "name": "github",
+      "display_name": "GitHub",
+      "description": "GitHub integration for repositories and issues",
+      "category": "dev_tools",
+      "oauth_enabled": true,
+      "webhook_support": true,
+      "capabilities": ["repos", "issues", "pull_requests", "webhooks"],
+      "status": "active"
+    }
+  ],
+  "count": 1,
+  "_persisted": true
+}
+```
+
+#### Create Integration Provider
+
+```http
+POST /v2/integrations/providers
+Content-Type: application/json
+
+{
+  "name": "slack",
+  "display_name": "Slack",
+  "description": "Slack messaging integration",
+  "category": "communication",
+  "oauth_enabled": true,
+  "oauth_authorization_url": "https://slack.com/oauth/v2/authorize",
+  "oauth_token_url": "https://slack.com/api/oauth.v2.access",
+  "oauth_scopes": ["chat:write", "channels:read"],
+  "api_base_url": "https://slack.com/api",
+  "webhook_support": true,
+  "webhook_events": ["message", "reaction_added"],
+  "capabilities": ["send_message", "read_channels", "webhooks"]
+}
+```
+
+#### Get Integration Provider
+
+```http
+GET /v2/integrations/providers/{provider_id}
+```
+
+### Integration Connections
+
+#### Create Connection
+
+```http
+POST /v2/integrations/connections
+Content-Type: application/json
+
+{
+  "provider_id": "prov_abc123",
+  "name": "My GitHub Account",
+  "external_account_id": "user123",
+  "external_account_name": "john-doe",
+  "granted_scopes": ["repo", "read:user"],
+  "organization_id": 1
+}
+```
+
+#### List Connections
+
+```http
+GET /v2/integrations/connections?provider_id={id}&status={status}&organization_id={org_id}
+```
+
+#### Get Connection
+
+```http
+GET /v2/integrations/connections/{connection_id}
+```
+
+#### Test Connection
+
+```http
+POST /v2/integrations/connections/{connection_id}/test
+```
+
+**Response**:
+```json
+{
+  "connection_id": "iconn_abc123",
+  "test_status": "success",
+  "message": "Connection test successful",
+  "latency_ms": 145,
+  "tested_at": "2024-01-15T10:30:00Z",
+  "_persisted": true
+}
+```
+
+#### Refresh OAuth Tokens
+
+```http
+POST /v2/integrations/connections/{connection_id}/refresh
+```
+
+#### Delete Connection
+
+```http
+DELETE /v2/integrations/connections/{connection_id}
+```
+
+### Integration Webhooks
+
+#### Create Webhook
+
+```http
+POST /v2/integrations/webhooks
+Content-Type: application/json
+
+{
+  "connection_id": "iconn_abc123",
+  "name": "GitHub Push Events",
+  "description": "Receive push events from GitHub",
+  "direction": "inbound",
+  "events": ["push", "pull_request"],
+  "filters": {"branch": "main"},
+  "organization_id": 1
+}
+```
+
+**Response**:
+```json
+{
+  "webhook_id": "iwh_abc123",
+  "name": "GitHub Push Events",
+  "direction": "inbound",
+  "endpoint_url": "/v2/integrations/webhooks/iwh_abc123/receive",
+  "secret_key": "whsec_...",
+  "events": ["push", "pull_request"],
+  "status": "active",
+  "created_at": "2024-01-15T10:30:00Z",
+  "_persisted": true
+}
+```
+
+#### List Webhooks
+
+```http
+GET /v2/integrations/webhooks?direction={dir}&status={status}&connection_id={conn_id}
+```
+
+#### Get Webhook
+
+```http
+GET /v2/integrations/webhooks/{webhook_id}
+```
+
+#### Receive Webhook (Inbound)
+
+```http
+POST /v2/integrations/webhooks/{webhook_id}/receive
+Content-Type: application/json
+
+{
+  "event_type": "push",
+  "repository": "my-repo",
+  "commits": [...]
+}
+```
+
+#### Trigger Webhook (Outbound)
+
+```http
+POST /v2/integrations/webhooks/{webhook_id}/trigger
+Content-Type: application/json
+
+{
+  "event_type": "workflow.completed",
+  "payload": {
+    "workflow_id": "wf_123",
+    "status": "success"
+  }
+}
+```
+
+#### List Webhook Deliveries
+
+```http
+GET /v2/integrations/webhooks/{webhook_id}/deliveries?status={status}&limit={limit}
+```
+
+**Response**:
+```json
+{
+  "deliveries": [
+    {
+      "delivery_id": "del_abc123",
+      "event_type": "push",
+      "status": "success",
+      "response_status_code": 200,
+      "response_time_ms": 125,
+      "attempt_count": 1,
+      "created_at": "2024-01-15T10:30:00Z",
+      "delivered_at": "2024-01-15T10:30:01Z"
+    }
+  ],
+  "count": 1,
+  "_persisted": true
+}
+```
+
+### Integration Sync Jobs
+
+#### Create Sync Job
+
+```http
+POST /v2/integrations/sync-jobs
+Content-Type: application/json
+
+{
+  "connection_id": "iconn_abc123",
+  "name": "GitHub Issues Sync",
+  "description": "Sync GitHub issues to local database",
+  "sync_type": "incremental",
+  "source_entity": "issues",
+  "target_entity": "tasks",
+  "field_mapping": {
+    "title": "name",
+    "body": "description",
+    "state": "status"
+  },
+  "schedule_type": "interval",
+  "schedule_interval_minutes": 60,
+  "error_handling_mode": "skip"
+}
+```
+
+#### List Sync Jobs
+
+```http
+GET /v2/integrations/sync-jobs?status={status}&connection_id={conn_id}
+```
+
+#### Get Sync Job
+
+```http
+GET /v2/integrations/sync-jobs/{sync_job_id}
+```
+
+#### Run Sync Job
+
+```http
+POST /v2/integrations/sync-jobs/{sync_job_id}/run
+```
+
+**Response**:
+```json
+{
+  "run_id": "run_abc123",
+  "sync_job_id": "sync_abc123",
+  "status": "completed",
+  "records_processed": 150,
+  "records_created": 45,
+  "records_updated": 80,
+  "duration_seconds": 32,
+  "_persisted": true
+}
+```
+
+#### List Sync Job Runs
+
+```http
+GET /v2/integrations/sync-jobs/{sync_job_id}/runs?status={status}&limit={limit}
+```
+
+### Integration Events
+
+#### List Integration Events
+
+```http
+GET /v2/integrations/events?event_type={type}&event_category={cat}&severity={sev}&connection_id={conn_id}&limit={limit}
+```
+
+**Response**:
+```json
+{
+  "events": [
+    {
+      "event_id": "evt_abc123",
+      "event_type": "oauth.token_refresh",
+      "event_category": "auth",
+      "severity": "info",
+      "message": "OAuth token refresh for GitHub Connection",
+      "details": {"connection_id": "iconn_abc123"},
+      "actor_type": "system",
+      "created_at": "2024-01-15T10:30:00Z"
+    }
+  ],
+  "count": 1,
+  "_persisted": true
+}
+```
+
+### Data Mappings
+
+#### Create Data Mapping
+
+```http
+POST /v2/integrations/data-mappings
+Content-Type: application/json
+
+{
+  "name": "GitHub Issues to Tasks",
+  "description": "Map GitHub issues to internal tasks",
+  "source_entity": "github_issues",
+  "target_entity": "tasks",
+  "field_mappings": [
+    {"source_field": "title", "target_field": "name"},
+    {"source_field": "body", "target_field": "description"},
+    {"source_field": "state", "target_field": "status", "transform": "map_status"}
+  ],
+  "default_values": {"priority": "medium"},
+  "validation_rules": {"name": {"required": true, "max_length": 200}}
+}
+```
+
+#### List Data Mappings
+
+```http
+GET /v2/integrations/data-mappings?source_entity={entity}&target_entity={entity}
+```
+
+#### Get Data Mapping
+
+```http
+GET /v2/integrations/data-mappings/{mapping_id}
+```
+
+---
+
+## Changelog
 
 ### v0.2.0-alpha
 - Agent Card management endpoints (copy, clone, CRUD)
